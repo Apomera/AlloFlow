@@ -1,4 +1,36 @@
-# AlloStudio — Design Doc (v0.4, 2026-07-05)
+# AlloStudio — Design Doc (v0.5, 2026-07-05)
+
+**v0.5 (2026-07-05, same day) — Polish + flagship batch:**
+- **Compose-from-prompt** ("Start with AI" card in the template picker,
+  teacher-only): blank canvas + one agent request → the SAME review panel.
+- **Plan preview**: rendered before/after thumbnails of the SELECTED ops on a
+  detached scene (`stPreviewScene` — no ledger contact; image.request noted as
+  generate-on-apply).
+- **"Fix accessibility (guided)"**: deterministic quick-fixes apply as 'user'
+  (rules, not model output), alt drafts land in the review panel, structural
+  issues pre-fill a focused agent request.
+- **Visual Print/PDF** export (`stPrintCss` + hidden-iframe print; window.open
+  is unreliable in the Canvas sandbox). Toast states the Tagged PDF remains
+  the accessible artifact. Alt-gated like every other export.
+- **Autosave/crash recovery**: debounced (~4s idle) full-doc snapshot to
+  localStorage (3.8M-char cap, "too large" honesty toast); template picker
+  offers Restore/Discard; explicit save clears it; restore only after
+  stValidateDoc passes.
+- **Fonts**: curated stacks by KEY (system/serif/friendly/mono) + BrandProfile
+  fonts; `stSafeFontFamily` charset-allowlists everything at every sink
+  (editor, HTML export, PNG raster) because font-family is interpolated into
+  export CSS. Agent may pick KEYS only. Brand style kit now applies brand
+  fonts; stock kits leave fonts alone.
+- **Import auto-downscale** to 1600px (JPEG stays JPEG, else PNG — crop rule).
+- **Welcome card** (first open, dismissible): reading order, alt gate, honest
+  process history.
+- **`frame.rotation` is RESERVED, not implemented**: accepted and preserved in
+  the schema, but no UI exposes it and no render/export honors it. Implement
+  end-to-end or keep ignoring — do not partially wire it.
+- Tests: 94. Deferred to their own sessions: worksheet→Document Hub handoff
+  (builder model is concurrently owned), studio i18n wave (57+ packs).
+
+---
 
 **v0.4 (2026-07-05) — Agentic batch (TEACHER-ONLY UI, per Aaron):** the module's
 agent layer is now WIRED (host `onAgentEdit` → `callGemini`, prompt-embedded

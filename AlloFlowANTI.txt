@@ -5127,7 +5127,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
     window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=36c706760'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=2cc67283'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=6e04997b'); }; })();
     window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=36c706760'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
@@ -30613,8 +30613,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         + 'TEACHER REQUEST: ' + (request?.prompt || '') + '\n\n'
                         + 'Respond with ONLY valid JSON (no markdown): {"summary":"what you changed and why (max 25 words)","ops":[...]}\n'
                         + 'Allowed op shapes (send only the fields you change):\n'
-                        + '- {"type":"object.update","target":"<id>","patch":{"text":"...","style":{"size":N,"color":"#hex","bold":true,"align":"left|center|right"},"role":"heading1|heading2|body","frame":{"x":N,"y":N,"w":N,"h":N},"alt":"...","decorative":false,"fill":"#hex","fit":"cover|contain"}}\n'
-                        + '- {"type":"object.add","object":{"type":"text","role":"heading1|heading2|body","text":"...","style":{"size":N,"color":"#hex","align":"left"},"frame":{"x":N,"y":N,"w":N,"h":N}}}\n'
+                        + '- {"type":"object.update","target":"<id>","patch":{"text":"...","style":{"size":N,"color":"#hex","bold":true,"align":"left|center|right","font":"system|serif|friendly|mono"},"role":"heading1|heading2|body","frame":{"x":N,"y":N,"w":N,"h":N},"alt":"...","decorative":false,"fill":"#hex","fit":"cover|contain"}}\n'
+                        + '- {"type":"object.add","object":{"type":"text","role":"heading1|heading2|body","text":"...","style":{"size":N,"color":"#hex","align":"left","font":"system|serif|friendly|mono"},"frame":{"x":N,"y":N,"w":N,"h":N}}}\n'
                         + '- {"type":"object.add","object":{"type":"shape","shape":"rect|ellipse","fill":"#hex","frame":{"x":N,"y":N,"w":N,"h":N}}}\n'
                         + '- {"type":"image.request","prompt":"description of an image to generate","frame":{"x":N,"y":N,"w":N,"h":N}}\n'
                         + '- {"type":"object.remove","target":"<id>"}\n'

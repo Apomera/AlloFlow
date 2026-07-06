@@ -939,7 +939,7 @@ describe('preflight delta (post-apply verification)', () => {
 describe('brand style kit (BrandProfile reuse)', () => {
   it('maps a valid profile to a kit and re-checks hex defensively', () => {
     const kit = ST.stBrandStyleKit({ name: 'King Middle', colors: { heading: '#123456', accent: '#2563eb', body: '#222222', bg: '#fafafa', cardBg: '#eeeeee' } });
-    expect(kit).toEqual({ key: 'brand', name: 'King Middle', background: '#fafafa', heading: '#123456', body: '#222222', shape: '#eeeeee' });
+    expect(kit).toEqual({ key: 'brand', name: 'King Middle', background: '#fafafa', heading: '#123456', body: '#222222', shape: '#eeeeee', bodyFont: null, headingFont: null });
     const hostile = ST.stBrandStyleKit({ name: 'X', colors: { heading: 'red;inject', bg: 'url(x)', body: '#12', cardBg: '#abc' } });
     expect(hostile.heading).toBe('#1e3a5f');
     expect(hostile.background).toBe('#ffffff');
@@ -975,5 +975,119 @@ describe('agent change descriptions for the new op kinds', () => {
     const ret = ST.stDescribeAgentChange({ type: 'doc.retitle', title: 'Better title' }, d, 4);
     expect(ret.before).toBe('Describe');
     expect(ret.after).toBe('Better title');
+  });
+});
+
+// ── Polish batch (2026-07-05 #2): fonts, import downscale, plan preview,
+// visual print CSS, autosave. Font-family is interpolated into export CSS, so
+// stSafeFontFamily is a security boundary, not a convenience. ──
+describe('font stacks (curated keys + charset-allowlisted brand fonts)', () => {
+  it('resolves keys, sanitizes raw strings, and falls back safely', () => {
+    expect(ST.stSafeFontFamily('serif')).toBe(ST.ST_FONT_STACKS.serif);
+    expect(ST.stSafeFontFamily(null)).toBe(ST.ST_FONT_STACKS.system);
+    expect(ST.stSafeFontFamily('')).toBe(ST.ST_FONT_STACKS.system);
+    // hostile raw string: declarations/urls cannot survive the allowlist
+    const hostile = ST.stSafeFontFamily("Arial'; position:fixed; background:url(javascript:x); font-family:'x");
+    expect(hostile).not.toContain(';');
+    expect(hostile).not.toContain(':');
+    expect(hostile).not.toContain('(');
+    // benign brand string passes through
+    expect(ST.stSafeFontFamily("'Inter', system-ui, sans-serif")).toBe("'Inter', system-ui, sans-serif");
+  });
+  it('export HTML uses the sanitized font and never leaks hostile CSS', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Fonts', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 10, y: 10, w: 300, h: 40 }, z: 1, runs: [{ text: 'Styled', style: { size: 16, font: "Evil\"; </style><script>x</script>; url(x)" } }] } }, 'user', T0);
+    const html = ST.stExportHtml(d, { lang: 'en' });
+    expect(html).toContain('font-family:');
+    expect(html).not.toContain('<script>');
+    expect(html).not.toContain('url(');
+    const d2 = ST.stCreateDoc('letter-portrait', 'Fonts2', T0);
+    ST.stAppend(d2, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 10, y: 10, w: 300, h: 40 }, z: 1, runs: [{ text: 'Mono', style: { size: 16, font: ST.ST_FONT_STACKS.mono } }] } }, 'user', T0);
+    expect(ST.stExportHtml(d2, { lang: 'en' })).toContain("font-family:'Consolas', 'Courier New', monospace");
+  });
+  it('brand kit carries sanitized fonts and the style-kit patch applies them (stock kits leave fonts alone)', () => {
+    const profile = { name: 'B', colors: { heading: '#111111', body: '#222222', bg: '#ffffff', cardBg: '#eeeeee' }, fonts: { body: "'Inter', system-ui, sans-serif", heading: "Georgia, serif" } };
+    const kit = ST.stBrandStyleKit(profile);
+    expect(kit.bodyFont).toBe("'Inter', system-ui, sans-serif");
+    expect(kit.headingFont).toBe('Georgia, serif');
+    const d = ST.stCreateDoc('letter-portrait', 'KitFonts', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'heading1', frame: { x: 10, y: 10, w: 300, h: 60 }, z: 10, runs: [{ text: 'H', style: {} }] } }, 'user', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 10, y: 90, w: 300, h: 40 }, z: 10, runs: [{ text: 'B', style: {} }] } }, 'user', T0);
+    const brandPlan = ST.stStyleKitPatch(d, 'brand', profile);
+    expect(brandPlan.patches[0].patch.runs[0].style.font).toBe('Georgia, serif');
+    expect(brandPlan.patches[1].patch.runs[0].style.font).toBe("'Inter', system-ui, sans-serif");
+    const stockPlan = ST.stStyleKitPatch(d, 'print', profile);
+    expect(stockPlan.patches[0].patch.runs[0].style.font).toBeUndefined();
+  });
+  it('agent plans may pick font KEYS only — raw stacks from the model are ignored', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'AgentFont', T0);
+    const a = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 10, y: 10, w: 300, h: 40 }, z: 1, runs: [{ text: 'x', style: { size: 16 } }] } }, 'user', T0).object.id;
+    const keyed = ST.stNormalizeAgentPlan({ ops: [{ type: 'object.update', target: a, patch: { style: { font: 'serif' } } }] }, d, { scope: 'document' });
+    expect(keyed.ops[0].patch.runs[0].style.font).toBe(ST.ST_FONT_STACKS.serif);
+    const raw = ST.stNormalizeAgentPlan({ ops: [{ type: 'object.update', target: a, patch: { style: { font: 'evil; position:fixed' } } }] }, d, { scope: 'document' });
+    expect(raw.ops[0].patch.runs[0].style.font).toBeUndefined();
+  });
+});
+
+describe('import downscale math', () => {
+  it('returns null when already small enough, proportional dims otherwise', () => {
+    expect(ST.stDownscaleDims(800, 600, 1600)).toBeNull();
+    expect(ST.stDownscaleDims(3200, 2400, 1600)).toEqual({ w: 1600, h: 1200 });
+    expect(ST.stDownscaleDims(1000, 4000, 1600)).toEqual({ w: 400, h: 1600 });
+    expect(ST.stDownscaleDims(0, 100, 1600)).toBeNull();
+    expect(ST.stDownscaleDims(Number.NaN, 100, 1600)).toBeNull();
+  });
+});
+
+describe('plan preview scene (detached apply)', () => {
+  it('applies selected ops without touching the document; image.request skipped', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Preview', T0);
+    const a = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 10, y: 10, w: 300, h: 40 }, z: 1, runs: [{ text: 'Old', style: {} }] } }, 'user', T0).object.id;
+    const opsBefore = d.ledger.ops.length;
+    const preview = ST.stPreviewScene(d, [
+      { type: 'object.update', target: a, patch: { runs: [{ text: 'New', style: { size: 16, color: '#111827', bold: false, align: 'left' } }] } },
+      { type: 'object.add', object: { type: 'shape', shape: 'rect', frame: { x: 0, y: 0, w: 50, h: 50 }, z: 1, fill: '#eeeeee', decorative: true } },
+      { type: 'image.request', prompt: 'a leaf', frame: { x: 0, y: 0, w: 100, h: 100 } }
+    ]);
+    expect(preview.objects).toHaveLength(2); // update + added shape; image.request skipped
+    expect(preview.objects[0].runs[0].text).toBe('New');
+    expect(preview.objects[1].id).toMatch(/^preview/);
+    // the real document is untouched
+    expect(d.objects).toHaveLength(1);
+    expect(d.objects[0].runs[0].text).toBe('Old');
+    expect(d.ledger.ops).toHaveLength(opsBefore);
+  });
+});
+
+describe('visual print CSS', () => {
+  it('sizes the @page to the canvas in inches with zero margin', () => {
+    const css = ST.stPrintCss({ w: 816, h: 1056 });
+    expect(css).toContain('@page { size: 8.5in 11in; margin: 0; }');
+    expect(css).toContain('.st-page');
+    const square = ST.stPrintCss({ w: 960, h: 960 });
+    expect(square).toContain('size: 10in 10in');
+    expect(ST.stPrintCss(null)).toContain('size: 8.5in 11in');
+  });
+});
+
+describe('autosave (crash recovery)', () => {
+  it('write -> read round-trips a valid doc; clear removes it', () => {
+    ST.stClearAutosave();
+    const d = ST.stCreateDoc('letter-portrait', 'Recover me', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 10, y: 10, w: 200, h: 40 }, z: 1, runs: [{ text: 'work', style: {} }] } }, 'user', T0);
+    expect(ST.stWriteAutosave(d, T0 + 5000).ok).toBe(true);
+    const saved = ST.stReadAutosave();
+    expect(saved.title).toBe('Recover me');
+    expect(saved.savedAt).toBe(T0 + 5000);
+    expect(ST.stValidateDoc(saved.doc)).toEqual([]);
+    expect(saved.doc.objects[0].runs[0].text).toBe('work');
+    ST.stClearAutosave();
+    expect(ST.stReadAutosave()).toBeNull();
+  });
+  it('refuses to restore garbage payloads', () => {
+    expect(ST.stAutosaveValid(null)).toBe(false);
+    expect(ST.stAutosaveValid({ v: 1, doc: { format: 'notallostudio' } })).toBe(false);
+    expect(ST.stAutosaveValid({ v: 2, doc: ST.stCreateDoc('square', 'x', T0) })).toBe(false);
+    expect(ST.stAutosaveValid(ST.stAutosavePayload(ST.stCreateDoc('square', 'x', T0), T0))).toBe(true);
   });
 });
