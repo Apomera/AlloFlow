@@ -601,12 +601,14 @@ describe('Studio visual ergonomics helpers', () => {
       ]
     };
     const normalized = ST.stNormalizeAgentPlan(plan, d, { scope: 'selection', ids: [a, img] });
-    expect(normalized.ops).toHaveLength(2);
+    // in-scope object.remove is now a supported (reviewable) op — 3 ops survive
+    expect(normalized.ops).toHaveLength(3);
     expect(normalized.ops[0].patch.runs[0].text).toBe('Clearer wording');
     expect(normalized.ops[0].patch.frame).toEqual({ x: 20, y: 20, w: 260, h: 80, rotation: 0 });
     expect(normalized.ops[1].patch).toEqual({ alt: 'Leaf diagram', decorative: false, fit: 'contain' });
+    expect(normalized.ops[2]).toEqual({ type: 'object.remove', target: a });
     expect(JSON.stringify(normalized.ops)).not.toContain('NEWPIXELS');
-    expect(normalized.rejected.length).toBeGreaterThanOrEqual(3);
+    expect(normalized.rejected.length).toBeGreaterThanOrEqual(2);
     const textChange = ST.stDescribeAgentChange(normalized.ops[0], d, 0);
     expect(textChange.notes).toContain('Text changed');
     expect(textChange.before).toBe('Original');
@@ -795,5 +797,183 @@ describe('born-accessible HTML export (the moat, doc §6)', () => {
 describe('honesty line (scientific-integrity rule — pinned verbatim)', () => {
   it('states editor-scope truth and explicitly disclaims AI detection', () => {
     expect(ST.ST_HONESTY_LINE).toBe('This timeline shows what happened inside this editor. It does not detect AI content in imported images.');
+  });
+});
+
+// ── Agentic batch (2026-07-05): extended op vocabulary, hostile-plan goldens,
+// plan batching/undo, preflight delta, and the brand style kit. The normalizer
+// is the trust boundary between model output and the ledger — every field the
+// model can emit must come out clamped, sanitized, or rejected. ──
+describe('agent plan: extended op vocabulary', () => {
+  const seed = () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Agentic', T0);
+    const a = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'heading1', frame: { x: 10, y: 10, w: 300, h: 60 }, z: 10, runs: [{ text: 'Title', style: { size: 40 } }] } }, 'user', T0).object.id;
+    const b = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 10, y: 90, w: 300, h: 40 }, z: 10, runs: [{ text: 'Body', style: { size: 16 } }] } }, 'user', T0).object.id;
+    return { d, a, b };
+  };
+
+  it('accepts sanitized object.add for text and shapes, never images', () => {
+    const { d } = seed();
+    const plan = { ops: [
+      { type: 'object.add', object: { type: 'text', role: 'heading9', text: 'New section', style: { size: 9999, color: 'red;position:fixed', bold: 1, align: 'evil' }, frame: { x: -500, y: 99999, w: 4000, h: 4000 } } },
+      { type: 'object.add', object: { type: 'shape', shape: 'hexagon', fill: 'url(javascript:x)', frame: { x: 0, y: 0, w: 50, h: 50 } } },
+      { type: 'object.add', object: { type: 'image', src: 'data:image/png;base64,EVIL', alt: 'x', frame: { x: 0, y: 0, w: 50, h: 50 } } }
+    ] };
+    const n = ST.stNormalizeAgentPlan(plan, d, { scope: 'document' });
+    expect(n.ops).toHaveLength(2);
+    const txt = n.ops[0].object;
+    expect(txt.type).toBe('text');
+    expect(txt.runs[0].text).toBe('New section');
+    expect(txt.runs[0].style.size).toBeLessThanOrEqual(120);
+    expect(txt.runs[0].style.color).toBe('#111827'); // junk color -> fallback
+    expect(txt.runs[0].style.bold).toBe(true);
+    expect(txt.frame.w).toBeLessThanOrEqual(d.canvas.w);
+    expect(txt.frame.x).toBeGreaterThanOrEqual(0);
+    expect(txt.id).toBeUndefined(); // ids are minted by stAppend, never by the model
+    const shp = n.ops[1].object;
+    expect(['rect', 'ellipse']).toContain(shp.shape);
+    expect(shp.fill).toBe('#dbeafe'); // junk fill -> fallback
+    expect(n.rejected.length).toBe(1); // the image add
+    expect(JSON.stringify(n.ops)).not.toContain('EVIL');
+  });
+
+  it('normalizes image.request (prompt cleaned + frame clamped) and drops empty ones', () => {
+    const { d } = seed();
+    const n = ST.stNormalizeAgentPlan({ ops: [
+      { type: 'image.request', prompt: '  a  friendly\n\nwater droplet  ', frame: { x: -50, y: -50, w: 9000, h: 9000 } },
+      { type: 'image.request', prompt: '   ' }
+    ] }, d, { scope: 'document' });
+    expect(n.ops).toHaveLength(1);
+    expect(n.ops[0].prompt).toBe('a friendly water droplet');
+    expect(n.ops[0].frame.w).toBeLessThanOrEqual(d.canvas.w);
+    expect(n.rejected).toHaveLength(1);
+  });
+
+  it('caps new objects per plan at 12', () => {
+    const { d } = seed();
+    const adds = Array.from({ length: 20 }, (_, i) => ({ type: 'object.add', object: { type: 'text', role: 'body', text: 'T' + i, frame: { x: 10, y: 10, w: 100, h: 30 } } }));
+    const n = ST.stNormalizeAgentPlan({ ops: adds }, d, { scope: 'document' });
+    expect(n.ops).toHaveLength(12);
+    expect(n.rejected.length).toBe(8);
+  });
+
+  it('object.reorder: in-scope + finite toIndex required, index clamped', () => {
+    const { d, a, b } = seed();
+    const n = ST.stNormalizeAgentPlan({ ops: [
+      { type: 'object.reorder', target: a, toIndex: 999 },
+      { type: 'object.reorder', target: b },
+      { type: 'object.reorder', target: 'ghost', toIndex: 0 }
+    ] }, d, { scope: 'document' });
+    expect(n.ops).toHaveLength(1);
+    expect(n.ops[0]).toEqual({ type: 'object.reorder', target: a, toIndex: d.objects.length - 1 });
+    expect(n.rejected).toHaveLength(2);
+  });
+
+  it('doc.retitle sanitized and blocked in selection scope', () => {
+    const { d, a } = seed();
+    const doc = ST.stNormalizeAgentPlan({ ops: [{ type: 'doc.retitle', title: '  New\nTitle  ' }] }, d, { scope: 'document' });
+    expect(doc.ops).toEqual([{ type: 'doc.retitle', title: 'New Title' }]);
+    const sel = ST.stNormalizeAgentPlan({ ops: [{ type: 'doc.retitle', title: 'Nope' }] }, d, { scope: 'selection', ids: [a] });
+    expect(sel.ops).toHaveLength(0);
+    expect(sel.rejected).toHaveLength(1);
+  });
+
+  it('PROPERTY: a normalized hostile plan applied as actor ai keeps the doc valid + replayable', () => {
+    const { d, a, b } = seed();
+    const hostile = { ops: [
+      { type: 'object.add', object: { type: 'text', role: 'x', text: 'ok', frame: { x: 1e9, y: -1e9, w: 0, h: Number.NaN } } },
+      { type: 'object.add', object: { type: 'shape', shape: 'blob', fill: '#12345', frame: {} } },
+      { type: 'object.update', target: a, patch: { frame: { x: Number.NaN, y: Infinity, w: -5, h: 1e9 }, text: 'edited', style: { size: -3, color: 'expression(alert(1))' } } },
+      { type: 'object.reorder', target: b, toIndex: -99 },
+      { type: 'object.remove', target: a },
+      { type: 'doc.retitle', title: 'Very long title padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding' },
+      { type: 'canvas.background', fill: 'red;inject' }
+    ] };
+    const n = ST.stNormalizeAgentPlan(hostile, d, { scope: 'document' });
+    expect(n.ops.length).toBeGreaterThan(0);
+    n.ops.forEach(op => { const body = JSON.parse(JSON.stringify(op)); body.agent = { batch: 'pTEST', prompt: 'hostile' }; ST.stAppend(d, body, 'ai', T0 + 1000); });
+    expect(ST.stValidateDoc(d)).toEqual([]);
+    const lastSeq = d.ledger.ops[d.ledger.ops.length - 1].seq;
+    const replayed = ST.stReplay(d, lastSeq);
+    expect(replayed.objects).toEqual(d.objects); // replay invariant survives agent ops
+  });
+});
+
+describe('agent batch provenance + one-gesture undo', () => {
+  it('stLastAgentBatch finds the tail batch and carries the prompt; stUndoAgentBatch reverts it', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Batch', T0);
+    const a = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 10, y: 10, w: 200, h: 40 }, z: 1, runs: [{ text: 'Keep', style: {} }] } }, 'user', T0).object.id;
+    const objectsBefore = JSON.parse(JSON.stringify(d.objects));
+    ST.stAppend(d, { type: 'object.update', target: a, patch: { role: 'heading1' }, agent: { batch: 'p1', prompt: 'make it a heading' } }, 'ai', T0 + 1);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', frame: { x: 0, y: 0, w: 40, h: 40 }, z: 1, fill: '#eeeeee', decorative: true }, agent: { batch: 'p1' } }, 'ai', T0 + 2);
+    const info = ST.stLastAgentBatch(d);
+    expect(info).toEqual({ batch: 'p1', count: 2, prompt: 'make it a heading' });
+    expect(ST.stDescribeOp(d.ledger.ops[1])).toContain('AI request: "make it a heading"');
+    const undone = ST.stUndoAgentBatch(d);
+    expect(undone).toBe(2);
+    expect(d.objects).toEqual(objectsBefore);
+    expect(ST.stLastAgentBatch(d)).toBeNull();
+  });
+
+  it('a manual op after the batch breaks the tail (no accidental undo of user work)', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Tail', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 10, y: 10, w: 200, h: 40 }, z: 1, runs: [{ text: 'x', style: {} }] }, agent: { batch: 'p2', prompt: 'add' } }, 'ai', T0);
+    ST.stAppend(d, { type: 'doc.retitle', title: 'User rename' }, 'user', T0 + 1);
+    expect(ST.stLastAgentBatch(d)).toBeNull();
+    expect(ST.stUndoAgentBatch(d)).toBe(0);
+    expect(d.title).toBe('User rename');
+  });
+});
+
+describe('preflight delta (post-apply verification)', () => {
+  it('errors outrank totals; direction reflects the change honestly', () => {
+    expect(ST.stPreflightDelta({ error: 2, warning: 1, review: 0 }, { error: 0, warning: 1, review: 0 }).direction).toBe('better');
+    expect(ST.stPreflightDelta({ error: 0, warning: 1, review: 0 }, { error: 1, warning: 0, review: 0 }).direction).toBe('worse');
+    expect(ST.stPreflightDelta({ error: 1, warning: 0, review: 3 }, { error: 1, warning: 0, review: 1 }).direction).toBe('better');
+    expect(ST.stPreflightDelta({ error: 0, warning: 2, review: 0 }, { error: 0, warning: 2, review: 0 }).direction).toBe('same');
+    expect(ST.stPreflightDelta(null, null).direction).toBe('same');
+    expect(ST.stPreflightDelta({ error: 1, warning: 1, review: 1 }, { error: 0, warning: 0, review: 0 }).text).toContain('3 -> 0');
+  });
+});
+
+describe('brand style kit (BrandProfile reuse)', () => {
+  it('maps a valid profile to a kit and re-checks hex defensively', () => {
+    const kit = ST.stBrandStyleKit({ name: 'King Middle', colors: { heading: '#123456', accent: '#2563eb', body: '#222222', bg: '#fafafa', cardBg: '#eeeeee' } });
+    expect(kit).toEqual({ key: 'brand', name: 'King Middle', background: '#fafafa', heading: '#123456', body: '#222222', shape: '#eeeeee' });
+    const hostile = ST.stBrandStyleKit({ name: 'X', colors: { heading: 'red;inject', bg: 'url(x)', body: '#12', cardBg: '#abc' } });
+    expect(hostile.heading).toBe('#1e3a5f');
+    expect(hostile.background).toBe('#ffffff');
+    expect(hostile.body).toBe('#1f2937');
+    expect(hostile.shape).toBe('#abc');
+  });
+  it('returns null without a usable profile, and stStyleKits prepends the brand kit only when present', () => {
+    expect(ST.stBrandStyleKit(null)).toBeNull();
+    expect(ST.stBrandStyleKit({ name: 'No colors' })).toBeNull();
+    expect(ST.stStyleKits().map(k => k.key)).toEqual(['print', 'calm', 'bold', 'contrast']);
+    const withBrand = ST.stStyleKits({ name: 'B', colors: { heading: '#111111' } });
+    expect(withBrand[0].key).toBe('brand');
+    expect(withBrand).toHaveLength(5);
+  });
+});
+
+describe('agent change descriptions for the new op kinds', () => {
+  it('describes add / image.request / remove / reorder / retitle for the review panel', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Describe', T0);
+    const a = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'heading1', frame: { x: 10, y: 10, w: 300, h: 60 }, z: 10, runs: [{ text: 'Hello', style: {} }] } }, 'user', T0).object.id;
+    const add = ST.stDescribeAgentChange({ type: 'object.add', object: { type: 'text', role: 'body', runs: [{ text: 'Fresh text', style: {} }], frame: { x: 0, y: 0, w: 100, h: 30 } } }, d, 0);
+    expect(add.title).toContain('Add text');
+    expect(add.after).toBe('Fresh text');
+    const img = ST.stDescribeAgentChange({ type: 'image.request', prompt: 'a leaf', frame: { x: 0, y: 0, w: 100, h: 80 } }, d, 1);
+    expect(img.title).toBe('Generate image');
+    expect(img.safety).toContain('Alt text');
+    const rem = ST.stDescribeAgentChange({ type: 'object.remove', target: a }, d, 2);
+    expect(rem.title).toContain('Remove');
+    expect(rem.before).toBe('Hello');
+    const ord = ST.stDescribeAgentChange({ type: 'object.reorder', target: a, toIndex: 0 }, d, 3);
+    expect(ord.kind).toBe('Reading order');
+    expect(ord.before).toBe('Position 1');
+    const ret = ST.stDescribeAgentChange({ type: 'doc.retitle', title: 'Better title' }, d, 4);
+    expect(ret.before).toBe('Describe');
+    expect(ret.after).toBe('Better title');
   });
 });

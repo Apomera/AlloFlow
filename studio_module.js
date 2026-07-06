@@ -28,7 +28,10 @@
 //   Props: { onClose, t, addToast, onExportTaggedPdf(html, title) -> Promise<bool>,
 //            initialRole: 'teacher' | 'student',
 //            onGenerateImage(prompt) -> Promise<dataUrl>,   // optional (Milestone B AI)
-//            onSuggestAlt(dataUrl) -> Promise<string> }      // optional (Milestone B AI)
+//            onSuggestAlt(dataUrl) -> Promise<string>,       // optional (Milestone B AI)
+//            onAgentEdit(request) -> Promise<plan|jsonText>, // optional (agent plan; TEACHER-ONLY UI)
+//            onEditImage(src, instruction) -> Promise<dataUrl>, // optional (whole-image AI edit; teacher-only)
+//            onDesignFeedback(pngDataUrl, context) -> Promise<string> } // optional (vision critique; teacher-only)
 //   The two AI props are optional: their buttons only render when wired, and
 //   every AI result enters the ledger as actor 'ai' (provenance by construction).
 //   Pure helpers attached for tests (the [ST_PURE_BEGIN]…[ST_PURE_END] block):
@@ -423,7 +426,15 @@
     return errs;
   }
 
+  // Process-tab step label. Ops applied from an agent plan carry the teacher's
+  // request (op.agent.prompt on the batch's first op) — surfacing it here keeps
+  // the timeline honest about WHY the AI changed something, not just that it did.
   function stDescribeOp(op) {
+    var base = stDescribeOpBase(op);
+    if (op && op.agent && op.agent.prompt) return base + ' — AI request: "' + stCleanText(op.agent.prompt, 80) + '"';
+    return base;
+  }
+  function stDescribeOpBase(op) {
     if (!op || typeof op !== 'object') return 'Unknown step';
     if (op.type === 'doc.template') return op.template ? 'Started from the ' + op.template + ' template' : 'Started from a template';
     if (op.type === 'doc.retitle') return 'Renamed the document';
@@ -445,7 +456,7 @@
       var p = op.patch || {};
       if (p.runs) return 'Edited text';
       if (p._crop) return 'Cropped an image';
-      if (p.src) return 'Replaced an image';
+      if (p.src) return (p.provenance && p.provenance.origin === 'ai-edited') ? 'AI edited an image' : 'Replaced an image';
       if (Object.prototype.hasOwnProperty.call(p, 'alt')) return 'Updated alt text';
       if (Object.prototype.hasOwnProperty.call(p, 'decorative')) return p.decorative ? 'Marked an image decorative' : 'Marked an image as content';
       if (p.role) return 'Changed the text role';
@@ -857,17 +868,20 @@
     });
   }
 
-  function stStyleKits() {
-    return [
+  function stStyleKits(brandProfile) {
+    var kits = [
       { key: 'print', name: 'Print clean', background: '#ffffff', heading: '#111827', body: '#1f2937', shape: '#f8fafc' },
       { key: 'calm', name: 'Calm focus', background: '#f8fafc', heading: '#0f766e', body: '#134e4a', shape: '#ccfbf1' },
       { key: 'bold', name: 'Clear color', background: '#ffffff', heading: '#1d4ed8', body: '#111827', shape: '#dbeafe' },
       { key: 'contrast', name: 'High contrast', background: '#ffffff', heading: '#000000', body: '#000000', shape: '#f3f4f6' }
     ];
+    var brand = stBrandStyleKit(brandProfile);
+    if (brand) kits.unshift(brand);
+    return kits;
   }
 
-  function stStyleKitPatch(doc, key) {
-    var kits = stStyleKits();
+  function stStyleKitPatch(doc, key, brandProfile) {
+    var kits = stStyleKits(brandProfile);
     var kit = kits.filter(function (k) { return k.key === key; })[0] || kits[0];
     var patches = [];
     ((doc && doc.objects) || []).forEach(function (o) {
@@ -1142,13 +1156,47 @@
     return out;
   }
 
+  // Per-plan cap on NEW objects (adds + image requests). Updates already ride
+  // the overall 30-op slice; adds get a tighter budget because every one grows
+  // the document the teacher has to review.
+  var ST_AGENT_MAX_ADDS = 12;
+
+  // The model may propose NEW objects, but only text and shapes, and only
+  // through the same constructors user insertion uses — never raw objects.
+  // No ids (stAppend mints them at apply), no src (pixels enter only via
+  // image.request → the host's Imagen seam), no unknown fields survive.
+  function stSanitizeAgentAdd(op, canvas) {
+    var raw = (op && op.object && typeof op.object === 'object') ? op.object : {};
+    var frame = stClampFrame(raw.frame || { x: 60, y: 60, w: 380, h: 60 }, canvas);
+    if (raw.type === 'text') {
+      var srcRun = (raw.runs && raw.runs[0]) || {};
+      var text = stCleanText(Object.prototype.hasOwnProperty.call(raw, 'text') ? raw.text : srcRun.text, 4000);
+      if (!text) return null;
+      var role = stSafeTextRole(raw.role);
+      var style = Object.assign({}, srcRun.style || {}, raw.style || {});
+      var obj = stMakeText(role, text, frame, {
+        size: Math.max(8, Math.min(120, stFiniteNumber(style.size, role === 'heading1' ? 44 : role === 'heading2' ? 28 : 16))),
+        color: stSafeCssColor(style.color, '#111827'),
+        align: stSafeAlign(style.align)
+      });
+      if (Object.prototype.hasOwnProperty.call(style, 'bold')) obj.runs[0].style.bold = !!style.bold;
+      return obj;
+    }
+    if (raw.type === 'shape') {
+      return stMakeShape(stSafeShape(raw.shape), frame, stSafeCssColor(raw.fill, '#dbeafe'));
+    }
+    return null;
+  }
+
   function stNormalizeAgentPlan(plan, doc, options) {
     options = options || {};
     var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
-    var allowedIds = stAgentScopeIds(doc, options.scope || (plan && plan.scope), options.ids);
+    var scopeName = options.scope || (plan && plan.scope);
+    var allowedIds = stAgentScopeIds(doc, scopeName, options.ids);
     var raw = Array.isArray(plan) ? plan : (Array.isArray(plan && plan.ops) ? plan.ops : (Array.isArray(plan && plan.changes) ? plan.changes : []));
     var out = [];
     var rejected = [];
+    var added = 0;
     raw.slice(0, 30).forEach(function (op) {
       if (!op || typeof op !== 'object') { rejected.push('Invalid change'); return; }
       if (op.type === 'object.update') {
@@ -1159,8 +1207,44 @@
         out.push({ type: 'object.update', target: op.target, patch: patch });
         return;
       }
+      if (op.type === 'object.add') {
+        if (added >= ST_AGENT_MAX_ADDS) { rejected.push('Skipped new object beyond the per-plan limit'); return; }
+        var obj = stSanitizeAgentAdd(op, doc && doc.canvas);
+        if (!obj) { rejected.push('Skipped unsupported new object (only text and shapes; images go through an image request)'); return; }
+        added++;
+        out.push({ type: 'object.add', object: obj });
+        return;
+      }
+      if (op.type === 'image.request') {
+        if (added >= ST_AGENT_MAX_ADDS) { rejected.push('Skipped new object beyond the per-plan limit'); return; }
+        var imgPrompt = stCleanText(op.prompt, 600);
+        if (!imgPrompt) { rejected.push('Skipped image request without a description'); return; }
+        added++;
+        out.push({ type: 'image.request', prompt: imgPrompt, frame: stClampFrame(op.frame || { x: 120, y: 120, w: 360, h: 270 }, doc && doc.canvas) });
+        return;
+      }
+      if (op.type === 'object.remove') {
+        var gone = objects.filter(function (o) { return o && o.id === op.target; })[0];
+        if (!gone || allowedIds.indexOf(op.target) < 0) { rejected.push('Skipped removal outside scope'); return; }
+        out.push({ type: 'object.remove', target: op.target });
+        return;
+      }
+      if (op.type === 'object.reorder') {
+        var moved = objects.filter(function (o) { return o && o.id === op.target; })[0];
+        if (!moved || allowedIds.indexOf(op.target) < 0) { rejected.push('Skipped reorder outside scope'); return; }
+        if (!stIsFiniteNumber(op.toIndex)) { rejected.push('Skipped reorder without a position'); return; }
+        out.push({ type: 'object.reorder', target: op.target, toIndex: Math.max(0, Math.min(Math.round(op.toIndex), Math.max(0, objects.length - 1))) });
+        return;
+      }
+      if (op.type === 'doc.retitle') {
+        if (scopeName === 'selection') { rejected.push('Skipped title change for selection scope'); return; }
+        var title = stCleanText(op.title, 140);
+        if (!title) { rejected.push('Skipped empty title'); return; }
+        out.push({ type: 'doc.retitle', title: title });
+        return;
+      }
       if (op.type === 'canvas.background') {
-        if ((options.scope || (plan && plan.scope)) === 'selection') { rejected.push('Skipped page background change for selection scope'); return; }
+        if (scopeName === 'selection') { rejected.push('Skipped page background change for selection scope'); return; }
         out.push({ type: 'canvas.background', fill: stSafeCssColor(op.fill, '#ffffff') });
         return;
       }
@@ -1213,10 +1297,57 @@
       info.after = stSafeCssColor(op.fill, '#ffffff');
       return info;
     }
+    if (op.type === 'doc.retitle') {
+      info.title = 'Document title';
+      info.kind = 'Document';
+      info.notes.push('Title changed');
+      info.before = stCleanText(doc && doc.title, 120);
+      info.after = stCleanText(op.title, 120);
+      return info;
+    }
+    if (op.type === 'object.add') {
+      var addKind = op.object && op.object.type;
+      info.objectLabel = stObjectLabelForAgent(op.object);
+      info.title = (addKind === 'text' ? 'Add text: ' : 'Add shape: ') + info.objectLabel;
+      info.kind = addKind === 'text' ? 'New text' : 'New shape';
+      info.notes.push('New object');
+      info.after = addKind === 'text'
+        ? stCleanText(op.object && op.object.runs && op.object.runs[0] && op.object.runs[0].text, 220)
+        : stFrameSummary(op.object && op.object.frame);
+      info.safety = 'Added at the end of the reading order — reorder after applying if needed';
+      return info;
+    }
+    if (op.type === 'image.request') {
+      info.title = 'Generate image';
+      info.kind = 'New image';
+      info.notes.push('Image is generated when you apply');
+      info.after = stCleanText(op.prompt, 220);
+      info.safety = 'Alt text is still required before export';
+      return info;
+    }
     var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
     var target = objects.filter(function (o) { return o && o.id === op.target; })[0];
-    var patch = op.patch || {};
     info.objectLabel = stObjectLabelForAgent(target);
+    if (op.type === 'object.remove') {
+      info.title = 'Remove: ' + info.objectLabel;
+      info.kind = target && target.type ? target.type.charAt(0).toUpperCase() + target.type.slice(1) : 'Object';
+      info.notes.push('Object removed');
+      info.before = info.objectLabel;
+      info.safety = 'Undo restores it';
+      return info;
+    }
+    if (op.type === 'object.reorder') {
+      var fromIdx = -1;
+      objects.forEach(function (o, i) { if (o && o.id === op.target) fromIdx = i; });
+      info.title = 'Reading order: ' + info.objectLabel;
+      info.kind = 'Reading order';
+      info.notes.push('Reading order changed');
+      info.before = 'Position ' + (fromIdx + 1);
+      info.after = 'Position ' + (Math.round(stFiniteNumber(op.toIndex, fromIdx)) + 1);
+      info.safety = 'Screen readers follow this order';
+      return info;
+    }
+    var patch = op.patch || {};
     info.title = info.objectLabel;
     info.kind = target && target.type ? target.type.charAt(0).toUpperCase() + target.type.slice(1) : 'Object';
     if (patch.runs) {
@@ -1262,6 +1393,66 @@
     if (target && target.type === 'image') info.safety = 'No image pixels changed';
     if (!info.notes.length) info.notes.push('Object settings changed');
     return info;
+  }
+
+  // ── Agent plan batching: ops applied from one AI proposal share a batch tag
+  // (stAppend clones extra opBody fields, so the tag + the teacher's request
+  // live in the ledger itself — attribution by construction, and the whole
+  // batch reverts in one gesture instead of N undo presses). ──
+  function stLastAgentBatch(doc) {
+    var ops = doc && doc.ledger && Array.isArray(doc.ledger.ops) ? doc.ledger.ops : [];
+    if (!ops.length) return null;
+    var tail = ops[ops.length - 1];
+    var batch = tail && tail.agent && tail.agent.batch;
+    if (!batch) return null;
+    var count = 0;
+    var prompt = '';
+    for (var i = ops.length - 1; i >= 0; i--) {
+      var a = ops[i] && ops[i].agent;
+      if (!a || a.batch !== batch) break;
+      count++;
+      if (a.prompt) prompt = a.prompt;
+    }
+    return { batch: batch, count: count, prompt: prompt };
+  }
+
+  function stUndoAgentBatch(doc) {
+    var info = stLastAgentBatch(doc);
+    if (!info) return 0;
+    var undone = 0;
+    while (undone < info.count && stUndo(doc)) undone++;
+    return undone;
+  }
+
+  // Did an applied plan help or hurt? Errors outrank totals: a plan that trades
+  // one contrast warning for a new alt-text ERROR is 'worse' even if the count
+  // fell. Drives the honest post-apply toast + the offer to undo the batch.
+  function stPreflightDelta(before, after) {
+    var b = before || {};
+    var a = after || {};
+    var be = stFiniteNumber(b.error, 0), ae = stFiniteNumber(a.error, 0);
+    var bTotal = be + stFiniteNumber(b.warning, 0) + stFiniteNumber(b.review, 0);
+    var aTotal = ae + stFiniteNumber(a.warning, 0) + stFiniteNumber(a.review, 0);
+    var direction = ae > be ? 'worse' : ae < be ? 'better' : aTotal > bTotal ? 'worse' : aTotal < bTotal ? 'better' : 'same';
+    return { direction: direction, before: bTotal, after: aTotal, text: 'Accessibility check: ' + bTotal + ' -> ' + aTotal + ' open item(s)' };
+  }
+
+  // School brand (BrandProfile module) as a one-tap style kit. Hex re-checked
+  // here (defense-in-depth) so a hand-edited localStorage profile can't push
+  // arbitrary CSS through the studio even if the brand module's guards change.
+  function stBrandStyleKit(profile) {
+    if (!profile || typeof profile !== 'object') return null;
+    var colors = (profile.colors && typeof profile.colors === 'object') ? profile.colors : null;
+    if (!colors) return null;
+    var hex = function (v, fb) { return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(String(v || '')) ? String(v) : fb; };
+    return {
+      key: 'brand',
+      name: stCleanText(profile.name, 22) || 'School brand',
+      background: hex(colors.bg, '#ffffff'),
+      heading: hex(colors.heading, '#1e3a5f'),
+      body: hex(colors.body, '#1f2937'),
+      shape: hex(colors.cardBg, '#f8fafc')
+    };
   }
 
   function stUiStatusTone(themeName, tone) {
@@ -2113,7 +2304,14 @@
     // result enters the ledger as actor 'ai' (provenance by construction).
     var canGenerateImage = typeof props.onGenerateImage === 'function';
     var canSuggestAlt = typeof props.onSuggestAlt === 'function';
-    var canAgentEdit = typeof props.onAgentEdit === 'function';
+    // Agentic surfaces are TEACHER-ONLY for now (Aaron, 2026-07-05): the agent
+    // panel, whole-image AI edit, bulk alt drafting, and design feedback all
+    // hide in student mode. Single "suggest alt" + "generate image" keep their
+    // existing both-roles behavior.
+    var canAgentEdit = typeof props.onAgentEdit === 'function' && role !== 'student';
+    var canEditImage = typeof props.onEditImage === 'function' && role !== 'student';
+    var canDesignFeedback = typeof props.onDesignFeedback === 'function' && role !== 'student';
+    var canBulkAlt = canSuggestAlt && role !== 'student';
     var _aiGenOpen = React.useState(false); var aiGenOpen = _aiGenOpen[0], setAiGenOpen = _aiGenOpen[1];
     var _aiGenPrompt = React.useState(''); var aiGenPrompt = _aiGenPrompt[0], setAiGenPrompt = _aiGenPrompt[1];
     var _aiBusy = React.useState(null); var aiBusy = _aiBusy[0], setAiBusy = _aiBusy[1];
@@ -2123,6 +2321,19 @@
     var _agentPrompt = React.useState(''); var agentPrompt = _agentPrompt[0], setAgentPrompt = _agentPrompt[1];
     var _agentPlan = React.useState(null); var agentPlan = _agentPlan[0], setAgentPlan = _agentPlan[1];
     var _agentSelectedOps = React.useState([]); var agentSelectedOps = _agentSelectedOps[0], setAgentSelectedOps = _agentSelectedOps[1];
+    var _agentFollowUp = React.useState(''); var agentFollowUp = _agentFollowUp[0], setAgentFollowUp = _agentFollowUp[1];
+    var _imgEditOpen = React.useState(false); var imgEditOpen = _imgEditOpen[0], setImgEditOpen = _imgEditOpen[1];
+    var _imgEditPrompt = React.useState(''); var imgEditPrompt = _imgEditPrompt[0], setImgEditPrompt = _imgEditPrompt[1];
+    var _designFeedback = React.useState(null); var designFeedback = _designFeedback[0], setDesignFeedback = _designFeedback[1];
+    // Active school brand (BrandProfile module) — read once per open via the
+    // lazy useState initializer; degrades to the stock kits when absent.
+    var _brandProfile = React.useState(function () {
+      try {
+        var bp = window.AlloModules && window.AlloModules.BrandProfile;
+        return (bp && typeof bp.getActiveBrandProfile === 'function') ? bp.getActiveBrandProfile() : null;
+      } catch (_) { return null; }
+    });
+    var brandProfile = _brandProfile[0];
     // In-editor crop: cropId opens the modal, cropRect is the drag selection in
     // 0..1 fractions of the displayed image.
     var _cropId = React.useState(null); var cropId = _cropId[0], setCropId = _cropId[1];
@@ -2323,19 +2534,28 @@
       }).catch(function (err) { setAiBusy(null); addToast(TT('studio.ai_alt_failed', 'Could not draft alt text.') + ' ' + (err && err.message || ''), 'error'); });
     };
 
-    var runAgentEdit = function () {
-      var prompt = String(agentPrompt || '').trim();
-      if (!prompt) { addToast(TT('studio.agent_need_prompt', 'Tell the AI what to change first.'), 'info'); return; }
+    // One agent request → one reviewable plan. `refineOf` carries the previous
+    // proposal back to the model so "adjust it" keeps context — conversational
+    // iteration with zero hidden chat state (everything shown in the panel).
+    var mintBatchId = function () { return 'p' + Date.now().toString(36) + Math.floor(Math.random() * 46656).toString(36); };
+    var requestAgentPlan = function (promptText, refineOf) {
       if (!doc || !canAgentEdit || aiBusy) return;
       var scope = stBuildAgentScope(doc, agentEffectiveScope, selectionIds);
+      var request = { prompt: promptText, scope: scope.scope, selectionIds: scope.selectedIds, document: scope };
+      var brandKit = stBrandStyleKit(brandProfile);
+      if (brandKit) request.brand = { heading: brandKit.heading, body: brandKit.body, background: brandKit.background, shape: brandKit.shape };
+      if (refineOf) request.priorPlan = { prompt: refineOf.prompt || '', summary: refineOf.summary || '', ops: refineOf.ops || [] };
       setAiBusy('agent');
       setAgentPlan(null);
       setAgentSelectedOps([]);
-      Promise.resolve(props.onAgentEdit({ prompt: prompt, scope: scope.scope, selectionIds: scope.selectedIds, document: scope })).then(function (plan) {
+      Promise.resolve(props.onAgentEdit(request)).then(function (plan) {
         setAiBusy(null);
         var normalized = stNormalizeAgentPlan(plan, _docRef.current, { scope: scope.scope, ids: scope.selectedIds });
+        normalized.prompt = promptText;
+        normalized.batch = mintBatchId();
         setAgentPlan(normalized);
         setAgentSelectedOps(normalized.ops.map(function (_, idx) { return idx; }));
+        setAgentFollowUp('');
         if (normalized.ops.length) {
           stAnnounce(TT('studio.a11y_agent_plan_ready', 'AI edit proposal ready'));
           addToast(TT('studio.agent_plan_ready', 'AI proposed changes. Review before applying.'), 'info');
@@ -2347,21 +2567,176 @@
         addToast(TT('studio.agent_failed', 'AI edit failed.') + ' ' + (err && err.message || ''), 'error');
       });
     };
+    var runAgentEdit = function () {
+      var prompt = String(agentPrompt || '').trim();
+      if (!prompt) { addToast(TT('studio.agent_need_prompt', 'Tell the AI what to change first.'), 'info'); return; }
+      requestAgentPlan(prompt, null);
+    };
+    var runAgentRefine = function () {
+      var follow = String(agentFollowUp || '').trim();
+      if (!follow || !agentPlan) return;
+      requestAgentPlan((agentPlan.prompt ? agentPlan.prompt + ' — adjustment: ' : '') + follow, agentPlan);
+    };
     var applyAgentPlan = function () {
-      if (!agentPlan || !agentPlan.ops || !agentPlan.ops.length) return;
+      if (!agentPlan || !agentPlan.ops || !agentPlan.ops.length || aiBusy) return;
       var selectedIndexes = Array.isArray(agentSelectedOps) ? agentSelectedOps : [];
       var opsToApply = agentPlan.ops.filter(function (_, idx) { return selectedIndexes.indexOf(idx) >= 0; });
       if (!opsToApply.length) { addToast(TT('studio.agent_select_change', 'Choose at least one change to apply.'), 'info'); return; }
+      var beforeCounts = stAnalyzeDoc(_docRef.current).counts;
+      var batch = agentPlan.batch || mintBatchId();
+      var promptText = agentPlan.prompt || '';
+      var stamped = false;
       var touched = [];
-      opsToApply.forEach(function (op) {
-        dispatch(op, 'ai');
-        if (op.target && touched.indexOf(op.target) < 0) touched.push(op.target);
-      });
-      if (touched.length) { setSelectedIds(touched); setSelectedId(touched[touched.length - 1]); }
+      // Batch tag on every op; the teacher's request once (first applied op) —
+      // the ledger stays light but the batch is attributable + undoable as one.
+      var dispatchAgent = function (op) {
+        var body = stClone(op);
+        body.agent = stamped ? { batch: batch } : { batch: batch, prompt: promptText };
+        var applied = dispatch(body, 'ai');
+        if (!applied) return null;
+        stamped = true;
+        var id = op.target || (applied.object && applied.object.id);
+        if (id && touched.indexOf(id) < 0) touched.push(id);
+        return applied;
+      };
+      var imageReqs = opsToApply.filter(function (op) { return op.type === 'image.request'; });
+      var plainOps = opsToApply.filter(function (op) { return op.type !== 'image.request'; });
+      var finish = function (failedImages) {
+        if (touched.length) { setSelectedIds(touched); setSelectedId(touched[touched.length - 1]); }
+        setAgentPlan(null);
+        setAgentSelectedOps([]);
+        var delta = stPreflightDelta(beforeCounts, stAnalyzeDoc(_docRef.current).counts);
+        var msg = TT('studio.agent_applied', 'Applied AI changes and logged them in the process history.') + ' ' + delta.text;
+        if (failedImages) msg += ' — ' + failedImages + ' ' + TT('studio.agent_images_failed', 'image(s) could not be generated');
+        if (delta.direction === 'worse') {
+          addToast(msg + '. ' + TT('studio.agent_worse_hint', 'The accessibility check got worse — "Undo AI changes" reverts this in one step.'), 'error');
+        } else {
+          addToast(msg, failedImages ? 'info' : 'success');
+        }
+        stAnnounce(TT('studio.a11y_agent_applied', 'AI proposed changes applied'));
+      };
+      plainOps.forEach(dispatchAgent);
+      if (!imageReqs.length) { finish(0); return; }
+      // image.request resolves through the SAME Imagen seam as the manual
+      // button, sequentially (the queue is rate-limit-aware but order keeps
+      // provenance readable). Alt stays EMPTY — the gate still applies.
+      if (!canGenerateImage) { finish(imageReqs.length); return; }
+      setAiBusy('agent-apply');
+      var queue = imageReqs.slice();
+      var failedImages = 0;
+      var step = function () {
+        if (!queue.length) { setAiBusy(null); finish(failedImages); return; }
+        var req = queue.shift();
+        Promise.resolve(props.onGenerateImage(req.prompt)).then(function (dataUrl) {
+          if (dataUrl && String(dataUrl).indexOf('data:') === 0) {
+            var obj = stMakeImage(dataUrl, '', req.frame, 'ai-generated');
+            obj.provenance = { origin: 'ai-generated', prompt: req.prompt };
+            dispatchAgent({ type: 'object.add', object: obj });
+          } else { failedImages++; }
+          step();
+        }).catch(function () { failedImages++; step(); });
+      };
+      step();
+    };
+    var undoAgentBatch = function () {
+      var n = stUndoAgentBatch(_docRef.current);
+      if (!n) return;
+      bump();
+      clearSelection();
       setAgentPlan(null);
       setAgentSelectedOps([]);
-      stAnnounce(TT('studio.a11y_agent_applied', 'AI proposed changes applied'));
-      addToast(TT('studio.agent_applied', 'Applied AI changes and logged them in the process history.'), 'success');
+      stAnnounce(TT('studio.a11y_agent_undone', 'AI changes undone'));
+      addToast(TT('studio.agent_undone', 'Undid the last AI batch') + ' (' + n + ')', 'success');
+    };
+
+    // Whole-image AI edit (the app-wide Gemini image-edit seam anchor charts +
+    // concept maps already use). NOT a crop: the original stays recoverable
+    // through undo/process history, so this is for improving pictures — the
+    // crop tool + its scrub invariant own removing sensitive content.
+    var runEditImage = function () {
+      if (!selected || selected.type !== 'image' || !selected.src || !canEditImage || aiBusy) return;
+      var instruction = String(imgEditPrompt || '').trim();
+      if (!instruction) { addToast(TT('studio.ai_edit_need_prompt', 'Describe how the image should change first.'), 'info'); return; }
+      var id = selected.id;
+      var priorOrigin = (selected.provenance && selected.provenance.origin) || 'unknown';
+      setAiBusy('img-edit');
+      Promise.resolve(props.onEditImage(selected.src, instruction)).then(function (dataUrl) {
+        setAiBusy(null);
+        if (!dataUrl || String(dataUrl).indexOf('data:') !== 0) { addToast(TT('studio.ai_edit_failed', 'Could not edit the image.'), 'error'); return; }
+        dispatch({ type: 'object.update', target: id, patch: { src: dataUrl, provenance: { origin: 'ai-edited', prompt: instruction, prior: priorOrigin } } }, 'ai');
+        setImgEditPrompt('');
+        setImgEditOpen(false);
+        stAnnounce(TT('studio.a11y_ai_edited', 'AI edited the image — review the alt text'));
+        addToast(TT('studio.ai_edit_ok', '✨ Image edited (logged as AI). Review the alt text — the picture may have changed.'), 'info');
+      }).catch(function (err) { setAiBusy(null); addToast(TT('studio.ai_edit_failed', 'Could not edit the image.') + ' ' + (err && err.message || ''), 'error'); });
+    };
+
+    // Bulk alt drafting: every unlabeled image gets an AI DRAFT, presented
+    // through the SAME review-before-apply panel as agent plans (one
+    // attributable, one-step-undoable batch; teacher edits stay 'user' ops).
+    var runDraftAllAlt = function () {
+      if (!doc || !canBulkAlt || aiBusy) return;
+      var byId = {};
+      doc.objects.forEach(function (o) { if (o && o.id) byId[o.id] = o; });
+      var targets = stAltGate(doc.objects).map(function (m) { return byId[m.id]; }).filter(function (o) { return o && o.src; }).slice(0, 12);
+      if (!targets.length) { addToast(TT('studio.ai_alt_none', 'Every image already has alt text or is marked decorative.'), 'info'); return; }
+      setAiBusy('alt-all');
+      var ops = [];
+      var failed = 0;
+      var queue = targets.slice();
+      var step = function () {
+        if (!queue.length) {
+          setAiBusy(null);
+          if (!ops.length) { addToast(TT('studio.ai_alt_failed', 'Could not draft alt text.'), 'error'); return; }
+          setAgentOpen(true);
+          setAgentPlan({
+            summary: TT('studio.ai_alt_all_summary', 'Draft alt text for review') + ' (' + ops.length + ')',
+            ops: ops,
+            rejected: failed ? [failed + ' ' + TT('studio.ai_alt_all_failed', 'image(s) could not be drafted')] : [],
+            prompt: 'Draft missing alt text',
+            batch: mintBatchId()
+          });
+          setAgentSelectedOps(ops.map(function (_, idx) { return idx; }));
+          stAnnounce(TT('studio.a11y_alt_all_ready', 'Alt text drafts ready — review before applying'));
+          addToast(TT('studio.ai_alt_all_ready', 'Alt text drafts ready. Review each one before applying.'), 'info');
+          return;
+        }
+        var o = queue.shift();
+        Promise.resolve(props.onSuggestAlt(o.src)).then(function (text) {
+          var alt = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+          if (alt) ops.push({ type: 'object.update', target: o.id, patch: { alt: alt } }); else failed++;
+          step();
+        }).catch(function () { failed++; step(); });
+      };
+      step();
+    };
+
+    // Design feedback: render the page → vision critique → text suggestions.
+    // Advisory only — no ops, nothing enters the ledger (the document did not
+    // change). stRenderPng is the same rasterizer the PNG export uses.
+    var runDesignFeedback = function () {
+      if (!doc || !canDesignFeedback || aiBusy) return;
+      setAiBusy('feedback');
+      var feedbackFailed = function (err) {
+        setAiBusy(null);
+        addToast(TT('studio.feedback_failed', 'Could not get design feedback.') + (err && err.message ? ' ' + err.message : ''), 'error');
+      };
+      stRenderPng(doc, 0.6).then(function (blob) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          var context = (doc.title || 'Untitled') + ' — ' + doc.objects.length + ' object(s), ' + preflightTotal + ' open accessibility item(s)';
+          Promise.resolve(props.onDesignFeedback(String(e.target.result || ''), context)).then(function (text) {
+            setAiBusy(null);
+            var body = String(text || '').trim().slice(0, 1600);
+            if (!body) { addToast(TT('studio.feedback_failed', 'Could not get design feedback.'), 'error'); return; }
+            setDesignFeedback({ text: body });
+            setPreflightOpen(true);
+            stAnnounce(TT('studio.a11y_feedback_ready', 'Design feedback ready'));
+          }).catch(feedbackFailed);
+        };
+        reader.onerror = function () { feedbackFailed(null); };
+        reader.readAsDataURL(blob);
+      }).catch(feedbackFailed);
     };
 
     // ── in-editor crop ──
@@ -2613,7 +2988,7 @@
       }
     };
     var applyStyleKit = function (key) {
-      var plan = stStyleKitPatch(doc, key);
+      var plan = stStyleKitPatch(doc, key, brandProfile);
       dispatch({ type: 'canvas.background', fill: plan.canvasFill }, 'user');
       plan.patches.forEach(function (p) { dispatch({ type: 'object.update', target: p.id, patch: p.patch }, 'user'); });
       addToast(TT('studio.style_applied', 'Style kit applied') + ': ' + plan.name, 'success');
@@ -2823,6 +3198,9 @@
     }
     var agentPendingColor = themeName === 'contrast' ? C.accent : '#f59e0b';
     var snapGuideColor = themeName === 'contrast' ? '#ffff00' : '#f59e0b';
+    // One-gesture rollback offer — only while the ledger tail IS an agent batch
+    // (any manual op in between means the batch is no longer the tail).
+    var lastAgentBatch = doc && canAgentEdit ? stLastAgentBatch(doc) : null;
 
     function renderObject(o, scale, interactivity, extra, hh) {
       var f = interactivity ? liveFrameFor(o) : o.frame;
@@ -3036,7 +3414,13 @@
             h('button', { style: Object.assign({}, S.tool, selected.fit === 'contain' ? { borderColor: C.accent } : null), onClick: function () { dispatch({ type: 'object.update', target: selected.id, patch: { fit: 'contain' } }, 'user'); }, 'aria-pressed': selected.fit === 'contain' }, 'Fit')),
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '4px' } },
             h('button', { style: S.tool, onClick: function () { if (fileRef.current) { fileRef.current.setAttribute('data-st-replace', selected.id); fileRef.current.click(); } } }, '🔁 ' + TT('studio.replace_image', 'Replace…')),
-            selected.src ? h('button', { style: S.tool, onClick: function () { setCropRect(null); setCropId(selected.id); }, title: TT('studio.crop_hint', 'Trim the image — removed pixels are permanently deleted, including from your saved file') }, '✂ ' + TT('studio.crop', 'Crop…')) : null)) : null,
+            selected.src ? h('button', { style: S.tool, onClick: function () { setCropRect(null); setCropId(selected.id); }, title: TT('studio.crop_hint', 'Trim the image — removed pixels are permanently deleted, including from your saved file') }, '✂ ' + TT('studio.crop', 'Crop…')) : null),
+          (canEditImage && selected.src) ? h('button', { style: Object.assign({}, S.tool, { marginTop: '4px' }, imgEditOpen ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-expanded': imgEditOpen, onClick: function () { setImgEditOpen(!imgEditOpen); } }, '✨ ' + TT('studio.ai_edit_image', 'Edit image with AI…')) : null,
+          (canEditImage && selected.src && imgEditOpen) ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', padding: '6px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt, marginTop: '4px' } },
+            h('textarea', { value: imgEditPrompt, rows: 2, placeholder: TT('studio.ai_edit_placeholder', 'e.g. brighten the colors and simplify the background'), 'aria-label': TT('studio.ai_edit_label', 'Describe how the image should change'), style: Object.assign({}, S.input, { resize: 'vertical' }), disabled: aiBusy === 'img-edit',
+              onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setImgEditPrompt(e.target.value); } }),
+            h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', borderColor: '#1e3a8a', opacity: (aiBusy === 'img-edit' || !String(imgEditPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'img-edit' || !String(imgEditPrompt).trim(), onClick: runEditImage }, aiBusy === 'img-edit' ? '… ' + TT('studio.ai_editing', 'Editing…') : '✨ ' + TT('studio.ai_edit_apply', 'Edit image')),
+            h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.ai_edit_note', 'Whole-image edit, logged as AI. The original stays in your process history — use Crop to permanently remove content.'))) : null) : null,
         h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } },
           h('button', { style: S.tool, onClick: function () { dispatch({ type: 'object.z', target: selected.id, z: (selected.z || 1) + 1 }, 'user'); }, title: TT('studio.bring_forward', 'Bring forward (visual stacking only — reading order is the list)') }, '⬆ z'),
           h('button', { style: S.tool, onClick: function () { dispatch({ type: 'object.z', target: selected.id, z: Math.max(0, (selected.z || 1) - 1) }, 'user'); }, title: TT('studio.send_back', 'Send backward') }, '⬇ z'),
@@ -3082,7 +3466,7 @@
           h('button', { style: Object.assign({}, S.hBtn, ops.length ? null : { opacity: 0.45, cursor: 'default' }), disabled: !ops.length, onClick: function () { if (stUndo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
           h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { if (stRedo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')),
           h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))),
-          h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { setRole(student ? 'teacher' : 'student'); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')),
+          h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')),
           h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { borderColor: '#fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal),
           h('span', { style: S.headerSpacer }),
           h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.save', 'Save')),
@@ -3093,7 +3477,9 @@
           h('div', { style: { fontSize: '12px', fontWeight: 800, color: C.text, minWidth: '170px' } }, ready ? ready.title : TT('studio.ready_to_share', 'Ready to share'),
             h('div', { style: { fontSize: '11px', fontWeight: 600, color: C.muted, marginTop: '2px' } }, preflight.counts.error + ' errors - ' + preflight.counts.warning + ' warnings - ' + preflight.counts.review + ' review'),
             h('div', { style: { fontSize: '10.5px', fontWeight: 500, color: C.soft, marginTop: '3px', lineHeight: 1.35 } }, ready ? ready.message : ''),
-            h('button', { style: Object.assign({}, S.hBtn, { marginTop: '6px', width: '100%', opacity: a11yAutoFix.ops.length ? 1 : 0.5 }), disabled: !a11yAutoFix.ops.length, onClick: applyA11yAutoFix, title: TT('studio.a11y_quick_fix_hint', 'Automatically fixes simple contrast, tiny text, and off-page object issues') }, TT('studio.a11y_quick_fix', 'Fix simple issues') + (a11yAutoFix.ops.length ? ' (' + a11yAutoFix.ops.length + ')' : ''))),
+            h('button', { style: Object.assign({}, S.hBtn, { marginTop: '6px', width: '100%', opacity: a11yAutoFix.ops.length ? 1 : 0.5 }), disabled: !a11yAutoFix.ops.length, onClick: applyA11yAutoFix, title: TT('studio.a11y_quick_fix_hint', 'Automatically fixes simple contrast, tiny text, and off-page object issues') }, TT('studio.a11y_quick_fix', 'Fix simple issues') + (a11yAutoFix.ops.length ? ' (' + a11yAutoFix.ops.length + ')' : '')),
+            (canBulkAlt && altFailures.length) ? h('button', { style: Object.assign({}, S.hBtn, { marginTop: '4px', width: '100%', opacity: aiBusy ? 0.6 : 1 }), disabled: !!aiBusy, onClick: runDraftAllAlt, title: TT('studio.ai_alt_all_hint', 'AI drafts alt text for every unlabeled image — you review each draft before it applies, and edits are logged honestly') }, aiBusy === 'alt-all' ? '… ' + TT('studio.ai_drafting', 'Drafting…') : '✨ ' + TT('studio.ai_alt_all', 'Draft missing alt text') + ' (' + Math.min(altFailures.length, 12) + ')') : null,
+            canDesignFeedback ? h('button', { style: Object.assign({}, S.hBtn, { marginTop: '4px', width: '100%', opacity: aiBusy ? 0.6 : 1 }), disabled: !!aiBusy, onClick: runDesignFeedback, title: TT('studio.feedback_hint', 'AI looks at the rendered page and suggests design improvements — advisory only, nothing is changed') }, aiBusy === 'feedback' ? '… ' + TT('studio.feedback_busy', 'Reviewing…') : '🎨 ' + TT('studio.feedback', 'Get design feedback')) : null),
           h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(5, minmax(112px, 1fr))', gap: '6px', flex: '1 1 520px' } },
             accessibilityChecklist.map(function (check) {
               var tone = check.severity === 'error' ? statusTone('error') : check.severity === 'warning' ? statusTone('warning') : check.severity === 'review' ? statusTone('review') : statusTone('success');
@@ -3116,6 +3502,12 @@
                 onClick: function () { applyReadyAction(action); },
                 title: action.message }, label);
             }) : h('span', { style: { fontSize: '12px', color: C.muted, fontWeight: 700 } }, TT('studio.no_a11y_issues', 'No accessibility issues found.'))),
+          designFeedback ? h('div', { style: { flex: '1 1 100%', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panel, padding: '8px', color: C.text } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' } },
+              h('strong', { style: { fontSize: '11.5px' } }, '🎨 ' + TT('studio.feedback_title', 'Design feedback (AI)')),
+              h('button', { style: Object.assign({}, S.tool, { padding: '2px 8px', minHeight: '22px', fontSize: '10px' }), onClick: function () { setDesignFeedback(null); } }, TT('studio.dismiss', 'Dismiss'))),
+            h('p', { style: { margin: '6px 0 4px', fontSize: '11px', lineHeight: 1.45, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, designFeedback.text),
+            h('p', { style: { margin: 0, fontSize: '9.5px', color: C.soft } }, TT('studio.feedback_note', 'Suggestions only — nothing in your document was changed.'))) : null,
           preflight.issues.length ? h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(auto-fit, minmax(210px, 1fr))', gap: '6px', flex: '1 1 100%' } },
             preflight.issues.slice(0, 10).map(function (issue, idx) {
               var tone = statusTone(issue.severity === 'error' ? 'error' : issue.severity === 'warning' ? 'warning' : 'review');
@@ -3211,8 +3603,13 @@
                   h('summary', { style: { cursor: 'pointer', fontWeight: 800 } }, TT('studio.agent_skipped_changes', 'Skipped') + ' ' + agentPlan.rejected.length),
                   h('ul', { style: { margin: '4px 0 0 16px', padding: 0 } }, agentPlan.rejected.slice(0, 8).map(function (msg, idx) { return h('li', { key: idx }, msg); }))) : null,
                 h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '7px' } },
-                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center' }), disabled: !selectedAgentCount, onClick: applyAgentPlan }, TT('studio.apply_selected', 'Apply selected')),
-                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center' }), onClick: function () { setAgentPlan(null); setAgentSelectedOps([]); } }, TT('studio.discard', 'Discard')))) : null,
+                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', opacity: (!selectedAgentCount || aiBusy) ? 0.6 : 1 }), disabled: !selectedAgentCount || !!aiBusy, onClick: applyAgentPlan }, aiBusy === 'agent-apply' ? '… ' + TT('studio.agent_applying', 'Applying…') : TT('studio.apply_selected', 'Apply selected')),
+                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center' }), disabled: aiBusy === 'agent-apply', onClick: function () { setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); } }, TT('studio.discard', 'Discard'))),
+                h('div', { style: { marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' } },
+                  h('textarea', { value: agentFollowUp, rows: 2, placeholder: TT('studio.agent_refine_placeholder', 'Adjust this proposal, e.g. keep the heading where it is'), 'aria-label': TT('studio.agent_refine_label', 'Describe an adjustment to the proposal'), style: Object.assign({}, S.input, { resize: 'vertical' }), disabled: !!aiBusy,
+                    onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setAgentFollowUp(e.target.value); } }),
+                  h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', opacity: (aiBusy || !String(agentFollowUp).trim()) ? 0.6 : 1 }), disabled: !!aiBusy || !String(agentFollowUp).trim(), onClick: runAgentRefine, title: TT('studio.agent_refine_hint', 'Asks the AI again with your adjustment and the current proposal as context') }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'Preparing…') : '↻ ' + TT('studio.agent_refine', 'Refine proposal')))) : null,
+              lastAgentBatch ? h('button', { style: Object.assign({}, S.tool, { width: '100%' }), onClick: undoAgentBatch, title: TT('studio.agent_undo_batch_hint', 'Reverts every change from the last applied AI batch in one step') }, '↩ ' + TT('studio.agent_undo_batch', 'Undo AI changes') + ' (' + lastAgentBatch.count + ')') : null,
               h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.agent_note', 'Preview first. Applied changes are logged as AI.'))) : null,
             h('button', { style: Object.assign({}, S.tool, resourceOpen ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-expanded': resourceOpen, onClick: function () { setResourceOpen(!resourceOpen); } },
               TT('studio.resource_shelf', 'Source shelf') + ' ' + resourceCues.length),
@@ -3233,7 +3630,7 @@
                 resourceCues.length ? TT('studio.no_resource_matches', 'No matching resources found.') : TT('studio.no_resources', 'No source history resources are available yet.'))) : null,
             h('div', { style: S.label }, TT('studio.style_kits', 'Style kits')),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }, role: 'group', 'aria-label': TT('studio.style_kits', 'Style kits') },
-              stStyleKits().map(function (kit) {
+              stStyleKits(brandProfile).map(function (kit) {
                 return h('button', { key: kit.key, style: Object.assign({}, S.tool, { padding: '6px', minHeight: '54px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '4px' }), onClick: function () { applyStyleKit(kit.key); }, title: kit.name },
                   h('span', { style: { display: 'flex', gap: '3px', alignItems: 'center' }, 'aria-hidden': true },
                     h('span', { style: { width: '16px', height: '14px', borderRadius: '3px', border: '1px solid ' + C.border, background: kit.background } }),
@@ -3363,6 +3760,11 @@
   AlloStudio.stBuildAgentScope = stBuildAgentScope;
   AlloStudio.stNormalizeAgentPlan = stNormalizeAgentPlan;
   AlloStudio.stDescribeAgentChange = stDescribeAgentChange;
+  AlloStudio.stSanitizeAgentAdd = stSanitizeAgentAdd;
+  AlloStudio.stLastAgentBatch = stLastAgentBatch;
+  AlloStudio.stUndoAgentBatch = stUndoAgentBatch;
+  AlloStudio.stPreflightDelta = stPreflightDelta;
+  AlloStudio.stBrandStyleKit = stBrandStyleKit;
   AlloStudio.stUiStatusTone = stUiStatusTone;
   AlloStudio.stCropPresetRect = stCropPresetRect;
   AlloStudio.stAdjustCropRect = stAdjustCropRect;

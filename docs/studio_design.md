@@ -1,4 +1,41 @@
-# AlloStudio — Design Doc (v0.3, 2026-07-02)
+# AlloStudio — Design Doc (v0.4, 2026-07-05)
+
+**v0.4 (2026-07-05) — Agentic batch (TEACHER-ONLY UI, per Aaron):** the module's
+agent layer is now WIRED (host `onAgentEdit` → `callGemini`, prompt-embedded
+JSON) and extended:
+- **Op vocabulary**: agent plans may now `object.add` (text/shape ONLY, built
+  through the same constructors as user inserts; ids minted by stAppend; max 12
+  new objects/plan), `image.request` (two-phase: prompt+frame reviewed first,
+  pixels generated through the SAME `callImagen` seam at apply, alt stays empty
+  → gate holds), `object.remove`, `object.reorder` (reading order!),
+  `doc.retitle`, plus the original `object.update`/`canvas.background`.
+- **Provenance batching**: applied plan ops carry `agent:{batch, prompt-on-first}`
+  in the LEDGER (stAppend clones extra fields) → Process tab shows the teacher's
+  request verbatim ("AI request: …"), and `stUndoAgentBatch` reverts the whole
+  batch in ONE gesture while it is still the ledger tail.
+- **Verify loop**: `stPreflightDelta` compares stAnalyzeDoc counts before/after
+  apply (errors outrank totals) and the toast reports it honestly; a 'worse'
+  delta points at "Undo AI changes".
+- **Conversational refine**: follow-up box re-asks with the prior plan as
+  context (`request.priorPlan`) — no hidden chat state.
+- **Whole-image AI edit** (`onEditImage` → app-wide `callGeminiImageEdit`, the
+  anchor-charts seam): logged as actor 'ai' with the instruction + prior origin
+  in provenance; explicitly NOT a crop (originals stay in history; the crop
+  scrub invariant still owns content removal).
+- **Bulk alt drafting**: "Draft missing alt text (N)" runs onSuggestAlt across
+  unlabeled images (cap 12) and lands in the SAME review panel as agent plans.
+- **Design feedback** (`onDesignFeedback` → `callGeminiVision` on the
+  stRenderPng raster): advisory text only, never ops, never in the ledger.
+- **Brand reuse**: active BrandProfile (Document Builder's brand module)
+  becomes a "School brand" style kit (hex re-checked defensively) and is passed
+  to the agent as preferred palette.
+- Student mode hides ALL of the above (role toggle also clears agent state);
+  the pre-existing single generate/suggest-alt buttons keep both-roles behavior.
+- Tests: 85 (hostile-plan goldens; replay/validity property over normalized
+  hostile plans; batch/undo; delta; brand kit). Deploy: module `?v=2cc67283`
+  bump + App.jsx regen ride the next deploy; Canvas smoke pending.
+
+---
 
 **Status:** **Milestone A BUILT** (same day, Aaron-approved go-ahead): `studio_module.js`
 (pure event-sourced core + Tier-2 editor, plain JS on the Video Studio module

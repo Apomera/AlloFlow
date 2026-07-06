@@ -5127,7 +5127,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
     window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=36c706760'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=1e5f07c6'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=2cc67283'); }; })();
     window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=36c706760'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
@@ -30585,6 +30585,72 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     const _prompt = 'Write concise, factual alt text (one sentence, do not start with "image of" or "picture of") describing this picture for a screen-reader user in a classroom document.';
                     const _txt = await callGeminiVision(_prompt, _base64, _mime);
                     return String(_txt || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+                },
+                // Agentic edit (2026-07-05, teacher-only UI module-side): the studio
+                // sends a pixel-redacted document scope + the teacher's request; the
+                // model returns a JSON plan that the module's stNormalizeAgentPlan
+                // re-sanitizes op-by-op (whitelisted types, clamped frames, hex-checked
+                // colors) before ANYTHING is shown, and nothing applies without the
+                // teacher reviewing each change. House JSON pattern: prompt-embedded
+                // JSON only (no responseSchema), fence-strip + brace-extract fallback.
+                onAgentEdit: async (request) => {
+                    const _docJson = JSON.stringify(request && request.document || {});
+                    const _cw = request?.document?.canvas?.w || 816;
+                    const _ch = request?.document?.canvas?.h || 1056;
+                    const _scopeLine = request?.scope === 'selection'
+                        ? 'Edit ONLY these selected objects: ' + (request.selectionIds || []).join(', ') + '. Do not touch anything else.'
+                        : 'You may edit any object in the document.';
+                    const _brandLine = request?.brand
+                        ? 'School brand colors (prefer these when recoloring): heading ' + request.brand.heading + ', body text ' + request.brand.body + ', page background ' + request.brand.background + ', shapes ' + request.brand.shape + '.'
+                        : '';
+                    const _priorLine = request?.priorPlan
+                        ? 'Your previous proposal (the teacher wants it ADJUSTED, not repeated):\n' + JSON.stringify(request.priorPlan).slice(0, 4000)
+                        : '';
+                    const _agentPrompt = 'You are a careful design assistant inside AlloStudio, an accessible flyer/worksheet editor for teachers.\n'
+                        + 'The document is a JSON scene: objects render in ARRAY ORDER, and that order IS the screen-reader reading order. Frames are pixels on a ' + _cw + 'x' + _ch + ' page.\n\n'
+                        + 'DOCUMENT:\n' + _docJson + '\n\n'
+                        + _scopeLine + '\n' + _brandLine + '\n' + _priorLine + '\n\n'
+                        + 'TEACHER REQUEST: ' + (request?.prompt || '') + '\n\n'
+                        + 'Respond with ONLY valid JSON (no markdown): {"summary":"what you changed and why (max 25 words)","ops":[...]}\n'
+                        + 'Allowed op shapes (send only the fields you change):\n'
+                        + '- {"type":"object.update","target":"<id>","patch":{"text":"...","style":{"size":N,"color":"#hex","bold":true,"align":"left|center|right"},"role":"heading1|heading2|body","frame":{"x":N,"y":N,"w":N,"h":N},"alt":"...","decorative":false,"fill":"#hex","fit":"cover|contain"}}\n'
+                        + '- {"type":"object.add","object":{"type":"text","role":"heading1|heading2|body","text":"...","style":{"size":N,"color":"#hex","align":"left"},"frame":{"x":N,"y":N,"w":N,"h":N}}}\n'
+                        + '- {"type":"object.add","object":{"type":"shape","shape":"rect|ellipse","fill":"#hex","frame":{"x":N,"y":N,"w":N,"h":N}}}\n'
+                        + '- {"type":"image.request","prompt":"description of an image to generate","frame":{"x":N,"y":N,"w":N,"h":N}}\n'
+                        + '- {"type":"object.remove","target":"<id>"}\n'
+                        + '- {"type":"object.reorder","target":"<id>","toIndex":N}  (0-based reading-order position)\n'
+                        + '- {"type":"doc.retitle","title":"..."}\n'
+                        + '- {"type":"canvas.background","fill":"#hex"}\n'
+                        + 'Rules: at most 30 ops; keep text at 12px or larger; keep WCAG AA text contrast against the page/shape behind it; keep a sane heading hierarchy (one H1, no skipped levels); reading order should match visual top-to-bottom flow; NEVER put words inside images (real text stays text).';
+                    const _txt = await callGemini(_agentPrompt, true);
+                    if (!_txt) return null;
+                    const _cleaned = String(_txt).replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+                    try { return JSON.parse(_cleaned); } catch (_e) {
+                        const _match = _cleaned.match(/\{[\s\S]*\}/);
+                        if (_match) { try { return JSON.parse(_match[0]); } catch (_e2) {} }
+                        return null;
+                    }
+                },
+                // Whole-image AI edit — the SAME callGeminiImageEdit seam anchor
+                // charts / concept maps / adventure already use. Result normalized
+                // to a data: URL (the studio requires one and logs actor 'ai').
+                onEditImage: async (src, instruction) => {
+                    const _b64 = String(src || '').replace(/^data:[^,]*,/, '');
+                    if (!_b64) return null;
+                    const _out = await callGeminiImageEdit('Edit this image for a classroom document: ' + instruction + '. Keep the subject recognizable. Do not add any words or text to the image.', _b64);
+                    if (!_out) return null;
+                    return String(_out).indexOf('data:') === 0 ? String(_out) : ('data:image/png;base64,' + String(_out));
+                },
+                // Design feedback — vision critique of the RENDERED page (advisory
+                // only; the studio never applies anything from this path).
+                onDesignFeedback: async (pngDataUrl, context) => {
+                    const _fm = /^data:([^;,]+)[;,]/.exec(String(pngDataUrl || ''));
+                    const _fmime = _fm ? _fm[1] : 'image/png';
+                    const _fb64 = String(pngDataUrl || '').replace(/^data:[^,]*,/, '');
+                    if (!_fb64) return '';
+                    const _fprompt = 'You are a friendly design coach for teachers. This is a rendered page from a classroom flyer/worksheet editor (' + String(context || '') + '). Give 3 to 5 short, specific, actionable suggestions to improve layout, visual hierarchy, readability, and balance. Plain-text lines starting with "- ". No preamble, no markdown headings, under 90 words total.';
+                    const _ftxt = await callGeminiVision(_fprompt, _fb64, _fmime);
+                    return String(_ftxt || '').trim();
                 }
             })}
         </CDNModuleGate>
