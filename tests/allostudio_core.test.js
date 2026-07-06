@@ -1120,3 +1120,42 @@ describe('AlloStudio keyboard shortcut reference (stShortcutList)', () => {
     expect(byId.help.keys).toBe('?');
   });
 });
+
+describe('AlloStudio color swatch palette (stSwatchPalette / stHexNorm)', () => {
+  it('normalizes hex colors and rejects junk', () => {
+    expect(ST.stHexNorm('#ABCDEF')).toBe('#abcdef');
+    expect(ST.stHexNorm('#f00')).toBe('#ff0000');
+    expect(ST.stHexNorm('  #FfFfFf ')).toBe('#ffffff');
+    expect(ST.stHexNorm('red')).toBe(null);
+    expect(ST.stHexNorm('rgb(1,2,3)')).toBe(null);
+    expect(ST.stHexNorm(null)).toBe(null);
+  });
+  it('gathers standard swatches and the colors actually used in the design, de-duplicated', () => {
+    const doc = ST.stCreateDoc('letter-portrait', 'Palette test', 1);
+    doc.objects = [
+      { id: 'a', type: 'text', frame: { x: 0, y: 0, w: 100, h: 40 }, z: 1, runs: [{ text: 'hi', style: { color: '#123ABC' } }] },
+      { id: 'b', type: 'shape', shape: 'rect', frame: { x: 0, y: 0, w: 50, h: 50 }, z: 2, fill: '#123abc' },
+      { id: 'c', type: 'shape', shape: 'rect', frame: { x: 0, y: 0, w: 50, h: 50 }, z: 3, fill: '#00ff00' }
+    ];
+    doc.canvas.background = { fill: '#ffffff' };
+    const pal = ST.stSwatchPalette(doc, null);
+    expect(Array.isArray(pal.standard)).toBe(true);
+    expect(pal.standard.length).toBeGreaterThan(6);
+    // document colors: the two distinct doc colors that are NOT already standard
+    expect(pal.document).toContain('#123abc');   // text + shape share this once
+    expect(pal.document.filter((c) => c === '#123abc').length).toBe(1);
+    // #00ff00 and #ffffff are not in the standard set, so they surface as doc colors
+    expect(pal.document).toContain('#00ff00');
+    // no color appears in more than one group
+    const all = pal.brand.concat(pal.standard, pal.document);
+    expect(new Set(all).size).toBe(all.length);
+  });
+  it('puts active brand-profile colors in the brand group ahead of everything', () => {
+    const doc = ST.stCreateDoc('square', 'Brand', 1);
+    const profile = { name: 'Test School', colors: { bg: '#fffdf5', heading: '#7a1f2b', body: '#22303f', cardBg: '#f1e9d2' } };
+    const pal = ST.stSwatchPalette(doc, profile);
+    expect(pal.brand).toContain('#7a1f2b');
+    expect(pal.brand).toContain('#22303f');
+    expect(pal.brand.length).toBeGreaterThanOrEqual(3);
+  });
+});

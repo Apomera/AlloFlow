@@ -2131,6 +2131,46 @@
     ];
   }
 
+  // ── Color swatch palette (the Canva-style quick picker) ──
+  // PURE: gathers three ordered, de-duplicated swatch groups so a teacher clicks
+  // a color instead of hunting in the OS picker: (1) BRAND colors from the active
+  // school profile, (2) a curated STANDARD palette, (3) DOCUMENT colors already
+  // used in this design (text runs, shape fills, page background). All normalized
+  // to #rrggbb; a color never repeats across groups.
+  function stHexNorm(c) {
+    if (typeof c !== 'string') return null;
+    var s = c.trim().toLowerCase();
+    if (/^#[0-9a-f]{6}$/.test(s)) return s;
+    if (/^#[0-9a-f]{3}$/.test(s)) return '#' + s[1] + s[1] + s[2] + s[2] + s[3] + s[3];
+    return null;
+  }
+  var ST_STANDARD_SWATCHES = ['#000000', '#334155', '#64748b', '#ffffff', '#ef4444', '#f97316', '#f59e0b', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#6366f1', '#a855f7', '#ec4899'];
+  function stSwatchPalette(doc, brandProfile) {
+    var seen = {};
+    var take = function (list, into) {
+      (list || []).forEach(function (c) { var n = stHexNorm(c); if (n && !seen[n]) { seen[n] = 1; into.push(n); } });
+    };
+    var brand = [];
+    var kit = stBrandStyleKit(brandProfile);
+    if (kit) take([kit.heading, kit.body, kit.background, kit.shape], brand);
+    try {
+      var extra = brandProfile && (brandProfile.palette || brandProfile.swatches);
+      if (Array.isArray(extra)) take(extra.map(function (x) { return typeof x === 'string' ? x : (x && x.hex); }), brand);
+    } catch (_) {}
+    var standard = []; take(ST_STANDARD_SWATCHES, standard);
+    var docColors = [];
+    var rawDoc = [];
+    if (doc && Array.isArray(doc.objects)) {
+      doc.objects.forEach(function (o) {
+        if (o && o.type === 'text' && Array.isArray(o.runs)) o.runs.forEach(function (r) { if (r && r.style) rawDoc.push(r.style.color); });
+        if (o && o.type === 'shape') rawDoc.push(o.fill);
+      });
+    }
+    if (doc && doc.canvas && doc.canvas.background) rawDoc.push(doc.canvas.background.fill);
+    take(rawDoc, docColors);
+    return { brand: brand, standard: standard, document: docColors };
+  }
+
   // ═══════════════════════════ [ST_PURE_END] ═══════════════════════════
 
   function stReadRecentProjects() {
@@ -3746,10 +3786,8 @@
                 'aria-pressed': bold, 'aria-label': TT('studio.bold', 'Bold'), title: TT('studio.bold', 'Bold'),
                 onClick: function () { var runs = textRunsFor(selected); runs[0].style = Object.assign({}, runs[0].style, { bold: !bold }); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } }, 'B');
             })())) : null,
-        selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_color', 'Text color'),
-          h('input', { type: 'color', value: selectedTextStyle.color || '#111827', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { var runs = textRunsFor(selected); runs[0].style.color = e.target.value; dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } })) : null,
-        selected.type === 'shape' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.fill', 'Fill'),
-          h('input', { type: 'color', value: selected.fill || '#dbeafe', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { fill: e.target.value } }, 'user'); } })) : null,
+        selected.type === 'text' ? colorField(TT('studio.text_color', 'Text color'), selectedTextStyle.color || '#111827', function (hex) { var runs = textRunsFor(selected); runs[0].style.color = hex; dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); }) : null,
+        selected.type === 'shape' ? colorField(TT('studio.fill', 'Fill'), selected.fill || '#dbeafe', function (hex) { dispatch({ type: 'object.update', target: selected.id, patch: { fill: hex } }, 'user'); }) : null,
         selected.type === 'image' ? h('div', null,
           h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.alt_text', 'Alt text (what a screen reader hears)'),
             // key by object id AND altNonce: switching selection OR an AI draft
@@ -3822,6 +3860,37 @@
     var errorTone = statusTone('error');
     var successTone = statusTone('success');
     var modLabel = (function () { try { return /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '') ? '⌘' : 'Ctrl'; } catch (_) { return 'Ctrl'; } })();
+    // Canva-style quick color picker: brand swatches + a curated palette + the
+    // colors already used in this design, with the OS picker kept as "Custom".
+    // One reusable field for text color, shape fill, and page background.
+    var swatchGroups = stSwatchPalette(doc, brandProfile);
+    var colorField = function (labelText, current, onPick) {
+      var cur = stHexNorm(current);
+      var ink = function (hex) { try { var r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16); return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#111827' : '#ffffff'; } catch (_) { return '#ffffff'; } };
+      var swatchBtn = function (hex) {
+        var active = cur === hex;
+        return h('button', { key: hex, type: 'button', title: hex, 'aria-label': hex, 'aria-pressed': active, onClick: function () { onPick(hex); },
+          style: { width: '22px', height: '22px', borderRadius: '5px', cursor: 'pointer', padding: 0, background: hex, border: 'none', boxShadow: active ? ('0 0 0 2px ' + C.accent + ', 0 0 0 3px ' + C.panel) : 'inset 0 0 0 1px rgba(0,0,0,0.18)' } },
+          active ? h('span', { 'aria-hidden': true, style: { color: ink(hex), fontSize: '12px', fontWeight: 900, lineHeight: '22px' } }, '✓') : null);
+      };
+      var groups = [
+        { key: 'brand', label: TT('studio.swatch_brand', 'School brand'), colors: swatchGroups.brand },
+        { key: 'standard', label: TT('studio.swatch_standard', 'Colors'), colors: swatchGroups.standard },
+        { key: 'document', label: TT('studio.swatch_document', 'In this design'), colors: swatchGroups.document }
+      ];
+      return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+        h('div', { style: S.label }, labelText),
+        groups.map(function (grp) {
+          if (!grp.colors.length) return null;
+          return h('div', { key: grp.key, style: { display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' } },
+            h('span', { style: { fontSize: '9px', color: C.soft, width: '100%', letterSpacing: '0.03em', textTransform: 'uppercase' } }, grp.label),
+            grp.colors.map(swatchBtn));
+        }),
+        h('label', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: C.muted, marginTop: '2px' } }, TT('studio.swatch_custom', 'Custom'),
+          h('input', { type: 'color', value: cur || '#000000', 'aria-label': TT('studio.swatch_custom', 'Custom color'),
+            style: { width: '36px', height: '24px', padding: '1px', border: '1px solid ' + C.border, borderRadius: '6px', background: C.inputBg, cursor: 'pointer' },
+            onChange: function (e) { onPick(e.target.value); } })));
+    };
     var shortcutsOverlay = shortcutsOpen ? h('div', {
         role: 'dialog', 'aria-modal': false, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'),
         style: { position: 'absolute', inset: 0, background: 'rgba(2,6,23,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60, padding: '20px' },
@@ -4046,8 +4115,7 @@
                 h('option', { value: 'letter-landscape' }, TT('studio.orient_landscape', 'Landscape') + ' (11×8.5)'),
                 h('option', { value: 'square' }, TT('studio.orient_square', 'Square')),
                 ST_CANVAS_PRESETS[doc.canvas.preset] ? null : h('option', { value: 'custom', disabled: true }, TT('studio.orient_custom', 'Custom')))),
-            h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.background', 'Background'),
-              h('input', { type: 'color', value: (doc.canvas.background && doc.canvas.background.fill) || '#ffffff', style: Object.assign({}, S.input, { padding: '2px', height: '30px' }), onChange: function (e) { dispatch({ type: 'canvas.background', fill: e.target.value }, 'user'); } })),
+            colorField(TT('studio.background', 'Background'), (doc.canvas.background && doc.canvas.background.fill) || '#ffffff', function (hex) { dispatch({ type: 'canvas.background', fill: hex }, 'user'); }),
             h('p', { style: { fontSize: '10px', color: C.soft, marginTop: 'auto' } }, TT('studio.keyboard_hint', 'Tip: Shift/Ctrl-click selects a group. Tab focuses objects; arrows move, Shift+arrows resize, Delete removes.'))),
           // center: canvas
           h('div', { style: S.canvasWrap },
@@ -4161,6 +4229,8 @@
   AlloStudio.stCanvasFitScale = stCanvasFitScale;
   AlloStudio.stAdjustCanvasZoom = stAdjustCanvasZoom;
   AlloStudio.stShortcutList = stShortcutList;
+  AlloStudio.stSwatchPalette = stSwatchPalette;
+  AlloStudio.stHexNorm = stHexNorm;
   AlloStudio.stSnapFrame = stSnapFrame;
   AlloStudio.stBuildAgentScope = stBuildAgentScope;
   AlloStudio.stNormalizeAgentPlan = stNormalizeAgentPlan;
