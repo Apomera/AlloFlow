@@ -25,14 +25,23 @@
   function renderDictionaryPanel(dict, t) {
     if (!dict) return null;
     var kids = [];
-    kids.push(React.createElement('div', { key: 'hd', className: 'flex items-center gap-2 mb-1' },
+    kids.push(React.createElement('div', { key: 'hd', className: 'flex items-center gap-2 mb-1 flex-wrap' },
       React.createElement('span', { className: 'text-[10px] font-bold uppercase tracking-wide text-emerald-700' }, (t('glossary.popups.dictionary') || 'Dictionary')),
-      dict.phonetic ? React.createElement('span', { className: 'text-[11px] text-slate-500' }, dict.phonetic) : null));
+      dict.phonetic ? React.createElement('span', { className: 'text-[11px] text-slate-500' }, dict.phonetic) : null,
+      dict.audio ? React.createElement('button', {
+        type: 'button',
+        onClick: function () { try { new Audio(dict.audio).play().catch(function () {}); } catch (_e) {} },
+        className: 'inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded px-1.5 py-0.5 transition-colors',
+        'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording',
+        title: t('glossary.popups.hear_real') || 'Hear a real recording'
+      }, React.createElement(Volume2, { size: 11 }), React.createElement('span', null, t('glossary.popups.real_audio') || 'Recording')) : null));
     (dict.meanings || []).slice(0, 2).forEach(function (m, mi) {
       var d0 = m.definitions && m.definitions[0] ? m.definitions[0].definition : '';
       if (!d0) return;
-      kids.push(React.createElement('div', { key: 'm' + mi, className: 'text-xs text-slate-700 leading-snug mb-0.5' },
-        m.partOfSpeech ? React.createElement('span', { className: 'italic text-slate-500 mr-1' }, m.partOfSpeech) : null, d0));
+      var d0ex = m.definitions[0].example || '';
+      kids.push(React.createElement('div', { key: 'm' + mi, className: 'text-xs text-slate-700 leading-snug mb-1' },
+        m.partOfSpeech ? React.createElement('span', { className: 'italic text-slate-500 mr-1' }, m.partOfSpeech) : null, d0,
+        d0ex ? React.createElement('span', { className: 'block text-[11px] text-slate-500 italic mt-0.5' }, '"' + d0ex + '"') : null));
     });
     if (dict.synonyms && dict.synonyms.length) {
       kids.push(React.createElement('div', { key: 'syn', className: 'text-[11px] text-slate-500 mt-0.5' },
