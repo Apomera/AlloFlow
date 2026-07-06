@@ -7,7 +7,10 @@ wire-up. This doc says **how each would be done and where it lands**, grounded i
 five-agent sweep of the current tree (2026-07-05). File:line anchors are as-of-today;
 re-grep before editing.
 
-**Status: ANALYSIS ONLY. Nothing here is built.**
+**Status: ANALYSIS + BUILD LOG. Update 2026-07-05: SRE, Zoom Gallery (Smithsonian/OSD),
+Cboard v0, and whisper.cpp ASR (runtime + client) are BUILT & committed on main
+(local, not deployed). H5P and StoryWeaver remain scoped-only. See the Build Log
+at the end of this doc for commit hashes and what was verified.**
 
 ---
 
@@ -323,3 +326,60 @@ Cboard v1 (self-hosted shelf) slots after v0 whenever the licensing check clears
 - OssCredits (view_info_modal) needs entries for every new upstream (SRE Apache-2.0,
   OpenSeadragon BSD-3, h5p-standalone MIT, Cboard GPL-3, StoryWeaver CC-BY content,
   Smithsonian CC0, whisper.cpp MIT).
+
+---
+
+## Build Log — 2026-07-05 (local commits on main, NOT deployed)
+
+Built in the recommended order. Every phase: gates green (check_plugin_files,
+check_free_vars, check_render_refs, node --check), pathspec commits around the
+concurrent brain-atlas session, deploy/dev artifacts reverted. Behavioral
+browser/on-device smoke pending on all (marked per phase).
+
+1. **SRE spoken math @dafe9d8ca.** `sre_loader.js` (lazy `window.AlloMathSpeech.toSpeech`,
+   speech-rule-engine@4.1.4 CDN-verified). New generic `window.__alloLoadPlugin`
+   injector (CDN modules couldn't see `pluginCdnBase` — why the braille UEB path
+   shipped dead; that's now fixed too, BRF lazy-loads liblouis). Seams: TTS
+   pre-pass at callTTS/callTTSDirect (delimited math → spoken instead of "dollar x
+   caret two dollar"); doc_pipeline equation-alt **triangulation** (Vision's
+   spoken alt vs deterministic SRE of the same LaTeX — divergence prefers SRE +
+   `data-allo-spoken-triangulation` marker); markdown export "Spoken:" caption.
+   About: SRE credit.
+2. **Zoom Gallery @477f619dd.** New shelf `zoomGallery` (OpenSeadragon@5.0.1,
+   Molecule-Shelf pattern, no iframe). 10 curated CC0/PD images (8 NASA public-
+   domain simple-image, 2 Smithsonian CC0 IIIF deep-zoom) — all asset URLs
+   HEAD-verified 200. Notice→Wonder coach, `alloczoom-*` bridge. 6-site wiring +
+   check_plugin_files 189/189. About: OpenSeadragon, Smithsonian Open Access,
+   NASA. (Accessibility angle: deep zoom is a low-vision affordance too.)
+3. **Cboard v0 @a6492b8c1.** Symbol Studio import now accepts `.json/.obf/.obz`
+   (`_obfToPage` maps the OBF grid back, resolves in-zip images to data URLs);
+   new `.obz` multipage export (JSZip, one .obf/page + manifest). Round-trip
+   harness on the REAL functions passes (labels, data/URL images, sparse grid,
+   no-grid Cboard fallback). About: Open Board Format credit.
+4. **whisper.cpp ASR runtime @d762dd5e7.** `localAsr` subsystem cloned from the
+   llama.cpp engine (config, `managedAsr` state machine, start/stop/status/
+   launch, `/api/asr/*`, autostart + SIGINT/before-quit teardown, runtime-contract
+   port 32176). Pinned whisper.cpp v1.9.1 `whisper-bin-x64.zip` (server.exe
+   verified present) + `ggml-base.bin`. **Real constraint encoded:** whisper.cpp
+   ships NO Windows arm64 → x64-under-emulation on arm64; whisper-server has no
+   /health → probe `GET /`. Runtime `--check`/`--smoke` pass; a harness on the
+   real exported status fn + live routes passes 17/17 (engine routes untouched).
+5. **whisper.cpp ASR client @86e571127 (+ credit @c15af59ed).** `fluency_module.js`:
+   `alignTranscriptToReference` (Needleman-Wunsch → the exact wordData shape the
+   existing metric fns consume), `_audioBase64ToWav16k` (Web Audio, no ffmpeg),
+   `transcribeAudioLocal` (same-origin /api/asr/status → whisper /inference,
+   CORS "*" verified), `analyzeFluencyLocal`, and **`triangulateFluency`** (local
+   whisper vs cloud Gemini — agreement=high confidence, divergence keeps the
+   MORE LENIENT status + flags needsReview; never over-penalize on a machine
+   disagreement). Integrity: every mismatch lowConfidence, confidence capped 6/10,
+   prosody null (not invented), explicit "no child/dialect tuning" caveat.
+   Harness on the real functions passes 18/18 (incl. running record via the real
+   metric fn). About: whisper.cpp credit.
+
+**Pending smoke (honest):** SRE (browser math read-aloud + export), Zoom Gallery
+(IIIF tiles + NASA simple-image + OSD sprites), Cboard (real .obf/.obz into
+Cboard), whisper ASR (binary/model download + mic→transcript on Aaron's Surface
+— needs a fresh installer, like the engine did). None deployed — Aaron deploys.
+
+**Still scoped-only (own projects):** H5P player shelf; StoryWeaver reading
+library. See sections 5 and 3 above.
