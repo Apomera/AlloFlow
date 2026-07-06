@@ -209,6 +209,16 @@ const OSS_CREDITS = [
         blurb: "Fast neural text-to-speech across 40+ languages, used for on-device narration in the School Box.",
         repo: "https://github.com/OHF-Voice/piper1-gpl"
       },
+      {
+        name: "eSpeak NG",
+        use: "offline grapheme\u2192phoneme (Word Sounds phonics) \u2014 sounds a word breaks into, in IPA",
+        license: "GPLv3",
+        url: "https://github.com/espeak-ng/espeak-ng",
+        featured: 13,
+        owner: "Reece Dunn & contributors",
+        blurb: "A dictionary-backed engine that breaks a word into its exact sounds (in IPA) for the phonics tools \u2014 deterministic and fully offline, in 100+ languages.",
+        repo: "https://github.com/espeak-ng/espeak-ng"
+      },
       { name: "Transformers.js", use: "in-browser ML (Whisper transcription, image gen)", license: "Apache-2.0", url: "https://github.com/huggingface/transformers.js" },
       {
         name: "whisper.cpp",

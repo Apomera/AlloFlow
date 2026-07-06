@@ -854,6 +854,7 @@ const PLUGIN_FILES = [
     'liblouis_braille_loader.js',
     'sre_loader.js',
     'mathlive_loader.js',
+    'phonics_g2p_loader.js',
     'sd_turbo_loader.js',
     'stem_lab/stem_tool_arccity.js',
     'stem_lab/stem_tool_dna.js',

@@ -7098,6 +7098,38 @@ EXAMPLES:
                   lastSound: targetWord[targetWord.length - 1]?.toLowerCase(),
                 };
               }
+              // ── eSpeak-primary phoneme sequence + Gemini triangulation (2026-07-06) ──
+              // eSpeak NG G2P is deterministic + dictionary-backed and benchmarked
+              // 32/32 on the core phonics set (digraphs, r-controlled, silent
+              // letters, long vowels), so it's the PRIMARY source for the phoneme
+              // SEQUENCE + COUNT. Gemini still provides grapheme alignment + the
+              // rich extras (rhymes/distractors/sound-sort): buildPhonemes keeps
+              // Gemini's graphemes when the two AGREE on count, else the local
+              // digraph-aware aligner, and records agreement (_phonemeAgreement)
+              // for triangulation. Lazy-loaded (18.5MB wasm) via __alloLoadPlugin;
+              // 4s cap so a slow first-word load falls back to Gemini for that word
+              // and is ready for the next. eSpeak failure → keep Gemini's phonemes,
+              // so this is never a regression. (School Box uses the native binary.)
+              try {
+                if (!(window.AlloPhonics && typeof window.AlloPhonics.toPhonemes === "function") && window.__alloLoadPlugin) {
+                  await Promise.race([window.__alloLoadPlugin("phonics_g2p_loader.js"), new Promise((r) => setTimeout(r, 6000))]);
+                }
+                if (window.AlloPhonics && typeof window.AlloPhonics.toPhonemes === "function") {
+                  const _esp = await Promise.race([
+                    window.AlloPhonics.toPhonemes(targetWord, { lang: wordSoundsLanguage }),
+                    new Promise((res) => setTimeout(() => res(null), 4000)),
+                  ]);
+                  if (_esp && Array.isArray(_esp.ipa) && _esp.ipa.length) {
+                    const _merged = window.AlloPhonics.buildPhonemes(targetWord, _esp, phonemeData && phonemeData.phonemes);
+                    if (_merged) {
+                      phonemeData = Object.assign({}, phonemeData || {}, _merged);
+                      debugLog(`🔤 eSpeak G2P for "${targetWord}": ${_esp.ipaString} (${_merged._phonemeAgreement === false ? "diverged from" : "agreed with"} Gemini)`);
+                    }
+                  }
+                }
+              } catch (_e) {
+                /* keep Gemini phonemeData — eSpeak is an enhancement, never a gate */
+              }
               const fetchAudio = async () => {
                 try {
                   await handleAudio(targetWord, false);
