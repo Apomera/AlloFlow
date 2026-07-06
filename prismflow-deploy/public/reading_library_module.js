@@ -142,6 +142,53 @@
     return parts.join('\n\n').trim();
   }
 
+  // ------------------------------------------------------- AI translation
+  // Instant AI translation fills the languages StoryWeaver doesn't cover
+  // (Somali, Ukrainian, …). Trade-offs are shown to the user in-reader:
+  // the text is AI-generated (not publisher-reviewed) and word-by-word
+  // narration highlighting is unavailable (cue timings only exist for the
+  // original narration audio).
+
+  // Quick picks for the translate menu — languages StoryWeaver lacks
+  // entirely (verified 2026-07-06) or nearly. Free-text accepts any other.
+  var GAP_LANGS = ['Somali', 'Ukrainian', 'Tigrinya', 'Hmong', 'Karen', 'Kurdish', 'Albanian', 'Bosnian', 'Mongolian', 'Uzbek', 'Hebrew', 'Czech', 'Hungarian', 'Swedish'];
+
+  var RTL_TARGETS = ['arabic', 'hebrew', 'farsi', 'persian', 'urdu', 'pashto', 'dari', 'kurdish', 'sorani', 'sindhi', 'uyghur', 'yiddish'];
+  function isRtlLanguage(name) {
+    var n = String(name || '').toLowerCase();
+    return RTL_TARGETS.some(function (l) { return n.indexOf(l) !== -1; });
+  }
+
+  // Best-effort BCP47 for the lang attribute (helps screen readers pick a
+  // voice); unknown names simply omit the attribute.
+  var LANG_CODES = {
+    somali: 'so', ukrainian: 'uk', tigrinya: 'ti', hmong: 'hmn', karen: 'kar',
+    kurdish: 'ku', albanian: 'sq', bosnian: 'bs', mongolian: 'mn', uzbek: 'uz',
+    hebrew: 'he', czech: 'cs', hungarian: 'hu', swedish: 'sv', finnish: 'fi',
+    somali_maay: 'so', arabic: 'ar', spanish: 'es', french: 'fr', portuguese: 'pt',
+    vietnamese: 'vi', russian: 'ru', german: 'de', english: 'en',
+  };
+  function langCodeFor(name) {
+    return LANG_CODES[String(name || '').toLowerCase().replace(/[^a-z]+/g, '_')] || null;
+  }
+
+  // Parse the model's translation JSON. The page count MUST match the
+  // original so every page turn still lines up with its artwork; a mismatch
+  // rejects the whole translation rather than desyncing the book.
+  function parseTranslation(raw, pageCount) {
+    var s = String(raw || '');
+    var a = s.indexOf('{');
+    var b = s.lastIndexOf('}');
+    if (a === -1 || b <= a) return null;
+    var data = null;
+    try { data = JSON.parse(s.slice(a, b + 1)); } catch (_) { return null; }
+    if (!data || !Array.isArray(data.pages) || data.pages.length !== pageCount) return null;
+    return {
+      title: typeof data.title === 'string' && data.title.trim() ? data.title.trim() : null,
+      pages: data.pages.map(function (p) { return String(p == null ? '' : p); }),
+    };
+  }
+
   function attributionLine(book) {
     var bits = [];
     if (book.authors && book.authors.length) bits.push(tr('readinglib_written_by', 'Written by') + ' ' + book.authors.join(', '));
@@ -262,7 +309,7 @@
       var reader = new FileReader();
       reader.onloadend = function () {
         var base64 = String(reader.result || '').split(',')[1] || '';
-        var refText = bookPlainText(book);
+        var refText = props.refText || bookPlainText(book);
         var refCount = refText.split(/\s+/).filter(Boolean).length;
         fl.analyzeFluencyWithGemini(base64, blob.type || 'audio/webm', refText)
           .then(function (analysis) {
@@ -324,15 +371,37 @@
     var _pop = useState(null); var popup = _pop[0]; var setPopup = _pop[1];
     var _prac = useState(false); var showPractice = _prac[0]; var setShowPractice = _prac[1];
     var _gen = useState(false); var genOpen = _gen[0]; var setGenOpen = _gen[1];
+    // AI translation: null | {status:'loading',language} | {status:'ready',
+    // language, title, pages[], isRtl, langCode}. Ephemeral — never persisted.
+    var _tx = useState(null); var translation = _tx[0]; var setTranslation = _tx[1];
+    var _txm = useState(false); var txMenuOpen = _txm[0]; var setTxMenuOpen = _txm[1];
+    var _txi = useState(''); var txInput = _txi[0]; var setTxInput = _txi[1];
     var audioRef = useRef(null);
 
     var pages = book.pages || [];
     var page = pages[pageIdx] || null;
     var hasNarration = !!(book.audio && book.audio.src && book.audio.cues && book.audio.cues.length);
 
+    // What's on screen: the original book, or its AI translation. Everything
+    // downstream (TTS, popups, practice, generate, export) follows the
+    // displayed text/language so what you see is what you act on.
+    var txReady = !!(translation && translation.status === 'ready');
+    var displayTitle = txReady && translation.title ? translation.title : book.title;
+    var displayLanguage = txReady ? translation.language : book.language;
+    var displayRtl = txReady ? translation.isRtl : book.isRtl;
+    var displayPageText = txReady ? (translation.pages[pageIdx] || '') : (page && page.text) || '';
+    var displayPlainText = txReady
+      ? [displayTitle].concat(translation.pages).filter(Boolean).join('\n\n').trim()
+      : bookPlainText(book);
+
+    useEffect(function () { setTranslation(null); setTxMenuOpen(false); }, [book.slug]);
+
     var lines = useMemo(function () {
-      return page ? assignCues(page.text, page.words) : [];
-    }, [page]);
+      if (!page) return [];
+      // Translated view has no cue timings — tokens render un-highlightable.
+      if (txReady) return assignCues(displayPageText, null);
+      return assignCues(page.text, page.words);
+    }, [page, txReady, displayPageText]);
 
     var stopAll = useCallback(function () {
       stopSpeech();
@@ -379,8 +448,8 @@
 
     var readPageTts = function () {
       stopAll();
-      if (!page || !page.text) return;
-      if (!speak(page.text, book.language)) {
+      if (!displayPageText) return;
+      if (!speak(displayPageText, displayLanguage)) {
         props.addToast && props.addToast(tr('readinglib_tts_unavailable', 'Read-aloud is not available right now.'), 'error');
       }
     };
@@ -395,13 +464,13 @@
         if (ev.defaultPrevented) return;
         var tag = (ev.target && ev.target.tagName) || '';
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-        var next = book.isRtl ? -1 : 1;
+        var next = displayRtl ? -1 : 1;
         if (ev.key === 'ArrowRight') { go(next); }
         else if (ev.key === 'ArrowLeft') { go(-next); }
       };
       window.addEventListener('keydown', onKey);
       return function () { window.removeEventListener('keydown', onKey); };
-    }, [go, book.isRtl]);
+    }, [go, displayRtl]);
 
     var onWordClick = function (word, ev) {
       if (mode === 'read') return;
@@ -414,8 +483,8 @@
       }
       if (mode === 'define') {
         setPopup({ type: 'define', word: clean, x: x, y: y, loading: true });
-        var dPrompt = 'A child is reading a level ' + book.level + ' picture book written in ' + book.language + '. ' +
-          'In ONE short, friendly sentence written in ' + book.language + ', explain what the word "' + clean + '" means in this story\'s context. Answer with only that sentence.';
+        var dPrompt = 'A child is reading a level ' + book.level + ' picture book written in ' + displayLanguage + '. ' +
+          'In ONE short, friendly sentence written in ' + displayLanguage + ', explain what the word "' + clean + '" means in this story\'s context. Answer with only that sentence.';
         props.callGemini(dPrompt).then(function (res) {
           setPopup(function (p) { return p && p.word === clean ? { type: 'define', word: clean, x: x, y: y, loading: false, text: String(res || '').trim() } : p; });
         }).catch(function () {
@@ -424,42 +493,42 @@
       } else if (mode === 'phonics') {
         setPopup({ type: 'phonics', word: clean, x: x, y: y, loading: true });
         var pPrompt = 'Return ONLY minified JSON, no markdown: {"ipa":string,"phoneticSpelling":string,"syllables":string} ' +
-          'for the ' + book.language + ' word "' + clean + '". phoneticSpelling = kid-friendly respelling; syllables = the word split with middle dots (e.g. "won·der·ful").';
+          'for the ' + displayLanguage + ' word "' + clean + '". phoneticSpelling = kid-friendly respelling; syllables = the word split with middle dots (e.g. "won·der·ful").';
         props.callGemini(pPrompt).then(function (res) {
           var data = null;
           try { data = JSON.parse(String(res || '').replace(/^[^{]*/, '').replace(/[^}]*$/, '')); } catch (_) {}
           setPopup(function (p) { return p && p.word === clean ? { type: 'phonics', word: clean, x: x, y: y, loading: false, phonics: data } : p; });
-          speak(clean, book.language);
+          speak(clean, displayLanguage);
         }).catch(function () {
           setPopup(function (p) { return p && p.word === clean ? { type: 'phonics', word: clean, x: x, y: y, loading: false, phonics: null } : p; });
         });
       }
     };
 
-    // Hand the book text to the main generation pipeline. Passing the book's
-    // language as langOverride keeps the material in the language the student
-    // is actually reading (default leveledTextLanguage is usually English —
-    // an English quiz on an Arabic book would surprise everyone). Teachers
-    // who want cross-language material use "Use as source text" + the normal
-    // language picker instead.
+    // Hand the DISPLAYED text to the main generation pipeline (the AI
+    // translation when one is active, the original otherwise). Passing the
+    // displayed language as langOverride keeps the material in the language
+    // the student is actually reading (default leveledTextLanguage is usually
+    // English — an English quiz on an Arabic book would surprise everyone).
+    // Teachers who want cross-language material use "Use as source text" +
+    // the normal language picker instead.
     var generate = function (type, label) {
       setGenOpen(false);
       if (typeof props.handleGenerate !== 'function') {
         props.addToast && props.addToast(tr('readinglib_generate_unavailable', 'Generation is not available right now.'), 'error');
         return;
       }
-      var text = bookPlainText(book);
-      var langOverride = book.language && book.language !== 'English' ? book.language : null;
+      var langOverride = displayLanguage && displayLanguage !== 'English' ? displayLanguage : null;
       try {
-        props.handleGenerate(type, langOverride, false, text);
-        props.addToast && props.addToast(tr('readinglib_generating', 'Creating') + ' ' + label + ' — "' + book.title + '"', 'success');
+        props.handleGenerate(type, langOverride, false, displayPlainText);
+        props.addToast && props.addToast(tr('readinglib_generating', 'Creating') + ' ' + label + ' — "' + displayTitle + '"', 'success');
         props.onExit && props.onExit(true);
       } catch (err) {
         props.addToast && props.addToast(tr('readinglib_generate_failed', 'Could not start generation.'), 'error');
       }
     };
 
-    // Load the full book text as the app's source text (the host wraps
+    // Load the displayed book text as the app's source text (the host wraps
     // setInputText to also reveal the Source panel), so every pipeline tool —
     // not just the four in this menu — can work from the book.
     var openAsDocument = function () {
@@ -468,9 +537,45 @@
         props.addToast && props.addToast(tr('readinglib_generate_unavailable', 'Generation is not available right now.'), 'error');
         return;
       }
-      props.setInputText(bookPlainText(book));
-      props.addToast && props.addToast('"' + book.title + '" ' + tr('readinglib_loaded_doc', 'is loaded as your source text — all the create tools can use it now.'), 'success');
+      props.setInputText(displayPlainText);
+      props.addToast && props.addToast('"' + displayTitle + '" ' + tr('readinglib_loaded_doc', 'is loaded as your source text — all the create tools can use it now.'), 'success');
       props.onExit && props.onExit(true);
+    };
+
+    // AI-translate the whole book in one call (consistent names/terms across
+    // pages). Page count must round-trip exactly so page turns stay aligned
+    // with the artwork; parseTranslation rejects anything else.
+    var translateBook = function (target) {
+      var lang = String(target || '').trim();
+      setTxMenuOpen(false);
+      if (!lang) return;
+      if (!props.callGemini) {
+        props.addToast && props.addToast(tr('readinglib_ai_unavailable', 'AI help is not available right now.'), 'info');
+        return;
+      }
+      stopAll();
+      setPopup(null);
+      var slug = book.slug;
+      var texts = pages.map(function (p) { return p.text || ''; });
+      setTranslation({ status: 'loading', language: lang });
+      var prompt = 'Translate a children\'s picture book (reading level ' + book.level + ') from ' + book.language + ' into ' + lang + '. ' +
+        'Return ONLY minified JSON, no markdown: {"title":string,"pages":string[]} where "pages" has EXACTLY ' + texts.length + ' entries — ' +
+        'each entry translating the input page at the same position. Keep empty pages as empty strings. ' +
+        'Use simple, natural, age-appropriate wording for young readers; translate meaning faithfully and do not add content. ' +
+        'Input title: ' + JSON.stringify(book.title) + '. Input pages: ' + JSON.stringify(texts);
+      props.callGemini(prompt).then(function (res) {
+        if (book.slug !== slug) return;
+        var data = parseTranslation(res, texts.length);
+        if (!data) throw new Error('bad translation shape');
+        setTranslation({
+          status: 'ready', language: lang, title: data.title, pages: data.pages,
+          isRtl: isRtlLanguage(lang), langCode: langCodeFor(lang),
+        });
+      }).catch(function () {
+        if (book.slug !== slug) return;
+        setTranslation(null);
+        props.addToast && props.addToast(tr('readinglib_translate_failed', 'Could not translate this book right now.'), 'error');
+      });
     };
 
     // Teacher: pin this book into the lesson history so students who load the
@@ -515,8 +620,8 @@
           className: 'px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold',
           onClick: function () { stopAll(); props.onExit && props.onExit(false); },
         }, '← ' + tr('readinglib_back', 'Library')),
-        e('div', { className: 'font-bold text-slate-800 truncate flex-1 min-w-0', dir: 'auto', title: book.title }, book.title),
-        hasNarration ? e('button', {
+        e('div', { className: 'font-bold text-slate-800 truncate flex-1 min-w-0', dir: 'auto', title: displayTitle }, displayTitle),
+        hasNarration && !txReady ? e('button', {
           className: 'px-3 py-1.5 rounded-lg text-sm font-semibold ' + (narrating ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'),
           onClick: toggleNarration,
           'aria-pressed': narrating,
@@ -526,6 +631,49 @@
         }, '🔊 ' + tr('readinglib_read_page', 'Read this page')),
         modeBtn('define', '📖', tr('readinglib_mode_define', 'Define')),
         modeBtn('phonics', '🔤', tr('readinglib_mode_phonics', 'Sounds')),
+        // AI translation menu — fills languages StoryWeaver doesn't cover.
+        e('div', { className: 'relative' },
+          e('button', {
+            className: 'px-2 py-1 rounded-lg text-sm font-semibold border ' +
+              (txReady ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+            onClick: function () { setTxMenuOpen(!txMenuOpen); },
+            'aria-expanded': txMenuOpen, 'aria-haspopup': 'menu',
+            title: tr('readinglib_translate_hint', 'AI-translate this book into any language'),
+          }, '🌐 ' + (txReady ? translation.language : tr('readinglib_translate', 'Translate')) + ' ▾'),
+          txMenuOpen ? e('div', { className: 'absolute right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-2 z-20 w-60', role: 'menu' },
+            e('p', { className: 'text-[11px] text-slate-500 px-1 pb-1' },
+              tr('readinglib_translate_note', 'AI translation — instant, any language, but not publisher-reviewed and without word-by-word narration.')),
+            txReady ? e('button', {
+              role: 'menuitem',
+              className: 'block w-full text-left px-2 py-1.5 rounded-lg text-sm font-semibold text-slate-700 hover:bg-purple-50',
+              onClick: function () { setTxMenuOpen(false); stopAll(); setTranslation(null); },
+            }, '↩ ' + tr('readinglib_show_original', 'Show original') + ' (' + book.language + ')') : null,
+            translation && translation.status === 'loading' ? e('div', { className: 'text-sm text-slate-500 italic px-2 py-1' },
+              tr('readinglib_translating', 'Translating…')) : null,
+            e('div', { className: 'max-h-44 overflow-y-auto' },
+              GAP_LANGS.filter(function (l) { return !txReady || l !== translation.language; }).map(function (l) {
+                return e('button', {
+                  key: l, role: 'menuitem',
+                  className: 'block w-full text-left px-2 py-1 rounded-lg text-sm text-slate-700 hover:bg-purple-50',
+                  onClick: function () { translateBook(l); },
+                }, l);
+              })
+            ),
+            e('div', { className: 'flex gap-1 pt-1 border-t border-slate-100 mt-1' },
+              e('input', {
+                className: 'flex-1 min-w-0 rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-700',
+                placeholder: tr('readinglib_translate_other', 'Any other language…'),
+                value: txInput,
+                onChange: function (ev) { setTxInput(ev.target.value); },
+                onKeyDown: function (ev) { if (ev.key === 'Enter') { translateBook(txInput); setTxInput(''); } },
+              }),
+              e('button', {
+                className: 'px-2 py-1 rounded-lg text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700',
+                onClick: function () { translateBook(txInput); setTxInput(''); },
+              }, tr('readinglib_go', 'Go'))
+            )
+          ) : null
+        ),
         e('button', {
           className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-white text-slate-700 border-slate-200 hover:bg-slate-100',
           onClick: function () { setShowPractice(!showPractice); },
@@ -565,7 +713,7 @@
         onTimeUpdate: onTimeUpdate,
         onEnded: function () { setNarrating(false); setActiveCue(null); },
       }) : null,
-      showPractice ? e(PracticePanel, { book: book, onClose: function () { setShowPractice(false); } }) : null,
+      showPractice ? e(PracticePanel, { book: book, refText: displayPlainText, onClose: function () { setShowPractice(false); } }) : null,
       // page spread — the flex column + m-auto child centers short spreads
       // vertically in the leftover space (justify-center would clip the top
       // of tall pages inside overflow-y-auto; auto margins collapse to 0 and
@@ -580,10 +728,15 @@
             className: 'block mx-auto w-auto max-w-full max-h-[48vh] rounded-xl',
             loading: 'lazy',
           }) : null,
+          translation && translation.status === 'loading' ? e('div', { className: 'mt-6 text-center text-slate-500 italic' },
+            '🌐 ' + tr('readinglib_translating_into', 'Translating into') + ' ' + translation.language + '…') : null,
+          txReady ? e('div', { className: 'mt-3 mx-auto max-w-xl text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 text-center' },
+            '🤖 ' + tr('readinglib_translate_caveat', 'AI translation') + ' (' + translation.language + ') — ' +
+            tr('readinglib_translate_caveat_body', 'created by AI, not reviewed by the publisher. Word-by-word narration is only available on the original.')) : null,
           e('div', {
-            className: 'mt-4 mx-auto max-w-xl leading-relaxed text-slate-800 ' + textLayoutClass(book.level, page.text) + (mode !== 'read' ? ' cursor-pointer' : ''),
-            dir: book.isRtl ? 'rtl' : 'auto',
-            lang: book.langCode || undefined,
+            className: 'mt-4 mx-auto max-w-xl leading-relaxed text-slate-800 ' + textLayoutClass(book.level, displayPageText) + (mode !== 'read' ? ' cursor-pointer' : ''),
+            dir: displayRtl ? 'rtl' : 'auto',
+            lang: (txReady ? translation.langCode : book.langCode) || undefined,
           }, lines.map(function (line, li) {
             return e('p', { key: li, className: 'mb-2' }, line.map(function (tok, ti) {
               var hot = tok.cue != null && tok.cue === activeCue;
@@ -612,7 +765,7 @@
           }, '›')
         ),
         e('p', { className: 'text-[11px] text-slate-500 text-center mt-1.5' },
-          attributionLine(book) + ' · ',
+          attributionLine(book) + (txReady ? ' · 🤖 ' + tr('readinglib_attr_ai_translated', 'AI-translated into') + ' ' + translation.language : '') + ' · ',
           e('a', { href: book.source && book.source.url, target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
             tr('readinglib_source_link', 'StoryWeaver, Pratham Books')),
           ' · ',
@@ -652,10 +805,11 @@
 
     var _idx = useState({ status: 'loading', data: null, base: null, error: null });
     var index = _idx[0]; var setIndex = _idx[1];
-    var _f = useState({ language: '', level: '', search: '' });
+    var _f = useState({ language: '', level: '', search: '', audio: false });
     var filters = _f[0]; var setFilters = _f[1];
     var _open = useState(null); var openBook = _open[0]; var setOpenBook = _open[1];
     var _loadingBook = useState(null); var loadingBook = _loadingBook[0]; var setLoadingBook = _loadingBook[1];
+    var _opt = useState(false); var optionsOpen = _opt[0]; var setOptionsOpen = _opt[1];
     var containerRef = useRef(null);
 
     useEffect(function () {
@@ -694,6 +848,7 @@
       return books.filter(function (b) {
         if (filters.language && b.language !== filters.language) return false;
         if (filters.level && String(b.level) !== filters.level) return false;
+        if (filters.audio && !b.hasAudio) return false;
         if (q) {
           var hay = (b.title + ' ' + (b.authors || []).join(' ') + ' ' + (b.description || '')).toLowerCase();
           if (hay.indexOf(q) === -1) return false;
@@ -753,7 +908,7 @@
     } else {
       body = e('div', { className: 'flex flex-col h-full min-h-0' },
         // filters
-        e('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2 pb-3' },
+        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 pb-3' },
           e('select', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
             value: filters.language,
@@ -778,7 +933,13 @@
             value: filters.search,
             onChange: function (ev) { setFilters(Object.assign({}, filters, { search: ev.target.value })); },
             'aria-label': tr('readinglib_search', 'Search'),
-          })
+          }),
+          e('button', {
+            className: 'rounded-lg border px-3 py-2 text-sm font-semibold text-left ' +
+              (filters.audio ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+            onClick: function () { setFilters(Object.assign({}, filters, { audio: !filters.audio })); },
+            'aria-pressed': filters.audio,
+          }, '🔊 ' + tr('readinglib_narrated_only', 'Narrated only'))
         ),
         // status
         e('div', { className: 'text-sm text-slate-500 pb-2' },
@@ -812,17 +973,46 @@
     },
       e('div', {
         ref: containerRef,
-        className: 'bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[92vh] flex flex-col p-4',
+        className: 'relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[92vh] flex flex-col p-4',
         role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('readinglib_title', 'Reading Library'),
       },
         e('div', { className: 'flex items-center justify-between gap-2 pb-2' },
           e('h2', { className: 'text-xl font-extrabold text-slate-800' }, '📚 ' + tr('readinglib_title', 'Reading Library')),
-          e('button', {
-            className: 'px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold',
-            onClick: props.onClose, 'aria-label': tr('readinglib_close', 'Close'),
-          }, '✕')
+          e('div', { className: 'flex items-center gap-2' },
+            props.isTeacherMode && !openBook ? e('button', {
+              className: 'px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-sm font-semibold border border-indigo-200',
+              onClick: function () { setOptionsOpen(true); },
+            }, '🌍 ' + tr('readinglib_lang_options', 'Language options')) : null,
+            e('button', {
+              className: 'px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold',
+              onClick: props.onClose, 'aria-label': tr('readinglib_close', 'Close'),
+            }, '✕')
+          )
         ),
-        e('div', { className: 'flex-1 min-h-0' }, body)
+        e('div', { className: 'flex-1 min-h-0' }, body),
+        // Teacher explainer: the three ways to get books in any language.
+        optionsOpen ? e('div', {
+          className: 'absolute inset-0 z-30 bg-black/30 flex items-center justify-center p-4 rounded-2xl',
+          onMouseDown: function (ev) { if (ev.target === ev.currentTarget) setOptionsOpen(false); },
+        },
+          e('div', { className: 'bg-white rounded-2xl shadow-2xl max-w-lg w-full p-4 max-h-full overflow-y-auto', role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('readinglib_lang_options', 'Language options') },
+            e('div', { className: 'flex items-center justify-between gap-2 mb-2' },
+              e('h3', { className: 'font-extrabold text-slate-800' }, '🌍 ' + tr('readinglib_lang_options_title', 'Getting books in any language')),
+              e('button', { className: 'text-slate-400 hover:text-slate-600 px-1', onClick: function () { setOptionsOpen(false); }, 'aria-label': tr('readinglib_close', 'Close') }, '✕')
+            ),
+            e('div', { className: 'space-y-3 text-sm text-slate-700' },
+              e('div', { className: 'border border-emerald-200 bg-emerald-50 rounded-xl p-3' },
+                e('div', { className: 'font-bold text-emerald-900' }, '📚 ' + tr('readinglib_opt1_title', 'Library books — most trustworthy')),
+                e('p', { className: 'mt-1' }, tr('readinglib_opt1_body', 'Authentic StoryWeaver picture books with publisher-verified text. Many are narrated with word-by-word highlighting. Use the language filter above.'))),
+              e('div', { className: 'border border-purple-200 bg-purple-50 rounded-xl p-3' },
+                e('div', { className: 'font-bold text-purple-900' }, '🌐 ' + tr('readinglib_opt2_title', 'Instant AI translation — any language, right now')),
+                e('p', { className: 'mt-1' }, tr('readinglib_opt2_body', 'Open any book and press 🌐 Translate. Works even for languages StoryWeaver does not publish (Somali, Ukrainian, …), and read-aloud still works. The text is AI-generated — not reviewed by the publisher — and word-by-word narration only exists on the original. Best for newcomer support today; pair students with the original when you can.'))),
+              e('div', { className: 'border border-sky-200 bg-sky-50 rounded-xl p-3' },
+                e('div', { className: 'font-bold text-sky-900' }, '📥 ' + tr('readinglib_opt3_title', 'Request a permanent addition')),
+                e('p', { className: 'mt-1' }, tr('readinglib_opt3_body', 'StoryWeaver publishes in 300+ languages. Any of them can be added to this library with verified text (and narration where it exists) in a quick app update — tell your AlloFlow maintainer which language you need.')))
+            )
+          )
+        ) : null
       )
     );
   }
@@ -835,6 +1025,10 @@
   ReadingLibrary._bookPlainText = bookPlainText;
   ReadingLibrary._textLayoutClass = textLayoutClass;
   ReadingLibrary._attributionLine = attributionLine;
+  ReadingLibrary._parseTranslation = parseTranslation;
+  ReadingLibrary._isRtlLanguage = isRtlLanguage;
+  ReadingLibrary._langCodeFor = langCodeFor;
+  ReadingLibrary._gapLangs = GAP_LANGS;
   ReadingLibrary.BookReader = BookReader;
   ReadingLibrary.PracticePanel = PracticePanel;
   ReadingLibrary.BookCard = BookCard;

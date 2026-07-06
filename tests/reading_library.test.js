@@ -145,6 +145,37 @@ describe('textLayoutClass — picture-book text layout', () => {
   });
 });
 
+describe('AI translation helpers', () => {
+  it('parseTranslation accepts exact page-count JSON (with fence noise)', () => {
+    const raw = '```json\n{"title":"Sheeko","pages":["a","","c"]}\n```';
+    expect(RL._parseTranslation(raw, 3)).toEqual({ title: 'Sheeko', pages: ['a', '', 'c'] });
+  });
+  it('parseTranslation rejects page-count mismatch, bad JSON, and non-arrays', () => {
+    expect(RL._parseTranslation('{"title":"x","pages":["a"]}', 3)).toBe(null);
+    expect(RL._parseTranslation('not json at all', 3)).toBe(null);
+    expect(RL._parseTranslation('{"title":"x","pages":"a,b,c"}', 3)).toBe(null);
+    expect(RL._parseTranslation('', 3)).toBe(null);
+  });
+  it('parseTranslation stringifies null pages and tolerates a missing title', () => {
+    const out = RL._parseTranslation('{"pages":[null,"b"]}', 2);
+    expect(out.pages).toEqual(['', 'b']);
+    expect(out.title).toBe(null);
+  });
+  it('isRtlLanguage knows the RTL targets and leaves the rest LTR', () => {
+    expect(RL._isRtlLanguage('Kurdish')).toBe(true);
+    expect(RL._isRtlLanguage('Hebrew')).toBe(true);
+    expect(RL._isRtlLanguage('Farsi (Dari)')).toBe(true);
+    expect(RL._isRtlLanguage('Somali')).toBe(false);
+    expect(RL._isRtlLanguage('Ukrainian')).toBe(false);
+    expect(RL._isRtlLanguage('')).toBe(false);
+  });
+  it('langCodeFor maps known names and omits unknown ones', () => {
+    expect(RL._langCodeFor('Somali')).toBe('so');
+    expect(RL._langCodeFor('Ukrainian')).toBe('uk');
+    expect(RL._langCodeFor('Klingon')).toBe(null);
+  });
+});
+
 describe('language plan (reading_library/languages.json)', () => {
   const plan = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'languages.json'), 'utf8')).plan;
 

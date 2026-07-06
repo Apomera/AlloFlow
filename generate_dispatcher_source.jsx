@@ -861,7 +861,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     const grade = gradesToGen[i];
                     const isLast = i === gradesToGen.length - 1;
                     setGenerationStep(`Generating version for ${grade}...`);
-                    await handleGenerate('simplified', null, !isLast, textToProcess, { grade: grade }, false, deps);
+                    // Thread langOverride through: callers that name a language
+                    // (e.g. Reading Library generating in the book's language)
+                    // must not have differentiated versions silently revert to
+                    // the leveledTextLanguage dropdown.
+                    await handleGenerate('simplified', langOverride, !isLast, textToProcess, { grade: grade }, false, deps);
                     if (!isLast) await new Promise(r => setTimeout(r, 800));
                 }
                 addToast(`Generated ${gradesToGen.length} differentiated versions!`, "success");
