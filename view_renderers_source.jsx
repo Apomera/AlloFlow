@@ -2752,23 +2752,36 @@ const _MP_STAMPS = [
     { id: 'ice', e: '🧊', label: 'Ice cube' },
     { id: 'volcano', e: '🌋', label: 'Volcano' },
 ];
-// Emoji → small PNG data-URL (dark card + big centered glyph). Returns null when
+// Per-theme stamp card palette so an emoji stamp reads against the room it hangs
+// in — the dark-indigo card vanished on the pasture sky and the space void.
+const _MP_STAMP_THEMES = {
+    gallery: { top: '#1e1b4b', bottom: '#0f172a', border: 'rgba(129,140,248,0.55)' },
+    pasture: { top: '#f0fdf4', bottom: '#dcfce7', border: 'rgba(22,163,74,0.55)' },
+    space: { top: '#0b1026', bottom: '#020617', border: 'rgba(148,163,184,0.6)' },
+};
+// Emoji → small PNG data-URL (themed card + big centered glyph). Returns null when
 // a 2D canvas isn't available (the caller toasts instead of crashing).
-const _mpStampImage = (emoji) => {
+const _mpStampImage = (emoji, theme) => {
     try {
         const c = document.createElement('canvas');
         c.width = 320; c.height = 240;
         const g = c.getContext('2d');
         if (!g) return null;
+        const pal = _MP_STAMP_THEMES[theme] || _MP_STAMP_THEMES.gallery;
         const grad = g.createLinearGradient(0, 0, 0, 240);
-        grad.addColorStop(0, '#1e1b4b'); grad.addColorStop(1, '#0f172a');
+        grad.addColorStop(0, pal.top); grad.addColorStop(1, pal.bottom);
         g.fillStyle = grad; g.fillRect(0, 0, 320, 240);
-        g.strokeStyle = 'rgba(129,140,248,0.55)'; g.lineWidth = 10; g.strokeRect(5, 5, 310, 230);
+        g.strokeStyle = pal.border; g.lineWidth = 10; g.strokeRect(5, 5, 310, 230);
         g.font = '150px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
         g.fillText(String(emoji || '⭐'), 160, 128);
         return c.toDataURL('image/png');
     } catch (e) { return null; }
 };
+
+// HTML-escape for the printable study sheet (labels/mnemonics are user/AI text).
+const _mpEsc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (ch) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+));
 
 const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onRecallArm, onRecallClose }) => {
     const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
@@ -2777,6 +2790,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const palaceRef = React.useRef(null);
     const [ready, setReady] = React.useState(false);
     const [failed, setFailed] = React.useState(false);
+    const [glbReady, setGlbReady] = React.useState(false);      // CC0 collectibles library loaded (declared early: the decor-label memo depends on it)
     const [furnishing, setFurnishing] = React.useState(null);   // {done, total} | null
     const [nonce, setNonce] = React.useState(0);
     const [current, setCurrent] = React.useState(null);         // {id, label, mnemonic, idx, total}
@@ -2844,6 +2858,38 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataKey, nowISO, masteryKey]);
 
+    // ── Decoration → screen-reader name map (accessibility parity) ──
+    // A sighted student SEES a torch / trophy / star at a frame; this gives the
+    // same cue to screen-reader users, fed to the palace as opts.decor so it rides
+    // the live-region announcement and the accessible route list. Localized where
+    // possible: collectibles + presets + stamps by id, AI sculptures by recipe name.
+    const decorKey = JSON.stringify({ o: data?.memoryPalace?.objects || {}, s: data?.memoryPalace?.stamps || {} });
+    const decorLabels = React.useMemo(() => {
+        const out = {};
+        const objs = data?.memoryPalace?.objects || {};
+        const stamps = data?.memoryPalace?.stamps || {};
+        const GLB = window.AlloModules && window.AlloModules.GlbLibrary;
+        let catalog = [];
+        try { catalog = (GLB && GLB.listCatalog) ? GLB.listCatalog() : []; } catch (e) {}
+        Object.keys(objs).forEach((id) => {
+            const rec = objs[id]; if (!rec) return;
+            if (rec.glbItem) {
+                const item = catalog.filter((c) => c.id === rec.glbItem)[0];
+                out[id] = t('memory_palace.collect_' + rec.glbItem) || (item && item.label) || rec.glbItem;
+            } else if (rec.presetId) {
+                out[id] = t('memory_palace.preset_' + rec.presetId) || rec.name || (t('memory_palace.decor_sculpture') || '3D decoration');
+            } else {
+                out[id] = rec.name || (t('memory_palace.decor_sculpture') || '3D decoration');
+            }
+        });
+        Object.keys(stamps).forEach((id) => {
+            const lbl = t('memory_palace.stamp_' + stamps[id]) || stamps[id];
+            out[id] = out[id] ? (out[id] + ', ' + lbl) : lbl;
+        });
+        return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [decorKey, glbReady]);
+
     React.useEffect(() => {
         let alive = true;
         // Prim3D is a best-effort sidecar (sculptures render only if it loads).
@@ -2869,6 +2915,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             images: data?.memoryPalace?.images || {},
             depths: data?.memoryPalace?.depths || {},
             objects: data?.memoryPalace?.objects || {},
+            decor: decorLabels,   // screen-reader names for placed decorations (a11y parity)
             mastery: recall ? undefined : (data?.memoryPalace?.mastery || {}),   // recall-driven dimming (study mode only)
             recall: !!recall,
             // In-VR recall bank: the palace spawns the remaining answers as ray-
@@ -2896,6 +2943,14 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ready, failed, dataKey, nonce, recall, (data?.memoryPalace?.theme || 'gallery')]);
+
+    // Push decoration SR-name changes to the LIVE walk without a remount — placing
+    // a decoration persists without bumping generatedAt (so the scene is not
+    // rebuilt), and this keeps the announcements/route list in step.
+    React.useEffect(() => {
+        try { if (handleRef.current && handleRef.current.setDecor) handleRef.current.setDecor(decorLabels); } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [decorKey, glbReady, ready]);
 
     // Environment theme (gallery / pasture / space) — persists in data.memoryPalace
     // and remounts the scene (theme rebuilds the whole environment).
@@ -3087,7 +3142,55 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     //    works offline; the walk is the locus picker (same contract as Direct).
     //    Choosing your own cue is itself encoding work (choice + generation effect).
     const [decorMode, setDecorMode] = React.useState(false);
-    const [glbReady, setGlbReady] = React.useState(false);
+    const [customizeOpen, setCustomizeOpen] = React.useState(false);   // collapse the "make it look good" actions behind one disclosure
+    // Printable study sheet: the palace route as a one-page handout (rooms → loci →
+    // mnemonics in walking order) — study off-screen / on paper, a UDL + offline win.
+    const handlePrintStudySheet = () => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !hasContent) return;
+        let palace;
+        try { palace = MP.buildPalace(data || {}); } catch (e) { return; }
+        const loci = palace.loci || [];
+        const byRoom = {};
+        (palace.route || []).forEach((id) => {
+            const l = loci.find((x) => x.id === id);
+            if (!l || l.id === '__entry') return;
+            (byRoom[l.roomIdx] = byRoom[l.roomIdx] || []).push(l);
+        });
+        let n = 0;
+        const roomsHtml = (palace.rooms || []).map((room, ri) => {
+            const items = byRoom[ri] || [];
+            if (ri === 0 || !items.length) return '';
+            const rows = items.map((l) => {
+                n += 1;
+                const dl = decorLabels[l.id];
+                return `<li><span class="num">${n}</span><div class="body">`
+                    + `<div class="fact">${_mpEsc(l.label)}</div>`
+                    + (l.mnemonic ? `<div class="mnem"><b>${_mpEsc(t('memory_palace.picture_this') || 'Picture this:')}</b> ${_mpEsc(l.mnemonic)}</div>` : '')
+                    + (dl ? `<div class="decor">${_mpEsc(t('memory_palace.sr_decoration') || 'Decoration')}: ${_mpEsc(dl)}</div>` : '')
+                    + `</div></li>`;
+            }).join('');
+            return `<section class="room"><h2 style="border-color:${_mpEsc(room.color)}">${_mpEsc(room.label)}</h2><ol>${rows}</ol></section>`;
+        }).join('');
+        const sheetTitle = _mpEsc(palace.title || data?.main || title || (t('memory_palace') || 'Memory Palace'));
+        const html = `<!doctype html><html><head><meta charset="utf-8"><title>${sheetTitle}</title><style>`
+            + `body{font-family:system-ui,-apple-system,sans-serif;color:#1e293b;max-width:760px;margin:0 auto;padding:32px 24px;line-height:1.5;}`
+            + `h1{font-size:24px;margin:0 0 4px;}.sub{color:#64748b;font-size:13px;margin:0 0 22px;}`
+            + `.room{page-break-inside:avoid;margin-bottom:20px;}.room h2{font-size:16px;border-left:5px solid #6366f1;padding-left:10px;margin:0 0 8px;}`
+            + `ol{list-style:none;padding:0;margin:0;}li{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #eef2f7;page-break-inside:avoid;}`
+            + `.num{flex:0 0 28px;height:28px;border-radius:50%;background:#6366f1;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;}`
+            + `.fact{font-weight:700;}.mnem{font-size:13px;color:#4338ca;margin-top:2px;}.decor{font-size:12px;color:#475569;margin-top:2px;}`
+            + `.method{margin-top:24px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#475569;}`
+            + `.no-print{text-align:center;margin-bottom:22px;}button{background:#4f46e5;color:#fff;border:none;padding:10px 20px;font-size:15px;font-weight:700;border-radius:6px;cursor:pointer;}`
+            + `@media print{.no-print{display:none;}}</style></head><body>`
+            + `<div class="no-print"><button onclick="window.print()">${_mpEsc(t('common.print') || 'Print')}</button></div>`
+            + `<h1>${sheetTitle}</h1><p class="sub">${_mpEsc(t('memory_palace.sheet_subtitle') || 'Memory palace study sheet — walk the route in order and picture each image vividly.')}</p>`
+            + roomsHtml
+            + `<div class="method">${_mpEsc(t('memory_palace.caption') || '')}</div></body></html>`;
+        const win = window.open('', '_blank');
+        if (win) { win.document.write(html); win.document.close(); }
+        else if (addToast) addToast(t('memory_palace.sheet_popup') || 'Allow pop-ups to open the printable study sheet.', 'error');
+    };
     // Place a CC0-library collectible: persist a tiny { glbItem } REFERENCE (not
     // the mesh) — the palace resolves it via GlbLibrary.loadModel, which uses the
     // real .glb when the catalog has one and the item's Prim3D fallback otherwise.
@@ -3103,18 +3206,21 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (!P3D || typeof P3D.getPreset !== 'function' || !cur || cur.id === '__entry' || !persist) return;
         const recipe = P3D.getPreset(presetId);
         if (!recipe) { if (addToast) addToast(t('memory_palace.decorate_failed') || 'Could not place that here — try another.', 'error'); return; }
+        recipe.presetId = presetId;   // survives storage (normalize ignores it) → localized SR label
         _persistObject(cur.id, recipe);
         if (addToast) addToast(t('memory_palace.decorate_placed') || '🎁 Placed! Saved with this palace.', 'success');
     };
     const handlePlaceStamp = (stamp) => {
         const cur = currentRef.current;
         if (!cur || cur.id === '__entry' || !persist) return;
-        const img = _mpStampImage(stamp.e);
+        const img = _mpStampImage(stamp.e, paletteTheme);   // themed card so it reads in every setting
         if (!img) { if (addToast) addToast(t('memory_palace.decorate_failed') || 'Could not place that here — try another.', 'error'); return; }
         if (handleRef.current && handleRef.current.setLocusImage) handleRef.current.setLocusImage(cur.id, img);
         const nx = { ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), [cur.id]: img } };
         // a flat stamp replaces any relief pair — drop the stale depth map with it
         if (nx.depths && nx.depths[cur.id]) { const d = { ...nx.depths }; delete d[cur.id]; nx.depths = d; }
+        // record the stamp id so screen readers can name it (the data-URL alone is opaque)
+        nx.stamps = { ...((mpRef.current && mpRef.current.stamps) || {}), [cur.id]: stamp.id };
         persist(nx, 'memoryPalace');
         if (addToast) addToast(t('memory_palace.decorate_placed') || '🎁 Placed! Saved with this palace.', 'success');
     };
@@ -3122,7 +3228,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const cur = currentRef.current;
         if (!cur || cur.id === '__entry' || !persist) return;
         const keep = { ...(mpRef.current || {}) };
-        ['images', 'depths', 'objects'].forEach((k) => {
+        ['images', 'depths', 'objects', 'stamps'].forEach((k) => {
             if (keep[k] && keep[k][cur.id] !== undefined) { const o = { ...keep[k] }; delete o[cur.id]; keep[k] = o; }
         });
         persist(keep, 'memoryPalace');
@@ -3251,6 +3357,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 }
                 const nx = { ...(mpRef.current || {}), [store]: { ...((mpRef.current && mpRef.current[store]) || {}), [cur.id]: val } };
                 if (key === 'images' && depthVal) nx.depths = { ...((mpRef.current && mpRef.current.depths) || {}), [cur.id]: depthVal };
+                // an AI image supersedes any stamp here → drop its stale SR name
+                if (key === 'images' && nx.stamps && nx.stamps[cur.id]) { const s = { ...nx.stamps }; delete s[cur.id]; nx.stamps = s; }
                 persist(nx, 'memoryPalace');
                 if (addToast) addToast(t('memory_palace.direct_placed') || '✨ Placed at this locus! Walk on and direct the next.', 'success');
                 setDirectPrompt('');
@@ -3357,6 +3465,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                 }
                 const nx = { ...(mpRef.current || {}), images: { ...((mpRef.current && mpRef.current.images) || {}), [l.id]: base64 } };
                 if (depthB64) nx.depths = { ...((mpRef.current && mpRef.current.depths) || {}), [l.id]: depthB64 };
+                if (nx.stamps && nx.stamps[l.id]) { const s = { ...nx.stamps }; delete s[l.id]; nx.stamps = s; }   // AI image supersedes a stamp's SR name
+
                 persist(nx, 'memoryPalace');
             };
             const colorP = haveImg ? Promise.resolve(haveImg)
@@ -3429,6 +3539,29 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     ⌨ {t('memory_palace.recall_expert') || 'Expert recall'}
                                 </button>
                             )}
+                            {hasContent && !failed && (
+                                <button
+                                    onClick={handlePrintStudySheet}
+                                    className="flex items-center gap-1 bg-white text-slate-700 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                                    title={t('memory_palace.sheet_tooltip') || 'Open a printable study sheet: the route, loci and mnemonics in walking order'}
+                                >
+                                    📄 {t('memory_palace.sheet') || 'Study sheet'}
+                                </button>
+                            )}
+                            {hasContent && !failed && persist && (
+                                <button
+                                    onClick={() => setCustomizeOpen((o) => !o)}
+                                    aria-expanded={customizeOpen ? 'true' : 'false'}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${customizeOpen ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'}`}
+                                    title={t('memory_palace.customize_tooltip') || 'Decorate the palace: AI images, sculptures, built-in decorations and relief'}
+                                >
+                                    🎨 {t('memory_palace.customize') || 'Customize'} <span aria-hidden="true">{customizeOpen ? '▲' : '▼'}</span>
+                                </button>
+                            )}
+                            {/* The "make it look good" family, collapsed behind Customize (kept open while a
+                                generation runs so its progress + Stop stay visible). */}
+                            {(customizeOpen || furnishing || sculpting) && (
+                                <>
                             {hasContent && !failed && persist && typeof window.callGemini === 'function' && (
                                 <button
                                     onClick={() => { setDirectMode((d) => !d); setDirectEval(null); }}
@@ -3470,6 +3603,20 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         : (t('memory_palace.furnish') || 'Furnish with AI images')}
                                 </button>
                             )}
+                            {hasContent && !failed && persist && typeof window.callGemini === 'function' && (
+                                <button
+                                    onClick={handleSculpt}
+                                    disabled={!!sculpting || !!furnishing}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-slate-600 to-slate-800 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={t('memory_palace.sculpt_tooltip') || 'AI designs a small primitive-block sculpture of each mnemonic and places it beside the frame (saved with the resource)'}
+                                >
+                                    🗿 {sculpting
+                                        ? (t('memory_palace.sculpting') || 'Sculpting {done}/{total}…').replace('{done}', String(sculpting.done)).replace('{total}', String(sculpting.total))
+                                        : (t('memory_palace.sculpt') || 'Sculpt 3D objects')}
+                                </button>
+                            )}
+                                </>
+                            )}
                             {hasContent && !failed && persist && (
                                 <div className="flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 border border-slate-200" role="group" aria-label={t('memory_palace.theme_label') || 'Palace setting'}>
                                     {((window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS) || ['gallery', 'pasture', 'space']).map((thm) => {
@@ -3484,18 +3631,6 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         );
                                     })}
                                 </div>
-                            )}
-                            {hasContent && !failed && persist && typeof window.callGemini === 'function' && (
-                                <button
-                                    onClick={handleSculpt}
-                                    disabled={!!sculpting || !!furnishing}
-                                    className="flex items-center gap-1 bg-gradient-to-r from-slate-600 to-slate-800 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title={t('memory_palace.sculpt_tooltip') || 'AI designs a small primitive-block sculpture of each mnemonic and places it beside the frame (saved with the resource)'}
-                                >
-                                    🗿 {sculpting
-                                        ? (t('memory_palace.sculpting') || 'Sculpting {done}/{total}…').replace('{done}', String(sculpting.done)).replace('{total}', String(sculpting.total))
-                                        : (t('memory_palace.sculpt') || 'Sculpt 3D objects')}
-                                </button>
                             )}
                             {(furnishing || sculpting) && (
                                 <button
@@ -3512,7 +3647,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         // Drop ONLY the generated art — keep the spaced-repetition mastery
                                         // (which also lives in this store), so clearing images doesn't wipe review progress.
                                         const keep = { ...(mpRef.current || {}) };
-                                        delete keep.images; delete keep.objects; delete keep.generatedAt;
+                                        delete keep.images; delete keep.objects; delete keep.depths; delete keep.stamps; delete keep.generatedAt;
                                         persist(Object.keys(keep).length ? keep : null, 'memoryPalace');
                                         setNonce((n) => n + 1);
                                     }}

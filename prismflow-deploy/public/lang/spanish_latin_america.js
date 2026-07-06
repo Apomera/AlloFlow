@@ -5119,6 +5119,15 @@
     "explanation_unavailable": "No se pudo generar una explicación en este momento. Inténtalo de nuevo en un momento."
   },
   "memory_palace": {
+    "customize": "Personalizar",
+    "customize_tooltip": "Decora el palacio: imágenes de IA, esculturas, decoraciones integradas y relieve",
+    "sheet": "Hoja de estudio",
+    "sheet_tooltip": "Abre una hoja de estudio imprimible: la ruta, los loci y las imágenes mentales en orden de recorrido",
+    "sheet_subtitle": "Hoja de estudio del palacio de la memoria: recorre la ruta en orden e imagina cada imagen con viveza.",
+    "sheet_popup": "Permite las ventanas emergentes para abrir la hoja de estudio imprimible.",
+    "sr_decoration": "Decoración",
+    "sr_cue": "Tu pista aquí",
+    "decor_sculpture": "Decoración 3D",
     "decorate_toggle": "Decorar",
     "decorate_tooltip": "Decora los loci tú mismo con objetos 3D y sellos integrados — instantáneo, sin créditos de IA",
     "decorate_at_entry": "🎁 Camina hasta un locus (▶ o WASD) y elige una decoración para él.",

@@ -2122,19 +2122,25 @@ const _MP_STAMPS = [
   { id: "ice", e: "\u{1F9CA}", label: "Ice cube" },
   { id: "volcano", e: "\u{1F30B}", label: "Volcano" }
 ];
-const _mpStampImage = (emoji) => {
+const _MP_STAMP_THEMES = {
+  gallery: { top: "#1e1b4b", bottom: "#0f172a", border: "rgba(129,140,248,0.55)" },
+  pasture: { top: "#f0fdf4", bottom: "#dcfce7", border: "rgba(22,163,74,0.55)" },
+  space: { top: "#0b1026", bottom: "#020617", border: "rgba(148,163,184,0.6)" }
+};
+const _mpStampImage = (emoji, theme) => {
   try {
     const c = document.createElement("canvas");
     c.width = 320;
     c.height = 240;
     const g = c.getContext("2d");
     if (!g) return null;
+    const pal = _MP_STAMP_THEMES[theme] || _MP_STAMP_THEMES.gallery;
     const grad = g.createLinearGradient(0, 0, 0, 240);
-    grad.addColorStop(0, "#1e1b4b");
-    grad.addColorStop(1, "#0f172a");
+    grad.addColorStop(0, pal.top);
+    grad.addColorStop(1, pal.bottom);
     g.fillStyle = grad;
     g.fillRect(0, 0, 320, 240);
-    g.strokeStyle = "rgba(129,140,248,0.55)";
+    g.strokeStyle = pal.border;
     g.lineWidth = 10;
     g.strokeRect(5, 5, 310, 230);
     g.font = "150px sans-serif";
@@ -2146,6 +2152,7 @@ const _mpStampImage = (emoji) => {
     return null;
   }
 };
+const _mpEsc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
 const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, onRecallArm, onRecallClose }) => {
   const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
   const hostRef = React.useRef(null);
@@ -2153,6 +2160,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const palaceRef = React.useRef(null);
   const [ready, setReady] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
+  const [glbReady, setGlbReady] = React.useState(false);
   const [furnishing, setFurnishing] = React.useState(null);
   const [nonce, setNonce] = React.useState(0);
   const [current, setCurrent] = React.useState(null);
@@ -2221,6 +2229,35 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       return null;
     }
   }, [dataKey, nowISO, masteryKey]);
+  const decorKey = JSON.stringify({ o: data?.memoryPalace?.objects || {}, s: data?.memoryPalace?.stamps || {} });
+  const decorLabels = React.useMemo(() => {
+    const out = {};
+    const objs = data?.memoryPalace?.objects || {};
+    const stamps = data?.memoryPalace?.stamps || {};
+    const GLB = window.AlloModules && window.AlloModules.GlbLibrary;
+    let catalog = [];
+    try {
+      catalog = GLB && GLB.listCatalog ? GLB.listCatalog() : [];
+    } catch (e) {
+    }
+    Object.keys(objs).forEach((id) => {
+      const rec = objs[id];
+      if (!rec) return;
+      if (rec.glbItem) {
+        const item = catalog.filter((c) => c.id === rec.glbItem)[0];
+        out[id] = t("memory_palace.collect_" + rec.glbItem) || item && item.label || rec.glbItem;
+      } else if (rec.presetId) {
+        out[id] = t("memory_palace.preset_" + rec.presetId) || rec.name || (t("memory_palace.decor_sculpture") || "3D decoration");
+      } else {
+        out[id] = rec.name || (t("memory_palace.decor_sculpture") || "3D decoration");
+      }
+    });
+    Object.keys(stamps).forEach((id) => {
+      const lbl = t("memory_palace.stamp_" + stamps[id]) || stamps[id];
+      out[id] = out[id] ? out[id] + ", " + lbl : lbl;
+    });
+    return out;
+  }, [decorKey, glbReady]);
   React.useEffect(() => {
     let alive = true;
     _voPalaceEnsure().then((ok) => {
@@ -2254,6 +2291,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       images: data?.memoryPalace?.images || {},
       depths: data?.memoryPalace?.depths || {},
       objects: data?.memoryPalace?.objects || {},
+      decor: decorLabels,
+      // screen-reader names for placed decorations (a11y parity)
       mastery: recall ? void 0 : data?.memoryPalace?.mastery || {},
       // recall-driven dimming (study mode only)
       recall: !!recall,
@@ -2285,6 +2324,12 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       handleRef.current = null;
     };
   }, [ready, failed, dataKey, nonce, recall, data?.memoryPalace?.theme || "gallery"]);
+  React.useEffect(() => {
+    try {
+      if (handleRef.current && handleRef.current.setDecor) handleRef.current.setDecor(decorLabels);
+    } catch (e) {
+    }
+  }, [decorKey, glbReady, ready]);
   const paletteTheme = data?.memoryPalace?.theme || "gallery";
   const handleSetTheme = (thm) => {
     if (!persist || thm === paletteTheme) return;
@@ -2519,7 +2564,42 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const objectCount = Object.keys(objects3d).length;
   const [sculpting, setSculpting] = React.useState(null);
   const [decorMode, setDecorMode] = React.useState(false);
-  const [glbReady, setGlbReady] = React.useState(false);
+  const [customizeOpen, setCustomizeOpen] = React.useState(false);
+  const handlePrintStudySheet = () => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!MP || !hasContent) return;
+    let palace;
+    try {
+      palace = MP.buildPalace(data || {});
+    } catch (e) {
+      return;
+    }
+    const loci = palace.loci || [];
+    const byRoom = {};
+    (palace.route || []).forEach((id) => {
+      const l = loci.find((x) => x.id === id);
+      if (!l || l.id === "__entry") return;
+      (byRoom[l.roomIdx] = byRoom[l.roomIdx] || []).push(l);
+    });
+    let n = 0;
+    const roomsHtml = (palace.rooms || []).map((room, ri) => {
+      const items = byRoom[ri] || [];
+      if (ri === 0 || !items.length) return "";
+      const rows = items.map((l) => {
+        n += 1;
+        const dl = decorLabels[l.id];
+        return `<li><span class="num">${n}</span><div class="body"><div class="fact">${_mpEsc(l.label)}</div>` + (l.mnemonic ? `<div class="mnem"><b>${_mpEsc(t("memory_palace.picture_this") || "Picture this:")}</b> ${_mpEsc(l.mnemonic)}</div>` : "") + (dl ? `<div class="decor">${_mpEsc(t("memory_palace.sr_decoration") || "Decoration")}: ${_mpEsc(dl)}</div>` : "") + `</div></li>`;
+      }).join("");
+      return `<section class="room"><h2 style="border-color:${_mpEsc(room.color)}">${_mpEsc(room.label)}</h2><ol>${rows}</ol></section>`;
+    }).join("");
+    const sheetTitle = _mpEsc(palace.title || data?.main || title || (t("memory_palace") || "Memory Palace"));
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${sheetTitle}</title><style>body{font-family:system-ui,-apple-system,sans-serif;color:#1e293b;max-width:760px;margin:0 auto;padding:32px 24px;line-height:1.5;}h1{font-size:24px;margin:0 0 4px;}.sub{color:#64748b;font-size:13px;margin:0 0 22px;}.room{page-break-inside:avoid;margin-bottom:20px;}.room h2{font-size:16px;border-left:5px solid #6366f1;padding-left:10px;margin:0 0 8px;}ol{list-style:none;padding:0;margin:0;}li{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #eef2f7;page-break-inside:avoid;}.num{flex:0 0 28px;height:28px;border-radius:50%;background:#6366f1;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;}.fact{font-weight:700;}.mnem{font-size:13px;color:#4338ca;margin-top:2px;}.decor{font-size:12px;color:#475569;margin-top:2px;}.method{margin-top:24px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#475569;}.no-print{text-align:center;margin-bottom:22px;}button{background:#4f46e5;color:#fff;border:none;padding:10px 20px;font-size:15px;font-weight:700;border-radius:6px;cursor:pointer;}@media print{.no-print{display:none;}}</style></head><body><div class="no-print"><button onclick="window.print()">${_mpEsc(t("common.print") || "Print")}</button></div><h1>${sheetTitle}</h1><p class="sub">${_mpEsc(t("memory_palace.sheet_subtitle") || "Memory palace study sheet \u2014 walk the route in order and picture each image vividly.")}</p>` + roomsHtml + `<div class="method">${_mpEsc(t("memory_palace.caption") || "")}</div></body></html>`;
+    const win = window.open("", "_blank");
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    } else if (addToast) addToast(t("memory_palace.sheet_popup") || "Allow pop-ups to open the printable study sheet.", "error");
+  };
   const handlePlaceCollectible = (item) => {
     const cur = currentRef.current;
     if (!item || !cur || cur.id === "__entry" || !persist) return;
@@ -2535,13 +2615,14 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       if (addToast) addToast(t("memory_palace.decorate_failed") || "Could not place that here \u2014 try another.", "error");
       return;
     }
+    recipe.presetId = presetId;
     _persistObject(cur.id, recipe);
     if (addToast) addToast(t("memory_palace.decorate_placed") || "\u{1F381} Placed! Saved with this palace.", "success");
   };
   const handlePlaceStamp = (stamp) => {
     const cur = currentRef.current;
     if (!cur || cur.id === "__entry" || !persist) return;
-    const img = _mpStampImage(stamp.e);
+    const img = _mpStampImage(stamp.e, paletteTheme);
     if (!img) {
       if (addToast) addToast(t("memory_palace.decorate_failed") || "Could not place that here \u2014 try another.", "error");
       return;
@@ -2553,6 +2634,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       delete d[cur.id];
       nx.depths = d;
     }
+    nx.stamps = { ...mpRef.current && mpRef.current.stamps || {}, [cur.id]: stamp.id };
     persist(nx, "memoryPalace");
     if (addToast) addToast(t("memory_palace.decorate_placed") || "\u{1F381} Placed! Saved with this palace.", "success");
   };
@@ -2560,7 +2642,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const cur = currentRef.current;
     if (!cur || cur.id === "__entry" || !persist) return;
     const keep = { ...mpRef.current || {} };
-    ["images", "depths", "objects"].forEach((k) => {
+    ["images", "depths", "objects", "stamps"].forEach((k) => {
       if (keep[k] && keep[k][cur.id] !== void 0) {
         const o = { ...keep[k] };
         delete o[cur.id];
@@ -2729,6 +2811,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         }
         const nx = { ...mpRef.current || {}, [store]: { ...mpRef.current && mpRef.current[store] || {}, [cur.id]: val } };
         if (key === "images" && depthVal) nx.depths = { ...mpRef.current && mpRef.current.depths || {}, [cur.id]: depthVal };
+        if (key === "images" && nx.stamps && nx.stamps[cur.id]) {
+          const s = { ...nx.stamps };
+          delete s[cur.id];
+          nx.stamps = s;
+        }
         persist(nx, "memoryPalace");
         if (addToast) addToast(t("memory_palace.direct_placed") || "\u2728 Placed at this locus! Walk on and direct the next.", "success");
         setDirectPrompt("");
@@ -2839,6 +2926,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         }
         const nx = { ...mpRef.current || {}, images: { ...mpRef.current && mpRef.current.images || {}, [l.id]: base64 } };
         if (depthB64) nx.depths = { ...mpRef.current && mpRef.current.depths || {}, [l.id]: depthB64 };
+        if (nx.stamps && nx.stamps[l.id]) {
+          const s = { ...nx.stamps };
+          delete s[l.id];
+          nx.stamps = s;
+        }
         persist(nx, "memoryPalace");
       };
       const colorP = haveImg ? Promise.resolve(haveImg) : callImagen("A vivid, memorable, slightly surreal illustration: " + subject + ". Single clear subject, bright colors, centered composition, storybook style, no text, no words.", 400);
@@ -2899,7 +2991,28 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u2328 ",
     t("memory_palace.recall_expert") || "Expert recall"
-  ), hasContent && !failed && persist && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handlePrintStudySheet,
+      className: "flex items-center gap-1 bg-white text-slate-700 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors",
+      title: t("memory_palace.sheet_tooltip") || "Open a printable study sheet: the route, loci and mnemonics in walking order"
+    },
+    "\u{1F4C4} ",
+    t("memory_palace.sheet") || "Study sheet"
+  ), hasContent && !failed && persist && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setCustomizeOpen((o) => !o),
+      "aria-expanded": customizeOpen ? "true" : "false",
+      className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${customizeOpen ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50"}`,
+      title: t("memory_palace.customize_tooltip") || "Decorate the palace: AI images, sculptures, built-in decorations and relief"
+    },
+    "\u{1F3A8} ",
+    t("memory_palace.customize") || "Customize",
+    " ",
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, customizeOpen ? "\u25B2" : "\u25BC")
+  ), (customizeOpen || furnishing || sculpting) && /* @__PURE__ */ React.createElement(React.Fragment, null, hasContent && !failed && persist && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -2941,7 +3054,17 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F5BC} ",
     furnishing ? (t("memory_palace.furnishing") || "Furnishing {done}/{total}\u2026").replace("{done}", String(furnishing.done)).replace("{total}", String(furnishing.total)) : t("memory_palace.furnish") || "Furnish with AI images"
-  ), hasContent && !failed && persist && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 border border-slate-200", role: "group", "aria-label": t("memory_palace.theme_label") || "Palace setting" }, (window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS || ["gallery", "pasture", "space"]).map((thm) => {
+  ), hasContent && !failed && persist && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleSculpt,
+      disabled: !!sculpting || !!furnishing,
+      className: "flex items-center gap-1 bg-gradient-to-r from-slate-600 to-slate-800 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+      title: t("memory_palace.sculpt_tooltip") || "AI designs a small primitive-block sculpture of each mnemonic and places it beside the frame (saved with the resource)"
+    },
+    "\u{1F5FF} ",
+    sculpting ? (t("memory_palace.sculpting") || "Sculpting {done}/{total}\u2026").replace("{done}", String(sculpting.done)).replace("{total}", String(sculpting.total)) : t("memory_palace.sculpt") || "Sculpt 3D objects"
+  )), hasContent && !failed && persist && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 border border-slate-200", role: "group", "aria-label": t("memory_palace.theme_label") || "Palace setting" }, (window.AlloModules && window.AlloModules.MemoryPalace && window.AlloModules.MemoryPalace.THEME_KEYS || ["gallery", "pasture", "space"]).map((thm) => {
     const on = paletteTheme === thm;
     const icon = thm === "gallery" ? "\u{1F3DB}" : thm === "pasture" ? "\u{1F33F}" : "\u{1FA90}";
     const label = thm === "gallery" ? t("memory_palace.theme_gallery") || "Gallery" : thm === "pasture" ? t("memory_palace.theme_pasture") || "Pasture" : t("memory_palace.theme_space") || "Space";
@@ -2958,17 +3081,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       " ",
       label
     );
-  })), hasContent && !failed && persist && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: handleSculpt,
-      disabled: !!sculpting || !!furnishing,
-      className: "flex items-center gap-1 bg-gradient-to-r from-slate-600 to-slate-800 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed",
-      title: t("memory_palace.sculpt_tooltip") || "AI designs a small primitive-block sculpture of each mnemonic and places it beside the frame (saved with the resource)"
-    },
-    "\u{1F5FF} ",
-    sculpting ? (t("memory_palace.sculpting") || "Sculpting {done}/{total}\u2026").replace("{done}", String(sculpting.done)).replace("{total}", String(sculpting.total)) : t("memory_palace.sculpt") || "Sculpt 3D objects"
-  ), (furnishing || sculpting) && /* @__PURE__ */ React.createElement(
+  })), (furnishing || sculpting) && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -2986,6 +3099,8 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const keep = { ...mpRef.current || {} };
         delete keep.images;
         delete keep.objects;
+        delete keep.depths;
+        delete keep.stamps;
         delete keep.generatedAt;
         persist(Object.keys(keep).length ? keep : null, "memoryPalace");
         setNonce((n) => n + 1);

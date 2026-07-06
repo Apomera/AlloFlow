@@ -387,3 +387,31 @@ describe('MemoryPalace — CC0 collectible references', () => {
     h.destroy();
   });
 });
+
+
+describe('MemoryPalace - decoration SR labels (accessibility parity)', () => {
+  it('describeLocusForSR appends the decoration name when supplied', () => {
+    const p = MP.buildPalace(sampleData());
+    const id = p.route.find((x) => x !== '__entry');
+    const withDecor = MP.describeLocusForSR(p, id, null, { [id]: 'Torch' });
+    expect(withDecor).toContain('Torch');
+    const without = MP.describeLocusForSR(p, id, null, {});
+    expect(without).not.toContain('Torch');
+  });
+  it('describeLocusForRecall includes the decoration as a CUE but never the answer', () => {
+    const p = MP.buildPalace(sampleData());
+    const id = p.route.find((x) => x !== '__entry');
+    const l = p.loci.find((x) => x.id === id);
+    const desc = MP.describeLocusForRecall(p, id, null, { [id]: 'Torch' });
+    expect(desc).toContain('Torch');
+    expect(desc).not.toContain(l.label);
+    if (l.mnemonic) expect(desc).not.toContain(l.mnemonic);
+  });
+  it('setDecor is on the handle (fallback path) as a safe no-op', () => {
+    const el = document.createElement('div');
+    const h = MP.render(el, sampleData(), {});
+    expect(typeof h.setDecor).toBe('function');
+    expect(() => h.setDecor({ b0_i0: 'Star' })).not.toThrow();
+    h.destroy();
+  });
+});

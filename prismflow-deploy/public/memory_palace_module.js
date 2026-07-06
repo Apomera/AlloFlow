@@ -181,8 +181,17 @@
     };
   }
 
+  // decor (optional) = { locusId: 'Torch' } — the human name of the 3D object /
+  // stamp the student placed at a locus, so screen-reader users get parity with
+  // what sighted users SEE decorating the frame (the decoration is a retrieval
+  // cue, not the answer). PURE: the caller supplies the labels.
+  function _decorLabel(decor, id) {
+    var v = decor && decor[id];
+    return (typeof v === 'string' && v.trim()) ? v.trim() : '';
+  }
+
   // ── describeLocusForSR — the announcement is the mnemonic's home ──
-  function describeLocusForSR(palace, id, t) {
+  function describeLocusForSR(palace, id, t, decor) {
     var l = locusById(palace, id);
     if (!l) return '';
     var route = palace.route || [];
@@ -196,6 +205,8 @@
       if (room) parts.push(room.label + ' ' + _tr(t, 'memory_palace.sr_room', 'room'));
       parts.push(l.label);
       if (l.mnemonic) parts.push(_tr(t, 'memory_palace.sr_picture', 'Picture this') + ': ' + l.mnemonic);
+      var dl = _decorLabel(decor, id);
+      if (dl) parts.push(_tr(t, 'memory_palace.sr_decoration', 'Decoration') + ': ' + dl);
     }
     return parts.join('. ');
   }
@@ -398,23 +409,27 @@
   }
 
   // Recall-safe announcement: room + position + the QUESTION — never the answer
-  // or the mnemonic (both would leak through the live region / route list).
-  function describeLocusForRecall(palace, id, t) {
+  // or the mnemonic (both would leak through the live region / route list). The
+  // decoration name IS included: it's the visible cue a sighted player sees at
+  // the frame (equivalent to the image cue), and it's a memory aid, not the answer.
+  function describeLocusForRecall(palace, id, t, decor) {
     var l = locusById(palace, id);
     if (!l) return '';
-    if (l.id === '__entry') return describeLocusForSR(palace, id, t);
+    if (l.id === '__entry') return describeLocusForSR(palace, id, t, decor);
     var route = palace.route || [];
     var pos = route.indexOf(id);
     var room = (palace.rooms || [])[l.roomIdx];
     var parts = [];
     if (pos >= 0) parts.push(_tr(t, 'memory_palace.sr_locus', 'Locus') + ' ' + pos + ' ' + _tr(t, 'memory_palace.sr_of', 'of') + ' ' + (route.length - 1));
     if (room) parts.push(room.label + ' ' + _tr(t, 'memory_palace.sr_room', 'room'));
+    var dl = _decorLabel(decor, id);
+    if (dl) parts.push(_tr(t, 'memory_palace.sr_cue', 'Your cue here') + ': ' + dl);
     parts.push(_tr(t, 'memory_palace.sr_recall_q', 'What belongs at this locus?'));
     return parts.join('. ');
   }
 
   // ── Accessible route DOM (source of truth; visible on any failure) ──
-  function buildRouteDom(palace, t, visible, recall) {
+  function buildRouteDom(palace, t, visible, recall, decor) {
     var wrap = document.createElement('div');
     wrap.style.cssText = visible ? 'color:#e2e8f0;padding:8px 16px;max-height:100%;overflow:auto;' : SR_ONLY;
     var heading = document.createElement('div');
@@ -426,7 +441,7 @@
     ol.style.cssText = visible ? 'font-size:13px;line-height:1.7;padding-left:22px;margin:0;' : 'margin:0;';
     (palace.route || []).forEach(function (id) {
       var li = document.createElement('li');
-      li.textContent = recall ? describeLocusForRecall(palace, id, t) : describeLocusForSR(palace, id, t);
+      li.textContent = recall ? describeLocusForRecall(palace, id, t, decor) : describeLocusForSR(palace, id, t, decor);
       ol.appendChild(li);
     });
     wrap.appendChild(ol);
@@ -526,6 +541,10 @@
     var w = holder.clientWidth || 800, hgt = holder.clientHeight || 480;
     var t = (opts && opts.t) || function (k) { return k; };
     var images = (opts && opts.images) || {};
+    var decor = (opts && opts.decor) || {};   // { locusId: 'Torch' } — SR names for placed decorations
+    // Live-update the decoration SR names without a remount (the walk position is
+    // kept): announce()/live-region reads this `decor` var through its closure.
+    state.setDecor = function (d) { decor = d || {}; };
     var reduce = false; try { reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
 
     var renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -1135,7 +1154,7 @@
     holder.appendChild(live);
 
     function announce(idx) {
-      try { live.textContent = recall ? describeLocusForRecall(palace, palace.route[idx], t2) : describeLocusForSR(palace, palace.route[idx], t2); } catch (e) {}
+      try { live.textContent = recall ? describeLocusForRecall(palace, palace.route[idx], t2, decor) : describeLocusForSR(palace, palace.route[idx], t2, decor); } catch (e) {}
       if (typeof opts.onLocusChange === 'function') {
         try { opts.onLocusChange(locusById(palace, palace.route[idx]), idx, palace.route.length); } catch (e) {}
       }
@@ -1243,7 +1262,7 @@
             try { renderer.setAnimationLoop(null); } catch (e) {}
             _unseatVR();
             if (btn) btn.disabled = false;
-            if (!state.disposed) tick();              // resume the 2D window-rAF loop
+            if (!state.disposed) { if (state._resumeLoop) state._resumeLoop(); else tick(); }   // resume the 2D window-rAF loop (clears any off-screen pause)
           });
         })
         .catch(function () {
@@ -1467,7 +1486,7 @@
           _vrBankGroup.add(s); _vrBankMeshes.push(s);
         });
         group.add(_vrBankGroup);
-        try { live.textContent = describeLocusForRecall(palace, id, t); } catch (e2) {}
+        try { live.textContent = describeLocusForRecall(palace, id, t, decor); } catch (e2) {}
       } catch (e) { _xrHideBank(); }
     }
     // Context-sensitive trigger: bank chip → answer; locus in recall → open the
@@ -1497,7 +1516,7 @@
             return;
           }
           try { if (state.revealLocus) state.revealLocus(id); } catch (e2) {}
-          try { if (live) live.textContent = describeLocusForSR(palace, id, t); } catch (e3) {}
+          try { if (live) live.textContent = describeLocusForSR(palace, id, t, decor); } catch (e3) {}
           try { if (typeof opts.onLocusActivate === 'function') opts.onLocusActivate(id); } catch (e4) {}   // seam for VR recall
           _xrHapticPulse(0.4, 40); return;
         }
@@ -1605,10 +1624,49 @@
       _pulseHl();
       _animateFlourish();
       renderer.render(root, camera);
-      state.raf = (window.requestAnimationFrame || function () { return 0; })(tick);
+      // Gate the reschedule on the pause flag so a pause that lands mid-frame
+      // actually stops the loop (cancelling state.raf alone would race the tail).
+      state.raf = state.loopPaused ? 0 : (window.requestAnimationFrame || function () { return 0; })(tick);
     }
     tick();
     announce(curIdx);
+
+    // ── Pause the render loop when the palace is off-screen or the tab is hidden ──
+    // The walk keeps its own rAF running continuously (camera easing + flourish);
+    // on the target school Chromebooks that's wasted battery while it sits in a
+    // collapsed panel or a background tab. Stop the loop when not visible, resume
+    // on return. XR sessions run on the headset's own setAnimationLoop — never
+    // touched here (guarded by state.xrActive).
+    function _pauseLoop() {
+      state.loopPaused = true;
+      if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
+    }
+    function _resumeLoop() {
+      if (state.disposed || state.xrActive) return;
+      state.loopPaused = false;
+      if (!state.raf) tick();
+    }
+    state._resumeLoop = _resumeLoop;   // XR session-end resumes through this (clears any pause set during VR)
+    var _palaceVisible = true;
+    try {
+      if (window.IntersectionObserver) {
+        var _vio = new IntersectionObserver(function (entries) {
+          _palaceVisible = entries.some(function (en) { return en.isIntersecting; });
+          if (!_palaceVisible) _pauseLoop();
+          else if (!(document && document.hidden)) _resumeLoop();
+        }, { threshold: 0.01 });
+        _vio.observe(holder);
+        state.cleanup.push(function () { try { _vio.disconnect(); } catch (e) {} });
+      }
+    } catch (e) {}
+    function _onVisibility() {
+      if (document && document.hidden) _pauseLoop();
+      else if (_palaceVisible) _resumeLoop();
+    }
+    try {
+      document.addEventListener('visibilitychange', _onVisibility);
+      state.cleanup.push(function () { try { document.removeEventListener('visibilitychange', _onVisibility); } catch (e) {} });
+    } catch (e) {}
 
     state.onResize = function () {
       var W = holder.clientWidth || w, H = holder.clientHeight || hgt;
@@ -1640,7 +1698,7 @@
     var palace = (data && data.version === VERSION && data.route) ? data : buildPalace(data, opts);
     while (container.firstChild) container.removeChild(container.firstChild);
 
-    var routeEl = buildRouteDom(palace, t, false, !!opts.recall);   // sr-only while 3D is live
+    var routeEl = buildRouteDom(palace, t, false, !!opts.recall, opts.decor);   // sr-only while 3D is live
     container.appendChild(routeEl);
 
     var state = { raf: 0, renderer: null, scene: null, disposed: false, onResize: null, cleanup: [], goTo: null, revealLocus: null, setLocusStatus: null };
@@ -1682,6 +1740,7 @@
     function setLocusObject(id, recipe) { try { if (state.setLocusObject) state.setLocusObject(id, recipe); } catch (e) {} }
     function replaceLocusObject(id, recipe) { try { if (state.replaceLocusObject) state.replaceLocusObject(id, recipe); } catch (e) {} }
     function clearLocus(id) { try { if (state.clearLocus) state.clearLocus(id); } catch (e) {} }
+    function setDecor(d) { try { if (state.setDecor) state.setDecor(d); } catch (e) {} }
     function showFallback(msg) {
       routeEl.style.cssText = 'color:#e2e8f0;padding:8px 16px;max-height:100%;overflow:auto;';
       var note = document.createElement('div');
@@ -1693,7 +1752,7 @@
 
     if (!isWebGLAvailable()) {
       showFallback(_tr(t, 'memory_palace.no_webgl', 'This browser cannot show the 3D palace. Showing the walking route instead.'));
-      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, fellBack: true };
+      return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, fellBack: true };
     }
 
     var holder = document.createElement('div');
@@ -1715,7 +1774,7 @@
       showFallback(_tr(t, 'memory_palace.load_error', 'The 3D library could not load. Showing the walking route instead.'));
     });
 
-    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, fellBack: false };
+    return { destroy: destroy, goTo: goTo, revealLocus: revealLocus, setLocusStatus: setLocusStatus, setLocusImage: setLocusImage, setLocusRelief: setLocusRelief, setLocusObject: setLocusObject, replaceLocusObject: replaceLocusObject, clearLocus: clearLocus, setDecor: setDecor, fellBack: false };
   }
 
   window.AlloModules = window.AlloModules || {};
