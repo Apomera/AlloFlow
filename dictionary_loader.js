@@ -81,9 +81,56 @@
     };
   }
 
+  // Content-word tokens (drops stopwords + short words) for lightweight sense matching.
+  var STOPWORDS = { the:1, a:1, an:1, of:1, to:1, in:1, and:1, or:1, is:1, are:1, for:1, that:1, with:1, as:1, by:1, on:1, at:1, from:1, it:1, its:1, this:1, which:1, be:1, been:1, being:1, was:1, were:1, has:1, have:1, had:1, not:1, but:1, can:1, may:1, one:1, used:1, using:1, into:1, when:1, such:1, more:1, most:1, some:1, any:1, etc:1 };
+  function _tokens(s) {
+    var out = [], seen = {};
+    String(s == null ? '' : s).toLowerCase().split(/[^a-z]+/).forEach(function (w) {
+      if (w.length >= 4 && !STOPWORDS[w] && !seen[w]) { seen[w] = 1; out.push(w); }
+    });
+    return out;
+  }
+  // Pick the single definition (a specific sense, with its part of speech + example)
+  // that best overlaps a context definition — e.g. the lesson's grade-leveled def — so
+  // we never surface a contradictory sense. The dictionary flattens many senses into one
+  // entry; the AI def is sense-specific. Scores per-DEFINITION (not per-POS-group) so a
+  // verbose part of speech can't win on volume, and returns the matching def itself.
+  // Returns { partOfSpeech, definition, example }, or null when nothing meaningfully
+  // overlaps (hide rather than mislead). With no context, returns the first sense.
+  function pickSense(entry, contextText) {
+    if (!entry || !Array.isArray(entry.meanings) || !entry.meanings.length) return null;
+    var ctx = _tokens(contextText);
+    var first = null, best = null, bestScore = 0;
+    entry.meanings.forEach(function (m) {
+      (m.definitions || []).forEach(function (d) {
+        var cand = { partOfSpeech: m.partOfSpeech || '', definition: d.definition || '', example: d.example || '' };
+        if (!first) first = cand;
+        if (ctx.length) {
+          // Score on the definition text only — examples add noise, not sense signal.
+          var toks = _tokens(cand.definition), hits = 0;
+          toks.forEach(function (tk) { if (ctx.indexOf(tk) >= 0) hits++; });
+          // Raw overlap count dominates; the sub-1 ratio term only breaks ties, favoring
+          // a concise precise sense over a verbose one that merely shares a common word.
+          var score = hits + (toks.length ? hits / toks.length : 0);
+          if (score > bestScore) { bestScore = score; best = cand; }
+        }
+      });
+    });
+    if (!ctx.length) return first;
+    return bestScore > 0 ? best : null;
+  }
+
   window.AlloDictionary = {
     /** True if we have a cached (offline) entry for this word. */
     hasOffline: function (word) { return readCache(normalizeWord(word)) !== undefined; },
+    /**
+     * Synchronous cache read for render contexts (no Promise): returns the cached
+     * entry, null (cached "not found"), or undefined (never looked up). Pairs with
+     * the glossary pre-warm so cards can read authoritative data with zero latency.
+     */
+    getCached: function (word) { return readCache(normalizeWord(word)); },
+    /** Sense-align an entry to a context definition (see pickSense above). */
+    pickSense: pickSense,
     /**
      * Look up an authoritative dictionary entry. Resolves to the normalized
      * entry, or NULL when not found / offline-uncached / any failure.

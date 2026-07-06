@@ -24,6 +24,42 @@
     }, React.createElement(Volume2, { size: 11 }), React.createElement('span', null, t('glossary.popups.real_audio') || 'Recording')));
     return React.createElement('div', { className: 'flex items-center gap-2 flex-wrap px-1' }, row);
   }
+
+  // Flashcard-back dictionary enrichment (example + part-of-speech + synonyms + real
+  // recording), sense-aligned to the card's lesson definition and read straight from the
+  // pre-warmed offline cache — collapsible so it never overloads the card. Returns null
+  // when unavailable (non-English / not cached / no aligned sense) so cards render as
+  // before. Only added to the English standard deck, not the language deck.
+  function renderFlashcardDictBack(item, t) {
+    if (!item || !item.term) return null;
+    var AD = window.AlloDictionary;
+    if (!AD || typeof AD.getCached !== 'function') return null;
+    var entry = AD.getCached(item.term);
+    if (!entry) return null;
+    var sense = typeof AD.pickSense === 'function' ? AD.pickSense(entry, item.def || '') : null;
+    var pos = sense ? sense.partOfSpeech : '';
+    var example = sense ? sense.example : '';
+    var syns = Array.isArray(entry.synonyms) ? entry.synonyms.slice(0, 4) : [];
+    var audio = entry.audio;
+    if (!pos && !example && !syns.length && !audio) return null;
+    var body = [];
+    if (pos || example) body.push(React.createElement('p', { key: 'ex', className: 'text-sm text-blue-50 leading-relaxed' },
+      pos ? React.createElement('span', { className: 'font-semibold text-blue-200 mr-1' }, pos) : null,
+      example ? React.createElement('span', { className: 'italic' }, '"' + example + '"') : null));
+    if (syns.length) body.push(React.createElement('p', { key: 'sy', className: 'text-xs text-blue-100 mt-1' },
+      (t('glossary.popups.similar') || 'Similar') + ': ' + syns.join(', ')));
+    if (audio) body.push(React.createElement('button', { key: 'au', type: 'button',
+      onClick: function (e) { e.stopPropagation(); try { new Audio(audio).play().catch(function () {}); } catch (_e) {} },
+      className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-900 bg-blue-50 hover:bg-white border border-blue-200 rounded-full px-2.5 py-1',
+      'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording' },
+      t('glossary.popups.real_audio') || 'Recording'));
+    return React.createElement('details', {
+        className: 'mt-4 pt-3 border-t border-blue-400/50 w-full text-left',
+        onClick: function (e) { e.stopPropagation(); }
+      },
+      React.createElement('summary', { className: 'text-xs font-bold text-blue-200 uppercase cursor-pointer select-none' }, t('glossary.dictionary_label') || 'Dictionary'),
+      React.createElement('div', { className: 'mt-2 space-y-1' }, body));
+  }
   var ArrowDown = _lazyIcon('ArrowDown');
   var Award = _lazyIcon('Award');
   var Ban = _lazyIcon('Ban');
@@ -395,7 +431,7 @@
                           e.stopPropagation();
                           handleSpeak(generatedContent.data[flashcardIndex].etymology, 'fc-back-etym');
                         }
-                      }} tabIndex={0} role="button" aria-label={t('glossary.etymology_label') || 'Word roots'}>{generatedContent.data[flashcardIndex].etymology}</p></div>}</> : (() => {
+                      }} tabIndex={0} role="button" aria-label={t('glossary.etymology_label') || 'Word roots'}>{generatedContent.data[flashcardIndex].etymology}</p></div>}{renderFlashcardDictBack(generatedContent.data[flashcardIndex], t)}</> : (() => {
                     const fullTrans = generatedContent?.data[flashcardIndex].translations?.[flashcardLang] || "Translation not available";
                     let transTerm = "";
                     let transDef = fullTrans;

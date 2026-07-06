@@ -1569,6 +1569,26 @@ const createExport = deps => {
             });
             return allRel.length > 0 ? `<div class="etym-related"><strong>${t('export.related_words_label') || 'Related words:'}</strong> ${allRel.slice(0, 6).map(w => cleanText(w)).join(', ')}</div>` : '';
           })()}` : ''}
+                        ${(() => {
+                          // Authoritative dictionary enrichment (example + part of speech +
+                          // synonyms), sense-aligned to the lesson def, from the offline cache.
+                          // Text only — a printed/HTML card can't play the remote recording.
+                          try {
+                            var AD = window.AlloDictionary;
+                            if (!AD || typeof AD.getCached !== 'function') return '';
+                            var _de = AD.getCached(item.term);
+                            if (!_de) return '';
+                            var _se = typeof AD.pickSense === 'function' ? AD.pickSense(_de, item.def || '') : null;
+                            var _pos = _se ? _se.partOfSpeech : '';
+                            var _ex = _se ? _se.example : '';
+                            var _syn = Array.isArray(_de.synonyms) ? _de.synonyms.slice(0, 4) : [];
+                            if (!_pos && !_ex && !_syn.length) return '';
+                            return `<div class="dict-enrich" style="margin-top:6px;padding-top:6px;border-top:1px dashed rgba(0,0,0,0.15);font-size:0.85em;">`
+                              + ((_pos || _ex) ? `<div>${_pos ? `<b>${cleanText(_pos)}</b> ` : ''}${_ex ? `<i>&ldquo;${cleanText(_ex)}&rdquo;</i>` : ''}</div>` : '')
+                              + (_syn.length ? `<div style="margin-top:2px;"><b>${t('glossary.popups.similar') || 'Similar'}:</b> ${_syn.map(function (s) { return cleanText(s); }).join(', ')}</div>` : '')
+                              + `</div>`;
+                          } catch (_err) { return ''; }
+                        })()}
                     `;
         }
         htmlBody += `
