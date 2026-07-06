@@ -80,20 +80,25 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         var self = this;
         return (Array.isArray(sentences) ? sentences : []).filter(function (s) { return !self.has(s); });
       },
-      // → resource JSON. Keyed by normalized sentence so hydrate is exact.
+      // → resource JSON. Per-entry mime (v2) so a resource can mix cloud-MP3
+      // and keyless-WAV takes and still hydrate each correctly. v1 payloads
+      // (single top-level format, no mimes) still hydrate via the fallback.
       serialize: function () {
         var sentences = {};
-        map.forEach(function (e, k) { sentences[k] = e.b64; });
-        return { format: 'mp3', version: 1, sentences: sentences };
+        var mimes = {};
+        map.forEach(function (e, k) { sentences[k] = e.b64; mimes[k] = e.mime || 'audio/mpeg'; });
+        return { format: 'per-entry', version: 2, sentences: sentences, mimes: mimes };
       },
       // resource JSON → memory. Returns count hydrated.
       hydrate: function (obj) {
         if (!obj || !obj.sentences || typeof obj.sentences !== 'object') return 0;
         var n = 0;
-        var mime = obj.format === 'wav' ? 'audio/wav' : 'audio/mpeg';
+        var mimes = (obj.mimes && typeof obj.mimes === 'object') ? obj.mimes : {};
+        var fallbackMime = obj.format === 'wav' ? 'audio/wav' : 'audio/mpeg';
         for (var k in obj.sentences) {
           if (!Object.prototype.hasOwnProperty.call(obj.sentences, k)) continue;
           try {
+            var mime = mimes[k] || fallbackMime;
             var url = b64ToUrl(obj.sentences[k], mime);
             if (url) { _revoke(map.get(k)); map.set(k, { b64: String(obj.sentences[k] || ''), mime: mime, url: url }); n++; }
           } catch (_) {}

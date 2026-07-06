@@ -389,6 +389,7 @@ function SimplifiedView(props) {
     text: (generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')
   }), /*#__PURE__*/React.createElement(KaraokeReaderOverlay, {
     isOpen: isKaraokeOverlayActive,
+    isTeacher: isTeacherMode,
     onClose: () => setIsKaraokeOverlayActive(false),
     getAudioUrl: sentenceText => {
       const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;

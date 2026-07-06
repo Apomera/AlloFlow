@@ -780,10 +780,12 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     !isPlaying && !finished && translateYRef.current < -4 && /* @__PURE__ */ React.createElement("div", { className: "absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs pointer-events-none", style: { background: `${p.bg}99`, border: `1px solid ${p.accent}33`, color: p.text } }, "\u23F8 Paused \u2014 click to resume")
   ), /* @__PURE__ */ React.createElement("div", { className: "h-1 w-full", style: { background: p.text + "22" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full transition-all duration-200 ease-linear", style: { width: `${progressPct}%`, backgroundColor: p.accent } })), /* @__PURE__ */ React.createElement("div", { className: "py-2 text-center text-xs", style: { color: p.text, opacity: 0.6 } }, "Click or Space pauses \xB7 R restarts \xB7 M mutes pad \xB7 Esc closes"));
 });
-const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl }) => {
+const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, isTeacher }) => {
   const { t } = useContext(LanguageContext);
   const [sentences, setSentences] = useState([]);
   const [sentenceIdx, setSentenceIdx] = useState(0);
+  const [regenBusy, setRegenBusy] = useState(false);
+  const [prepState, setPrepState] = useState(null);
   const [sweepPct, setSweepPct] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [autoAdvance, setAutoAdvance] = useState(true);
@@ -1021,6 +1023,31 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
       else setIsPlaying(false);
     }, 1500);
   }, [sentences, getAudioUrl, autoAdvance, reducedMotion]);
+  const regenerateCurrent = useCallback(async () => {
+    const sentence = sentences[sentenceIdx];
+    if (regenBusy || !sentence || typeof window.__alloRegenerateSentenceAudio !== "function") return;
+    setRegenBusy(true);
+    try {
+      await window.__alloRegenerateSentenceAudio(sentence);
+      warmedRef.current.delete(sentenceIdx);
+      setSweepPct(0);
+      playSentence(sentenceIdx);
+    } catch (e) {
+    }
+    setRegenBusy(false);
+  }, [regenBusy, sentences, sentenceIdx, playSentence]);
+  const prepareAll = useCallback(async () => {
+    if (prepState && prepState.busy || !sentences.length || typeof window.__alloPrepareReadAloud !== "function") return;
+    setPrepState({ busy: true, done: 0, total: sentences.length });
+    try {
+      const res = await window.__alloPrepareReadAloud(sentences, function(done, total) {
+        setPrepState({ busy: true, done, total });
+      });
+      setPrepState({ busy: false, done: res && res.generated || 0, total: res && res.total || 0, bytes: res && res.bytes || 0 });
+    } catch (e) {
+      setPrepState(null);
+    }
+  }, [prepState, sentences]);
   useEffect(() => {
     if (!isOpen || !isPlaying) return;
     playSentence(sentenceIdx);
@@ -1145,7 +1172,29 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200", style: { backgroundColor: c.bg, color: c.ink } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
     hardStop();
     onClose();
-  }, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, safeT(t, "immersive.focus_reader", "Focus Reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: autoAdvance, onChange: (e) => setAutoAdvance(e.target.checked), "aria-label": t("immersive.auto_advance_aria") || "Auto-advance to next sentence" }), /* @__PURE__ */ React.createElement("span", { style: { color: c.ink } }, "Auto-advance")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": t("immersive.playback_speed_aria") || "Playback speed" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.dim } }, "SPEED"), [0.75, 1, 1.25, 1.5].map((rate) => /* @__PURE__ */ React.createElement(
+  }, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, safeT(t, "immersive.focus_reader", "Focus Reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, isTeacher && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.teacher_audio_tools", "Read-aloud tools") }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: regenerateCurrent,
+      disabled: regenBusy,
+      title: safeT(t, "immersive.regenerate_sentence_tip", "Re-generate the audio for this sentence if it sounds off. Students hear your vetted version."),
+      className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
+      style: { background: "transparent", color: c.ink, border: `1px solid ${c.dim}55`, opacity: regenBusy ? 0.6 : 1 }
+    },
+    regenBusy ? "\u2026" : "\u{1F504}",
+    " ",
+    safeT(t, "immersive.regenerate_sentence", "Regenerate this sentence")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: prepareAll,
+      disabled: !!(prepState && prepState.busy),
+      title: safeT(t, "immersive.prepare_readaloud_tip", "Generate audio for every sentence and save it into this resource so students hear it instantly on any device."),
+      className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
+      style: { background: prepState && !prepState.busy ? c.accent : "transparent", color: c.ink, border: `1px solid ${c.dim}55`, opacity: prepState && prepState.busy ? 0.7 : 1 }
+    },
+    prepState && prepState.busy ? `\u2026 ${prepState.done}/${prepState.total}` : prepState && !prepState.busy ? `\u2713 ${safeT(t, "immersive.readaloud_saved", "Saved")}${prepState.bytes ? " \xB7 " + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + " MB" : ""}` : `\u{1F4BE} ${safeT(t, "immersive.prepare_readaloud", "Prepare read-aloud for students")}`
+  )), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: autoAdvance, onChange: (e) => setAutoAdvance(e.target.checked), "aria-label": t("immersive.auto_advance_aria") || "Auto-advance to next sentence" }), /* @__PURE__ */ React.createElement("span", { style: { color: c.ink } }, "Auto-advance")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": t("immersive.playback_speed_aria") || "Playback speed" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.dim } }, "SPEED"), [0.75, 1, 1.25, 1.5].map((rate) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: rate,

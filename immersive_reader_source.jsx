@@ -964,10 +964,15 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
 // (Compatible with Gemini TTS, which returns audio-only with no timepoint
 // metadata. See plan.md for rationale.)
 // ============================================================================
-const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl }) => {
+const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, isTeacher }) => {
     const { t } = useContext(LanguageContext);
     const [sentences, setSentences] = useState([]);
     const [sentenceIdx, setSentenceIdx] = useState(0);
+    // Teacher read-aloud vetting: regenerate the current sentence, or prepare
+    // the whole set for students. Both persist into the resource via the ANTI
+    // globals; the player picks up the new audio through the shared store.
+    const [regenBusy, setRegenBusy] = useState(false);
+    const [prepState, setPrepState] = useState(null); // { busy, done, total, bytes } | null
     const [sweepPct, setSweepPct] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [autoAdvance, setAutoAdvance] = useState(true);
@@ -1198,6 +1203,32 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
         }, 1500);
     }, [sentences, getAudioUrl, autoAdvance, reducedMotion]);
 
+    // ── Teacher vetting handlers ────────────────────────────────────────
+    // Regenerate the CURRENT sentence's audio, then replay so the teacher hears
+    // the new take immediately. The ANTI global stores it + persists it into
+    // the resource; getAudioUrl (store-first) serves the new clip next play.
+    const regenerateCurrent = useCallback(async () => {
+        const sentence = sentences[sentenceIdx];
+        if (regenBusy || !sentence || typeof window.__alloRegenerateSentenceAudio !== 'function') return;
+        setRegenBusy(true);
+        try {
+            await window.__alloRegenerateSentenceAudio(sentence);
+            warmedRef.current.delete(sentenceIdx); // force a fresh fetch of the new clip
+            setSweepPct(0);
+            playSentence(sentenceIdx);
+        } catch (e) {}
+        setRegenBusy(false);
+    }, [regenBusy, sentences, sentenceIdx, playSentence]);
+    // Generate audio for every not-yet-vetted sentence and persist the set.
+    const prepareAll = useCallback(async () => {
+        if ((prepState && prepState.busy) || !sentences.length || typeof window.__alloPrepareReadAloud !== 'function') return;
+        setPrepState({ busy: true, done: 0, total: sentences.length });
+        try {
+            const res = await window.__alloPrepareReadAloud(sentences, function (done, total) { setPrepState({ busy: true, done: done, total: total }); });
+            setPrepState({ busy: false, done: (res && res.generated) || 0, total: (res && res.total) || 0, bytes: (res && res.bytes) || 0 });
+        } catch (e) { setPrepState(null); }
+    }, [prepState, sentences]);
+
     // Start / restart playback when sentenceIdx changes while playing, or when play toggles on
     useEffect(() => {
         if (!isOpen || !isPlaying) return;
@@ -1299,6 +1330,32 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
                     </div>
                 </div>
                 <div className="flex items-center gap-4 flex-wrap text-xs font-bold">
+                    {isTeacher && (
+                        <div className="flex items-center gap-2" role="group" aria-label={safeT(t, 'immersive.teacher_audio_tools', 'Read-aloud tools')}>
+                            <button
+                                onClick={regenerateCurrent}
+                                disabled={regenBusy}
+                                title={safeT(t, 'immersive.regenerate_sentence_tip', 'Re-generate the audio for this sentence if it sounds off. Students hear your vetted version.')}
+                                className="px-2.5 py-1 rounded-full transition-all flex items-center gap-1"
+                                style={{ background: 'transparent', color: c.ink, border: `1px solid ${c.dim}55`, opacity: regenBusy ? 0.6 : 1 }}
+                            >
+                                {regenBusy ? '…' : '🔄'} {safeT(t, 'immersive.regenerate_sentence', 'Regenerate this sentence')}
+                            </button>
+                            <button
+                                onClick={prepareAll}
+                                disabled={!!(prepState && prepState.busy)}
+                                title={safeT(t, 'immersive.prepare_readaloud_tip', 'Generate audio for every sentence and save it into this resource so students hear it instantly on any device.')}
+                                className="px-2.5 py-1 rounded-full transition-all flex items-center gap-1"
+                                style={{ background: (prepState && !prepState.busy) ? c.accent : 'transparent', color: c.ink, border: `1px solid ${c.dim}55`, opacity: (prepState && prepState.busy) ? 0.7 : 1 }}
+                            >
+                                {prepState && prepState.busy
+                                    ? `… ${prepState.done}/${prepState.total}`
+                                    : (prepState && !prepState.busy)
+                                        ? `✓ ${safeT(t, 'immersive.readaloud_saved', 'Saved')}${prepState.bytes ? ' · ' + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + ' MB' : ''}`
+                                        : `💾 ${safeT(t, 'immersive.prepare_readaloud', 'Prepare read-aloud for students')}`}
+                            </button>
+                        </div>
+                    )}
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" checked={autoAdvance} onChange={e => setAutoAdvance(e.target.checked)} aria-label={t('immersive.auto_advance_aria') || 'Auto-advance to next sentence'} />
                         <span style={{ color: c.ink }}>Auto-advance</span>

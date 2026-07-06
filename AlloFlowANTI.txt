@@ -5296,6 +5296,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=698f5b1f8');
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=698f5b1f8');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=698f5b1f8');
+    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=698f5b1f8');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=698f5b1f8');
     loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=698f5b1f8');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=698f5b1f8');
@@ -17197,6 +17198,72 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       });
     throw new Error("[handleDownloadAudio] AudioHelpers module not loaded - reload the page");
   };
+  // ── Read-aloud audio: teacher-vettable per-sentence generation (2026-07-06) ──
+  // KaraokeAudioStore holds one clip per sentence. These let the karaoke overlay
+  // (teacher mode) regenerate a single off sentence or prepare the whole set, and
+  // persist the vetted audio into the resource so it travels to students
+  // cross-device with zero re-synth. Human-in-the-loop, opt-in (never auto).
+  const _blobToBase64 = (blob) => new Promise((resolve, reject) => {
+    try {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result || '').replace(/^data:[^,]*,/, ''));
+      r.onerror = () => reject(r.error || new Error('blob read failed'));
+      r.readAsDataURL(blob);
+    } catch (e) { reject(e); }
+  });
+  // Synthesize ONE sentence to { b64, mime }. Prefer cloud PCM -> MP3 (small);
+  // fall back to whatever callTTS yields (Kokoro WAV, keyless) so it works
+  // everywhere. Uses the currently selected voice.
+  const _synthSentenceForStore = async (sentence) => {
+    try {
+      const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
+      if (window.lamejs && _ah && typeof _ah.pcmToMp3 === 'function') {
+        const r = await fetchTTSBytes(sentence, selectedVoice);
+        if (r && r.bytes) {
+          const mp3Blob = _ah.pcmToMp3(r.bytes, 24000);
+          return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg' };
+        }
+      }
+    } catch (_) {}
+    try {
+      const url = await callTTS(sentence).catch(() => null);
+      if (!url) return null;
+      const blob = await (await fetch(url)).blob();
+      return { b64: await _blobToBase64(blob), mime: blob.type || 'audio/wav' };
+    } catch (_) { return null; }
+  };
+  // Regenerate (or first-generate) ONE sentence; store it + persist into the
+  // active resource. Returns the new blob URL or null.
+  window.__alloRegenerateSentenceAudio = async (sentence) => {
+    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    if (!KS) return null;
+    if (!KS.current) KS.current = KS.createStore();
+    const out = await _synthSentenceForStore(sentence);
+    if (!out || !out.b64) return null;
+    const url = KS.current.put(sentence, out.b64, out.mime);
+    try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeAudio: KS.current.serialize() }) : gc); } catch (_) {}
+    return url;
+  };
+  // Prepare the WHOLE text: generate audio for every not-yet-vetted sentence.
+  // onProgress(done,total,sentence) drives the teacher UI; sequential so it
+  // respects the TTS queue and can be stopped via __alloPrepareReadAloudCancel.
+  window.__alloPrepareReadAloud = async (sentences, onProgress) => {
+    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    if (!KS) return { ok: false };
+    if (!KS.current) KS.current = KS.createStore();
+    const list = (Array.isArray(sentences) ? sentences : []).filter(Boolean);
+    const todo = KS.current.missing(list);
+    let n = 0;
+    for (let i = 0; i < todo.length; i++) {
+      if (window.__alloPrepareReadAloudCancel) { window.__alloPrepareReadAloudCancel = false; break; }
+      const out = await _synthSentenceForStore(todo[i]);
+      if (out && out.b64) KS.current.put(todo[i], out.b64, out.mime);
+      n++;
+      try { if (typeof onProgress === 'function') onProgress(n, todo.length, todo[i]); } catch (_) {}
+    }
+    try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeAudio: KS.current.serialize() }) : gc); } catch (_) {}
+    return { ok: true, generated: n, total: todo.length, bytes: KS.current.estimateBytes() };
+  };
   const STYLE_SEEDS = (window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.STYLE_SEEDS) || {
     professional: { name: 'Professional', emoji: '💼', wcagLevel: 'AA', cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' } },
     highContrast: { name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA', cssVars: { bodyFont: "'Atkinson Hyperlegible', system-ui, sans-serif", headingColor: '#000000', accentColor: '#0000ff', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#000000', headerBg: '#000000', headerText: '#ffff00', extraCSS: 'body { font-size: 1.1rem; } a { color: #0000ff; text-decoration: underline; } .section { border: 2px solid #000; } th { background: #000; color: #fff; }' } },
@@ -17294,6 +17361,19 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     setGeneratedContent, setHistory, setIsGeneratingTimelineImage,
   });
 
+  // Rebuild the per-sentence read-aloud store whenever the active resource
+  // changes, so the karaoke player serves vetted/persisted audio instantly
+  // and the teacher's regenerate has a store to write into. Keyed on resource
+  // id: a same-id karaokeAudio update (from regenerate) must NOT re-hydrate.
+  React.useEffect(() => {
+    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    if (!KS) return;
+    const st = KS.createStore();
+    if (generatedContent && generatedContent.karaokeAudio) {
+      try { st.hydrate(generatedContent.karaokeAudio); } catch (_) {}
+    }
+    KS.current = st;
+  }, [generatedContent && generatedContent.id]);
   React.useEffect(() => { pdfFixResultRef.current = pdfFixResult; }, [pdfFixResult]);
 
   const runAutoFixLoop = React.useCallback(async (maxRounds = 3) => {
