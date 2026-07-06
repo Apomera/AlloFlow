@@ -1001,6 +1001,10 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
     // starting and resolving, the token increments and the stale promise bails
     // instead of playing phantom audio over the current sentence.
     const playTokenRef = useRef(0);
+    // Sentences whose audio has already been pre-warmed this session (indices).
+    // callTTS caches on the shared urlCache, so a warmed sentence is an instant
+    // cache hit when the player later requests it — zero perceived latency.
+    const warmedRef = useRef(new Set());
     const reducedMotion = typeof window !== 'undefined' && window.matchMedia
         ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
         : false;
@@ -1027,7 +1031,43 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
         setSentences(out.length > 0 ? out : [cleaned]);
         setSentenceIdx(0);
         setSweepPct(0);
+        warmedRef.current = new Set(); // new text → nothing warmed yet
     }, [text]);
+
+    // ── Zero-latency pre-warm (2026-07-06) ──────────────────────────────
+    // Whenever the active sentence changes, quietly fetch the NEXT few
+    // sentences through the SAME getAudioUrl the player uses. Because that
+    // path (callTTS) caches on the shared urlCache under the exact key
+    // playback will request, advancing to a warmed sentence is an instant
+    // cache hit — the audio "generated once" serves both the fetch and the
+    // pre-warm. Design guards:
+    //  • FORWARD-ONLY (idx+1…): never competes with the current sentence's
+    //    own fetch, so the sentence the student is on is never delayed.
+    //  • BOUNDED look-ahead: won't eagerly bill cloud-metered TTS for
+    //    sentences a student may never reach; on local Kokoro (free,
+    //    on-device) the whole text ends up warm within a sentence or two.
+    //  • Deduped via warmedRef; cancelled on close/advance.
+    useEffect(() => {
+        if (!isOpen || typeof getAudioUrl !== 'function' || sentences.length === 0) return;
+        let cancelled = false;
+        const LOOKAHEAD = 3;
+        const run = async () => {
+            for (let i = sentenceIdx + 1; i <= sentenceIdx + LOOKAHEAD && i < sentences.length; i++) {
+                if (cancelled) return;
+                if (warmedRef.current.has(i)) continue;
+                warmedRef.current.add(i);
+                // Fire through the player's own audio resolver; we ignore the
+                // returned URL — the point is the cache side-effect. A failure
+                // clears the mark so a later pass can retry.
+                try { await getAudioUrl(sentences[i]); }
+                catch (e) { warmedRef.current.delete(i); }
+            }
+        };
+        // Small defer so the current sentence's on-demand fetch always wins
+        // the queue; pre-warm fills in behind it.
+        const timer = setTimeout(run, 200);
+        return () => { cancelled = true; clearTimeout(timer); };
+    }, [isOpen, sentences, sentenceIdx, getAudioUrl]);
 
     // Hard teardown when the overlay closes or the component unmounts
     useEffect(() => {

@@ -69,3 +69,45 @@ It has been a privilege to build this. The tree is clean, the traps are document
 
 ### 7. Automated tutorial-video compiler (Aaron's idea, endorsed — high leverage)
 The pieces already exist: **Guided Mode tours** (`GUIDED_TOUR_MAP`, spotlight steps) are machine-readable scripts of every complex flow; **Video Studio** records; **Kokoro TTS** narrates locally at zero cost; the **NotebookLM→Remotion editor** is a doc-to-video pipeline already scoped. Build: a "tutorial compiler" that drives the real app through a tour (Playwright or the tour engine itself), captures the screen, narrates the tour strings via TTS, and composites. Because tours are data, every release can regenerate every video automatically — no stale tutorials, ever — and 50+ language packs × TTS = localized tutorials nearly free. Use Gemini to draft/polish narration scripts, the deterministic tour engine to execute (accuracy over improv). Prototype ONE feature end-to-end first (suggest leveled text).
+
+**SCAFFOLD SHIPPED (2026-07-06, Opus):** `tutorial_compiler_module.js` — the
+manifest builder is REAL + tested (turns `GUIDED_STEPS` + `GUIDED_TOUR_MAP`
+into `{steps:[{anchorId, beats:[{kind, text, seconds}]}]}`, localized via t());
+the capture→narrate→composite pipeline is documented stubs naming each seam
+(Video Studio recorder, callTTS/Kokoro voice, Remotion composite). NOT yet in
+the ANTI boot list (zero boot cost until fleshed out) — activation steps are in
+the file header. Next: wire one flow end-to-end, suggest `simplified` (Text
+Adaptation). Captions from beat text are free accessibility — do them.
+
+### 8. Read-aloud audio: reuse + share (pre-warm SHIPPED; sharing = a decision)
+Aaron's insight: the generated read-aloud audio is a wasted asset — students
+re-download what a teacher already made, and karaoke regenerates what Download
+Audio already synthesized.
+- **SHIPPED (pre-warm, @<this commit>)**: `KaraokeReaderOverlay` now rolls a
+  bounded forward look-ahead through the SAME `getAudioUrl`→`callTTS`→`urlCache`
+  path playback uses, so advancing is an instant cache hit. Zero storage, zero
+  drift, forward-only (never delays the current sentence), bounded so cloud TTS
+  isn't billed for unreached sentences; on local Kokoro the whole text warms in
+  a sentence or two. This is the "zero latency when the student uses it" ask.
+- **Deeper reuse (small, do next)**: `handleDownloadAudio` (audio_helpers) still
+  chunks + combines PCM on its OWN path, so its work doesn't warm karaoke and
+  vice-versa. Re-plumb Download Audio to synthesize PER SENTENCE via `callTTS`
+  (same splitter karaoke uses) and concatenate the cached blobs → one
+  generation serves download AND karaoke. Watch: `callTTS` has no in-flight
+  dedupe, so guard against double-synth of the same key.
+- **Teacher→student SHARING (a DECISION, not a default — Aaron flagged the size
+  cost correctly)**. Do NOT bake audio into the resource-history JSON — WAV is
+  ~10x MP3 and it balloons every pack. Three honest tiers, pick per context:
+  1. *LAN classroom (RECOMMENDED, infra EXISTS)*: teacher generates once →
+     store as a session-asset via the runtime's `/api/lan-docs/{key}` bridge
+     (private write, public GET + PIN, TTL-capped) → students fetch on demand.
+     No per-student download, no JSON balloon, audio stays on the classroom
+     network. This is the ask done right and it reuses shipped plumbing.
+  2. *Portable pack (opt-in, guarded)*: only when a teacher explicitly wants
+     audio to travel offline inside the `.json`. Force MP3 (`pcmToMp3` exists),
+     sentence-keyed so it doubles as the karaoke warm-cache on load, with a
+     visible size estimate + confirm. Default OFF.
+  3. *Regenerate locally (status quo)*: on the School Box, Kokoro is free and
+     instant enough that re-synth per device is often the simplest right answer.
+  My recommendation: ship tier 1 with the LAN classroom work; leave tier 2
+  behind an explicit toggle; never make either the default.

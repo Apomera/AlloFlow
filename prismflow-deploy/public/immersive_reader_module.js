@@ -807,6 +807,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
   const rafRef = useRef(null);
   const activeSentenceRef = useRef(null);
   const playTokenRef = useRef(0);
+  const warmedRef = useRef(/* @__PURE__ */ new Set());
   const reducedMotion = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
   useEffect(() => {
     if (!text) {
@@ -830,7 +831,30 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
     setSentences(out.length > 0 ? out : [cleaned]);
     setSentenceIdx(0);
     setSweepPct(0);
+    warmedRef.current = /* @__PURE__ */ new Set();
   }, [text]);
+  useEffect(() => {
+    if (!isOpen || typeof getAudioUrl !== "function" || sentences.length === 0) return;
+    let cancelled = false;
+    const LOOKAHEAD = 3;
+    const run = async () => {
+      for (let i = sentenceIdx + 1; i <= sentenceIdx + LOOKAHEAD && i < sentences.length; i++) {
+        if (cancelled) return;
+        if (warmedRef.current.has(i)) continue;
+        warmedRef.current.add(i);
+        try {
+          await getAudioUrl(sentences[i]);
+        } catch (e) {
+          warmedRef.current.delete(i);
+        }
+      }
+    };
+    const timer = setTimeout(run, 200);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [isOpen, sentences, sentenceIdx, getAudioUrl]);
   useEffect(() => {
     if (!isOpen) {
       playTokenRef.current++;
