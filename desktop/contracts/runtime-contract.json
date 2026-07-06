@@ -7,6 +7,7 @@
     "alloflowLocalEngine": 32173,
     "schoolBoxHost": 32174,
     "lanShare": 32175,
+    "alloflowLocalAsr": 32176,
     "alloflowWebApp": 3000
   },
   "schoolBox": {
@@ -129,6 +130,10 @@
     { "method": "POST", "path": "/api/engine/start", "purpose": "Download (first run) and start the managed llama-server; returns a snapshot immediately — poll status for progress" },
     { "method": "POST", "path": "/api/engine/stop", "purpose": "Stop the managed llama-server process tree" },
     { "method": "GET", "path": "/api/engine/logs", "purpose": "Recent built-in engine process logs" },
+    { "method": "GET", "path": "/api/asr/status", "purpose": "Offline speech-to-text (whisper.cpp) status: phase, download progress, model presence, arch, inference URL. 127.0.0.1 only; never on the LAN share listener. Practice-signal STT for oral-reading fluency, not norm-referenced" },
+    { "method": "POST", "path": "/api/asr/start", "purpose": "Download (first run) and start the managed whisper-server; returns a snapshot immediately — poll status for progress. whisper.cpp ships x64-only on Windows (arm64 runs it under emulation)" },
+    { "method": "POST", "path": "/api/asr/stop", "purpose": "Stop the managed whisper-server process tree" },
+    { "method": "GET", "path": "/api/asr/logs", "purpose": "Recent offline ASR process logs" },
     { "method": "GET", "path": "/api/live-session/status", "purpose": "Selected live-session backend, data location, cloud allowance, and next actions" },
     { "method": "GET", "path": "/api/lan-share/status", "purpose": "Private command-center status for the explicit student-safe LAN share listener" },
     { "method": "GET", "path": "/api/lan-share/diagnostics", "purpose": "Private plain-language network readout: LAN addresses, share/PIN state, join base URLs, and firewall/client-isolation guidance" },

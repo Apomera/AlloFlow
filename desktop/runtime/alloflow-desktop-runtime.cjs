@@ -179,6 +179,29 @@ const DEFAULT_CONFIG = {
     threads: 0,
     extraArgs: [],
   },
+  localAsr: {
+    // Offline speech-to-text (whisper.cpp whisper-server) for oral-reading
+    // fluency PRACTICE — so a student's voice is transcribed ON DEVICE and
+    // never leaves the machine (the cloud fluency path sends audio to Gemini).
+    // INTEGRITY: this is a practice signal, not a norm-referenced score, and
+    // whisper has no child-speech/dialect tuning — the app frames results as
+    // teacher-reviewable suggestions, never an automatic reading level.
+    enabled: false,
+    port: 32176,
+    modelDirectory: '',
+    // Pinned whisper.cpp CPU build per-arch when empty (see ASR_BINARY_URLS).
+    // NOTE: whisper.cpp publishes NO Windows arm64 build — arm64 machines run
+    // the x64 binary under Windows emulation (slower but works).
+    binaryUrl: '',
+    // Default: multilingual base (~148 MB) — small enough for a classroom
+    // laptop, covers the 60+ reading languages. Swap for ggml-small.bin /
+    // ggml-medium.bin (bigger, more accurate) or a local .bin path via config.
+    modelUrl: 'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin',
+    // Spoken language for decoding: 'auto' detects; the app overrides per call.
+    language: 'auto',
+    threads: 0,
+    extraArgs: [],
+  },
   updates: {
     channel: process.env.ALLOFLOW_UPDATE_CHANNEL || 'latest',
   },
@@ -2256,6 +2279,328 @@ async function stopLocalEngine(config = readConfig()) {
   return getLocalEngineStatus(config);
 }
 
+// ─── AlloFlow Offline ASR (managed whisper.cpp whisper-server) ──────────────
+// "localAsr" = a whisper-server child this runtime downloads and manages, so
+// oral-reading-fluency practice can transcribe a student's recording ON THE
+// DEVICE instead of sending the audio to Gemini. Speaks whisper.cpp's HTTP API
+// (POST /inference, multipart) on 127.0.0.1:{port}. Cloned from the llama.cpp
+// engine subsystem above; the one real difference is that whisper.cpp ships NO
+// Windows arm64 build, so on arm64 we run the x64 binary under emulation.
+const ASR_BINARY_URLS = {
+  // whisper.cpp v1.9.1 Windows x64 CPU zip (contains whisper-server.exe + DLLs).
+  x64: 'https://github.com/ggml-org/whisper.cpp/releases/download/v1.9.1/whisper-bin-x64.zip',
+};
+const managedAsr = {
+  child: null,
+  logs: [],
+  phase: 'stopped', // stopped | downloading-binary | downloading-model | starting | running | error
+  download: null,
+  startPromise: null,
+  startedAt: null,
+  stoppedAt: null,
+  lastError: null,
+  binaryPath: null,
+  modelPath: null,
+  arch: null,
+  stopRequested: false,
+  abortController: null,
+  binaryCheckCache: null,
+};
+
+function asrUserStopError() {
+  const error = new Error('ASR start cancelled by Stop.');
+  error.isUserStop = true;
+  return error;
+}
+function throwIfAsrStopRequested() {
+  if (managedAsr.stopRequested) throw asrUserStopError();
+}
+function appendAsrLog(line) {
+  const text = String(line || '').replace(/\r/g, '').trimEnd();
+  if (!text) return;
+  text.split('\n').forEach((entry) => {
+    managedAsr.logs.push({ at: new Date().toISOString(), line: entry.slice(0, 2000) });
+  });
+  if (managedAsr.logs.length > 250) managedAsr.logs.splice(0, managedAsr.logs.length - 250);
+}
+function isAsrRunning() {
+  return Boolean(managedAsr.child && !managedAsr.child.killed && managedAsr.child.exitCode === null);
+}
+function getAsrConfig(config = readConfig()) {
+  return deepMerge(DEFAULT_CONFIG.localAsr, (config && config.localAsr) || {});
+}
+function getAsrDir(config) {
+  const asr = getAsrConfig(config);
+  return asr.modelDirectory || path.join(getDataDir(), 'asr');
+}
+function asrModelFilePath(config) {
+  const asr = getAsrConfig(config);
+  if (!asr.modelUrl) return '';
+  if (!/^https?:\/\//i.test(String(asr.modelUrl))) return path.resolve(String(asr.modelUrl));
+  const name = decodeURIComponent(String(asr.modelUrl).split('/').pop().split('?')[0] || '');
+  return name ? path.join(getAsrDir(config), 'models', name) : '';
+}
+function asrBinarySourceMarker(archDir) {
+  return path.join(archDir, 'binary-source.txt');
+}
+
+// whisper.cpp has only an x64 Windows build; arm64 runs it under emulation.
+const PRIMARY_ASR_ARCH = 'x64';
+
+// Reuses the generic download primitive shape but writes progress into
+// managedAsr.download (downloadEngineFile is coupled to managedEngine state).
+async function downloadAsrFile(url, destination, label) {
+  const signal = managedAsr.abortController ? managedAsr.abortController.signal : undefined;
+  const response = await fetch(url, { redirect: 'follow', signal });
+  if (!response.ok || !response.body) throw new Error(label + ' download failed (HTTP ' + response.status + ').');
+  const totalBytes = Number(response.headers.get('content-length')) || 0;
+  fs.mkdirSync(path.dirname(destination), { recursive: true });
+  const freeBytes = await getFreeDiskBytes(path.dirname(destination));
+  if (freeBytes !== null && totalBytes && freeBytes < totalBytes + 1.5 * 1024 * 1024 * 1024) {
+    throw new Error('Not enough disk space for the ' + label + ': it needs ' + Math.round(totalBytes / 1048576) +
+      ' MB plus working headroom, but only ' + Math.round(freeBytes / 1048576) + ' MB is free. Free up space, then try again.');
+  }
+  managedAsr.download = { file: label, receivedBytes: 0, totalBytes };
+  const temp = destination + '.download';
+  await new Promise((resolveDone, rejectDone) => {
+    const output = fs.createWriteStream(temp);
+    const reader = require('stream').Readable.fromWeb(response.body);
+    reader.on('data', (chunk) => { managedAsr.download.receivedBytes += chunk.length; });
+    reader.on('error', rejectDone);
+    output.on('error', rejectDone);
+    output.on('finish', resolveDone);
+    reader.pipe(output);
+  });
+  fs.renameSync(temp, destination);
+  managedAsr.download = null;
+}
+
+async function ensureAsrBinary(config, arch) {
+  const asr = getAsrConfig(config);
+  const dir = getAsrDir(config);
+  const binaryName = process.platform === 'win32' ? 'whisper-server.exe' : 'whisper-server';
+  const archDir = path.join(dir, 'bin', arch);
+  const url = (arch === PRIMARY_ASR_ARCH && asr.binaryUrl) || ASR_BINARY_URLS[arch];
+  let binary = findFileRecursive(archDir, binaryName);
+  if (binary) {
+    let extractedFrom = '';
+    try { extractedFrom = fs.readFileSync(asrBinarySourceMarker(archDir), 'utf8').trim(); } catch (_) {}
+    if (extractedFrom && url && extractedFrom !== url) {
+      appendAsrLog('ASR binary URL changed — refreshing the ' + arch + ' binary from ' + url);
+      try { fs.rmSync(archDir, { recursive: true, force: true }); } catch (_) {}
+      managedAsr.binaryCheckCache = null;
+      binary = null;
+    }
+  }
+  if (!binary) {
+    if (!url) throw new Error('No ASR binary is published for this platform (' + process.platform + '/' + arch + ').');
+    throwIfAsrStopRequested();
+    managedAsr.phase = 'downloading-binary';
+    appendAsrLog('Downloading ASR binary (' + arch + '): ' + url);
+    const zipPath = path.join(archDir, 'whisper-server-download.zip');
+    await downloadAsrFile(url, zipPath, 'speech-to-text program');
+    throwIfAsrStopRequested();
+    await expandEngineZip(zipPath, archDir);
+    try { fs.unlinkSync(zipPath); } catch (_) {}
+    try { fs.writeFileSync(asrBinarySourceMarker(archDir), url + '\n', 'utf8'); } catch (_) {}
+    managedAsr.binaryCheckCache = null;
+    binary = findFileRecursive(archDir, binaryName);
+    if (!binary) throw new Error('whisper-server was not found inside the downloaded ASR archive.');
+  }
+  return binary;
+}
+
+async function ensureAsrAssets(config, arch) {
+  const asr = getAsrConfig(config);
+  if (!asr.modelUrl) throw new Error('No speech model URL is configured (localAsr.modelUrl).');
+  const modelFile = asrModelFilePath(config);
+  const modelIsLocal = !/^https?:\/\//i.test(String(asr.modelUrl));
+  if (modelIsLocal && !fs.existsSync(modelFile)) {
+    throw new Error('The speech model file was not found at ' + modelFile +
+      '. If it lives on a USB drive or network share, make sure it is connected — or pick a downloadable model instead.');
+  }
+  const binary = await ensureAsrBinary(config, arch);
+  if (!fs.existsSync(modelFile)) {
+    throwIfAsrStopRequested();
+    managedAsr.phase = 'downloading-model';
+    appendAsrLog('Downloading speech model: ' + asr.modelUrl);
+    await downloadAsrFile(asr.modelUrl, modelFile, 'speech model');
+  }
+  throwIfAsrStopRequested();
+  managedAsr.binaryPath = binary;
+  managedAsr.modelPath = modelFile;
+  return { binary, modelFile };
+}
+
+async function getLocalAsrStatus(config = readConfig()) {
+  const asr = getAsrConfig(config);
+  const dir = getAsrDir(config);
+  const binaryName = process.platform === 'win32' ? 'whisper-server.exe' : 'whisper-server';
+  const now = Date.now();
+  let binaryPresent;
+  if (managedAsr.binaryPath) {
+    binaryPresent = true;
+  } else if (managedAsr.binaryCheckCache && now - managedAsr.binaryCheckCache.at < 15000) {
+    binaryPresent = managedAsr.binaryCheckCache.present;
+  } else {
+    binaryPresent = Boolean(findFileRecursive(path.join(dir, 'bin'), binaryName));
+    managedAsr.binaryCheckCache = { present: binaryPresent, at: now };
+  }
+  const modelFile = asrModelFilePath(config);
+  let modelBytes = null;
+  try { modelBytes = fs.statSync(modelFile).size; } catch (_) {}
+  const running = isAsrRunning();
+  const phase = (!running && managedAsr.phase === 'running') ? 'stopped' : managedAsr.phase;
+  return {
+    implemented: true,
+    phase,
+    running: phase === 'running',
+    pid: running ? managedAsr.child.pid : null,
+    port: asr.port,
+    baseUrl: 'http://127.0.0.1:' + asr.port,
+    inferenceUrl: 'http://127.0.0.1:' + asr.port + '/inference',
+    asrDir: dir,
+    binaryPresent,
+    model: { url: asr.modelUrl, name: modelFile ? path.basename(modelFile) : '', present: Boolean(modelBytes), bytes: modelBytes },
+    download: managedAsr.download,
+    startedAt: managedAsr.startedAt,
+    stoppedAt: managedAsr.stoppedAt,
+    lastError: managedAsr.lastError,
+    arch: managedAsr.arch,
+  };
+}
+
+async function launchAsrProcess(config, arch) {
+  const asr = getAsrConfig(config);
+  const { binary, modelFile } = await ensureAsrAssets(config, arch);
+  // Port preflight: whisper-server has no /health, so probe the root page —
+  // if anything already answers here, don't let a poll mistake it for ours.
+  try {
+    const squatter = await fetch('http://127.0.0.1:' + asr.port + '/');
+    if (squatter.ok) {
+      throw Object.assign(new Error('Port ' + asr.port + ' is already in use — probably a whisper-server left over from an earlier session. ' +
+        'Close it (Task Manager: whisper-server.exe) or change localAsr.port, then start again.'), { isPortSquatter: true });
+    }
+  } catch (error) {
+    if (error.isPortSquatter) throw error;
+    /* nothing listening — good */
+  }
+  managedAsr.phase = 'starting';
+  managedAsr.arch = arch;
+  appendAsrLog('Starting whisper-server (' + arch + ') on 127.0.0.1:' + asr.port + ' with ' + path.basename(modelFile));
+  const args = ['-m', modelFile, '--host', '127.0.0.1', '--port', String(asr.port), '--inference-path', '/inference', '--convert'];
+  if (asr.language && String(asr.language).trim()) args.push('-l', String(asr.language).trim());
+  if (asr.threads) args.push('-t', String(asr.threads));
+  (Array.isArray(asr.extraArgs) ? asr.extraArgs : []).forEach((arg) => args.push(String(arg)));
+  let exitCode = null;
+  const child = spawn(binary, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  managedAsr.child = child;
+  managedAsr.startedAt = new Date().toISOString();
+  child.stdout.on('data', (data) => appendAsrLog(data));
+  child.stderr.on('data', (data) => appendAsrLog(data));
+  child.on('exit', (code) => {
+    exitCode = code;
+    appendAsrLog('whisper-server exited with code ' + code);
+    managedAsr.child = null;
+    managedAsr.stoppedAt = new Date().toISOString();
+    if (managedAsr.phase !== 'stopped') managedAsr.phase = code === 0 ? 'stopped' : 'error';
+  });
+  child.on('error', (error) => {
+    managedAsr.lastError = error.message;
+    appendAsrLog('spawn error: ' + error.message);
+  });
+  // whisper-server loads the model then serves; the root page answers when up.
+  const deadline = Date.now() + 120000;
+  while (Date.now() < deadline) {
+    if (managedAsr.stopRequested) { try { child.kill(); } catch (_) {} throw asrUserStopError(); }
+    if (!isAsrRunning()) {
+      if (exitCode !== null && ENGINE_LOADER_EXIT_CODES.has(exitCode >>> 0)) return { loaderFailure: true, exitCode };
+      throw new Error(managedAsr.lastError || 'The whisper-server process exited during startup — see /api/asr/logs.');
+    }
+    try {
+      const probe = await fetch('http://127.0.0.1:' + asr.port + '/');
+      if (probe.ok) {
+        managedAsr.phase = 'running';
+        appendAsrLog('ASR is healthy and serving /inference (' + arch + ').');
+        return { loaderFailure: false };
+      }
+    } catch (_) { /* not up yet */ }
+    await new Promise((resolveDone) => setTimeout(resolveDone, 1000));
+  }
+  throw new Error('The ASR server did not become healthy within 120 seconds — see /api/asr/logs.');
+}
+
+async function startLocalAsr(config = readConfig()) {
+  if (isAsrRunning() || managedAsr.startPromise) return managedAsr.startPromise || Promise.resolve();
+  managedAsr.lastError = null;
+  managedAsr.stopRequested = false;
+  managedAsr.abortController = new AbortController();
+  managedAsr.startPromise = (async () => {
+    try {
+      // whisper.cpp ships only x64 on Windows; arm64 runs it under emulation.
+      const attempt = await launchAsrProcess(config, PRIMARY_ASR_ARCH);
+      if (attempt.loaderFailure) {
+        throw new Error('The whisper-server binary could not be loaded by Windows (exit ' + attempt.exitCode + ') — see /api/asr/logs.');
+      }
+    } catch (error) {
+      managedAsr.download = null;
+      const userStop = error.isUserStop || managedAsr.stopRequested || error.name === 'AbortError';
+      if (userStop) {
+        managedAsr.phase = 'stopped';
+        managedAsr.lastError = null;
+        appendAsrLog('Start cancelled by Stop.');
+        if (isAsrRunning()) { try { managedAsr.child.kill(); } catch (_) {} }
+        return;
+      }
+      managedAsr.lastError = error.message;
+      managedAsr.phase = 'error';
+      appendAsrLog('ERROR: ' + error.message);
+      if (isAsrRunning()) { try { managedAsr.child.kill(); } catch (_) {} }
+      throw error;
+    } finally {
+      managedAsr.startPromise = null;
+      managedAsr.abortController = null;
+    }
+  })();
+  return managedAsr.startPromise;
+}
+
+async function stopLocalAsr(config = readConfig()) {
+  managedAsr.stopRequested = true;
+  if (managedAsr.abortController) { try { managedAsr.abortController.abort(); } catch (_) {} }
+  if (!isAsrRunning()) {
+    if (!managedAsr.startPromise) managedAsr.phase = 'stopped';
+    managedAsr.download = null;
+    return getLocalAsrStatus(config);
+  }
+  const child = managedAsr.child;
+  managedAsr.phase = 'stopped';
+  appendAsrLog('Stopping the offline speech-to-text server.');
+  if (process.platform === 'win32') {
+    await new Promise((resolveDone) => {
+      const killer = spawn('taskkill', ['/pid', String(child.pid), '/t', '/f'], { windowsHide: true });
+      killer.on('exit', resolveDone);
+      killer.on('error', resolveDone);
+    });
+  } else {
+    try { child.kill('SIGTERM'); } catch (_) {}
+  }
+  managedAsr.child = null;
+  managedAsr.stoppedAt = new Date().toISOString();
+  return getLocalAsrStatus(config);
+}
+
+// Autostart mirror: warm the ASR server with the desktop once a teacher has
+// chosen it (localAsr.enabled, persisted by POST /api/asr/start) AND the model
+// is already on disk. Never on a fresh config, never mid-download.
+function maybeAutostartAsr(config = readConfig()) {
+  if (getAsrConfig(config).enabled && fs.existsSync(asrModelFilePath(config))) {
+    console.log('[AlloFlow Desktop] Offline ASR enabled and model present — starting it.');
+    return startLocalAsr(config).catch((error) => console.warn('[AlloFlow Desktop] ASR autostart failed:', error.message));
+  }
+  return Promise.resolve();
+}
+
 async function readRequestJson(req) {
   const chunks = [];
   let size = 0;
@@ -2609,6 +2954,33 @@ async function handleApi(req, res, url) {
 
   if (req.method === 'GET' && url.pathname === '/api/engine/logs') {
     jsonResponse(res, 200, { logs: managedEngine.logs.slice(-100) });
+    return;
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/asr/status') {
+    jsonResponse(res, 200, { ...await getLocalAsrStatus(config), asr: getAsrConfig(config) });
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/asr/start') {
+    if (!isAsrRunning() && !managedAsr.startPromise) {
+      startLocalAsr(config).catch(() => { /* surfaced via status.lastError */ });
+      // Starting IS the opt-in: autostart the ASR server from now on.
+      try { writeConfig(deepMerge(config, { localAsr: { enabled: true } })); } catch (_) {}
+    }
+    jsonResponse(res, 200, await getLocalAsrStatus(config));
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/asr/stop') {
+    const stopped = await stopLocalAsr(config);
+    try { writeConfig(deepMerge(readConfig(), { localAsr: { enabled: false } })); } catch (_) {}
+    jsonResponse(res, 200, stopped);
+    return;
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/asr/logs') {
+    jsonResponse(res, 200, { logs: managedAsr.logs.slice(-100) });
     return;
   }
 
@@ -3099,12 +3471,14 @@ async function main() {
     console.log('[AlloFlow Desktop] Runtime listening on http://' + args.host + ':' + address.port);
     console.log('[AlloFlow Desktop] AlloFlow app URL: ' + getAppUrl(readConfig(), `http://${args.host}:${address.port}`));
     maybeAutostartEngine();
+    maybeAutostartAsr();
   });
-  // CLI runs own their engine child: never orphan a 2GB llama-server on
-  // Ctrl+C. The packaged Electron shell has its own before-quit teardown.
+  // CLI runs own their child processes: never orphan a llama-server or a
+  // whisper-server on Ctrl+C. The packaged Electron shell has its own
+  // before-quit teardown.
   ['SIGINT', 'SIGTERM'].forEach((signal) => {
     process.on(signal, () => {
-      stopLocalEngine().catch(() => {}).finally(() => process.exit(0));
+      Promise.allSettled([stopLocalEngine(), stopLocalAsr()]).finally(() => process.exit(0));
     });
   });
 }
@@ -3132,6 +3506,10 @@ module.exports = {
   maybeAutostartEngine,
   stopLocalEngine,
   getLocalEngineStatus,
+  maybeAutostartAsr,
+  startLocalAsr,
+  stopLocalAsr,
+  getLocalAsrStatus,
   getConfigPath,
   getDataDir,
   getAppUrl,

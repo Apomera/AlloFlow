@@ -332,6 +332,10 @@ async function ensureRuntime() {
       if (typeof runtime.maybeAutostartEngine === 'function') {
         runtime.maybeAutostartEngine().catch(() => {});
       }
+      // Same for the offline ASR server (oral-reading-fluency practice).
+      if (typeof runtime.maybeAutostartAsr === 'function') {
+        runtime.maybeAutostartAsr().catch(() => {});
+      }
       return waitForRuntime(getCommandCenterUrl());
     } catch (error) {
       server.close();
@@ -507,12 +511,17 @@ app.whenReady().then(async () => {
 
 let engineTorndown = false;
 app.on('before-quit', (event) => {
-  // Never orphan the llama-server child: it holds ~2GB RAM and the engine
-  // port, and a leftover would poison the next launch's health checks.
-  if (!engineTorndown && typeof runtime.stopLocalEngine === 'function') {
+  // Never orphan the child servers: llama-server holds ~2GB RAM + the engine
+  // port, whisper-server holds the ASR port, and a leftover of either would
+  // poison the next launch's health checks / port preflight.
+  const canTeardown = typeof runtime.stopLocalEngine === 'function' || typeof runtime.stopLocalAsr === 'function';
+  if (!engineTorndown && canTeardown) {
     engineTorndown = true;
     event.preventDefault();
-    Promise.resolve(runtime.stopLocalEngine()).catch(() => {}).finally(() => {
+    const teardowns = [];
+    if (typeof runtime.stopLocalEngine === 'function') teardowns.push(Promise.resolve(runtime.stopLocalEngine()).catch(() => {}));
+    if (typeof runtime.stopLocalAsr === 'function') teardowns.push(Promise.resolve(runtime.stopLocalAsr()).catch(() => {}));
+    Promise.allSettled(teardowns).finally(() => {
       if (runtimeServer) {
         runtimeServer.close();
         runtimeServer = null;
