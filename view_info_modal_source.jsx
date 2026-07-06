@@ -101,6 +101,7 @@ const OSS_CREDITS = [
       { name: 'Kokoro', use: 'neural text-to-speech (primary)', license: 'Apache-2.0', url: 'https://github.com/hexgrad/kokoro' },
       { name: 'Piper', use: 'neural text-to-speech (40+ languages)', license: 'MIT (engine now GPLv3 fork)', url: 'https://github.com/OHF-Voice/piper1-gpl' },
       { name: 'Transformers.js', use: 'in-browser ML (Whisper transcription, image gen)', license: 'Apache-2.0', url: 'https://github.com/huggingface/transformers.js' },
+      { name: 'whisper.cpp', use: 'on-device speech-to-text for oral-reading-fluency practice (School Box) — Georgi Gerganov', license: 'MIT', url: 'https://github.com/ggml-org/whisper.cpp' },
       { name: 'ONNX Runtime Web', use: 'machine-learning inference', license: 'MIT', url: 'https://onnxruntime.ai' },
       { name: 'Pyodide', use: 'Python in the browser', license: 'MPL-2.0', url: 'https://pyodide.org' },
     ],
