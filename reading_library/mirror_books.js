@@ -37,16 +37,16 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 // Somali/Swahili/Ukrainian have zero SW coverage (verified 2026-07-05) —
 // African Storybook is the future source for those.
 const PLAN = [
-  { language: 'English', code: 'en', perLevel: { 1: 4, 2: 4, 3: 4, 4: 4 } },
-  { language: 'Spanish', code: 'es', perLevel: { 1: 2, 2: 2, 3: 2, 4: 2 } },
-  { language: 'French', code: 'fr', perLevel: { 1: 2, 2: 2, 3: 1, 4: 1 } },
-  { language: 'Arabic', code: 'ar', perLevel: { 1: 2, 2: 1, 3: 1, 4: 1 } },
-  { language: 'Hindi', code: 'hi', perLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  { language: 'Portuguese', code: 'pt', perLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
-  { language: 'Vietnamese', code: 'vi', perLevel: { 1: 1, 2: 1, 3: 1 } },
-  { language: 'Russian', code: 'ru', perLevel: { 1: 1, 2: 1 } },
-  { language: 'German', code: 'de', perLevel: { 1: 1, 2: 1 } },
-  { language: 'Haitian Creole', code: 'ht', perLevel: { 1: 1, 2: 1, 3: 1 } },
+  { language: 'English', code: 'en', perLevel: { 1: 7, 2: 7, 3: 7, 4: 7 } },
+  { language: 'Spanish', code: 'es', perLevel: { 1: 4, 2: 4, 3: 4, 4: 4 } },
+  { language: 'French', code: 'fr', perLevel: { 1: 3, 2: 3, 3: 3, 4: 3 } },
+  { language: 'Arabic', code: 'ar', perLevel: { 1: 3, 2: 3, 3: 2, 4: 2 } },
+  { language: 'Hindi', code: 'hi', perLevel: { 1: 2, 2: 2, 3: 2, 4: 2 } },
+  { language: 'Portuguese', code: 'pt', perLevel: { 1: 2, 2: 2, 3: 2, 4: 2 } },
+  { language: 'Vietnamese', code: 'vi', perLevel: { 1: 2, 2: 2, 3: 2 } },
+  { language: 'Russian', code: 'ru', perLevel: { 1: 2, 2: 2 } },
+  { language: 'German', code: 'de', perLevel: { 1: 2, 2: 2 } },
+  { language: 'Haitian Creole', code: 'ht', perLevel: { 1: 2, 2: 2, 3: 1 } },
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -92,7 +92,14 @@ function scoreBook(b) {
 }
 
 async function plan() {
-  const picks = [];
+  // Merge-not-replace: books already in curation.json stay in the library
+  // forever (students may have them assigned in saved lessons); planning only
+  // ADDS new picks. Prune deliberately by hand-editing curation.json.
+  const existing = fs.existsSync(CURATION_PATH)
+    ? JSON.parse(fs.readFileSync(CURATION_PATH, 'utf8')).picks || []
+    : [];
+  const have = new Set(existing.map((p) => p.slug));
+  const picks = existing.slice();
   for (const langPlan of PLAN) {
     for (const [level, want] of Object.entries(langPlan.perLevel)) {
       const url =
@@ -107,11 +114,13 @@ async function plan() {
         console.warn('SKIP search', langPlan.language, 'L' + level, err.message);
         continue;
       }
+      const already = existing.filter((p) => p.language === langPlan.language && p.level === String(level)).length;
       const ranked = (data.data || [])
-        .filter((b) => b.slug && b.title)
+        .filter((b) => b.slug && b.title && !have.has(b.slug))
         .sort((a, b) => scoreBook(b) - scoreBook(a))
-        .slice(0, Number(want));
+        .slice(0, Math.max(0, Number(want) - already));
       for (const b of ranked) {
+        have.add(b.slug);
         picks.push({
           slug: b.slug,
           title: b.title,

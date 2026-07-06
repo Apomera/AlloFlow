@@ -452,6 +452,24 @@
       props.onExit && props.onExit(true);
     };
 
+    // Teacher: pin this book into the lesson history so students who load the
+    // lesson (or join the session) can open it from Resources with one click.
+    var saveToLesson = function () {
+      if (typeof props.onSaveToLesson !== 'function') return;
+      props.onSaveToLesson({
+        slug: book.slug,
+        title: book.title,
+        language: book.language,
+        langCode: book.langCode,
+        level: book.level,
+        cover: (book.cover && book.cover.card) || null,
+        hasAudio: !!book.audio,
+        description: book.description || '',
+        attribution: attributionLine(book),
+      });
+      props.addToast && props.addToast('"' + book.title + '" ' + tr('readinglib_saved_lesson', 'was added to this lesson’s resources.'), 'success');
+    };
+
     var genTypes = [
       { type: 'quiz', label: tr('readinglib_gen_quiz', 'Quiz') },
       { type: 'glossary', label: tr('readinglib_gen_glossary', 'Glossary') },
@@ -492,6 +510,11 @@
           onClick: function () { setShowPractice(!showPractice); },
           'aria-pressed': showPractice,
         }, '🎙️ ' + tr('readinglib_practice', 'Practice')),
+        props.isTeacherMode && typeof props.onSaveToLesson === 'function' ? e('button', {
+          className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100',
+          onClick: saveToLesson,
+          title: tr('readinglib_save_lesson_hint', 'Students who load this lesson can open the book from Resources'),
+        }, '📌 ' + tr('readinglib_save_lesson', 'Save to lesson')) : null,
         e('div', { className: 'relative' },
           e('button', {
             className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100',
@@ -675,6 +698,19 @@
       if (closeAll && props.onClose) props.onClose();
     };
 
+    // Deep-open: a lesson's saved-book item restores through here. When the
+    // index is ready and the host handed us a slug, open that book directly.
+    useEffect(function () {
+      if (!props.initialBookSlug || index.status !== 'ok' || openBook || loadingBook) return;
+      var entry = books.filter(function (b) { return b.slug === props.initialBookSlug; })[0];
+      if (entry) {
+        openBookBySlug(entry);
+      } else {
+        props.addToast && props.addToast(tr('readinglib_assigned_missing', 'That book is no longer in the library.'), 'info');
+      }
+      if (typeof props.onInitialBookConsumed === 'function') props.onInitialBookConsumed();
+    }, [props.initialBookSlug, index.status]);
+
     var body;
     if (openBook) {
       body = e(BookReader, {
@@ -684,6 +720,8 @@
         callGemini: props.callGemini,
         handleGenerate: props.handleGenerate,
         setInputText: props.setInputText,
+        isTeacherMode: props.isTeacherMode,
+        onSaveToLesson: props.onSaveToLesson,
       });
     } else {
       body = e('div', { className: 'flex flex-col h-full min-h-0' },

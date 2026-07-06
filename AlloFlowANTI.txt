@@ -2382,6 +2382,7 @@ const getIconForType = (type) => {
         case 'poettree-submission': return <Sparkles size={16} />;
         case 'litlab-config': return <BookOpen size={16} />;
         case 'litlab-submission': return <Sparkles size={16} />;
+        case 'readingBook': return <BookOpen size={16} />;
         default: return <FileText size={16} />;
     }
 };
@@ -4759,6 +4760,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isCommunityCatalogOpen, setIsCommunityCatalogOpen] = useState(false);
   // Reading Library (2026-07-05): StoryWeaver CC-BY picture books, browse + read + practice.
   const [isReadingLibraryOpen, setIsReadingLibraryOpen] = useState(false);
+  // Deep-open slug for a lesson-pinned book (set by restore/sync, consumed by the module).
+  const [pendingReadingBookSlug, setPendingReadingBookSlug] = useState(null);
   const [isAccessibilityLabOpen, setIsAccessibilityLabOpen] = useState(false);
   const [isAuditRemediatorOpen, setIsAuditRemediatorOpen] = useState(false);
   // Plan S: Quiz mode (exit-ticket | pre-check | formative | review).
@@ -10303,6 +10306,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           const target = resourcesToRender.find(r => r.id === targetResourceId);
                           if (target) {
                               if (currentGenContentIdRef.current !== targetResourceId) {
+                                  if (_maybeOpenReadingBookSync(target, targetResourceId)) {
+                                      addToast(t('toasts.synced_resource', { title: target.title || getDefaultTitle(target.type) }) || `Synced: ${target.title || getDefaultTitle(target.type)}`, "info");
+                                  } else {
                                   setGeneratedContent({ type: target.type, data: target.data, id: target.id });
                                   setActiveView(target.type);
                                   if (audioRef.current) {
@@ -10310,6 +10316,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                       setIsPlaying(false);
                                   }
                                   addToast(t('toasts.synced_resource', { title: target.title || getDefaultTitle(target.type) }) || `Synced: ${target.title || getDefaultTitle(target.type)}`, "info");
+                                  }
                               }
                           }
                       }
@@ -10324,6 +10331,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                       if (target && currentGenContentIdRef.current !== myEntry.resourceId && lastIndividualPushKeyRef.current !== individualPushKey) {
                           lastIndividualPushKeyRef.current = individualPushKey;
                           debugLog(`Individual Differentiation: Showing per-student resource ${myEntry.resourceId}`);
+                          if (_maybeOpenReadingBookSync(target, myEntry.resourceId)) {
+                              addToast(t('toasts.individual_resource', { title: target.title || getDefaultTitle(target.type) }) || `For you: ${target.title || getDefaultTitle(target.type)}`, "info");
+                          } else {
                           setGeneratedContent({ type: target.type, data: target.data, id: target.id });
                           setActiveView(target.type);
                           if (audioRef.current) {
@@ -10331,6 +10341,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                               setIsPlaying(false);
                           }
                           addToast(t('toasts.individual_resource', { title: target.title || getDefaultTitle(target.type) }) || `For you: ${target.title || getDefaultTitle(target.type)}`, "info");
+                          }
                       }
                   }
                   else if (data.roster && data.roster[user.uid] && data.roster[user.uid].groupId) {
@@ -10346,6 +10357,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           if (target && currentGenContentIdRef.current !== groupResourceId && lastGroupPushKeyRef.current !== groupPushKey) {
                               lastGroupPushKeyRef.current = groupPushKey;
                               debugLog(`Group Differentiation: Showing group-specific resource ${groupResourceId}`);
+                              if (_maybeOpenReadingBookSync(target, groupResourceId)) {
+                                  addToast(t('toasts.group_resource', { title: target.title || getDefaultTitle(target.type) }) || `Group Resource: ${target.title || getDefaultTitle(target.type)}`, "info");
+                              } else {
                               setGeneratedContent({ type: target.type, data: target.data, id: target.id });
                               setActiveView(target.type);
                               if (audioRef.current) {
@@ -10353,6 +10367,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                   setIsPlaying(false);
                               }
                               addToast(t('toasts.group_resource', { title: target.title || getDefaultTitle(target.type) }) || `Group Resource: ${target.title || getDefaultTitle(target.type)}`, "info");
+                              }
                           }
                       }
                   }
@@ -19158,7 +19173,33 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       addToast && addToast(t('toasts.failed_load_lesson') + (err && err.message), 'error');
     }
   };
+  // Reading Library sync helper (2026-07-05): a pushed/restored 'readingBook'
+  // resource opens the reader overlay instead of a content view (there is no
+  // 'readingBook' activeView renderer — falling through would blank the pane).
+  // Advances the consumed-id ref manually because setGeneratedContent, which
+  // normally advances it via its effect, is deliberately skipped here.
+  function _maybeOpenReadingBookSync(target, pushId) {
+      if (!target || target.type !== 'readingBook' || !target.data || !target.data.slug) return false;
+      currentGenContentIdRef.current = pushId;
+      setPendingReadingBookSlug(target.data.slug);
+      setIsReadingLibraryOpen(true);
+      return true;
+  }
+
   const handleRestoreView = (item) => {
+      // Reading Library book pinned to the lesson (2026-07-05): open the reader
+      // on the saved book. Surface-opener — early return, no activeView swap.
+      if (item && item.type === 'readingBook' && item.data && item.data.slug) {
+          setPendingReadingBookSlug(item.data.slug);
+          setIsReadingLibraryOpen(true);
+          if (isTeacherMode && activeSessionCode && !TEACHER_ONLY_TYPES.includes(item.type)) {
+              try {
+                  const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+                  updateDoc(sessionRef, { currentResourceId: item.id }).catch(e => warnLog('Sync error:', e));
+              } catch (e) { warnLog('Sync error:', e); }
+          }
+          return;
+      }
       // Phase 2 — DA-generated math manipulative resource. Open the STEM Lab to
       // the right tool with the preset slotted into labToolData. We ALSO set
       // generatedContent so the floating "Return to Dynamic Assessment" pill
@@ -19359,6 +19400,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           case 'litlab-submission': return t('output.title_litlab_submission') || '🎭 Performance Submission';
           case 'note-taking': return t('help_mode.tool_note_taking') || 'Note-Taking Templates';
           case 'anchor-chart': return t('help_mode.tool_anchor_chart') || 'Anchor Chart';
+          case 'readingBook': return t('readinglib_book_resource') || 'Book';
           default: return t('common.resource') || 'Resource';
       }
   };
@@ -31206,6 +31248,20 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 handleGenerate,
                 setInputText,
                 isTeacherMode,
+                initialBookSlug: pendingReadingBookSlug,
+                onInitialBookConsumed: () => setPendingReadingBookSlug(null),
+                onSaveToLesson: (bookRef) => {
+                    if (!bookRef || !bookRef.slug) return;
+                    const newItem = {
+                        id: 'readingbook-' + bookRef.slug + '-' + Date.now(),
+                        type: 'readingBook',
+                        title: bookRef.title,
+                        timestamp: new Date(),
+                        data: bookRef,
+                        config: {},
+                    };
+                    setHistory(prev => [...prev, newItem]);
+                },
             })}
         </CDNModuleGate>
 
