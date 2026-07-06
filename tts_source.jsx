@@ -449,6 +449,17 @@ const createTTS = (deps) => {
             console.warn("[TTS] Skipping — global rate-limit cooldown active for", Math.round((state.rateLimitedUntil - Date.now()) / 1000), "more seconds");
             return null;
         }
+        // Keyless install (desktop Built-in Engine, no cloud account): the
+        // Gemini TTS leg can NEVER succeed — every attempt is a guaranteed
+        // 400 + retries + an error-report entry. Skip it silently (one log
+        // per session); callers fall to the browser voice until Kokoro is up.
+        if (!_isCanvasEnv && !apiKey) {
+            if (typeof window !== 'undefined' && !window.__ttsKeylessLogged) {
+                window.__ttsKeylessLogged = true;
+                console.log('[TTS] No cloud TTS key — cloud voice skipped; local Kokoro/browser voices handle read-aloud.');
+            }
+            return null;
+        }
         const cacheKey = `${(text || '').toLowerCase().trim()}__${voiceName}__${speed}__${_language || 'English'}`;
         if (state.urlCache.has(cacheKey)) {
             debugLog("⚡ callTTS cache HIT:", text?.substring(0, 30));
@@ -572,6 +583,15 @@ const createTTS = (deps) => {
         }
         if (Date.now() < state.rateLimitedUntil) {
             console.warn("[TTS-Bot] Skipping — global rate-limit cooldown active for", Math.round((state.rateLimitedUntil - Date.now()) / 1000), "more seconds");
+            return null;
+        }
+        // Same keyless short-circuit as callTTS: no key = guaranteed 400 from
+        // the Gemini leg, so don't burn retries or pollute the error report.
+        if (!_isCanvasEnv && !apiKey) {
+            if (typeof window !== 'undefined' && !window.__ttsKeylessLogged) {
+                window.__ttsKeylessLogged = true;
+                console.log('[TTS-Bot] No cloud TTS key — cloud voice skipped; local Kokoro/browser voices handle speech.');
+            }
             return null;
         }
         const safeVoice = AVAILABLE_VOICES.map(v => v.toLowerCase()).includes((voiceName || '').toLowerCase()) ? voiceName : 'Puck';

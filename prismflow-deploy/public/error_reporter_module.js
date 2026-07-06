@@ -80,6 +80,14 @@
   // facing "⚠ N errors" badge meaningful instead of trivially-true.
   var IGNORE_MESSAGE_PATTERNS = [
     /ResizeObserver loop /,    // ResizeObserver loop completed / limit exceeded
+    // onnxruntime perf ADVISORIES from local-AI workers (Kokoro TTS, SD-Turbo,
+    // whisper). "Some nodes were not assigned to the preferred execution
+    // providers" + its follow-up line are expected on every session init —
+    // ORT deliberately pins shape ops to CPU — but they arrive via stderr/
+    // console.error and were landing in teacher bug reports as ERRORs.
+    /VerifyEachNodeIsAssignedToAnEp/,
+    /Some nodes were not assigned to the preferred execution providers/,
+    /Rerunning with verbose output on a non-minimal build/,
   ];
 
   function shouldIgnore(message) {
