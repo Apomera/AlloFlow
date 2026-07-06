@@ -493,6 +493,22 @@ function AIBackendModal(props) {
     });
     select.value = selectedValue || "";
   };
+  const stopEngineStripPoll = () => {
+    if (window.__alloEngineStripPoll) {
+      clearInterval(window.__alloEngineStripPoll);
+      window.__alloEngineStripPoll = null;
+    }
+  };
+  const startEngineStripPoll = () => {
+    if (window.__alloEngineStripPoll) return;
+    window.__alloEngineStripPoll = setInterval(() => {
+      if (!document.getElementById("ai-backend-engine-strip")) {
+        stopEngineStripPoll();
+        return;
+      }
+      refreshEngineStrip();
+    }, 2e3);
+  };
   const refreshEngineStrip = async () => {
     const strip = document.getElementById("ai-backend-engine-strip");
     if (!strip) return;
@@ -501,22 +517,58 @@ function AIBackendModal(props) {
     if (providerSelect && providerSelect.value) backend = providerSelect.value;
     if (backend !== "alloflow-local") {
       strip.style.display = "none";
+      stopEngineStripPoll();
       return;
     }
     strip.style.display = "";
+    let stripText = strip.querySelector("[data-engine-strip-text]");
+    let startBtn = strip.querySelector("[data-engine-strip-start]");
+    if (!stripText) {
+      stripText = document.createElement("span");
+      stripText.setAttribute("data-engine-strip-text", "1");
+      strip.appendChild(stripText);
+      startBtn = document.createElement("button");
+      startBtn.type = "button";
+      startBtn.setAttribute("data-engine-strip-start", "1");
+      startBtn.textContent = t("ai_backend.engine_start_btn") || "Start engine";
+      startBtn.className = "ml-2 px-2.5 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700";
+      startBtn.onclick = async () => {
+        startBtn.disabled = true;
+        try {
+          await fetch("/api/engine/start", { method: "POST" });
+        } catch (_) {
+        }
+        startEngineStripPoll();
+      };
+      strip.appendChild(startBtn);
+    }
+    const setLine = (line, cls) => {
+      if (stripText.textContent !== line) stripText.textContent = line;
+      if (strip.className !== cls) strip.className = cls;
+    };
+    const AMBER = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
     if (!(typeof window !== "undefined" && window._isDesktopBundledApp)) {
-      strip.textContent = t("ai_backend.engine_desktop_only") || "The Built-in Engine runs inside AlloFlow Desktop. Install the desktop app to use local AI on this computer \u2014 no account or key needed.";
-      strip.className = "text-xs font-bold mt-2 text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200";
+      setLine(
+        t("ai_backend.engine_desktop_only") || "The Built-in Engine runs inside AlloFlow Desktop. Install the desktop app to use local AI on this computer \u2014 no account or key needed.",
+        "text-xs font-bold mt-2 text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200"
+      );
+      startBtn.hidden = true;
+      stopEngineStripPoll();
       return;
     }
     try {
       const engineStatus = await fetch("/api/engine/status").then((response) => response.json());
       if (engineStatus.running) {
-        strip.textContent = "\u2713 " + (t("ai_backend.engine_running") || "Engine running") + (engineStatus.model && engineStatus.model.name ? " \u2014 " + engineStatus.model.name : "") + ". " + (t("ai_backend.engine_reload_note") || "Reload the app to start using it.");
-        strip.className = "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100";
+        setLine(
+          "\u2713 " + (t("ai_backend.engine_running") || "Engine running") + (engineStatus.model && engineStatus.model.name ? " \u2014 " + engineStatus.model.name : "") + ". " + (t("ai_backend.engine_reload_note") || "Reload the app to start using it."),
+          "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100"
+        );
+        startBtn.hidden = true;
+        stopEngineStripPoll();
         return;
       }
       let line = t("ai_backend.engine_stopped") || "Engine is not running.";
+      const busy = Boolean(engineStatus.download && engineStatus.download.totalBytes) || engineStatus.phase === "starting" || engineStatus.phase === "downloading-binary" || engineStatus.phase === "downloading-model";
       if (engineStatus.download && engineStatus.download.totalBytes) {
         line = (t("ai_backend.engine_downloading") || "Downloading") + " " + engineStatus.download.file + " \u2014 " + Math.round(engineStatus.download.receivedBytes / engineStatus.download.totalBytes * 100) + "%";
       } else if (engineStatus.phase === "starting") {
@@ -524,43 +576,19 @@ function AIBackendModal(props) {
       } else if (engineStatus.lastError) {
         line = engineStatus.lastError;
       }
-      strip.innerHTML = "";
-      const stripText = document.createElement("span");
-      stripText.textContent = line + (engineStatus.model && !engineStatus.model.present && !engineStatus.download && engineStatus.phase !== "starting" ? " " + (t("ai_backend.engine_first_run") || "(first start downloads the AI model \u2014 about 2 GB, one time)") : "");
-      strip.appendChild(stripText);
-      if (!engineStatus.download && engineStatus.phase !== "starting") {
-        const startBtn = document.createElement("button");
-        startBtn.type = "button";
-        startBtn.textContent = t("ai_backend.engine_start_btn") || "Start engine";
-        startBtn.className = "ml-2 px-2.5 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700";
-        startBtn.onclick = async () => {
-          startBtn.disabled = true;
-          try {
-            await fetch("/api/engine/start", { method: "POST" });
-            fetch("/api/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ localEngine: { enabled: true } }) }).catch(() => {
-            });
-          } catch (_) {
-          }
-          pollEngineStrip();
-        };
-        strip.appendChild(startBtn);
+      if (engineStatus.model && !engineStatus.model.present && !busy) {
+        line += " " + (t("ai_backend.engine_first_run") || "(first start downloads the AI model \u2014 about 2 GB, one time)");
       }
-      strip.className = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
+      setLine(line, AMBER);
+      startBtn.hidden = busy;
+      if (!busy) startBtn.disabled = false;
+      if (busy) startEngineStripPoll();
+      else stopEngineStripPoll();
     } catch (_) {
-      strip.textContent = t("ai_backend.engine_unreachable") || "Could not reach the desktop runtime from this page.";
-      strip.className = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
+      setLine(t("ai_backend.engine_unreachable") || "Could not reach the desktop runtime from this page.", AMBER);
+      startBtn.hidden = true;
+      stopEngineStripPoll();
     }
-  };
-  const pollEngineStrip = () => {
-    if (window.__alloEngineStripPoll) clearInterval(window.__alloEngineStripPoll);
-    window.__alloEngineStripPoll = setInterval(() => {
-      if (!document.getElementById("ai-backend-engine-strip")) {
-        clearInterval(window.__alloEngineStripPoll);
-        window.__alloEngineStripPoll = null;
-        return;
-      }
-      refreshEngineStrip();
-    }, 2e3);
   };
   const createAIProviderFromSettings = () => {
     const cfg = readAIBackendConfig();
@@ -645,7 +673,10 @@ function AIBackendModal(props) {
       className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
     }
   )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-engine-strip", style: { display: "none" }, "aria-live": "polite", ref: (node) => {
-    if (node) setTimeout(refreshEngineStrip, 0);
+    if (node && !node.dataset.engineInit) {
+      node.dataset.engineInit = "1";
+      setTimeout(refreshEngineStrip, 0);
+    }
   } }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.api_key_label") || "API Key", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.api_key_hint") || "(cloud providers only)")), /* @__PURE__ */ React.createElement(
     "input",
     {

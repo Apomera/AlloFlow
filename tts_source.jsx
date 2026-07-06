@@ -205,6 +205,26 @@ const createTTS = (deps) => {
         return queuedTask;
     };
 
+    // ONE voice-prefix test and ONE local-TTS text cleaner for all four
+    // routing sites (Canvas/non-Canvas x callTTS/callTTSDirect). The copies
+    // had already drifted: the short chains lacked the Dr./Mr./decimal-point
+    // pronunciation rules the Canvas chain applies.
+    const KOKORO_VOICE_PREFIX = /^(af_|am_|bf_|bm_)/i;
+    const cleanTextForLocalTTS = (raw) => String(raw == null ? '' : raw)
+        .replace(/^\s*\d+\.\s+/gm, '')
+        .replace(/^\s*[-*\u2022]\s+/gm, '')
+        .replace(/\be\.g\.\s/gi, 'for example ')
+        .replace(/\bi\.e\.\s/gi, 'that is ')
+        .replace(/\betc\.\s/gi, 'etcetera ')
+        .replace(/\bvs\.\s/gi, 'versus ')
+        .replace(/\bDr\.\s/gi, 'Doctor ')
+        .replace(/\bMr\.\s/gi, 'Mister ')
+        .replace(/\bMs\.\s/gi, 'Miss ')
+        .replace(/\bSt\.\s/gi, 'Saint ')
+        .replace(/(\d)\.\s+(\d)/g, '$1 point $2')
+        .replace(/\n{2,}/g, '. ')
+        .replace(/\n/g, ', ')
+        .replace(/\s{2,}/g, ' ').trim();
     const callTTS = async (text, voiceName = "Puck", speed = 1, maxRetriesOrOpts = 2, languageArg) => {
         if (isGlobalMuted()) {
             return null;
@@ -216,7 +236,10 @@ const createTTS = (deps) => {
         var maxRetries = typeof maxRetriesOrOpts === 'number' ? maxRetriesOrOpts
             : (maxRetriesOrOpts && typeof maxRetriesOrOpts.maxRetries === 'number' ? maxRetriesOrOpts.maxRetries : 2);
         var _callOpts = (maxRetriesOrOpts && typeof maxRetriesOrOpts === 'object') ? maxRetriesOrOpts : {};
-        var _language = languageArg || _callOpts.language || 'English';
+        // When the caller omits the language, resolve it from app state the
+        // same way callTTSDirect does — defaulting to 'English' made Kokoro
+        // speak Spanish glossary terms with English phonology (and cache it).
+        var _language = languageArg || _callOpts.language || getLeveledTextLanguage() || getCurrentUiLanguage() || 'English';
         var _isEnglish = typeof _language === 'string' && /^english$/i.test(_language.trim());
         // Optional AbortSignal for per-call cancellation. AlloSpeechPlayer.stop()
         // aborts in-flight TTS so a fast click-to-stop doesn't keep burning the
@@ -300,21 +323,7 @@ const createTTS = (deps) => {
                 if (setShowKokoroOfferModal) setShowKokoroOfferModal(true);
               }
             }
-            const localTtsText = text
-              .replace(/^\s*\d+\.\s+/gm, '')
-              .replace(/^\s*[-*•]\s+/gm, '')
-              .replace(/\be\.g\.\s/gi, 'for example ')
-              .replace(/\bi\.e\.\s/gi, 'that is ')
-              .replace(/\betc\.\s/gi, 'etcetera ')
-              .replace(/\bvs\.\s/gi, 'versus ')
-              .replace(/\bDr\.\s/gi, 'Doctor ')
-              .replace(/\bMr\.\s/gi, 'Mister ')
-              .replace(/\bMs\.\s/gi, 'Miss ')
-              .replace(/\bSt\.\s/gi, 'Saint ')
-              .replace(/(\d)\.\s+(\d)/g, '$1 point $2')
-              .replace(/\n{2,}/g, '. ')
-              .replace(/\n/g, ', ')
-              .replace(/\s{2,}/g, ' ').trim();
+            const localTtsText = cleanTextForLocalTTS(text);
             const ttsLang = languageToTTSCode(getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
             if (ttsLang === 'en') {
                 try {
@@ -345,31 +354,32 @@ const createTTS = (deps) => {
         // AIProvider/Gemini instead: Gemini 400s on non-Gemini voice names, every
         // caller's catch lands on browser speechSynthesis, and the model that the
         // header picker downloads (and desktop/Firebase boot auto-loads) never speaks.
-        var _kokoroVoicePrefixNC = /^(af_|am_|bf_|bm_)/i;
-        if (typeof voiceName === 'string' && _kokoroVoicePrefixNC.test(voiceName)) {
+        var _kokoroDeferredToGemini = false;
+        if (typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName)) {
             if (!_isEnglish) {
-                console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — switching to Gemini "Puck" for this call');
-                voiceName = 'Puck';
+                console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — deferring to cloud voices for this call');
+                _kokoroDeferredToGemini = true;
             } else if (window._kokoroTTS) {
                 try {
-                    const kokoroText = text.replace(/^\s*\d+\.\s+/gm, '').replace(/^\s*[-*\u2022]\s+/gm, '').replace(/\be\.g\.\s/gi, 'for example ').replace(/\bi\.e\.\s/gi, 'that is ').replace(/\n{2,}/g, '. ').replace(/\n/g, ', ').replace(/\s{2,}/g, ' ').trim();
-                    const kokoroUrl = await window._kokoroTTS.speakStreaming(kokoroText, voiceName, speed);
+                    const kokoroUrl = await window._kokoroTTS.speakStreaming(cleanTextForLocalTTS(text), voiceName, speed);
                     if (kokoroUrl) return kokoroUrl;
-                    voiceName = 'Puck'; // engine returned nothing — never send af_* to Gemini
+                    _kokoroDeferredToGemini = true; // engine returned nothing
                 } catch (e) {
                     if (_isAbortError(e)) { throw e; }
-                    console.warn('[TTS] Kokoro engine failed, degrading to Gemini "Puck":', e?.message);
-                    voiceName = 'Puck';
+                    console.warn('[TTS] Kokoro engine failed — deferring to provider/cloud voices:', e?.message);
+                    _kokoroDeferredToGemini = true;
                 }
             } else {
-                // Engine missing (download declined/failed/blocked). Kick a background
-                // (re)load for future calls and degrade this one to a valid Gemini voice.
+                // Engine missing (download declined/failed/blocked): kick a background
+                // (re)load for future calls. The configured provider still sees the
+                // ORIGINAL voice — OpenAI-compatible local TTS servers (for example
+                // Kokoro-FastAPI) accept af_* names natively; only the Gemini leg
+                // below needs a valid Gemini voice.
                 if (window.__loadKokoroTTS && !window.__kokoroTTSDownloading) {
                     window.__kokoroTTSDownloading = true;
                     Promise.resolve(window.__loadKokoroTTS()).then(function () { window.__kokoroTTSDownloading = false; }, function () { window.__kokoroTTSDownloading = false; });
                 }
-                console.warn('[TTS] Kokoro voice "' + voiceName + '" selected but the engine is not loaded — using Gemini "Puck" this time');
-                voiceName = 'Puck';
+                _kokoroDeferredToGemini = true;
             }
         }
 
@@ -385,6 +395,10 @@ const createTTS = (deps) => {
             } catch (e) {
                 console.warn('[callTTS] AIProvider TTS failed, falling back to Gemini:', e?.message);
             }
+        }
+        if (_kokoroDeferredToGemini && KOKORO_VOICE_PREFIX.test(voiceName)) {
+            console.warn('[TTS] Kokoro voice unavailable for this call — using Gemini "Puck"');
+            voiceName = 'Puck';
         }
         if (Date.now() < state.rateLimitedUntil) {
             console.warn("[TTS] Skipping — global rate-limit cooldown active for", Math.round((state.rateLimitedUntil - Date.now()) / 1000), "more seconds");
@@ -451,7 +465,7 @@ const createTTS = (deps) => {
                 }
             }
             const ttsLang = languageToTTSCode(getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
-            const cleanedText = text.replace(/^\s*\d+\.\s+/gm, '').replace(/^\s*[-*•]\s+/gm, '').replace(/\be\.g\.\s/gi, 'for example ').replace(/\bi\.e\.\s/gi, 'that is ').replace(/\n{2,}/g, '. ').replace(/\n/g, ', ').replace(/\s{2,}/g, ' ').trim();
+            const cleanedText = cleanTextForLocalTTS(text);
             if (ttsLang === 'en') {
                 try {
                     if (window._kokoroTTS) {
@@ -476,17 +490,17 @@ const createTTS = (deps) => {
             return null;
         }
         // ─── Desktop/Firebase: selected Kokoro voice → local engine (same fix as callTTS) ───
-        var _kokoroVoicePrefixBot = /^(af_|am_|bf_|bm_)/i;
-        if (typeof voiceName === 'string' && _kokoroVoicePrefixBot.test(voiceName)) {
+        if (typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName)) {
             const botKokoroLang = languageToTTSCode(getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
             if (botKokoroLang === 'en' && window._kokoroTTS) {
                 try {
-                    const kokoroBotText = text.replace(/^\s*\d+\.\s+/gm, '').replace(/^\s*[-*\u2022]\s+/gm, '').replace(/\be\.g\.\s/gi, 'for example ').replace(/\bi\.e\.\s/gi, 'that is ').replace(/\n{2,}/g, '. ').replace(/\n/g, ', ').replace(/\s{2,}/g, ' ').trim();
-                    const kokoroBotUrl = await window._kokoroTTS.speakStreaming(kokoroBotText, voiceName, speed);
+                    const kokoroBotUrl = await window._kokoroTTS.speakStreaming(cleanTextForLocalTTS(text), voiceName, speed);
                     if (kokoroBotUrl) return kokoroBotUrl;
-                } catch (e) { console.warn('[callTTSDirect] Kokoro engine failed, degrading to "Puck":', e?.message); }
+                } catch (e) { console.warn('[callTTSDirect] Kokoro engine failed — deferring to provider/cloud:', e?.message); }
             }
-            voiceName = 'Puck'; // valid Gemini voice for the fallback paths below
+            // No rewrite here: the configured provider accepts af_* names
+            // (Kokoro-FastAPI); the safeVoice guard below already maps any
+            // non-Gemini voice to 'Puck' for the Gemini fallback leg.
         }
 
         // ─── AIProvider TTS routing (same as callTTS) ─────────────────

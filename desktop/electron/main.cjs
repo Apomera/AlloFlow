@@ -327,6 +327,11 @@ async function ensureRuntime() {
       runtimeServer = server;
       setRuntimePort(port);
       logLine(`Started packaged runtime at ${getCommandCenterUrl()}`);
+      // Honor localEngine.enabled here too: main() (which also autostarts) is
+      // unreachable in the packaged app — we require the runtime as a module.
+      if (typeof runtime.maybeAutostartEngine === 'function') {
+        runtime.maybeAutostartEngine().catch(() => {});
+      }
       return waitForRuntime(getCommandCenterUrl());
     } catch (error) {
       server.close();
@@ -500,7 +505,22 @@ app.whenReady().then(async () => {
   app.quit();
 });
 
-app.on('before-quit', () => {
+let engineTorndown = false;
+app.on('before-quit', (event) => {
+  // Never orphan the llama-server child: it holds ~2GB RAM and the engine
+  // port, and a leftover would poison the next launch's health checks.
+  if (!engineTorndown && typeof runtime.stopLocalEngine === 'function') {
+    engineTorndown = true;
+    event.preventDefault();
+    Promise.resolve(runtime.stopLocalEngine()).catch(() => {}).finally(() => {
+      if (runtimeServer) {
+        runtimeServer.close();
+        runtimeServer = null;
+      }
+      app.quit();
+    });
+    return;
+  }
   if (runtimeServer) {
     runtimeServer.close();
     runtimeServer = null;

@@ -865,9 +865,10 @@
     const result = $('#engine-result');
     let modelUrl = event.target.value;
     if (modelUrl === '__custom') {
-      modelUrl = window.prompt('Paste a direct .gguf download URL, or the full path to a .gguf file (for example on a USB drive):', '');
-      if (!modelUrl || !modelUrl.trim()) { refreshEngineStatus().catch(() => {}); return; }
-      modelUrl = modelUrl.trim();
+      // window.prompt() throws in Electron renderers — use the inline row.
+      const row = $('#engine-custom-row');
+      if (row) { row.hidden = false; const input = $('#engine-custom-input'); if (input) input.focus(); }
+      return;
     }
     try {
       await api('/api/config', { method: 'POST', body: JSON.stringify({ localEngine: { modelUrl } }) });
@@ -880,6 +881,30 @@
     } catch (error) {
       if (result) result.textContent = error.message || 'Could not save the model choice.';
     }
+  }
+  async function applyCustomEngineModel() {
+    const result = $('#engine-result');
+    const row = $('#engine-custom-row');
+    const input = $('#engine-custom-input');
+    const modelUrl = input && input.value ? input.value.trim() : '';
+    if (!modelUrl) { if (result) result.textContent = 'Enter a .gguf URL or file path first.'; return; }
+    try {
+      await api('/api/config', { method: 'POST', body: JSON.stringify({ localEngine: { modelUrl } }) });
+      if (row) row.hidden = true;
+      if (result) {
+        result.textContent = /^https?:\/\//i.test(modelUrl)
+          ? 'Custom model saved. It downloads on the next engine start.'
+          : 'Local model file saved: ' + modelUrl + ' — used in place, nothing downloads. Keep the drive connected while the engine runs.';
+      }
+      await refreshEngineStatus();
+    } catch (error) {
+      if (result) result.textContent = error.message || 'Could not save the custom model.';
+    }
+  }
+  function cancelCustomEngineModel() {
+    const row = $('#engine-custom-row');
+    if (row) row.hidden = true;
+    refreshEngineStatus().catch(() => {});
   }
   async function saveEngineModelDir() {
     const result = $('#engine-result');
@@ -1191,6 +1216,8 @@
     $('#engine-start').addEventListener('click', startBuiltInEngine);
     $('#engine-stop').addEventListener('click', stopBuiltInEngine);
     $('#engine-model-select').addEventListener('change', changeEngineModel);
+    $('#engine-custom-apply').addEventListener('click', applyCustomEngineModel);
+    $('#engine-custom-cancel').addEventListener('click', cancelCustomEngineModel);
     $('#engine-model-dir-save').addEventListener('click', saveEngineModelDir);
     refreshEngineStatus().catch(() => {});
     $('#app-frame').addEventListener('load', () => {

@@ -133,6 +133,14 @@
                 <option value="__custom">Custom… (URL, or a .gguf file on a USB drive)</option>
               </optgroup>
             </select>
+            <div id="engine-custom-row" hidden>
+              <label for="engine-custom-input">Custom model <span class="hint">(a direct .gguf URL, or a full path like E:\models\my-model.gguf)</span></label>
+              <div class="button-row">
+                <input id="engine-custom-input" type="text" placeholder="https://… or E:\models\my-model.gguf">
+                <button id="engine-custom-apply" type="button">Use it</button>
+                <button id="engine-custom-cancel" type="button">Cancel</button>
+              </div>
+            </div>
             <label for="engine-model-dir">Model storage folder <span class="hint">(blank = this app's data folder; point at a USB drive to keep models off this PC)</span></label>
             <div class="button-row">
               <input id="engine-model-dir" type="text" placeholder="e.g. E:\alloflow-models">

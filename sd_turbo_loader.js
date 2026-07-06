@@ -129,22 +129,47 @@
     }
     var response = await fetch(url);
     if (!response.ok) throw new Error(label + ' download failed (HTTP ' + response.status + ')');
+    // Memory discipline: these files are up to ~1.7GB and the target machines
+    // have 8-16GB total. The cache is fed by a clone that the browser streams
+    // to CacheStorage in parallel (no JS-heap copy), and when the server
+    // reports a length we read straight into ONE preallocated buffer — peak
+    // stays ~1x file size instead of the previous ~3-4x.
+    var cachePutPromise = null;
+    if (cache) {
+      try { cachePutPromise = cache.put(url, response.clone()).catch(function () { /* quota — still usable this session */ }); }
+      catch (_) { cachePutPromise = null; }
+    }
     var total = Number(response.headers.get('content-length')) || 0;
     var reader = response.body.getReader();
-    var chunks = [];
     var received = 0;
+    var buffer = total ? new Uint8Array(total) : null;
+    var chunks = buffer ? null : [];
     for (;;) {
       var step = await reader.read();
       if (step.done) break;
-      chunks.push(step.value);
+      if (buffer) {
+        if (received + step.value.length > buffer.length) {
+          // Server lied about content-length — fall back to chunk collection.
+          chunks = [buffer.subarray(0, received)];
+          buffer = null;
+          chunks.push(step.value);
+        } else {
+          buffer.set(step.value, received);
+        }
+      } else {
+        chunks.push(step.value);
+      }
       received += step.value.length;
-      if (onProgress && total) onProgress({ file: label, pct: received / total });
+      if (onProgress && total) onProgress({ file: label, pct: Math.min(1, received / total) });
     }
-    var buffer = new Uint8Array(received);
+    if (cachePutPromise) { try { await cachePutPromise; } catch (_) {} }
+    if (buffer) {
+      return received === buffer.length ? buffer.buffer : buffer.buffer.slice(0, received);
+    }
+    var joined = new Uint8Array(received);
     var offset = 0;
-    for (var i = 0; i < chunks.length; i++) { buffer.set(chunks[i], offset); offset += chunks[i].length; }
-    if (cache) { try { await cache.put(url, new Response(buffer.buffer.slice(0))); } catch (_) { /* quota — still usable this session */ } }
-    return buffer.buffer;
+    for (var i = 0; i < chunks.length; i++) { joined.set(chunks[i], offset); offset += chunks[i].length; }
+    return joined.buffer;
   }
 
   async function init(onProgress) {
@@ -200,7 +225,15 @@
     return new ort.Tensor('float32', data, dims);
   }
   function tensorToFloat32(tensor) {
-    if (tensor.type === 'float16') return fromHalf(new Uint16Array(tensor.data.buffer || tensor.data));
+    if (tensor.type === 'float16') {
+      var data = tensor.data;
+      // Respect the view's offset/length: reinterpreting the whole backing
+      // buffer from 0 corrupts outputs when ort hands back a pooled view.
+      var u16 = ArrayBuffer.isView(data)
+        ? new Uint16Array(data.buffer, data.byteOffset, data.length)
+        : new Uint16Array(data);
+      return fromHalf(u16);
+    }
     return tensor.data instanceof Float32Array ? tensor.data : new Float32Array(tensor.data);
   }
 
