@@ -76,7 +76,7 @@ async function mount(extraProps = {}) {
   host = document.createElement('div');
   document.body.appendChild(host);
   root = ReactDOMClient.createRoot(host);
-  const calls = { toasts: [], generate: [], inputText: [], closed: 0 };
+  const calls = { toasts: [], generate: [], inputText: [], saved: [], closed: 0 };
   const props = {
     isOpen: true,
     onClose: () => { calls.closed++; },
@@ -84,6 +84,7 @@ async function mount(extraProps = {}) {
     callGemini: () => Promise.resolve(''),
     handleGenerate: (...a) => calls.generate.push(a),
     setInputText: (t) => calls.inputText.push(t),
+    onSaveToLesson: (ref) => calls.saved.push(ref),
     isTeacherMode: true,
     ...extraProps,
   };
@@ -180,6 +181,25 @@ describe('reader view (RTL original)', () => {
     expect(type).toBe('quiz');
     expect(langOverride).toBe('Arabic');
     expect(text).toContain(rtlBook.title);
+  });
+
+  it('also fills the source box and pins the book to the resource pack on generate', async () => {
+    const { calls } = await mount();
+    clickByText(host, 'button', rtlEntry.title.slice(0, 12));
+    await flush();
+    clickByText(host, 'button', 'Create');
+    await flush();
+    clickByText(host, 'button', 'Quiz');
+    await flush();
+    // source text populated for follow-up tools
+    expect(calls.inputText.length).toBe(1);
+    expect(calls.inputText[0]).toContain(rtlBook.title);
+    // book added to the resource pack with the fields the meta label needs
+    expect(calls.saved.length).toBe(1);
+    expect(calls.saved[0].slug).toBe(rtlBook.slug);
+    expect(calls.saved[0].language).toBe(rtlBook.language);
+    expect(String(calls.saved[0].level)).toBe(String(rtlBook.level));
+    expect(calls.saved[0]).toHaveProperty('hasAudio');
   });
 });
 

@@ -546,6 +546,12 @@
       }
       var langOverride = displayLanguage && displayLanguage !== 'English' ? displayLanguage : null;
       try {
+        // Also drop the book into the source box so the teacher can spin up
+        // more tools from it afterward, and register the book itself as a
+        // resource-pack entry (host dedupes by slug) — the generated resource
+        // and its source book both live in the lesson.
+        if (typeof props.setInputText === 'function') props.setInputText(displayPlainText);
+        if (typeof props.onSaveToLesson === 'function') props.onSaveToLesson(bookRef());
         props.handleGenerate(type, langOverride, false, displayPlainText);
         props.addToast && props.addToast(tr('readinglib_generating', 'Creating') + ' ' + label + ' — "' + displayTitle + '"', 'success');
         props.onExit && props.onExit(true);
@@ -604,11 +610,12 @@
       });
     };
 
-    // Teacher: pin this book into the lesson history so students who load the
-    // lesson (or join the session) can open it from Resources with one click.
-    var saveToLesson = function () {
-      if (typeof props.onSaveToLesson !== 'function') return;
-      props.onSaveToLesson({
+    // Compact resource-pack ref for a readingBook history item. Always the
+    // ORIGINAL book (an AI translation is ephemeral; the item reopens the real
+    // book in the reader). Host dedupes by slug, so calling it more than once
+    // for the same book is safe.
+    var bookRef = function () {
+      return {
         slug: book.slug,
         title: book.title,
         language: book.language,
@@ -616,9 +623,17 @@
         level: book.level,
         cover: (book.cover && book.cover.card) || null,
         hasAudio: !!book.audio,
+        pageCount: (book.pages || []).length,
         description: book.description || '',
         attribution: attributionLine(book),
-      });
+      };
+    };
+
+    // Teacher: pin this book into the lesson history so students who load the
+    // lesson (or join the session) can open it from Resources with one click.
+    var saveToLesson = function () {
+      if (typeof props.onSaveToLesson !== 'function') return;
+      props.onSaveToLesson(bookRef());
       props.addToast && props.addToast('"' + book.title + '" ' + tr('readinglib_saved_lesson', 'was added to this lesson’s resources.'), 'success');
     };
 

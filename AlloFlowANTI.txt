@@ -8871,6 +8871,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleSetInfoModalTabToAbout = React.useCallback(() => setInfoModalTab('about'), []);
   const handleSetInfoModalTabToFeatures = React.useCallback(() => setInfoModalTab('features'), []);
   const handleSetInfoModalTabToOpenSource = React.useCallback(() => setInfoModalTab('opensource'), []);
+  const handleSetInfoModalTabToAtlas = React.useCallback(() => setInfoModalTab('atlas'), []);
+  const handleSetInfoModalTabToPrivacy = React.useCallback(() => setInfoModalTab('privacy'), []);
   const handleSetShowHintsModalToFalse = React.useCallback(() => setShowHintsModal(false), []);
   const handleSetShowXPModalToFalse = React.useCallback(() => setShowXPModal(false), []);
   const handleSetShowStorybookExportModalToFalse = React.useCallback(() => setShowStorybookExportModal(false), []);
@@ -19798,7 +19800,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           case 'litlab-submission': return t('output.title_litlab_submission') || '🎭 Performance Submission';
           case 'note-taking': return t('help_mode.tool_note_taking') || 'Note-Taking Templates';
           case 'anchor-chart': return t('help_mode.tool_anchor_chart') || 'Anchor Chart';
-          case 'readingBook': return t('readinglib_book_resource') || 'Book';
+          case 'readingBook': return t('readinglib_book_resource') || 'Illustrated story';
           default: return t('common.resource') || 'Resource';
       }
   };
@@ -27454,7 +27456,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and
           restore document.activeElement around open/close. */}
-      {showInfoModal && <div ref={infoModalRef}><InfoModal handleSetInfoModalTabToAbout={handleSetInfoModalTabToAbout} handleSetInfoModalTabToFeatures={handleSetInfoModalTabToFeatures} handleSetInfoModalTabToOpenSource={handleSetInfoModalTabToOpenSource} handleSetShowInfoModalToFalse={handleSetShowInfoModalToFalse} infoModalTab={infoModalTab} safeRemoveItem={safeRemoveItem} setShowInfoModal={setShowInfoModal} setShowWizard={setShowWizard} t={t} /></div>}
+      {showInfoModal && <div ref={infoModalRef}><InfoModal handleSetInfoModalTabToAbout={handleSetInfoModalTabToAbout} handleSetInfoModalTabToAtlas={handleSetInfoModalTabToAtlas} handleSetInfoModalTabToFeatures={handleSetInfoModalTabToFeatures} handleSetInfoModalTabToPrivacy={handleSetInfoModalTabToPrivacy} handleSetInfoModalTabToOpenSource={handleSetInfoModalTabToOpenSource} handleSetShowInfoModalToFalse={handleSetShowInfoModalToFalse} infoModalTab={infoModalTab} safeRemoveItem={safeRemoveItem} setShowInfoModal={setShowInfoModal} setShowWizard={setShowWizard} t={t} /></div>}
       {showHintsModal && <div ref={hintsModalRef}><HintsModal handleApplyHint={handleApplyHint} handleGenerateLessonIdeas={handleGenerateLessonIdeas} handleSaveExtensionToHistory={handleSaveExtensionToHistory} handleSetShowHintsModalToFalse={handleSetShowHintsModalToFalse} hintHistory={hintHistory} history={history} isGeneratingExtension={isGeneratingExtension} renderFormattedText={renderFormattedText} t={t} /></div>}
       {showXPModal && <div ref={xpModalRef}><XPModal currentLevelXP={currentLevelXP} globalLevel={globalLevel} globalPoints={globalPoints} globalProgress={globalProgress} globalXPNext={globalXPNext} handleSetShowXPModalToFalse={handleSetShowXPModalToFalse} pointHistory={pointHistory} t={t} /></div>}
       {adventureState.isGameOver && adventureState.climax?.masteryScore >= 80 && !adventureState.missionReportDismissed && (
@@ -31671,15 +31673,29 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 onInitialBookConsumed: () => setPendingReadingBookSlug(null),
                 onSaveToLesson: (bookRef) => {
                     if (!bookRef || !bookRef.slug) return;
-                    const newItem = {
-                        id: 'readingbook-' + bookRef.slug + '-' + Date.now(),
-                        type: 'readingBook',
-                        title: bookRef.title,
-                        timestamp: new Date(),
-                        data: bookRef,
-                        config: {},
-                    };
-                    setHistory(prev => [...prev, newItem]);
+                    // Subtitle shown under the title in the resource pack, so a
+                    // pinned book reads as an illustrated story with its level +
+                    // language rather than a bare title.
+                    const meta = [
+                        t('readinglib_resource_kind') || 'StoryWeaver illustrated story',
+                        bookRef.level ? (t('readinglib_level') || 'Level') + ' ' + bookRef.level : null,
+                        bookRef.language,
+                        bookRef.hasAudio ? ('🔊 ' + (t('readinglib_narrated') || 'narrated')) : null,
+                    ].filter(Boolean).join(' · ');
+                    setHistory(prev => {
+                        // Dedup by slug: the reader pins the book on Save-to-lesson
+                        // AND on generate, so the same book can arrive twice.
+                        if (prev.some(it => it && it.type === 'readingBook' && it.data && it.data.slug === bookRef.slug)) return prev;
+                        return [...prev, {
+                            id: 'readingbook-' + bookRef.slug + '-' + Date.now(),
+                            type: 'readingBook',
+                            title: bookRef.title,
+                            meta,
+                            timestamp: new Date(),
+                            data: bookRef,
+                            config: {},
+                        }];
+                    });
                 },
             })}
         </CDNModuleGate>

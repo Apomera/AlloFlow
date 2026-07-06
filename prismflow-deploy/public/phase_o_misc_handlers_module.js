@@ -380,14 +380,24 @@ const handleWizardComplete = (data, deps) => {
       // dumped into the source box.
       if (finalData.sourceMode === 'storybook' && finalData.storybookRef && finalData.storybookRef.slug) {
         const ref = finalData.storybookRef;
-        setHistory(prev => [...prev, {
-          id: 'readingbook-' + ref.slug + '-' + Date.now(),
-          type: 'readingBook',
-          title: ref.title,
-          timestamp: new Date(),
-          data: ref,
-          config: {},
-        }]);
+        const meta = [
+          t('readinglib_resource_kind') || 'StoryWeaver illustrated story',
+          ref.level ? (t('readinglib_level') || 'Level') + ' ' + ref.level : null,
+          ref.language,
+          ref.hasAudio ? ('🔊 ' + (t('readinglib_narrated') || 'narrated')) : null,
+        ].filter(Boolean).join(' · ');
+        setHistory(prev => {
+          if (prev.some(it => it && it.type === 'readingBook' && it.data && it.data.slug === ref.slug)) return prev;
+          return [...prev, {
+            id: 'readingbook-' + ref.slug + '-' + Date.now(),
+            type: 'readingBook',
+            title: ref.title,
+            meta,
+            timestamp: new Date(),
+            data: ref,
+            config: {},
+          }];
+        });
       }
     } else if (finalData.sourceMode === 'file' || finalData.materialType === 'file') {
       setExpandedTools(prev => prev.includes('source-input') ? prev : [...prev, 'source-input']);
