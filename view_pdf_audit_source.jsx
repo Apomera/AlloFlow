@@ -5235,7 +5235,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div>SEM: ±{pdfAuditResult.scoreSEM} <span className="text-slate-400">(re-prompt spread)</span> | Range: {pdfAuditResult.scoreRange} | Auditors: {pdfAuditResult.auditorCount}/{pdfAuditResult.requestedAuditors}</div>
                           <div>Individual scores: {pdfAuditResult.scores.join(', ')}</div>
                           <div>{pdfAuditResult.reliabilityDegenerate
-                            ? (pdfAuditResult.auditorCount < 2 ? '⚠️ Single pass — no cross-pass agreement to report' : '⚠️ Every pass scored 0 (pinned at the deduction floor) — “agreement” here reflects the floor, not stable scoring, so it is not meaningful')
+                            ? (pdfAuditResult.auditorCount < 2 ? '⚠️ Single pass — no cross-pass agreement to report' : '✅ Unanimous at the floor — every pass independently scored 0/100 (each pass’s own findings exceeded the 100-point deduction scale); only the variance-based index is undefined at a boundary, so it shows n/a')
                             : pdfAuditResult.icc >= 0.9 ? '✅ Excellent agreement — auditors highly consistent' : pdfAuditResult.icc >= 0.75 ? '✅ Good agreement — scores clustered tightly' : pdfAuditResult.icc >= 0.5 ? '⚠️ Moderate agreement — some variation between auditors' : '⚠️ Variable agreement — consider increasing auditor count'}</div>
                         </div>
                       </div>

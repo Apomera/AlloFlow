@@ -19787,7 +19787,9 @@ tr { page-break-inside: avoid; }
         <div class="meta-card"><div class="meta-val">${audit.reliabilityDegenerate ? 'N/A' : (audit.icc ?? 'N/A')}</div><div class="meta-label">Cross-pass agreement (heuristic index)</div></div>
         ${(audit.cronbachAlpha !== null && audit.cronbachAlpha !== undefined && !audit.reliabilityDegenerate) ? '<div class="meta-card"><div class="meta-val">' + audit.cronbachAlpha + '</div><div class="meta-label">Cross-pass agreement (consistency heuristic)</div></div>' : ''}
       </div>
-      <p style="font-size:12px;color:#64748b">AI passes: ${audit.auditorCount || audit.scores.length} | Individual scores: ${audit.scores.join(', ')} | SEM: &plusmn;${audit.scoreSEM || 'N/A'} | Range: ${audit.scoreRange || 'N/A'} | Reliability: ${audit.reliability || 'N/A'}</p>${audit.reliabilityDegenerate ? '<p style="font-size:12px;color:#92400e;padding:6px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">&#9888; Agreement is not meaningful here (' + (audit.auditorCount < 2 ? 'single pass' : 'all passes pinned at the deduction floor') + ') — it reflects the floor/sample, not stable scoring.</p>' : ''}`;
+      <p style="font-size:12px;color:#64748b">AI passes: ${audit.auditorCount || audit.scores.length} | Individual scores: ${audit.scores.join(', ')} | SEM: &plusmn;${audit.scoreSEM || 'N/A'} | Range: ${audit.scoreRange || 'N/A'} | Reliability: ${audit.reliability || 'N/A'}</p>${audit.reliabilityDegenerate ? (audit.auditorCount < 2
+        ? '<p style="font-size:12px;color:#92400e;padding:6px 10px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">&#9888; Single pass — no cross-pass agreement to report (index shows N/A).</p>'
+        : '<p style="font-size:12px;color:#475569;padding:6px 10px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px">All ' + (audit.auditorCount || audit.scores.length) + ' passes independently scored 0/100 — each pass&#39;s own findings exceeded the 100-point deduction scale: a unanimous verdict, not a scoring artifact. Only the variance-based agreement index is undefined at the floor (shown as N/A).</p>') : ''}`;
     }
 
     // Document info
@@ -20053,7 +20055,15 @@ tr { page-break-inside: avoid; }
           <tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;font-weight:600">Individual pass scores</td><td style="padding:6px 10px;border:1px solid #e2e8f0">${Array.isArray(ar.scores) ? ar.scores.join(', ') : 'n/a'}</td></tr>
         </tbody>
       </table>
-      ${ar.reliabilityDegenerate ? `<p style="font-size:12px;color:#92400e;margin:0 0 8px;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">⚠ Cross-pass agreement is <strong>not meaningful</strong> for this run: ${ar.auditorCount < 2 ? 'only one pass was scored' : 'every pass scored 0 (pinned at the deduction floor)'}, so an "agreement" verdict would describe the floor/single sample, not stable scoring. Re-run (ideally without throttling) for a non-degraded comparison.</p>` : ''}
+      ${ar.reliabilityDegenerate ? (ar.auditorCount < 2
+        ? `<p style="font-size:12px;color:#92400e;margin:0 0 8px;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">⚠ Only one scoring pass returned, so there is no cross-pass comparison to report (the agreement index shows n/a).</p>`
+        // Floored-unanimous copy (2026-07-05, maintainer): the old wording ("not meaningful … re-run
+        // without throttling for a non-degraded comparison") DISCREDITED a legitimate 0. Each pass's
+        // score is deduction-grounded from that pass's OWN findings, so N passes all landing at 0 means
+        // N independent audits each found more than 100 points of deductions — convergent findings, the
+        // OPPOSITE of degraded. Only the variance-based index is undefined at a boundary; say exactly
+        // that, and nothing about throttling (the pre-audit may not have been throttled at all).
+        : `<p style="font-size:12px;color:#475569;margin:0 0 8px;padding:8px 12px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px">All ${ar.auditorCount} scoring passes independently arrived at <strong>0/100</strong> — each pass's own findings exceeded the 100-point deduction scale, so the floor is a <strong>unanimous verdict</strong> on the document's pre-remediation accessibility, not a scoring artifact. Only the variance-based agreement index is undefined at a score boundary (shown as n/a).</p>`) : ''}
       <p style="font-size:11px;color:#64748b;margin-top:0">No commercial PDF accessibility validator currently reports a cross-pass agreement signal. This is an AlloFlow extension: these are agreement heuristics computed across multiple AI audit passes of the same single model — repeat-measurement stability, <strong>not</strong> independent human reviewer agreement. Read them as a consistency signal, not a validity guarantee.</p>
     ` : '';
 

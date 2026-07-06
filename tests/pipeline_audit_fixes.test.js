@@ -139,11 +139,17 @@ describe('Reliability honesty (2026-06-23): no "excellent agreement" on degenera
   it('both report blocks show n/a + a note for the degenerate case (not a number next to "n/a")', () => {
     expect(dp).toMatch(/\$\{ar\.reliabilityDegenerate \? 'n\/a' : \(ar\.icc \?\? 'n\/a'\)\}/);   // Score Stability section
     expect(dp).toMatch(/\$\{audit\.reliabilityDegenerate \? 'N\/A' : \(audit\.icc \?\? 'N\/A'\)\}/); // meta-card report
-    expect(dp).toMatch(/Cross-pass agreement is <strong>not meaningful<\/strong> for this run/);
+    // Floored-unanimous copy (2026-07-05, maintainer): a real 0 on an image-only scan is a unanimous
+    // deduction-grounded verdict, NOT a degraded measurement — the note must not discredit the score
+    // (the old "not meaningful … re-run without throttling" framing did). Only the variance-based
+    // index is undefined at the boundary; the copy says exactly that.
+    expect(dp).toMatch(/unanimous verdict<\/strong> on the document's pre-remediation accessibility, not a scoring artifact/);
+    expect(dp).toMatch(/Only one scoring pass returned, so there is no cross-pass comparison to report/);
+    expect(dp).not.toMatch(/Re-run \(ideally without throttling\) for a non-degraded comparison/);
   });
   it('the live UI verdict no longer says "Excellent agreement" when scores are degenerate', () => {
     expect(view).toMatch(/pdfAuditResult\.reliabilityDegenerate\s*\n?\s*\?\s*\(pdfAuditResult\.auditorCount < 2/);
-    expect(view).toMatch(/pinned at the deduction floor/);
+    expect(view).toMatch(/Unanimous at the floor/);
     // the icc value renders n/a (not the misleading 1) when degenerate
     expect(view).toMatch(/pdfAuditResult\.reliabilityDegenerate \? 'n\/a' : pdfAuditResult\.icc/);
   });

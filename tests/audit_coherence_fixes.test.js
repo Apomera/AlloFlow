@@ -33,7 +33,10 @@ describe('audit coherence — no-text-layer story is enforced by the math', () =
 
   it('C3: the downloadable report renders n/a tiles (not by-construction numbers) for image-only scans', () => {
     expect(dp).toMatch(/const _noTextRpt = !isBeforeAfter && d\.hasSearchableText === false;/);
-    expect(dp).toMatch(/\{ automatedNA: _noTextRpt \}/);
+    // Pin repointed 2026-07-05: the _honestReportBlocks opts object gained sibling keys
+    // (integrityWarning, fidelityNotes), so the exact `{ automatedNA: _noTextRpt }` no longer
+    // matches — the flag itself is unchanged and still first in the object.
+    expect(dp).toMatch(/\{ automatedNA: _noTextRpt[,}]/);
     expect(dp).toMatch(/if \(opts && opts\.automatedNA && typeof semantic === 'number'\)/);
     expect(dp).toMatch(/Automated engine checks are not applicable to this document\./);
   });

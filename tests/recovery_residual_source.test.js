@@ -12,7 +12,22 @@ const src = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'u
 const _s = src.indexOf('const _recoveryResidualSource = (td, sourceText, finalText) => {');
 const _e = src.indexOf('\n  };', _s) + 4;
 if (_s === -1 || _e === -1) throw new Error('extraction markers for _recoveryResidualSource missing');
-const _recoveryResidualSource = new Function(src.slice(_s, _e) + '\nreturn _recoveryResidualSource;')();
+// Harness repair (2026-07-05): S7 single-sourced the token fold — _recoveryResidualSource now calls
+// _normTokenForDiffShared (top-level in the view), a free variable the bare slice couldn't resolve, so
+// every behavior test threw ReferenceError (red since S7 @34018900). Prepend the shared fold + its
+// fallback from the same source; with AlloModules unloaded here it exercises the fallback fold, whose
+// equality with the pipeline's canonical copy is sentinel-tested in tests/norm_token_drift.test.js.
+const _sliceFn = (marker) => {
+  const s0 = src.indexOf(marker);
+  if (s0 === -1) throw new Error('extraction marker missing: ' + marker);
+  const e0 = src.indexOf('\n}', s0) + 2;
+  return src.slice(s0, e0);
+};
+const _recoveryResidualSource = new Function(
+  _sliceFn('function _viewNormTokenFallback(s) {') + '\n'
+  + _sliceFn('function _normTokenForDiffShared(s) {') + '\n'
+  + src.slice(_s, _e) + '\nreturn _recoveryResidualSource;'
+)();
 
 describe('_recoveryResidualSource: prefers a fresh snapshot, else a fresh source-vs-final diff', () => {
   it('uses the tagged-PDF snapshot when it has a positive residual (PDF-tagging loss)', () => {
@@ -65,13 +80,17 @@ describe('anti-drift: Recovery wiring + the re-tag-failure desync guard', () => 
     expect(src).toMatch(/_lastTaggedBytesRef\.current = null/);
     expect(src).toMatch(/_staleAfterRestore: true/);
   });
-  it('(2026-06-23) both view-side _normTokenForDiff copies are synced to the enhanced cosmetic folds', () => {
-    // Option-B fresh mode + the Tier-B onClick re-filter must fold the same cosmetic variants the
-    // authoritative round-trip residual computation does (ligatures, zero-width, smart quotes, hyphen-variants).
-    const copies = src.match(/const _normTokenForDiff = \(s\) =>/g) || [];
-    expect(copies.length).toBe(2);
-    expect((src.match(/\\ufb01/g) || []).length).toBeGreaterThanOrEqual(2);   // ligature fold in both
-    expect((src.match(/\\u200b/g) || []).length).toBeGreaterThanOrEqual(2);   // zero-width strip in both
-    expect(src).not.toMatch(/\(s\) => String\(s \|\| ''\)\.toLowerCase\(\)\.replace\(\/\(\\p\{L\}\)\[-/); // old weak one-liner is gone
+  it('(2026-06-23; repointed 2026-07-05) the view-side folds are SINGLE-SOURCED, not hand-synced copies', () => {
+    // Superseded premise: this test used to require TWO inline _normTokenForDiff copies kept in sync.
+    // S7 (@34018900) replaced them with _normTokenForDiffShared → the pipeline's canonical
+    // normTokenForDiff static (fold-equality sentinel: tests/norm_token_drift.test.js). Pin the
+    // single-source wiring instead: no inline arrow copies remain, both use sites delegate, and the
+    // load-order fallback still carries the enhanced folds (ligature + zero-width).
+    expect((src.match(/const _normTokenForDiff = \(s\) =>/g) || []).length).toBe(0);          // hand-synced copies gone
+    expect((src.match(/const _normTokenForDiff = _normTokenForDiffShared;/g) || []).length).toBeGreaterThanOrEqual(2); // both use sites delegate
+    expect(src).toMatch(/window\.AlloModules\.createDocPipeline\.normTokenForDiff/);          // delegates to the canonical static
+    expect(src).toMatch(/function _viewNormTokenFallback\(s\) \{/);
+    expect(src).toMatch(/ﬁ/);                                                                  // ligature fold survives in the fallback
+    expect(src).toMatch(/[​]/);                                                           // zero-width strip survives in the fallback
   });
 });
