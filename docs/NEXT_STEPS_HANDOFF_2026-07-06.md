@@ -192,3 +192,21 @@ hear it back → reload → still your voice) needs Aaron env (mic permission).
   (AlloStudio process-portfolio pattern). Spans recorder + ASR + portfolio. FERPA:
   student voice is sensitive — local-only, no cloud egress (app posture already
   guarantees, but state it in the UI).
+
+#### 8e — Two recording lanes: teacher reference + student practice SHIPPED (@790829fca, Opus)
+Aaron corrected the model: sharing is teacher<->student ONLY (never student->
+student), so student recordings never contend with a shared teacher take — and
+BOTH lanes should coexist so a struggling student always has the teacher's
+reference. SHIPPED: store gains a second lane `studentCurrent` (persisted to
+generatedContent.karaokeStudentAudio, separate from the model's karaokeAudio);
+ANTI hydrates both + adds __alloStoreStudentSentenceAudio (tags 'human-student').
+Karaoke overlay: teacher sees "🎤 Record my voice" (writes MODEL/reference lane);
+student (!isTeacher) sees "🎤 Record my reading" + "▶ Hear my reading" (writes/
+plays the STUDENT lane). The teacher/AI read-along is always the student's
+fallback. Live smoke: both lanes present, both globals functions, and INDEPENDENCE
+verified in-page (same sentence in both lanes → different clips, correct sources,
+no overwrite), 0 errors. Human smoke (student records → hears own take → still has
+teacher reference; save round-trips both lanes) needs Aaron env.
+- **STILL OPEN (add-on, not blocking)**: fluency SCORING of the student lane via
+  the shipped whisper scorer (fluency_module + /api/asr/transcribe) + portfolio
+  artifact (AlloStudio process pattern). The lanes are now in place to hang this on.
