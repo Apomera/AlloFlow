@@ -1856,6 +1856,22 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
       // fall back to English as the analysis language in that ambiguous case.
       const _phLang = (leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages')
           ? leveledTextLanguage : 'English';
+      // Authoritative pronunciation alongside the AI phonics: real recording (dict.audio)
+      // + authoritative IPA (dict.phonetic) as a quiet third source. English-only, fallback-safe.
+      if (_phLang === 'English') {
+          (async () => {
+              try {
+                  if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function') && window.__alloLoadPlugin) {
+                      await Promise.race([window.__alloLoadPlugin('dictionary_loader.js'), new Promise(r => setTimeout(r, 6000))]);
+                  }
+                  if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === 'function')) return;
+                  const dEntry = await window.AlloDictionary.lookup(word);
+                  if (dEntry && reqId === _phonicsReqId) {
+                      setPhonicsData(prev => (reqId === _phonicsReqId && prev && prev.word === word ? { ...prev, dictionary: { phonetic: dEntry.phonetic, audio: dEntry.audio } } : prev));
+                  }
+              } catch (_e) {}
+          })();
+      }
       try {
           const prompt = _phLang === 'English'
               ? `Analyze the English word: '${word}'. Return ONLY JSON: { "ipa": "International Phonetic Alphabet representation", "phoneticSpelling": "Simple phonetic spelling (e.g. cat -> kat)", "syllables": ["syl", "la", "bles"] }.`

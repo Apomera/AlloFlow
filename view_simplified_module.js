@@ -51,6 +51,23 @@
     return React.createElement('div', { className: 'mt-3 pt-3 border-t border-emerald-100' }, kids);
   }
 
+  // Authoritative pronunciation row for the phonics popup: real Wiktionary recording
+  // + authoritative IPA, shown quietly beside the AI phonics. Pure fn; null when absent.
+  function renderPhonicsDictRow(phonicsData, t) {
+    var d = phonicsData && phonicsData.dictionary;
+    if (!d || (!d.phonetic && !d.audio)) return null;
+    var row = [React.createElement('span', { key: 'lbl', className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wide' }, (t('glossary.popups.dictionary') || 'Dictionary'))];
+    if (d.phonetic) row.push(React.createElement('span', { key: 'ipa', className: 'font-mono text-xs text-slate-600' }, d.phonetic));
+    if (d.audio) row.push(React.createElement('button', {
+      key: 'aud', type: 'button',
+      onClick: function () { try { new Audio(d.audio).play().catch(function () {}); } catch (_e) {} },
+      className: 'inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-white hover:bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 transition-colors',
+      'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording',
+      title: t('glossary.popups.hear_real') || 'Hear a real recording'
+    }, React.createElement(Volume2, { size: 11 }), React.createElement('span', null, t('glossary.popups.real_audio') || 'Recording')));
+    return React.createElement('div', { className: 'flex items-center gap-2 flex-wrap px-1' }, row);
+  }
+
   // Inject Chunk Read mood keyframes once. Reduced-motion media query disables
   // the animations globally so users with that preference see static styling.
   (function () {
@@ -867,7 +884,7 @@
   }, /*#__PURE__*/React.createElement(Volume2, {
     size: 20,
     className: "fill-current"
-  }))), /*#__PURE__*/React.createElement("div", {
+  }))), renderPhonicsDictRow(phonicsData, t), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 gap-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 p-2 rounded border border-slate-100"

@@ -39,6 +39,23 @@
     kids.push(React.createElement('div', { key: 'src', className: 'text-[10px] text-slate-400 mt-1' }, dict.source));
     return React.createElement('div', { className: 'mt-3 pt-3 border-t border-emerald-100' }, kids);
   }
+
+  // Authoritative pronunciation row for the phonics popup: real Wiktionary recording
+  // + authoritative IPA, shown quietly beside the AI phonics. Pure fn; null when absent.
+  function renderPhonicsDictRow(phonicsData, t) {
+    var d = phonicsData && phonicsData.dictionary;
+    if (!d || (!d.phonetic && !d.audio)) return null;
+    var row = [React.createElement('span', { key: 'lbl', className: 'text-[10px] font-bold text-emerald-700 uppercase tracking-wide' }, (t('glossary.popups.dictionary') || 'Dictionary'))];
+    if (d.phonetic) row.push(React.createElement('span', { key: 'ipa', className: 'font-mono text-xs text-slate-600' }, d.phonetic));
+    if (d.audio) row.push(React.createElement('button', {
+      key: 'aud', type: 'button',
+      onClick: function () { try { new Audio(d.audio).play().catch(function () {}); } catch (_e) {} },
+      className: 'inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-white hover:bg-emerald-50 border border-emerald-300 rounded px-1.5 py-0.5 transition-colors',
+      'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording',
+      title: t('glossary.popups.hear_real') || 'Hear a real recording'
+    }, React.createElement(Volume2, { size: 11 }), React.createElement('span', null, t('glossary.popups.real_audio') || 'Recording')));
+    return React.createElement('div', { className: 'flex items-center gap-2 flex-wrap px-1' }, row);
+  }
   var _lazyIcon = function (name) {
     return function (props) {
       var I = window.AlloIcons && window.AlloIcons[name];
@@ -444,7 +461,7 @@
                   audio.playbackRate = voiceSpeed || 1;
                   audio.play().catch(() => {});
                 }
-              }} className="bg-emerald-700 hover:bg-emerald-800 text-white p-2 rounded-full shadow-md transition-transform hover:scale-110 active:scale-95" title={t('glossary.popups.replay')}><Volume2 size={20} className="fill-current" /></button></div><div className="grid grid-cols-2 gap-2"><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.ipa')}</div><div className="font-mono text-sm text-slate-600">{phonicsData.data.ipa}</div></div><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.syllables')}</div><div className="flex flex-wrap items-center gap-0.5">{phonicsData.data.syllables.map((syl, i) => <>{i > 0 && <span className="text-emerald-500 font-bold px-0.5" aria-hidden="true">•</span>}<span className="bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm">{syl}</span></>)}</div></div></div></div> : <div className="text-center text-red-600 text-xs font-bold py-4">{t('glossary.popups.failed')}</div>}<div className="allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45" /></div>}{phonicsData && <div role="button" tabIndex={0} onKeyDown={e => {
+              }} className="bg-emerald-700 hover:bg-emerald-800 text-white p-2 rounded-full shadow-md transition-transform hover:scale-110 active:scale-95" title={t('glossary.popups.replay')}><Volume2 size={20} className="fill-current" /></button></div>{renderPhonicsDictRow(phonicsData, t)}<div className="grid grid-cols-2 gap-2"><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.ipa')}</div><div className="font-mono text-sm text-slate-600">{phonicsData.data.ipa}</div></div><div className="bg-slate-50 p-2 rounded border border-slate-100"><div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">{t('glossary.popups.syllables')}</div><div className="flex flex-wrap items-center gap-0.5">{phonicsData.data.syllables.map((syl, i) => <>{i > 0 && <span className="text-emerald-500 font-bold px-0.5" aria-hidden="true">•</span>}<span className="bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm">{syl}</span></>)}</div></div></div></div> : <div className="text-center text-red-600 text-xs font-bold py-4">{t('glossary.popups.failed')}</div>}<div className="allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45" /></div>}{phonicsData && <div role="button" tabIndex={0} onKeyDown={e => {
           if (e.key === 'Escape') e.currentTarget.click();
         }} className={`fixed inset-0 ${_popupBackdropZ}`} onClick={closePhonics} />}{selectionMenu && <div className={`fixed ${_popupZ} flex flex-col gap-1 items-center animate-in fade-in slide-in-from-bottom-2 duration-200`} style={{
           top: selectionMenu.y - 50 + 'px',
