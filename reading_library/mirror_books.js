@@ -37,15 +37,15 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 // Somali/Swahili/Ukrainian have zero SW coverage (verified 2026-07-05) —
 // African Storybook is the future source for those.
 const PLAN = [
-  { language: 'English', code: 'en', perLevel: { 1: 7, 2: 7, 3: 7, 4: 7 } },
-  { language: 'Spanish', code: 'es', perLevel: { 1: 4, 2: 4, 3: 4, 4: 4 } },
-  { language: 'French', code: 'fr', perLevel: { 1: 3, 2: 3, 3: 3, 4: 3 } },
-  { language: 'Arabic', code: 'ar', perLevel: { 1: 3, 2: 3, 3: 2, 4: 2 } },
-  { language: 'Hindi', code: 'hi', perLevel: { 1: 2, 2: 2, 3: 2, 4: 2 } },
-  { language: 'Portuguese', code: 'pt', perLevel: { 1: 2, 2: 2, 3: 2, 4: 2 } },
-  { language: 'Vietnamese', code: 'vi', perLevel: { 1: 2, 2: 2, 3: 2 } },
-  { language: 'Russian', code: 'ru', perLevel: { 1: 2, 2: 2 } },
-  { language: 'German', code: 'de', perLevel: { 1: 2, 2: 2 } },
+  { language: 'English', code: 'en', perLevel: { 1: 10, 2: 10, 3: 10, 4: 10 } },
+  { language: 'Spanish', code: 'es', perLevel: { 1: 6, 2: 6, 3: 6, 4: 6 } },
+  { language: 'French', code: 'fr', perLevel: { 1: 4, 2: 4, 3: 4, 4: 4 } },
+  { language: 'Arabic', code: 'ar', perLevel: { 1: 4, 2: 4, 3: 3, 4: 3 } },
+  { language: 'Hindi', code: 'hi', perLevel: { 1: 3, 2: 3, 3: 3, 4: 3 } },
+  { language: 'Portuguese', code: 'pt', perLevel: { 1: 3, 2: 3, 3: 3, 4: 3 } },
+  { language: 'Vietnamese', code: 'vi', perLevel: { 1: 3, 2: 3, 3: 3 } },
+  { language: 'Russian', code: 'ru', perLevel: { 1: 3, 2: 3, 3: 1, 4: 1 } },
+  { language: 'German', code: 'de', perLevel: { 1: 3, 2: 3, 3: 1, 4: 1 } },
   { language: 'Haitian Creole', code: 'ht', perLevel: { 1: 2, 2: 2, 3: 1 } },
 ];
 
@@ -291,11 +291,21 @@ async function fetchAll(onlySlug) {
   const { picks } = JSON.parse(fs.readFileSync(CURATION_PATH, 'utf8'));
   const indexBooks = [];
   const failures = [];
+  const force = process.argv.includes('--force');
   for (const pick of picks) {
     if (onlySlug && pick.slug !== onlySlug) continue;
     try {
-      const book = await fetchBook(pick);
-      fs.writeFileSync(path.join(BOOKS_DIR, pick.slug + '.json'), JSON.stringify(book));
+      const bookPath = path.join(BOOKS_DIR, pick.slug + '.json');
+      let book;
+      // Incremental by default: already-mirrored books index from disk with no
+      // network fetch. --force (or --only <slug>) re-fetches.
+      if (!force && !onlySlug && fs.existsSync(bookPath)) {
+        book = JSON.parse(fs.readFileSync(bookPath, 'utf8'));
+      } else {
+        book = await fetchBook(pick);
+        await sleep(700);
+      }
+      fs.writeFileSync(bookPath, JSON.stringify(book));
       indexBooks.push({
         slug: book.slug,
         title: book.title,
@@ -317,8 +327,8 @@ async function fetchAll(onlySlug) {
     } catch (err) {
       failures.push({ slug: pick.slug, error: err.message });
       console.warn('FAIL', pick.slug, err.message);
+      await sleep(700);
     }
-    await sleep(700);
   }
   if (onlySlug) return; // single-book refresh: don't rewrite the index
 

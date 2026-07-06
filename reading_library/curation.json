@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-06T03:23:15.678Z",
+  "generatedAt": "2026-07-06T04:09:11.179Z",
   "picks": [
     {
       "slug": "16411-too-big-too-small",
@@ -2107,6 +2107,1005 @@
       "cover": {
         "card": "https://static.storyweaver.org.in/illustration_crops/721909/size3/578f72502f01ea8298384a08257557b2.jpg",
         "large": "https://static.storyweaver.org.in/illustration_crops/721909/size6/578f72502f01ea8298384a08257557b2.jpg"
+      }
+    },
+    {
+      "slug": "12758-my-brother-and-me",
+      "title": "My Brother and Me",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "This is a story about two brothers, and what they do all day in each other's company.\r\n",
+      "authors": [
+        "Kanchan Bannerjee"
+      ],
+      "illustrators": [
+        "Pallak Goswamy"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/35077/size3/32c5acbb641dda85c65de0146802be36.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/35077/size6/32c5acbb641dda85c65de0146802be36.jpg"
+      }
+    },
+    {
+      "slug": "12294-the-race",
+      "title": "The Race",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Four children. Four toys. They decide to a have a race! Who will win?",
+      "authors": [
+        "Kanchan Bannerjee"
+      ],
+      "illustrators": [
+        "Kavya Singh",
+        "Natasha  Mehra"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/685170/size3/f6179a002865f1f189fc4529282df74b.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/685170/size6/f6179a002865f1f189fc4529282df74b.jpg"
+      }
+    },
+    {
+      "slug": "12293-bed-time-stories",
+      "title": "Bed-Time Stories",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Let's all curl up in our blankets! This is a story about the stories that a mother tells her son before he sleeps.",
+      "authors": [
+        "Kanchan Bannerjee"
+      ],
+      "illustrators": [
+        "Harshvardhan Gantha"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/34952/size3/cd9982004d7e6ea392ebe738a42cb276.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/34952/size6/cd9982004d7e6ea392ebe738a42cb276.jpg"
+      }
+    },
+    {
+      "slug": "44659-meera-and-ameera",
+      "title": "Meera and Ameera",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Ameera is Meera’s best friend. Strangely, nobody else can see her. That’s because Ameera happens to be an imaginary porcupine. Join the two friends on their many adventures, real and made-up.",
+      "authors": [
+        "Nimmy Chacko"
+      ],
+      "illustrators": [
+        "Lavanya  Naidu"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/117617/size3/835e1d375a9f1cb096053b2a8491e360.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/117617/size6/835e1d375a9f1cb096053b2a8491e360.jpg"
+      }
+    },
+    {
+      "slug": "11243-satya-watch-out",
+      "title": "Satya, Watch Out!",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Jump and crawl and climb with Satya as he goes along with his mother to the farm where she works. A story about the different and wonderful ways in which we move. ",
+      "authors": [
+        "Yamini Vijayan"
+      ],
+      "illustrators": [
+        "Vishnu  M Nair"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/724002/size3/2ec570b512dfcbf96a9b0bea170cb39b.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/724002/size6/2ec570b512dfcbf96a9b0bea170cb39b.jpg"
+      }
+    },
+    {
+      "slug": "26702-the-very-wiggly-tooth",
+      "title": "The Very Wiggly Tooth",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Bunu’s loose tooth refuses to come out! Learn how, with a little help from a Himalayan folktale, Bunu loses her tooth.",
+      "authors": [
+        "Reshma Thapa Gurung"
+      ],
+      "illustrators": [
+        "Canato Jimo"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/55586/size3/40838dac3ea07f5046062e3785fa72f9.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/55586/size6/40838dac3ea07f5046062e3785fa72f9.jpg"
+      }
+    },
+    {
+      "slug": "114216-when-i-grow-up",
+      "title": "When I Grow Up",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "I am Papori and I will be an engineer when I grow up. This book is about all the things I will build. It is full of big words, but it is full of big adventures too. Come join me!",
+      "authors": [
+        "Priyadarshini Gogoi"
+      ],
+      "illustrators": [
+        "Tarique Aziz"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/524494/size3/593a3b57ef62de289db490553a419cf1.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/524494/size6/593a3b57ef62de289db490553a419cf1.jpg"
+      }
+    },
+    {
+      "slug": "58964-stage-fright",
+      "title": "Stage Fright",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Champa loves to sing. But she can’t sing on stage. Will she be able to face the huge crowd\r\non her school’s Annual Day?",
+      "authors": [
+        "Yamini Vijayan"
+      ],
+      "illustrators": [
+        "Somesh Kumar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/524458/size3/494a9f0a61a10b2065089e090ff8017f.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/524458/size6/494a9f0a61a10b2065089e090ff8017f.jpg"
+      }
+    },
+    {
+      "slug": "10727-the-will",
+      "title": "The Will",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "How can half of seventeen camels be given to someone? Here is a story that illustrates the wisdom of a father, Abdullah bin Saad, and the intelligence of a mother, Rukaiya Khatoon, who solves the puzzle and ensures harmony between her sons.",
+      "authors": [
+        "Pragya Gopinath"
+      ],
+      "illustrators": [
+        "Juhi  Agarwal"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/723049/size3/5709a651ff168831b050f19140068505.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/723049/size6/5709a651ff168831b050f19140068505.jpg"
+      }
+    },
+    {
+      "slug": "114373-mangalyaan-a-journey-to-mars",
+      "title": "Mangalyaan: A Journey to Mars",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Hop aboard the spaceship called Mangalyaan. Our destination is Mars. We will fly past the Moon and journey to the other side of the Sun. Let’s go.",
+      "authors": [
+        "Nikhil Gulati"
+      ],
+      "illustrators": [
+        "Nikhil Gulati"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/720045/size3/2d5d71e713132473aa21890cddff485e.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/720045/size6/2d5d71e713132473aa21890cddff485e.jpg"
+      }
+    },
+    {
+      "slug": "113899-lost-in-the-internet",
+      "title": "Lost in the Internet",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Kunal gets lost in the Internet and doesn’t know how to get out. Join him on a sci-fi journey through the Internet as he finds his way home.",
+      "authors": [
+        "Kris Stokes",
+        "Madhurima Chakraborty"
+      ],
+      "illustrators": [
+        "Gaurav Wakankar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/181775/size3/f1f3e98219874cda59f16f00331eea98.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/181775/size6/f1f3e98219874cda59f16f00331eea98.jpg"
+      }
+    },
+    {
+      "slug": "44009-mission-cycle",
+      "title": "Mission Cycle",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Noorain is on a mission to learn cycling so that she can win a race against her\r\nbest friend Wasim. But Noorain’s Mission Cycle gets complicated as conflict escalates\r\nin her city.",
+      "authors": [
+        "Rohini Mohan"
+      ],
+      "illustrators": [
+        "Jayesh Sivan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117609/size3/f694813ea14be3f5b5c97621019ab51f.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117609/size6/f694813ea14be3f5b5c97621019ab51f.jpg"
+      }
+    },
+    {
+      "slug": "130676-cooentos-antes-dey-dormir",
+      "title": "Cuentos antes de dormir",
+      "language": "Spanish",
+      "langCode": "es",
+      "level": "1",
+      "description": "Esta es una historia de los cuentos que una madre cuenta  a sus hijos antes de dormirse. ¿Entonces, estás listo para leerla? ",
+      "authors": [
+        "Aboli Chowdhary"
+      ],
+      "illustrators": [
+        "Harshvardhan Gantha"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/34952/size3/cd9982004d7e6ea392ebe738a42cb276.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/34952/size6/cd9982004d7e6ea392ebe738a42cb276.jpg"
+      }
+    },
+    {
+      "slug": "130744-kiero-o-no-kiero",
+      "title": "Quiero o no quiero......",
+      "language": "Spanish",
+      "langCode": "es",
+      "level": "1",
+      "description": "Este niño no quería hacer las cosas ni quería ir a la escuela. Pero ahora quiere hacer todo y está listo para ir a la escuela...¿Cómo?...Lee la historia para saberlo..",
+      "authors": [
+        "Aboli Chowdhary"
+      ],
+      "illustrators": [
+        "Ruchi Shah"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/704667/size3/8c71055ce1d056e9c4ed3d8ddf07d0f5.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/704667/size6/8c71055ce1d056e9c4ed3d8ddf07d0f5.jpg"
+      }
+    },
+    {
+      "slug": "193695-a-pebble-in-my-shoe",
+      "title": "Una piedra en mi zapato",
+      "language": "Spanish",
+      "langCode": "es",
+      "level": "2",
+      "description": "¿De dónde vino la piedra que Ronu encontró en su zapato? ¿Algún gigante la lanzó desde el cielo? Si tan solo Ronu supiera...",
+      "authors": [
+        "Sigo leyendo"
+      ],
+      "illustrators": [
+        "Jaikar Marur"
+      ],
+      "originalAuthors": [],
+      "publisher": "Sigo leyendo",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/121481/size3/c893d6b00cb5ea4c294f7aa4937bca42.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/121481/size6/c893d6b00cb5ea4c294f7aa4937bca42.jpg"
+      }
+    },
+    {
+      "slug": "171287-iel-senor-conejo-se-va-de-fiesta",
+      "title": "¡El señor conejo se va de fiesta!",
+      "language": "Spanish",
+      "langCode": "es",
+      "level": "2",
+      "description": "Rabbit puts on a pair of horns to go to a horned party. What happens when the other animals find out?",
+      "authors": [
+        "Aprende Leyendo"
+      ],
+      "illustrators": [
+        "Hélder de  Paz Alexandre"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/230064/size3/d4f85a5ac02a555edd703d3ed17580ae.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/230064/size6/d4f85a5ac02a555edd703d3ed17580ae.jpg"
+      }
+    },
+    {
+      "slug": "425354-rainbow-girls",
+      "title": "Niñas Arcoíris",
+      "language": "Spanish",
+      "langCode": "es",
+      "level": "3",
+      "description": "¿Todas las niñas son iguales? ¿Les gustan las mismas cosas? ¿Tienen que vestir parecidas? ¡Pensemos sobre ello!",
+      "authors": [
+        "Helena Arami"
+      ],
+      "illustrators": [
+        "Priya Kuriyan"
+      ],
+      "originalAuthors": [],
+      "publisher": "CuenTale Cuentoteca digital",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/775918/size3/387b24c89c6928c37934e632b4a92636.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/775918/size6/387b24c89c6928c37934e632b4a92636.jpg"
+      }
+    },
+    {
+      "slug": "128983-oona-sonrisa-dey-mariposa",
+      "title": "Una sonrisa de mariposa",
+      "language": "Spanish",
+      "langCode": "es",
+      "level": "3",
+      "description": "la familia de Kavya acaba de mudarse de su aldea a Bangalore. Ella es la niña nueva en la escuela. ¡Da un paseo con Kavya en el parque en el que ella puede conectar con las mariposas y a la vez hace su primera amiga en la ciudad!",
+      "authors": [
+        "Aboli Chowdhary"
+      ],
+      "illustrators": [
+        "Lavanya  Naidu"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/712825/size3/46977bed0760c446c9dd926ee5c83ee5.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/712825/size6/46977bed0760c446c9dd926ee5c83ee5.jpg"
+      }
+    },
+    {
+      "slug": "130072-lost-in-the-internet",
+      "title": "Perdido en internet",
+      "language": "Spanish",
+      "langCode": "es",
+      "level": "4",
+      "description": "Kunal se pierde en Internet y no sabe cómo salir. Únete a él en un viaje de ciencia ficción a través de Internet mientras encuentra su camino a casa.",
+      "authors": [
+        "Manuel Granados"
+      ],
+      "illustrators": [
+        "Gaurav Wakankar"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/181775/size3/f1f3e98219874cda59f16f00331eea98.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/181775/size6/f1f3e98219874cda59f16f00331eea98.jpg"
+      }
+    },
+    {
+      "slug": "19982-el-primer-vuelo-de-raju",
+      "title": "El primer vuelo de Raju",
+      "language": "Spanish",
+      "langCode": "es",
+      "level": "4",
+      "description": "Es un gran día para Raju. Acompáñalo mientras se prepara para un viaje en avi´ón muy especial.",
+      "authors": [
+        "Gabriela Pla"
+      ],
+      "illustrators": [
+        "Upamanyu  Bhattacharyya"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/713806/size3/2625fe2f51bccee02b4391276a85eca7.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/713806/size6/2625fe2f51bccee02b4391276a85eca7.jpg"
+      }
+    },
+    {
+      "slug": "98010-le-porridge",
+      "title": "Le Porridge",
+      "language": "French",
+      "langCode": "fr",
+      "level": "1",
+      "description": "Mom is away and Dad is making the morning porridge.",
+      "authors": [
+        "Patricia Roth",
+        "Translators withoutBorders"
+      ],
+      "illustrators": [
+        "Catherine Groenewald"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/151769/size3/773091332b87122b8e66a39000540408.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/151769/size6/773091332b87122b8e66a39000540408.jpg"
+      }
+    },
+    {
+      "slug": "97920-comment-la-fourmi-sauva-la-colombe",
+      "title": "Comment La Fourmi Sauva La Colombe",
+      "language": "French",
+      "langCode": "fr",
+      "level": "2",
+      "description": "The land is dry and Little Ant is very thirsty. He goes to the river for a drink and is swept away.",
+      "authors": [
+        "Isabelle  Duston",
+        "Veronique Biddau"
+      ],
+      "illustrators": [
+        "Wiehan de Jager"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/141891/size3/134ad8caa3025116bcdc29245beb43da.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/141891/size6/134ad8caa3025116bcdc29245beb43da.jpg"
+      }
+    },
+    {
+      "slug": "99694-my-brother-s-wheeeeelchair",
+      "title": "À fond les ballons !",
+      "language": "French",
+      "langCode": "fr",
+      "level": "3",
+      "description": "Viens faire la connaissance de Durva et Dhrubo, ainsi que du fauteuil roulant de Dhrubo, tandis qu'ils vont au parc, au marché et dans plein d'autres endroits et s'amusent comme des petits fous.",
+      "authors": [
+        "Sak Untala"
+      ],
+      "illustrators": [
+        "Tanvi Bhat"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/495678/size3/30c9c6f01105d7fa1d9b37bd919d931f.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/495678/size6/30c9c6f01105d7fa1d9b37bd919d931f.jpg"
+      }
+    },
+    {
+      "slug": "65383-la-fille-du-nom-de-norah",
+      "title": "La Fille Du Nom De Norah",
+      "language": "French",
+      "langCode": "fr",
+      "level": "4",
+      "description": "Norah loves her doll and gets worried one day when she is not able to find it.",
+      "authors": [
+        "Abdul Wahid",
+        "Marianne Pasy",
+        "Translators withoutBorders"
+      ],
+      "illustrators": [
+        "Melany  Pietersen"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/93398/size3/6e47cce5d03279405b1fe8c71a479888.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/93398/size6/6e47cce5d03279405b1fe8c71a479888.jpg"
+      }
+    },
+    {
+      "slug": "230163-kabira-jiddan-saghira-jiddan",
+      "title": "كَبِيرَةٌ جِدًّا، صَغِيرَةٌ جِدًّا",
+      "language": "Arabic",
+      "langCode": "ar",
+      "level": "1",
+      "description": "شَانُو أَكْبَرُ مِنْ أَنْ تَحْمِلَهَا أُمُّهَا، وَأَصْغَرُ مِنْ أَنْ تَذْهَبَ لِلْمَدْرَسَةِ بِمُفْرَدِهَا. فَهَلْ أَنْتَ أَصْغَرُ مِنْ أَنْ تَقْرَأَ هَذِهِ الْقِصَّةَ بِمُفْرَدِكَ؟ أَمْ أَكْبَرُ مِنْ أَنْ يَقْرَأَهَا لَكَ أَحَدٌ؟ افْتَحِ الْقِصَّةَ وَاكْتَشِفْ بِنَفْسِكَ!",
+      "authors": [
+        "Danah Al-Sadi"
+      ],
+      "illustrators": [
+        "Lavanya Karthik"
+      ],
+      "originalAuthors": [],
+      "publisher": "Education Above All (EAA)",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/42852/size3/0a1060a113ec19cf656ea8d7ef5b0ad9.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/42852/size6/0a1060a113ec19cf656ea8d7ef5b0ad9.jpg"
+      }
+    },
+    {
+      "slug": "250570-khata-alqut",
+      "title": "خَطَأُ الْقِطَّةِ",
+      "language": "Arabic",
+      "langCode": "ar",
+      "level": "2",
+      "description": "لَمْ يَسْتَطِعِ الصَّبِيُّ فِي هَذِهِ الْقِصَّةِ إِكْمَالَ وَاجِبَاتِهِ الْمَدْرَسِيَّةِ بِسَبَبِ قِطَّةٍ مُشَاغِبَةٍ. رُبَّمَا يَبْدُو كَأَنَّهُ عُذْرٌ سَخِيفٌ، أَلَيْسَ كَذَلِكَ؟ حَسَنًا، اقْرَأِ الْقِصَّةَ لِتَعْرِفَ مَاذَا حَدَثَ لِهَذَا الصَّبِيِّ، وَسَتَرَى كَيْفَ يُمْكِنُ أَنْ يُؤَدِّيَ شَيْءٌ مَا إِلَى شَيْءٍ آخَرَ، ثُمَّ شَيْءٍ آخَرَ، وَهَكَذَا...",
+      "authors": [
+        "Halima Al-Shukaili"
+      ],
+      "illustrators": [
+        "Priya Kuriyan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Education Above All (EAA)",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/696669/size3/8717a72070ac52bd090aeebc8e6b36e6.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/696669/size6/8717a72070ac52bd090aeebc8e6b36e6.jpg"
+      }
+    },
+    {
+      "slug": "108082-ibtisamatu-alfarasha",
+      "title": "إبتسامة الفراشة",
+      "language": "Arabic",
+      "langCode": "ar",
+      "level": "3",
+      "description": "انتقلت كافيا مع عائلتها حديثا من القرية إلى مدينة بنغالورو، إنها الفتاة الجديدة في قسمها. رافق كافيا في زيارتها لحديقة الفراشات حيث تكتشف ارتباطا مميزا بينها وبين الفراشات وتعقد صداقة جديدة.",
+      "authors": [
+        "Amina  Bouiali"
+      ],
+      "illustrators": [
+        "Lavanya  Naidu"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/712825/size3/46977bed0760c446c9dd926ee5c83ee5.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/712825/size6/46977bed0760c446c9dd926ee5c83ee5.jpg"
+      }
+    },
+    {
+      "slug": "235106-khadyat-almyah-aldaa-ia",
+      "title": "قضية المياه الضائعة",
+      "language": "Arabic",
+      "langCode": "ar",
+      "level": "4",
+      "description": "عندما بدأت قرية رانج تعاني من الجفاف، انطلقت رانج في مهمة للبحث عن المياه الضائعة. اكتشفوا كيف تحل المحققة رانج هذه القضية.",
+      "authors": [
+        "Ithar Elnour"
+      ],
+      "illustrators": [
+        "Upamanyu  Bhattacharyya"
+      ],
+      "originalAuthors": [],
+      "publisher": "Education Above All (EAA)",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/724112/size3/1c190e70406411ab7431038cc2aaea88.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/724112/size6/1c190e70406411ab7431038cc2aaea88.jpg"
+      }
+    },
+    {
+      "slug": "195-aaloo-maaloo-kaaloo",
+      "title": "आलू-मालू-कालू",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "1",
+      "description": "एक दिन मालू को बगीचे में से आलू लाने थे। \r\nउसकी मदद किसने करी? कालू ने! \r\nपढ़िये मालू और कालू की आलू वाली कहानी!\r\n",
+      "authors": [
+        "Vinita Krishna"
+      ],
+      "illustrators": [
+        "Suvidha Mistry"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/703824/size3/e58cf9e6698ff1d6a72c150d34efe53e.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/703824/size6/e58cf9e6698ff1d6a72c150d34efe53e.jpg"
+      }
+    },
+    {
+      "slug": "12743-darpok-railgadi",
+      "title": "डरपोक रेलगाड़ी",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "2",
+      "description": "क्या आप नयी जगहें जाने और अकेले घूमने से डरते हैं? नहीं ना, पर यह नया नवेला इंजन तो बहुत ही डरपोक है। अब अगर इंजन डरेगा तो रेलगाड़ी कैसे चलेगी? \r\nआईये, देखें कि इस इंजन का डर कैसे दूर हुआ और रेलगाड़ी कैसे चली!",
+      "authors": [
+        "Rajesh Khar"
+      ],
+      "illustrators": [
+        "Preeti Krishnamurthy"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721023/size3/80a76fd4a925e3e639bdd087df48bd0f.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721023/size6/80a76fd4a925e3e639bdd087df48bd0f.jpg"
+      }
+    },
+    {
+      "slug": "24875-ek-kitaab-puchakoo-ke-lie",
+      "title": "एक किताब पुचकू के लिए",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "3",
+      "description": "पुचकू सारी किताबें पढ़ चुकी है, इसलिए अब उसके पास पढ़ने के लिए कोई किताब नहीं बची है। तभी उसे पुस्तकालय की अलमारी के ऊपर के खाने में और बहुत सी किताबें नज़र आती हैं। मगर पुचकू है छोटी और अलमारी है ऊँची। वह उन प्यारी किताबों तक पहुँचेगी कैसे?",
+      "authors": [
+        "Nagraj Rao"
+      ],
+      "illustrators": [
+        "Rajiv Eipe"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117108/size3/e8e1a6d2e2ced15a142777ab5ebacbf5.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117108/size6/e8e1a6d2e2ced15a142777ab5ebacbf5.jpg"
+      }
+    },
+    {
+      "slug": "15698-kissa-bulli-aur-bagh-ka",
+      "title": "किस्सा बुली और बाघ का",
+      "language": "Hindi",
+      "langCode": "hi",
+      "level": "4",
+      "description": "असम के टोकरी बुनने वाले एक परिवार की प्यारी-सी बच्ची है बुली। जब बाँस मुहैया कराने वाले व्यापारी दाम बढ़ाने की बात करते हैं तो गाँव के सभी बुनकरों में मायूसी छा जाती है। बुली अपनी बिरादरी को इस संकट से उबारने की ठान लेती है, चाहे इसके लिए उसे जंगल के पुराने बाघ से ही क्यों न मिलना पड़े। शालिनी रेस द्वारा लिखी गई इस प्रेरणादायक कहानी का चित्रांकन ननकुसिया श्याम ने गोंड शैली में किया है।",
+      "authors": [
+        "Bhavana Pankaj"
+      ],
+      "illustrators": [
+        "Nankusia Shyam"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/37004/size3/8d39fc51a21264dddb80ad83f482be7a.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/37004/size6/8d39fc51a21264dddb80ad83f482be7a.jpg"
+      }
+    },
+    {
+      "slug": "74718-cores",
+      "title": "Cores",
+      "language": "Portuguese",
+      "langCode": "pt",
+      "level": "1",
+      "description": "Often an inquisitive child asks his parents about the colours or shapes that he sees around himself. The 'Tell me ... now!' Series describes how interesting the questions and answers turn out.",
+      "authors": [
+        "Isabel Ferreira",
+        "Translators withoutBorders"
+      ],
+      "illustrators": [
+        "Rijuta Ghate"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/700102/size3/610c0cae5d16405f1f342e373837d71f.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/700102/size6/610c0cae5d16405f1f342e373837d71f.jpg"
+      }
+    },
+    {
+      "slug": "458412-a-minha-familia-e-eu",
+      "title": "A Minha Família E Eu",
+      "language": "Portuguese",
+      "langCode": "pt",
+      "level": "2",
+      "description": "A story about a little boy's adventures with an unusual family!",
+      "authors": [
+        "Rita Rolim",
+        "Translators withoutBorders"
+      ],
+      "illustrators": [
+        "Wiehan de Jager"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/530767/size3/f0638008ff6da83fb2fed01ee1a2ff3a.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/530767/size6/f0638008ff6da83fb2fed01ee1a2ff3a.jpg"
+      }
+    },
+    {
+      "slug": "96023-o-elefante-e-o-camaleao",
+      "title": "O Elefante E O Camaleão",
+      "language": "Portuguese",
+      "langCode": "pt",
+      "level": "3",
+      "description": "A king sets a difficult task, but the reward is to marry the princess. Who will succeed Elephant or Chameleon ?",
+      "authors": [
+        "Debora Santos",
+        "Translators withoutBorders"
+      ],
+      "illustrators": [
+        "Wiehan de Jager"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/138793/size3/bc5aa53eae24ca770caa6c6dc42d7829.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/138793/size6/bc5aa53eae24ca770caa6c6dc42d7829.jpg"
+      }
+    },
+    {
+      "slug": "151842-o-tapete-especial-de-akai",
+      "title": "O Tapete Especial De Akai",
+      "language": "Portuguese",
+      "langCode": "pt",
+      "level": "4",
+      "description": "Akai has a special mat given to her by her aunt. One day she gets lost. What happens next?",
+      "authors": [
+        "Andréa Marroquim",
+        "Translators withoutBorders"
+      ],
+      "illustrators": [
+        "Catherine Groenewald"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/202075/size3/45590c641bbb09a51ba8d180bc27904d.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/202075/size6/45590c641bbb09a51ba8d180bc27904d.jpg"
+      }
+    },
+    {
+      "slug": "11133-ca-cua-to-khong-ca-cua-to-chu",
+      "title": "'Cá của tớ!' 'Không, cá của tớ chứ!",
+      "language": "Vietnamese",
+      "langCode": "vi",
+      "level": "1",
+      "description": "Một câu chuyện nhỏ hài hước về ba người bạn và ba chú cá thông minh!\r\n",
+      "authors": [
+        "Son Pham"
+      ],
+      "illustrators": [
+        "Soumya Menon"
+      ],
+      "originalAuthors": [],
+      "publisher": "The Rosetta Foundation",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/721012/size3/1db7298d5b01da68f1fd305946c8895a.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/721012/size6/1db7298d5b01da68f1fd305946c8895a.jpg"
+      }
+    },
+    {
+      "slug": "31013-soc-con-di-hoc",
+      "title": "Sóc con đi học",
+      "language": "Vietnamese",
+      "langCode": "vi",
+      "level": "2",
+      "description": "Sóc nhỏ là bạn thân nhất của Mây. Cả hai cùng sống ở bản rất vui. Một ngày nọ, Mây nói ngày mai cả hai sẽ lên đường đi học. Đi học? Đi học có gì vui, mà trường thì xa, đi qua rừng chắc nhiều thú dữ lắm. Sóc không thích đi chút nào. Nhưng Sóc và Mây vẫn lên đường...",
+      "authors": [
+        "Dỗ Thái Thanh"
+      ],
+      "illustrators": [
+        "Dỗ Thái Thanh"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/119964/size3/3103ddb647070d37eccd9a8555696161.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/119964/size6/3103ddb647070d37eccd9a8555696161.jpg"
+      }
+    },
+    {
+      "slug": "29414-the-little-bird-in-the-big-mountains",
+      "title": "The Little Bird in the Big Mountains",
+      "language": "Vietnamese",
+      "langCode": "vi",
+      "level": "3",
+      "description": "Meera đang đến chợ đễ mua đôi giày mới. Trên đường đi, anh và mẹ cứu một con chim bị thương. Câu chuyện này hình dung được tiếng nhẹ nhàng của núi và rừng. ",
+      "authors": [
+        "Nguyen Dac Thai Hang"
+      ],
+      "illustrators": [
+        "Sonali Zohra"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/726566/size3/fc6939958e491931b99e6b78e305a572.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/726566/size6/fc6939958e491931b99e6b78e305a572.jpg"
+      }
+    },
+    {
+      "slug": "7469-tolstyj-korol-i-hudaja-sobaka",
+      "title": "Толстый король и худая собака",
+      "language": "Russian",
+      "langCode": "ru",
+      "level": "1",
+      "description": "Беги за Худой Собакой вместе с Толстым Королем!",
+      "authors": [
+        "Sonya Alexandrova"
+      ],
+      "illustrators": [
+        "Parismita"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/721909/size3/578f72502f01ea8298384a08257557b2.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/721909/size6/578f72502f01ea8298384a08257557b2.jpg"
+      }
+    },
+    {
+      "slug": "107024-ritu-s-letter-gets-longer",
+      "title": "Как Риту письмо отправляла",
+      "language": "Russian",
+      "langCode": "ru",
+      "level": "2",
+      "description": "Маленькая Риту очень жаждет увидеться с племянником. Поэтому отправляет ему крайне необычное письмо.",
+      "authors": [
+        "Radeem Navyan"
+      ],
+      "illustrators": [
+        "Henu"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/696671/size3/5a67c4862d76b9ca92826bddea4fa06d.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/696671/size6/5a67c4862d76b9ca92826bddea4fa06d.jpg"
+      }
+    },
+    {
+      "slug": "19550-gigantskaya-slonovaya-ptiza",
+      "title": "Гигантская Слоновая Птица",
+      "language": "Russian",
+      "langCode": "ru",
+      "level": "3",
+      "description": "Муния знала, что гигантская слоновая птица не ела лошадь, не смотря не то, что птица была настолько большая, что могла бы проглотить лошадь целиком. Но куда же пропала лошадь? Эта история рассказывает о волшебной птице и смелой маленькой девочке.",
+      "authors": [
+        "Kate Chumbarova"
+      ],
+      "illustrators": [
+        "Sonal Goyal",
+        "Sumit Sakhuja"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/27020/size3/17058267175af8fd5a857fa240a3d630.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/27020/size6/17058267175af8fd5a857fa240a3d630.jpg"
+      }
+    },
+    {
+      "slug": "582162-lost-in-the-internet",
+      "title": "Потерянный в Интернете",
+      "language": "Russian",
+      "langCode": "ru",
+      "level": "4",
+      "description": "Кунал потерялся в Интернете и не знал как выбраться. Присоединяйтесь к его научно-фантастическому путешествию в Интернете, там он найдёт дорогу домой.",
+      "authors": [
+        "Arina Ozarciuc"
+      ],
+      "illustrators": [
+        "Gaurav Wakankar"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/181775/size3/f1f3e98219874cda59f16f00331eea98.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/181775/size6/f1f3e98219874cda59f16f00331eea98.jpg"
+      }
+    },
+    {
+      "slug": "9488-english",
+      "title": "Badezeit für Chunnu und Munnu",
+      "language": "German",
+      "langCode": "de",
+      "level": "1",
+      "description": "Mach mit Chunnu und Munnu während sie herum spritzen, indem sie ein Bad haben. Eine lustige Vorlesung und eine gute Möglichkeit, gute Nacht zu sagen.",
+      "authors": [
+        "Beby Haryanti Dewi"
+      ],
+      "illustrators": [
+        "Sonal Goyal",
+        "Sumit Sakhuja"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/721702/size3/fb052d30f4a73aae542e0c8d52969aab.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/721702/size6/fb052d30f4a73aae542e0c8d52969aab.jpg"
+      }
+    },
+    {
+      "slug": "20187-ghum-gums-grosses-abenteuer",
+      "title": "Ghum-Gums grosses Abenteuer",
+      "language": "German",
+      "langCode": "de",
+      "level": "2",
+      "description": "Gavial Ghum-Gum darf das erste Mal schwimmen gehen. Aber bald muss sie feststellen, dass ihre Familie weiterzog ohne sie. Wird sie ihr Familie wiederfinden? Schwimm mit Ghum-Ghum den Ganges entlang und treffe dabei auf faszinierende Kreaturen.",
+      "authors": [
+        "Carmen  Erni Jensen"
+      ],
+      "illustrators": [
+        "ROSH"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/723978/size3/fef3cb2e4de26e284dc81d72ff16571a.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/723978/size6/fef3cb2e4de26e284dc81d72ff16571a.jpg"
+      }
+    },
+    {
+      "slug": "7266-pishi-caught-in-a-storm",
+      "title": "Pishi gefangen im Sturm",
+      "language": "German",
+      "langCode": "de",
+      "level": "3",
+      "description": "In diesem Buch geht es um einen Manta-Rochen, der in einen großen Sturm gerät. Ein aufregendes Abenteuer beginnt!",
+      "authors": [
+        "George Evans"
+      ],
+      "illustrators": [
+        "Sangeeta Das"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/722387/size3/073d9b1811b5dd45c355c678228d68cc.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/722387/size6/073d9b1811b5dd45c355c678228d68cc.jpg"
+      }
+    },
+    {
+      "slug": "155014-tine-und-der-aufruf-des-fernen-berges",
+      "title": "Tine und der Ruf des fernen Berges",
+      "language": "German",
+      "langCode": "de",
+      "level": "4",
+      "description": "Whooshoo! Whooshoo! In einer kleinen Stadt auf den Bergen, Echali, hört Tine ein Flüstern. Es ist der Ruf eines Berges für sie.  Als Jungendliche träumt sie von in ihren geliebten Bergen zu sein. Aber kann sie die Spitze des höchsten Berg der Welt erreichen? Dieses Buch erzählt über eine Bergsteigerin aus Arunachal Pradesh und zelebriert die Macht der Träume und des Glaubens an sich selbst.",
+      "authors": [
+        "Deepti Chaudhary"
+      ],
+      "illustrators": [
+        "Ogin Nayam"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver Community",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/83442/size3/2499ede9af5c09c5a97f7cea234d4a65.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/83442/size6/2499ede9af5c09c5a97f7cea234d4a65.jpg"
       }
     }
   ]

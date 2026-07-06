@@ -124,6 +124,17 @@
     return [Math.min.apply(null, ids), Math.max.apply(null, ids)];
   }
 
+  // Picture-book text layout: short text bursts sit centered under the artwork
+  // (the picture-book convention — left-hugging text under a centered image
+  // reads as misaligned); longer level-3/4 passages stay start-aligned for
+  // readability (also correct for RTL, which 'text-left' would break). Early
+  // levels get a larger face.
+  function textLayoutClass(level, text) {
+    var size = (String(level) === '1' || String(level) === '2') ? 'text-2xl' : 'text-xl';
+    var align = String(text || '').replace(/\s+/g, ' ').length <= 220 ? ' text-center' : '';
+    return size + align;
+  }
+
   function bookPlainText(book) {
     if (!book) return '';
     var parts = [book.title || ''];
@@ -554,7 +565,7 @@
             loading: 'lazy',
           }) : null,
           e('div', {
-            className: 'mt-3 text-xl leading-relaxed text-slate-800 ' + (mode !== 'read' ? 'cursor-pointer' : ''),
+            className: 'mt-4 mx-auto max-w-xl leading-relaxed text-slate-800 ' + textLayoutClass(book.level, page.text) + (mode !== 'read' ? ' cursor-pointer' : ''),
             dir: book.isRtl ? 'rtl' : 'auto',
             lang: book.langCode || undefined,
           }, lines.map(function (line, li) {
@@ -805,6 +816,7 @@
   ReadingLibrary._findActiveCue = findActiveCue;
   ReadingLibrary._pageCueRange = pageCueRange;
   ReadingLibrary._bookPlainText = bookPlainText;
+  ReadingLibrary._textLayoutClass = textLayoutClass;
   ReadingLibrary._attributionLine = attributionLine;
   ReadingLibrary.BookReader = BookReader;
   ReadingLibrary.PracticePanel = PracticePanel;

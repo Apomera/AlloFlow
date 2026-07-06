@@ -127,6 +127,24 @@ describe('bookPlainText / attributionLine', () => {
   });
 });
 
+describe('textLayoutClass — picture-book text layout', () => {
+  it('centers short page text (the picture-book convention)', () => {
+    expect(RL._textLayoutClass('3', 'A short caption under the art.')).toContain('text-center');
+  });
+  it('start-aligns long passages for readability', () => {
+    expect(RL._textLayoutClass('4', 'word '.repeat(80))).not.toContain('text-center');
+  });
+  it('uses a larger face for levels 1-2 and standard for 3-4', () => {
+    expect(RL._textLayoutClass('1', 'Hi.')).toContain('text-2xl');
+    expect(RL._textLayoutClass('2', 'Hi.')).toContain('text-2xl');
+    expect(RL._textLayoutClass('4', 'Hi.')).toContain('text-xl');
+    expect(RL._textLayoutClass('4', 'Hi.')).not.toContain('text-2xl');
+  });
+  it('never emits text-left (would break RTL start alignment)', () => {
+    expect(RL._textLayoutClass('4', 'word '.repeat(80))).not.toContain('text-left');
+  });
+});
+
 describe('mirrored data contract (reading_library/)', () => {
   const index = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'index.json'), 'utf8'));
 
