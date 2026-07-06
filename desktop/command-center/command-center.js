@@ -1224,6 +1224,35 @@
     refreshSetupHealth().catch(() => {});
   }
 
+  // Speak a fixed sentence through the REAL local engine and play it here —
+  // separates "engine can synthesize" from "the app routed elsewhere" in one
+  // click, with the router's own breadcrumb shown for the app half.
+  async function testKokoroVoice() {
+    const appWindow = getBundledAppWindow();
+    if (!appWindow) {
+      $('#voice-result').textContent = 'Switch the app URL to the bundled /app/ address, then try again.';
+      return;
+    }
+    if (!(appWindow._kokoroTTS && appWindow._kokoroTTS.ready)) {
+      $('#voice-result').textContent = 'The Kokoro engine is not ready yet (state: ' + (appWindow._kokoroTTS ? 'loaded, preparing' : 'not loaded') + '). Wait for the ready toast in the app, then retry.';
+      return;
+    }
+    let voicePref = 'af_heart';
+    try { voicePref = localStorage.getItem('allo_voice_preference') || 'af_heart'; } catch (_) {}
+    $('#voice-result').textContent = 'Synthesizing a test sentence with voice "' + voicePref + '"…';
+    try {
+      const url = await appWindow._kokoroTTS.speakStreaming('Hello! This is the local Kokoro voice speaking on this computer.', voicePref, 1);
+      if (!url) { $('#voice-result').textContent = 'Engine returned no audio — send this to the developer with the app console lines.'; return; }
+      const audio = new Audio(url);
+      await audio.play();
+      const lastRoute = appWindow.__ttsLastRoute;
+      $('#voice-result').textContent = 'You should be hearing the Kokoro voice now (engine OK). Last in-app read-aloud route: '
+        + (lastRoute ? lastRoute.route + ' (voice ' + lastRoute.voice + ', ' + (lastRoute.detail || 'no detail') + ')' : 'none recorded yet — read something aloud in the app first.');
+    } catch (error) {
+      $('#voice-result').textContent = 'Playback failed: ' + (error && error.message ? error.message : error);
+    }
+  }
+
   // ── Setup Health card ──────────────────────────────────────────
   // One glance = live truth for the five capabilities field testing kept
   // tripping over. Rows only show an action button when the runtime can
@@ -1279,7 +1308,18 @@
     try {
       const w = getBundledAppWindow();
       if (w && w._kokoroTTS && w._kokoroTTS.ready) {
-        setHealthRow('#health-voice', 'ok', 'Ready — reads aloud on this device');
+        // Engine READY is necessary but not sufficient — show what the last
+        // read-aloud actually did (window.__ttsLastRoute breadcrumb from the
+        // TTS router) so "ready but I hear the robot voice" is diagnosable
+        // at a glance instead of via DevTools.
+        let voicePref = '';
+        try { voicePref = localStorage.getItem('allo_voice_preference') || ''; } catch (_) {}
+        const lastRoute = w.__ttsLastRoute || null;
+        if (lastRoute && lastRoute.route && lastRoute.route !== 'kokoro' && lastRoute.route !== 'provider') {
+          setHealthRow('#health-voice', 'warn', 'Ready, but last read-aloud fell back (' + lastRoute.route + (lastRoute.voice ? ', voice ' + lastRoute.voice : '') + ')');
+        } else {
+          setHealthRow('#health-voice', 'ok', 'Ready — reads aloud on this device' + (voicePref ? ' (' + voicePref + ')' : ''));
+        }
       } else if (w && w.__kokoroTTSDownloading) {
         setHealthRow('#health-voice', 'busy', 'Preparing voice model…');
       } else {
@@ -1423,6 +1463,7 @@
     $('#download-kokoro').addEventListener('click', downloadKokoroVoice);
     $('#check-sd').addEventListener('click', inspectSdTurbo);
     $('#download-sd').addEventListener('click', downloadSdTurbo);
+    $('#test-voice').addEventListener('click', testKokoroVoice);
     $('#engine-start').addEventListener('click', startBuiltInEngine);
     $('#engine-stop').addEventListener('click', stopBuiltInEngine);
     $('#engine-model-select').addEventListener('change', changeEngineModel);

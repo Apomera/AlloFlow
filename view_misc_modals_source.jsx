@@ -1083,6 +1083,7 @@ function AIBackendModal(props) {
                         className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
                     >
                         <option value="auto">🔄 Auto (match backend)</option>
+                        <option value="sd-local">🏫 SD-Turbo (this computer — no account)</option>
                         <option value="imagen">🎨 Imagen 4.0 (Google Cloud)</option>
                         <option value="flux">🖼️ FLUX (Local — port 7860)</option>
                         <option value="off">🚫 Off (disable image generation)</option>

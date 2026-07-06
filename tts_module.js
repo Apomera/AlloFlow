@@ -397,14 +397,33 @@ const createTTS = (deps) => {
         // caller's catch lands on browser speechSynthesis, and the model that the
         // header picker downloads (and desktop/Firebase boot auto-loads) never speaks.
         var _kokoroDeferredToGemini = false;
-        if (typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName)) {
+        // Routing breadcrumb for the Setup Health card / diagnostics: which leg
+        // actually served (or refused) the last read-aloud, and why.
+        var _routeNote = function (route, detail) {
+            try { window.__ttsLastRoute = { at: Date.now(), fn: 'callTTS', voice: String(voiceName || ''), route: route, detail: detail || '' }; } catch (_) {}
+        };
+        // Keyless installs have NO usable cloud voice: once the local engine is
+        // ready it should serve EVERY voice name (the engine's resolveVoice maps
+        // Gemini names like 'Kore' to Kokoro equivalents). Without this, any
+        // stale cloud voice name in storage pinned keyless users to the browser
+        // voice even with a ready engine. Explicit 'browser' choice and
+        // provider-managed TTS (Edge/off) are respected.
+        var _cfgTtsEarly = getAiUserConfig();
+        var _provTtsEarly = (_cfgTtsEarly && _cfgTtsEarly.ttsProvider) || 'auto';
+        var _provIsLocalAI = !!(_cfgTtsEarly && (_cfgTtsEarly.backend === 'ollama' || _cfgTtsEarly.backend === 'localai'));
+        var _providerHandlesTts = _provTtsEarly === 'local' || _provTtsEarly === 'browser' || _provTtsEarly === 'off' || (_provTtsEarly === 'auto' && _provIsLocalAI);
+        var _kokoroPreferred = typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName);
+        var _kokoroKeyless = !_isCanvasEnv && !apiKey && !_providerHandlesTts && typeof voiceName === 'string' && voiceName !== 'browser';
+        if (_kokoroPreferred || _kokoroKeyless) {
             if (!_isEnglish) {
                 console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — deferring to cloud voices for this call');
+                _routeNote('kokoro-skip', 'non-English content: ' + _language);
                 _kokoroDeferredToGemini = true;
             } else if (window._kokoroTTS && window._kokoroTTS.ready) {
                 try {
                     const kokoroUrl = await window._kokoroTTS.speakStreaming(cleanTextForLocalTTS(text), voiceName, speed);
-                    if (kokoroUrl) return kokoroUrl;
+                    if (kokoroUrl) { _routeNote('kokoro', _kokoroPreferred ? 'kokoro voice selected' : 'keyless reroute'); return kokoroUrl; }
+                    _routeNote('kokoro-empty', 'engine returned no audio');
                     _kokoroDeferredToGemini = true; // engine returned nothing
                 } catch (e) {
                     if (_isAbortError(e)) { throw e; }
@@ -426,6 +445,7 @@ const createTTS = (deps) => {
                     window.__kokoroTTSDownloading = true;
                     Promise.resolve(window.__loadKokoroTTS()).then(function () { window.__kokoroTTSDownloading = false; }, function () { window.__kokoroTTSDownloading = false; });
                 }
+                _routeNote('kokoro-not-ready', 'engine preparing — background (re)init kicked');
                 _kokoroDeferredToGemini = true;
             }
         }
@@ -438,6 +458,7 @@ const createTTS = (deps) => {
         if (_ttsOvr === 'local' || _ttsOvr === 'browser' || _ttsOvr === 'off' || (_ttsOvr === 'auto' && _isLocalAI)) {
             try {
                 const result = await _ai.textToSpeech(text, { voice: voiceName, speed });
+                _routeNote('provider', 'ttsProvider=' + _ttsOvr);
                 return result;
             } catch (e) {
                 console.warn('[callTTS] AIProvider TTS failed, falling back to Gemini:', e?.message);
@@ -460,6 +481,7 @@ const createTTS = (deps) => {
                 window.__ttsKeylessLogged = true;
                 console.log('[TTS] No cloud TTS key — cloud voice skipped; local Kokoro/browser voices handle read-aloud.');
             }
+            _routeNote('keyless-skip', 'no cloud key; caller falls back to the browser voice');
             return null;
         }
         const cacheKey = `${(text || '').toLowerCase().trim()}__${voiceName}__${speed}__${_language || 'English'}`;
@@ -550,13 +572,24 @@ const createTTS = (deps) => {
             return null;
         }
         // ─── Desktop/Firebase: selected Kokoro voice → local engine (same fix as callTTS) ───
-        if (typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName)) {
+        var _routeNoteBot = function (route, detail) {
+            try { window.__ttsLastRoute = { at: Date.now(), fn: 'callTTSDirect', voice: String(voiceName || ''), route: route, detail: detail || '' }; } catch (_) {}
+        };
+        // Keyless: the local engine serves ANY bot voice name once ready
+        // (resolveVoice maps Gemini names) — same reroute as callTTS.
+        var _botCfgTts = getAiUserConfig();
+        var _botProvTts = (_botCfgTts && _botCfgTts.ttsProvider) || 'auto';
+        var _botProvLocalAI = !!(_botCfgTts && (_botCfgTts.backend === 'ollama' || _botCfgTts.backend === 'localai'));
+        var _botProviderHandles = _botProvTts === 'local' || _botProvTts === 'browser' || _botProvTts === 'off' || (_botProvTts === 'auto' && _botProvLocalAI);
+        var _botKokoroEligible = (typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName))
+            || (!_isCanvasEnv && !apiKey && !_botProviderHandles && typeof voiceName === 'string' && voiceName !== 'browser');
+        if (_botKokoroEligible) {
             const botKokoroLang = languageToTTSCode(getLeveledTextLanguage() || getCurrentUiLanguage() || 'English');
             if (botKokoroLang === 'en' && window._kokoroTTS && window._kokoroTTS.ready) {
                 try {
                     const kokoroBotUrl = await window._kokoroTTS.speakStreaming(cleanTextForLocalTTS(text), voiceName, speed);
-                    if (kokoroBotUrl) return kokoroBotUrl;
-                } catch (e) { console.warn('[callTTSDirect] Kokoro engine failed — deferring to provider/cloud:', e?.message); }
+                    if (kokoroBotUrl) { _routeNoteBot('kokoro'); return kokoroBotUrl; }
+                } catch (e) { console.warn('[callTTSDirect] Kokoro engine failed — deferring to provider/cloud:', e?.message); _routeNoteBot('kokoro-failed', e?.message); }
             } else if (botKokoroLang === 'en') {
                 // Missing or never-ready engine: background (re)init, same as
                 // callTTS — a failed first init otherwise pins every bot line

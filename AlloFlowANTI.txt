@@ -3757,9 +3757,20 @@ const AlloFlowContent = () => {
               return 'Kore'; // Gemini TTS default — bright, clear female voice
           }
           const cfg = JSON.parse(localStorage.getItem('alloflow_ai_config') || 'null');
-          const isLocalBackend = cfg?.backend === 'ollama' || cfg?.backend === 'localai' || cfg?.backend === 'lmstudio';
+          // 'alloflow-local' (the desktop Built-in Engine) was MISSING here
+          // (field-caught 2026-07-06): with it absent, a saved Kokoro voice
+          // fell into the Gemini validator below and was RESET TO 'Kore' on
+          // every launch — the user re-picked af_heart each session, restart
+          // wiped it, keyless routing then refused the cloud voice, and every
+          // read-aloud landed on the browser voice with no ready toast. Any
+          // non-gemini backend counts as local.
+          const isLocalBackend = !!(cfg?.backend && cfg.backend !== 'gemini');
           const saved = safeGetItem('allo_voice_preference');
           if (saved) {
+              // A saved Kokoro voice is ALWAYS valid outside Canvas — the
+              // engine is local and needs no backend or key (mirrors the
+              // Canvas branch above).
+              if (KOKORO_VOICES.some(v => v.id === saved)) return saved;
               if (_isDesktopBundledApp && isLocalBackend && saved === 'alloy') return 'af_heart';
               if (isLocalBackend) return saved; // Edge TTS voices are free-form
               if (AVAILABLE_VOICES.map(v => v.toLowerCase()).includes(saved.toLowerCase())) return saved;
@@ -3767,6 +3778,7 @@ const AlloFlowContent = () => {
               safeSetItem('allo_voice_preference', 'Kore');
           }
           if (isLocalBackend) return _isDesktopBundledApp ? 'af_heart' : 'alloy';
+          if (_isDesktopBundledApp) return 'af_heart'; // desktop default: the local voice works keyless
           return 'Kore';
       }
       return 'Kore';
@@ -5665,8 +5677,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // with no idea the local voice had (or hadn't) come up.
         window.__loadKokoroTTS().then((ok) => {
           try {
-            if (ok && /^(af|am|bf|bm)_/.test(String(selectedVoice || ''))) {
-              addToast(t('toasts.kokoro_ready') || '🎤 Kokoro voice ready — read-aloud now uses it.', 'success');
+            // Toast whenever the local voice WILL actually serve read-aloud:
+            // a Kokoro voice is selected, OR this is a keyless install (the
+            // routing serves any voice name locally then). The old af_-only
+            // condition meant keyless users whose voice had been reset to a
+            // cloud name never saw readiness at all.
+            const _kokoroWillServe = /^(af|am|bf|bm)_/.test(String(selectedVoice || '')) || (!_isCanvasEnv && !apiKey);
+            if (ok && _kokoroWillServe) {
+              addToast(t('toasts.kokoro_ready') || '🎤 Local voice ready — read-aloud now uses it.', 'success');
             } else if (!ok) {
               console.warn('[TTS] Kokoro boot preload did not complete — it retries on first read-aloud.');
             }
@@ -8775,6 +8793,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleSetShowInfoModalToFalse = React.useCallback(() => setShowInfoModal(false), []);
   const handleSetInfoModalTabToAbout = React.useCallback(() => setInfoModalTab('about'), []);
   const handleSetInfoModalTabToFeatures = React.useCallback(() => setInfoModalTab('features'), []);
+  const handleSetInfoModalTabToOpenSource = React.useCallback(() => setInfoModalTab('opensource'), []);
   const handleSetShowHintsModalToFalse = React.useCallback(() => setShowHintsModal(false), []);
   const handleSetShowXPModalToFalse = React.useCallback(() => setShowXPModal(false), []);
   const handleSetShowStorybookExportModalToFalse = React.useCallback(() => setShowStorybookExportModal(false), []);
@@ -15084,6 +15103,29 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     });
   };
   const callImagen = async (prompt, width = 300, qual = 0.7) => {
+    // Explicit "SD-Turbo (this computer)" choice in AI Settings: local runs
+    // FIRST even when a cloud key exists. Not ready yet → kick the download
+    // in the background (adapter permitting) and fall through honestly to
+    // whatever the rest of the flow can do this call.
+    if (!_isCanvasEnv) {
+      let _imgPref = 'auto';
+      try { _imgPref = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').imageProvider || 'auto'; } catch (_) {}
+      if (_imgPref === 'sd-local') {
+        const localPick = await _sdTurboTryLocal(prompt, width, qual);
+        if (localPick) return localPick;
+        if (!window.__sdTurboDownloading && window.__loadSdTurbo && await _webGpuAdapterOk()) {
+          window.__sdTurboDownloading = true;
+          Promise.resolve(window.__loadSdTurbo(() => {})).then(
+            () => { window.__sdTurboDownloading = false; },
+            () => { window.__sdTurboDownloading = false; }
+          );
+          if (!window.__sdLocalPrepToastShown) {
+            window.__sdLocalPrepToastShown = true;
+            imagenKeyNotice('Local image generation is still preparing (one-time model download). Images use the cloud until it finishes — or wait and try again.');
+          }
+        }
+      }
+    }
     if (!_isCanvasEnv && !apiKey) {
       const localOnly = await _sdTurboTryLocal(prompt, width, qual);
       if (localOnly) return localOnly;
@@ -27118,7 +27160,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and
           restore document.activeElement around open/close. */}
-      {showInfoModal && <div ref={infoModalRef}><InfoModal handleSetInfoModalTabToAbout={handleSetInfoModalTabToAbout} handleSetInfoModalTabToFeatures={handleSetInfoModalTabToFeatures} handleSetShowInfoModalToFalse={handleSetShowInfoModalToFalse} infoModalTab={infoModalTab} safeRemoveItem={safeRemoveItem} setShowInfoModal={setShowInfoModal} setShowWizard={setShowWizard} t={t} /></div>}
+      {showInfoModal && <div ref={infoModalRef}><InfoModal handleSetInfoModalTabToAbout={handleSetInfoModalTabToAbout} handleSetInfoModalTabToFeatures={handleSetInfoModalTabToFeatures} handleSetInfoModalTabToOpenSource={handleSetInfoModalTabToOpenSource} handleSetShowInfoModalToFalse={handleSetShowInfoModalToFalse} infoModalTab={infoModalTab} safeRemoveItem={safeRemoveItem} setShowInfoModal={setShowInfoModal} setShowWizard={setShowWizard} t={t} /></div>}
       {showHintsModal && <div ref={hintsModalRef}><HintsModal handleApplyHint={handleApplyHint} handleGenerateLessonIdeas={handleGenerateLessonIdeas} handleSaveExtensionToHistory={handleSaveExtensionToHistory} handleSetShowHintsModalToFalse={handleSetShowHintsModalToFalse} hintHistory={hintHistory} history={history} isGeneratingExtension={isGeneratingExtension} renderFormattedText={renderFormattedText} t={t} /></div>}
       {showXPModal && <div ref={xpModalRef}><XPModal currentLevelXP={currentLevelXP} globalLevel={globalLevel} globalPoints={globalPoints} globalProgress={globalProgress} globalXPNext={globalXPNext} handleSetShowXPModalToFalse={handleSetShowXPModalToFalse} pointHistory={pointHistory} t={t} /></div>}
       {adventureState.isGameOver && adventureState.climax?.masteryScore >= 80 && !adventureState.missionReportDismissed && (

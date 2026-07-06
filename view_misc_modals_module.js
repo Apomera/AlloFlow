@@ -975,6 +975,7 @@ function AIBackendModal(props) {
       className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
     },
     /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F504} Auto (match backend)"),
+    /* @__PURE__ */ React.createElement("option", { value: "sd-local" }, "\u{1F3EB} SD-Turbo (this computer \u2014 no account)"),
     /* @__PURE__ */ React.createElement("option", { value: "imagen" }, "\u{1F3A8} Imagen 4.0 (Google Cloud)"),
     /* @__PURE__ */ React.createElement("option", { value: "flux" }, "\u{1F5BC}\uFE0F FLUX (Local \u2014 port 7860)"),
     /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F6AB} Off (disable image generation)")
