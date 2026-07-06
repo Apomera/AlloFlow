@@ -15,6 +15,20 @@ try {
   updaterLoadError = error;
 }
 
+// ── Renderer capability switches (probe-verified 2026-07-06, Electron 37) ──
+// The desktop shell is a local, trusted surface, and two Chromium defaults
+// silently break shipped features inside it:
+// 1. Gesture-gated autoplay: read-aloud audio starts AFTER multi-second
+//    on-device Kokoro synthesis, so the click's transient activation (~5s)
+//    expires and Audio.play() rejects — every caller then falls back to the
+//    robotic browser voice even though the Kokoro engine is ready. (A/B on
+//    this machine: rejected without the switch, plays with it.)
+// 2. WebGPU adapter: navigator.gpu exists but requestAdapter() returns null
+//    without the enable switch, so local SD-Turbo image generation can never
+//    run. (A/B: adapter null → real adapter.)
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+app.commandLine.appendSwitch('enable-unsafe-webgpu');
+
 const DEFAULT_HOST = process.env.ALLOFLOW_DESKTOP_HOST || '127.0.0.1';
 const DEFAULT_PORT = Number(process.env.ALLOFLOW_DESKTOP_PORT || 32170);
 const MAX_PORT_ATTEMPTS = 20;

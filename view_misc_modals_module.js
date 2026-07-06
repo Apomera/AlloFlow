@@ -509,6 +509,84 @@ function AIBackendModal(props) {
       refreshEngineStrip();
     }, 2e3);
   };
+  const refreshSdTurboStrip = async () => {
+    const strip = document.getElementById("ai-backend-sdturbo-strip");
+    if (!strip) return;
+    let text = strip.querySelector("[data-sd-strip-text]");
+    let btn = strip.querySelector("[data-sd-strip-btn]");
+    if (!text) {
+      text = document.createElement("span");
+      text.setAttribute("data-sd-strip-text", "1");
+      strip.appendChild(text);
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.setAttribute("data-sd-strip-btn", "1");
+      btn.className = "ml-2 px-2.5 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700";
+      btn.hidden = true;
+      strip.appendChild(btn);
+    }
+    const TITLE = (t("ai_backend.sd_title") || "Local images (SD-Turbo)") + ": ";
+    const setLine = (line, cls) => {
+      const full = TITLE + line;
+      if (text.textContent !== full) text.textContent = full;
+      if (strip.className !== cls) strip.className = cls;
+    };
+    const SD_SLATE = "text-xs font-bold mt-2 text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200";
+    const SD_GREEN = "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100";
+    const SD_AMBER = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
+    strip.style.display = "";
+    if (window._sdTurbo?.ready) {
+      setLine(t("ai_backend.sd_ready") || "Ready. Images generate on this computer when cloud image AI is unavailable.", SD_GREEN);
+      btn.hidden = true;
+      return;
+    }
+    let adapterOk = false;
+    try {
+      adapterOk = window.__alloWebGpuAdapterCheck ? await window.__alloWebGpuAdapterCheck() : !!(typeof navigator !== "undefined" && navigator.gpu && await navigator.gpu.requestAdapter());
+    } catch (_) {
+      adapterOk = false;
+    }
+    if (!adapterOk) {
+      setLine(t("ai_backend.sd_no_gpu") || "Not available on this computer (no WebGPU graphics adapter). Cloud image AI still works with an API key.", SD_SLATE);
+      btn.hidden = true;
+      return;
+    }
+    const DOWNLOADING = t("ai_backend.sd_downloading") || "Downloading the model... about 2GB, one time only.";
+    if (window.__sdTurboDownloading) {
+      setLine(DOWNLOADING, SD_AMBER);
+      btn.hidden = true;
+      return;
+    }
+    setLine(t("ai_backend.sd_available") || "Available. Downloads a ~2GB model once, then images generate on this computer at no cost.", SD_SLATE);
+    btn.textContent = t("ai_backend.sd_download_btn") || "Download & enable";
+    btn.hidden = false;
+    btn.disabled = false;
+    btn.onclick = async () => {
+      btn.disabled = true;
+      btn.hidden = true;
+      window.__sdTurboDownloading = true;
+      setLine(DOWNLOADING + " 0%", SD_AMBER);
+      try {
+        const ok = await (window.__loadSdTurbo ? window.__loadSdTurbo((p) => {
+          const pct = p && p.pct != null ? Math.round(p.pct * 100) + "%" : "";
+          setLine(DOWNLOADING + " " + pct, SD_AMBER);
+        }) : Promise.resolve(false));
+        window.__sdTurboDownloading = false;
+        if (ok) {
+          setLine(t("ai_backend.sd_ready") || "Ready. Images generate on this computer when cloud image AI is unavailable.", SD_GREEN);
+        } else {
+          setLine(t("ai_backend.sd_failed") || "Download failed. Check the connection and try again.", SD_AMBER);
+          btn.hidden = false;
+          btn.disabled = false;
+        }
+      } catch (e) {
+        window.__sdTurboDownloading = false;
+        setLine((t("ai_backend.sd_failed") || "Download failed. Check the connection and try again.") + (e && e.message ? " (" + e.message + ")" : ""), SD_AMBER);
+        btn.hidden = false;
+        btn.disabled = false;
+      }
+    };
+  };
   const refreshEngineStrip = async () => {
     const strip = document.getElementById("ai-backend-engine-strip");
     if (!strip) return;
@@ -676,6 +754,11 @@ function AIBackendModal(props) {
     if (node && !node.dataset.engineInit) {
       node.dataset.engineInit = "1";
       setTimeout(refreshEngineStrip, 0);
+    }
+  } }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-sdturbo-strip", style: { display: "none" }, "aria-live": "polite", ref: (node) => {
+    if (node && !node.dataset.sdInit) {
+      node.dataset.sdInit = "1";
+      setTimeout(refreshSdTurboStrip, 0);
     }
   } }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.api_key_label") || "API Key", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.api_key_hint") || "(cloud providers only)")), /* @__PURE__ */ React.createElement(
     "input",

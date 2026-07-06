@@ -44,7 +44,11 @@
         </header>
         <div class="app-grid">
           <div class="app-frame-wrap">
-            <iframe id="app-frame" title="AlloFlow application preview"></iframe>
+            <!-- Explicit permissions: same-origin iframes usually inherit, but
+                 read-aloud (autoplay), fluency/ASR (microphone), and Access
+                 Lens (camera) must never silently lose capability to a policy
+                 default change. -->
+            <iframe id="app-frame" title="AlloFlow application preview" allow="autoplay; microphone; camera; clipboard-write; fullscreen" allowfullscreen></iframe>
           </div>
           <aside class="panel app-side">
             <h2>App Manager</h2>

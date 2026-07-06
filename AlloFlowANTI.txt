@@ -5660,7 +5660,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         setKokoroLoadState(null); // No loading overlay
       } else {
         console.log('[Firebase TTS] Auto-loading Kokoro (cached for future sessions)...');
-        window.__loadKokoroTTS();
+        // Surface the boot preload's outcome when a Kokoro voice is the active
+        // selection — silence here left users hearing the browser fallback
+        // with no idea the local voice had (or hadn't) come up.
+        window.__loadKokoroTTS().then((ok) => {
+          try {
+            if (ok && /^(af|am|bf|bm)_/.test(String(selectedVoice || ''))) {
+              addToast(t('toasts.kokoro_ready') || '🎤 Kokoro voice ready — read-aloud now uses it.', 'success');
+            } else if (!ok) {
+              console.warn('[TTS] Kokoro boot preload did not complete — it retries on first read-aloud.');
+            }
+          } catch (_) {}
+        });
       }
     }
   }, []);
@@ -15047,13 +15058,30 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (/Safety|Block/i.test(msg)) return false;
     return Boolean(err.isConfigState || err.isRateLimited || /429|quota|RESOURCE_EXHAUSTED|Rate limited/i.test(msg));
   };
+  // navigator.gpu EXISTING is not enough: Electron (and some browsers) expose
+  // the API while requestAdapter() returns null (GPU blocklist / no switch).
+  // Cache the real adapter answer once so the offer + settings strip never
+  // promise what can't run. (Probe-verified 2026-07-06: desktop needed the
+  // enable-unsafe-webgpu switch for a non-null adapter.)
+  const _webGpuAdapterOk = async () => {
+    if (typeof navigator === 'undefined' || !navigator.gpu) return false;
+    if (typeof window !== 'undefined' && window.__alloWebGpuAdapterOk !== undefined) return window.__alloWebGpuAdapterOk;
+    let ok = false;
+    try { ok = !!(await navigator.gpu.requestAdapter()); } catch (_) { ok = false; }
+    if (typeof window !== 'undefined') window.__alloWebGpuAdapterOk = ok;
+    return ok;
+  };
+  if (typeof window !== 'undefined') window.__alloWebGpuAdapterCheck = _webGpuAdapterOk;
   const _sdTurboMaybeOffer = (err) => {
     if (sdTurboOfferedRef.current || window.__sdTurboOfferDeclined || window.__sdTurboDownloading) return;
     if (window._sdTurbo?.ready) return;
-    if (typeof navigator === 'undefined' || !navigator.gpu) return; // no WebGPU: never offer what can't run
+    if (typeof navigator === 'undefined' || !navigator.gpu) return; // no WebGPU API: never offer what can't run
     if (!_sdTurboEligibleError(err)) return;
-    sdTurboOfferedRef.current = true;
-    setShowSdTurboOfferModal(true);
+    _webGpuAdapterOk().then((ok) => {
+      if (!ok || sdTurboOfferedRef.current) return; // API present but no real adapter → stay silent
+      sdTurboOfferedRef.current = true;
+      setShowSdTurboOfferModal(true);
+    });
   };
   const callImagen = async (prompt, width = 300, qual = 0.7) => {
     if (!_isCanvasEnv && !apiKey) {
