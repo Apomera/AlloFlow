@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -19348,7 +19348,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _result = {
         accessibleHtml,
         integrityCoverage,
-        integrityWarning,
+        // (integrityWarning is set once, below, with the M5 `|| null` default —
+        // a shorthand copy here was a duplicate key esbuild warned on; the
+        // later key won anyway, so removing this is behavior-identical.)
         // Estimated OCR-quality of the embedded searchable text (scanned docs only; null otherwise).
         // { score, band, confidence, basis, metrics, suspectSamples } — see _alloOcrAccuracy.
         ocrAccuracy,
@@ -31681,11 +31683,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

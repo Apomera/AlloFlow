@@ -19346,7 +19346,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       const _result = {
         accessibleHtml,
         integrityCoverage,
-        integrityWarning,
+        // (integrityWarning is set once, below, with the M5 `|| null` default —
+        // a shorthand copy here was a duplicate key esbuild warned on; the
+        // later key won anyway, so removing this is behavior-identical.)
         // Estimated OCR-quality of the embedded searchable text (scanned docs only; null otherwise).
         // { score, band, confidence, basis, metrics, suspectSamples } — see _alloOcrAccuracy.
         ocrAccuracy,
