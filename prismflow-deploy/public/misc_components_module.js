@@ -167,6 +167,21 @@ const WordSoundsReviewPanel = ({
   }, []);
   const [expandedIndex, setExpandedIndex] = React.useState(null);
   const [showPhonemeBank, setShowPhonemeBank] = React.useState(null);
+  const [bankLabelMode, setBankLabelMode] = React.useState(() => {
+    try {
+      return localStorage.getItem("alloWsBankLabelMode") || "ipa";
+    } catch (_) {
+      return "ipa";
+    }
+  });
+  const [expandedBankKey, setExpandedBankKey] = React.useState(null);
+  const setBankLabelModePersist = (m) => {
+    setBankLabelMode(m);
+    try {
+      localStorage.setItem("alloWsBankLabelMode", m);
+    } catch (_) {
+    }
+  };
   const [imageRefinementInputs, setImageRefinementInputs] = React.useState({});
   const [draggedPhoneme, setDraggedPhoneme] = React.useState(null);
   const [dragOverIndex, setDragOverIndex] = React.useState(null);
@@ -301,6 +316,32 @@ const WordSoundsReviewPanel = ({
     const ipa = GRAPHEME_TO_IPA[grapheme] || grapheme;
     return { ipa, grapheme: defaultGrapheme || grapheme };
   };
+  const _bankIpaFallback = {
+    oo_short: "\u028A",
+    zh: "\u0292",
+    q: "kw",
+    ie: "a\u026A",
+    ea: "i",
+    oy: "\u0254\u026A",
+    air: "\u025Br",
+    ear: "\u026Ar",
+    ay: "e\u026A",
+    ar: "\u0251r",
+    aw: "\u0254",
+    ow: "a\u028A",
+    ue: "u"
+  };
+  const resolvePhonemeDisplay = (key) => {
+    const anchors = typeof window !== "undefined" && window.__alloAnchor && window.__alloAnchor.GRAPHOPHONEME_ANCHORS || {};
+    const a = anchors[key];
+    if (a) return {
+      ipa: a.ipa || normalizePhoneme(key).ipa || key,
+      graphemes: Array.isArray(a.graphemes) && a.graphemes.length ? a.graphemes : [key],
+      keyWord: a.keyWord || ""
+    };
+    return { ipa: _bankIpaFallback[key] || normalizePhoneme(key).ipa || key, graphemes: [key], keyWord: "" };
+  };
+  const _bankDisplayGrapheme = (key) => key === "oo_short" ? "\u014F\u014F" : key;
   const addPhoneme = (wordIdx, phoneme) => {
     const word = preloadedWords[wordIdx];
     const newPhonemes = [...word.phonemes || [], phoneme];
@@ -647,26 +688,67 @@ const WordSoundsReviewPanel = ({
         const a = Array.isArray(p) ? p : p?.phonemes && Array.isArray(p.phonemes) ? p.phonemes : [];
         return a.length === 0;
       })() && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-sm italic" }, t("word_sounds.no_phonemes_hint") || 'No phonemes - click "Add Sound" to build')
-    ), showPhonemeBank === idx && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("word_sounds.phoneme_bank_hover_hint") || "\u{1F4A1} Hover any sound for teaching tips")), Object.entries(PHONEME_BANK).map(([category, phonemes]) => /* @__PURE__ */ React.createElement("div", { key: category, className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase mb-1", title: category === "Consonants" ? "Single consonant sounds \u2014 pair voiced (b,d,g) with unvoiced (p,t,k)" : category === "Vowels (Short)" ? "Quick vowel sounds \u2014 cat, pet, sit, hot, cup, book" : category === "Vowels (Long)" ? "Longer vowel sounds \u2014 see, moon, cue, saw + vowel teams ai, ea, oa" : category === "Digraphs" ? "Two letters that make ONE sound \u2014 sh, ch, th, wh, ng" : category === "R-Controlled" ? "Bossy R changes the vowel sound \u2014 ar, er, ir, or, ur, air, ear" : category === "Diphthongs" ? "Vowel sounds that glide \u2014 ay (day), ie (tie), ow (cow), oy (boy)" : category }, category), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, (Array.isArray(phonemes) ? phonemes : []).map((p) => /* @__PURE__ */ React.createElement("div", { key: p, className: "inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors" }, /* @__PURE__ */ React.createElement(
+    ), showPhonemeBank === idx && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2 gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("word_sounds.phoneme_bank_hover_hint") || "\u{1F4A1} Hover any sound for teaching tips"), /* @__PURE__ */ React.createElement("div", { className: "inline-flex rounded-lg border border-slate-300 overflow-hidden text-[11px] font-bold shrink-0", role: "group", "aria-label": t("word_sounds.bank_label_mode") || "Sound label style" }, /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => onPlayAudio && onPlayAudio(p),
-        className: "px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors border-r border-slate-300",
-        title: typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `\u{1F50A} ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) \u2014 ${PHONEME_GUIDE[p].examples}` : `Play sound: ${p}`
+        type: "button",
+        onClick: () => setBankLabelModePersist("ipa"),
+        "aria-pressed": bankLabelMode === "ipa",
+        title: t("word_sounds.bank_show_ipa") || "Show the sound in IPA (international phonetic symbols) first",
+        className: `px-2 py-1 transition-colors ${bankLabelMode === "ipa" ? "bg-pink-600 text-white" : "bg-white text-slate-500 hover:bg-pink-50"}`
       },
-      "\u{1F50A}"
+      "/\u0283/ IPA"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
-        onClick: () => addPhoneme(idx, p),
-        draggable: true,
-        onDragStart: (e) => handleDragStart(e, p, "bank"),
-        onDragEnd: handleDragEnd,
-        className: "px-2 py-1 bg-white hover:bg-pink-100 text-sm font-mono transition-colors cursor-grab active:cursor-grabbing",
-        title: typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label}: ${PHONEME_GUIDE[p].tip}${PHONEME_GUIDE[p].confusesWith?.length ? "\n\u26A0\uFE0F Often confused with: " + PHONEME_GUIDE[p].confusesWith.join(", ") : ""}` : `Click or drag to add "${p}"`
+        type: "button",
+        onClick: () => setBankLabelModePersist("letters"),
+        "aria-pressed": bankLabelMode === "letters",
+        title: t("word_sounds.bank_show_letters") || "Show the letters (graphemes) first",
+        className: `px-2 py-1 border-l border-slate-300 transition-colors ${bankLabelMode === "letters" ? "bg-pink-600 text-white" : "bg-white text-slate-500 hover:bg-pink-50"}`
       },
-      p === "oo_short" ? "\u014F\u014F" : p
-    )))))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-orange-500 uppercase tracking-wider mb-2 block" }, t("word_sounds.rhyme_options")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
+      "Aa letters"
+    ))), Object.entries(PHONEME_BANK).map(([category, phonemes]) => /* @__PURE__ */ React.createElement("div", { key: category, className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase mb-1", title: category === "Consonants" ? "Single consonant sounds \u2014 pair voiced (b,d,g) with unvoiced (p,t,k)" : category === "Vowels (Short)" ? "Quick vowel sounds \u2014 cat, pet, sit, hot, cup, book" : category === "Vowels (Long)" ? "Longer vowel sounds \u2014 see, moon, cue, saw + vowel teams ai, ea, oa" : category === "Digraphs" ? "Two letters that make ONE sound \u2014 sh, ch, th, wh, ng" : category === "R-Controlled" ? "Bossy R changes the vowel sound \u2014 ar, er, ir, or, ur, air, ear" : category === "Diphthongs" ? "Vowel sounds that glide \u2014 ay (day), ie (tie), ow (cow), oy (boy)" : category }, category), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, (Array.isArray(phonemes) ? phonemes : []).map((p) => {
+      const _disp = resolvePhonemeDisplay(p);
+      const _graph = _bankDisplayGrapheme(p);
+      const _ipaLabel = "/" + _disp.ipa + "/";
+      const _lead = bankLabelMode === "ipa" ? _ipaLabel : _graph;
+      const _caption = bankLabelMode === "ipa" ? _graph : _ipaLabel;
+      const _bankKey = idx + ":" + p;
+      const _isExp = expandedBankKey === _bankKey;
+      const _hasSpellings = Array.isArray(_disp.graphemes) && _disp.graphemes.length > 1;
+      const _addTitle = typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label}: ${PHONEME_GUIDE[p].tip}${PHONEME_GUIDE[p].confusesWith?.length ? "\n\u26A0\uFE0F Often confused with: " + PHONEME_GUIDE[p].confusesWith.join(", ") : ""}` : `Click or drag to add the ${_ipaLabel} sound (${_graph})`;
+      return /* @__PURE__ */ React.createElement("div", { key: p, className: "inline-flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => onPlayAudio && onPlayAudio(p),
+          className: "px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors border-r border-slate-300",
+          title: typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `\u{1F50A} ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) \u2014 ${PHONEME_GUIDE[p].examples}` : `Play the ${_ipaLabel} sound`
+        },
+        "\u{1F50A}"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => addPhoneme(idx, p),
+          draggable: true,
+          onDragStart: (e) => handleDragStart(e, p, "bank"),
+          onDragEnd: handleDragEnd,
+          className: "px-2 py-1 bg-white hover:bg-pink-100 transition-colors cursor-grab active:cursor-grabbing flex flex-col items-center leading-none",
+          title: _addTitle
+        },
+        /* @__PURE__ */ React.createElement("span", { className: bankLabelMode === "ipa" ? "text-sm font-bold text-slate-800" : "text-sm font-mono text-slate-800" }, _lead),
+        /* @__PURE__ */ React.createElement("span", { className: bankLabelMode === "ipa" ? "text-[10px] font-mono text-slate-400 mt-0.5" : "text-[10px] text-slate-400 mt-0.5" }, _caption)
+      ), _hasSpellings && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => setExpandedBankKey(_isExp ? null : _bankKey),
+          "aria-expanded": _isExp,
+          className: "px-1 py-1 bg-slate-50 hover:bg-pink-100 text-slate-400 hover:text-pink-600 transition-colors border-l border-slate-300 text-[10px]",
+          title: t("word_sounds.bank_show_spellings") || "Show the letters that spell this sound"
+        },
+        _isExp ? "\u25B4" : "\u22EF"
+      )), _isExp && /* @__PURE__ */ React.createElement("div", { className: "mt-1 mb-1 px-2 py-1 bg-white border border-pink-200 rounded-lg text-[11px] text-slate-600 max-w-[220px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-pink-600" }, _ipaLabel), _disp.keyWord ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, " \xB7 as in ", _disp.keyWord) : null, /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 flex flex-wrap gap-1" }, _disp.graphemes.map((g, gi) => /* @__PURE__ */ React.createElement("span", { key: gi, className: "px-1.5 py-0.5 bg-slate-100 rounded font-mono text-slate-700" }, g)))));
+    })))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-orange-500 uppercase tracking-wider mb-2 block" }, t("word_sounds.rhyme_options")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.rhyme_time_options"),

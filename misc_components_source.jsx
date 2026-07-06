@@ -162,6 +162,17 @@ const WordSoundsReviewPanel = ({
     }, []);
     const [expandedIndex, setExpandedIndex] = React.useState(null);
     const [showPhonemeBank, setShowPhonemeBank] = React.useState(null);
+    // Phoneme-bank display: IPA-first (the language-neutral spine) by default,
+    // with a toggle to letters-first for young readers, and a per-chip reveal of
+    // the graphemes that spell each sound. Persisted so a teacher's choice sticks.
+    const [bankLabelMode, setBankLabelMode] = React.useState(() => {
+        try { return localStorage.getItem('alloWsBankLabelMode') || 'ipa'; } catch (_) { return 'ipa'; }
+    });
+    const [expandedBankKey, setExpandedBankKey] = React.useState(null);
+    const setBankLabelModePersist = (m) => {
+        setBankLabelMode(m);
+        try { localStorage.setItem('alloWsBankLabelMode', m); } catch (_) {}
+    };
     const [imageRefinementInputs, setImageRefinementInputs] = React.useState({});
     const [draggedPhoneme, setDraggedPhoneme] = React.useState(null);
     const [dragOverIndex, setDragOverIndex] = React.useState(null);
@@ -243,6 +254,26 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
     const ipa = GRAPHEME_TO_IPA[grapheme] || grapheme;
     return { ipa, grapheme: defaultGrapheme || grapheme };
 };
+    // Resolve a phoneme-bank key (a grapheme like "sh"/"ee"/"ar") to its IPA +
+    // the graphemes that spell that sound + a key word, from the shared
+    // GRAPHOPHONEME_ANCHORS table (exposed by word_sounds as window.__alloAnchor),
+    // falling back to the local grapheme→IPA map. The graphemes list is what the
+    // per-chip "spellings" reveal shows — the letters this sound corresponds with.
+    const _bankIpaFallback = {
+        oo_short: 'ʊ', zh: 'ʒ', q: 'kw', ie: 'aɪ', ea: 'i', oy: 'ɔɪ',
+        air: 'ɛr', ear: 'ɪr', ay: 'eɪ', ar: 'ɑr', aw: 'ɔ', ow: 'aʊ', ue: 'u'
+    };
+    const resolvePhonemeDisplay = (key) => {
+        const anchors = (typeof window !== 'undefined' && window.__alloAnchor && window.__alloAnchor.GRAPHOPHONEME_ANCHORS) || {};
+        const a = anchors[key];
+        if (a) return {
+            ipa: a.ipa || normalizePhoneme(key).ipa || key,
+            graphemes: (Array.isArray(a.graphemes) && a.graphemes.length) ? a.graphemes : [key],
+            keyWord: a.keyWord || ''
+        };
+        return { ipa: _bankIpaFallback[key] || normalizePhoneme(key).ipa || key, graphemes: [key], keyWord: '' };
+    };
+    const _bankDisplayGrapheme = (key) => (key === 'oo_short' ? 'ŏŏ' : key);
     const addPhoneme = (wordIdx, phoneme) => {
         const word = preloadedWords[wordIdx];
         const newPhonemes = [...(word.phonemes || []), phoneme];
@@ -619,8 +650,21 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                             </div>
                                             {showPhonemeBank === idx && (
                                                 <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in slide-in-from-top-2">
-                                                    <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                                                         <span className="text-xs text-slate-600 italic">{t('word_sounds.phoneme_bank_hover_hint') || '💡 Hover any sound for teaching tips'}</span>
+                                                        {/* IPA-first vs letters-first toggle. IPA is the language-neutral
+                                                            spine (default); letters-first suits young readers. Each chip's
+                                                            "spellings" reveal shows the graphemes the sound corresponds with. */}
+                                                        <div className="inline-flex rounded-lg border border-slate-300 overflow-hidden text-[11px] font-bold shrink-0" role="group" aria-label={t('word_sounds.bank_label_mode') || 'Sound label style'}>
+                                                            <button type="button" onClick={() => setBankLabelModePersist('ipa')}
+                                                                aria-pressed={bankLabelMode === 'ipa'}
+                                                                title={t('word_sounds.bank_show_ipa') || 'Show the sound in IPA (international phonetic symbols) first'}
+                                                                className={`px-2 py-1 transition-colors ${bankLabelMode === 'ipa' ? 'bg-pink-600 text-white' : 'bg-white text-slate-500 hover:bg-pink-50'}`}>/ʃ/ IPA</button>
+                                                            <button type="button" onClick={() => setBankLabelModePersist('letters')}
+                                                                aria-pressed={bankLabelMode === 'letters'}
+                                                                title={t('word_sounds.bank_show_letters') || 'Show the letters (graphemes) first'}
+                                                                className={`px-2 py-1 border-l border-slate-300 transition-colors ${bankLabelMode === 'letters' ? 'bg-pink-600 text-white' : 'bg-white text-slate-500 hover:bg-pink-50'}`}>Aa letters</button>
+                                                        </div>
                                                     </div>
                                                     {Object.entries(PHONEME_BANK).map(([category, phonemes]) => (
                                                         <div key={category} className="mb-3">
@@ -634,23 +678,65 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                                 category
                                                             }>{category}</div>
                                                             <div className="flex flex-wrap gap-1">
-                                                                {(Array.isArray(phonemes) ? phonemes : []).map(p => (
-                                                                    <div key={p} className="inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors">
-                                                                        <button
-                                                                            onClick={() => onPlayAudio && onPlayAudio(p)}
-                                                                            className="px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors border-r border-slate-300"
-                                                                            title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `🔊 ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : `Play sound: ${p}`}
-                                                                        >🔊</button>
-                                                                        <button
-                                                                            onClick={() => addPhoneme(idx, p)}
-                                                                            draggable
-                                                                            onDragStart={(e) => handleDragStart(e, p, 'bank')}
-                                                                            onDragEnd={handleDragEnd}
-                                                                            className="px-2 py-1 bg-white hover:bg-pink-100 text-sm font-mono transition-colors cursor-grab active:cursor-grabbing"
-                                                                            title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label}: ${PHONEME_GUIDE[p].tip}${PHONEME_GUIDE[p].confusesWith?.length ? '\n⚠️ Often confused with: ' + PHONEME_GUIDE[p].confusesWith.join(', ') : ''}` : `Click or drag to add "${p}"`}
-                                                                        >{p === 'oo_short' ? 'ŏŏ' : p}</button>
-                                                                    </div>
-                                                                ))}
+                                                                {(Array.isArray(phonemes) ? phonemes : []).map(p => {
+                                                                    // IPA-first chip: the sound (IPA) leads, the canonical
+                                                                    // grapheme is the small caption; an expander reveals every
+                                                                    // grapheme that spells the sound. `letters` mode flips lead
+                                                                    // + caption for young readers. Click/drag still adds by the
+                                                                    // grapheme key `p` (word phonemes stay grapheme-based).
+                                                                    const _disp = resolvePhonemeDisplay(p);
+                                                                    const _graph = _bankDisplayGrapheme(p);
+                                                                    const _ipaLabel = '/' + _disp.ipa + '/';
+                                                                    const _lead = bankLabelMode === 'ipa' ? _ipaLabel : _graph;
+                                                                    const _caption = bankLabelMode === 'ipa' ? _graph : _ipaLabel;
+                                                                    const _bankKey = idx + ':' + p;
+                                                                    const _isExp = expandedBankKey === _bankKey;
+                                                                    const _hasSpellings = Array.isArray(_disp.graphemes) && _disp.graphemes.length > 1;
+                                                                    const _addTitle = typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p]
+                                                                        ? `${PHONEME_GUIDE[p].label}: ${PHONEME_GUIDE[p].tip}${PHONEME_GUIDE[p].confusesWith?.length ? '\n⚠️ Often confused with: ' + PHONEME_GUIDE[p].confusesWith.join(', ') : ''}`
+                                                                        : `Click or drag to add the ${_ipaLabel} sound (${_graph})`;
+                                                                    return (
+                                                                        <div key={p} className="inline-flex flex-col">
+                                                                            <div className="inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors">
+                                                                                <button
+                                                                                    onClick={() => onPlayAudio && onPlayAudio(p)}
+                                                                                    className="px-1.5 py-1 bg-slate-100 hover:bg-pink-200 text-slate-600 hover:text-pink-600 transition-colors border-r border-slate-300"
+                                                                                    title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[p] ? `🔊 ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) — ${PHONEME_GUIDE[p].examples}` : `Play the ${_ipaLabel} sound`}
+                                                                                >🔊</button>
+                                                                                <button
+                                                                                    onClick={() => addPhoneme(idx, p)}
+                                                                                    draggable
+                                                                                    onDragStart={(e) => handleDragStart(e, p, 'bank')}
+                                                                                    onDragEnd={handleDragEnd}
+                                                                                    className="px-2 py-1 bg-white hover:bg-pink-100 transition-colors cursor-grab active:cursor-grabbing flex flex-col items-center leading-none"
+                                                                                    title={_addTitle}
+                                                                                >
+                                                                                    <span className={bankLabelMode === 'ipa' ? 'text-sm font-bold text-slate-800' : 'text-sm font-mono text-slate-800'}>{_lead}</span>
+                                                                                    <span className={bankLabelMode === 'ipa' ? 'text-[10px] font-mono text-slate-400 mt-0.5' : 'text-[10px] text-slate-400 mt-0.5'}>{_caption}</span>
+                                                                                </button>
+                                                                                {_hasSpellings && (
+                                                                                    <button
+                                                                                        onClick={() => setExpandedBankKey(_isExp ? null : _bankKey)}
+                                                                                        aria-expanded={_isExp}
+                                                                                        className="px-1 py-1 bg-slate-50 hover:bg-pink-100 text-slate-400 hover:text-pink-600 transition-colors border-l border-slate-300 text-[10px]"
+                                                                                        title={t('word_sounds.bank_show_spellings') || 'Show the letters that spell this sound'}
+                                                                                    >{_isExp ? '▴' : '⋯'}</button>
+                                                                                )}
+                                                                            </div>
+                                                                            {_isExp && (
+                                                                                <div className="mt-1 mb-1 px-2 py-1 bg-white border border-pink-200 rounded-lg text-[11px] text-slate-600 max-w-[220px]">
+                                                                                    <span className="font-bold text-pink-600">{_ipaLabel}</span>
+                                                                                    {_disp.keyWord ? <span className="text-slate-400"> · as in {_disp.keyWord}</span> : null}
+                                                                                    <div className="mt-0.5 flex flex-wrap gap-1">
+                                                                                        {_disp.graphemes.map((g, gi) => (
+                                                                                            <span key={gi} className="px-1.5 py-0.5 bg-slate-100 rounded font-mono text-slate-700">{g}</span>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })}
                                                             </div>
                                                         </div>
                                                     ))}
