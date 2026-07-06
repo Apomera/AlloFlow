@@ -3125,6 +3125,28 @@
                       }),
                   ),
                 ),
+                (data.dictionaryIpa || data.dictionaryAudio)
+                  ? /*#__PURE__*/ React.createElement(
+                      "div",
+                      { className: "flex items-center justify-center gap-2 flex-wrap" },
+                      data.dictionaryIpa
+                        ? /*#__PURE__*/ React.createElement("span", { className: "font-mono text-sm text-slate-500" }, data.dictionaryIpa)
+                        : null,
+                      data.dictionaryAudio
+                        ? /*#__PURE__*/ React.createElement(
+                            "button",
+                            {
+                              type: "button",
+                              onClick: () => { try { new Audio(data.dictionaryAudio).play().catch(() => {}); } catch (_e) {} },
+                              className: "inline-flex items-center gap-1 text-xs font-semibold text-violet-700 bg-white hover:bg-violet-50 border border-violet-300 rounded-full px-2.5 py-1 shadow-sm transition-colors",
+                              "aria-label": (ts("word_sounds.hear_real_recording") || "Hear a real recording"),
+                              title: (ts("word_sounds.hear_real_recording") || "Hear a real recording"),
+                            },
+                            (ts("word_sounds.real_recording") || "Real recording"),
+                          )
+                        : null,
+                    )
+                  : null,
                 /*#__PURE__*/ React.createElement(
                   "div",
                   { className: "flex items-center justify-center gap-2" },
@@ -7129,6 +7151,25 @@ EXAMPLES:
                 }
               } catch (_e) {
                 /* keep Gemini phonemeData — eSpeak is an enhancement, never a gate */
+              }
+              // Authoritative dictionary IPA + real recording (English-only) — a quiet third
+              // oracle beside eSpeak/Gemini, and the word's authoritative IPA to display.
+              // Fallback-safe: absence just means no extra row. Rides phonemeData → state.
+              try {
+                if (!wordSoundsLanguage || wordSoundsLanguage.startsWith("en")) {
+                  if (!(window.AlloDictionary && typeof window.AlloDictionary.lookup === "function") && window.__alloLoadPlugin) {
+                    await Promise.race([window.__alloLoadPlugin("dictionary_loader.js"), new Promise((r) => setTimeout(r, 6000))]);
+                  }
+                  if (window.AlloDictionary && typeof window.AlloDictionary.lookup === "function") {
+                    const _de = await Promise.race([window.AlloDictionary.lookup(targetWord), new Promise((res) => setTimeout(() => res(null), 4000))]);
+                    if (_de && (_de.phonetic || _de.audio)) {
+                      phonemeData = Object.assign({}, phonemeData || {}, { dictionaryIpa: _de.phonetic || "", dictionaryAudio: _de.audio || "" });
+                      debugLog(`[dict] "${targetWord}": IPA ${_de.phonetic || "(none)"}${_de.audio ? " + recording" : ""}`);
+                    }
+                  }
+                }
+              } catch (_e) {
+                /* no dictionary entry — enhancement only, never a gate */
               }
               const fetchAudio = async () => {
                 try {
