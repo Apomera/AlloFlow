@@ -2107,6 +2107,30 @@
     return '<!DOCTYPE html>\n<html lang="' + stEscapeHtml(lang) + '">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>' + stEscapeHtml(doc.title) + '</title>\n<style>\n  body { margin: 0; background: #f1f5f9; font-family: system-ui, sans-serif; }\n  .st-page { position: relative; width: ' + canvas.w + 'px; height: ' + canvas.h + 'px; background: ' + canvas.background.fill + '; margin: 24px auto; box-shadow: 0 2px 12px rgba(15,23,42,0.15); overflow: hidden; }\n  @media print { body { background: none; } .st-page { margin: 0; box-shadow: none; page-break-after: always; } }\n</style>\n</head>\n<body>\n<main class="st-page">\n' + parts.join('\n') + '\n</main>\n</body>\n</html>';
   }
 
+  // ── Keyboard shortcut reference (pure data; the editor renders + binds it) ──
+  // `mod` = the platform command key (Ctrl on Windows/Linux, ⌘ on Mac); the
+  // editor prefixes it and localizes each label by id (studio.sc_<id>). Kept as
+  // ONE source of truth so the bound handlers and the help overlay never drift.
+  function stShortcutList() {
+    return [
+      { id: 'undo', mod: true, keys: 'Z', label: 'Undo' },
+      { id: 'redo', mod: true, keys: 'Shift+Z / Y', label: 'Redo' },
+      { id: 'duplicate', mod: true, keys: 'D', label: 'Duplicate the selection' },
+      { id: 'selectAll', mod: true, keys: 'A', label: 'Select all objects' },
+      { id: 'save', mod: true, keys: 'S', label: 'Save the document' },
+      { id: 'forward', mod: true, keys: ']', label: 'Move later in reading order' },
+      { id: 'backward', mod: true, keys: '[', label: 'Move earlier in reading order' },
+      { id: 'zoomIn', mod: true, keys: '+', label: 'Zoom in' },
+      { id: 'zoomOut', mod: true, keys: '-', label: 'Zoom out' },
+      { id: 'zoomFit', mod: true, keys: '0', label: 'Fit the page to the screen' },
+      { id: 'nudge', mod: false, keys: 'Arrow keys', label: 'Move the selected object' },
+      { id: 'resize', mod: false, keys: 'Shift + Arrows', label: 'Resize the selected object' },
+      { id: 'remove', mod: false, keys: 'Delete', label: 'Remove the selected object' },
+      { id: 'deselect', mod: false, keys: 'Esc', label: 'Deselect, or close a panel' },
+      { id: 'help', mod: false, keys: '?', label: 'Show this shortcuts list' }
+    ];
+  }
+
   // ═══════════════════════════ [ST_PURE_END] ═══════════════════════════
 
   function stReadRecentProjects() {
@@ -2379,6 +2403,7 @@
     var _scrub = React.useState(null); var scrubSeq = _scrub[0], setScrubSeq = _scrub[1];
     var _exportOpen = React.useState(false); var exportOpen = _exportOpen[0], setExportOpen = _exportOpen[1];
     var _preflightOpen = React.useState(false); var preflightOpen = _preflightOpen[0], setPreflightOpen = _preflightOpen[1];
+    var _shortcutsOpen = React.useState(false); var shortcutsOpen = _shortcutsOpen[0], setShortcutsOpen = _shortcutsOpen[1];
     var _templateFilter = React.useState('all'); var templateFilter = _templateFilter[0], setTemplateFilter = _templateFilter[1];
     var _resourceOpen = React.useState(false); var resourceOpen = _resourceOpen[0], setResourceOpen = _resourceOpen[1];
     var _resourceSearch = React.useState(''); var resourceSearch = _resourceSearch[0], setResourceSearch = _resourceSearch[1];
@@ -2530,6 +2555,25 @@
       else list.push(id);
       setSelectedIds(list);
       setSelectedId(list.length ? (at >= 0 ? list[list.length - 1] : id) : null);
+    };
+    var selectAllObjects = function () {
+      if (!doc || !doc.objects.length) return;
+      var ids = doc.objects.map(function (o) { return o.id; });
+      setSelectedIds(ids);
+      setSelectedId(ids[ids.length - 1]);
+      stAnnounce(TT('studio.a11y_selected_all', 'Selected all objects'));
+    };
+    // Bring the selected object one step earlier/later in READING ORDER (the same
+    // move as the navigator ↑/↓ buttons; Ctrl+[ / Ctrl+]). Single-selection only.
+    var reorderSelected = function (dir) {
+      if (!doc || !selectedId) return;
+      var idx = -1;
+      for (var i = 0; i < doc.objects.length; i++) { if (doc.objects[i].id === selectedId) { idx = i; break; } }
+      if (idx < 0) return;
+      var to = idx + (dir < 0 ? -1 : 1);
+      if (to < 0 || to > doc.objects.length - 1) return;
+      dispatch({ type: 'object.reorder', target: selectedId, toIndex: to }, 'user');
+      stAnnounce(dir < 0 ? TT('studio.a11y_moved_earlier', 'Moved earlier in reading order') : TT('studio.a11y_moved_later', 'Moved later in reading order'));
     };
     var selected = doc && selectedId ? doc.objects.filter(function (o) { return o.id === selectedId; })[0] : null;
     var selectionIds = (Array.isArray(selectedIds) ? selectedIds : []).filter(function (id) {
@@ -3744,25 +3788,59 @@
       // Escape: deselect if something is selected, otherwise close the modal.
       // A focused object handles (and stops) its own Escape; text fields keep
       // their native Escape. This only fires from panels/canvas chrome.
+      var inField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+      // Escape: close the shortcuts overlay first, then deselect, then close.
       if (ev.key === 'Escape') {
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        if (inField) return;
+        if (shortcutsOpen) { ev.preventDefault(); setShortcutsOpen(false); return; }
         ev.preventDefault();
         if (selectedId || selectionIds.length) { clearSelection(); return; }
         if (typeof props.onClose === 'function') props.onClose();
         return;
       }
+      // '?' (Shift+/) toggles the shortcut reference — no modifier, so handle it
+      // before the Ctrl/⌘ gate below. Never steals a keystroke from a text field.
+      if (ev.key === '?' && !inField && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+        ev.preventDefault(); setShortcutsOpen(function (v) { return !v; }); return;
+      }
       if (!(ev.ctrlKey || ev.metaKey)) return;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (inField) return;
       var k = (ev.key || '').toLowerCase();
       if (k === '+' || k === '=') { ev.preventDefault(); changeCanvasZoom('in'); }
       else if (k === '-' || k === '_') { ev.preventDefault(); changeCanvasZoom('out'); }
       else if (k === '0') { ev.preventDefault(); changeCanvasZoom('fit'); }
       else if (k === 'z' && !ev.shiftKey) { ev.preventDefault(); if (stUndo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_undone', 'Undone')); } }
       else if (k === 'y' || (k === 'z' && ev.shiftKey)) { ev.preventDefault(); if (stRedo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_redone', 'Redone')); } }
+      // Duplicate the selection (group-aware); mirrors the panel's Duplicate button.
+      else if (k === 'd') { ev.preventDefault(); if (selectionIds.length > 1) duplicateSelectedGroup(); else if (selectedId) duplicateSelected(); }
+      else if (k === 'a') { ev.preventDefault(); selectAllObjects(); }
+      // Ctrl+S saves in-app instead of firing the browser's Save-page dialog.
+      else if (k === 's') { ev.preventDefault(); saveDoc(); }
+      else if (k === ']') { ev.preventDefault(); reorderSelected(1); }
+      else if (k === '[') { ev.preventDefault(); reorderSelected(-1); }
     };
     var errorTone = statusTone('error');
     var successTone = statusTone('success');
+    var modLabel = (function () { try { return /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '') ? '⌘' : 'Ctrl'; } catch (_) { return 'Ctrl'; } })();
+    var shortcutsOverlay = shortcutsOpen ? h('div', {
+        role: 'dialog', 'aria-modal': false, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'),
+        style: { position: 'absolute', inset: 0, background: 'rgba(2,6,23,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60, padding: '20px' },
+        onClick: function (e) { if (e.target === e.currentTarget) setShortcutsOpen(false); } },
+      h('div', { style: { background: C.panel, color: C.text, border: '1px solid ' + C.border, borderRadius: '14px', boxShadow: '0 12px 40px rgba(0,0,0,0.4)', maxWidth: '460px', width: '100%', maxHeight: '82%', overflow: 'auto', padding: '18px 20px' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
+          h('h2', { style: { margin: 0, fontSize: '15px', fontWeight: 800 } }, '⌨ ' + TT('studio.shortcuts', 'Keyboard shortcuts')),
+          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close'), onClick: function () { setShortcutsOpen(false); } }, '✕')),
+        h('div', { style: { display: 'grid', gap: '6px' } },
+          stShortcutList().map(function (sc) {
+            var keys = sc.mod ? (modLabel + '+' + sc.keys) : sc.keys;
+            return h('div', { key: sc.id, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '5px 9px', borderRadius: '8px', background: C.panelAlt } },
+              h('span', { style: { fontSize: '12.5px' } }, TT('studio.sc_' + sc.id, sc.label)),
+              h('kbd', { style: { fontSize: '11px', fontWeight: 800, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', background: C.inputBg, color: C.inputText, border: '1px solid ' + C.border, borderRadius: '6px', padding: '2px 7px', whiteSpace: 'nowrap' } }, keys));
+          })),
+        h('p', { style: { fontSize: '11px', color: C.soft, margin: '12px 0 0' } }, TT('studio.shortcuts_note', 'Shortcuts work while the editor is focused, not while typing in a text box.'))
+      )) : null;
     return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'), onKeyDown: function (ev) { trapTab(ev); onShellKeyDown(ev); } },
+      shortcutsOverlay,
       h('div', { ref: _shellRef, style: S.shell },
         // header
         h('div', { style: S.header },
@@ -3777,6 +3855,7 @@
           h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))),
           h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')),
           h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { borderColor: '#fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal),
+          h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'),
           h('span', { style: S.headerSpacer }),
           h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.save', 'Save')),
           h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.portfolio', 'Portfolio')),
@@ -4081,6 +4160,7 @@
   AlloStudio.stStudioLayout = stStudioLayout;
   AlloStudio.stCanvasFitScale = stCanvasFitScale;
   AlloStudio.stAdjustCanvasZoom = stAdjustCanvasZoom;
+  AlloStudio.stShortcutList = stShortcutList;
   AlloStudio.stSnapFrame = stSnapFrame;
   AlloStudio.stBuildAgentScope = stBuildAgentScope;
   AlloStudio.stNormalizeAgentPlan = stNormalizeAgentPlan;

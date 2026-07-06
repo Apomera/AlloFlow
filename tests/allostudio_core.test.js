@@ -1091,3 +1091,32 @@ describe('autosave (crash recovery)', () => {
     expect(ST.stAutosaveValid(ST.stAutosavePayload(ST.stCreateDoc('square', 'x', T0), T0))).toBe(true);
   });
 });
+
+describe('AlloStudio keyboard shortcut reference (stShortcutList)', () => {
+  it('returns a non-empty list with unique ids, keys, and labels', () => {
+    const list = ST.stShortcutList();
+    expect(Array.isArray(list)).toBe(true);
+    expect(list.length).toBeGreaterThanOrEqual(12);
+    const ids = list.map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    list.forEach((s) => {
+      expect(typeof s.id).toBe('string');
+      expect(s.id.length).toBeGreaterThan(0);
+      expect(typeof s.keys).toBe('string');
+      expect(s.keys.length).toBeGreaterThan(0);
+      expect(typeof s.label).toBe('string');
+      expect(s.label.length).toBeGreaterThan(0);
+      expect(typeof s.mod).toBe('boolean');
+    });
+  });
+  it('documents the core editing shortcuts that the handler binds', () => {
+    const byId = {};
+    ST.stShortcutList().forEach((s) => { byId[s.id] = s; });
+    ['undo', 'redo', 'duplicate', 'selectAll', 'save', 'forward', 'backward', 'zoomFit', 'help'].forEach((id) => {
+      expect(byId[id]).toBeTruthy();
+    });
+    expect(byId.duplicate.mod).toBe(true);
+    expect(byId.help.mod).toBe(false);
+    expect(byId.help.keys).toBe('?');
+  });
+});
