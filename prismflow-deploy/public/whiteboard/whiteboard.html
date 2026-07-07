@@ -54,6 +54,11 @@
   .nameinput { max-width: 170px; }
   button.hdr:disabled { pointer-events: none; }
   .flash { font-size: 11px; font-weight: 600; opacity: 0; transition: opacity .3s ease; white-space: nowrap; }
+  .aibar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 7px 12px; background: #172033; border-bottom: 1px solid var(--line); flex: 0 0 auto; }
+  .aibar .ailabel { font-size: 12px; font-weight: 700; color: #a5b4fc; white-space: nowrap; }
+  .aiinput { flex: 1 1 220px; min-width: 160px; max-width: 520px; }
+  .aistatus { font-size: 11px; font-weight: 600; color: var(--dim); }
+  .aibar button.hdr:disabled { opacity: 0.5; }
 </style>
 </head>
 <body>
@@ -78,8 +83,16 @@
   <button class="hdr" id="exportBtn" aria-label="Export the drawing as a PNG image to this device">⬇️ Export PNG</button>
   <span id="flashmsg" class="flash" role="status" aria-live="polite"></span>
 </header>
+<div class="aibar" id="aibar">
+  <span class="ailabel">✨ AI assist</span>
+  <input id="aiPrompt" class="hdr aiinput" type="text" maxlength="600" placeholder="Describe a diagram or image to add — e.g. “water cycle” or “a friendly robot”…" aria-label="Describe what the AI should draw or generate" />
+  <button class="hdr" id="aiDiagramBtn" aria-label="Generate a labeled diagram from your description">◇ Diagram</button>
+  <button class="hdr" id="aiImageBtn" aria-label="Generate a picture from your description">🖼️ Image</button>
+  <button class="hdr" id="aiEditImgBtn" aria-label="Edit the selected image with AI" disabled>✏️ Edit selected image</button>
+  <span id="aiStatus" class="aistatus" role="status" aria-live="polite"></span>
+</div>
 <div id="excal"><div class="loadmsg" id="loadmsg">Loading the whiteboard…</div></div>
-<div class="privacy">Private by default: your drawing stays in this window. <strong>Export PNG</strong> and Excalidraw’s own Save (top-left, for an editable .excalidraw file or SVG) keep it on this device. <strong>Save to AlloFlow</strong> hands this drawing to your AlloFlow window so it joins your resource history — use that only when you want it saved there.</div>
+<div class="privacy">Private by default: your drawing stays in this window. <strong>Export PNG</strong> and Excalidraw’s own Save (top-left, for an editable .excalidraw file or SVG) keep it on this device. <strong>Save to AlloFlow</strong> hands this drawing to your AlloFlow window so it joins your resource history — use that only when you want it saved there. <strong>AI assist</strong> sends your prompt (and, for image edits, the selected image) to Google’s Gemini through AlloFlow.</div>
 
 <script>window.EXCALIDRAW_ASSET_PATH = "https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.17.6/dist/";</script>
 <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin></script>
@@ -166,6 +179,7 @@
     reactRoot = ReactDOM.createRoot(container);
     reactRoot.render(React.createElement(E.Excalidraw, {
       excalidrawAPI: function (api) { excalidrawAPI = api; },
+      onChange: function () { scheduleAiButtonSync(); },
       // Warm, classroom-friendly defaults.
       initialData: { appState: { viewBackgroundColor: '#ffffff', currentItemStrokeColor: IND } },
       UIOptions: { canvasActions: { loadScene: true, saveToActiveFile: true, export: { saveFileToDisk: true }, toggleTheme: true } }
@@ -246,6 +260,148 @@
       .catch(function (e) { console.warn('[Whiteboard] save failed', e); flash('Could not save — try Export PNG instead.', false); });
   }
 
+  // ── AI assist ──
+  // Round-trips through the AlloFlow opener, which holds the API key + quota: we
+  // POST a request; the app runs Gemini/Imagen and posts the result back to the
+  // message listener in Boot. Everything the AI produces is re-sanitized here
+  // before it reaches the canvas (whitelisted element types, clamped geometry,
+  // hex-checked colors, capped counts).
+  var aiPending = {};      // requestId -> { mode }
+  var aiBusyFlag = false;
+  var aiButtonsRAF = 0;
+
+  function aiStatus(msg, good) {
+    var el = document.getElementById('aiStatus');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.color = good === false ? '#f87171' : (good === true ? '#34d399' : '#94a3b8');
+  }
+  function setAiBusy(busy) {
+    aiBusyFlag = busy;
+    var diag = document.getElementById('aiDiagramBtn'); if (diag) diag.disabled = busy;
+    var img = document.getElementById('aiImageBtn'); if (img) img.disabled = busy;
+    updateAiButtons();
+  }
+  function scheduleAiButtonSync() {
+    if (aiButtonsRAF) return;
+    aiButtonsRAF = requestAnimationFrame(function () { aiButtonsRAF = 0; updateAiButtons(); });
+  }
+  function updateAiButtons() {
+    var b = document.getElementById('aiEditImgBtn');
+    if (b) b.disabled = aiBusyFlag || !getSelectedImage();
+  }
+  function getSelectedImage() {
+    try {
+      if (!excalidrawAPI) return null;
+      var st = excalidrawAPI.getAppState() || {};
+      var ids = st.selectedElementIds || {};
+      var els = excalidrawAPI.getSceneElements() || [];
+      var files = excalidrawAPI.getFiles() || {};
+      var picked = els.filter(function (e) { return ids[e.id] && e.type === 'image' && !e.isDeleted; });
+      if (picked.length !== 1) return null;
+      var el = picked[0];
+      var f = el.fileId && files[el.fileId];
+      if (!f || !f.dataURL) return null;
+      return { element: el, dataURL: f.dataURL };
+    } catch (_) { return null; }
+  }
+  function aiRequest(mode) {
+    if (!window.opener || window.opener.closed) { aiStatus('Open the Whiteboard from AlloFlow to use AI assist.', false); return; }
+    if (!excalidrawAPI) return;
+    var promptEl = document.getElementById('aiPrompt');
+    var prompt = (promptEl && promptEl.value || '').trim();
+    if (mode !== 'edit-image' && !prompt) { aiStatus('Type what you want first.', false); return; }
+    var payload = { type: 'allocwb-ai-request', requestId: 'r' + Date.now() + Math.random().toString(36).slice(2, 7), mode: mode, prompt: prompt };
+    if (mode === 'edit-image') {
+      var sel = getSelectedImage();
+      if (!sel) { aiStatus('Select exactly one image on the canvas first.', false); return; }
+      payload.imageDataUrl = sel.dataURL;
+    }
+    aiPending[payload.requestId] = { mode: mode };
+    setAiBusy(true);
+    aiStatus(mode === 'image' ? 'Generating image…' : mode === 'edit-image' ? 'Editing image…' : 'Drawing diagram…', null);
+    toOpener(payload);
+  }
+
+  function clampNum(v, lo, hi, dflt) { v = Number(v); if (!isFinite(v)) return dflt; return Math.max(lo, Math.min(hi, v)); }
+  function sanitizeSkeleton(list) {
+    var ALLOWED = { rectangle: 1, ellipse: 1, diamond: 1, text: 1, arrow: 1, line: 1 };
+    var hex = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+    var out = [];
+    (Array.isArray(list) ? list : []).slice(0, 60).forEach(function (e) {
+      if (!e || typeof e !== 'object' || !ALLOWED[e.type]) return;
+      var o = { type: e.type };
+      o.x = clampNum(e.x, -2000, 4000, 0);
+      o.y = clampNum(e.y, -2000, 4000, 0);
+      if (e.type !== 'text') { o.width = clampNum(e.width, 2, 2000, 100); o.height = clampNum(e.height, 2, 2000, 60); }
+      if (typeof e.text === 'string' && e.text) o.text = e.text.slice(0, 240);
+      if (e.label && typeof e.label === 'object' && typeof e.label.text === 'string') o.label = { text: e.label.text.slice(0, 120) };
+      if (e.type === 'text') o.fontSize = clampNum(e.fontSize, 8, 96, 20);
+      if (hex.test(e.strokeColor || '')) o.strokeColor = e.strokeColor;
+      if (e.backgroundColor === 'transparent' || hex.test(e.backgroundColor || '')) o.backgroundColor = e.backgroundColor;
+      if ((e.type === 'arrow' || e.type === 'line')) {
+        if (!Array.isArray(e.points)) return;
+        o.points = e.points.slice(0, 60).map(function (p) { return [clampNum(p && p[0], -3000, 3000, 0), clampNum(p && p[1], -3000, 3000, 0)]; });
+        if (o.points.length < 2) return;
+      }
+      out.push(o);
+    });
+    return out;
+  }
+  function applyDiagram(plan) {
+    var list = Array.isArray(plan) ? plan : (plan && Array.isArray(plan.elements) ? plan.elements : null);
+    var skel = sanitizeSkeleton(list || []);
+    if (!skel.length) { aiStatus('The AI didn’t return anything drawable — try rephrasing.', false); return; }
+    try {
+      var newEls = (typeof E.convertToExcalidrawElements === 'function') ? E.convertToExcalidrawElements(skel) : skel;
+      var cur = excalidrawAPI.getSceneElements() || [];
+      excalidrawAPI.updateScene({ elements: cur.concat(newEls) });
+      try { excalidrawAPI.scrollToContent(newEls, { fitToContent: true }); } catch (_) {}
+      aiStatus('Diagram added ✓ — edit or move anything you like.', true);
+    } catch (e) { console.warn('[Whiteboard] diagram apply failed', e); aiStatus('Could not add the diagram.', false); }
+  }
+  function makeImageElement(fileId, x, y, w, h) {
+    var now = Date.now();
+    return {
+      type: 'image', id: 'wbimg-' + now + Math.random().toString(36).slice(2, 7), fileId: fileId,
+      x: x, y: y, width: w, height: h, angle: 0,
+      strokeColor: 'transparent', backgroundColor: 'transparent', fillStyle: 'solid',
+      strokeWidth: 1, strokeStyle: 'solid', roughness: 0, opacity: 100,
+      groupIds: [], frameId: null, roundness: null, seed: Math.floor(Math.random() * 2e9),
+      version: 1, versionNonce: Math.floor(Math.random() * 2e9), isDeleted: false,
+      boundElements: null, updated: now, link: null, locked: false, status: 'saved', scale: [1, 1]
+    };
+  }
+  function insertGeneratedImage(dataUrl) {
+    try {
+      if (!excalidrawAPI || typeof excalidrawAPI.addFiles !== 'function') { aiStatus('This build can’t place images — use Diagram instead.', false); return; }
+      var fileId = 'wb-img-' + Date.now() + Math.random().toString(36).slice(2, 7);
+      var mime = (/^data:([^;,]+)/.exec(dataUrl) || [])[1] || 'image/png';
+      excalidrawAPI.addFiles([{ id: fileId, dataURL: dataUrl, mimeType: mime, created: Date.now(), lastRetrieved: Date.now() }]);
+      var st = excalidrawAPI.getAppState() || {};
+      var x = (st.scrollX != null ? -st.scrollX : 0) + 140;
+      var y = (st.scrollY != null ? -st.scrollY : 0) + 120;
+      var el = makeImageElement(fileId, x, y, 360, 360);
+      var cur = excalidrawAPI.getSceneElements() || [];
+      excalidrawAPI.updateScene({ elements: cur.concat([el]) });
+      try { excalidrawAPI.scrollToContent([el], { fitToContent: true }); } catch (_) {}
+      aiStatus('Image added ✓', true);
+    } catch (e) { console.warn('[Whiteboard] image insert failed', e); aiStatus('Could not place the image.', false); }
+  }
+  function replaceSelectedImage(dataUrl) {
+    try {
+      var sel = getSelectedImage();
+      if (!sel) { insertGeneratedImage(dataUrl); return; }
+      var fileId = 'wb-img-' + Date.now() + Math.random().toString(36).slice(2, 7);
+      var mime = (/^data:([^;,]+)/.exec(dataUrl) || [])[1] || 'image/png';
+      excalidrawAPI.addFiles([{ id: fileId, dataURL: dataUrl, mimeType: mime, created: Date.now(), lastRetrieved: Date.now() }]);
+      var cur = excalidrawAPI.getSceneElements() || [];
+      var next = cur.map(function (e) { return (e.id === sel.element.id) ? Object.assign({}, e, { fileId: fileId, version: (e.version || 1) + 1, versionNonce: Math.floor(Math.random() * 2e9), updated: Date.now() }) : e; });
+      excalidrawAPI.updateScene({ elements: next });
+      aiStatus('Image updated ✓', true);
+    } catch (e) { console.warn('[Whiteboard] image replace failed', e); aiStatus('Could not update the image.', false); }
+  }
+
   // Boot
   mount();
   document.getElementById('tplSel').addEventListener('change', function (ev) { loadTemplate(ev.target.value); });
@@ -260,6 +416,16 @@
     }
   }
 
+  // AI assist needs the AlloFlow app (it holds the key/quota); hide it if opened standalone.
+  var aibar = document.getElementById('aibar');
+  if (aibar && !window.opener) aibar.style.display = 'none';
+  var wireAi = function (id, mode) { var b = document.getElementById(id); if (b) b.addEventListener('click', function () { aiRequest(mode); }); };
+  wireAi('aiDiagramBtn', 'diagram');
+  wireAi('aiImageBtn', 'image');
+  wireAi('aiEditImgBtn', 'edit-image');
+  var aiPromptEl = document.getElementById('aiPrompt');
+  if (aiPromptEl) aiPromptEl.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); aiRequest('diagram'); } });
+
   // Inbound messages from the AlloFlow opener. Today this only completes the
   // handshake: the opener answers our hello with an ack, so we learn its origin
   // and target later posts precisely. AI-assist responses (image gen / edit
@@ -271,6 +437,19 @@
       var d = ev.data;
       if (!d || typeof d !== 'object') return;
       if (d.type === 'allocwb-ack') { openerOrigin = ev.origin; return; }
+      if (openerOrigin && ev.origin !== openerOrigin) return;   // once learned, pin to the opener's origin
+      if (d.type === 'allocwb-ai-image' && d.requestId && aiPending[d.requestId]) {
+        var m1 = aiPending[d.requestId].mode; delete aiPending[d.requestId]; setAiBusy(false);
+        if (!d.dataUrl || String(d.dataUrl).indexOf('data:image/') !== 0) { aiStatus('The AI didn’t return an image.', false); return; }
+        if (m1 === 'edit-image') replaceSelectedImage(d.dataUrl); else insertGeneratedImage(d.dataUrl);
+        return;
+      }
+      if (d.type === 'allocwb-ai-plan' && d.requestId && aiPending[d.requestId]) {
+        delete aiPending[d.requestId]; setAiBusy(false); applyDiagram(d.plan); return;
+      }
+      if (d.type === 'allocwb-ai-error' && d.requestId && aiPending[d.requestId]) {
+        delete aiPending[d.requestId]; setAiBusy(false); aiStatus(d.message || 'AI is unavailable right now.', false); return;
+      }
     } catch (_) {}
   });
 

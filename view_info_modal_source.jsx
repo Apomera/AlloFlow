@@ -184,6 +184,8 @@ const OSS_CREDITS = [
       { name: 'OpenDyslexic', use: 'dyslexia-friendly reading font', license: 'SIL OFL-1.1', url: 'https://opendyslexic.org' },
       { name: 'Atkinson Hyperlegible', use: 'low-vision font — Braille Institute', license: 'free (Atkinson Hyperlegible Font License)', url: 'https://brailleinstitute.org/freefont' },
       { name: 'Inter & Lexend', use: 'interface fonts', license: 'SIL OFL-1.1', url: 'https://fonts.google.com' },
+      { name: 'Outfit', use: 'display / heading font — Rodrigo Fuenzalida', license: 'SIL OFL-1.1', url: 'https://fonts.google.com/specimen/Outfit' },
+      { name: 'Plus Jakarta Sans', use: 'interface font — Tokotype', license: 'SIL OFL-1.1', url: 'https://fonts.google.com/specimen/Plus+Jakarta+Sans' },
       { name: 'Noto', use: 'Unicode & CJK text in PDFs — Google', license: 'SIL OFL-1.1', url: 'https://fonts.google.com/noto' },
       { name: 'DejaVu', use: 'PDF fallback font', license: 'Bitstream Vera / public domain', url: 'https://dejavu-fonts.github.io' },
     ],
@@ -295,7 +297,7 @@ function OpenSourceTab({ t }) {
       </details>
 
       <p className="text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200">
-        {t('about.oss_credits_footer') || 'AI features also use Google’s Gemini API, a hosted service (not bundled software). Full license texts ship with the source. Spot something we should credit or correct? Let us know.'}
+        {t('about.oss_credits_footer') || 'AI features also use Google’s Gemini API, a hosted service (not bundled software). Full license texts ship with the source (THIRD_PARTY_LICENSES.md). Spot something we should credit or correct? Let us know.'}
       </p>
     </div>
   );

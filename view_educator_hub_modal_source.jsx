@@ -40,6 +40,10 @@ function EducatorHubModal(props) {
     // bridge feature is reachable from the hub, not only the History sidebar tab.
     // Optional default so a host that hasn't wired the setter still renders the hub.
     setBridgeSendOpen = (() => {}),
+    // Whiteboard launcher (2026-07-06): the host owns window.open now so it can
+    // retain the popup handle for two-way postMessage (Save-to-resources + future
+    // AI assist). Optional default so a host that hasn't wired it still renders.
+    openWhiteboard = (() => {}),
   } = props;
 
   // ── Platform Check (2026-06-12) ──
@@ -216,7 +220,7 @@ function EducatorHubModal(props) {
                   in its own window — the escape-hatch popup pattern, so it works inside the
                   Gemini Canvas sandbox. A general, cross-subject "multiple means of
                   expression" tool, so it lives here in the Educator Hub, not the STEM grid. */}
-              <button data-help-key="educator_hub_whiteboard_card" onClick={() => { setShowEducatorHub(false); try { const _w = window.open('https://alloflow-cdn.pages.dev/whiteboard/whiteboard.html?v=1', 'alloflow-whiteboard', 'width=1280,height=860'); if (!_w && typeof window !== 'undefined') { try { window.alert('Allow pop-ups for this page, then open the Whiteboard again.'); } catch (_a) {} } } catch (_e) {} }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              <button data-help-key="educator_hub_whiteboard_card" onClick={() => { setShowEducatorHub(false); try { openWhiteboard(); } catch (_e) {} }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">✏️</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.whiteboard_title') || 'Whiteboard'}</h3>

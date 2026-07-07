@@ -10035,6 +10035,53 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           try { addToast((t('toasts.whiteboard_saved') || 'Added “{name}” to your resources.').replace('{name}', title), 'success'); } catch (_c) {}
           return;
         }
+        if (d.type === 'allocwb-ai-request') {
+          // AI assist round-trip: the Whiteboard popup has no key/quota, so it asks
+          // us to run Gemini/Imagen and we post the result back. The whiteboard
+          // re-sanitizes anything before it touches the canvas.
+          const src = ev.source;
+          const reqId = d.requestId;
+          const reply = (msg) => { try { src && src.postMessage(msg, WHITEBOARD_ORIGIN); } catch (_r) {} };
+          (async () => {
+            try {
+              if (d.mode === 'image') {
+                const url = await callImagen(String(d.prompt || '').slice(0, 600), 512, 0.85);
+                reply(url ? { type: 'allocwb-ai-image', requestId: reqId, dataUrl: url } : { type: 'allocwb-ai-error', requestId: reqId, message: 'No image was generated.' });
+              } else if (d.mode === 'edit-image') {
+                const b64 = String(d.imageDataUrl || '').replace(/^data:[^,]*,/, '');
+                if (!b64) { reply({ type: 'allocwb-ai-error', requestId: reqId, message: 'No image to edit.' }); return; }
+                const url = await callGeminiImageEdit(String(d.prompt || 'Improve this image.').slice(0, 600), b64, 800, 0.9);
+                reply(url ? { type: 'allocwb-ai-image', requestId: reqId, dataUrl: url } : { type: 'allocwb-ai-error', requestId: reqId, message: 'The image edit did not return anything.' });
+              } else if (d.mode === 'diagram') {
+                const topic = String(d.prompt || '').slice(0, 600);
+                const p = 'You are a diagramming assistant for a classroom whiteboard (Excalidraw). Turn the request into a small, clear labeled diagram or graphic organizer.\n'
+                  + 'Return ONLY valid JSON (no markdown, no prose): {"elements":[ ... ]}.\n'
+                  + 'The canvas working area is about 900 wide by 600 tall; lay elements within roughly x:0..900, y:0..600, non-overlapping, left-to-right / top-to-bottom.\n'
+                  + 'Each element is one of:\n'
+                  + '- {"type":"rectangle|ellipse|diamond","x":N,"y":N,"width":N,"height":N,"strokeColor":"#4f46e5","backgroundColor":"transparent","label":{"text":"words inside the shape"}}\n'
+                  + '- {"type":"text","x":N,"y":N,"text":"a free label","fontSize":20,"strokeColor":"#1e293b"}\n'
+                  + '- {"type":"arrow","x":N,"y":N,"points":[[0,0],[120,0]],"strokeColor":"#334155"}  (points are RELATIVE to x,y; the first point is [0,0])\n'
+                  + '- {"type":"line","x":N,"y":N,"points":[[0,0],[0,200]],"strokeColor":"#334155"}\n'
+                  + 'Rules: at most 40 elements; hex colors only; put short labels INSIDE shapes via "label"; connect related shapes with arrows; keep it readable, not cluttered.\n\n'
+                  + 'REQUEST: ' + topic;
+                const txt = await callGemini(p, true);
+                let plan = null;
+                if (txt) {
+                  const cleaned = String(txt).replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+                  let parsed = null;
+                  try { parsed = JSON.parse(cleaned); } catch (_p) { const m = cleaned.match(/\{[\s\S]*\}/); if (m) { try { parsed = JSON.parse(m[0]); } catch (_p2) {} } }
+                  if (parsed) { const els = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.elements) ? parsed.elements : null); if (els && els.length) plan = els; }
+                }
+                reply(plan ? { type: 'allocwb-ai-plan', requestId: reqId, plan } : { type: 'allocwb-ai-error', requestId: reqId, message: 'The AI could not draw that — try rephrasing.' });
+              } else {
+                reply({ type: 'allocwb-ai-error', requestId: reqId, message: 'Unknown AI request.' });
+              }
+            } catch (err) {
+              reply({ type: 'allocwb-ai-error', requestId: reqId, message: (err && err.message) ? String(err.message).slice(0, 160) : 'AI is unavailable right now.' });
+            }
+          })();
+          return;
+        }
         // allocwb-export / allocwb-template are informational; no host action needed.
       } catch (_e) {}
     };
