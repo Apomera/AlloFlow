@@ -115,12 +115,18 @@ const createTTS = (deps) => {
               contents: [{ parts: [{ text: promptText }] }],
               generationConfig: {
                 responseModalities: ["AUDIO"],
-                // Lower sampling temperature: the default (~1.0) re-rolls the
-                // voice acting on every request, so back-to-back persona calls
-                // with the identical voice direction drift in accent/delivery.
-                // 0.7 keeps renditions stable while still expressive. Gated so
-                // a 400 rejecting the field disables it globally (see below).
-                ...(state.ttsTemperatureUnsupported ? {} : { temperature: 0.7 }),
+                // Read-aloud FIDELITY temperature (2026-07-06). Gemini TTS is a
+                // GENERATIVE model — at the default (~1.0) or even 0.7 it has
+                // latitude to paraphrase or DROP words, which on repetitive
+                // leveled text surfaced as e.g. 'The teacher says, "Jump up
+                // high."' being spoken as a truncated fragment. The text sent
+                // is provably intact (splitter + preprocessing verified), so
+                // the drift is the model's sampling. 0.2 strongly favors reading
+                // the words verbatim — the priority for a struggling reader
+                // tracking along. Personas keep 0.7 (callTTSDirect) for
+                // expressive delivery. Gated so a 400 rejecting the field
+                // disables it globally (see below).
+                ...(state.ttsTemperatureUnsupported ? {} : { temperature: 0.2 }),
                 speechConfig: {
                   voiceConfig: { prebuiltVoiceConfig: { voiceName: safeVoice } }
                 }
@@ -178,7 +184,7 @@ const createTTS = (deps) => {
                               contents: [{ parts: [{ text: `Please say the word: ${text}` }] }],
                               generationConfig: {
                                   responseModalities: ["AUDIO"],
-                                  ...(state.ttsTemperatureUnsupported ? {} : { temperature: 0.7 }),
+                                  ...(state.ttsTemperatureUnsupported ? {} : { temperature: 0.2 }),
                                   speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: safeVoice } } }
                               }
                           };
