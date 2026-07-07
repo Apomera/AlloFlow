@@ -443,7 +443,7 @@
     function btn(label, onClick, opts) {
       opts = opts || {};
       return h('button', {
-        type: 'button', className: 'accesslens-btn', onClick: onClick,
+        key: opts.key, type: 'button', className: 'accesslens-btn', onClick: onClick,
         disabled: !!opts.disabled,
         'aria-pressed': opts.pressed === undefined ? undefined : !!opts.pressed,
         title: opts.title || undefined,
@@ -499,10 +499,10 @@
             onClick: function () { if (fileRef.current) fileRef.current.click(); },
             style: { padding: '10px 16px', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: 800, border: '1px solid ' + C.btnBg, background: C.btnBg, color: '#ffffff' }
           }, '📷 ' + _t('stem.accessLens.take_photo', 'Take or choose a photo')),
-          btn('🎥 ' + _t('stem.accessLens.live_camera', 'Live camera'), startLiveCamera, { title: _t('stem.accessLens.live_camera_title', 'Show a live preview and snap from it') })
+          btn('🎥 ' + _t('stem.accessLens.live_camera', 'Live camera'), startLiveCamera, { key: 'livecam', title: _t('stem.accessLens.live_camera_title', 'Show a live preview and snap from it') })
         ];
         if (camState === 'denied') {
-          row.push(btn('🪟 ' + _t('stem.accessLens.popout', 'Open camera window'), openLensWindow, { title: _t('stem.accessLens.popout_title', 'Opens a separate window where the camera is allowed') }));
+          row.push(btn('🪟 ' + _t('stem.accessLens.popout', 'Open camera window'), openLensWindow, { key: 'popout', title: _t('stem.accessLens.popout_title', 'Opens a separate window where the camera is allowed') }));
         }
         kids.push(h('div', { key: 'row', style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } }, row));
         if (camState === 'denied') {
