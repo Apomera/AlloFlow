@@ -1254,6 +1254,24 @@ const COMPILE_PAIRS = [
             );
         },
     },
+    {
+        // ── immersive_reader ── Reading overlays (Focus/Speed/Bionic/Crawl/Karaoke)
+        // + toolbar. JSX-bearing. Unlike the Babel-compiled pairs above, this module
+        // is built with esbuild (--jsx=transform) via the canonical builder in
+        // _build_immersive_reader_module.js, whose preamble injects the React-hook
+        // aliases, lazy lucide-icon shims, and window.AlloLanguageContext binding.
+        // Both this pair and that script's CLI call the SAME buildImmersiveReaderModule()
+        // so they can never drift (cf. the gemini_api double-builder incident).
+        // Onboarded 2026-07-07 after the FocusReaderOverlay `studentTakeTick is not
+        // defined` crash — now covered by check_free_vars + this compile/dirty-tree guard.
+        name: 'ImmersiveReader',
+        srcPath: path.join(ROOT, 'immersive_reader_source.jsx'),
+        modPath: path.join(ROOT, 'immersive_reader_module.js'),
+        publicPath: path.join(ROOT, 'prismflow-deploy', 'public', 'immersive_reader_module.js'),
+        wrap(src) {
+            return require('./_build_immersive_reader_module.js').buildImmersiveReaderModule(src);
+        },
+    },
 ];
 
 function compileSources() {

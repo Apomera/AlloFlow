@@ -46,6 +46,7 @@ const KNOWN_GLOBALS = new Set([
   'DOMParser', 'XMLSerializer', 'Node', 'Element', 'HTMLElement', 'Image', 'Audio', 'Event', 'CustomEvent',
   'KeyboardEvent', 'MouseEvent', 'SpeechSynthesisUtterance', 'speechSynthesis',
   'MutationObserver', 'IntersectionObserver', 'ResizeObserver', 'getComputedStyle', 'matchMedia',
+  'MediaRecorder', 'MediaStream', 'MediaSource',
   'localStorage', 'sessionStorage', 'indexedDB', 'alert', 'confirm', 'prompt', 'btoa', 'AudioContext',
   'React', 'ReactDOM', 'process', 'require', 'module', 'exports', '__dirname', '__filename', 'Buffer',
   'WebSocket', 'Worker', 'Notification', 'CanvasRenderingContext2D', 'Path2D', 'OffscreenCanvas',
@@ -56,7 +57,7 @@ const KNOWN_GLOBALS = new Set([
 const args = process.argv.slice(2);
 const UPDATE = args.includes('--update');
 const files = args.filter((a) => a !== '--update');
-if (!files.length) files.push('doc_pipeline_source.jsx', 'view_pdf_audit_source.jsx', 'gemini_api_source.jsx');
+if (!files.length) files.push('doc_pipeline_source.jsx', 'view_pdf_audit_source.jsx', 'gemini_api_source.jsx', 'immersive_reader_source.jsx');
 
 const BASELINE_PATH = path.resolve(__dirname, 'free_vars_baseline.json');
 const baseline = (!UPDATE && fs.existsSync(BASELINE_PATH)) ? JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8')) : {};

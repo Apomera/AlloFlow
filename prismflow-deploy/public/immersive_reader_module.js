@@ -782,8 +782,8 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
 });
 const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, isTeacher }) => {
   const { t } = useContext(LanguageContext);
-  const [sentences2, setSentences] = useState([]);
-  const [sentenceIdx2, setSentenceIdx] = useState(0);
+  const [sentences, setSentences] = useState([]);
+  const [sentenceIdx, setSentenceIdx] = useState(0);
   const [regenBusy, setRegenBusy] = useState(false);
   const [prepState, setPrepState] = useState(null);
   const [captureOn, setCaptureOn] = useState(() => {
@@ -794,7 +794,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     }
   });
   const [recording, setRecording] = useState(false);
-  const [studentTakeTick2, setStudentTakeTick] = useState(0);
+  const [studentTakeTick, setStudentTakeTick] = useState(0);
   const _recRef = useRef(null);
   const [sweepPct, setSweepPct] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -855,16 +855,16 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     warmedRef.current = /* @__PURE__ */ new Set();
   }, [text]);
   useEffect(() => {
-    if (!isOpen || typeof getAudioUrl !== "function" || sentences2.length === 0) return;
+    if (!isOpen || typeof getAudioUrl !== "function" || sentences.length === 0) return;
     let cancelled = false;
     const LOOKAHEAD = 3;
     const run = async () => {
-      for (let i = sentenceIdx2 + 1; i <= sentenceIdx2 + LOOKAHEAD && i < sentences2.length; i++) {
+      for (let i = sentenceIdx + 1; i <= sentenceIdx + LOOKAHEAD && i < sentences.length; i++) {
         if (cancelled) return;
         if (warmedRef.current.has(i)) continue;
         warmedRef.current.add(i);
         try {
-          await getAudioUrl(sentences2[i]);
+          await getAudioUrl(sentences[i]);
         } catch (e) {
           warmedRef.current.delete(i);
         }
@@ -875,7 +875,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [isOpen, sentences2, sentenceIdx2, getAudioUrl]);
+  }, [isOpen, sentences, sentenceIdx, getAudioUrl]);
   useEffect(() => {
     if (!isOpen) {
       playTokenRef.current++;
@@ -921,9 +921,9 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       } catch (e) {
       }
     }
-  }, [sentenceIdx2, reducedMotion]);
+  }, [sentenceIdx, reducedMotion]);
   const playSentence = useCallback(async (idx) => {
-    if (idx < 0 || idx >= sentences2.length) return;
+    if (idx < 0 || idx >= sentences.length) return;
     try {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -940,7 +940,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     } catch (e) {
     }
     setSweepPct(0);
-    const sentenceText = sentences2[idx];
+    const sentenceText = sentences[idx];
     const token = ++playTokenRef.current;
     let url = null;
     if (typeof getAudioUrl === "function") {
@@ -970,7 +970,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       audio.addEventListener("timeupdate", updateSweep);
       audio.addEventListener("ended", () => {
         setSweepPct(100);
-        if (autoAdvance && idx < sentences2.length - 1) {
+        if (autoAdvance && idx < sentences.length - 1) {
           setTimeout(() => {
             setSentenceIdx(idx + 1);
           }, 250);
@@ -1008,7 +1008,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
             rafRef.current = null;
           }
           setSweepPct(100);
-          if (autoAdvance && idx < sentences2.length - 1) {
+          if (autoAdvance && idx < sentences.length - 1) {
             setTimeout(() => {
               setSentenceIdx(idx + 1);
             }, 250);
@@ -1029,39 +1029,39 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     }
     setTimeout(() => {
       setSweepPct(100);
-      if (autoAdvance && idx < sentences2.length - 1) setSentenceIdx(idx + 1);
+      if (autoAdvance && idx < sentences.length - 1) setSentenceIdx(idx + 1);
       else setIsPlaying(false);
     }, 1500);
-  }, [sentences2, getAudioUrl, autoAdvance, reducedMotion]);
+  }, [sentences, getAudioUrl, autoAdvance, reducedMotion]);
   const regenerateCurrent = useCallback(async () => {
-    const sentence = sentences2[sentenceIdx2];
+    const sentence = sentences[sentenceIdx];
     if (regenBusy || !sentence || typeof window.__alloRegenerateSentenceAudio !== "function") return;
     setRegenBusy(true);
     try {
       await window.__alloRegenerateSentenceAudio(sentence);
-      warmedRef.current.delete(sentenceIdx2);
+      warmedRef.current.delete(sentenceIdx);
       setSweepPct(0);
-      playSentence(sentenceIdx2);
+      playSentence(sentenceIdx);
     } catch (e) {
     }
     setRegenBusy(false);
-  }, [regenBusy, sentences2, sentenceIdx2, playSentence]);
+  }, [regenBusy, sentences, sentenceIdx, playSentence]);
   const prepareAll = useCallback(async () => {
-    if (prepState && prepState.busy || !sentences2.length || typeof window.__alloPrepareReadAloud !== "function") return;
-    setPrepState({ busy: true, done: 0, total: sentences2.length });
+    if (prepState && prepState.busy || !sentences.length || typeof window.__alloPrepareReadAloud !== "function") return;
+    setPrepState({ busy: true, done: 0, total: sentences.length });
     try {
-      const res = await window.__alloPrepareReadAloud(sentences2, function(done, total) {
+      const res = await window.__alloPrepareReadAloud(sentences, function(done, total) {
         setPrepState({ busy: true, done, total });
       });
       setPrepState({ busy: false, done: res && res.generated || 0, total: res && res.total || 0, bytes: res && res.bytes || 0 });
     } catch (e) {
       setPrepState(null);
     }
-  }, [prepState, sentences2]);
+  }, [prepState, sentences]);
   const playStudentTake = useCallback(() => {
     try {
       const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.studentCurrent;
-      const url = st && st.get(sentences2[sentenceIdx2]);
+      const url = st && st.get(sentences[sentenceIdx]);
       if (!url) return;
       try {
         if (audioRef.current) {
@@ -1080,9 +1080,9 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       });
     } catch (e) {
     }
-  }, [sentences2, sentenceIdx2]);
+  }, [sentences, sentenceIdx]);
   const recordCurrent = useCallback(async () => {
-    const sentence = sentences2[sentenceIdx2];
+    const sentence = sentences[sentenceIdx];
     if (!sentence) return;
     if (recording) {
       try {
@@ -1111,9 +1111,9 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
           if (typeof window.__alloStoreRecordedSentenceAudio === "function") {
             const ok = await window.__alloStoreRecordedSentenceAudio(sentence, blob, "human-teacher");
             if (ok) {
-              warmedRef.current.delete(sentenceIdx2);
+              warmedRef.current.delete(sentenceIdx);
               setSweepPct(0);
-              playSentence(sentenceIdx2);
+              playSentence(sentenceIdx);
             }
           }
         } else {
@@ -1132,7 +1132,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     } catch (e) {
       setRecording(false);
     }
-  }, [recording, sentences2, sentenceIdx2, playSentence, playStudentTake, isTeacher]);
+  }, [recording, sentences, sentenceIdx, playSentence, playStudentTake, isTeacher]);
   useEffect(() => {
     if (!isOpen) {
       try {
@@ -1146,8 +1146,8 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   }, [isOpen]);
   useEffect(() => {
     if (!isOpen || !isPlaying) return;
-    playSentence(sentenceIdx2);
-  }, [sentenceIdx2, isOpen, isPlaying, playSentence]);
+    playSentence(sentenceIdx);
+  }, [sentenceIdx, isOpen, isPlaying, playSentence]);
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
@@ -1155,7 +1155,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         e.preventDefault();
         setIsPlaying((p) => !p);
       } else if (e.code === "ArrowRight") {
-        setSentenceIdx((i) => Math.min(sentences2.length - 1, i + 1));
+        setSentenceIdx((i) => Math.min(sentences.length - 1, i + 1));
         setSweepPct(0);
       } else if (e.code === "ArrowLeft") {
         setSentenceIdx((i) => Math.max(0, i - 1));
@@ -1164,7 +1164,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         setSentenceIdx(0);
         setSweepPct(0);
       } else if (e.code === "End") {
-        setSentenceIdx(Math.max(0, sentences2.length - 1));
+        setSentenceIdx(Math.max(0, sentences.length - 1));
         setSweepPct(0);
       } else if (e.key === "Escape") {
         try {
@@ -1177,12 +1177,12 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, onClose, sentences2.length]);
+  }, [isOpen, onClose, sentences.length]);
   if (!isOpen) return null;
-  const overallPct = sentences2.length > 0 ? (sentenceIdx2 + sweepPct / 100) / sentences2.length * 100 : 0;
+  const overallPct = sentences.length > 0 ? (sentenceIdx + sweepPct / 100) / sentences.length * 100 : 0;
   const renderSentence = (sText, idx) => {
-    const isActive = idx === sentenceIdx2;
-    const isPast = idx < sentenceIdx2;
+    const isActive = idx === sentenceIdx;
+    const isPast = idx < sentenceIdx;
     if (isActive) {
       const pct = sweepPct;
       const bgImage = "linear-gradient(to right, " + c.sweep + " 0%, " + c.sweep + " " + pct + "%, " + c.dim + " " + pct + "%, " + c.dim + " 100%)";
@@ -1265,10 +1265,10 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       rafRef.current = null;
     }
   };
-  const hasStudentTake = studentTakeTick2 >= 0 && (() => {
+  const hasStudentTake = studentTakeTick >= 0 && (() => {
     try {
       const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.studentCurrent;
-      return !!(st && st.has(sentences2[sentenceIdx2]));
+      return !!(st && st.has(sentences[sentenceIdx]));
     } catch (e) {
       return false;
     }
@@ -1276,10 +1276,10 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200", style: { backgroundColor: c.bg, color: c.ink } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
     hardStop();
     onClose();
-  }, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, safeT(t, "immersive.focus_reader", "Focus Reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx2 + 1, " / ", sentences2.length, " \xB7 read-along sweep", (() => {
+  }, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, safeT(t, "immersive.focus_reader", "Focus Reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep", (() => {
     try {
       const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
-      return _st && _st.sourceOf(sentences2[sentenceIdx2]) === "human-teacher";
+      return _st && _st.sourceOf(sentences[sentenceIdx]) === "human-teacher";
     } catch (e) {
       return false;
     }
@@ -1390,7 +1390,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       "aria-label": t("a11y.restart_first_sentence")
     },
     "\u21BA Restart"
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-auto px-6 md:px-16 py-10", style: { scrollBehavior: reducedMotion ? "auto" : "smooth" } }, /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto", style: { fontSize: "clamp(1.5rem, 2.4vw, 2.25rem)", lineHeight: 1.7, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' } }, sentences2.map((s, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: i }, renderSentence(s, i), " ")))), /* @__PURE__ */ React.createElement("div", { className: "h-2 w-full", role: "progressbar", "aria-valuenow": Math.round(overallPct), "aria-valuemin": 0, "aria-valuemax": 100, "aria-label": t("a11y.reading_progress"), style: { background: c.dim + "33" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full", style: { width: overallPct + "%", backgroundColor: c.sweep, transition: reducedMotion ? "none" : "width 0.2s linear" } })), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 text-center text-xs", style: { color: c.dim } }, "Space play/pause \xB7 \u2190 \u2192 sentences \xB7 Home/End jump \xB7 click any sentence to jump \xB7 Esc closes"));
+  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-auto px-6 md:px-16 py-10", style: { scrollBehavior: reducedMotion ? "auto" : "smooth" } }, /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto", style: { fontSize: "clamp(1.5rem, 2.4vw, 2.25rem)", lineHeight: 1.7, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' } }, sentences.map((s, i) => /* @__PURE__ */ React.createElement(React.Fragment, { key: i }, renderSentence(s, i), " ")))), /* @__PURE__ */ React.createElement("div", { className: "h-2 w-full", role: "progressbar", "aria-valuenow": Math.round(overallPct), "aria-valuemin": 0, "aria-valuemax": 100, "aria-label": t("a11y.reading_progress"), style: { background: c.dim + "33" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full", style: { width: overallPct + "%", backgroundColor: c.sweep, transition: reducedMotion ? "none" : "width 0.2s linear" } })), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 text-center text-xs", style: { color: c.dim } }, "Space play/pause \xB7 \u2190 \u2192 sentences \xB7 Home/End jump \xB7 click any sentence to jump \xB7 Esc closes"));
 });
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.FocusReaderOverlay = FocusReaderOverlay;

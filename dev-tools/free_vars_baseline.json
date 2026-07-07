@@ -25,5 +25,6 @@
     "useState",
     "warnLog"
   ],
-  "gemini_api_source.jsx": []
+  "gemini_api_source.jsx": [],
+  "immersive_reader_source.jsx": []
 }
