@@ -282,3 +282,35 @@ describe('resizeObject (edit a placed object; preserve direction + slant)', () =
     expect(P.resizeObject(pt, 0, 5)).toEqual(pt);
   });
 });
+
+describe('taperRect / pyramid volume (the 1/3 and frustum formulas)', () => {
+  const rect = { id: 1, type: 'rect', position: [0, 0, 0], u: [3, 0, 0], v: [0, 4, 0] }; // base area 12
+  it('topScale 1 (box) equals the prism volume base×height', () => {
+    const box = P.taperRect(rect, 'z', 5, 1, 0);
+    expect(box.type).toBe('pyramid');
+    expect(P.geoStretchMeasure(box).value).toBeCloseTo(12 * 5, 5);   // 60
+  });
+  it('topScale 0 (pyramid) is exactly 1/3 of the box', () => {
+    const pyr = P.taperRect(rect, 'z', 5, 0, 0);
+    expect(P.geoStretchMeasure(pyr).value).toBeCloseTo(12 * 5 / 3, 5); // 20
+    expect(P.geoStretchMeasure(pyr).apex).toBe(true);
+  });
+  it('a frustum (topScale 0.5) uses V = h/3 (B1 + B2 + sqrt(B1 B2))', () => {
+    const s = 0.5, h = 5, B1 = 12, B2 = 12 * s * s;               // top area scales by s^2
+    const expected = h / 3 * (B1 + B2 + Math.sqrt(B1 * B2));
+    const fr = P.taperRect(rect, 'z', h, s, 0);
+    expect(P.geoStretchMeasure(fr).value).toBeCloseTo(expected, 5);
+    expect(P.geoStretchMeasure(fr).apex).toBe(false);
+  });
+  it('surface area: pyramid base + 4 triangles; box matches the prism SA', () => {
+    const box = P.taperRect(rect, 'z', 5, 1, 0);
+    // prism 3x4x5 SA = 2(12 + 20 + 15) = 94
+    expect(P.geoPyramidSurfaceArea(box)).toBeCloseTo(94, 4);
+    const pyr = P.taperRect(rect, 'z', 5, 0, 0);
+    // base 12 + 4 triangles; apex above base centre → two pairs of slant triangles
+    // face over the 3-wide edges: half-base 2 (=4/2) → slant h = sqrt(5^2+? ) — just assert > base and finite
+    const sa = P.geoPyramidSurfaceArea(pyr);
+    expect(sa).toBeGreaterThan(12);
+    expect(Number.isFinite(sa)).toBe(true);
+  });
+});

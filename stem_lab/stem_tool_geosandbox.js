@@ -870,6 +870,10 @@ window.StemLab = window.StemLab || {
   function vec3Mag(a) { return Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]); }
   function vec3Cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
   function vec3Norm(a) { var m = vec3Mag(a); return m > 1e-9 ? vec3Scale(a, 1 / m) : [1, 0, 0]; }
+  function vec3Sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+  // Area of a triangle / planar quad from world corners (used for tapered-solid SA).
+  function _triArea(a, b, c) { return 0.5 * vec3Mag(vec3Cross(vec3Sub(b, a), vec3Sub(c, a))); }
+  function _quadArea(a, b, c, d) { return _triArea(a, b, c) + _triArea(a, c, d); }
   function vec3Perp(v) {
     // Pick a perpendicular axis: if v is along x or close, perp is y; else perp is x.
     var ax = Math.abs(v[0]), ay = Math.abs(v[1]), az = Math.abs(v[2]);
@@ -913,6 +917,37 @@ window.StemLab = window.StemLab || {
     if (slant) w = vec3Add(w, vec3Scale(vec3Norm(u), slant * length));
     return { type: 'prism', position: rect.position.slice(), u: u.slice(), v: v.slice(), w: w };
   }
+  // ── Taper (PURE) — extrude a rectangle up by `length` but SHRINK the top face
+  //    toward the base centre by topScale s (1 = prism, 0 = apex/pyramid, between =
+  //    frustum). This is where the ⅓ comes from: as the top collapses, the cross-
+  //    section shrinks linearly, so the volume is a third of the box at s=0. ──
+  function taperRect(rect, axis, length, topScale, slant) {
+    var u = rect.u, v = rect.v;
+    var normal = vec3Norm(vec3Cross(u, v));
+    if (vec3Mag(vec3Cross(u, v)) < 1e-9) normal = [0, 0, 1];
+    var w = vec3Scale(normal, length);
+    if (slant) w = vec3Add(w, vec3Scale(vec3Norm(u), slant * length));
+    var s = Math.max(0, Math.min(1, topScale == null ? 0 : topScale));
+    return { type: 'pyramid', position: rect.position.slice(), u: u.slice(), v: v.slice(), w: w, topScale: s };
+  }
+  // The 8 world corners of a tapered solid: base parallelogram + top parallelogram
+  // scaled by topScale about the base centre and offset by w. (Top collapses to the
+  // apex point when topScale = 0.) Shared by the SA math and the GL renderer.
+  function taperCorners(o) {
+    var p0 = o.position, u = o.u, v = o.v, w = o.w, s = o.topScale == null ? 0 : o.topScale;
+    var base = [p0.slice(), vec3Add(p0, u), vec3Add(vec3Add(p0, u), v), vec3Add(p0, v)];
+    var centre = vec3Add(p0, vec3Scale(vec3Add(u, v), 0.5));
+    var top = base.map(function(c) { return vec3Add(vec3Add(centre, vec3Scale(vec3Sub(c, centre), s)), w); });
+    return { base: base, top: top };
+  }
+  // Surface area of a tapered solid = base + top + 4 side trapezoids (from corners).
+  function geoPyramidSurfaceArea(o) {
+    if (!o || o.type !== 'pyramid') return 0;
+    var C = taperCorners(o), b = C.base, t = C.top;
+    var sa = _quadArea(b[0], b[1], b[2], b[3]) + _quadArea(t[0], t[1], t[2], t[3]);
+    for (var i = 0; i < 4; i++) { var j = (i + 1) % 4; sa += _quadArea(b[i], b[j], t[j], t[i]); }
+    return sa;
+  }
   // ── Resize a placed object (PURE) — set one defining edge to a new length while
   //    PRESERVING its direction (and any Cavalieri slant baked into that vector).
   //    dimIndex: segment→0 (vector); rect→0(u)/1(v); prism→0(u)/1(v)/2(w). This is
@@ -925,7 +960,7 @@ window.StemLab = window.StemLab || {
     var setLen = function(vec) { var m = vec3Mag(vec); return m > 1e-9 ? vec3Scale(vec, L / m) : vec; };
     if (o.type === 'segment' && dimIndex === 0) c.vector = setLen(o.vector);
     else if (o.type === 'rect') { if (dimIndex === 1) c.v = setLen(o.v); else c.u = setLen(o.u); }
-    else if (o.type === 'prism') { if (dimIndex === 1) c.v = setLen(o.v); else if (dimIndex === 2) c.w = setLen(o.w); else c.u = setLen(o.u); }
+    else if (o.type === 'prism' || o.type === 'pyramid') { if (dimIndex === 1) c.v = setLen(o.v); else if (dimIndex === 2) c.w = setLen(o.w); else c.u = setLen(o.u); }
     return c;
   }
   // Surface area of a parallelepiped prism = 2(|u×v| + |v×w| + |w×u|).
@@ -954,6 +989,15 @@ window.StemLab = window.StemLab || {
       var cz = vv[0] * ww[1] - vv[1] * ww[0];
       return Math.abs(u[0] * cx + u[1] * cy + u[2] * cz);
     }
+    if (o.type === 'pyramid') {
+      // Prismatoid with a linearly-scaled cross-section: V = B · h · (1 + s + s²)/3.
+      // s=1 → box (B·h); s=0 → pyramid (⅓·B·h). h = perpendicular height (w · n̂).
+      var base = vec3Mag(vec3Cross(o.u, o.v));
+      var n = vec3Norm(vec3Cross(o.u, o.v));
+      var h = Math.abs(o.w[0] * n[0] + o.w[1] * n[1] + o.w[2] * n[2]);
+      var s = o.topScale == null ? 0 : o.topScale;
+      return base * h * (1 + s + s * s) / 3;
+    }
     return 0;
   }
 
@@ -970,6 +1014,14 @@ window.StemLab = window.StemLab || {
       // so surfaceArea grows while volume is unchanged — the Cavalieri contrast.
       var oblique = Math.abs(o.u && o.v && o.w ? (function() { var n = vec3Norm(vec3Cross(o.u, o.v)); return (o.w[0] * n[0] + o.w[1] * n[1] + o.w[2] * n[2]) / (vec3Mag(o.w) || 1); })() : 1) < 0.999;
       return { dim: 3, kind: 'volume', value: objectVolume(o), unitExp: 3, formula: '|u · (v × w)|', label: 'Volume', surfaceArea: geoPrismSurfaceArea(o), oblique: oblique };
+    }
+    if (o.type === 'pyramid') {
+      var s = o.topScale == null ? 0 : o.topScale;
+      var apex = s <= 0.001;
+      var obliqueP = Math.abs((function() { var n = vec3Norm(vec3Cross(o.u, o.v)); return (o.w[0] * n[0] + o.w[1] * n[1] + o.w[2] * n[2]) / (vec3Mag(o.w) || 1); })()) < 0.999;
+      return { dim: 3, kind: 'volume', value: objectVolume(o), unitExp: 3,
+        formula: apex ? 'V = ⅓ · B · h' : 'V = ⅓h(B₁ + B₂ + √(B₁B₂))',
+        label: 'Volume', surfaceArea: geoPyramidSurfaceArea(o), oblique: obliqueP, taper: s, apex: apex };
     }
     return null;
   }
@@ -1167,7 +1219,7 @@ window.StemLab = window.StemLab || {
     if (!objects) return group;
     objects.forEach(function(o) {
       var isSel = (o.id === selectedId);
-      var color = isSel ? 0xfbbf24 : (o.type === 'point' ? 0xef4444 : o.type === 'segment' ? 0x22c55e : o.type === 'rect' ? 0x3b82f6 : 0xa78bfa);
+      var color = isSel ? 0xfbbf24 : (o.type === 'point' ? 0xef4444 : o.type === 'segment' ? 0x22c55e : o.type === 'rect' ? 0x3b82f6 : o.type === 'pyramid' ? 0xf472b6 : o.type === 'revolution' ? 0x2dd4bf : 0xa78bfa);
       var mesh;
       if (o.type === 'point') {
         var pg = new THREE.SphereGeometry(0.12, 16, 16);
@@ -1244,6 +1296,26 @@ window.StemLab = window.StemLab || {
         var prismGroup = new THREE.Group();
         prismGroup.add(mesh); prismGroup.add(prismEdgeLines);
         mesh = prismGroup;
+      } else if (o.type === 'pyramid') {
+        // Tapered solid (pyramid / frustum): base + scaled top via taperCorners.
+        var C = taperCorners(o);
+        var ptsPy = C.base.concat(C.top);   // [b0,b1,b2,b3, t0,t1,t2,t3]
+        var facesPy = [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]];
+        var vertsPy = [];
+        facesPy.forEach(function(f) {
+          var v0 = ptsPy[f[0]], v1 = ptsPy[f[1]], v2 = ptsPy[f[2]], v3 = ptsPy[f[3]];
+          vertsPy.push(v0[0], v0[1], v0[2], v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]);
+          vertsPy.push(v0[0], v0[1], v0[2], v2[0], v2[1], v2[2], v3[0], v3[1], v3[2]);
+        });
+        var pyGeo = new THREE.BufferGeometry();
+        pyGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertsPy), 3));
+        pyGeo.computeVertexNormals();
+        mesh = new THREE.Mesh(pyGeo, new THREE.MeshStandardMaterial({ color: color, transparent: true, opacity: 0.72, side: THREE.DoubleSide }));
+        var pyEdges = new THREE.EdgesGeometry(pyGeo);
+        var pyEdgeLines = new THREE.LineSegments(pyEdges, new THREE.LineBasicMaterial({ color: 0x0f172a }));
+        var pyGroup = new THREE.Group();
+        pyGroup.add(mesh); pyGroup.add(pyEdgeLines);
+        mesh = pyGroup;
       }
       if (mesh) {
         mesh.userData.objId = o.id;
@@ -1297,6 +1369,7 @@ window.StemLab = window.StemLab || {
       objectVolume: objectVolume,
       geoPrismSurfaceArea: geoPrismSurfaceArea,
       stretchPoint: stretchPoint, stretchSegment: stretchSegment, stretchRect: stretchRect,
+      taperRect: taperRect, taperCorners: taperCorners, geoPyramidSurfaceArea: geoPyramidSurfaceArea,
       resizeObject: resizeObject,
       geoStretchMeasure: geoStretchMeasure,
       geoScaleObject: geoScaleObject,
@@ -1458,6 +1531,10 @@ window.StemLab = window.StemLab || {
       var predictMode = !!gd.predictMode;
       var pendingPredict = gd.pendingPredict || null;
       var _pg = React.useState(''); var predictGuess = _pg[0], setPredictGuess = _pg[1];
+      // Build verb: how a stretch resolves. 'stretch' = right prism; 'taper' =
+      // pyramid/frustum (rect only); 'revolve' = solid of revolution (Wave 4).
+      var buildVerb = gd.buildVerb || 'stretch';
+      var topScale = gd.topScale != null ? gd.topScale : 0;   // taper top size (0 = apex)
       // ── Build Challenge (stretch-mode problem solving) ──
       var buildChallenge = gd.buildChallenge || null;
       var buildScore = gd.buildScore || { solved: 0 };
@@ -1498,8 +1575,11 @@ window.StemLab = window.StemLab || {
       }
       // Build the stretched object WITHOUT committing (so predict-mode can measure
       // the result before revealing it). Returns null if the source can't stretch.
-      function buildStretchObj(sel, ax, len, slant) {
+      function buildStretchObj(sel, ax, len, slant, verb, top) {
         if (!sel) return null;
+        verb = verb || 'stretch';
+        // Taper only applies to a rectangle (rect → pyramid/frustum).
+        if (verb === 'taper' && sel.type === 'rect') return taperRect(sel, ax, len, top, slant);
         if (sel.type === 'point')   return stretchPoint(sel, ax, len);
         if (sel.type === 'segment') return stretchSegment(sel, ax, len, slant);
         if (sel.type === 'rect')    return stretchRect(sel, ax, len, slant);
@@ -1521,7 +1601,7 @@ window.StemLab = window.StemLab || {
         var ax = (axisOverride === 'x' || axisOverride === 'y' || axisOverride === 'z') ? axisOverride : stretchAxis;
         var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
         if (!sel) { addToast('Select an object first', 'error'); return; }
-        var newObj = buildStretchObj(sel, ax, stretchLength, stretchSlant);
+        var newObj = buildStretchObj(sel, ax, stretchLength, stretchSlant, buildVerb, topScale);
         if (!newObj) { addToast('Cannot stretch this further in this dimension', 'info'); return; }
         // Predict-then-reveal: pause and ask for a guess before committing.
         if (predictMode) {
@@ -1529,7 +1609,7 @@ window.StemLab = window.StemLab || {
           setPredictGuess('');
           setLabToolData(function(p) {
             var g = p.geoSandbox || {};
-            return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { pendingPredict: { srcId: sel.id, ax: ax, len: stretchLength, slant: stretchSlant, kind: mm.kind, label: mm.label, unitExp: mm.unitExp, actual: mm.value } }) });
+            return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { pendingPredict: { srcId: sel.id, ax: ax, len: stretchLength, slant: stretchSlant, verb: buildVerb, top: topScale, kind: mm.kind, label: mm.label, unitExp: mm.unitExp, actual: mm.value } }) });
           });
           if (announceToSR) announceToSR('Predict the ' + mm.label.toLowerCase() + ' of the result, then reveal.');
           return;
@@ -1540,7 +1620,7 @@ window.StemLab = window.StemLab || {
       function revealPrediction() {
         var pp = gd.pendingPredict; if (!pp) return;
         var sel = construction.objects.find(function(o) { return o.id === pp.srcId; });
-        var newObj = sel && buildStretchObj(sel, pp.ax, pp.len, pp.slant);
+        var newObj = sel && buildStretchObj(sel, pp.ax, pp.len, pp.slant, pp.verb, pp.top);
         if (!newObj) { setLabToolData(function(p) { var g = p.geoSandbox || {}; return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { pendingPredict: null }) }); }); return; }
         commitNewObject(newObj, 'Revealed —');
         var guess = parseFloat(predictGuess);
@@ -2732,6 +2812,36 @@ window.StemLab = window.StemLab || {
                   })
                 )
               ),
+              // Build action (verb) — how the next stretch resolves.
+              h('div', null,
+                h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, t('stem.geosandbox.build_action', 'Build action:')),
+                h('div', { className: 'flex gap-1', role: 'radiogroup', 'aria-label': t('stem.geosandbox.build_action_2', 'Build action') },
+                  [{ id: 'stretch', label: t('stem.geosandbox.verb_stretch', '⤴ Stretch') }, { id: 'taper', label: t('stem.geosandbox.verb_taper', '🔺 Taper') }].map(function(vb) {
+                    var active = buildVerb === vb.id;
+                    return h('button', {
+                      key: 'vb-' + vb.id, role: 'radio', 'aria-checked': active,
+                      onClick: function() { upd('buildVerb', vb.id); },
+                      className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold border-2 ' +
+                        (active ? 'bg-fuchsia-700 text-white border-fuchsia-400' : 'bg-slate-800/60 text-slate-300 border-transparent hover:bg-slate-700')
+                    }, vb.label);
+                  })
+                ),
+                buildVerb === 'taper' && h('p', { className: 'text-[10px] text-fuchsia-200/70 mt-0.5' },
+                  t('stem.geosandbox.taper_hint', 'Taper a rectangle → shrinks the top toward a point. Top 0 = pyramid (⅓ the box!), 1 = box.'))
+              ),
+              // Taper top-size slider (taper verb only).
+              buildVerb === 'taper' && h('div', null,
+                h('div', { className: 'flex justify-between text-[11px] font-bold text-purple-200 mb-1' },
+                  h('span', null, t('stem.geosandbox.top_size', 'Top size')),
+                  h('span', { className: 'text-fuchsia-300 font-mono' }, topScale.toFixed(2) + (topScale <= 0.001 ? ' ▲ ' + t('stem.geosandbox.pyramid', 'pyramid') : topScale >= 0.999 ? ' ▮ ' + t('stem.geosandbox.box', 'box') : ' ◭ ' + t('stem.geosandbox.frustum', 'frustum')))
+                ),
+                h('input', {
+                  type: 'range', min: '0', max: '1', step: '0.05', value: topScale,
+                  onChange: function(e) { upd('topScale', parseFloat(e.target.value)); },
+                  'aria-label': t('stem.geosandbox.top_size_aria', 'Taper top size'),
+                  className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-fuchsia-500'
+                })
+              ),
               // Stretch axis selector
               h('div', null,
                 h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, t('stem.geosandbox.stretch_axis', 'Stretch axis:')),
@@ -2831,7 +2941,11 @@ window.StemLab = window.StemLab || {
                 var label = 'Select an object first';
                 var enabled = false;
                 if (sel) {
-                  if (sel.type === 'point')         { label = 'Stretch point → segment (1D)'; enabled = true; }
+                  if (buildVerb === 'taper' && sel.type === 'rect') {
+                    label = topScale <= 0.001 ? 'Taper rectangle → pyramid (3D)' : topScale >= 0.999 ? 'Taper rectangle → prism (3D)' : 'Taper rectangle → frustum (3D)';
+                    enabled = true;
+                  }
+                  else if (sel.type === 'point')    { label = 'Stretch point → segment (1D)'; enabled = true; }
                   else if (sel.type === 'segment')  { label = 'Stretch segment → rectangle (2D)'; enabled = true; }
                   else if (sel.type === 'rect')     { label = 'Stretch rectangle → prism (3D)'; enabled = true; }
                   else                              { label = '✓ Already a solid (3D)'; enabled = false; }
@@ -2851,11 +2965,14 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'space-y-1 max-h-40 overflow-y-auto' },
                   construction.objects.map(function(o) {
                     var isSel = o.id === construction.selection;
-                    var icon = o.type === 'point' ? '⊙' : o.type === 'segment' ? '⎯' : o.type === 'rect' ? '▭' : '⬛';
+                    var icon = o.type === 'point' ? '⊙' : o.type === 'segment' ? '⎯' : o.type === 'rect' ? '▭' : o.type === 'pyramid' ? '🔺' : o.type === 'revolution' ? '🌀' : '⬛';
+                    var mmO = geoStretchMeasure(o);
                     var label = o.type === 'point' ? 'Point #' + o.id :
                                 o.type === 'segment' ? 'Segment #' + o.id + ' (L = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + ')' :
                                 o.type === 'rect' ? 'Rectangle #' + o.id + ' (A = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + '²)' :
-                                'Prism #' + o.id + ' (V = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + '³, SA = ' + geoPrismSurfaceArea(o).toFixed(1) + ' ' + unitDef.short + '²)' + (geoStretchMeasure(o).oblique ? ' ◣' : '');
+                                o.type === 'pyramid' ? ((mmO.apex ? 'Pyramid #' : 'Frustum #') + o.id + ' (V = ' + mmO.value.toFixed(2) + ' ' + unitDef.short + '³, SA = ' + mmO.surfaceArea.toFixed(1) + ' ' + unitDef.short + '²)' + (mmO.oblique ? ' ◣' : '')) :
+                                o.type === 'revolution' ? ('Revolution #' + o.id + ' (V = ' + mmO.value.toFixed(2) + ' ' + unitDef.short + '³)') :
+                                'Prism #' + o.id + ' (V = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + '³, SA = ' + geoPrismSurfaceArea(o).toFixed(1) + ' ' + unitDef.short + '²)' + (mmO.oblique ? ' ◣' : '');
                     return h('div', { key: 'obj-' + o.id, className: 'flex items-center gap-1' },
                       h('button', {
                         onClick: function() { selectObject(o.id); },
@@ -2878,7 +2995,7 @@ window.StemLab = window.StemLab || {
               //    size, so this shows only for segment/rect/prism. ──
               (function() {
                 var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
-                if (!sel || sel.type === 'point') return null;
+                if (!sel || ['segment', 'rect', 'prism', 'pyramid'].indexOf(sel.type) < 0) return null;
                 var dims = sel.type === 'segment'
                   ? [{ label: t('stem.geosandbox.dim_length', 'Length'), i: 0, len: vec3Mag(sel.vector) }]
                   : sel.type === 'rect'
