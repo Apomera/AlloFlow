@@ -17,7 +17,7 @@ exports[`brainAtlas render goldens > detail panel: dopamine (ACCURACY LOCK — n
   "canvases": 1,
   "inputs": 7,
   "lengthBucket": 97,
-  "sha": "17968a53f4235b1f",
+  "sha": "5e76e2d2a9da70fa",
   "svgs": 1,
 }
 `;
@@ -94,7 +94,7 @@ exports[`brainAtlas render goldens > view: neuron renders + pins a digest 1`] = 
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 68,
-  "sha": "54310be398edfdaf",
+  "sha": "67efe25f86096c19",
   "svgs": 0,
 }
 `;
@@ -105,7 +105,7 @@ exports[`brainAtlas render goldens > view: neurotransmitters renders + pins a di
   "canvases": 1,
   "inputs": 7,
   "lengthBucket": 125,
-  "sha": "bbcb4823a080fbfe",
+  "sha": "51377a3e36b075ed",
   "svgs": 1,
 }
 `;
@@ -149,7 +149,7 @@ exports[`brainAtlas render goldens > view: synapses renders + pins a digest 1`] 
   "canvases": 1,
   "inputs": 1,
   "lengthBucket": 60,
-  "sha": "dab1dcf04ea253d4",
+  "sha": "5da1d76d4b7ae511",
   "svgs": 0,
 }
 `;

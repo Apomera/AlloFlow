@@ -568,7 +568,11 @@ var d = labToolData.brainAtlas || {};
 
             var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
 
-            var fontScale = W / 600; // Scale text proportionally
+            // Neurochemistry views (isNT/isNeuron/isSynapse) get a REDUCED text
+            // scale so their dense labels stop overlapping — the larger canvas
+            // (see atlasW/atlasH) becomes spacing between labels, not bigger
+            // glyphs. Other views keep the proportional W/600 scale.
+            var fontScale = (W / 600) * ((currentView.isNT || currentView.isNeuron || currentView.isSynapse) ? 0.8 : 1); // Scale text proportionally
 
             if (!canvas._neurons) {
 
@@ -3238,8 +3242,15 @@ var d = labToolData.brainAtlas || {};
           selectedLabel = String(selectedLabel || 'None selected');
           var showNtInquiry = viewKey === 'neurotransmitters' || !!d.showNtInquiry;
           var specialAtlasView = !!(currentView.isNT || currentView.isNeuron || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral);
-          var atlasW = specialAtlasView ? 600 : 520;
-          var atlasH = specialAtlasView ? 500 : 460;
+          // Neurochemistry diagrams (synapse release, neuron anatomy, synapse
+          // growth) pack many labels into a tall vertical stack and were
+          // cramped / overlapping. Give them a larger canvas so the diagram
+          // spreads out; fontScale is REDUCED for these views (see ~line 571)
+          // so the extra room becomes label SPACING, not bigger glyphs.
+          // Safe: hit-testing is fraction-based [0,1], independent of canvas px.
+          var neurochemView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse);
+          var atlasW = neurochemView ? 680 : (specialAtlasView ? 600 : 520);
+          var atlasH = neurochemView ? 660 : (specialAtlasView ? 500 : 460);
           var missionText = sel
             ? t('stem.brainatlas.now_studying_region_detail', 'Now studying selected region details, function, related conditions, and damage patterns.')
             : currentView.desc;
