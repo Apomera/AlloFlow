@@ -57,6 +57,43 @@ describe('pipeline behavior — source pins', () => {
   });
 });
 
+describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections until the AI audit completes', () => {
+  // Maintainer 2026-07-07: a run whose AI audit did not finish shows NO score (by design). The old
+  // deferred re-audit WAITED once (<=45s) and re-audited ONCE, so a sustained storm could leave a
+  // section un-read forever. It now LOOPS (wait-for-calm -> re-audit) until FULL AI coverage, a genuine
+  // non-throttle failure, or a bounded safety cap. Purely AI re-auditing — no deterministic/scoring change.
+  it('loops (not one-shot): re-audits while _partialAudit, gated on waitForGeminiCalm', () => {
+    expect(dp).toContain('while (verification && verification._partialAudit && Date.now() < _deferHardStop) {');
+    expect(dp).toContain('await waitForGeminiCalm({ maxWaitMs: Math.max(0, _deferHardStop - Date.now()) });');
+    expect(dp).toContain('_reFinalAudit = await auditOutputAccessibility(accessibleHtml);');
+  });
+  it('re-runs the AI audit (auditOutputAccessibility), NOT a deterministic substitute', () => {
+    // the loop body must call the AI audit and must not swap in axe/EA as the coverage source
+    const s = dp.indexOf('Circle-back-until-the-AI-audit-COMPLETES');
+    const e = dp.indexOf('Deferred re-audit SKIPPED', s);
+    const block = dp.slice(s, e);
+    expect(block).toContain('auditOutputAccessibility(accessibleHtml)');
+    expect(block).not.toContain('deterministicScore');
+    expect(block).not.toContain('runAxeAudit');
+  });
+  it('adopts only equal-or-better coverage, and logs real coverage growth', () => {
+    expect(dp).toContain('if (_reFinalAudit && (_reFinalAudit.chunksAudited || 0) >= _prevAudited) {');
+    expect(dp).toContain("(_reFinalAudit._partialAudit ? ' (still partial — circling back)' : ' (full coverage restored)')");
+  });
+  it('stop-improving guard: a CALM round with no new section is a genuine failure → break (not an infinite loop)', () => {
+    expect(dp).toContain('const _stormNow = _geminiThrottleInfo().storming;');
+    expect(dp).toContain('if ((verification.chunksAudited || 0) <= _prevAudited && !_stormNow) break;');
+  });
+  it('bounded: a single-file safety cap + the batch per-file wall (never an unbounded hang)', () => {
+    expect(dp).toContain('Date.now() + 600000,');
+    expect(dp).toContain('_perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity');
+  });
+  it('the memo makes each re-audit cheap: only FAILED sections are re-called (successful parses memoized)', () => {
+    // successful parse memoized; a null (failed) parse is NOT — so it re-calls next round
+    expect(dp).toMatch(/if \(!p \|\| !Array\.isArray\(p\.issues\)\) return null;\s*\n\s*_auditMemoPut\(_memoKey, p\);/);
+  });
+});
+
 describe('host auto-continue wiring (AlloFlowANTI)', () => {
   it('the loop binds the export with an immediate-calm fallback (an older pipeline module changes nothing)', () => {
     expect(anti).toContain("const waitForGeminiCalm = (_docPipeline && _docPipeline.waitForGeminiCalm) ? _docPipeline.waitForGeminiCalm : async () => ({ calm: true, waitedMs: 0 });");

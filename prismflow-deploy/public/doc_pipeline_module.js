@@ -18598,30 +18598,56 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           || (_geminiCap < _geminiEffectiveMax); // R7: cap forced BELOW the run ceiling = a storm (robust vs pacing-to-1)
         if (_throttleCaused) {
           _finalAuditThrottled = true;
-          // R5 (2026-07-03): in BATCH mode fixAndVerifyPdf races an 8-min per-file wall (_withTimeout). B's
-          // cooldown wait + re-audit is tail latency INSIDE that wall, so near the deadline it can push a
-          // FINISHED remediation past 8 min → the batch discards it. Skip B when <60s of the per-file budget
-          // remains, and otherwise clamp the wait to leave 30s of headroom for the re-audit + integrity +
-          // export. Single-file runs have no wall (_perFileDeadlineTs 0 → Infinity) so they are unchanged.
+          // R5 (2026-07-03): in BATCH mode fixAndVerifyPdf races an 8-min per-file wall (_withTimeout). The
+          // wait + re-audit is tail latency INSIDE that wall, so near the deadline it can push a FINISHED
+          // remediation past 8 min → the batch discards it. Skip when <60s of the per-file budget remains,
+          // and otherwise leave 30s of headroom for the re-audit + integrity + export.
           const _budgetLeft = _perFileDeadlineTs ? (_perFileDeadlineTs - Date.now()) : Infinity;
           if (_budgetLeft > 60000) {
-            const _reauditDeadline = Math.min(Date.now() + 45000, _perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity); // bounded — never wait out a true outage, and leave batch headroom
-            while (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now() && Date.now() < _reauditDeadline) {
-              try { _pulsePipelineWatchdog(); } catch (_) {} // a deliberate cooldown wait is activity, not a stall
-              await new Promise(function (r) { setTimeout(r, Math.min(3000, Math.max(500, _geminiCooldownUntil - Date.now()))); });
+            // ── Circle-back-until-the-AI-audit-COMPLETES (2026-07-07, maintainer) ── By design, a run whose
+            // AI audit did not finish shows NO headline score — the score is only earned once the AI rubric
+            // has actually read EVERY section. So the fix is to make the AI re-read the sections a throttle
+            // skipped, not to substitute a stand-in. The deferred re-audit used to WAIT once (≤45s) and
+            // re-audit ONCE; a SUSTAINED storm outlasts a single wait, so a section could stay un-audited and
+            // the run finish scoreless. Now LOOP: wait for calm (wait-not-stop), re-run the AI audit, and
+            // repeat until FULL AI coverage (every section read → a score can be shown), a genuine
+            // (non-throttle) failure, or a bounded safety cap. Cheap: the temp-0 chunk memo (_auditChunkMemo)
+            // re-serves already-read sections for free, so each pass only re-calls the STILL-MISSING one(s).
+            // The cap is a backstop against a true multi-hour outage, NOT the normal exit — the normal exit is
+            // "AI coverage complete"; if the cap is hit still-partial, the by-design scoreless outcome stands.
+            const _deferHardStop = Math.min(
+              Date.now() + 600000,                                        // single-file safety cap (~10 min): generous so a decaying storm can be ridden out, but never an unbounded hang
+              _perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity  // batch: stay inside the per-file wall, leaving export/integrity headroom
+            );
+            let _reRound = 0;
+            while (verification && verification._partialAudit && Date.now() < _deferHardStop) {
+              _reRound++;
+              const _prevAudited = verification.chunksAudited || 0;
+              // Wait out the active storm before spending calls (wait-not-stop; bounded by the remaining
+              // defer budget). Pulses the idle watchdog internally, so a long wait never reads as a stall.
+              try { await waitForGeminiCalm({ maxWaitMs: Math.max(0, _deferHardStop - Date.now()) }); } catch (_) {}
+              if (Date.now() >= _deferHardStop) break;
+              let _reFinalAudit = null;
+              try { _reFinalAudit = await auditOutputAccessibility(accessibleHtml); }
+              catch (_reErr) { break; /* fail-soft: keep the best partial we have */ }
+              if (_reFinalAudit && (_reFinalAudit.chunksAudited || 0) >= _prevAudited) {
+                const _grew = (_reFinalAudit.chunksAudited || 0) > _prevAudited || !_reFinalAudit._partialAudit;
+                if (_grew) warnLog('[PDF Fix] Deferred re-audit round ' + _reRound + ': coverage '
+                  + _prevAudited + '/' + (verification.chunksRequested || '?') + ' → '
+                  + (_reFinalAudit.chunksAudited || 0) + '/' + _reFinalAudit.chunksRequested
+                  + (_reFinalAudit._partialAudit ? ' (still partial — circling back)' : ' (full coverage restored)'));
+                verification = _reFinalAudit;
+              }
+              // Stop-improving guard: a round that recovered NO new section while the gate is CALM is a
+              // genuine content/parse failure, not a rate-limit — more rounds can't help. (An active storm
+              // ⇒ keep circling; it just hasn't eased yet, and waitForGeminiCalm will pace the next attempt.)
+              const _stormNow = _geminiThrottleInfo().storming;
+              if ((verification.chunksAudited || 0) <= _prevAudited && !_stormNow) break;
             }
-            // Only re-audit if the window actually eased — re-calling under an active cooldown just re-fails.
-            if (!(typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())) {
-              try {
-                const _reFinalAudit = await auditOutputAccessibility(accessibleHtml);
-                if (_reFinalAudit && (_reFinalAudit.chunksAudited || 0) > (verification.chunksAudited || 0)) {
-                  warnLog('[PDF Fix] Deferred final re-audit after throttle eased: coverage '
-                    + verification.chunksAudited + '/' + verification.chunksRequested + ' → '
-                    + _reFinalAudit.chunksAudited + '/' + _reFinalAudit.chunksRequested
-                    + (_reFinalAudit._partialAudit ? ' (still partial)' : ' (full coverage restored)'));
-                  verification = _reFinalAudit;
-                }
-              } catch (_reErr) { /* fail-soft: keep the partial result */ }
+            if (verification && verification._partialAudit) {
+              warnLog('[PDF Fix] Deferred re-audit hit its safety cap still partial ('
+                + (verification.chunksAudited || 0) + '/' + (verification.chunksRequested || '?')
+                + ' AI sections) after ' + _reRound + ' round(s) — the storm outlasted the budget; run finishes per the existing partial-audit behavior (D reframes the coverage note honestly).');
             }
           } else {
             warnLog('[PDF Fix] Deferred re-audit SKIPPED — <60s of the per-file batch budget remains; shipping the axe-governed result now (D reframes the coverage note honestly).');
