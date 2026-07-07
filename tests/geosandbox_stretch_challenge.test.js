@@ -338,3 +338,29 @@ describe('revolveRect / solid of revolution (Pappus: V = θ·R̄·A)', () => {
     expect(half).toBeCloseTo(full / 2, 5);
   });
 });
+
+describe('real-world builds + fattest-solid puzzle (Wave 5)', () => {
+  it('the die challenge requires an actual cube of the right volume', () => {
+    const die = P.GEO_REAL_OBJECTS.find(function (r) { return r.id === 'die'; });
+    const cube = { id: 1, type: 'prism', position: [0, 0, 0], u: [2, 0, 0], v: [0, 2, 0], w: [0, 0, 2] };   // 2³ = 8
+    const slab = { id: 2, type: 'prism', position: [0, 0, 0], u: [4, 0, 0], v: [0, 2, 0], w: [0, 0, 1] };   // vol 8 but NOT a cube
+    expect(P.geoEvalRealChallenge(die, [cube]).solved).toBe(true);
+    expect(P.geoEvalRealChallenge(die, [slab]).solved).toBe(false);   // right volume, wrong shape
+  });
+  it('the can challenge only accepts a solid of revolution near πr²h', () => {
+    const can = P.GEO_REAL_OBJECTS.find(function (r) { return r.id === 'can'; });
+    const cyl = P.revolveRect({ type: 'rect', position: [0, 0, 0], u: [2, 0, 0], v: [0, 2, 0] }, 'y', 360, 48);
+    const box = { id: 2, type: 'prism', position: [0, 0, 0], u: [2, 0, 0], v: [0, 2, 0], w: [0, 0, 6.28] };
+    expect(P.geoEvalRealChallenge(can, [cyl]).solved).toBe(true);
+    expect(P.geoEvalRealChallenge(can, [box]).solved).toBe(false);   // right volume, not a revolution
+  });
+  it('fattest-solid puzzle: a 3×3×3 cube is optimal at cap 54', () => {
+    const cube = { id: 1, type: 'prism', position: [0, 0, 0], u: [3, 0, 0], v: [0, 3, 0], w: [0, 0, 3] }; // SA 54, V 27
+    const res = P.geoEvalMaxVolPuzzle(54, [cube]);
+    expect(res.best).toBeCloseTo(27, 4);
+    expect(res.atOptimum).toBe(true);
+    // a long thin bar of equal SA has far less volume and does not reach optimum
+    const bar = { id: 2, type: 'prism', position: [0, 0, 0], u: [8, 0, 0], v: [0, 1, 0], w: [0, 0, 1] }; // SA 2(8+8+1)=34 ≤54, V 8
+    expect(P.geoEvalMaxVolPuzzle(54, [bar]).atOptimum).toBe(false);
+  });
+});

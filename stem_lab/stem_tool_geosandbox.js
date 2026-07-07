@@ -1249,6 +1249,45 @@ window.StemLab = window.StemLab || {
     return { solved: false };
   }
 
+  // ── Real-world "build this" challenges (PURE) — anchor volume/SA in objects
+  //    students recognise, and give the new verbs a reason to exist (you can't
+  //    build a can without Revolve, or a pyramid without Taper). Matched by
+  //    target volume within tolerance, restricted to the right shape family. ──
+  var GEO_REAL_OBJECTS = [
+    { id: 'die',     icon: '🎲', name: 'A game die',    desc: 'Build a cube 2 units on a side.', target: 8,               types: ['prism', 'pyramid'], requireCube: true, hint: 'Stretch: 2 → 2 → 2. All three edges equal.' },
+    { id: 'box',     icon: '📦', name: 'A cereal box',  desc: 'Build a box with volume 24 (e.g. 2×3×4).', target: 24,     types: ['prism'], hint: 'Stretch a point 2, that segment 3, that rectangle 4.' },
+    { id: 'can',     icon: '🥫', name: 'A soup can',    desc: 'Revolve a rectangle into a cylinder, volume ≈ 25.', target: Math.PI * 4 * 2, types: ['revolution'], hint: 'Revolve mode: rectangle radius 2 (an edge on the axis) × height 2, full turn. πr²h.' },
+    { id: 'pyramid', icon: '🔺', name: 'A pyramid',     desc: 'Taper a 3×3 base to a point, height 4 (volume 12).', target: 12, types: ['pyramid'], requireApex: true, hint: 'Taper mode, Top size 0. Base 3×3, height 4 → ⅓·9·4 = 12.' }
+  ];
+  function geoEvalRealChallenge(ch, objects) {
+    if (!ch) return { solved: false, closest: null, deltaPct: null };
+    var tol = ch.tolerance || 0.08, best = null, bestDelta = Infinity;
+    (objects || []).forEach(function (o) {
+      if (ch.types && ch.types.indexOf(o.type) < 0) return;
+      if (ch.requireCube && !_geoIsCube(o)) return;
+      var m = geoStretchMeasure(o);
+      if (!m || m.kind !== 'volume') return;
+      if (ch.requireApex && !m.apex) return;
+      var delta = ch.target === 0 ? Math.abs(m.value) : Math.abs(m.value - ch.target) / Math.abs(ch.target);
+      if (delta < bestDelta) { bestDelta = delta; best = m.value; }
+    });
+    return { solved: best != null && bestDelta <= tol, closest: best, deltaPct: best == null ? null : bestDelta };
+  }
+  // Optimization puzzle (PURE): the FATTEST solid — biggest volume whose surface
+  //   area is within a cap. The cube is optimal (isoperimetric), so the record to
+  //   beat is a cube at the cap: 6s² = cap → V = s³. Reports the student's current
+  //   best-under-cap and how close it is to that theoretical max.
+  function geoEvalMaxVolPuzzle(cap, objects) {
+    var best = 0, bestObj = null;
+    (objects || []).forEach(function (o) {
+      var m = geoStretchMeasure(o);
+      if (!m || m.dim !== 3 || m.surfaceArea == null) return;
+      if (m.surfaceArea <= cap * 1.001 && m.value > best) { best = m.value; bestObj = o; }
+    });
+    var s = Math.sqrt(cap / 6), cubeMax = s * s * s;   // optimal cube volume at the cap
+    return { best: best, cubeMax: cubeMax, cap: cap, fraction: cubeMax > 0 ? best / cubeMax : 0, atOptimum: best >= cubeMax * 0.97 };
+  }
+
   // ── Prism net (PURE) — unfold a RIGHT rectangular prism into a 2D cross net of
   //    6 face rectangles (x,y,w,h,label in net units). Returns null for oblique
   //    prisms (their true net has non-rectangular flaps) so the UI can prompt the
@@ -1449,6 +1488,9 @@ window.StemLab = window.StemLab || {
       geoEvalBuildChallenge: geoEvalBuildChallenge,
       GEO_MISSIONS: GEO_MISSIONS,
       geoEvalMission: geoEvalMission,
+      GEO_REAL_OBJECTS: GEO_REAL_OBJECTS,
+      geoEvalRealChallenge: geoEvalRealChallenge,
+      geoEvalMaxVolPuzzle: geoEvalMaxVolPuzzle,
       geoPrismNet: geoPrismNet
     };
   } catch (e) {}
@@ -1604,6 +1646,13 @@ window.StemLab = window.StemLab || {
       var buildVerb = gd.buildVerb || 'stretch';
       var topScale = gd.topScale != null ? gd.topScale : 0;   // taper top size (0 = apex)
       var revolveAngle = gd.revolveAngle != null ? gd.revolveAngle : 360;   // revolve sweep (degrees)
+      // Wave 5 content: active real-world build + the fattest-solid puzzle.
+      var realChallengeId = gd.realChallenge || null;
+      var realChallenge = realChallengeId ? GEO_REAL_OBJECTS.find(function(r) { return r.id === realChallengeId; }) : null;
+      var realEval = (mode === 'stretch' && realChallenge) ? geoEvalRealChallenge(realChallenge, construction.objects) : null;
+      var puzzleOn = !!gd.puzzleOn;
+      var PUZZLE_SA_CAP = 54;   // 6·3² → optimal cube is 3×3×3, volume 27
+      var puzzleEval = (mode === 'stretch' && puzzleOn) ? geoEvalMaxVolPuzzle(PUZZLE_SA_CAP, construction.objects) : null;
       // ── Build Challenge (stretch-mode problem solving) ──
       var buildChallenge = gd.buildChallenge || null;
       var buildScore = gd.buildScore || { solved: 0 };
@@ -3165,6 +3214,47 @@ window.StemLab = window.StemLab || {
                     liveSolved && !everSolved && h('span', { className: 'text-[9px] text-emerald-300 font-bold self-center' }, t('stem.geosandbox.mission_now', 'now!'))
                   );
                 })
+              )
+            ),
+
+            // ═══ REAL-WORLD BUILDS — recognisable objects that need the new verbs ═══
+            mode === 'stretch' && h('div', { className: 'bg-gradient-to-br from-teal-900/40 to-slate-900/30 rounded-xl p-3 border border-teal-500/40 space-y-2' },
+              h('div', { className: 'text-xs font-bold text-teal-200 uppercase tracking-wider' }, t('stem.geosandbox.real_world_builds', '🌍 Real-world builds')),
+              h('p', { className: 'text-[10.5px] text-teal-200/70' }, t('stem.geosandbox.real_world_intro', 'Recreate a real object. Match its volume with the right shape — a can needs Revolve, a pyramid needs Taper.')),
+              h('div', { className: 'grid grid-cols-2 gap-1' },
+                GEO_REAL_OBJECTS.map(function(ro) {
+                  var active = realChallengeId === ro.id;
+                  return h('button', {
+                    key: 'real-' + ro.id,
+                    onClick: function() { upd('realChallenge', active ? null : ro.id); },
+                    'aria-pressed': active,
+                    className: 'text-left px-2 py-1.5 rounded text-[11px] font-bold transition-all border ' +
+                      (active ? 'bg-teal-600 text-white border-teal-300' : 'bg-slate-800/60 text-slate-300 border-transparent hover:bg-slate-700')
+                  }, ro.icon + ' ' + ro.name);
+                })
+              ),
+              realChallenge && h('div', { className: 'rounded-lg p-2 bg-slate-900/50 border border-teal-500/30 space-y-1' },
+                h('div', { className: 'text-[11px] text-teal-100' }, (realEval && realEval.solved ? '✅ ' : '🎯 ') + realChallenge.desc),
+                realEval && realEval.closest != null && !realEval.solved && h('div', { className: 'text-[10px] text-teal-300/80 font-mono' },
+                  t('stem.geosandbox.closest_volume', 'Closest volume so far:') + ' ' + (Math.round(realEval.closest * 100) / 100) + ' / ' + (Math.round(realChallenge.target * 100) / 100)),
+                realEval && realEval.solved && h('div', { className: 'text-[11px] text-emerald-300 font-bold' }, t('stem.geosandbox.real_solved', 'Solved! You built a') + ' ' + realChallenge.name.toLowerCase() + '.'),
+                h('div', { className: 'text-[10px] text-teal-200/60' }, '💡 ' + realChallenge.hint)
+              )
+            ),
+
+            // ═══ PUZZLE — fattest solid (max volume under a surface-area cap) ═══
+            mode === 'stretch' && h('div', { className: 'bg-gradient-to-br from-amber-900/30 to-slate-900/30 rounded-xl p-3 border border-amber-500/40 space-y-2' },
+              h('label', { className: 'flex items-center justify-between cursor-pointer' },
+                h('span', { className: 'text-xs font-bold text-amber-200 uppercase tracking-wider' }, t('stem.geosandbox.puzzle_fattest', '🏆 Puzzle: the fattest solid')),
+                h('input', { type: 'checkbox', checked: puzzleOn, onChange: function(e) { upd('puzzleOn', e.target.checked); }, 'aria-label': t('stem.geosandbox.puzzle_toggle', 'Turn on the fattest-solid puzzle') })
+              ),
+              puzzleOn && h('div', { className: 'space-y-1' },
+                h('p', { className: 'text-[10.5px] text-amber-200/80' }, t('stem.geosandbox.puzzle_desc', 'Build the solid with the BIGGEST volume whose surface area is ≤ 54 square units. What shape wins?')),
+                puzzleEval && h('div', { className: 'text-[11px] font-mono text-amber-100' },
+                  t('stem.geosandbox.your_best', 'Your best:') + ' V = ' + (Math.round(puzzleEval.best * 100) / 100) + '  (' + Math.round(puzzleEval.fraction * 100) + '% ' + t('stem.geosandbox.of_optimum', 'of the max') + ')'),
+                puzzleEval && puzzleEval.atOptimum
+                  ? h('div', { className: 'text-[11px] text-emerald-300 font-bold' }, t('stem.geosandbox.puzzle_win', '🏆 Optimal! A cube is the fattest solid for a given surface area.'))
+                  : h('div', { className: 'text-[10px] text-amber-200/60' }, t('stem.geosandbox.puzzle_hint', 'Try a cube: surface 6s² ≤ 54 means s ≤ 3, so a 3×3×3 cube (volume 27) is unbeatable.'))
               )
             ),
 
