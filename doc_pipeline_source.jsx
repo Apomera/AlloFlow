@@ -2536,6 +2536,24 @@ function _suppressContradictedIssues(issues, html) {
     navigation: /role=["']navigation["']/.test(lc) || /<nav[\s>]/.test(lc),
     contentinfo: /role=["']contentinfo["']/.test(lc) || /<footer[\s>]/.test(lc),
   };
+  // navWarranted (2026-07-07, maintainer): a <nav> landmark GROUPS navigation links — it is only
+  // warranted when the document actually HAS navigational content (a link list / table of contents).
+  // A linear prose document (an assessment report, a letter) has none, so the AI rubric's recurring
+  // "missing <nav> landmark" (1.3.1) is a FALSE POSITIVE there — you never add an empty landmark. Warranted
+  // = a <ul>/<ol> containing ≥2 in-page/anchor links (the same signal fix_add_nav wraps) OR an explicit TOC.
+  // DOM-checked, fail-safe. When a nav IS warranted but absent, the claim is a REAL barrier and stands.
+  present.navWarranted = (function () {
+    try {
+      if (/\b(?:table of contents|role=["']doc-toc["'])\b/i.test(stripped) || /\bid=["'][^"']*\btoc\b/i.test(lc)) return true;
+      if (typeof DOMParser === 'undefined') return /<nav[\s>]/.test(lc); // no DOM → conservative: only "warranted" if one already exists
+      var _nd = new DOMParser().parseFromString(stripped, 'text/html');
+      var _lists = _nd.querySelectorAll('ul, ol');
+      for (var _li = 0; _li < _lists.length; _li++) {
+        if (_lists[_li].querySelectorAll('a[href]').length >= 2) return true;
+      }
+      return false;
+    } catch (_) { return true; } // on any parse error, assume warranted (never suppress a real barrier)
+  })();
   // Table headers (2026-06-18): the AI rubric hallucinates "data table lacks <th>/scope" on documents whose
   // tables are correctly tagged — directly contradicting the deterministic structuralPasses ("TABLES
   // highly accessible …") that drive the VERIFIED-ACCESSIBLE checklist. Suppress that claim ONLY when
@@ -2590,7 +2608,10 @@ function _suppressContradictedIssues(issues, html) {
                && _absNear(raw, 'header|banner|nav(?:igation|bar)?|footer|contentinfo|landmark|region').test(raw)) {
         var _lm = [];
         if (/\b(?:header|banner)\b/i.test(raw)) _lm.push(present.banner);
-        if (/\bnav(?:igation|bar)?\b/i.test(raw)) _lm.push(present.navigation);
+        // A nav "requirement" is satisfied either by an existing <nav> OR by there being no navigation
+        // content to group (navWarranted false) — so a missing-nav claim on a linear prose document is
+        // dropped as a false positive, while a genuinely-missing nav on a doc WITH link lists still stands.
+        if (/\bnav(?:igation|bar)?\b/i.test(raw)) _lm.push(present.navigation || !present.navWarranted);
         if (/\b(?:footer|contentinfo)\b/i.test(raw)) _lm.push(present.contentinfo);
         if (_lm.length && _lm.every(Boolean)) drop = true;
       }

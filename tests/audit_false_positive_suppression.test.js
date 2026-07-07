@@ -123,8 +123,15 @@ describe('landmark-region suppression — drops only when EVERY named landmark i
   it('drops a single "lacks a contentinfo footer landmark" when the footer landmark is present', () => {
     expect(drops({ wcag: '1.3.1', issue: 'The page lacks a contentinfo footer landmark region.' }, LM_FOOTER_ONLY)).toBe(true);
   });
-  it('KEEPS "lacks a navigation landmark" when no nav exists', () => {
-    expect(keeps({ wcag: '1.3.1', issue: 'The page lacks a navigation landmark region.' }, LM_NONE)).toBe(true);
+  // navWarranted (2026-07-07, maintainer): a <nav> GROUPS navigation links, so "missing <nav>" is a
+  // FALSE POSITIVE on a linear prose document (assessment report / letter) with no links to group — you
+  // never add an empty landmark. It stays a real barrier ONLY when the doc HAS a link list / TOC.
+  const NAV_WARRANTED = '<html lang="en"><head><title>T</title></head><body><main><h1>X</h1><ul><li><a href="#a">Section A</a></li><li><a href="#b">Section B</a></li></ul><p>y</p></main></body></html>';
+  it('DROPS "lacks a navigation landmark" on a linear prose doc (no navigation content to group)', () => {
+    expect(drops({ wcag: '1.3.1', issue: 'The page lacks a navigation landmark region.' }, LM_NONE)).toBe(true);
+  });
+  it('KEEPS "lacks a navigation landmark" when the doc HAS a link list / TOC but no <nav> wrapper (real barrier)', () => {
+    expect(keeps({ wcag: '1.3.1', issue: 'The document lacks a <nav> landmark to identify the navigation section.' }, NAV_WARRANTED)).toBe(true);
   });
   it('does NOT misread a TABLE-header absence as a banner landmark (real barrier kept)', () => {
     expect(keeps({ wcag: '1.3.1', issue: 'The data table is missing header cells and scope attributes.' }, LM_ALL)).toBe(true);
