@@ -319,73 +319,419 @@ function OpenSourceTab({ t }) {
     item.name
   ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2014 ", item.use, " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\xB7"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-medium text-slate-500" }, item.license))))))))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200" }, t("about.oss_credits_footer") || "AI features also use Google\u2019s Gemini API, a hosted service (not bundled software). Full license texts ship with the source (THIRD_PARTY_LICENSES.md). Spot something we should credit or correct? Let us know."));
 }
-const ATLAS_DOMAINS = [
+const ATLAS_HUBS = [
   {
-    icon: "\u{1F4C4}",
-    name: "Documents & Literacy",
-    blurb: "Turn any handout into leveled, translated, read-aloud, accessible learning.",
-    tools: ["Leveled Texts", "Immersive Reader", "Side-by-side Translation", "Reading Library", "Reading Fluency", "Vocabulary Games", "Accessible PDF export"]
+    "hub": "Documents & Literacy",
+    "icon": "\u{1F4C4}",
+    "total": 8,
+    "categories": [
+      {
+        "name": "Core literacy tools",
+        "tools": [
+          "Leveled Reader",
+          "Immersive Reader",
+          "Side-by-side Translation",
+          "Smart Glossary",
+          "Word Sounds Studio",
+          "Oral Reading Fluency",
+          "Reading Library",
+          "Accessible PDF export"
+        ]
+      }
+    ]
   },
   {
-    icon: "\u{1F522}",
-    name: "Math",
-    blurb: "Manipulatives and solvers from number sense through calculus.",
-    tools: ["Fraction Lab", "Algebra Solver", "Geometry Sandbox", "3D Volume Explorer", "Calculus Visualizer", "Graphing Calculator", "Function Grapher", "Probability", "Statistics Lab", "Unit Converter"]
+    "hub": "STEM Lab",
+    "icon": "\u{1F52C}",
+    "total": 118,
+    "categories": [
+      {
+        "name": "Math Fundamentals",
+        "tools": [
+          "3D Volume Explorer",
+          "Number Line",
+          "Area Model",
+          "Fraction Lab",
+          "Math Manipulatives",
+          "Money Math",
+          "Coordinate Grid",
+          "Angle Explorer",
+          "Geometry Sandbox",
+          "Multiplication Table"
+        ]
+      },
+      {
+        "name": "Advanced Math",
+        "tools": [
+          "Function Grapher",
+          "Inequality Grapher",
+          "Calculus Visualizer",
+          "Algebra Solver",
+          "Graphing Calculator",
+          "Probability",
+          "Unit Converter"
+        ]
+      },
+      {
+        "name": "Life & Earth Science",
+        "tools": [
+          "Dino Lab",
+          "Cell Simulator",
+          "Solar System",
+          "Moon Mission",
+          "Galaxy Explorer",
+          "Universe Time-Lapse",
+          "Rocks & Minerals",
+          "Water Cycle",
+          "Rock Cycle",
+          "Ecosystem",
+          "Companion Planting Lab",
+          "Beehive Colony Simulator",
+          "Climate Explorer",
+          "Environmental Stewardship Campaigns",
+          "Renewables Lab",
+          "Fire Ecology & Indigenous Stewardship",
+          "Aquaculture & Ocean Lab",
+          "Science of Pets Lab",
+          "FisherLab: Boating & Fishing Sim",
+          "AquacultureLab: Mussel Farm Sim",
+          "Decomposer",
+          "Human Anatomy",
+          "Titration Lab",
+          "Baking Lab",
+          "Dissection Lab",
+          "Brain Atlas",
+          "Molecule Builder"
+        ]
+      },
+      {
+        "name": "Physics & Chemistry",
+        "tools": [
+          "Wave Simulator",
+          "Circuit Builder",
+          "Equation Balancer",
+          "Punnett Square",
+          "Semiconductor Lab",
+          "Physics Simulator",
+          "Data Plotter",
+          "Data Studio",
+          "Lumen",
+          "OpticsLab AP"
+        ]
+      },
+      {
+        "name": "Computer Science",
+        "tools": [
+          "Coding Playground",
+          "Cyber Defense Lab",
+          "Digital Accessibility Lab"
+        ]
+      },
+      {
+        "name": "Arts & Music",
+        "tools": [
+          "Music Synthesizer",
+          "Art & Design Studio",
+          "Architecture Studio"
+        ]
+      },
+      {
+        "name": "\u{1F9E0} Behavioral Science",
+        "tools": [
+          "Behavior Shaping Lab",
+          "School Behavior Toolkit"
+        ]
+      },
+      {
+        "name": "\u{1F4B0} Social Studies & Economics",
+        "tools": [
+          "Economics Lab",
+          "WriteCraft",
+          "Life Skills Lab",
+          "Typing Practice",
+          "SkySchool",
+          "RoadReady: Driver's Ed",
+          "BikeLab: Physics & Repair",
+          "Echo Navigator",
+          "ATC Tower",
+          "ThrowLab: Sports Physics",
+          "PlayLab: Strategy on the Field",
+          "SkateLab: Skate + BMX Physics",
+          "First Response Lab",
+          "SwimLab",
+          "Auto Repair Shop",
+          "WeldLab: Welding & Metal Joining",
+          "NutritionLab: Nutrition Science",
+          "Kitchen Lab",
+          "Cephalopod Lab",
+          "EvoLab: Evolution",
+          "Statistics Lab",
+          "Learning Lab: How Learning Works",
+          "AI Literacy Lab",
+          "Assessment Literacy Lab"
+        ]
+      },
+      {
+        "name": "\u2694\uFE0F Strategy Games",
+        "tools": [
+          "Arc City",
+          "Kepler Colony",
+          "Space Explorer",
+          "AlloBot: Starbound Sage",
+          "Game Studio"
+        ]
+      },
+      {
+        "name": "\u{1F9EC} Biology & Life Science",
+        "tools": [
+          "DNA Lab",
+          "Epidemic Simulator",
+          "Microbiology Lab"
+        ]
+      },
+      {
+        "name": "\u{1F30D} Geography & Earth Science",
+        "tools": [
+          "Geography Quiz",
+          "Plate Tectonics",
+          "Geology Explorer",
+          "Night Sky & Astronomy"
+        ]
+      },
+      {
+        "name": "\u{1F4D0} Advanced Math",
+        "tools": [
+          "Geometry Prover",
+          "Geometry World",
+          "Logic Lab",
+          "Cellular Automaton Lab"
+        ]
+      },
+      {
+        "name": "\u{1F3A4} Sound, Speech & Music",
+        "tools": [
+          "Echolocation Lab",
+          "Oratory & Speech Lab",
+          "Voice & Singing Lab"
+        ]
+      },
+      {
+        "name": "\u{1F4DC} History & Engineering",
+        "tools": [
+          "PrintingPress",
+          "Bridge Engineering Lab"
+        ]
+      },
+      {
+        "name": "\u{1F30D} Ecology & Migration",
+        "tools": [
+          "BirdLab: I-Spy Ornithology",
+          "Raptor Hunt: Predator Physics + Biology",
+          "Animal Migration Lab"
+        ]
+      },
+      {
+        "name": "\u{1F4F1} Technology & AI",
+        "tools": [
+          "AppLab: AI App Generator",
+          "Access Lens",
+          "Data Lab",
+          "Sim Shelf",
+          "Circuit Shelf",
+          "Molecule Shelf",
+          "Timeline Studio",
+          "Zoom Gallery"
+        ]
+      }
+    ]
   },
   {
-    icon: "\u{1F9EC}",
-    name: "Life & Earth Science",
-    blurb: "Explore cells, genetics, the brain, ecosystems, and the changing Earth.",
-    tools: ["Cell Simulator", "DNA Lab", "Brain Atlas", "Human Anatomy", "Dissection Lab", "Punnett Square", "Microbiology Lab", "Ecosystem", "Evolution Lab", "Dino Lab", "Plate Tectonics", "Rock Cycle", "Water Cycle", "Climate Explorer", "Geology Explorer"]
+    "hub": "SEL Hub",
+    "icon": "\u{1F9E0}",
+    "total": 70,
+    "categories": [
+      {
+        "name": "Self-Awareness",
+        "tools": [
+          "Emotion Zones",
+          "Emotion Explorer",
+          "Strengths Finder",
+          "VIA Strengths",
+          "Wheel of Life",
+          "PERMA Wellbeing",
+          "Self-Advocacy"
+        ]
+      },
+      {
+        "name": "Self-Regulation",
+        "tools": [
+          "Coping Toolkit",
+          "Window of Tolerance",
+          "Stress Bucket",
+          "TIPP",
+          "Anxiety Toolkit",
+          "Sleep & Rest",
+          "Sensory Regulation",
+          "Big Feelings (Anger)",
+          "Substance Use",
+          "Behavioral Activation",
+          "Life Transitions",
+          "Digital Wellbeing Studio"
+        ]
+      },
+      {
+        "name": "Inner Work",
+        "tools": [
+          "Mindfulness Corner",
+          "Quiet Questions",
+          "Orientations",
+          "CBT Thought Record",
+          "Cost-Benefit Grid",
+          "Solution-Focused"
+        ]
+      },
+      {
+        "name": "Care of Self",
+        "tools": [
+          "Care Constellations",
+          "Ecomap",
+          "Circles of Support",
+          "Genogram",
+          "Grief & Loss",
+          "Understanding Trauma",
+          "Body Story",
+          "Sources of Strength",
+          "Crisis Companion",
+          "Identity Support",
+          "Disability Voices",
+          "Compassion & Self-Talk"
+        ]
+      },
+      {
+        "name": "Self-Direction",
+        "tools": [
+          "Goal Setter",
+          "HOWL Tracker",
+          "One-Page Profile",
+          "MAPS",
+          "PATH",
+          "Values & Action",
+          "Career Compass",
+          "Growth Mindset",
+          "Executive Function"
+        ]
+      },
+      {
+        "name": "Social Awareness",
+        "tools": [
+          "Perspective Lens",
+          "Community & Culture",
+          "Upstander Training",
+          "Culture Explorer",
+          "Voice Detective"
+        ]
+      },
+      {
+        "name": "Relationship Skills",
+        "tools": [
+          "Conflict Resolution",
+          "Social Skills Lab",
+          "Teamwork Builder",
+          "DEAR MAN",
+          "Motivational Interviewing",
+          "Crew Protocols",
+          "Healthy Relationships",
+          "Restorative Circle",
+          "Friendship Builder",
+          "Social Skills Roleplay",
+          "Peer Support Coach",
+          "Conflict Theater"
+        ]
+      },
+      {
+        "name": "Responsible Decision-Making",
+        "tools": [
+          "Decision Lab",
+          "Feelings Journal",
+          "Safety & Boundaries",
+          "Ethical Reasoning Lab"
+        ]
+      },
+      {
+        "name": "Stewardship",
+        "tools": [
+          "Land & Place",
+          "Civic Action & Hope"
+        ]
+      }
+    ]
   },
   {
-    icon: "\u{1F30C}",
-    name: "Space & Physics",
-    blurb: "From the solar system to circuits, optics, and waves.",
-    tools: ["Solar System", "Galaxy Explorer", "Universe Timelapse", "Moon Mission", "Night Sky", "Wave Simulator", "Optics Lab", "Circuit Builder", "Physics Simulator", "Semiconductor Lab"]
+    "hub": "Research Hub",
+    "icon": "\u{1F50E}",
+    "total": 3,
+    "categories": [
+      {
+        "name": "Inquiry lanes",
+        "tools": [
+          "Scientific Inquiry \u2014 Phenomenon Workbench",
+          "Engineering Design \u2014 Design Studio",
+          "Humanities & Social Research \u2014 Inquiry Studio"
+        ]
+      }
+    ]
   },
   {
-    icon: "\u2697\uFE0F",
-    name: "Chemistry",
-    blurb: "Build molecules, balance equations, and run virtual titrations.",
-    tools: ["Molecule Builder", "Titration Lab", "Equation Balancer"]
-  },
-  {
-    icon: "\u{1F4BB}",
-    name: "Computer Science & Technology",
-    blurb: "Write and run code, build apps, and explore digital safety.",
-    tools: ["Coding Playground", "AppLab (AI App Generator)", "Cellular Automaton Lab", "Logic Lab", "Cyber Defense Lab", "Digital Accessibility Lab", "Access Lens"]
-  },
-  {
-    icon: "\u{1F3A8}",
-    name: "Arts, Music & Expression",
-    blurb: "Design, compose, perform, and tell stories.",
-    tools: ["Symbol Studio", "Music Synthesizer", "Art & Design Studio", "Architecture Studio", "Oratory & Speech Lab", "Voice & Singing Lab", "Story Forge", "Memory Palace"]
-  },
-  {
-    icon: "\u{1F6E0}\uFE0F",
-    name: "Life Skills & Careers",
-    blurb: "Hands-on simulations for real-world and career-technical skills.",
-    tools: ["Life Skills Lab", "Driver's Ed", "BikeLab", "Auto Repair Shop", "WeldLab", "Kitchen Lab", "NutritionLab", "Typing Practice", "First Response Lab", "Bridge Engineering Lab"]
-  },
-  {
-    icon: "\u{1F30D}",
-    name: "Social Studies & Strategy",
-    blurb: "Geography, economics, behavior, world-building, and strategy games.",
-    tools: ["Geography Quiz", "Economics Lab", "Behavior Shaping Lab", "WriteCraft", "Arc City", "Kepler Colony", "Game Studio"]
-  },
-  {
-    icon: "\u{1F52C}",
-    name: "Labs & Shelves",
-    blurb: "Best-in-class open-source tools wrapped with an AI coach \u2014 see the Open Source tab for credits.",
-    tools: ["Data Lab (CODAP)", "Sim Shelf (PhET)", "Circuit Shelf", "Molecule Shelf (Mol*)", "Zoom Gallery", "Timeline Studio", "Lumen research canvas"]
+    "hub": "Studios & Surfaces",
+    "icon": "\u{1F3AC}",
+    "total": 32,
+    "categories": [
+      {
+        "name": "Open from anywhere",
+        "tools": [
+          "Accessibility Lab",
+          "AlloHaven",
+          "AlloStudio",
+          "Behavior Lens",
+          "Cinematic Studio",
+          "Community Catalog",
+          "Document Builder",
+          "Dynamic Assessment",
+          "Educator Hub",
+          "Family Bridge",
+          "Go to the dashboard",
+          "Guided Mode",
+          "Interview Mode",
+          "Learning Hub",
+          "LitLab",
+          "Lumen (data canvas)",
+          "Memory Palace",
+          "Open Groove Studio",
+          "PoetTree",
+          "Read this page to me",
+          "Reading Library",
+          "Report Writer",
+          "SEL Hub",
+          "STEM Lab",
+          "StoryForge",
+          "Symbol Studio",
+          "Throughline",
+          "Video Studio",
+          "Visual Organizer",
+          "Whiteboard",
+          "export menu",
+          "my notebook"
+        ]
+      }
+    ]
   }
 ];
-function AtlasCard({ domain }) {
-  return /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl leading-none", "aria-hidden": "true" }, domain.icon), /* @__PURE__ */ React.createElement("h5", { className: "font-bold text-slate-800 text-sm" }, domain.name)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-3" }, domain.blurb), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, domain.tools.map((tool) => /* @__PURE__ */ React.createElement("span", { key: tool, className: "text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5" }, tool))));
+function AtlasHubCard({ hub, defaultOpen }) {
+  const catCount = hub.categories ? hub.categories.length : 0;
+  return /* @__PURE__ */ React.createElement("details", { open: defaultOpen, className: "bg-white rounded-xl border border-slate-200 shadow-sm group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer select-none p-4 flex items-center gap-2 hover:bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("span", { className: "text-xl leading-none", "aria-hidden": "true" }, hub.icon), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-800 text-sm flex-1" }, hub.hub), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-nowrap" }, hub.total, catCount > 1 ? ` \xB7 ${catCount} areas` : ""), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "text-slate-400 group-open:rotate-90 transition-transform text-xs" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "px-4 pb-4 pt-0 space-y-3" }, (hub.categories || []).map((cat) => /* @__PURE__ */ React.createElement("div", { key: cat.name }, /* @__PURE__ */ React.createElement("h6", { className: "font-bold text-[11px] uppercase tracking-wider text-slate-500 mb-1.5" }, cat.name, " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\xB7 ", cat.tools.length)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, cat.tools.map((tool, i) => /* @__PURE__ */ React.createElement("span", { key: tool + i, className: "text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5" }, tool)))))));
 }
 function AtlasTab({ t }) {
-  return /* @__PURE__ */ React.createElement("div", { className: "space-y-5 text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F5FA}\uFE0F"), t("about.atlas_title") || "The AlloFlow Atlas"), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, t("about.atlas_intro") || "A map of everything inside AlloFlow, grouped by subject. Open the tool menu or the STEM Lab to launch any of these \u2014 this page is just to help you see the whole landscape at a glance.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3" }, ATLAS_DOMAINS.map((domain) => /* @__PURE__ */ React.createElement(AtlasCard, { key: domain.name, domain }))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200" }, t("about.atlas_footer") || "New tools ship regularly \u2014 this map highlights the main ones in each area rather than listing every single tool."));
+  return /* @__PURE__ */ React.createElement("div", { className: "space-y-5 text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-indigo-900 mb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F5FA}\uFE0F"), t("about.atlas_title") || "The AlloFlow Atlas"), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, t("about.atlas_intro") || "A map of everything inside AlloFlow, by hub. Expand any hub to see its full set of tools \u2014 open the tool menu or a hub to launch them. This page is here to help you see the whole landscape at a glance.")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2.5" }, ATLAS_HUBS.map((hub, idx) => /* @__PURE__ */ React.createElement(AtlasHubCard, { key: hub.hub, hub, defaultOpen: idx < 1 }))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200" }, t("about.atlas_footer") || "This directory is generated from AlloFlow\u2019s live tool catalogs, so counts and names stay current. New tools appear here automatically as they ship."));
 }
 function PrivacyTab({ t }) {
   const noop = () => null;
@@ -799,7 +1145,7 @@ function getFeatureDetails(title) {
     "Export Suite": {
       inputs: ["Lesson pack resources"],
       engine: ["IMS Common Cartridge packaging", "QTI quiz formatting", "PowerPoint slide builder"],
-      outputs: ["PowerPoint file (.pptx)", "LMS import package (.zip)", "Canvas QTI quizzes"],
+      outputs: ["PowerPoint file (.pptx)", "LMS import package (.zip)", "Canvas QTI quizzes", "Braille (.brf) \u2014 Grade 1, with contracted UEB Grade 2 where available"],
       customizations: ["Export individual resources vs full packages", "Edit PowerPoint theme colors"],
       proTip: "Export as Canvas QTI to immediately import generated exit tickets into your Canvas or Schoology course quizzes."
     },
@@ -902,10 +1248,10 @@ function getFeatureDetails(title) {
       proTip: "Word Garden's wish-seed button (\u{1F4AB}) captures the moment a student reaches for a word that isn't on their board \u2014 invaluable data for next-board planning."
     },
     "STEM Lab": {
-      inputs: ["Tool selection from 100+ simulations across 9 subject areas", "Optional grade + standards filters"],
+      inputs: ["Tool selection from 115+ simulations across 16 subject areas", "Optional grade + standards filters"],
       engine: ["Dynamically lazy-loaded per-tool plugin (Cloudflare Pages CDN)", "Per-tool state persistence", "Theme-aware rendering shell"],
-      outputs: ["Interactive math labs (Fractions, Algebra CAS, 3D Geometry, Calculus, Probability)", "Life science (Cell, Anatomy, Brain Atlas, DNA Lab, Punnett, Dissection, Ecosystem)", "Earth/Space (Plate Tectonics, Solar System, Universe Timelapse)", "Physics + Chemistry (Wave Simulator, Circuit Builder, Molecule Builder, Titration)", "CS, creative design, social studies, and applied simulation tools"],
-      customizations: ["100+ individual tool configurations", "Some tools support multi-student saved worlds", "Print/export per tool"],
+      outputs: ["Interactive math labs (Fraction Lab, Algebra Solver, Geometry Sandbox, Calculus Visualizer, Graphing Calculator)", "Life science (Cell Simulator, Human Anatomy, Brain Atlas, DNA Lab, Punnett Square, Dissection Lab, Ecosystem, Dino Lab)", "Earth/Space (Plate Tectonics, Solar System, Moon Mission, Universe Time-Lapse)", "Physics + Chemistry (Wave Simulator, Circuit Builder, Molecule Builder, Titration Lab)", "Open-source shelves (Data Lab, Sim Shelf, Circuit Shelf, Molecule Shelf, Zoom Gallery, Timeline Studio)", "CS, life-skills/CTE, creative design, and social-studies tools"],
+      customizations: ["115+ individual tool configurations", "Some tools support multi-student saved worlds", "Print/export per tool"],
       proTip: "Open STEM Lab from the Educator Hub and search by keyword \u2014 the catalog filters to tools matching your current lesson topic in real time."
     },
     "DBQ Generator": {
@@ -935,6 +1281,83 @@ function getFeatureDetails(title) {
       outputs: ["Annotated passage with persistent overlays", "Exportable annotated PDF", "Voice-note library", "Color-coded highlight layers (theme, evidence, vocabulary, question)"],
       customizations: ["Annotation tool selection", "Color palette for layer types", "Voice-note transcription on/off", "Export with or without annotations"],
       proTip: "Use color-coded highlight layers (theme / evidence / vocabulary / question) consistently across a unit \u2014 students start recognizing the pattern and self-annotating in the same scheme."
+    },
+    "Reading Library": {
+      inputs: ["Language, reading level, and topic filters", "Optional: pin a book to the current lesson"],
+      engine: ["Openly licensed StoryWeaver catalog (CC BY)", "In-app Immersive Reader + translation", "MediaRecorder fluency capture"],
+      outputs: ["Hundreds of leveled picture books across dozens of languages", "Read-aloud with karaoke highlighting", "Oral-reading-fluency passages (WCPM + accuracy)"],
+      customizations: ["Filter by language, level, and theme", "Translate a book in-reader", "Use any book as a fluency passage"],
+      proTip: "Filter by both a home language and an English level to hand a newcomer the same story in both \u2014 a ready-made bilingual bridge."
+    },
+    "Document Hub": {
+      inputs: ["A document, upload, or generated resource"],
+      engine: ["WYSIWYG editor", "Document pipeline (build \u2192 remediate \u2192 export)", "PDF/UA tagging + veraPDF validation"],
+      outputs: ["Edited differentiated document", "Accessible PDF (tagged)", "Multi-format export (PDF, DOCX, PPTX, HTML, Braille)"],
+      customizations: ["Edit in place before export", "Choose target accessibility score", "Pick export formats"],
+      proTip: "Run the accessibility remediation before exporting \u2014 the Hub tags the PDF and independently checks it against PDF/UA so it is classroom-ready, not just printed."
+    },
+    "Memory Palace": {
+      inputs: ["Facts, terms, or a list to memorize", "A room or route to place them in"],
+      engine: ["three.js 3D scene", "Spaced-repetition scheduler", "WebXR / VR support"],
+      outputs: ["Walkable 3D memory palace", "Recall + spaced-repetition sessions", "Decorated, sharable spaces"],
+      customizations: ["Choose rooms and decorations", "Walk, recall, or sculpt modes", "Enter VR where supported"],
+      proTip: "Have students place vocabulary along a route they know well (their walk to class) \u2014 the familiar path is the scaffold that makes the recall stick."
+    },
+    "Whiteboard": {
+      inputs: ["A blank canvas or an imported image"],
+      engine: ["Excalidraw infinite canvas", "Hand-drawn-style shapes", "Export to image"],
+      outputs: ["Diagrams, sketches, and brainstorms", "Exportable board images", "Shared visual space"],
+      customizations: ["Shapes, arrows, freehand, and text", "Color and stroke styles", "Export selection or full board"],
+      proTip: "Sketch a concept map live while you teach, then export the board as an image and drop it straight into a lesson pack."
+    },
+    "Accessibility Lab": {
+      inputs: ["Any AlloFlow view or generated resource"],
+      engine: ["axe-core automated audit", "Preview-as-student rendering", "Disability simulators"],
+      outputs: ["Accessibility audit report", "Keyboard-only and screen-reader walkthrough", "Simulated low-vision / color-vision / dyslexia previews"],
+      customizations: ["Choose which simulator to run", "Audit a single view or a full resource", "Toggle keyboard-tour mode"],
+      proTip: "Run the color-vision and low-vision simulators on a finished handout before you assign it \u2014 it surfaces contrast problems a checklist misses."
+    },
+    "Research Hub": {
+      inputs: ["A research question or phenomenon", "A chosen inquiry lane"],
+      engine: ["Three lanes: Scientific Inquiry, Engineering Design (Constraint Forge), Humanities (Inquiry Studio)", "Lateral source-evaluation (SIFT) scaffolds", "Claim\u2013evidence\u2013warrant builder"],
+      outputs: ["Structured inquiry workspace", "Source-evaluation notes", "A public argument or informed-action product"],
+      customizations: ["Pick the lane that fits the discipline", "Scaffold depth by grade", "Standpoint + method selection"],
+      proTip: "Start in the Humanities lane's question workbench \u2014 getting students to a genuinely contestable question up front is what makes the rest of the inquiry real."
+    },
+    "Video Studio": {
+      inputs: ["A lesson, document, or script"],
+      engine: ["Screen recording", "AI narration (TTS)", "Multi-scene composition"],
+      outputs: ["Narrated instructional video", "Multi-scene walkthroughs", "Downloadable video file"],
+      customizations: ["Record screen, narrate, or both", "Choose a narration voice", "Arrange scenes and captions"],
+      proTip: "Generate a narrated walkthrough of a complex handout so students who were absent \u2014 or who need a re-teach \u2014 can replay it on their own time."
+    },
+    "AlloStudio": {
+      inputs: ["A plain-language request for what you want built"],
+      engine: ["Agentic tool-and-resource builder", "Iterative edit loop"],
+      outputs: ["Generated AlloFlow resources and tools", "Editable, refinable drafts"],
+      customizations: ["Describe the outcome in your own words", "Refine with follow-up requests", "Keep or discard drafts"],
+      proTip: 'Describe the finished artifact you want ("a 3-station rotation on the water cycle for grade 4") rather than the steps \u2014 the studio plans the steps for you.'
+    },
+    "Guided Mode": {
+      inputs: ["A topic or goal for a lesson"],
+      engine: ["Step-by-step co-authoring flow", "Type-matched next-step suggestions", "Resume from where you left off"],
+      outputs: ["A complete differentiated lesson pack, built step by step", "Saved progress you can return to"],
+      customizations: ["Follow every step or jump ahead", "Accept or revise each suggestion", "Resume a partially built lesson"],
+      proTip: "New to AlloFlow? Start here \u2014 Guided Mode makes the tool decisions for you the first few times, so you learn the workflow by doing it."
+    },
+    "Community Catalog": {
+      inputs: ["A search, or a resource of your own to share"],
+      engine: ["Shared catalog of teacher-made packs and tools", "Import into your workspace"],
+      outputs: ["Browsable community resources", "One-click import", "Optional publish-your-own"],
+      customizations: ["Search and filter by subject/grade", "Import and then adapt", "Share your own packs"],
+      proTip: "Import a community pack as a starting point, then re-level and translate it for your class \u2014 you inherit someone's structure and keep your own differentiation."
+    },
+    "Professional Development": {
+      inputs: ["Choose a learning module"],
+      engine: ["Short in-app PD modules", "UDL + differentiation grounding"],
+      outputs: ["Self-paced professional learning", "Practical how-tos tied to AlloFlow tools"],
+      customizations: ["Pick modules by topic", "Go at your own pace"],
+      proTip: "Pair a PD module with the tool it covers open in the next tab \u2014 read a step, then try it immediately on a real lesson."
     }
   };
   return details[title] || {
