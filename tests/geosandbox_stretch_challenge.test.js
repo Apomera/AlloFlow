@@ -415,3 +415,28 @@ describe('geoCrossSection + geoConicSection (single-mode slicing)', () => {
     expect(P.geoConicSection(d, 70).name).toBe('Hyperbola');
   });
 });
+
+describe('geoShapeNet + geoRealWorldScale (single-mode nets & scale)', () => {
+  it('box net is 6 rectangles whose areas sum to the surface area', () => {
+    const net = P.geoShapeNet('box', { w: 2, h: 3, d: 4 });
+    expect(net.unfoldable).toBe(true);
+    expect(net.pieces.length).toBe(6);
+    const sum = net.pieces.reduce(function (s, p) { return s + p.area; }, 0);
+    expect(sum).toBeCloseTo(2 * (2 * 3 + 2 * 4 + 3 * 4), 5);   // = SA 52
+  });
+  it('cylinder net = 2 circles + a wrap rectangle 2πr wide', () => {
+    const net = P.geoShapeNet('cylinder', { rTop: 2, rBot: 2, h: 5 });
+    const wrap = net.pieces.find(function (p) { return p.kind === 'rect'; });
+    expect(wrap.w).toBeCloseTo(2 * Math.PI * 2, 5);
+    expect(net.pieces.filter(function (p) { return p.kind === 'circle'; }).length).toBe(2);
+  });
+  it('sphere has no flat net', () => {
+    expect(P.geoShapeNet('sphere', { r: 2 }).unfoldable).toBe(false);
+  });
+  it('real-world scale: 1 u³ ≈ 1 litre, with a comparison phrase', () => {
+    const rs = P.geoRealWorldScale(8);
+    expect(rs.litres).toBeCloseTo(8, 6);
+    expect(typeof rs.phrase).toBe('string');
+    expect(rs.phrase.length).toBeGreaterThan(0);
+  });
+});

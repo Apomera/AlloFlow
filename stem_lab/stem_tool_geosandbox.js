@@ -791,6 +791,39 @@ window.StemLab = window.StemLab || {
     return { name: name, note: note, sigma: sigma, beta: beta };
   }
 
+  // ── Nets (PURE) — the flat pieces a shape's surface unfolds into. Each piece is
+  //    a drawable primitive (rect / circle / triangle / sector) with its area, so
+  //    the UI can show that surface area = the sum of the flat pieces. Sphere and
+  //    torus can't be unrolled flat (returned unfoldable:false). ──
+  function geoShapeNet(shape, dims) {
+    var PI = Math.PI;
+    var rectP = function(w, h, label) { return { kind: 'rect', w: w, h: h, area: w * h, label: label }; };
+    var circP = function(r, label) { return { kind: 'circle', r: r, area: PI * r * r, label: label }; };
+    var triP = function(b, h, label) { return { kind: 'tri', b: b, h: h, area: 0.5 * b * h, label: label }; };
+    switch (shape) {
+      case 'box': { var w = dims.w || 3, h = dims.h || 3, d = dims.d || 3;
+        return { unfoldable: true, pieces: [rectP(w, h, 'front'), rectP(w, h, 'back'), rectP(d, h, 'left'), rectP(d, h, 'right'), rectP(w, d, 'top'), rectP(w, d, 'bottom')], note: 'Six rectangles — their areas sum to the surface area.' }; }
+      case 'cylinder': { var r = dims.rTop || dims.rBot || 1.5, hc = dims.h || 3;
+        return { unfoldable: true, pieces: [circP(r, 'top'), circP(r, 'bottom'), rectP(2 * PI * r, hc, 'wrap (2πr × h)')], note: 'A rectangle 2πr wide rolls into the tube; two circles cap the ends.' }; }
+      case 'cone': { var rc = dims.r || 1.5, hco = dims.h || 3, sl = Math.sqrt(rc * rc + hco * hco);
+        return { unfoldable: true, pieces: [circP(rc, 'base'), { kind: 'sector', r: sl, angle: 2 * PI * rc / sl, area: PI * rc * sl, label: 'side (sector, radius l)' }], note: 'The side unrolls into a sector of radius l = √(r²+h²); a circle is the base.' }; }
+      case 'pyramid': { var rp = dims.r || 1.5, base = 2 * rp, hp = dims.h || 3, slp = Math.sqrt(rp * rp + hp * hp);
+        return { unfoldable: true, pieces: [rectP(base, base, 'base'), triP(base, slp, 'face'), triP(base, slp, 'face'), triP(base, slp, 'face'), triP(base, slp, 'face')], note: 'A square base plus four identical triangles (slant height l = √(r²+h²)).' }; }
+      case 'prism': { var wp = dims.w || 3, hpp = dims.h || 3, dp = dims.d || 3, hyp = Math.sqrt((wp / 2) * (wp / 2) + hpp * hpp);
+        return { unfoldable: true, pieces: [triP(wp, hpp, 'end'), triP(wp, hpp, 'end'), rectP(wp, dp, 'bottom'), rectP(hyp, dp, 'slope'), rectP(hyp, dp, 'slope')], note: 'Two triangular ends plus three rectangles.' }; }
+      default: return { unfoldable: false, pieces: [], note: shape === 'sphere' ? 'A sphere can’t be unrolled flat without distortion — that’s why world maps stretch the poles.' : 'This shape has no simple flat net.' };
+    }
+  }
+  // ── Real-world scale (PURE) — anchor an abstract volume in something familiar.
+  //    Convention: 1 unit = 10 cm, so 1 u³ = 1 litre. Gives litres + a comparison. ──
+  function geoRealWorldScale(volU3) {
+    var litres = volU3;   // 1 u³ = (10cm)³ = 1000 cm³ = 1 L
+    var phrase = litres < 0.35 ? 'about a soda can' : litres < 1.3 ? 'about a big water bottle'
+      : litres < 4 ? 'about a milk jug' : litres < 12 ? 'about a bucket'
+      : litres < 60 ? 'about a small aquarium' : litres < 200 ? 'about a bathtub' : 'bigger than a bathtub';
+    return { litres: litres, cups: litres * 4.2268, phrase: phrase };
+  }
+
   // ── Challenge calculations (includes lateral area for challenge) ──
   function challengeCalc(sid, rd) {
     var PI = Math.PI;
@@ -1566,6 +1599,7 @@ window.StemLab = window.StemLab || {
       geoEvalMaxVolPuzzle: geoEvalMaxVolPuzzle,
       geoFormulaSteps: geoFormulaSteps,
       geoCrossSection: geoCrossSection, geoConicSection: geoConicSection,
+      geoShapeNet: geoShapeNet, geoRealWorldScale: geoRealWorldScale,
       geoPrismNet: geoPrismNet
     };
   } catch (e) {}
@@ -1993,6 +2027,10 @@ window.StemLab = window.StemLab || {
       var conicTilt = gd.conicTilt != null ? gd.conicTilt : 0;
       var xs = geoCrossSection(shape, dims, xsT);
       var conic = shape === 'cone' ? geoConicSection(dims, conicTilt) : null;
+      // Net unfold + real-world scale (single mode)
+      var netOpen = !!gd.singleNetOpen;
+      var shapeNet = geoShapeNet(shape, dims);
+      var realScale = geoRealWorldScale(m.vol);
 
       // ── Challenge state ──
       var challenge = gd.challenge || null;
@@ -3886,6 +3924,46 @@ window.StemLab = window.StemLab || {
                   h('div', { className: 'text-[12px] font-bold text-orange-100' }, conic.name),
                   h('div', { className: 'text-[10px] text-orange-200/70' }, conic.note)
                 )
+              )
+            ),
+
+            // \u2550\u2550\u2550 NET UNFOLD + REAL-WORLD SIZE (single mode) \u2550\u2550\u2550
+            !gd.challengeMode && mode === 'single' && h('div', { className: 'bg-gradient-to-br from-sky-900/30 to-slate-900/40 rounded-xl p-3 border border-sky-500/40 space-y-2' },
+              h('div', { className: 'flex justify-between items-center' },
+                h('div', { className: 'text-xs font-bold text-sky-200 uppercase tracking-wider' }, t('stem.geosandbox.unfold_net_single', '\uD83D\uDCE6 Unfold net')),
+                shapeNet.unfoldable && h('button', {
+                  onClick: function() { upd('singleNetOpen', !netOpen); },
+                  'aria-pressed': netOpen,
+                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (netOpen ? 'bg-sky-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                }, netOpen ? t('stem.geosandbox.hide', 'Hide') : t('stem.geosandbox.show', 'Show'))
+              ),
+              !shapeNet.unfoldable && h('p', { className: 'text-[11px] text-sky-200/70 italic' }, shapeNet.note),
+              shapeNet.unfoldable && netOpen && h('div', { className: 'space-y-1.5' },
+                h('p', { className: 'text-[10.5px] text-sky-200/70' }, shapeNet.note),
+                h('div', { className: 'flex flex-wrap gap-1.5' },
+                  shapeNet.pieces.map(function(pc, i) {
+                    // Scaled swatch for each flat piece + its label/area.
+                    var box = 42, pad = 5, mx = 6;   // draw within a 42px box
+                    for (var j = 0; j < shapeNet.pieces.length; j++) { var q = shapeNet.pieces[j]; mx = Math.max(mx, q.w || 0, q.h || 0, (q.r || 0) * 2, q.b || 0); }
+                    var sc = (box - 2 * pad) / mx, kid;
+                    if (pc.kind === 'circle') kid = h('circle', { cx: box / 2, cy: box / 2, r: Math.max(1, pc.r * sc), fill: '#38bdf833', stroke: '#38bdf8', strokeWidth: 1 });
+                    else if (pc.kind === 'tri') { var b = pc.b * sc, hh = pc.h * sc, x0 = box / 2 - b / 2, yb = box / 2 + hh / 2; kid = h('polygon', { points: x0 + ',' + yb + ' ' + (x0 + b) + ',' + yb + ' ' + (box / 2) + ',' + (yb - hh), fill: '#38bdf833', stroke: '#38bdf8', strokeWidth: 1 }); }
+                    else if (pc.kind === 'sector') { kid = h('path', { d: (function() { var R = Math.min(box / 2 - pad, pc.r * sc), a = Math.min(pc.angle, 2 * Math.PI - 0.001), x1 = box / 2 + R, y1 = box / 2, x2 = box / 2 + R * Math.cos(a), y2 = box / 2 + R * Math.sin(a), large = a > Math.PI ? 1 : 0; return 'M' + (box / 2) + ',' + (box / 2) + ' L' + x1 + ',' + y1 + ' A' + R + ',' + R + ' 0 ' + large + ' 1 ' + x2 + ',' + y2 + ' Z'; })(), fill: '#38bdf833', stroke: '#38bdf8', strokeWidth: 1 }); }
+                    else { var pw = Math.min(box - 2 * pad, (pc.w || 1) * sc), ph = Math.min(box - 2 * pad, (pc.h || 1) * sc); kid = h('rect', { x: box / 2 - pw / 2, y: box / 2 - ph / 2, width: Math.max(1, pw), height: Math.max(1, ph), fill: '#38bdf833', stroke: '#38bdf8', strokeWidth: 1 }); }
+                    return h('div', { key: 'net-' + i, className: 'text-center' },
+                      h('svg', { width: box, height: box, viewBox: '0 0 ' + box + ' ' + box, className: 'bg-slate-950/50 rounded border border-slate-700' }, kid),
+                      h('div', { className: 'text-[8.5px] text-sky-300/80 leading-tight mt-0.5' }, pc.label),
+                      h('div', { className: 'text-[8px] text-slate-400 font-mono' }, pc.area.toFixed(1) + ' u\u00B2')
+                    );
+                  })
+                ),
+                h('div', { className: 'text-[10px] text-sky-300/70 font-mono' }, t('stem.geosandbox.faces_sum', '\u03A3 pieces') + ' = ' + shapeNet.pieces.reduce(function(s, p) { return s + p.area; }, 0).toFixed(1) + ' u\u00B2 \u2248 ' + t('stem.geosandbox.surface_area', 'Surface Area'))
+              ),
+              // Real-world size anchor
+              h('div', { className: 'border-t border-sky-500/30 pt-2' },
+                h('div', { className: 'text-[11px] text-sky-100' }, '\uD83C\uDF0D ' + t('stem.geosandbox.real_world_size', 'Real-world size') + ' (' + t('stem.geosandbox.if_one_unit', '1 unit = 10 cm') + ')'),
+                h('div', { className: 'text-[11px] text-sky-200 font-mono' }, '\u2248 ' + realScale.litres.toFixed(1) + ' L  \u00B7  ' + Math.round(realScale.cups) + ' ' + t('stem.geosandbox.cups', 'cups')),
+                h('div', { className: 'text-[10px] text-sky-300/70' }, '\u2014 ' + realScale.phrase)
               )
             ),
 
