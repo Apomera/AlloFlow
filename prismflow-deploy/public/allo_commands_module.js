@@ -186,7 +186,7 @@ function buildAlloCommands(ctx) {
       c.handleToggleIsHelpMode();
       return t("cmd.toggle_help_mode_done", "Help mode toggled \u2014 click any control to learn about it.");
     } },
-    { id: "toggle_bot", icon: "\u{1F916}", roles: "all", label: t("cmd.toggle_bot", "Show or hide AlloBot"), aliases: ["allobot", "bot", "assistant", "hide bot", "show bot"], hint: t("cmd.toggle_bot_hint", "The assistant character"), run: (c) => {
+    { id: "toggle_bot", icon: "\u{1F916}", roles: "all", chatSkip: true, label: t("cmd.toggle_bot", "Show or hide AlloBot"), aliases: ["allobot", "bot", "assistant", "hide bot", "show bot"], hint: t("cmd.toggle_bot_hint", "The assistant character"), run: (c) => {
       c.handleToggleIsBotVisible();
       return t("cmd.toggle_bot_done", "AlloBot visibility toggled.");
     } },
@@ -391,7 +391,12 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     { id: "translate_document", re: /^translate\s+(?:this|the\s+document|document|it)?\s*(?:to|into)\s+([a-z\u00C0-\u024F\s()-]{2,40})\??$/i, params: (m) => ({ language: m[1].trim() }) },
     { id: "generate_simplified", re: /^(?:simplify|make (?:this|it) (?:easier|simpler)|lower the (?:reading )?level)(?:\s+(?:this|it))?(?:\s+(?:to|for)?\s*(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade)?)?\s*\??$/i, params: (m) => ({ grade: m[1] || null }) }
   ];
-  const commands = buildAlloCommands(ctx);
+  let commands = buildAlloCommands(ctx);
+  // The bot chat (preview) must not PROPOSE commands flagged chatSkip — e.g.
+  // toggle_bot: hiding the bot from inside its own chat is pointless (the chat
+  // has an X), and a stray "bot"/"assistant" shouldn't even raise a confirm
+  // chip. They stay fully available via Ctrl+K / voice (non-preview).
+  if (opts.preview) commands = commands.filter((c) => !c.chatSkip);
   const _runCmd = (cmd, via, params) => {
     // preview mode (used by the bot chat): report the match WITHOUT running it,
     // so the chat can ask the user to confirm before any side effect fires.

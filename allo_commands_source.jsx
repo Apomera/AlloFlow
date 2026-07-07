@@ -84,7 +84,7 @@ function buildAlloCommands(ctx) {
     { id: 'toggle_focus_mode', icon: '🎯', roles: 'all', label: t('cmd.toggle_focus_mode', 'Toggle focus mode'), aliases: ['focus mode', 'concentrate', 'distraction free'], hint: t('cmd.toggle_focus_mode_hint', 'Dim everything but the content'), run: (c) => { c.handleToggleFocusMode(); return t('cmd.toggle_focus_mode_done', 'Focus mode toggled.'); } },
     { id: 'toggle_reading_ruler', icon: '📏', roles: 'all', label: t('cmd.toggle_reading_ruler', 'Toggle the reading ruler'), aliases: ['reading ruler', 'line guide', 'ruler'], hint: t('cmd.toggle_reading_ruler_hint', 'A movable line guide for tracking'), run: (c) => { c.handleToggleReadingRuler(); return t('cmd.toggle_reading_ruler_done', 'Reading ruler toggled.'); } },
     { id: 'toggle_help_mode', icon: '❓', roles: 'all', label: t('cmd.toggle_help_mode', 'Toggle help mode'), aliases: ['help mode', 'what does this do', 'explain buttons'], hint: t('cmd.toggle_help_mode_hint', 'Click anything to learn what it does'), run: (c) => { c.handleToggleIsHelpMode(); return t('cmd.toggle_help_mode_done', 'Help mode toggled — click any control to learn about it.'); } },
-    { id: 'toggle_bot', icon: '🤖', roles: 'all', label: t('cmd.toggle_bot', 'Show or hide AlloBot'), aliases: ['allobot', 'bot', 'assistant', 'hide bot', 'show bot'], hint: t('cmd.toggle_bot_hint', 'The assistant character'), run: (c) => { c.handleToggleIsBotVisible(); return t('cmd.toggle_bot_done', 'AlloBot visibility toggled.'); } },
+    { id: 'toggle_bot', icon: '🤖', roles: 'all', chatSkip: true, label: t('cmd.toggle_bot', 'Show or hide AlloBot'), aliases: ['allobot', 'bot', 'assistant', 'hide bot', 'show bot'], hint: t('cmd.toggle_bot_hint', 'The assistant character'), run: (c) => { c.handleToggleIsBotVisible(); return t('cmd.toggle_bot_done', 'AlloBot visibility toggled.'); } },
     { id: 'toggle_line_focus', icon: '🔦', roles: 'all', label: t('cmd.toggle_line_focus', 'Toggle line focus'), aliases: ['line focus', 'focus line', 'one line'], hint: t('cmd.toggle_line_focus_hint', 'Highlight one line at a time'), run: (c) => { c.toggleLineFocus(); return t('cmd.toggle_line_focus_done', 'Line focus toggled.'); } },
     { id: 'toggle_visual_supports', icon: '🖼️', roles: 'all', label: t('cmd.toggle_visual_supports', 'Toggle visual supports'), aliases: ['visual supports', 'picture supports', 'visuals'], hint: t('cmd.toggle_visual_supports_hint', 'Picture cues alongside the text'), run: (c) => { c.handleToggleVisualSupports(); return t('cmd.toggle_visual_supports_done', 'Visual supports toggled.'); } },
     { id: 'toggle_dictation', icon: '🎤', roles: 'all', label: t('cmd.toggle_dictation', 'Toggle dictation'), aliases: ['dictation', 'speech to text', 'type by voice'], hint: t('cmd.toggle_dictation_hint', 'Speak instead of typing'), run: (c) => { c.toggleDictation(); return t('cmd.toggle_dictation_done', 'Dictation toggled.'); } },
@@ -174,7 +174,10 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     { id: 'translate_document', re: /^translate\s+(?:this|the\s+document|document|it)?\s*(?:to|into)\s+([a-z\u00C0-\u024F\s()-]{2,40})\??$/i, params: (m) => ({ language: m[1].trim() }) },
     { id: 'generate_simplified', re: /^(?:simplify|make (?:this|it) (?:easier|simpler)|lower the (?:reading )?level)(?:\s+(?:this|it))?(?:\s+(?:to|for)?\s*(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade)?)?\s*\??$/i, params: (m) => ({ grade: m[1] || null }) },
   ];
-  const commands = buildAlloCommands(ctx);
+  let commands = buildAlloCommands(ctx);
+  // The bot chat (preview) must not PROPOSE chatSkip commands (e.g. toggle_bot:
+  // the chat already has an X). They stay available via Ctrl+K / voice.
+  if (opts.preview) commands = commands.filter((c) => !c.chatSkip);
   // _runCmd MUST be declared before the grammar loop below — the loop calls it on a match, and a
   // `const` referenced before its declaration is a temporal-dead-zone ReferenceError. That throw
   // was swallowed by the caller's try-catch as a silent non-match, which killed EVERY natural-

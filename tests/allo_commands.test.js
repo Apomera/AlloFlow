@@ -101,12 +101,20 @@ describe('routeUtterance', () => {
 // match, a stray "bot"/"hi" opener runs toggle_bot → the bot hides and the chat
 // closes. Preview mode must MATCH-without-running so the chat can confirm first.
 describe('routeUtterance preview mode (bot chat safety)', () => {
-  it('reports a match WITHOUT running it', async () => {
+  it('excludes chatSkip commands (toggle_bot) from chat proposals', async () => {
+    // Hiding the bot from inside its own chat is pointless (there is an X), so
+    // "bot"/"assistant" must not even raise a confirm chip in the chat.
     const handleToggleIsBotVisible = vi.fn();
-    const r = await AC.routeUtterance({ handleToggleIsBotVisible }, 'bot', { preview: true });
-    expect(r).toMatchObject({ preview: true, handled: false, commandId: 'toggle_bot' });
-    expect(r.label).toBeTruthy();
-    expect(handleToggleIsBotVisible).not.toHaveBeenCalled(); // proposed, not run
+    const r = await AC.routeUtterance({ handleToggleIsBotVisible }, 'bot', { preview: true, allowAi: false });
+    expect(r).toBeNull();
+    expect(handleToggleIsBotVisible).not.toHaveBeenCalled();
+  });
+
+  it('but toggle_bot STILL runs via Ctrl+K / voice (non-preview)', async () => {
+    const handleToggleIsBotVisible = vi.fn();
+    const r = await AC.routeUtterance({ handleToggleIsBotVisible }, 'bot', {});
+    expect(r).toMatchObject({ handled: true, commandId: 'toggle_bot' });
+    expect(handleToggleIsBotVisible).toHaveBeenCalled();
   });
 
   it('previews a real multi-word command without side effects', async () => {
