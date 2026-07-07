@@ -7,8 +7,6 @@
     "UI_STRINGS",
     "chunkReport",
     "chunkWeightedScore",
-    "pageTitle",
-    "sourceTopic",
     "storageDB"
   ],
   "view_pdf_audit_source.jsx": [
