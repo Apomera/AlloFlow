@@ -4176,6 +4176,9 @@ const AlloFlowContent = () => {
   
   const [showStudentEntry, setShowStudentEntry] = useState(false);
   const [showWizard, setShowWizard] = useState(true);
+  // When set (e.g. from the idle panel's "Find a resource online"), the wizard
+  // opens straight to that source step instead of step 1. Cleared once consumed.
+  const [wizardInitialMode, setWizardInitialMode] = useState(null);
   _guidedWizardOpenRef.current = showWizard && hasSelectedRole && isTeacherMode; // keep the guided effect's wizard check current each render
   useEffect(() => {
     const wizardCompleted = safeGetItem('allo_wizard_completed');
@@ -28964,8 +28967,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {[
                         { key: 'book', emoji: '📖', label: t('input.qs_book') || 'Open a story book', sub: t('input.qs_book_sub') || 'Real illustrated books, 50+ languages', onClick: () => setIsReadingLibraryOpen(true) },
-                        { key: 'write', emoji: '📝', label: t('input.qs_write') || 'Write or paste text', sub: t('input.qs_write_sub') || 'Use your own material', onClick: () => { setActiveSidebarTab('create'); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); } },
-                        { key: 'find', emoji: '🔎', label: t('input.qs_find') || 'Find a resource online', sub: t('input.qs_find_sub') || 'Paste a link or let AI search', onClick: () => setShowWizard(true) },
+                        { key: 'write', emoji: '📝', label: t('input.qs_write') || 'Write or paste text', sub: t('input.qs_write_sub') || 'Use your own material', onClick: () => { setActiveSidebarTab('create'); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); setTimeout(() => { const panel = document.getElementById('tour-input-panel'); if (panel) { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); const field = panel.querySelector('textarea, [contenteditable="true"], input[type="text"]'); if (field && field.focus) field.focus(); } }, 150); } },
+                        { key: 'find', emoji: '🔎', label: t('input.qs_find') || 'Find a resource online', sub: t('input.qs_find_sub') || 'Paste a link or let AI search', onClick: () => { setWizardInitialMode('search'); setShowWizard(true); } },
                         { key: 'generate', emoji: '✨', label: t('input.qs_generate') || 'Generate from a topic', sub: t('input.qs_generate_sub') || 'AI writes it for you', onClick: () => { setActiveSidebarTab('create'); setShowSourceGen(true); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); } },
                       ].map((a) => (
                         <button key={a.key} onClick={a.onClick} className="flex items-center gap-3 text-left p-3 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 transition-colors">
@@ -30750,7 +30753,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       <ErrorBoundary fallbackMessage="The setup wizard encountered an error. Please close and try again.">
               <QuickStartWizard
         isOpen={showWizard && hasSelectedRole && isTeacherMode}
-        onClose={() => setShowWizard(false)}
+        onClose={() => { setShowWizard(false); setWizardInitialMode(null); }}
         onComplete={handleWizardComplete}
         onUpload={() => fileInputRef.current?.click()}
         onLookupStandards={handleWizardStandardLookup}
@@ -30761,6 +30764,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         isIndependentMode={isIndependentMode}
         isHelpMode={isHelpMode}
         setIsHelpMode={setIsHelpMode}
+        initialSourceMode={wizardInitialMode}
+        onInitialModeConsumed={() => setWizardInitialMode(null)}
       />
       </ErrorBoundary>
       {isProjectSettingsOpen && window.AlloModules && window.AlloModules.ProjectSettingsView && React.createElement(window.AlloModules.ProjectSettingsView, {

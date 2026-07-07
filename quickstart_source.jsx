@@ -170,7 +170,7 @@ function StorybookPicker(props) {
       wt('wizard.storybook_credit', 'Books from StoryWeaver, an open library by Pratham Books (CC BY 4.0).'))
   );
 }
-const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode }) => {
+const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, onLookupStandards, onCallGemini, onWebSearch, addToast, isParentMode, isIndependentMode, isHelpMode, setIsHelpMode, initialSourceMode, onInitialModeConsumed }) => {
   const [step, setStep] = useState(1);
   const { t } = useContext(LanguageContext);
   // Guarded fallback for keys newer than the lang packs (raw-key echo counts
@@ -219,6 +219,19 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
     3: { title: 'Step 3: Standards & Customization', text: 'Align your content to academic standards (Common Core, NGSS, state-specific). You can search by AI or enter codes manually. Also set DOK level, output format, writing tone, languages, and student interests for personalized content.' },
     4: { title: 'Step 4: Review & Personalize', text: 'Final review of your settings. Add vocabulary terms, a learning goal, citation preferences, and any custom instructions for the AI. Click Finish to generate your lesson with all configured options applied.' },
   };
+  // On open: deep-link straight to a source step when the host asked for one
+  // (e.g. the idle-panel "Find a resource online" jumps to Find-on-the-Web),
+  // otherwise start fresh at step 1. Consumed once so the next open is normal.
+  useEffect(() => {
+    if (!isOpen) return;
+    if (initialSourceMode) {
+      setLocalData(prev => ({ ...prev, sourceMode: initialSourceMode }));
+      setStep(3);
+      if (onInitialModeConsumed) onInitialModeConsumed();
+    } else {
+      setStep(1);
+    }
+  }, [isOpen]);
   if (!isOpen) return null;
   const handleSkip = () => {
     safeSetItem('allo_wizard_completed', 'true');
