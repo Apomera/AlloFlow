@@ -804,7 +804,20 @@ var _stripRestoreMarkdown = function (s) {
     // "number"). A single mid-line "#" (Room # 5, # of students) is left alone.
     .replace(/(^|\n)[ \t]*#{1,6}[ \t]+/g, '$1')
     .replace(/(\s)#{2,6}(?=\s)/g, '$1')
+    // #I (2026-07-07): the 7/7 scanned run leaked MORE source-markdown into restored fragments + the
+    // Preserved/Recovery boxes — literal <br> tags, table pipes ("| |" from the source's list cells),
+    // and "* " bullet markers (the scanned outline's list items OCR'd as asterisks). The source OCR
+    // ground truth legitimately carries these, so an UN-ANCHORABLE fragment pulled into a restore box
+    // shipped the raw markup as visible text ("* Trauma * Peer relations", "<br>* What are…", "| | Tyrone").
+    // Strip them so restored prose reads cleanly. Scope-safe: this runs ONLY on restore fragments (the
+    // needs-review preserved/recovery text), never on the main reconstructed body (which the JSON/markdown
+    // renderers own), so a legitimate "2 * 3" in real body prose is untouched.
+    .replace(/<br\s*\/?>/gi, ' ')                                     // literal HTML break tags
+    .replace(/(^|\n)[ \t]*[*+•‣▪◦-][ \t]+/g, '$1') // line-leading bullet (*, +, -, •, ▪, ◦)
+    .replace(/[ \t]+[*•‣▪◦](?=[ \t]|$)/gm, '')     // space-preceded bullet, mid-line OR trailing (not a lone mid-word *)
+    .replace(/[ \t]*\|[ \t]*/g, ' ')                                  // table pipe separators ("| |", leading/trailing |)
     .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 };
 
@@ -2307,6 +2320,47 @@ function _collapseExtraMains(html) {
     const tc = (out.match(/<\/main\s*>/gi) || []).length;
     let c = 0; out = out.replace(/<\/main\s*>/gi, (m) => (++c === tc ? m : ''));
     return out;
+  } catch (_) { return html; }
+}
+
+// #I (2026-07-07, maintainer-approved defensive guard): re-wrap PRIMARY content orphaned AFTER a
+// prematurely-closed <main>. The AI rubric can flag "the main landmark and body tags are closed in the
+// middle of the content, leaving the majority of the text orphaned and inaccessible to landmark
+// navigation." If a </main> ever closes early, the content after it sits outside every landmark. This
+// moves such content back to the END of <main> — while EXEMPTING the sections that legitimately live
+// after <main>: the designed Content-recovery + Preserved-source-content appendices, and a <footer> /
+// role=contentinfo. Conservative + fail-safe: no <main>, a non-top-level <main>, or nothing substantive
+// orphaned → returned byte-identical. Idempotent (a clean doc has nothing to move). Pure DOM. (one-main
+// dedup runs first via _collapseExtraMains; this handles the single-early-close case that one can't.)
+function _rewrapOrphanedMainContent(html) {
+  try {
+    if (!html || typeof html !== 'string' || typeof DOMParser === 'undefined') return html;
+    if (!/<main[\s>]/i.test(html)) return html;
+    var doctypeMatch = html.match(/^\s*<!DOCTYPE[^>]*>/i);
+    var doctypePrefix = doctypeMatch ? doctypeMatch[0] + '\n' : '';
+    var dom = new DOMParser().parseFromString(html, 'text/html');
+    var main = dom.querySelector('main');
+    var body = dom.body;
+    if (!main || !body || main.parentNode !== body) return html; // only a top-level <main>
+    var _exempt = function (el) {
+      if (!el || el.nodeType !== 1) return true; // ignore text/comment nodes between elements
+      var tag = (el.tagName || '').toUpperCase();
+      if (tag === 'FOOTER' || tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEMPLATE') return true;
+      if ((el.getAttribute('role') || '').toLowerCase() === 'contentinfo') return true;
+      try { if (el.matches && el.matches('section[data-content-recovery="true"], section[data-source-preserved-block="true"], section[data-image-recovery="true"]')) return true; } catch (_) {}
+      return false;
+    };
+    var toMove = [];
+    var chars = 0;
+    for (var sib = main.nextSibling; sib; sib = sib.nextSibling) {
+      if (sib.nodeType === 1 && !_exempt(sib)) {
+        var t = (sib.textContent || '').trim();
+        if (t.length > 0) { toMove.push(sib); chars += t.length; }
+      }
+    }
+    if (!toMove.length || chars < 40) return html; // nothing meaningful orphaned outside main
+    for (var i = 0; i < toMove.length; i++) main.appendChild(toMove[i]); // move to END of main, order preserved
+    return doctypePrefix + (dom.documentElement ? dom.documentElement.outerHTML : html);
   } catch (_) { return html; }
 }
 
@@ -18267,6 +18321,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
         // 8. Ensure main landmark exists (collapse any duplicate <main> first — one-main dedup)
         { const _mb = (accessibleHtml.match(/<main\b[^>]*>/gi) || []).length; accessibleHtml = _collapseExtraMains(accessibleHtml); if (_mb > 1) aiFixCount++; }
+        // 8a. #I (2026-07-07): re-wrap any PRIMARY content orphaned after a prematurely-closed </main> back
+        // into <main> (the designed recovery/preserved/footer appendices stay outside — exempted). No-op
+        // when nothing is orphaned, so a well-formed doc is untouched.
+        { const _bO = accessibleHtml; accessibleHtml = _rewrapOrphanedMainContent(accessibleHtml); if (accessibleHtml !== _bO) { aiFixCount++; warnLog('[PDF Fix] Re-wrapped primary content orphaned after a premature </main> back into the main landmark.'); } }
         if (!accessibleHtml.includes('<main')) {
           accessibleHtml = accessibleHtml.replace(/<body[^>]*>/, (match) => {
             aiFixCount++;
@@ -25056,7 +25114,11 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         li.appendChild(strong);
         // #F (2026-07-05): H2 records an unindexed word with an EMPTY context — render that honestly
         // instead of a bare `source context: ""` (which reads as broken output).
-        li.appendChild(doc.createTextNode(u.context ? (' — source context: "' + u.context + '"') : ' — exact source position could not be determined'));
+        // #I (2026-07-07): strip leaked source-markdown (* bullets, ### headings, <br>, | pipes) from the
+        // context snippet too, so it reads as prose ("Vision, hearing, or sensorimotor impairment") not
+        // raw markup ("* Vision, hearing… ### Behavioral/Psychiatric *").
+        const _ctx = u.context ? _stripRestoreMarkdown(u.context) : '';
+        li.appendChild(doc.createTextNode(_ctx ? (' — source context: "' + _ctx + '"') : ' — exact source position could not be determined'));
         if (ul) ul.appendChild(li);
       });
     }

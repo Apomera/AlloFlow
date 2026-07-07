@@ -12,23 +12,23 @@ import { resolve } from 'node:path';
 
 const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
-const extract = (startMarker, endMarker, name) => {
-  const s = src.indexOf(startMarker);
-  const e = src.indexOf(endMarker, s);
-  if (s === -1 || e === -1) throw new Error('extraction markers for ' + name + ' missing');
-  return new Function('warnLog', src.slice(s, e) + '\n; return ' + name + ';')(() => {});
-};
-const applyWordRestoration = extract(
-  'const applyWordRestoration = (html, missingList, sourceText) => {',
-  '\n  // ── Stage A: Gemini-targeted sentence re-insertion ──', 'applyWordRestoration');
-// restoreSentencesDeterministic now calls the module-level _stripRestoreMarkdown helper (P2-b,
-// 2026-07-03) to keep raw markdown out of restored text. The slice-eval harness must inject it the
-// same way it injects warnLog (it lives outside the sliced function body).
+// restoreSentencesDeterministic AND applyWordRestoration (the recovery-appendix render, #I 2026-07-07)
+// both call the module-level _stripRestoreMarkdown helper to keep raw markdown out of restored text. The
+// slice-eval harness must inject it the same way it injects warnLog (it lives outside the sliced bodies).
 const _stripRestoreMarkdown = (() => {
   const s = src.indexOf('var _stripRestoreMarkdown = function');
   const e = src.indexOf('\n};', s) + 3;
   return new Function(src.slice(s, e) + '\n; return _stripRestoreMarkdown;')();
 })();
+const extract = (startMarker, endMarker, name) => {
+  const s = src.indexOf(startMarker);
+  const e = src.indexOf(endMarker, s);
+  if (s === -1 || e === -1) throw new Error('extraction markers for ' + name + ' missing');
+  return new Function('warnLog', '_stripRestoreMarkdown', src.slice(s, e) + '\n; return ' + name + ';')(() => {}, _stripRestoreMarkdown);
+};
+const applyWordRestoration = extract(
+  'const applyWordRestoration = (html, missingList, sourceText) => {',
+  '\n  // ── Stage A: Gemini-targeted sentence re-insertion ──', 'applyWordRestoration');
 const restoreSentencesDeterministic = (() => {
   const s = src.indexOf('const restoreSentencesDeterministic = (html, missingList, sourceText) => {');
   const e = src.indexOf('\n  // ── Stage D: Duplicate detection', s);
