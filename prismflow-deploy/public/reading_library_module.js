@@ -850,7 +850,7 @@
 
     var _idx = useState({ status: 'loading', data: null, base: null, error: null });
     var index = _idx[0]; var setIndex = _idx[1];
-    var _f = useState({ language: '', level: '', search: '', audio: false, sort: 'level' });
+    var _f = useState({ language: 'English', level: '', search: '', audio: false, sort: 'level' });
     var filters = _f[0]; var setFilters = _f[1];
     var _open = useState(null); var openBook = _open[0]; var setOpenBook = _open[1];
     var _loadingBook = useState(null); var loadingBook = _loadingBook[0]; var setLoadingBook = _loadingBook[1];

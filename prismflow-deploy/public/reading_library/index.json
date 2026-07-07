@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-07T04:04:08.401Z",
+ "generatedAt": "2026-07-07T04:16:56.895Z",
  "attribution": {
   "text": "Books from StoryWeaver, an open library by Pratham Books. Licensed CC BY 4.0.",
   "url": "https://storyweaver.org.in",
@@ -10,7 +10,7 @@
   {
    "name": "English",
    "code": "en",
-   "count": 80
+   "count": 174
   },
   {
    "name": "Spanish",
@@ -12809,6 +12809,1988 @@
    "pageCount": 12,
    "wordCount": 376,
    "file": "books/28736-maths-at-the-mela.json"
+  },
+  {
+   "slug": "60812-the-roti-roll",
+   "title": "The Roti Roll",
+   "description": "Bhaunkoo, the dog was given a roti. \r\nBut was he able to eat it right away? \r\nRead this interesting roti travelogue and find out!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721737/size3/48b7ff8c9cc0446230d23cabcfe477af.jpg",
+   "authors": [
+    "Manisha Chaudhry"
+   ],
+   "illustrators": [
+    "Partho Sengupta"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 7,
+   "wordCount": 140,
+   "file": "books/60812-the-roti-roll.json"
+  },
+  {
+   "slug": "37232-the-bee-and-the-elephant",
+   "title": "The Bee and the Elephant",
+   "description": "An elephant tries to help a little lost bee find his home. Is it the nest? The cave? Where does he live?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101349/size3/39f8b81749a713480835e9f715fadc44.jpg",
+   "authors": [
+    "Celia  Bolam"
+   ],
+   "illustrators": [
+    "Try Samphos"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 78,
+   "file": "books/37232-the-bee-and-the-elephant.json"
+  },
+  {
+   "slug": "13916-lara-the-yellow-ladybird",
+   "title": "Lara the Yellow Ladybird",
+   "description": "A yellow bug in a world of red, Lara the Ladybird just wants to fit in.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/527552/size3/0e134808094d26d5824406a78f24b74f.jpg",
+   "authors": [
+    "Catherine Holtzhausen",
+    "Martha  Evans",
+    "Nadene Kriel"
+   ],
+   "illustrators": [
+    "Catherine Holtzhausen"
+   ],
+   "publisher": "Book Dash",
+   "hasAudio": true,
+   "pageCount": 19,
+   "wordCount": 208,
+   "file": "books/13916-lara-the-yellow-ladybird.json"
+  },
+  {
+   "slug": "24039-food-monster",
+   "title": "Food Monster",
+   "description": "From roti to dosa and chakli to barfi, there are different kinds of food you can eat across India.\r\nBut have you ever thought about the shape of these food items?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/123549/size3/3687d0df50d079218bf3867d505dcd51.jpg",
+   "authors": [
+    "Meenu Thomas"
+   ],
+   "illustrators": [
+    "Aindri C"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 97,
+   "file": "books/24039-food-monster.json"
+  },
+  {
+   "slug": "11986-who-is-it",
+   "title": "Who is it?",
+   "description": "Srr.. Srr.. Who do you think is making this sound? Priya will find out in this story!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/34997/size3/65a5a02ef778f95e582ebb23ecddc4e6.jpg",
+   "authors": [
+    "Kanchan Bannerjee"
+   ],
+   "illustrators": [
+    "Pratyush  Gupta"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 8,
+   "wordCount": 101,
+   "file": "books/11986-who-is-it.json"
+  },
+  {
+   "slug": "8218-sam-s-christmas-present",
+   "title": "Sam's Christmas Present",
+   "description": "Sam wants his Christmas present now! But it is hidden in a secret place. Would you like to find out what Sam did? ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/85011/size3/22a46844089b416e89ce3fc175daf53a.jpg",
+   "authors": [
+    "Annie Besant"
+   ],
+   "illustrators": [
+    "Alicia Souza"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 258,
+   "file": "books/8218-sam-s-christmas-present.json"
+  },
+  {
+   "slug": "880-what-if",
+   "title": "What If?",
+   "description": "When Shyam is sleepy he has trouble brushing his teeth. But dreaming big is no trouble at all.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723050/size3/9093d145b12c1371d8ae9d976bfeb4ca.jpg",
+   "authors": [
+    "Hari Kumar Nair"
+   ],
+   "illustrators": [
+    "Hari Kumar Nair"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 10,
+   "wordCount": 211,
+   "file": "books/880-what-if.json"
+  },
+  {
+   "slug": "822-i-can-climb",
+   "title": "I Can Climb!",
+   "description": "Here, a little boy learns to climb up. But can he climb down? This book is one of the four books in the 'Growing Up' series. ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/705479/size3/57c8c82ddc4444a38929edee69280586.jpg",
+   "authors": [
+    "Mini Shrinivasan"
+   ],
+   "illustrators": [
+    "Deval Maniar"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 89,
+   "file": "books/822-i-can-climb.json"
+  },
+  {
+   "slug": "60810-the-picnic",
+   "title": "The Picnic",
+   "description": "When five friends go for a picnic they not only have a great time, they also eat new and exciting food!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721729/size3/5342c4c88d17f024b62f9c5f7701fd3f.jpg",
+   "authors": [
+    "Manisha Chaudhry"
+   ],
+   "illustrators": [
+    "Partho Sengupta"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 8,
+   "wordCount": 185,
+   "file": "books/60810-the-picnic.json"
+  },
+  {
+   "slug": "47926-the-little-leaf",
+   "title": "The Little Leaf",
+   "description": "Follow the journey of a little yellow-green leaf.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/99508/size3/2a551b9353131eff1cbbd72774fa8d32.jpg",
+   "authors": [
+    "Swagata Sen Pillai"
+   ],
+   "illustrators": [
+    "Sonal Goyal"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 4,
+   "wordCount": 94,
+   "file": "books/47926-the-little-leaf.json"
+  },
+  {
+   "slug": "37233-piggy-wants-to-fly",
+   "title": "Piggy Wants to Fly",
+   "description": "As Piggy gazes upon a butterfly happy in flight, Piggy dreams of flying. Can Piggy learn to fly like a butterfly?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/101348/size3/9590904b7e94f28a5dd15888d0ac5885.jpg",
+   "authors": [
+    "Stephanie  Wei"
+   ],
+   "illustrators": [
+    "Youm Kosal"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 9,
+   "wordCount": 87,
+   "file": "books/37233-piggy-wants-to-fly.json"
+  },
+  {
+   "slug": "24795-who-is-our-friend",
+   "title": "Who Is Our Friend?",
+   "description": "Rhino, Crocodile, Giraffe and Zebra all have an unlikely friend. Can you guess who he is?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/706095/size3/61695b92450e5cf6696869c4b800dd6e.jpg",
+   "authors": [
+    "Jade  Mathieson"
+   ],
+   "illustrators": [
+    "Gerhard Van Wyk"
+   ],
+   "publisher": "Book Dash",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 100,
+   "file": "books/24795-who-is-our-friend.json"
+  },
+  {
+   "slug": "43931-my-garden",
+   "title": "My Garden",
+   "description": "Join a young girl as she spends time in her beautiful garden, full of flowers, butterflies, and bumblebees. ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/99587/size3/9e6ac2f6ea4cc4f34e6e276ccbdf9270.jpg",
+   "authors": [
+    "Shannon David"
+   ],
+   "illustrators": [
+    "Kishor Joshi"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 210,
+   "file": "books/43931-my-garden.json"
+  },
+  {
+   "slug": "19723-foxy-joxy-plays-a-trick",
+   "title": "Foxy Joxy Plays a Trick",
+   "description": "Foxy Joxy, a sly fox, sells watermelons. One day he has a clever idea. The animals were not happy. What will they do to teach him a lesson?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/735188/size3/b90d94b9c65b24e49ac0bf3f5faa5908.jpg",
+   "authors": [
+    "Nahida  Esmail"
+   ],
+   "illustrators": [
+    "Mdu Ntuli"
+   ],
+   "publisher": "Book Dash",
+   "hasAudio": false,
+   "pageCount": 18,
+   "wordCount": 162,
+   "file": "books/19723-foxy-joxy-plays-a-trick.json"
+  },
+  {
+   "slug": "8040-colours-on-the-street",
+   "title": "Colours on the Street",
+   "description": "There is so much to see on a street. \r\nJoin Sonu, Monu and Rina on a colourful walk down the lane.\r\n",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/703514/size3/2abd90f3ae29e713fad56ce8eb55e637.jpg",
+   "authors": [
+    "Mala Kumar",
+    "Manisha Chaudhry"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 107,
+   "file": "books/8040-colours-on-the-street.json"
+  },
+  {
+   "slug": "196-aaloo-maaloo-kaaloo",
+   "title": "Aaloo-Maaloo-Kaaloo",
+   "description": "One day Maloo had to get some potatoes from his grandmother's kitchen garden, but he could not find any. And then Kaloo helps him to uncover the hidden potatoes.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/703824/size3/e58cf9e6698ff1d6a72c150d34efe53e.jpg",
+   "authors": [
+    "Ritu Singh"
+   ],
+   "illustrators": [
+    "Suvidha Mistry"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 7,
+   "wordCount": 141,
+   "file": "books/196-aaloo-maaloo-kaaloo.json"
+  },
+  {
+   "slug": "6818-a-street-or-a-zoo",
+   "title": "A Street, or a Zoo?",
+   "description": "Sonu, Monu and Rina discovered many things together in 'Colours on the Street'. In this second book, the three friends set out to play. Little did they know that they would meet so many animals. Would you like to meet them too?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/703806/size3/ca4ec79c4a3534baf1250338357fe8ec.jpg",
+   "authors": [
+    "Mala Kumar",
+    "Manisha Chaudhry"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 172,
+   "file": "books/6818-a-street-or-a-zoo.json"
+  },
+  {
+   "slug": "234-the-moon-and-the-cap",
+   "title": "The Moon and The Cap",
+   "description": "Do you like to wear a cap on a sunny day? Find out who else likes to wear a cap in this charming book.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/700911/size3/a7997747b4c2afe36ad258eb24979534.jpg",
+   "authors": [
+    "Rohini Nilekani"
+   ],
+   "illustrators": [
+    "Angie & Upesh"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 143,
+   "file": "books/234-the-moon-and-the-cap.json"
+  },
+  {
+   "slug": "36641-the-three-little-kittens",
+   "title": "The Three Little Kittens",
+   "description": "Three little kittens are afraid of the neighbourhood dog. He really wants to play with them, but whenever they see him they run away! Why do you think they are so scared of him?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101318/size3/a997546bf81a177c22005e6474cb2c66.jpg",
+   "authors": [
+    "Magdalena  Cooper"
+   ],
+   "illustrators": [
+    "Youm Kosal"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 13,
+   "wordCount": 109,
+   "file": "books/36641-the-three-little-kittens.json"
+  },
+  {
+   "slug": "968-i-can-help",
+   "title": "I Can Help!",
+   "description": "A big girl or boy can help others in many ways. Helping is so much fun! This book is one of the four books in the 'Growing Up' series.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/705491/size3/f2ecd62b4dc76be8fa891bf361c2b379.jpg",
+   "authors": [
+    "Mini Shrinivasan"
+   ],
+   "illustrators": [
+    "Aman Randhawa"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 120,
+   "file": "books/968-i-can-help.json"
+  },
+  {
+   "slug": "376-my-friends",
+   "title": "My Friends",
+   "description": "I have many friends. I like all of them but one of them is really special! ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721912/size3/066122b27bde426119a6c1d4284800f1.jpg",
+   "authors": [
+    "Manisha Chaudhry"
+   ],
+   "illustrators": [
+    "Rajeev Verma 'Banjara'"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 69,
+   "file": "books/376-my-friends.json"
+  },
+  {
+   "slug": "174103-the-girl-who-could-not-stop-laughing",
+   "title": "The Girl Who Could Not Stop Laughing",
+   "description": "Every day T. Sundari gets into trouble because most things make her laugh. She just cannot keep her mouth sealed. T. Sundari wants to know if something is wrong with her. Because if there isn't, she can laugh all the time!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/718145/size3/8f27fe5f72c50232be4f992cd4a2eaea.jpg",
+   "authors": [
+    "Pratham Books Team"
+   ],
+   "illustrators": [
+    "ROSH"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 21,
+   "file": "books/174103-the-girl-who-could-not-stop-laughing.json"
+  },
+  {
+   "slug": "11949-the-kite",
+   "title": "The Kite",
+   "description": "Open the book. Spot the kite. See what happens to it. Enjoy the crisp lines and the Warli art.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/117638/size3/ac6a77ff9d0dd2a0a61098ad0557ff0c.jpg",
+   "authors": [
+    "Jeyanthi Manokaran"
+   ],
+   "illustrators": [
+    "Jeyanthi Manokaran"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 90,
+   "file": "books/11949-the-kite.json"
+  },
+  {
+   "slug": "21616-who-ate-all-that-up",
+   "title": "Who Ate All That Up?",
+   "description": "How is the forest so clean? Find out how nothing goes to waste in the jungle.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/188968/size3/715cc0ac513fbf98008ab8be6fa089d2.jpg",
+   "authors": [
+    "Sejal Mehta"
+   ],
+   "illustrators": [
+    "Rohan Chakravarty"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 132,
+   "file": "books/21616-who-ate-all-that-up.json"
+  },
+  {
+   "slug": "51955-anand",
+   "title": "Anand",
+   "description": "Meet Anand! He likes driving around and meeting new people. He likes music, dancing, and animals. He likes looking good, and he likes making your neighbourhood look good. He's awesome!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/524491/size3/5a749282e0877bdf46bf87ebe6d7102f.jpg",
+   "authors": [
+    "Rajiv Eipe"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 14,
+   "wordCount": 84,
+   "file": "books/51955-anand.json"
+  },
+  {
+   "slug": "8223-sringeri-srinivas-learns-to-laugh",
+   "title": "Sringeri Srinivas Learns to Laugh",
+   "description": "In this book, Sringeri Srinivas, the crazy but lovable, long-haired farmer is very, very angry. What's making him so angry?  Read this fun story to find out what new problem he solves today.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/123547/size3/19462a25e203b01049a94b325e2a43c9.jpg",
+   "authors": [
+    "Rohini Nilekani"
+   ],
+   "illustrators": [
+    "Angie & Upesh"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 19,
+   "wordCount": 659,
+   "file": "books/8223-sringeri-srinivas-learns-to-laugh.json"
+  },
+  {
+   "slug": "39753-rabbit-becomes-a-chef",
+   "title": "Rabbit Becomes a Chef",
+   "description": "Raw carrots for breakfast. Raw carrots for lunch. Raw carrots for dinner. Rabbit is tired of eating raw carrots and wants to learn how to cook them into a tasty curry. ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/105036/size3/18f8fd4a121fc54acd71d658d4013da8.jpg",
+   "authors": [
+    "Magdalena  Cooper"
+   ],
+   "illustrators": [
+    "Chamath Prasanga Lokuliyana"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 154,
+   "file": "books/39753-rabbit-becomes-a-chef.json"
+  },
+  {
+   "slug": "7263-brushing-is-no-fun",
+   "title": "Brushing is No Fun!",
+   "description": "Rohan does not like to brush his teeth or take a bath. But his sister Riya tells him a secret that changes his mind!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/527487/size3/3b22d4a144943a8e5648a8ff9a4364de.jpg",
+   "authors": [
+    "Srividhya Venkat"
+   ],
+   "illustrators": [
+    "Anupama Ajinkya Apte"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 13,
+   "wordCount": 651,
+   "file": "books/7263-brushing-is-no-fun.json"
+  },
+  {
+   "slug": "71-everything-looks-new",
+   "title": "Everything looks new!",
+   "description": "So many flowers, so many colours, so many birds and squirrels chirping and jumping around Meenu! She is enchanted by nature at its best. It is spring time.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/702434/size3/ba622e2c893a49e15653341c6057331a.jpg",
+   "authors": [
+    "Mala Kumar",
+    "Manisha Chaudhry"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 311,
+   "file": "books/71-everything-looks-new.json"
+  },
+  {
+   "slug": "56272-the-pig-with-the-runaway-tail",
+   "title": "The Pig With The Runaway Tail",
+   "description": "Pongal the pig has a bit of a problem. Her tail keeps running off on its own to have an adventure! Help Pongal find her runaway tail in this spotting book. ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/120979/size3/3d623966446a7444473bbd5c84c8ba2e.jpg",
+   "authors": [
+    "Parinita Shetty"
+   ],
+   "illustrators": [
+    "Parvati  Pillai"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 16,
+   "wordCount": 486,
+   "file": "books/56272-the-pig-with-the-runaway-tail.json"
+  },
+  {
+   "slug": "26371-best-foot-forward",
+   "title": "Best Foot Forward",
+   "description": "Mr. Centipede wears 21 pairs of boots on his morning walk. But with so many legs to choose from, how does he\r\nknow which foot to use first? Join Mr. Centipede and his garden friends in this story about counting and indecision!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/646248/size3/785eeebf26aca45dc9fc4f56cedba1a6.jpg",
+   "authors": [
+    "Rustom  Dadachanji"
+   ],
+   "illustrators": [
+    "Tanvi Bhat"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 454,
+   "file": "books/26371-best-foot-forward.json"
+  },
+  {
+   "slug": "37268-it-s-a-ghost",
+   "title": "It's a Ghost!",
+   "description": "Once there was a ghost who loved to scare someone every day. One day, he decided to look for something easy to scare… like a mouse! Will the mouse be as frightened as everyone else?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/617117/size3/f46f95b0a9c9d93baa8531860a28a997.jpg",
+   "authors": [
+    "Alisha Berger"
+   ],
+   "illustrators": [
+    "Kaustubh  Kamat"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": true,
+   "pageCount": 16,
+   "wordCount": 158,
+   "file": "books/37268-it-s-a-ghost.json"
+  },
+  {
+   "slug": "11166-a-cloud-of-trash",
+   "title": "A Cloud of Trash",
+   "description": "A cloud of trash is hanging over Cheekoo’s head, making her the unhappiest girl in the world. Read this wonderful story to find out how Cheekoo gets rid of this horrible trash cloud. ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/713656/size3/2262cbd33bad9fd90a1213d1ee122583.jpg",
+   "authors": [
+    "Karanjeet  Kaur"
+   ],
+   "illustrators": [
+    "Bhavana  Vyas Vipparthi"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 18,
+   "wordCount": 721,
+   "file": "books/11166-a-cloud-of-trash.json"
+  },
+  {
+   "slug": "355041-the-shapes-in-our-pookalam",
+   "title": "The Shapes in Our Pookalam",
+   "description": "Nikku and his chechi are celebrating Onam. They are making a beautiful pookalam with different flowers. Spot the different shapes they use to create it.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/480203/size3/c4c3e54f9eb1af4be5e0035b26927543.jpg",
+   "authors": [
+    "Megha Vishwanath"
+   ],
+   "illustrators": [
+    "Saksham Arora"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 8,
+   "wordCount": 137,
+   "file": "books/355041-the-shapes-in-our-pookalam.json"
+  },
+  {
+   "slug": "24355-little-ant-s-big-plan",
+   "title": "Little Ant's Big Plan",
+   "description": "This is a story about a little ant with a big plan, and how his love for reading saved the day.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/86165/size3/cdaec4ae12cc711034c3eefcfd214d40.jpg",
+   "authors": [
+    "Candice  Dingwall"
+   ],
+   "illustrators": [
+    "Steven McKimmie"
+   ],
+   "publisher": "Book Dash",
+   "hasAudio": false,
+   "pageCount": 18,
+   "wordCount": 207,
+   "file": "books/24355-little-ant-s-big-plan.json"
+  },
+  {
+   "slug": "60805-going-to-market",
+   "title": "Going to Market",
+   "description": "Children always like to share their experiences with others. Going to Market shows how enjoyable the experiences can be.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722697/size3/70f63c77cc485a7dc8880d6fe0eb2958.jpg",
+   "authors": [
+    "Madhav Chavan"
+   ],
+   "illustrators": [
+    "Rijuta Ghate",
+    "Santosh Pujari"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 295,
+   "file": "books/60805-going-to-market.json"
+  },
+  {
+   "slug": "31958-the-drawing-game",
+   "title": "The Drawing Game",
+   "description": "Jeenu and Ajji are drawing circles, triangles and squares. Then they turn them into all sorts of things. This simple story introduces the concept of shapes to children and encourages them to use their imagination.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/716431/size3/6bc9c1887a5230a7f0d6708d14a9982d.jpg",
+   "authors": [
+    "Anitha Murthy"
+   ],
+   "illustrators": [
+    "Ajanta Guhathakurta"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 12,
+   "wordCount": 302,
+   "file": "books/31958-the-drawing-game.json"
+  },
+  {
+   "slug": "31966-let-s-make-some-lime-juice",
+   "title": "Let's Make Some Lime Juice!",
+   "description": "Eight children are playing in the hot sun. They want to make a jug of lime juice from the recipe Raju Uncle gives them. How do they measure out the ingredients? How do they divide the drink equally? The concept of fractions is introduced using a yummy recipe!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/716367/size3/e97da48c8cd10ab3eb5854216b62b4a7.jpg",
+   "authors": [
+    "Nandini Bajpai"
+   ],
+   "illustrators": [
+    "Niloufer Wadia"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 391,
+   "file": "books/31966-let-s-make-some-lime-juice.json"
+  },
+  {
+   "slug": "371579-what-would-you-like-to-drink",
+   "title": "What Would You Like to Drink?",
+   "description": "It is Priya Bua’s baby’s first birthday and Tara watches as each person asks Dada for coffee, tea and other things. Tara finds a smart way to help him.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/527525/size3/5a38403b027f09dcefaa87bed5cd9e97.jpg",
+   "authors": [
+    "Anand Janardhan"
+   ],
+   "illustrators": [
+    "Ayesha Punjabi"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 7,
+   "wordCount": 189,
+   "file": "books/371579-what-would-you-like-to-drink.json"
+  },
+  {
+   "slug": "19721-you-can-t-find-me",
+   "title": "You Can't Find Me!",
+   "description": "Mia is the best in the world at hiding. Can you find her? A hide-and-seek book where you have to find Mia and the items on her Ma’s shopping list.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/116826/size3/426af0a182efe12d8719ad2b2404bdee.jpg",
+   "authors": [
+    "Jemma Jose"
+   ],
+   "illustrators": [
+    "Jemma Jose"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 27,
+   "wordCount": 371,
+   "file": "books/19721-you-can-t-find-me.json"
+  },
+  {
+   "slug": "23466-tra-s-red-bean-plant",
+   "title": "Tra's Red Bean Plant",
+   "description": "Tra is excited about her birthday gift. It's three red bean seeds and a book about gardening. She plants her seeds and waters them daily. But for some reason her plant begins to droop. What could be wrong?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/120534/size3/df42a3511e9b369e0e5c0e1baa98b0ea.jpg",
+   "authors": [
+    "Alisha Berger"
+   ],
+   "illustrators": [
+    "Phạm Hùng  Vinh"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 20,
+   "wordCount": 413,
+   "file": "books/23466-tra-s-red-bean-plant.json"
+  },
+  {
+   "slug": "60932-dance-mihlali",
+   "title": "Dance, Mihlali!",
+   "description": "The day of the concert is approaching, and Mihlali is getting more and more nervous. Will she ever be ready to dance in front of all those people?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/130507/size3/abbca912f758719547f7dc1afe9eac68.jpg",
+   "authors": [
+    "Matona Fatman"
+   ],
+   "illustrators": [
+    "Aimee  Ayres"
+   ],
+   "publisher": "Book Dash",
+   "hasAudio": false,
+   "pageCount": 18,
+   "wordCount": 153,
+   "file": "books/60932-dance-mihlali.json"
+  },
+  {
+   "slug": "486-gulli-s-box-of-things",
+   "title": "Gulli's Box of Things",
+   "description": "Gulli has a little brown box where he keeps many things like buttons and keys. But what does he do with them? Find out, and then you may want your own special box too!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/696949/size3/95a90e9213ad825d4119cacb0d9f24bf.jpg",
+   "authors": [
+    "Anupama Ajinkya Apte"
+   ],
+   "illustrators": [
+    "Anupama Ajinkya Apte"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 319,
+   "file": "books/486-gulli-s-box-of-things.json"
+  },
+  {
+   "slug": "1029-under-my-bed",
+   "title": "Under My Bed",
+   "description": "Sometimes strange things lurk under my bed. Would you like to know what I found the other night?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704859/size3/5213e3c314261561008ed455eb6d0fe7.jpg",
+   "authors": [
+    "Anupa Lal"
+   ],
+   "illustrators": [
+    "Suvidha Mistry"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 138,
+   "file": "books/1029-under-my-bed.json"
+  },
+  {
+   "slug": "10448-ghum-ghum-gharial-s-glorious-adventure",
+   "title": "Ghum-Ghum Gharial's Glorious Adventure",
+   "description": "Ghum-Ghum Gharial is out on her very first swim when she realizes that her family has swum off without her. Will she find them? Swim along the river Ganga with Ghum-Ghum and meet many amazing creatures along the way!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723978/size3/fef3cb2e4de26e284dc81d72ff16571a.jpg",
+   "authors": [
+    "Aparna  Kapur"
+   ],
+   "illustrators": [
+    "ROSH"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 19,
+   "wordCount": 479,
+   "file": "books/10448-ghum-ghum-gharial-s-glorious-adventure.json"
+  },
+  {
+   "slug": "26725-laundry-day",
+   "title": "Laundry Day",
+   "description": "It's Mary's favourite time of day – washing time! Meet Mary's neighbours as they wash their clothes and get their days off to a fresh, clean start.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/55464/size3/56deae620a87cdf1061749233170a37b.jpg",
+   "authors": [
+    "Mathangi  Subramanian "
+   ],
+   "illustrators": [
+    "Shambhavi Singh"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 24,
+   "wordCount": 192,
+   "file": "books/26725-laundry-day.json"
+  },
+  {
+   "slug": "26391-goby-s-noisy-best-friend",
+   "title": "Goby's Noisy Best Friend",
+   "description": "Legless Goby and noisy Snap are best friends who live together in a burrow deep in the ocean. What happens when Goby gets tired of Snap’s loud claws? ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/714180/size3/025ea38f1770db73146dcc161613c29c.jpg",
+   "authors": [
+    " Sheila Dhir"
+   ],
+   "illustrators": [
+    "Anjora Noronha"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 14,
+   "wordCount": 454,
+   "file": "books/26391-goby-s-noisy-best-friend.json"
+  },
+  {
+   "slug": "12218-cube-cat-cone-cat",
+   "title": "Cube Cat, Cone Cat",
+   "description": "The cat in this book loves shapes. Have fun following the cat and his little friend and look at all the shapes that they see.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/720849/size3/129b533b0a0d7b69a71cff6ce379b5a3.jpg",
+   "authors": [
+    "Praba Ram",
+    "Sheela Preuitt"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 15,
+   "wordCount": 112,
+   "file": "books/12218-cube-cat-cone-cat.json"
+  },
+  {
+   "slug": "10823-i-spy",
+   "title": "I Spy!",
+   "description": "A simple game of 'I Spy' at Sania's birthday party turns into a hilarious misadventure when bees and cats and dogs decide to join in. Does Sania find ALL her hidden friends in the end? COUNT DOWN with the birthday girl to find out!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/713555/size3/f35c9e0ae7b19a3cefc15f016bf28ec6.jpg",
+   "authors": [
+    "Samvida  Venkatesh"
+   ],
+   "illustrators": [
+    "Sandhya Prabhat"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 736,
+   "file": "books/10823-i-spy.json"
+  },
+  {
+   "slug": "38666-a-special-nest",
+   "title": "A Special Nest",
+   "description": "A bird is trying to build a nest for herself. But everywhere she builds a nest, something or the other disturbs her. What will she do?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/100169/size3/6ba43714a19f5bc87346890ae7c45e3b.jpg",
+   "authors": [
+    "Kavita Singh"
+   ],
+   "illustrators": [
+    "Partho Sengupta"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 281,
+   "file": "books/38666-a-special-nest.json"
+  },
+  {
+   "slug": "37371-reba-wants-ice-cream",
+   "title": "Reba Wants Ice Cream",
+   "description": "When Reba comes home, she realises that a shopkeeper has given her too much change. Should she tell the shopkeeper the truth?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/93887/size3/d8f14b0124e4a95d660994b1141c79e2.jpg",
+   "authors": [
+    "Gouri Srinidhi"
+   ],
+   "illustrators": [
+    "Dhiman  Sarkar"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 314,
+   "file": "books/37371-reba-wants-ice-cream.json"
+  },
+  {
+   "slug": "19586-who-is-afraid-of-the-rakshas-sweetie-man",
+   "title": "Who is Afraid of the Rakshas Sweetie-Man?",
+   "description": "Samar and Nivya are terrified of the Rakshas Sweetie-Man. He looks scary, and oh, does he eat little puppies? When their six puppies run into the Rakshas Sweetie-Man’s shop, the twins must rescue them. But then they get the biggest surprise ever!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721915/size3/c10359f01d981cd18e162b1f51f2d1bc.jpg",
+   "authors": [
+    "Ranjit Lal"
+   ],
+   "illustrators": [
+    "Lavanya  Naidu"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 12,
+   "wordCount": 404,
+   "file": "books/19586-who-is-afraid-of-the-rakshas-sweetie-man.json"
+  },
+  {
+   "slug": "25699-gurru-and-peechu-s-day-out",
+   "title": "Gurru and Peechu's Day Out",
+   "description": "Gurru and Peechu have nowhere to play! Join them as they go scouting for new spaces in their city.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722963/size3/a8ebe3620e8f0c4efe7a4021ea268154.jpg",
+   "authors": [
+    "Meenu Thomas"
+   ],
+   "illustrators": [
+    "Sayan Mukherjee"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 263,
+   "file": "books/25699-gurru-and-peechu-s-day-out.json"
+  },
+  {
+   "slug": "28960-the-grand-patch-up",
+   "title": "The Grand Patch-up",
+   "description": "Mary and Josana are neighbours and best friends. When they have a fight, Mary wonders how to patch things up with her friend.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/724111/size3/9c28a54e71a2ce6ddcd0ec16827ffc81.jpg",
+   "authors": [
+    "Karthika G"
+   ],
+   "illustrators": [
+    "Tasneem Amiruddin"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 442,
+   "file": "books/28960-the-grand-patch-up.json"
+  },
+  {
+   "slug": "5287-dive",
+   "title": "DIVE!",
+   "description": "Take a dive with us into the spectacular world of coral reefs, and catch a glimpse of some strange and beautiful sea creatures! ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723793/size3/cbace915f1070d1f46291c016afd4b5d.jpg",
+   "authors": [
+    "Rajiv Eipe"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 729,
+   "file": "books/5287-dive.json"
+  },
+  {
+   "slug": "34971-sailing-ships-and-sinking-spoons",
+   "title": "Sailing Ships and Sinking Spoons",
+   "description": "Tenzin and Tashi, two young Tibetan monks, and Genla, the beloved storyteller of the monastery, wonder why a small steel spoon sinks in water but a huge ship floats. Their science teacher Miss Sonam helps them experiment with an apple, a spoon and a tub-full of water to learn more about objects that float.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/717230/size3/b192003f504666cffb50823a65999e64.jpg",
+   "authors": [
+    "Jamyang Gyaltsen"
+   ],
+   "illustrators": [
+    "Ngawang Dorjee"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 1191,
+   "file": "books/34971-sailing-ships-and-sinking-spoons.json"
+  },
+  {
+   "slug": "61025-the-animals-meeting",
+   "title": "The Animals Meeting",
+   "description": "Animal's Meeting is a story about the relationship between animals, humans and the environment. As spring arrives, the animals and the peasants attend meetings to discuss all the things they do for the environment. Humans are also invited to the meeting. What will they talk about? Read and find out.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/130492/size3/136762bc922f12c95c3032f6c22566df.jpg",
+   "authors": [
+    "Alisha Berger"
+   ],
+   "illustrators": [
+    "Raju Babu Shakya"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 24,
+   "wordCount": 811,
+   "file": "books/61025-the-animals-meeting.json"
+  },
+  {
+   "slug": "5052-jadav-and-the-tree-place",
+   "title": "Jadav and the Tree-Place",
+   "description": "Jadav has the best job in the world: he makes forests! How does he do it? Read this book to find out!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/712342/size3/d8de7d5aebdf7754bbf81fd93c25dba0.jpg",
+   "authors": [
+    "Vinayak Varma"
+   ],
+   "illustrators": [
+    "Vinayak Varma"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 1437,
+   "file": "books/5052-jadav-and-the-tree-place.json"
+  },
+  {
+   "slug": "1091-the-boy-and-the-drum",
+   "title": "The Boy and the Drum",
+   "description": "A folktale about giving and kindness transforms into a lively play! This versatile and adaptable piece can be performed on stage or in the classroom. Hours of fun and learning guaranteed!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/705272/size3/30c01bdae2b4750452bd542c68c8a913.jpg",
+   "authors": [
+    "Umesh P N"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 35,
+   "wordCount": 2796,
+   "file": "books/1091-the-boy-and-the-drum.json"
+  },
+  {
+   "slug": "35195-password-please",
+   "title": "Password, please?",
+   "description": "Manju wants to play games on her cousin’s phone. But it’s locked with a password! Here is a book that introduces readers to the concept of passwords as a key to guard information. To find out more, open the book; you don’t need a password for that!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/725415/size3/535de83b4fa2d0a1a0b5327e87724891.jpg",
+   "authors": [
+    "Vahishta Mistry"
+   ],
+   "illustrators": [
+    "Radhika Tipnis"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 18,
+   "wordCount": 984,
+   "file": "books/35195-password-please.json"
+  },
+  {
+   "slug": "54646-what-s-that-smell",
+   "title": "What's That Smell?",
+   "description": " Someone’s been eating all of Madhav and Tara’s food. Strange creatures, fuzzy monsters, or something invisible? Who could it be?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/714317/size3/943de6f6a8d5ef43d1bb7b9147b1ca58.jpg",
+   "authors": [
+    "Ashwitha  Jayakumar"
+   ],
+   "illustrators": [
+    "Tarique Aziz"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 596,
+   "file": "books/54646-what-s-that-smell.json"
+  },
+  {
+   "slug": "125010-the-laddoo-code",
+   "title": "The Laddoo Code",
+   "description": "Rahul and Ritvik’s friends always eat up their snacks. Until one day, they come up with a secret code to protect their food.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/180166/size3/49c85a9527750e46622accc20a0c24f0.jpg",
+   "authors": [
+    "Saksham Arora"
+   ],
+   "illustrators": [
+    "Saksham Arora"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 254,
+   "file": "books/125010-the-laddoo-code.json"
+  },
+  {
+   "slug": "105546-the-tiffin-gang",
+   "title": "The Tiffin Gang",
+   "description": "Meenu dislikes tiffin time because Amma always gives her idlis. But what do her classmates bring for lunch? Meenu decides to peek into their boxes and find out.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/159426/size3/24bf771e8e549de1a9f5449bc5c0e216.jpg",
+   "authors": [
+    "Shweta Ganesh Kumar"
+   ],
+   "illustrators": [
+    "Ogin Nayam"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 380,
+   "file": "books/105546-the-tiffin-gang.json"
+  },
+  {
+   "slug": "39842-whale-in-the-sky",
+   "title": "Whale in the Sky",
+   "description": "Join Dadu and Muznah on their cloud-watching expedition, and dive into the ocean to learn about blue whales.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/724152/size3/202262fcb48ac69ed4dcd898b6f4d20e.jpg",
+   "authors": [
+    "Siddharth  Chakravarty"
+   ],
+   "illustrators": [
+    "Kaveri Gopalakrishnan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 18,
+   "wordCount": 569,
+   "file": "books/39842-whale-in-the-sky.json"
+  },
+  {
+   "slug": "26810-the-little-bird-in-the-big-mountains",
+   "title": "The Little Bird in the Big Mountains",
+   "description": "Meera is going to the market to buy new shoes. On the way, Meera, her brother and\r\nMa rescue an injured bird. A story that brings alive the sights and sounds of mountain life and\r\nits gentle rhythms.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/726566/size3/fc6939958e491931b99e6b78e305a572.jpg",
+   "authors": [
+    "Bulbul Sharma"
+   ],
+   "illustrators": [
+    "Sonali Zohra"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 561,
+   "file": "books/26810-the-little-bird-in-the-big-mountains.json"
+  },
+  {
+   "slug": "109014-puchku-seeks-a-song",
+   "title": "Puchku Seeks a Song",
+   "description": "Puchku is off on a new adventure. The Brilliant Plans Department by Boltu, Puchku and Dodla (BPD)2 is on a mission to find a song for a baby bird. But there are too many songs to choose from.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/157652/size3/1cb2983c02d446895f8e8263e9b8a5a0.jpg",
+   "authors": [
+    "Deepanjana Pal"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 861,
+   "file": "books/109014-puchku-seeks-a-song.json"
+  },
+  {
+   "slug": "38367-the-magic-mirror",
+   "title": "The Magic Mirror",
+   "description": "An evil witch curses the village, causing children to turn into scary creatures. Only Sam and Soy are free from the curse. Will Sam and Soy continue to escape the witch’s curse? Will the other children stay scary creatures forever?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101351/size3/f5105b39b5e56da9625b42d59e079231.jpg",
+   "authors": [
+    "Magdalena  Cooper"
+   ],
+   "illustrators": [
+    "UK Nhal"
+   ],
+   "publisher": "Room to Read",
+   "hasAudio": false,
+   "pageCount": 24,
+   "wordCount": 1452,
+   "file": "books/38367-the-magic-mirror.json"
+  },
+  {
+   "slug": "326772-beauty-is-missing",
+   "title": "Beauty Is Missing",
+   "description": "Tessamma’s beloved buffalo is missing! No one knows what happened to her but constable Jincy is determined to find out. She goes all over the village, questioning people and looking for clues. Will Jincy be able to find Beauty the buffalo? The game is afoot in this mystery about a music-loving buffalo.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/703483/size3/32d97f0835d6c7513042c8ab55b3ce74.jpg",
+   "authors": [
+    "Priya Kuriyan"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 27,
+   "wordCount": 737,
+   "file": "books/326772-beauty-is-missing.json"
+  },
+  {
+   "slug": "27124-lazy-mama",
+   "title": "Lazy Mama",
+   "description": "When lazy Raghu Mama claims that he can go on wild adventures without leaving his chair, Amish and Soni are amazed. How does he do it? Can Amish and Soni go on these adventures too?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/714195/size3/3774467adccf3e2d6841cf43aa22d880.jpg",
+   "authors": [
+    "Vidya Pradhan"
+   ],
+   "illustrators": [
+    "Rohit Kelkar"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 932,
+   "file": "books/27124-lazy-mama.json"
+  },
+  {
+   "slug": "16054-kottavi-raja-and-his-sleepy-kingdom",
+   "title": "Kottavi Raja and his Sleepy Kingdom",
+   "description": "Kottavi Raja had trouble sleeping. Only at night. During the day, when his ministers discussed complex problems, he’d find himself nodding of f. He asked everyone for remedies. Nothing seemed to work. Until... \r\nTravel to Kottavi Raja’s land through this book and see what happened next.\r\n",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/118231/size3/9734b4374359de228b2b2badb59750a9.jpg",
+   "authors": [
+    "Yasaswini  Sampathkumar"
+   ],
+   "illustrators": [
+    "Henu"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 1230,
+   "file": "books/16054-kottavi-raja-and-his-sleepy-kingdom.json"
+  },
+  {
+   "slug": "10398-one-by-two",
+   "title": "One by Two",
+   "description": "How do you share something fairly with a friend? How do you take one thing and divide it into two equal parts? Join Rani and Jiya at the fair where they use a simple trick called One-by-Two to share a delicious meal.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/723972/size3/68be81afff6476c2e972c6dea33ed083.jpg",
+   "authors": [
+    "Maya Bisineer"
+   ],
+   "illustrators": [
+    "Shreya  Sen"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 980,
+   "file": "books/10398-one-by-two.json"
+  },
+  {
+   "slug": "33603-fire-fire",
+   "title": "Fire! Fire!",
+   "description": "Ana misses Goa. But she finds her new home fascinating. Everything seems so different in noisy Mumbai. In some tall buildings, she sees speakers and showers. Strange! They don’t ever come on until...",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/717034/size3/201d96d6b2f02a74a45fa386e61d59a3.jpg",
+   "authors": [
+    "Aditi Ghosh"
+   ],
+   "illustrators": [
+    "George Supreeth"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 786,
+   "file": "books/33603-fire-fire.json"
+  },
+  {
+   "slug": "139495-the-right-way-school",
+   "title": "The Right Way School",
+   "description": "The Right Way School has only the right way of doing things and that’s how Mrs Gambhir teaches as well. Until one day a girl with wild hair and endless curiosity joins the school and stumps everyone with her questions, her merry voice, and her behaviour. What will happen next?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/188969/size3/3bacc5d88dc24dcb3711be73fb8f289a.jpg",
+   "authors": [
+    "Shabnam  Minwalla"
+   ],
+   "illustrators": [
+    "Fahad Faizal"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 971,
+   "file": "books/139495-the-right-way-school.json"
+  },
+  {
+   "slug": "353206-the-birthday-menu",
+   "title": "The Birthday Menu",
+   "description": "It is Kanchi’s birthday and she can’t go out to her favourite restaurant. Knowing that baingan bharta is all she has to look forward to, she is really upset. But her neighbours in Sunrise Society know that the best way to turn things around is with a feast! A story about community, compassion, and the food we eat.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/727417/size3/6a5199c6c3a470dbd30154529ea8a4bc.jpg",
+   "authors": [
+    "Meenu Thomas"
+   ],
+   "illustrators": [
+    "Aakanksha Mittra"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 644,
+   "file": "books/353206-the-birthday-menu.json"
+  },
+  {
+   "slug": "105363-i-love-me",
+   "title": "I Love Me",
+   "description": "Rubina has just moved to a new home and doesn’t know anyone there. No one wants to play with her. Can Rubina find a friend of her own?\r\n",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/214248/size3/924c337c1c01987477444de3b4a774a2.jpg",
+   "authors": [
+    "Menaka Raman"
+   ],
+   "illustrators": [
+    "Ekta Bharti"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 350,
+   "file": "books/105363-i-love-me.json"
+  },
+  {
+   "slug": "71750-the-scavenger-hunt",
+   "title": "The Scavenger Hunt",
+   "description": "Lajjo has to find all the items on her list in order to win Daadu’s game. The family is puzzled. Why is Daadu sending Lajjo on a scavenger hunt in the middle of a crisis?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/715245/size3/125c121033c3f1d3ae6712079658c840.jpg",
+   "authors": [
+    "Ajit Narra"
+   ],
+   "illustrators": [
+    "Arkapriya Koley"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 18,
+   "wordCount": 792,
+   "file": "books/71750-the-scavenger-hunt.json"
+  },
+  {
+   "slug": "49732-a-stitch-in-time",
+   "title": "A Stitch in Time",
+   "description": "First, a ripped shirt and then, a faulty iron box. The day has just begun for Shyam. With everything going wrong one after the other, Shrisha takes him to a Repair Mela where you can fix almost anything.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/717377/size3/de7ac270e794445be00068049e544ed0.jpg",
+   "authors": [
+    "Himadri  Das",
+    "Veena Prasad"
+   ],
+   "illustrators": [
+    "Ankitha Kini"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 970,
+   "file": "books/49732-a-stitch-in-time.json"
+  },
+  {
+   "slug": "3787-long-live-friendship-a-humorous-play-for-children",
+   "title": "Long Live Friendship! A Humorous Play for Children",
+   "description": "When Vikram falls sick, Yamraj thinks its time to take him in. Vikram’s maddeningly stubborn friends think otherwise. The play takes a serious issue and presents it in a light-hearted vein. Children can easily and quickly stage and self-direct this hilarious play. Perfect for annual school days and neighbourhood events.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/699246/size3/af9f6093a29e3d59668e6c35efe10c2a.jpg",
+   "authors": [
+    "Meera Dixit"
+   ],
+   "illustrators": [
+    "Shailja Jain Chougule"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 34,
+   "wordCount": 2968,
+   "file": "books/3787-long-live-friendship-a-humorous-play-for-children.json"
+  },
+  {
+   "slug": "111469-the-sound-of-water",
+   "title": "The Sound of Water",
+   "description": "Varsha and her Appa live near the forest. It has been a hot summer and Varsha is feeling the heat. One day she hears a strange noise and decides to investigate. Only she can hear the sound and wonders what it is. What will Varsha find and will Appa believe her?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721325/size3/07c19bca39403c868921d7fe61cc44d2.jpg",
+   "authors": [
+    "Shalini  Srinivasan "
+   ],
+   "illustrators": [
+    "Debasmita Dasgupta"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 773,
+   "file": "books/111469-the-sound-of-water.json"
+  },
+  {
+   "slug": "5699-how-old-is-muttajji",
+   "title": "How Old is Muttajji?",
+   "description": "Putta and Putti know that Muttajji is really, really old. But exactly HOW old is she? Join the twin detectives on an exciting mathematical journey through Muttajji's memories and India's history in their quest to crack the big question.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/723800/size3/30b6242b35da965c70816bf0f26308c3.jpg",
+   "authors": [
+    "Roopa Pai"
+   ],
+   "illustrators": [
+    "Kaveri Gopalakrishnan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 1551,
+   "file": "books/5699-how-old-is-muttajji.json"
+  },
+  {
+   "slug": "12180-arya-in-the-cockpit",
+   "title": "Arya in the Cockpit",
+   "description": "Arya has always dreamt of flying. Fasten your seatbelts as she gets ready for a very special flight journey. ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/713815/size3/86bf40b3b913d9d94bc04157998a8257.jpg",
+   "authors": [
+    "Nandita Jayaraj"
+   ],
+   "illustrators": [
+    "Upamanyu  Bhattacharyya"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 529,
+   "file": "books/12180-arya-in-the-cockpit.json"
+  },
+  {
+   "slug": "13518-the-tale-of-the-toilet",
+   "title": "The Tale of the Toilet",
+   "description": "Number one or number two, they are always big jobs! But do you ever wonder what toilets looked like in the olden times? And are they different in other countries? Get ready to take a peek into toilets across space and time!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/713648/size3/f87ae90aebe1b0d710b7ac350157e072.jpg",
+   "authors": [
+    "Veena Prasad"
+   ],
+   "illustrators": [
+    "Greystroke"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 1249,
+   "file": "books/13518-the-tale-of-the-toilet.json"
+  },
+  {
+   "slug": "8905-chipko-takes-root",
+   "title": "Chipko takes root",
+   "description": "Here is a story set in the hills that shows what bravery and grit can accomplish. Dichi, a brave Bhotiya girl takes part in the Chipko movement to save her beloved trees. Everybody in her village knows that trees give them all the important things in their life. Rapid deforestation in the Himalayan region of Alaknanda river caused floods in the 1970s and gave birth to a movement to save trees by hugging them. Read this heartwarming tale to learn the power of collective action as seen through the eyes of young Dichi.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/29172/size3/d13859ef173ca4ad6a2462e70e5d344a.jpg",
+   "authors": [
+    "Jeyanthi Manokaran"
+   ],
+   "illustrators": [
+    "Jeyanthi Manokaran"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 35,
+   "wordCount": 2288,
+   "file": "books/8905-chipko-takes-root.json"
+  },
+  {
+   "slug": "28887-creatures-of-old",
+   "title": "Creatures of Old",
+   "description": "Ever wondered what the planet was like millions of years ago? What kind of creatures roamed the Earth? What trees grew in the prehistoric forests? Well, there is a way to find out—through palaeontology, a special science that is all about digging up and unscrambling clues to the past. \r\n",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/724109/size3/ffde7fb4ad46096f5a5b5ac794c0dfce.jpg",
+   "authors": [
+    "Veena Prasad"
+   ],
+   "illustrators": [
+    "Kabini  Amin"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 1039,
+   "file": "books/28887-creatures-of-old.json"
+  },
+  {
+   "slug": "61788-how-pintu-found-pi",
+   "title": "How Pintu Found Pi",
+   "description": "Pintu is lonely in his new school. Whenever he approaches his classmates, they form a closed circle. Then Pintu finds pi.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/718341/size3/5ba950a3c80d17bc15f123072ca97a74.jpg",
+   "authors": [
+    "Sarat  Talluri Rao"
+   ],
+   "illustrators": [
+    "Aratrika Choudhury"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 1328,
+   "file": "books/61788-how-pintu-found-pi.json"
+  },
+  {
+   "slug": "32832-behind-the-lie",
+   "title": "Behind the Lie",
+   "description": "Valli and Ramesh live under a cloud of fear because of their father, who has a frightening temper. Will things ever change for them? A story about domestic violence, grit and hope.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/713827/size3/f0bc807027e81b582713864f4cb60cf1.jpg",
+   "authors": [
+    "Asha Nehemiah"
+   ],
+   "illustrators": [
+    "Aindri C"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 24,
+   "wordCount": 1576,
+   "file": "books/32832-behind-the-lie.json"
+  },
+  {
+   "slug": "12643-bulli-and-the-tiger",
+   "title": "Bulli and the Tiger",
+   "description": "Bulli is a little girl growing up in Assam, in a basket-weavers’ community. When the bamboo suppliers threaten to raise the rates and put their whole village in jeopardy, Bulli knows she has to find other ways of finding bamboo, even if it means facing the legendary tiger!  Shalini Reys’s adventure-filled story is illustrated by Nankusiya Shyam in the Gond style.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/37004/size3/8d39fc51a21264dddb80ad83f482be7a.jpg",
+   "authors": [
+    "Shalini Reys"
+   ],
+   "illustrators": [
+    "Nankusia Shyam"
+   ],
+   "publisher": "Dastkari Haat Samiti",
+   "hasAudio": false,
+   "pageCount": 31,
+   "wordCount": 3249,
+   "file": "books/12643-bulli-and-the-tiger.json"
+  },
+  {
+   "slug": "10058-biju-spins-some-magic",
+   "title": "Biju Spins Some Magic",
+   "description": "Biju and his family are weavers in rural Odisha. They create beautiful fabrics to sell in the cities of India and abroad. This is the tale of Biju’s adventures when he accompanies his father to Delhi to sell the saris, and in the process impresses a city boy with his skill. Jaya Jaitly’s fun-filled story is illustrated by Bhramara Nayak in the patachitra style.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/524535/size3/2d6162e002a3bf3ad6834ac1a6050a54.jpg",
+   "authors": [
+    "Jaya Jaitly"
+   ],
+   "illustrators": [
+    "Bhramara  Nayak"
+   ],
+   "publisher": "Dastkari Haat Samiti",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 2888,
+   "file": "books/10058-biju-spins-some-magic.json"
+  },
+  {
+   "slug": "266069-our-beautiful-world",
+   "title": "Our Beautiful World",
+   "description": "Humans have been around for 2,00,000 years. But in the last 250 years, we have created a monster: climate change. This monster is making the planet hotter, and threatening the lives of those we share the planet with. How did we get here? And what comes next? This non-fiction book tells us why we should be hot under the collar about the climate crisis.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/621795/size3/bf212bf61e522b6f4d6d83b07ad4934f.jpg",
+   "authors": [
+    "Bibek Bhattacharya"
+   ],
+   "illustrators": [
+    "Joanna Davala"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 1087,
+   "file": "books/266069-our-beautiful-world.json"
+  },
+  {
+   "slug": "269397-the-birthday-cake",
+   "title": "The Birthday Cake",
+   "description": "Azad, Haniya, Charulata and Piyush love to play in front of their house — as long as they avoid the grumpy old woman at the end of the street. One day, when they find out that it's her birthday, the four friends decide to bake her a cake. After all, no one should spend their birthday alone. \r\nA charming story about fraternity and empathy.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/524457/size3/3de4e044e2aa994fccf7b609981e035c.jpg",
+   "authors": [
+    "Andaleeb Wajid"
+   ],
+   "illustrators": [
+    "Kabini  Amin"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 22,
+   "wordCount": 1073,
+   "file": "books/269397-the-birthday-cake.json"
+  },
+  {
+   "slug": "113431-home",
+   "title": "Home",
+   "description": "Hasina and her family live happily in their rainy village. Until one day the tides turn, and Amma and young Hasina are swept away by fear. They join a river of escaping people. They become refugees in a new country, away from everything that is familiar. A story that explores the meaning of home.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/518337/size3/f324e69b9a98fdcaed6a391bcd6c4412.jpg",
+   "authors": [
+    "Fausto Aarya De Santis"
+   ],
+   "illustrators": [
+    "Ogin Nayam"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 726,
+   "file": "books/113431-home.json"
+  },
+  {
+   "slug": "352163-paati-s-gold",
+   "title": "Paati's Gold",
+   "description": "Paati and Appa are worried because of the failing rice crops. But Paati has an answer hidden in a wooden box, a secret more precious than gold. Savi and Selvan watch Paati unlock the power of indigenous seeds and knowledge in this book about farming. ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495419/size3/233ccd21e8f8b4c78c9c7a371ec10913.jpg",
+   "authors": [
+    "Meenu Thomas"
+   ],
+   "illustrators": [
+    "Kruttika Susarla"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 14,
+   "wordCount": 590,
+   "file": "books/352163-paati-s-gold.json"
+  },
+  {
+   "slug": "25146-janice-goes-to-chinatown",
+   "title": "Janice Goes to Chinatown",
+   "description": "Janice sets off to Kolkata’s Chinatown along with her Grandma. Join her as she discovers this heritage\r\ndistrict.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/117364/size3/f869de03a5e7e66d3b65f3e3ba6faaf1.jpg",
+   "authors": [
+    "Anuradha Sengupta"
+   ],
+   "illustrators": [
+    "Kalyani  Ganapathy"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 12,
+   "wordCount": 381,
+   "file": "books/25146-janice-goes-to-chinatown.json"
+  },
+  {
+   "slug": "27388-an-umbrella-for-druvi",
+   "title": "An Umbrella for Druvi",
+   "description": "Druvi needs an umbrella to protect her wings from the rain. Join the dragonfly as she searches for the perfect leaf-umbrella.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/117422/size3/bce20e90beadcf3f47d10ecfe9213c98.jpg",
+   "authors": [
+    "Shabnam  Minwalla"
+   ],
+   "illustrators": [
+    "Malvika Tewari"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 351,
+   "file": "books/27388-an-umbrella-for-druvi.json"
   }
  ]
 }
