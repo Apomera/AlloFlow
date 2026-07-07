@@ -569,7 +569,15 @@ window.StemLab = window.StemLab || {
     wireframeToggle: { icon: '\uD83D\uDD73\uFE0F', name: 'X-Ray Vision',  desc: 'Toggle wireframe mode' },
     stlExport:       { icon: '\uD83D\uDCE6', name: '3D Printer',          desc: 'Export your first STL file' },
     dimTweaker:      { icon: '\uD83D\uDD27', name: 'Dimension Tweaker',   desc: 'Adjust dimensions 20 times' },
-    geoMaster:       { icon: '\uD83C\uDF1F', name: 'Geo Master',          desc: 'Score 80%+ on 10+ challenges' }
+    geoMaster:       { icon: '\uD83C\uDF1F', name: 'Geo Master',          desc: 'Score 80%+ on 10+ challenges' },
+    // \u2500\u2500 Dimensional-stretch (immersive builder) badges \u2500\u2500
+    firstSeg:        { icon: '\u2500',        name: 'Into the 1st Dimension', desc: 'Stretch a point into a segment' },
+    firstPlane:      { icon: '\u25AD',        name: 'Flatlander',           desc: 'Stretch a segment into a rectangle' },
+    firstSolid:      { icon: '\uD83E\uDDCA',  name: 'Solid Ground',         desc: 'Build your first solid by stretching' },
+    cavalieriTwin:   { icon: '\u2696\uFE0F',  name: 'Cavalieri Twin',       desc: 'A straight and a slanted prism with equal volume' },
+    squareCubeBadge: { icon: '\uD83D\uDD22',  name: 'Square\u2013Cube',      desc: 'Place a scaled copy and watch volume jump' },
+    taperMaker:      { icon: '\uD83D\uDD3A',  name: 'Point of It All',      desc: 'Taper a shape to a pyramid or cone' },
+    revolver:        { icon: '\uD83C\uDF00',  name: 'Solid of Revolution',  desc: 'Spin a shape into a round solid' }
   };
 
   function checkGeoBadges(ext, updates, awardXP, addToast) {
@@ -599,6 +607,39 @@ window.StemLab = window.StemLab || {
     });
     if (changed) updates.badges = newBadges;
     return updates;
+  }
+
+  // ── Stretch-mode reward loop — awards badges for the dimensional builder (the
+  //    original badges only covered single-shape mode) and tracks the highest
+  //    dimension ever reached so the "dimension journey" spine can fill in. Reads
+  //    the live construction; writes badges + maxDim into `updates`. ──
+  function checkGeoStretchBadges(ext, construction, updates, awardXP, addToast) {
+    var objs = (construction && construction.objects) || [];
+    var newBadges = Object.assign({}, ext.badges || {});
+    var maxDim = ext.maxDim || 0;
+    objs.forEach(function (o) { var m = geoStretchMeasure(o); if (m && m.dim > maxDim) maxDim = m.dim; });
+    var hasType = function (t) { return objs.some(function (o) { return o.type === t; }); };
+    var checks = {
+      firstSeg:        function () { return maxDim >= 1; },
+      firstPlane:      function () { return maxDim >= 2; },
+      firstSolid:      function () { return maxDim >= 3; },
+      cavalieriTwin:   function () { return geoEvalMission({ test: { type: 'cavalieri' } }, objs).solved; },
+      squareCubeBadge: function () { return geoEvalMission({ test: { type: 'scaled', ratio: 2 } }, objs).solved; },
+      taperMaker:      function () { return hasType('pyramid'); },
+      revolver:        function () { return hasType('revolution'); }
+    };
+    var changed = false;
+    Object.keys(checks).forEach(function (id) {
+      if (!newBadges[id] && checks[id]()) {
+        newBadges[id] = true; changed = true;
+        var b = geoBadges[id]; geoSound('badge');
+        if (typeof awardXP === 'function') awardXP('geoSandbox', 10, b.name);
+        if (typeof addToast === 'function') addToast(b.icon + ' Badge: ' + b.name + ' — ' + b.desc, 'success');
+      }
+    });
+    if (maxDim !== (ext.maxDim || 0)) { updates.maxDim = maxDim; changed = true; }
+    if (changed) updates.badges = newBadges;
+    return changed;
   }
 
   // ── Volume / SA formulas by shape ──
@@ -1412,6 +1453,11 @@ window.StemLab = window.StemLab || {
       var stretchAxis = gd.stretchAxis || 'x';
       var stretchLength = gd.stretchLength != null ? gd.stretchLength : 2;
       var stretchSlant = gd.stretchSlant != null ? gd.stretchSlant : 0;   // Cavalieri shear (0 = right/straight)
+      // Predict-then-reveal (reward loop): when on, a stretch pauses to ask for a
+      // guess before it resolves. pendingPredict holds the paused move.
+      var predictMode = !!gd.predictMode;
+      var pendingPredict = gd.pendingPredict || null;
+      var _pg = React.useState(''); var predictGuess = _pg[0], setPredictGuess = _pg[1];
       // ── Build Challenge (stretch-mode problem solving) ──
       var buildChallenge = gd.buildChallenge || null;
       var buildScore = gd.buildScore || { solved: 0 };
@@ -1450,25 +1496,66 @@ window.StemLab = window.StemLab || {
         geoSound('shapeChange');
         if (announceToSR) announceToSR('Point added. Select an axis and stretch to create a segment.');
       }
-      function performStretch(axisOverride) {
-        var ax = (axisOverride === 'x' || axisOverride === 'y' || axisOverride === 'z') ? axisOverride : stretchAxis;
-        var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
-        if (!sel) { addToast('Select an object first', 'error'); return; }
-        var newObj;
-        if (sel.type === 'point')        newObj = stretchPoint(sel, ax, stretchLength);
-        else if (sel.type === 'segment') newObj = stretchSegment(sel, ax, stretchLength, stretchSlant);
-        else if (sel.type === 'rect')    newObj = stretchRect(sel, ax, stretchLength, stretchSlant);
-        else { addToast('Cannot stretch a solid further in this dimension', 'info'); return; }
+      // Build the stretched object WITHOUT committing (so predict-mode can measure
+      // the result before revealing it). Returns null if the source can't stretch.
+      function buildStretchObj(sel, ax, len, slant) {
+        if (!sel) return null;
+        if (sel.type === 'point')   return stretchPoint(sel, ax, len);
+        if (sel.type === 'segment') return stretchSegment(sel, ax, len, slant);
+        if (sel.type === 'rect')    return stretchRect(sel, ax, len, slant);
+        return null;
+      }
+      function commitNewObject(newObj, verb) {
         pushHistory();
         newObj.id = nextObjId(construction.objects);
         var newObjs = construction.objects.concat([newObj]);
         setLabToolData(function(p) {
           var g = p.geoSandbox || {};
-          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: newObjs, selection: newObj.id } }) });
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: newObjs, selection: newObj.id }, pendingPredict: null }) });
         });
         geoSound('shapeChange');
-        var nextLabel = newObj.type === 'segment' ? 'segment (line)' : newObj.type === 'rect' ? 'rectangle (plane)' : 'prism (solid)';
-        if (announceToSR) announceToSR('Stretched to ' + nextLabel + '. Now ' + newObjs.length + ' objects in construction.');
+        var lbl = newObj.type === 'segment' ? 'segment (line)' : newObj.type === 'rect' ? 'rectangle (plane)' : newObj.type === 'prism' ? 'prism (solid)' : newObj.type === 'pyramid' ? 'tapered solid' : newObj.type === 'revolution' ? 'solid of revolution' : newObj.type;
+        if (announceToSR) announceToSR((verb || 'Stretched') + ' to ' + lbl + '. Now ' + newObjs.length + ' objects in construction.');
+      }
+      function performStretch(axisOverride) {
+        var ax = (axisOverride === 'x' || axisOverride === 'y' || axisOverride === 'z') ? axisOverride : stretchAxis;
+        var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+        if (!sel) { addToast('Select an object first', 'error'); return; }
+        var newObj = buildStretchObj(sel, ax, stretchLength, stretchSlant);
+        if (!newObj) { addToast('Cannot stretch this further in this dimension', 'info'); return; }
+        // Predict-then-reveal: pause and ask for a guess before committing.
+        if (predictMode) {
+          var mm = geoStretchMeasure(newObj);
+          setPredictGuess('');
+          setLabToolData(function(p) {
+            var g = p.geoSandbox || {};
+            return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { pendingPredict: { srcId: sel.id, ax: ax, len: stretchLength, slant: stretchSlant, kind: mm.kind, label: mm.label, unitExp: mm.unitExp, actual: mm.value } }) });
+          });
+          if (announceToSR) announceToSR('Predict the ' + mm.label.toLowerCase() + ' of the result, then reveal.');
+          return;
+        }
+        commitNewObject(newObj, 'Stretched');
+      }
+      // Reveal a paused prediction: build the stored move, score the guess.
+      function revealPrediction() {
+        var pp = gd.pendingPredict; if (!pp) return;
+        var sel = construction.objects.find(function(o) { return o.id === pp.srcId; });
+        var newObj = sel && buildStretchObj(sel, pp.ax, pp.len, pp.slant);
+        if (!newObj) { setLabToolData(function(p) { var g = p.geoSandbox || {}; return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { pendingPredict: null }) }); }); return; }
+        commitNewObject(newObj, 'Revealed —');
+        var guess = parseFloat(predictGuess);
+        if (isFinite(guess) && pp.actual) {
+          var err = Math.abs(guess - pp.actual) / Math.abs(pp.actual);
+          var pct = Math.round(err * 100);
+          if (err <= 0.05) { if (awardXP) awardXP('geoSandbox', 15, 'Spot-on prediction'); if (addToast) addToast('🎯 Spot on! ' + pp.label + ' = ' + (Math.round(pp.actual * 100) / 100) + ' (you said ' + guess + ')', 'success'); }
+          else if (err <= 0.15) { if (awardXP) awardXP('geoSandbox', 8, 'Close prediction'); if (addToast) addToast('👍 Within ' + pct + '% — ' + pp.label + ' = ' + (Math.round(pp.actual * 100) / 100), 'success'); }
+          else if (addToast) addToast('Actual ' + pp.label.toLowerCase() + ' = ' + (Math.round(pp.actual * 100) / 100) + ' (you said ' + guess + ', off by ' + pct + '%)', 'info');
+        }
+        setPredictGuess('');
+      }
+      function cancelPrediction() {
+        setLabToolData(function(p) { var g = p.geoSandbox || {}; return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { pendingPredict: null }) }); });
+        setPredictGuess('');
       }
       function clearConstruction() {
         pushHistory();
@@ -1968,6 +2055,20 @@ window.StemLab = window.StemLab || {
           var merged = cur.slice();
           newly.forEach(function(mn) { if (merged.indexOf(mn.id) < 0) merged.push(mn.id); });
           return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { missionsSolved: merged }) });
+        });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [construction, mode]);
+
+      // ── Stretch-mode badges + dimension-journey progress: award on construction
+      //    change (the reward loop that single-shape mode already had). ──
+      React.useEffect(function() {
+        if (mode !== 'stretch') return;
+        var updates = {};
+        var changed = checkGeoStretchBadges(gd._geoExt || {}, construction, updates, awardXP, addToast);
+        if (!changed) return;
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { _geoExt: Object.assign({}, g._geoExt || {}, updates) }) });
         });
       // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [construction, mode]);
@@ -2484,6 +2585,42 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-[11px] text-purple-200/80 leading-relaxed' },
                 t('stem.geosandbox.build_geometry_by_stretching_a_point_i', 'Build geometry by stretching a point into a line, a line into a plane, and a plane into a solid. Each stretch adds a new object to the scene.')
               ),
+              // ── Dimension journey: 0D→3D spine that fills as the student first
+              //    reaches each dimension (persisted in _geoExt.maxDim). ──
+              (function() {
+                var liveMax = 0;
+                construction.objects.forEach(function(o) { var m = geoStretchMeasure(o); if (m && m.dim > liveMax) liveMax = m.dim; });
+                var reached = Math.max(liveMax, (gd._geoExt && gd._geoExt.maxDim) || 0);
+                var rungs = [
+                  { d: 0, glyph: '•', name: t('stem.geosandbox.dim0', 'Point'), color: '#ef4444' },
+                  { d: 1, glyph: '—', name: t('stem.geosandbox.dim1', 'Line'), color: '#22c55e' },
+                  { d: 2, glyph: '▭', name: t('stem.geosandbox.dim2', 'Plane'), color: '#3b82f6' },
+                  { d: 3, glyph: '🧊', name: t('stem.geosandbox.dim3', 'Solid'), color: '#a78bfa' }
+                ];
+                return h('div', { className: 'flex items-stretch gap-1', role: 'img', 'aria-label': t('stem.geosandbox.dimension_journey', 'Dimension journey') + ': ' + reached + 'D ' + t('stem.geosandbox.reached', 'reached') },
+                  rungs.map(function(r) {
+                    var on = reached >= r.d;
+                    return h('div', {
+                      key: 'jr-' + r.d,
+                      className: 'flex-1 rounded-md px-1 py-1 text-center transition-all border',
+                      style: { background: on ? (r.color + '26') : 'rgba(30,41,59,0.5)', borderColor: on ? r.color : 'transparent', opacity: on ? 1 : 0.5 }
+                    },
+                      h('div', { className: 'text-sm leading-none', style: { color: on ? r.color : '#64748b' } }, r.glyph),
+                      h('div', { className: 'text-[9px] font-bold mt-0.5', style: { color: on ? r.color : '#64748b' } }, r.d + 'D'),
+                      h('div', { className: 'text-[8px] text-slate-400 leading-tight' }, r.name)
+                    );
+                  })
+                );
+              })(),
+              // ── Predict-then-reveal toggle: pause each stretch to guess the result. ──
+              h('label', { className: 'flex items-center gap-1.5 text-[11px] font-bold text-purple-200 cursor-pointer' },
+                h('input', {
+                  type: 'checkbox', checked: predictMode,
+                  onChange: function(e) { upd('predictMode', e.target.checked); if (!e.target.checked && pendingPredict) cancelPrediction(); },
+                  'aria-label': t('stem.geosandbox.predict_mode', 'Predict mode: guess the result before each stretch')
+                }),
+                t('stem.geosandbox.predict_before_reveal', '🔮 Predict before reveal')
+              ),
               // ── Build Challenge: math problem-solving woven into the mechanic ──
               (function() {
                 if (!buildChallenge) {
@@ -2663,6 +2800,31 @@ window.StemLab = window.StemLab || {
                   t('stem.geosandbox.cavalieri_note', "Cavalieri: slanting keeps the base and height — so area/volume don't change, only the surface does.")
                 )
               ),
+              // Predict card — when a stretch is paused for a guess (predict mode).
+              pendingPredict && h('div', { className: 'rounded-lg p-2.5 bg-indigo-900/50 border border-indigo-400/50 space-y-2' },
+                h('div', { className: 'text-[11px] font-bold text-indigo-100' },
+                  '🔮 ' + t('stem.geosandbox.predict_the', 'Predict the') + ' ' + pendingPredict.label.toLowerCase() +
+                  ' ' + t('stem.geosandbox.of_the_result', 'of the result') +
+                  (pendingPredict.unitExp ? ' (' + unitDef.short + (pendingPredict.unitExp === 2 ? '²' : pendingPredict.unitExp === 3 ? '³' : '') + ')' : '')),
+                h('div', { className: 'flex items-center gap-1.5' },
+                  h('input', {
+                    type: 'number', step: '0.1', value: predictGuess, autoFocus: true,
+                    onChange: function(e) { setPredictGuess(e.target.value); },
+                    onKeyDown: function(e) { if (e.key === 'Enter') revealPrediction(); },
+                    'aria-label': t('stem.geosandbox.your_prediction', 'Your prediction'),
+                    className: 'flex-1 px-2 py-1 rounded bg-slate-900/70 border border-indigo-400/50 text-indigo-100 text-xs font-mono text-right'
+                  }),
+                  h('button', {
+                    onClick: revealPrediction,
+                    className: 'px-3 py-1 rounded-lg text-[11px] font-bold bg-indigo-500 text-white hover:bg-indigo-600 transition-all'
+                  }, t('stem.geosandbox.reveal_build', 'Reveal & build')),
+                  h('button', {
+                    onClick: cancelPrediction,
+                    'aria-label': t('stem.geosandbox.cancel_prediction', 'Cancel prediction'),
+                    className: 'px-2 py-1 rounded-lg text-[11px] text-indigo-200 hover:bg-indigo-800/50 transition-all'
+                  }, '✕')
+                )
+              ),
               // Stretch button (context label changes based on selection)
               (function() {
                 var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
@@ -2676,11 +2838,11 @@ window.StemLab = window.StemLab || {
                 }
                 return h('button', {
                   onClick: performStretch,
-                  disabled: !enabled,
+                  disabled: !enabled || !!pendingPredict,
                   'aria-label': label,
                   className: 'w-full px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
-                    (enabled ? 'bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:from-fuchsia-700 hover:to-purple-700 shadow-md' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
-                }, '⤴ ' + label);
+                    (enabled && !pendingPredict ? 'bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:from-fuchsia-700 hover:to-purple-700 shadow-md' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                }, (predictMode ? '🔮 ' : '⤴ ') + label);
               })(),
               // Construction object list
               construction.objects.length > 0 && h('div', { className: 'border-t border-purple-500/30 pt-2' },
