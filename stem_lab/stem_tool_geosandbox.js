@@ -1099,11 +1099,26 @@ window.StemLab = window.StemLab || {
   //    comes from PAPPUS'S THEOREM: V = θ · R̄ · A (sweep angle × centroid travel
   //    radius × profile area) — exact, no meshing needed, as long as the profile
   //    doesn't cross the axis. ──
-  function revolveRect(rect, axis, angleDeg, segments) {
+  function revolveRect(rect, axis, angleDeg, segments, profile) {
     var axId = (axis === 'x' || axis === 'y' || axis === 'z') ? axis : 'y';
     return { type: 'revolution', position: rect.position.slice(), u: rect.u.slice(), v: rect.v.slice(),
       axis: axId, angleDeg: Math.max(1, Math.min(360, angleDeg == null ? 360 : angleDeg)),
-      segments: Math.max(6, Math.min(96, segments || 48)) };
+      segments: Math.max(6, Math.min(96, segments || 48)),
+      profile: profile === 'triangle' ? 'triangle' : 'rect' };   // rect → cylinder/ring, triangle → cone
+  }
+  // Profile geometry: a rect profile = 4 corners (area |u×v|, centroid at (u+v)/2);
+  //   a triangle profile = corners position, +u, +v (area ½|u×v|, centroid at (u+v)/3)
+  //   → revolving it makes a cone, and Pappus gives exactly ⅓πr²h.
+  function _revProfile(o) {
+    var p = o.position;
+    if (o.profile === 'triangle') {
+      return { corners: [p.slice(), vec3Add(p, o.u), vec3Add(p, o.v)],
+        area: 0.5 * vec3Mag(vec3Cross(o.u, o.v)),
+        centroid: vec3Add(p, vec3Scale(vec3Add(o.u, o.v), 1 / 3)) };
+    }
+    return { corners: [p.slice(), vec3Add(p, o.u), vec3Add(vec3Add(p, o.u), o.v), vec3Add(p, o.v)],
+      area: vec3Mag(vec3Cross(o.u, o.v)),
+      centroid: vec3Add(p, vec3Scale(vec3Add(o.u, o.v), 0.5)) };
   }
   // Rotate a point about the line through aPoint along unit aDir by phi (Rodrigues).
   function _rotAxis(p, aPoint, aDir, phi) {
@@ -1121,27 +1136,31 @@ window.StemLab = window.StemLab || {
   //   line through the ORIGIN (so placing a rect away from the axis makes a ring).
   //   This is the R̄ in Pappus.
   function _revRadius(o) {
-    var av = _revAxisVec(o);
-    var cen = vec3Add(o.position, vec3Scale(vec3Add(o.u, o.v), 0.5));
+    var av = _revAxisVec(o), cen = _revProfile(o).centroid;
     var proj = cen[0] * av[0] + cen[1] * av[1] + cen[2] * av[2];
     return vec3Mag(vec3Sub(cen, vec3Scale(av, proj)));
   }
   function revolutionVolume(o) {
     if (!o || o.type !== 'revolution') return 0;
-    var A = vec3Mag(vec3Cross(o.u, o.v));
-    return (o.angleDeg || 360) * Math.PI / 180 * _revRadius(o) * A;   // Pappus
+    return (o.angleDeg || 360) * Math.PI / 180 * _revRadius(o) * _revProfile(o).area;   // Pappus: θ·R̄·A
   }
-  // Triangle-soup for the swept surface (lateral sweep of the 4 profile edges +
-  //   the two profile end-caps when the sweep is partial). Used by the GL renderer.
+  // Triangle-soup for the swept surface: sweep each profile-boundary edge around
+  //   the axis + end-caps for partial turns. Works for a rect (4 edges → cylinder/
+  //   ring) or a triangle (3 edges → cone). Used by the GL renderer.
   function revolutionTriangles(o) {
     var av = _revAxisVec(o), aPoint = [0, 0, 0];   // spin about the world axis through the origin
-    var corners = [o.position.slice(), vec3Add(o.position, o.u), vec3Add(vec3Add(o.position, o.u), o.v), vec3Add(o.position, o.v)];
+    var corners = _revProfile(o).corners, nc = corners.length;
     var N = o.segments || 48, theta = (o.angleDeg || 360) * Math.PI / 180, rings = [];
     for (var k = 0; k <= N; k++) { var phi = theta * k / N; rings.push(corners.map(function(c) { return _rotAxis(c, aPoint, av, phi); })); }
     var tris = [];
     var pushQuad = function(a, b, c, d) { tris.push(a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2], a[0], a[1], a[2], c[0], c[1], c[2], d[0], d[1], d[2]); };
-    for (var m = 0; m < N; m++) { var R0 = rings[m], R1 = rings[m + 1]; for (var e = 0; e < 4; e++) { var e2 = (e + 1) % 4; pushQuad(R0[e], R0[e2], R1[e2], R1[e]); } }
-    if (theta < 2 * Math.PI - 1e-3) { var f = rings[0]; pushQuad(f[0], f[1], f[2], f[3]); var g = rings[N]; pushQuad(g[3], g[2], g[1], g[0]); }
+    var pushTri = function(a, b, c) { tris.push(a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]); };
+    for (var m = 0; m < N; m++) { var R0 = rings[m], R1 = rings[m + 1]; for (var e = 0; e < nc; e++) { var e2 = (e + 1) % nc; pushQuad(R0[e], R0[e2], R1[e2], R1[e]); } }
+    if (theta < 2 * Math.PI - 1e-3) {   // end-caps for a partial sweep
+      var f = rings[0], g = rings[N];
+      if (nc === 4) { pushQuad(f[0], f[1], f[2], f[3]); pushQuad(g[3], g[2], g[1], g[0]); }
+      else { pushTri(f[0], f[1], f[2]); pushTri(g[2], g[1], g[0]); }
+    }
     return tris;
   }
   // ── Resize a placed object (PURE) — set one defining edge to a new length while
@@ -1222,8 +1241,8 @@ window.StemLab = window.StemLab || {
     }
     if (o.type === 'revolution') {
       return { dim: 3, kind: 'volume', value: revolutionVolume(o), unitExp: 3,
-        formula: 'V = θ · R̄ · A  (Pappus)', label: 'Volume',
-        radius: _revRadius(o), angleDeg: o.angleDeg || 360, profileArea: vec3Mag(vec3Cross(o.u, o.v)) };
+        formula: o.profile === 'triangle' ? 'V = ⅓πr²h  (Pappus: θ·R̄·A)' : 'V = θ · R̄ · A  (Pappus)', label: 'Volume',
+        radius: _revRadius(o), angleDeg: o.angleDeg || 360, profileArea: _revProfile(o).area, cone: o.profile === 'triangle' };
     }
     return null;
   }
@@ -1795,6 +1814,7 @@ window.StemLab = window.StemLab || {
       var buildVerb = gd.buildVerb || 'stretch';
       var topScale = gd.topScale != null ? gd.topScale : 0;   // taper top size (0 = apex)
       var revolveAngle = gd.revolveAngle != null ? gd.revolveAngle : 360;   // revolve sweep (degrees)
+      var revolveProfile = gd.revolveProfile === 'triangle' ? 'triangle' : 'rect';   // rect→cylinder, triangle→cone
       // Wave 5 content: active real-world build + the fattest-solid puzzle.
       var realChallengeId = gd.realChallenge || null;
       var realChallenge = realChallengeId ? GEO_REAL_OBJECTS.find(function(r) { return r.id === realChallengeId; }) : null;
@@ -1847,7 +1867,7 @@ window.StemLab = window.StemLab || {
         verb = verb || 'stretch';
         // Taper / Revolve only apply to a rectangle.
         if (verb === 'taper' && sel.type === 'rect') return taperRect(sel, ax, len, top, slant);
-        if (verb === 'revolve' && sel.type === 'rect') return revolveRect(sel, ax, angle, 48);
+        if (verb === 'revolve' && sel.type === 'rect') return revolveRect(sel, ax, angle, 48, revolveProfile);
         if (sel.type === 'point')   return stretchPoint(sel, ax, len);
         if (sel.type === 'segment') return stretchSegment(sel, ax, len, slant);
         if (sel.type === 'rect')    return stretchRect(sel, ax, len, slant);
@@ -2724,7 +2744,7 @@ window.StemLab = window.StemLab || {
               },
               title: t('stem.geosandbox.open_immersive_title', 'Open the Immersive Geometry Lab in a new window — stretch a point into a line, a line into a plane, a plane into a solid, on a desktop or in VR'),
               className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-md shadow-violet-600/20'
-            }, t('stem.geosandbox.open_immersive', '🌐 Immersive Lab')),
+            }, t('stem.geosandbox.open_immersive', '🌐 VR Lab ↗')),
             h('button', { 'aria-label': t('stem.geosandbox.challenge', 'Challenge'),
               onClick: generateChallenge,
               title: t('stem.geosandbox.challenge_mode_c', 'Challenge Mode [C]'),
@@ -3165,7 +3185,21 @@ window.StemLab = window.StemLab || {
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500'
                 }),
                 h('p', { className: 'text-[10px] text-teal-200/70 mt-0.5' },
-                  t('stem.geosandbox.revolve_axis_note', 'Uses the axis picker below as the spin axis (through the origin). Edge on the axis → solid cylinder; placed further out → a ring.'))
+                  t('stem.geosandbox.revolve_axis_note', 'Uses the axis picker below as the spin axis (through the origin). Edge on the axis → solid cylinder; placed further out → a ring.')),
+                // Profile: rectangle → cylinder/ring, triangle → cone
+                h('div', { className: 'flex gap-1 mt-1', role: 'radiogroup', 'aria-label': t('stem.geosandbox.revolve_profile', 'Profile to spin') },
+                  [{ id: 'rect', label: t('stem.geosandbox.profile_rect', '▭ Rectangle → cylinder') }, { id: 'triangle', label: t('stem.geosandbox.profile_tri', '◺ Triangle → cone') }].map(function(pf) {
+                    var active = revolveProfile === pf.id;
+                    return h('button', {
+                      key: 'pf-' + pf.id, role: 'radio', 'aria-checked': active,
+                      onClick: function() { upd('revolveProfile', pf.id); },
+                      className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold border ' +
+                        (active ? 'bg-teal-700 text-white border-teal-300' : 'bg-slate-800/60 text-slate-300 border-transparent hover:bg-slate-700')
+                    }, pf.label);
+                  })
+                ),
+                revolveProfile === 'triangle' && h('p', { className: 'text-[10px] text-teal-200/70 mt-0.5' },
+                  t('stem.geosandbox.cone_note', 'Spinning a right triangle gives a cone — and Pappus lands exactly on V = ⅓πr²h.'))
               ),
               // Stretch axis selector
               h('div', null,
@@ -3271,7 +3305,8 @@ window.StemLab = window.StemLab || {
                     enabled = true;
                   }
                   else if (buildVerb === 'revolve' && sel.type === 'rect') {
-                    label = revolveAngle >= 360 ? 'Revolve rectangle → cylinder/ring (3D)' : 'Revolve rectangle → wedge (3D)';
+                    label = revolveProfile === 'triangle' ? (revolveAngle >= 360 ? 'Revolve triangle → cone (3D)' : 'Revolve triangle → cone wedge (3D)')
+                      : (revolveAngle >= 360 ? 'Revolve rectangle → cylinder/ring (3D)' : 'Revolve rectangle → wedge (3D)');
                     enabled = true;
                   }
                   else if ((buildVerb === 'taper' || buildVerb === 'revolve') && sel.type !== 'rect') {
@@ -3675,12 +3710,13 @@ window.StemLab = window.StemLab || {
                   });
                 }
               });
+              var dp = Math.max(1, Math.min(3, iq.detail || 1));   // Detail slider = decimal places
               var metrics = [
                 { k: 'count', label: t('stem.geosandbox.objects', 'Objects'), val: objs.length },
-                { k: 'dim', label: t('stem.geosandbox.avg_dim', 'Avg dim'), val: avgDim.toFixed(2) },
-                { k: 'len', label: t('stem.geosandbox.length_2', 'Σ length'), val: totalLen.toFixed(2) },
-                { k: 'area', label: t('stem.geosandbox.area', 'Σ area'), val: totalArea.toFixed(2) },
-                { k: 'vol', label: t('stem.geosandbox.volume', 'Σ volume'), val: totalVol.toFixed(2) }
+                { k: 'dim', label: t('stem.geosandbox.avg_dim', 'Avg dim'), val: avgDim.toFixed(dp) },
+                { k: 'len', label: t('stem.geosandbox.length_2', 'Σ length'), val: totalLen.toFixed(dp) },
+                { k: 'area', label: t('stem.geosandbox.area', 'Σ area'), val: totalArea.toFixed(dp) },
+                { k: 'vol', label: t('stem.geosandbox.volume', 'Σ volume'), val: totalVol.toFixed(dp) }
               ];
               return h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-purple-700/40', style: { color: '#e8f0f5' } },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.geosandbox.stretch_analyzer_inquiry_widget', '📐 Stretch Analyzer — Inquiry Widget')),
@@ -3715,8 +3751,8 @@ window.StemLab = window.StemLab || {
                     h('input', { type: 'range', min: 0, max: 60, step: 5, value: iq.viewAngle, onChange: function(e) { setKey('viewAngle', parseInt(e.target.value, 10)); }, className: 'w-full' })
                   ),
                   h('label', { className: 'text-[10px]' },
-                    h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.geosandbox.detail_level', 'Detail level')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.detail)),
-                    h('input', { type: 'range', min: 1, max: 3, step: 1, value: iq.detail, onChange: function(e) { setKey('detail', parseInt(e.target.value, 10)); }, className: 'w-full' })
+                    h('div', { className: 'flex justify-between mb-0.5' }, h('span', null, t('stem.geosandbox.detail_level', 'Detail (decimals)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.detail)),
+                    h('input', { type: 'range', min: 1, max: 3, step: 1, value: iq.detail, onChange: function(e) { setKey('detail', parseInt(e.target.value, 10)); }, 'aria-label': t('stem.geosandbox.detail_decimals_aria', 'Decimal places shown in the analyzer metrics'), className: 'w-full' })
                   ),
                   h('label', { className: 'text-[10px]' },
                     h('div', { className: 'mb-0.5' }, t('stem.geosandbox.focus_on_type', 'Focus on type')),

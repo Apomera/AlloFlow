@@ -466,3 +466,20 @@ describe('geoSculptMeasure (sculpt-mode per-part formulas + totals)', () => {
     expect(P.geoSculptMeasure({ parts: [] }).totalVol).toBe(0);
   });
 });
+
+describe('revolve triangle profile → true cone (Wave E)', () => {
+  it('a full-turn triangle profile gives exactly ⅓πr²h', () => {
+    // profile rect: u = radial [2,0,0] (r=2), v = vertical [0,3,0] (h=3); triangle → cone
+    const rect = { type: 'rect', position: [0, 0, 0], u: [2, 0, 0], v: [0, 3, 0] };
+    const cone = P.revolveRect(rect, 'y', 360, 48, 'triangle');
+    expect(cone.profile).toBe('triangle');
+    expect(P.geoStretchMeasure(cone).value).toBeCloseTo(Math.PI * 4 * 3 / 3, 4);  // ⅓πr²h = 4π
+    expect(P.geoStretchMeasure(cone).cone).toBe(true);
+  });
+  it('the same rect as a rectangle profile is a cylinder (3× the cone)', () => {
+    const rect = { type: 'rect', position: [0, 0, 0], u: [2, 0, 0], v: [0, 3, 0] };
+    const cyl = P.revolutionVolume(P.revolveRect(rect, 'y', 360, 48, 'rect'));
+    const cone = P.revolutionVolume(P.revolveRect(rect, 'y', 360, 48, 'triangle'));
+    expect(cyl / cone).toBeCloseTo(3, 4);   // cone is a third of its cylinder
+  });
+});
