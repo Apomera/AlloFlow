@@ -193,7 +193,6 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
         );
     };
 
-    const hasStudentTake = studentTakeTick >= 0 && (() => { try { const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.studentCurrent; return !!(st && st.has(sentences[sentenceIdx])); } catch (e) { return false; } })();
     return (
         <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
@@ -1380,6 +1379,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
     };
 
+    const hasStudentTake = studentTakeTick >= 0 && (() => { try { const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.studentCurrent; return !!(st && st.has(sentences[sentenceIdx])); } catch (e) { return false; } })();
     return (
         <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg, color: c.ink }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
