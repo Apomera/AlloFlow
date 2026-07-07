@@ -440,3 +440,29 @@ describe('geoShapeNet + geoRealWorldScale (single-mode nets & scale)', () => {
     expect(rs.phrase.length).toBeGreaterThan(0);
   });
 });
+
+describe('geoSculptMeasure (sculpt-mode per-part formulas + totals)', () => {
+  it('measures each primitive part and sums volume/SA', () => {
+    const recipe = { scale: 1, parts: [
+      { shape: 'box', size: [2, 2, 2] },        // V 8
+      { shape: 'sphere', size: [1] },           // V 4/3π ≈ 4.19
+      { shape: 'cylinder', size: [1, 3] }       // V π·1·3 ≈ 9.42
+    ] };
+    const sm = P.geoSculptMeasure(recipe);
+    expect(sm.parts.length).toBe(3);
+    expect(sm.parts[0].vol).toBeCloseTo(8, 5);
+    expect(sm.parts[0].volFormula).toContain('l');
+    const expected = 8 + 4 / 3 * Math.PI * 1 + Math.PI * 1 * 3;
+    expect(sm.totalVol).toBeCloseTo(expected, 4);
+  });
+  it('applies the global scale as ×scale³ (volume) and ×scale² (area)', () => {
+    const one = P.geoSculptMeasure({ scale: 1, parts: [{ shape: 'box', size: [2, 2, 2] }] });
+    const two = P.geoSculptMeasure({ scale: 2, parts: [{ shape: 'box', size: [2, 2, 2] }] });
+    expect(two.totalVol).toBeCloseTo(one.totalVol * 8, 5);
+    expect(two.totalSA).toBeCloseTo(one.totalSA * 4, 5);
+  });
+  it('empty / missing recipe is zero, not a crash', () => {
+    expect(P.geoSculptMeasure(null).totalVol).toBe(0);
+    expect(P.geoSculptMeasure({ parts: [] }).totalVol).toBe(0);
+  });
+});

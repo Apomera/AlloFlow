@@ -824,6 +824,45 @@ window.StemLab = window.StemLab || {
     return { litres: litres, cups: litres * 4.2268, phrase: phrase };
   }
 
+  // ── Sculpt math (PURE) — a sculpt is a set of primitive PARTS ({shape, size}).
+  //    Measure each part with the same primitive formulas as single mode, apply
+  //    the recipe's global scale (volume ×scale³, area ×scale²), and sum. NOTE:
+  //    parts may overlap, so the total is the SUM OF PARTS (an upper bound), which
+  //    is the honest thing to show — and a good talking point. size semantics:
+  //    box=[w,h,d] · sphere=[r] · cylinder/cone=[r,h] · torus=[R,tube]. ──
+  function geoPrimitiveMeasure(shape, size) {
+    size = size || [];
+    var nn = function(x) { return Math.round((x || 0) * 100) / 100; };
+    var dimsMap = {
+      box: { w: size[0], h: size[1], d: size[2] },
+      sphere: { r: size[0] },
+      cylinder: { rTop: size[0], rBot: size[0], h: size[1] },
+      cone: { r: size[0], h: size[1] },
+      torus: { r: size[0], tube: size[1] }
+    };
+    var dims = dimsMap[shape];
+    if (!dims) return { name: shape, dims: '', vol: 0, sa: 0, volFormula: '', saFormula: '' };
+    var m = calcMeasurements(shape, dims), fm = formulaMap[shape] || { vol: '', sa: '' };
+    var dimStr = shape === 'box' ? (nn(size[0]) + '×' + nn(size[1]) + '×' + nn(size[2]))
+      : shape === 'sphere' ? ('r=' + nn(size[0]))
+      : shape === 'torus' ? ('R=' + nn(size[0]) + ', tube=' + nn(size[1]))
+      : ('r=' + nn(size[0]) + ', h=' + nn(size[1]));
+    return { name: m.name, dims: dimStr, vol: m.vol, sa: m.sa, volFormula: fm.vol, saFormula: fm.sa };
+  }
+  function geoSculptMeasure(recipe) {
+    if (!recipe || !recipe.parts || !recipe.parts.length) return { parts: [], totalVol: 0, totalSA: 0, scale: 1 };
+    var scale = recipe.scale || 1, s3 = scale * scale * scale, s2 = scale * scale;
+    var parts = recipe.parts.map(function(p) {
+      var pm = geoPrimitiveMeasure(p.shape, p.size || []);
+      return { shape: p.shape, name: pm.name, dims: pm.dims, volFormula: pm.volFormula, saFormula: pm.saFormula, vol: pm.vol * s3, sa: pm.sa * s2 };
+    });
+    return {
+      parts: parts, scale: scale,
+      totalVol: parts.reduce(function(a, b) { return a + b.vol; }, 0),
+      totalSA: parts.reduce(function(a, b) { return a + b.sa; }, 0)
+    };
+  }
+
   // ── Challenge calculations (includes lateral area for challenge) ──
   function challengeCalc(sid, rd) {
     var PI = Math.PI;
@@ -1600,6 +1639,7 @@ window.StemLab = window.StemLab || {
       geoFormulaSteps: geoFormulaSteps,
       geoCrossSection: geoCrossSection, geoConicSection: geoConicSection,
       geoShapeNet: geoShapeNet, geoRealWorldScale: geoRealWorldScale,
+      geoPrimitiveMeasure: geoPrimitiveMeasure, geoSculptMeasure: geoSculptMeasure,
       geoPrismNet: geoPrismNet
     };
   } catch (e) {}
@@ -2898,6 +2938,34 @@ window.StemLab = window.StemLab || {
                     )
               )
             ),
+
+            // ═══ SCULPT MATH — per-part formulas for the primitives in a sculpt ═══
+            mode === 'sculpt' && sculptRecipe && sculptRecipe.parts && sculptRecipe.parts.length > 0 && (function() {
+              var sm = geoSculptMeasure(sculptRecipe);
+              return h('div', { className: 'bg-gradient-to-br from-emerald-900/30 to-slate-900/40 rounded-xl p-3 border border-emerald-500/40 space-y-2' },
+                h('div', { className: 'text-xs font-bold text-emerald-200 uppercase tracking-wider' }, t('stem.geosandbox.sculpt_math', '🧮 Sculpt math')),
+                h('p', { className: 'text-[10.5px] text-emerald-200/70' },
+                  t('stem.geosandbox.sculpt_math_intro', 'Every sculpt is built from primitives. Here is each part’s formula and size') +
+                  (sm.scale !== 1 ? ' (' + t('stem.geosandbox.at_scale', 'at scale') + ' ×' + sm.scale + ')' : '') + ':'),
+                h('div', { className: 'space-y-1 max-h-48 overflow-y-auto' },
+                  sm.parts.map(function(pt, i) {
+                    return h('div', { key: 'sm-' + i, className: 'text-[11px] bg-slate-900/40 rounded px-2 py-1' },
+                      h('div', { className: 'flex justify-between font-bold text-emerald-100' },
+                        h('span', null, (i + 1) + '. ' + pt.name + ' (' + pt.dims + ')'),
+                        h('span', { className: 'font-mono text-emerald-300' }, 'V ' + pt.vol.toFixed(2))
+                      ),
+                      h('div', { className: 'font-mono text-[10px] text-emerald-400/70' }, pt.volFormula + ' · ' + pt.saFormula + ' → SA ' + pt.sa.toFixed(1))
+                    );
+                  })
+                ),
+                h('div', { className: 'flex justify-between text-[11px] font-bold pt-1.5 border-t border-emerald-500/30' },
+                  h('span', { className: 'text-emerald-200' }, t('stem.geosandbox.sculpt_total', 'Sum of parts')),
+                  h('span', { className: 'font-mono text-emerald-300' }, 'V ' + sm.totalVol.toFixed(2) + ' u³ · SA ' + sm.totalSA.toFixed(1) + ' u²')
+                ),
+                h('div', { className: 'text-[10px] text-emerald-200/60 italic' },
+                  t('stem.geosandbox.sculpt_overlap_note', 'This is the sum of the parts — where pieces overlap, the real solid’s volume is a little less. Good to notice!'))
+              );
+            })(),
 
             // ── v2: STRETCH MODE PANEL — the HandWaver-inspired workflow ──
             mode === 'stretch' && h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/30 rounded-xl p-3 border border-purple-500/40 space-y-3' },
