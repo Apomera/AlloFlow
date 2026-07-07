@@ -2244,7 +2244,11 @@ window.StemLab = window.StemLab || {
         ),
 
         // Main layout: sidebar + viewport
-        h('div', { className: 'flex gap-3', style: { minHeight: '480px', flexDirection: 'row' } },
+        // Fullscreen wrapper: passing this container (controls + 3D viewport)
+        // to __alloStemFS keeps the UI visible in fullscreen, not just the bare
+        // canvas — the shared STEM pattern (cf. solarsystem/geometryworld). The
+        // canvas re-measures via the window 'resize' event __alloStemFS fires.
+        h('div', { id: 'geo-fullscreen-container', className: 'flex gap-3', style: { minHeight: '480px', flexDirection: 'row' } },
 
           // === LEFT SIDEBAR ===
           h('div', { style: { width: '260px', maxHeight: '520px', overflowY: 'auto', flexShrink: 0 }, className: 'flex flex-col gap-3' },
@@ -3116,6 +3120,24 @@ window.StemLab = window.StemLab || {
                   className: 'w-full h-full',
                   style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
                 }),
+            // Fullscreen toggle (top-right) — fills the frame with controls +
+            // canvas via the shared __alloStemFS helper (real OS fullscreen
+            // where the host iframe allows it, else a CSS fill-frame fallback
+            // that also works inside sandboxed iframes like Gemini Canvas).
+            h('button', {
+              'aria-label': t('stem.geosandbox.toggle_fullscreen', 'Toggle fullscreen'),
+              title: t('stem.geosandbox.fullscreen', 'Fullscreen'),
+              onClick: function(ev) {
+                ev.stopPropagation();
+                var fsEl = document.getElementById('geo-fullscreen-container');
+                if (!fsEl) return;
+                var inReal = document.fullscreenElement === fsEl || document.webkitFullscreenElement === fsEl || document.mozFullScreenElement === fsEl;
+                if (inReal) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) { try { ex.call(document); } catch (e) {} } }
+                else if (window.__alloStemFS) window.__alloStemFS(fsEl);
+              },
+              className: 'absolute top-2 right-2 z-20',
+              style: { width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.85)', border: '1px solid rgba(167,139,250,0.55)', color: '#c4b5fd', fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }
+            }, '⛶'),
             // Controls hint overlay
             h('div', { className: 'absolute bottom-2 right-2 text-[11px] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md' },
               t('stem.geosandbox.drag_rotate_scroll_zoom_right_click_pa', '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan')
