@@ -645,22 +645,44 @@ const createTTS = deps => {
     // ─── Canvas: Gemini TTS first → Kokoro/Piper fallback (same cascade as callTTS) ─────
     if (_isCanvasEnv) {
       if (Date.now() >= state.rateLimitedUntil) {
-        try {
-          const ttsResult = await fetchTTSBytes(text, voiceName, speed);
-          if (ttsResult) {
-            const {
-              bytes: pcmBytes
-            } = ttsResult;
-            const wavBuffer = pcmToWav(pcmBytes);
-            const blob = new Blob([wavBuffer], {
-              type: 'audio/wav'
-            });
-            return URL.createObjectURL(blob);
-          }
-        } catch (e) {
-          console.warn('[callTTSDirect] Gemini TTS failed, falling back to local:', e?.message);
-          if (e?.message?.includes('429') || e?.message?.includes('Rate Limited')) {
-            state.rateLimitedUntil = Date.now() + 60000;
+        // Match callTTS's Canvas resilience (field-caught 2026-07-06): the
+        // Canvas proxy rotates auth tokens fast enough that a request can
+        // transiently 401/503, and the generative TTS model occasionally
+        // refuses a short bot line. This path had NO retry (unlike callTTS),
+        // so a single blip dropped AlloBot straight to the browser voice
+        // even though Gemini was available — the "sometimes browser TTS"
+        // regression. Retry transient errors before giving up.
+        const botCanvasMaxAttempts = 3;
+        for (let botAttempt = 0; botAttempt < botCanvasMaxAttempts; botAttempt++) {
+          try {
+            const ttsResult = await fetchTTSBytes(text, voiceName, speed);
+            if (ttsResult) {
+              const {
+                bytes: pcmBytes
+              } = ttsResult;
+              const wavBuffer = pcmToWav(pcmBytes);
+              const blob = new Blob([wavBuffer], {
+                type: 'audio/wav'
+              });
+              return URL.createObjectURL(blob);
+            }
+            throw new Error('fetchTTSBytes returned empty result');
+          } catch (e) {
+            const msg = e?.message || '';
+            if (msg.includes('429') || msg.includes('Rate Limited')) {
+              state.rateLimitedUntil = Date.now() + 60000;
+              console.warn('[callTTSDirect] Gemini rate-limited — falling back to local:', msg);
+              break;
+            }
+            const isTransient = msg.includes('401') || msg.includes('403') || msg.includes('503') || msg.includes('model refused') || msg.includes('Transient Error') || msg.includes('empty result');
+            if (isTransient && botAttempt < botCanvasMaxAttempts - 1) {
+              const backoffMs = 800 * Math.pow(2, botAttempt);
+              console.warn(`[callTTSDirect] Transient Gemini error "${msg}" — retrying in ${backoffMs}ms (attempt ${botAttempt + 2}/${botCanvasMaxAttempts})`);
+              await new Promise(r => setTimeout(r, backoffMs));
+              continue;
+            }
+            console.warn('[callTTSDirect] Gemini TTS failed after retries, falling back to local:', msg);
+            break;
           }
         }
       }
