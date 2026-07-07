@@ -381,7 +381,7 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   if (!text || text.length > 200) return null;
   const t = _mkT(ctx && ctx.t);
   const _whereM = text.match(/^(?:where(?:'s| is| are)?|find|locate|show me where)\s+(?:the\s+|my\s+|is\s+|are\s+)?(.{2,60}?)\??$/i);
-  if (_whereM && typeof ctx.whereIs === "function") {
+  if (_whereM && !opts.preview && typeof ctx.whereIs === "function") {
     const narration = ctx.whereIs(_whereM[1].trim());
     if (narration) return { handled: true, narration, commandId: "where_is", via: "where-is" };
   }
@@ -393,6 +393,9 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   ];
   const commands = buildAlloCommands(ctx);
   const _runCmd = (cmd, via, params) => {
+    // preview mode (used by the bot chat): report the match WITHOUT running it,
+    // so the chat can ask the user to confirm before any side effect fires.
+    if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: params || {}, via, destructive: !!cmd.destructive };
     if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation \u2014 use Ctrl+K to run it."), commandId: cmd.id, via };
     if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
       try {
@@ -423,7 +426,11 @@ async function routeUtterance(ctx, rawText, opts = {}) {
       best = c;
     }
   }
-  if (bestScore >= 60) return _runCmd(best, "deterministic");
+  // The Ctrl+K palette / voice loop accept a 60+ match. The bot CHAT (preview)
+  // demands a stronger 80+ match on a >=3 char utterance, so a stray "hi"/"a"
+  // opener can't be read as a command (it would only be proposed, but we still
+  // avoid the noise). AI-classified matches below still apply in preview.
+  if (bestScore >= 60 && (!opts.preview || (bestScore >= 80 && text.length >= 3))) return _runCmd(best, "deterministic");
   if (!opts.allowAi || typeof ctx.callGemini !== "function") return null;
   if (text.split(/\s+/).length > 14) return null;
   try {
@@ -438,6 +445,27 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   } catch (_) {
   }
   return null;
+}
+// Run a specific command by id (used by the bot chat AFTER the user confirms a
+// previewed match). Mirrors routeUtterance's _runCmd side-effect handling.
+function runCommandById(ctx, id, params, opts = {}) {
+  const t = _mkT(ctx && ctx.t);
+  const commands = buildAlloCommands(ctx);
+  const cmd = commands.find((c) => c.id === id);
+  if (!cmd) return null;
+  if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation — use Ctrl+K to run it."), commandId: cmd.id, via: "confirm" };
+  if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
+    try {
+      ctx.closeOtherPanels(cmd.opensPanel);
+    } catch (_) {
+    }
+  }
+  try {
+    const msg = cmd.run(ctx, params || {});
+    return { handled: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via: "confirm" };
+  } catch (e) {
+    return { handled: true, narration: t("router.failed", "That didn’t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: "confirm" };
+  }
 }
 function createVoiceLoop(getCtx) {
   let rec = null, active = false, errStreak = 0;
@@ -893,6 +921,6 @@ const AlloCommandPalette = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, createVoiceLoop: createVoiceLoop };
+  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, runCommandById: runCommandById, createVoiceLoop: createVoiceLoop };
   console.log('[CDN] AlloCommands loaded');
 })();

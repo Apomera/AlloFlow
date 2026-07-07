@@ -161,7 +161,7 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   // rather than describing. Deterministic prefix grammar; the host's
   // whereIs scans the on-screen [data-help-key] vocabulary.
   const _whereM = text.match(/^(?:where(?:'s| is| are)?|find|locate|show me where)\s+(?:the\s+|my\s+|is\s+|are\s+)?(.{2,60}?)\??$/i);
-  if (_whereM && typeof ctx.whereIs === 'function') {
+  if (_whereM && !opts.preview && typeof ctx.whereIs === 'function') {
     const narration = ctx.whereIs(_whereM[1].trim());
     if (narration) return { handled: true, narration, commandId: 'where_is', via: 'where-is' };
   }
@@ -181,6 +181,8 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   // language param grammar (create_lesson / set_font_size / translate_document / generate_simplified)
   // on both the bot router and the voice loop. (Audit wmb2t8o20, fix 2026-06-15.)
   const _runCmd = (cmd, via, params) => {
+    // preview mode (bot chat): report the match WITHOUT running it, so the chat can confirm first.
+    if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: params || {}, via, destructive: !!cmd.destructive };
     if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t('router.needs_confirm', 'That action needs confirmation — use Ctrl+K to run it.'), commandId: cmd.id, via };
     // Panel-stacking fix (shared with the palette runCmd): close other large surfaces first.
     if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === 'function') { try { ctx.closeOtherPanels(cmd.opensPanel); } catch (_) {} }
@@ -197,7 +199,9 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   }
   let best = null, bestScore = 0;
   for (const c of commands) { const s = scoreCommand(c, text); if (s > bestScore) { bestScore = s; best = c; } }
-  if (bestScore >= 60) return _runCmd(best, 'deterministic');
+  // Palette/voice accept 60+; the bot CHAT (preview) demands 80+ on a >=3 char
+  // utterance so a stray short opener can't be read as a command.
+  if (bestScore >= 60 && (!opts.preview || (bestScore >= 80 && text.length >= 3))) return _runCmd(best, 'deterministic');
   if (!opts.allowAi || typeof ctx.callGemini !== 'function') return null;
   // Cheap heuristic gate: don't burn a call on clearly-conversational
   // input (questions about content, long sentences with no verbs we know).
@@ -215,6 +219,18 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   return null;
 }
 
+// Run a specific command by id (used by the bot chat AFTER the user confirms a
+// previewed match). Mirrors routeUtterance's _runCmd side-effect handling.
+function runCommandById(ctx, id, params, opts = {}) {
+  const t = _mkT(ctx && ctx.t);
+  const commands = buildAlloCommands(ctx);
+  const cmd = commands.find((c) => c.id === id);
+  if (!cmd) return null;
+  if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t('router.needs_confirm', 'That action needs confirmation — use Ctrl+K to run it.'), commandId: cmd.id, via: 'confirm' };
+  if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === 'function') { try { ctx.closeOtherPanels(cmd.opensPanel); } catch (_) {} }
+  try { const msg = cmd.run(ctx, params || {}); return { handled: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via: 'confirm' }; }
+  catch (e) { return { handled: true, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via: 'confirm' }; }
+}
 // ── S2: the opt-in voice loop ──
 // One singleton SpeechRecognition session; every FINAL transcript routes
 // through routeUtterance (deterministic-first). Unmatched utterances are

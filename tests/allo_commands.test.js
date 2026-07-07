@@ -96,3 +96,61 @@ describe('routeUtterance', () => {
     expect(startNewPdfAudit).toHaveBeenCalled(); // confirmed → run
   });
 });
+
+// The bot CHAT routes every message through the router first. If it EXECUTES on a
+// match, a stray "bot"/"hi" opener runs toggle_bot → the bot hides and the chat
+// closes. Preview mode must MATCH-without-running so the chat can confirm first.
+describe('routeUtterance preview mode (bot chat safety)', () => {
+  it('reports a match WITHOUT running it', async () => {
+    const handleToggleIsBotVisible = vi.fn();
+    const r = await AC.routeUtterance({ handleToggleIsBotVisible }, 'bot', { preview: true });
+    expect(r).toMatchObject({ preview: true, handled: false, commandId: 'toggle_bot' });
+    expect(r.label).toBeTruthy();
+    expect(handleToggleIsBotVisible).not.toHaveBeenCalled(); // proposed, not run
+  });
+
+  it('previews a real multi-word command without side effects', async () => {
+    const setShowEducatorHub = vi.fn();
+    const r = await AC.routeUtterance({ setShowEducatorHub }, 'open the educator hub', { preview: true });
+    expect(r).toMatchObject({ preview: true, commandId: 'open_educator_hub' });
+    expect(setShowEducatorHub).not.toHaveBeenCalled();
+  });
+
+  it('does NOT match a short opener like "hi" (would only be noise)', async () => {
+    // 'hi' scores 80 via "hide bot".startsWith("hi") but is < 3 chars → rejected in
+    // preview. allowAi:false so it cannot fall through to the AI classifier.
+    const handleToggleIsBotVisible = vi.fn();
+    const r = await AC.routeUtterance({ handleToggleIsBotVisible }, 'hi', { preview: true, allowAi: false });
+    expect(r).toBeNull();
+    expect(handleToggleIsBotVisible).not.toHaveBeenCalled();
+  });
+
+  it('does not spotlight on a "where is X" utterance in preview mode', async () => {
+    const whereIs = vi.fn(() => 'in the sidebar');
+    const r = await AC.routeUtterance({ whereIs }, 'where is the glossary', { preview: true, allowAi: false });
+    expect(whereIs).not.toHaveBeenCalled();
+    expect(r).toBeNull();
+  });
+});
+
+describe('runCommandById (executes a confirmed, previewed command)', () => {
+  it('runs the command by id', () => {
+    const handleToggleIsBotVisible = vi.fn();
+    const r = AC.runCommandById({ handleToggleIsBotVisible }, 'toggle_bot', {});
+    expect(r).toMatchObject({ handled: true, commandId: 'toggle_bot' });
+    expect(handleToggleIsBotVisible).toHaveBeenCalled();
+  });
+
+  it('returns null for an unknown id', () => {
+    expect(AC.runCommandById({}, 'no_such_command')).toBeNull();
+  });
+
+  it('still gates a destructive command until confirmed:true', () => {
+    const startNewPdfAudit = vi.fn();
+    const ctx = { pipelineOpen: true, startNewPdfAudit };
+    AC.runCommandById(ctx, 'pipeline_new_doc', {}); // no confirmed flag
+    expect(startNewPdfAudit).not.toHaveBeenCalled();
+    AC.runCommandById(ctx, 'pipeline_new_doc', {}, { confirmed: true });
+    expect(startNewPdfAudit).toHaveBeenCalled();
+  });
+});

@@ -21974,6 +21974,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // the app already uses — the agent has no special powers.
   const [alloVoiceActive, setAlloVoiceActive] = useState(false);
   const _alloCmdCtxRef = useRef(null);
+  // Holds a command the bot chat has PROPOSED (via a confirm chip) but not yet
+  // run. Nothing executes until the user clicks "Do it" — see handleSendUDLMessage.
+  const _pendingBotCmdRef = useRef(null);
   const _alloCmdCtx = () => {
     const ctx = {
       t, addToast, callGemini,
@@ -22185,24 +22188,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     _alloCmdCtxRef.current = ctx;
     return ctx;
   };
-  const handleSendUDLMessage = async (manualText = null) => {
-    // S1: the bot chat understands app commands. A deterministic match
-    // runs instantly; one cheap AI fallback maps free-form phrasing;
-    // anything unconfident falls through to the normal chat — the bot
-    // keeps its conversational self, it just gains hands.
-    try {
-      const _AC = window.AlloModules && window.AlloModules.AlloCommands;
-      const _utter = (manualText != null ? manualText : udlInput) || '';
-      if (_AC && typeof _AC.routeUtterance === 'function' && _utter.trim()) {
-        const _r = await _AC.routeUtterance(_alloCmdCtx(), _utter, { allowAi: true });
-        if (_r && _r.handled) {
-          setUdlMessages(prev => [...prev, { role: 'user', text: _utter }, { role: 'model', text: '✅ ' + _r.narration }]);
-          setUdlInput('');
-          try { if (window.alloAnnounce) window.alloAnnounce(_r.narration); } catch (_) {}
-          return;
-        }
-      }
-    } catch (_) { /* the router must never break the chat */ }
+  // The chat's delivery path to the conversational UdlChat module. Split out so
+  // handleSendUDLMessage (below) can reach it after the command preview/confirm
+  // step, and so a "just chat" reply can re-send the original text as normal chat.
+  const _sendUdlToChat = (manualText = null) => {
     const _m = window.AlloModules && window.AlloModules.UdlChat;
     if (_m && typeof _m.handleSendUDLMessage === "function") return _m.handleSendUDLMessage(manualText, {
       activeBlueprint, activeView, alloBotRef, currentUiLanguage, guidedFlowState,
@@ -22281,6 +22270,83 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       storageDB: typeof storageDB !== 'undefined' ? storageDB : null,
       });
     throw new Error("[handleSendUDLMessage] UdlChat module not loaded - reload the page");
+  };
+  const handleSendUDLMessage = async (manualText = null) => {
+    const _AC = window.AlloModules && window.AlloModules.AlloCommands;
+    const _rawUtter = (manualText != null ? manualText : udlInput) || '';
+    // ── Command confirmation (2026-07-06) ──
+    // The bot chat used to RUN an app command the instant the router matched one.
+    // A short opener ("hi", "bot", "assistant") matched `toggle_bot`, which hid the
+    // bot and — via the isBotVisible→showUDLGuide effect — slammed the chat shut,
+    // looking like "talking to AlloBot closes it". Now a match only PROPOSES: we
+    // post a confirm chip and run the command only on an explicit "Do it". The
+    // Ctrl+K palette and voice loop still execute directly (explicit surfaces).
+
+    // (1) Resolving a confirm chip we posted on the previous turn.
+    const _pending = _pendingBotCmdRef.current;
+    if (_pending) {
+      const _reply = String(_rawUtter).trim().toLowerCase();
+      const _isDo = _rawUtter === '__allo_do' || ['yes','yeah','yep','ok','okay','do it','sure','confirm','run it','go'].indexOf(_reply) >= 0;
+      const _isSkip = _rawUtter === '__allo_skip' || ['no','nope','just chat','cancel','chat','nevermind','never mind'].indexOf(_reply) >= 0;
+      if (_isDo || _isSkip) {
+        _pendingBotCmdRef.current = null;
+        setUdlInput('');
+        if (_isDo && _AC && typeof _AC.runCommandById === 'function') {
+          try {
+            const _res = await _AC.runCommandById(_alloCmdCtx(), _pending.commandId, _pending.params, { confirmed: true });
+            const _narr = (_res && _res.narration) || (t('chat_guide.cmd_done') || 'Done.');
+            setUdlMessages(prev => [...prev, { role: 'model', text: '✅ ' + _narr }]);
+            try { if (window.alloAnnounce) window.alloAnnounce(_narr); } catch (_) {}
+          } catch (_) {
+            setUdlMessages(prev => [...prev, { role: 'model', text: (t('chat_guide.cmd_failed') || "I couldn't run that — try the ⌘K command menu.") }]);
+          }
+          return;
+        }
+        // "Just chat" — answer the original message conversationally.
+        return _sendUdlToChat(_pending.originalText);
+      }
+      // Any other message cancels the pending confirmation and is handled below.
+      _pendingBotCmdRef.current = null;
+    }
+
+    // (2) If the last bot message is an on-screen chooser (the pack-choice
+    //     buttons OR our own confirm chip), the reply belongs to that chooser —
+    //     hand it straight to the chat module, never the command router.
+    const _lastMsg = (Array.isArray(udlMessages) && udlMessages.length) ? udlMessages[udlMessages.length - 1] : null;
+    const _awaitingChoice = !!(_lastMsg && _lastMsg.role === 'model' && _lastMsg.type === 'choices');
+
+    // (3) Command PREVIEW — a match only PROPOSES a confirm chip; nothing runs
+    //     until the user clicks "Do it".
+    if (!_awaitingChoice && _rawUtter !== '__allo_do' && _rawUtter !== '__allo_skip') {
+      try {
+        if (_AC && typeof _AC.routeUtterance === 'function' && _rawUtter.trim()) {
+          const _match = await _AC.routeUtterance(_alloCmdCtx(), _rawUtter, { allowAi: true, preview: true });
+          if (_match && _match.preview && _match.commandId) {
+            _pendingBotCmdRef.current = { commandId: _match.commandId, params: _match.params || {}, label: _match.label, originalText: _rawUtter };
+            if (!manualText) setUdlInput('');
+            const _label = _match.label || (t('chat_guide.cmd_generic') || 'run a command');
+            const _q = (t('chat_guide.cmd_confirm_prompt') || 'It looks like you want to **{label}**. Run that, or keep chatting?').replace('{label}', _label);
+            setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: _q, choices: [
+              { label: '▶ ' + (t('chat_guide.cmd_confirm_do') || 'Do it'), value: '__allo_do' },
+              { label: '💬 ' + (t('chat_guide.cmd_confirm_skip') || 'Just chat'), value: '__allo_skip' }
+            ] }]);
+            try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.cmd_confirm_aria') || 'That looks like a command. Confirm to run it, or keep chatting.'); } catch (_) {}
+            return;
+          }
+          // Fallback for an older cached module without preview support: it would
+          // have EXECUTED the command already and returned {handled:true}; surface
+          // that result rather than double-processing the message.
+          if (_match && _match.handled && !_match.preview) {
+            setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, { role: 'model', text: '✅ ' + (_match.narration || 'Done.') }]);
+            if (!manualText) setUdlInput('');
+            try { if (window.alloAnnounce) window.alloAnnounce(_match.narration); } catch (_) {}
+            return;
+          }
+        }
+      } catch (_) { /* the router must never break the chat */ }
+    }
+
+    return _sendUdlToChat(manualText);
   };
   const handleSocraticSubmit = async (inputOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
@@ -26387,6 +26453,20 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             color: #000000 !important;
             border: 2px solid #FFFFFF !important;
         }
+      `}</style>
+      {/* Layout fix — right-edge blank band / "header reaches further right
+          than the workspace". The app header (view_header_module) carries
+          Tailwind's `min-w-max`, which floors its width at its full, NON-wrapping
+          content width (the whole toolbar). In a narrow Canvas iframe that is
+          wider than the frame, so the header forces the DOCUMENT wider than the
+          viewport while <main> stays at w-full (= viewport) — the header ends up
+          further right than the panel and a blank strip opens on the right (plus
+          a horizontal scrollbar). The header's inner controls already use
+          flex-wrap, so dropping the min-width floor lets it wrap to the frame
+          instead of forcing overflow; header and workspace then share the same
+          right edge. Scoped to `header.min-w-max` so nothing else is touched. */}
+      <style>{`
+        header.min-w-max { min-width: 0 !important; }
       `}</style>
       <style data-docsuite-theme="v1">{`
 /* ── Scoped theme remaps (GENERATED — do not hand-edit) ──
