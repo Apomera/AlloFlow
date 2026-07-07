@@ -231,24 +231,38 @@ window.StemLab = window.StemLab || {
     var _pickRay = new THREE.Raycaster();
     try { if (_pickRay.params && _pickRay.params.Line) _pickRay.params.Line.threshold = 0.25; } catch (e) {}
     var _pickV2 = new THREE.Vector2();
+    // Ground plane (y=0) for click-to-place: when placement is armed, a tap on empty
+    // space drops a point where the ray meets the floor — no headset needed.
+    var _groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    var _gpHit = new THREE.Vector3();
     function _geoPickDown(e) { _pick.down = true; _pick.moved = false; _pick.x = e.clientX; _pick.y = e.clientY; }
     function _geoPickMove(e) { if (_pick.down && (Math.abs(e.clientX - _pick.x) + Math.abs(e.clientY - _pick.y)) > 6) _pick.moved = true; }
     function _geoPickUp(e) {
       var wasDown = _pick.down; _pick.down = false;
-      if (!wasDown || _pick.moved) return;                       // it was an orbit drag, not a select
+      if (!wasDown || _pick.moved) return;                       // it was an orbit drag, not a tap
+      var rect = renderer.domElement.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      _pickV2.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      _pickV2.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      _pickRay.setFromCamera(_pickV2, camera);
+      // 1) Tap an existing construction object → select it (parity with VR point-select).
       try {
         var gs = window._geoScene; var grp = gs && gs.constructionGroup;
-        if (!grp || !grp.children || !grp.children.length) return;
-        var rect = renderer.domElement.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
-        _pickV2.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        _pickV2.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-        _pickRay.setFromCamera(_pickV2, camera);
-        var hits = _pickRay.intersectObjects(grp.children, true);
-        if (!hits.length) return;
-        var node = hits[0].object, id = null;
-        while (node) { if (node.userData && node.userData.objId != null) { id = node.userData.objId; break; } node = node.parent; }
-        if (id != null && window._geoSelectObj) window._geoSelectObj(id);
+        if (grp && grp.children && grp.children.length) {
+          var hits = _pickRay.intersectObjects(grp.children, true);
+          if (hits.length) {
+            var node = hits[0].object, id = null;
+            while (node) { if (node.userData && node.userData.objId != null) { id = node.userData.objId; break; } node = node.parent; }
+            if (id != null && window._geoSelectObj) { window._geoSelectObj(id); return; }
+          }
+        }
+      } catch (err) {}
+      // 2) Otherwise, if click-to-place is armed, drop a point on the ground plane.
+      try {
+        if (window._geoPlaceArmed && window._geoPlacePoint) {
+          var hit = _pickRay.ray.intersectPlane(_groundPlane, _gpHit);
+          if (hit) window._geoPlacePoint(_gpHit.x, _gpHit.z);   // placePoint() applies snap
+        }
       } catch (err) {}
     }
     renderer.domElement.addEventListener('pointerdown', _geoPickDown);
@@ -858,6 +872,21 @@ window.StemLab = window.StemLab || {
     if (slant) w = vec3Add(w, vec3Scale(vec3Norm(u), slant * length));
     return { type: 'prism', position: rect.position.slice(), u: u.slice(), v: v.slice(), w: w };
   }
+  // ── Resize a placed object (PURE) — set one defining edge to a new length while
+  //    PRESERVING its direction (and any Cavalieri slant baked into that vector).
+  //    dimIndex: segment→0 (vector); rect→0(u)/1(v); prism→0(u)/1(v)/2(w). This is
+  //    what makes objects editable after creation: change a side, watch area/volume
+  //    update live. Points have no size (returned unchanged). ──
+  function resizeObject(o, dimIndex, newLen) {
+    if (!o) return o;
+    var c = JSON.parse(JSON.stringify(o));
+    var L = (newLen > 0) ? newLen : 0.0001;
+    var setLen = function(vec) { var m = vec3Mag(vec); return m > 1e-9 ? vec3Scale(vec, L / m) : vec; };
+    if (o.type === 'segment' && dimIndex === 0) c.vector = setLen(o.vector);
+    else if (o.type === 'rect') { if (dimIndex === 1) c.v = setLen(o.v); else c.u = setLen(o.u); }
+    else if (o.type === 'prism') { if (dimIndex === 1) c.v = setLen(o.v); else if (dimIndex === 2) c.w = setLen(o.w); else c.u = setLen(o.u); }
+    return c;
+  }
   // Surface area of a parallelepiped prism = 2(|u×v| + |v×w| + |w×u|).
   function geoPrismSurfaceArea(o) {
     if (!o || o.type !== 'prism') return 0;
@@ -1227,6 +1256,7 @@ window.StemLab = window.StemLab || {
       objectVolume: objectVolume,
       geoPrismSurfaceArea: geoPrismSurfaceArea,
       stretchPoint: stretchPoint, stretchSegment: stretchSegment, stretchRect: stretchRect,
+      resizeObject: resizeObject,
       geoStretchMeasure: geoStretchMeasure,
       geoScaleObject: geoScaleObject,
       geoScaleReport: geoScaleReport,
@@ -1330,6 +1360,13 @@ window.StemLab = window.StemLab || {
       // v2 additions ─────────────────────────────────────────────
       var mode = gd.mode || 'single'; // 'single' | 'stretch' | 'sculpt'
       var construction = gd.construction || { objects: [], selection: null };
+      // Free-placement + resize state (Foundation wave): where new points land, the
+      // snap grid, and whether a canvas tap drops a point.
+      var placeArmed = !!gd.placeArmed;
+      var snap = gd.snap != null ? gd.snap : 1;            // 0 = off, else grid size
+      var placeX = gd.placeX != null ? gd.placeX : 0;
+      var placeZ = gd.placeZ != null ? gd.placeZ : 0;
+      var resizeSnapRef = React.useRef(false);              // one undo snapshot per slider drag
       // ── AI Sculpt (v3, reuses window.AlloModules.Prim3D) ──
       var sculptRecipe = gd.sculptRecipe || null;
       var _scP = React.useState(''); var sculptPrompt = _scP[0], setSculptPrompt = _scP[1];
@@ -1458,6 +1495,46 @@ window.StemLab = window.StemLab || {
         var mm = geoStretchMeasure(objs[nextIdx]);
         if (announceToSR && mm) announceToSR('Selected ' + mm.label.toLowerCase() + (mm.dim > 0 ? ' ' + (Math.round(mm.value * 100) / 100) : ''));
       }
+      // ── Free placement (Foundation wave) — drop a point at a snapped x/z on the
+      //    ground plane. Called by the numeric "Place" button and by the canvas
+      //    raycaster (window._geoPlacePoint) when click-to-place is armed. ──
+      function placePoint(x, z) {
+        var sx = snap ? Math.round(x / snap) * snap : Math.round(x * 100) / 100;
+        var sz = snap ? Math.round(z / snap) * snap : Math.round(z * 100) / 100;
+        addPoint([sx, 0, sz]);
+      }
+      // Delete a single object (stretch mode had only Undo / Clear-all before).
+      function deleteObject(id) {
+        if (!construction.objects.some(function(o) { return o.id === id; })) return;
+        pushHistory();
+        var objs = construction.objects.filter(function(o) { return o.id !== id; });
+        var newSel = construction.selection === id ? (objs.length ? objs[objs.length - 1].id : null) : construction.selection;
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: objs, selection: newSel } }) });
+        });
+        geoSound('shapeChange');
+        if (announceToSR) announceToSR('Deleted. ' + objs.length + ' object' + (objs.length === 1 ? '' : 's') + ' remain.');
+      }
+      // Resize one edge of the SELECTED object to a new length, live. commitHistory
+      // is false during a slider drag (we snapshot once on pointer-down via
+      // beginResizeDrag) and true for a discrete number-box commit — so undo steps
+      // back one drag, not one pixel.
+      function resizeSelectedDim(dimIndex, newLen, commitHistory) {
+        var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+        if (!sel) return;
+        var v = parseFloat(newLen); if (isNaN(v)) return;
+        v = Math.max(0.1, Math.min(20, v));
+        if (commitHistory) pushHistory();
+        var updated = resizeObject(sel, dimIndex, v);
+        var objs = construction.objects.map(function(o) { return o.id === sel.id ? updated : o; });
+        setLabToolData(function(p) {
+          var g = p.geoSandbox || {};
+          return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: objs, selection: sel.id } }) });
+        });
+      }
+      function beginResizeDrag() { if (!resizeSnapRef.current) { pushHistory(); resizeSnapRef.current = true; } }
+      function endResizeDrag() { resizeSnapRef.current = false; }
       // Start / advance a build challenge. Level auto-advances 1→2→3 with each
       // solve so the problem-solving scaffolds from length to area to volume.
       function startBuildChallenge(level) {
@@ -1925,9 +2002,13 @@ window.StemLab = window.StemLab || {
         // On-screen click-to-select: the canvas raycaster (initScene) calls this
         // when a construction object is tapped — same selectObject as the list.
         window._geoSelectObj = function(id) { selectObject(id); };
-        return function() { try { window._geoXrPrimary = null; window._geoXrAxis = null; window._geoXrLen = null; window._geoSelectObj = null; } catch (e) {} };
+        // Click-to-place: armed only in stretch mode; the raycaster drops a point
+        // on the ground plane where the student taps (placePoint applies the snap).
+        window._geoPlacePoint = function(x, z) { placePoint(x, z); };
+        window._geoPlaceArmed = (mode === 'stretch') && placeArmed;
+        return function() { try { window._geoXrPrimary = null; window._geoXrAxis = null; window._geoXrLen = null; window._geoSelectObj = null; window._geoPlacePoint = null; window._geoPlaceArmed = false; } catch (e) {} };
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [mode, construction, stretchAxis, stretchLength]);
+      }, [mode, construction, stretchAxis, stretchLength, placeArmed, snap]);
 
       // ── VR math HUD: while a headset session is presenting, pin a compact line
       //    (axis · length · current measurement · challenge target) in view so the
@@ -2457,12 +2538,63 @@ window.StemLab = window.StemLab || {
                 }, voiceListening ? ('🔴 ' + t('stem.geosandbox.voice_listening', 'Listening… tap to stop')) : ('🎤 ' + t('stem.geosandbox.voice_build', 'Voice build'))),
                 voiceHeard && h('p', { className: 'text-[11px] text-purple-200/70 italic', 'aria-live': 'polite' }, '“' + voiceHeard + '”')
               ),
-              // Step 1: Place point
-              h('button', {
-                onClick: function() { addPoint([0, 0, 0]); },
-                'aria-label': t('stem.geosandbox.add_a_point_at_origin', 'Add a point at origin'),
-                className: 'w-full px-3 py-2 rounded-lg text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all shadow-md'
-              }, t('stem.geosandbox.place_point_at_origin', '⊙ Place point at origin')),
+              // Step 1: Place a point — at the origin, by tapping the 3D view, or at exact x/z.
+              h('div', { className: 'space-y-1.5' },
+                h('div', { className: 'flex gap-1.5' },
+                  h('button', {
+                    onClick: function() { addPoint([0, 0, 0]); },
+                    'aria-label': t('stem.geosandbox.add_a_point_at_origin', 'Add a point at origin'),
+                    className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all shadow-md'
+                  }, t('stem.geosandbox.place_point_at_origin', '⊙ Point at origin')),
+                  h('button', {
+                    onClick: function() { upd('placeArmed', !placeArmed); },
+                    'aria-pressed': placeArmed,
+                    'aria-label': t('stem.geosandbox.click_to_place_toggle', 'Click in the 3D view to place a point'),
+                    className: 'px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
+                      (placeArmed ? 'bg-emerald-600 text-white border-emerald-300 shadow-md' : 'bg-slate-800/60 text-slate-300 border-transparent hover:bg-slate-700')
+                  }, placeArmed ? t('stem.geosandbox.placing_active', '🎯 Placing…') : t('stem.geosandbox.click_place', '🎯 Click-place'))
+                ),
+                placeArmed && h('p', { className: 'text-[10px] text-emerald-300/80' },
+                  t('stem.geosandbox.click_place_hint', 'Click empty space in the 3D view to drop a point (snaps to the grid).')),
+                // Exact placement + snap grid (keyboard-friendly path)
+                h('div', { className: 'flex items-end gap-1.5' },
+                  h('label', { className: 'flex-1' },
+                    h('span', { className: 'block text-[10px] font-bold text-purple-200 mb-0.5' }, t('stem.geosandbox.place_x', 'X')),
+                    h('input', {
+                      type: 'number', step: (snap || 0.5), value: placeX,
+                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) upd('placeX', v); },
+                      'aria-label': t('stem.geosandbox.place_x_aria', 'Point X position'),
+                      className: 'w-full px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[11px] font-mono text-right'
+                    })),
+                  h('label', { className: 'flex-1' },
+                    h('span', { className: 'block text-[10px] font-bold text-purple-200 mb-0.5' }, t('stem.geosandbox.place_z', 'Z')),
+                    h('input', {
+                      type: 'number', step: (snap || 0.5), value: placeZ,
+                      onChange: function(e) { var v = parseFloat(e.target.value); if (!isNaN(v)) upd('placeZ', v); },
+                      'aria-label': t('stem.geosandbox.place_z_aria', 'Point Z position'),
+                      className: 'w-full px-1.5 py-1 rounded bg-slate-900/70 border border-purple-500/40 text-purple-100 text-[11px] font-mono text-right'
+                    })),
+                  h('button', {
+                    onClick: function() { placePoint(placeX, placeZ); },
+                    'aria-label': t('stem.geosandbox.place_at_xz', 'Place a point at the entered X and Z'),
+                    className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 transition-all'
+                  }, t('stem.geosandbox.place', 'Place'))
+                ),
+                h('div', { className: 'flex items-center gap-1.5' },
+                  h('span', { className: 'text-[10px] font-bold text-purple-200' }, t('stem.geosandbox.snap', 'Snap:')),
+                  [{ v: 0.5, l: '½' }, { v: 1, l: '1' }, { v: 0, l: t('stem.geosandbox.snap_off', 'off') }].map(function(s) {
+                    var on = snap === s.v;
+                    return h('button', {
+                      key: 'snap-' + s.v,
+                      onClick: function() { upd('snap', s.v); },
+                      'aria-pressed': on,
+                      'aria-label': t('stem.geosandbox.snap_grid', 'Snap grid') + ' ' + s.l,
+                      className: 'px-2 py-0.5 rounded text-[11px] font-bold font-mono transition-all ' +
+                        (on ? 'bg-purple-600 text-white' : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700')
+                    }, s.l);
+                  })
+                )
+              ),
               // Stretch axis selector
               h('div', null,
                 h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, t('stem.geosandbox.stretch_axis', 'Stretch axis:')),
@@ -2562,16 +2694,57 @@ window.StemLab = window.StemLab || {
                                 o.type === 'segment' ? 'Segment #' + o.id + ' (L = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + ')' :
                                 o.type === 'rect' ? 'Rectangle #' + o.id + ' (A = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + '²)' :
                                 'Prism #' + o.id + ' (V = ' + objectVolume(o).toFixed(2) + ' ' + unitDef.short + '³, SA = ' + geoPrismSurfaceArea(o).toFixed(1) + ' ' + unitDef.short + '²)' + (geoStretchMeasure(o).oblique ? ' ◣' : '');
-                    return h('button', {
-                      key: 'obj-' + o.id,
-                      onClick: function() { selectObject(o.id); },
-                      'aria-pressed': isSel,
-                      className: 'w-full text-left px-2 py-1 rounded text-[11px] transition-all flex items-center gap-2 ' +
-                        (isSel ? 'bg-fuchsia-600 text-white' : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700')
-                    }, h('span', { className: 'text-base' }, icon), label);
+                    return h('div', { key: 'obj-' + o.id, className: 'flex items-center gap-1' },
+                      h('button', {
+                        onClick: function() { selectObject(o.id); },
+                        'aria-pressed': isSel,
+                        className: 'flex-1 text-left px-2 py-1 rounded text-[11px] transition-all flex items-center gap-2 ' +
+                          (isSel ? 'bg-fuchsia-600 text-white' : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700')
+                      }, h('span', { className: 'text-base' }, icon), label),
+                      h('button', {
+                        onClick: function() { deleteObject(o.id); },
+                        'aria-label': t('stem.geosandbox.delete_object', 'Delete') + ' ' + o.type + ' #' + o.id,
+                        title: t('stem.geosandbox.delete_object', 'Delete this object'),
+                        className: 'px-1.5 py-1 rounded text-[11px] text-rose-300 hover:bg-rose-700/40 transition-all'
+                      }, '🗑')
+                    );
                   })
                 )
               ),
+              // ── Edit selected size (Foundation wave) — resize any edge of the
+              //    selected object live and watch its measure update. Points have no
+              //    size, so this shows only for segment/rect/prism. ──
+              (function() {
+                var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
+                if (!sel || sel.type === 'point') return null;
+                var dims = sel.type === 'segment'
+                  ? [{ label: t('stem.geosandbox.dim_length', 'Length'), i: 0, len: vec3Mag(sel.vector) }]
+                  : sel.type === 'rect'
+                    ? [{ label: t('stem.geosandbox.dim_side_u', 'Side u'), i: 0, len: vec3Mag(sel.u) }, { label: t('stem.geosandbox.dim_side_v', 'Side v'), i: 1, len: vec3Mag(sel.v) }]
+                    : [{ label: t('stem.geosandbox.dim_side_u', 'Side u'), i: 0, len: vec3Mag(sel.u) }, { label: t('stem.geosandbox.dim_side_v', 'Side v'), i: 1, len: vec3Mag(sel.v) }, { label: t('stem.geosandbox.dim_height_w', 'Height w'), i: 2, len: vec3Mag(sel.w) }];
+                return h('div', { className: 'border-t border-purple-500/30 pt-2 space-y-1.5' },
+                  h('div', { className: 'text-[11px] font-bold text-purple-200' },
+                    t('stem.geosandbox.edit_selected', '✎ Edit selected size') + ' (#' + sel.id + ')'),
+                  dims.map(function(d) {
+                    return h('div', { key: 'rsz-' + d.i, className: 'flex items-center gap-2' },
+                      h('span', { className: 'w-16 text-[11px] font-bold text-purple-200' }, d.label),
+                      h('input', {
+                        type: 'range', min: '0.5', max: '12', step: '0.5', value: Math.min(12, d.len),
+                        onPointerDown: beginResizeDrag, onPointerUp: endResizeDrag, onBlur: endResizeDrag,
+                        onChange: function(e) { resizeSelectedDim(d.i, parseFloat(e.target.value), false); },
+                        'aria-label': d.label + ' ' + t('stem.geosandbox.resize', 'resize'),
+                        className: 'flex-1 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-fuchsia-500'
+                      }),
+                      h('input', {
+                        type: 'number', min: '0.1', max: '20', step: '0.1', value: +d.len.toFixed(2),
+                        onChange: function(e) { resizeSelectedDim(d.i, e.target.value, true); },
+                        'aria-label': d.label + ' ' + t('stem.geosandbox.exact_value', 'exact value'),
+                        className: 'w-16 px-1.5 py-1 rounded bg-slate-900/70 border border-fuchsia-500/40 text-fuchsia-100 text-[11px] font-mono text-right'
+                      })
+                    );
+                  })
+                );
+              })(),
               // Undo + Clear
               h('div', { className: 'flex gap-2' },
                 h('button', {

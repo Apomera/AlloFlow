@@ -251,3 +251,34 @@ describe('cross-section slicer (geoCrossSectionArea, geoCrossSectionInfo, geoSta
     expect(P.geoCrossSectionArea({ type: 'segment', position:[0,0,0], vector:[1,0,0] }, 0.5)).toBe(0);
   });
 });
+
+describe('resizeObject (edit a placed object; preserve direction + slant)', () => {
+  it('sets a segment to a new length along the same direction', () => {
+    const seg = { id: 1, type: 'segment', position: [0, 0, 0], vector: [3, 0, 0] };
+    const r = P.resizeObject(seg, 0, 7);
+    expect(P.geoStretchMeasure(r).value).toBeCloseTo(7, 6);
+    expect(r.vector[1]).toBeCloseTo(0, 9);
+    expect(r.vector[2]).toBeCloseTo(0, 9);
+  });
+  it('resizing one rect side scales area proportionally, leaves the other side', () => {
+    const rect = { id: 1, type: 'rect', position: [0, 0, 0], u: [3, 0, 0], v: [0, 4, 0] };
+    const r = P.resizeObject(rect, 0, 6);            // u: 3 -> 6, area 12 -> 24
+    expect(P.geoStretchMeasure(r).value).toBeCloseTo(24, 6);
+    expect(r.v).toEqual([0, 4, 0]);
+  });
+  it('resizing prism height scales volume; preserves an oblique slant direction', () => {
+    // oblique w = height (up) + shear (along u): |w| = sqrt(4^2 + 2^2)
+    const prism = { id: 1, type: 'prism', position: [0, 0, 0], u: [2, 0, 0], v: [0, 3, 0], w: [2, 4, 0] };
+    const before = P.geoStretchMeasure(prism);
+    expect(before.oblique).toBe(true);
+    const r = P.resizeObject(prism, 2, 2 * Math.hypot(2, 4));   // double the w-edge length
+    // direction preserved → still oblique, and volume doubles (base area unchanged, height doubles)
+    const after = P.geoStretchMeasure(r);
+    expect(after.oblique).toBe(true);
+    expect(after.value).toBeCloseTo(before.value * 2, 4);
+  });
+  it('leaves a point unchanged (no size to edit)', () => {
+    const pt = { id: 1, type: 'point', position: [1, 0, 2] };
+    expect(P.resizeObject(pt, 0, 5)).toEqual(pt);
+  });
+});
