@@ -759,6 +759,38 @@ window.StemLab = window.StemLab || {
     return { name: m.name, vol: vol, sa: sa };
   }
 
+  // ── Cross-sections (PURE) — a horizontal cut at height fraction t (0 = bottom,
+  //    1 = top) through a single-mode shape: the 2D shape it exposes + that area.
+  //    A solid IS a stack of these — slicing makes "volume = area × height" and the
+  //    shrinking cone/pyramid visible. Returns {name, area, r|w|h... , t}. ──
+  function geoCrossSection(shape, dims, t) {
+    var PI = Math.PI, tt = Math.max(0, Math.min(1, t == null ? 0.5 : t));
+    switch (shape) {
+      case 'box':      { var w = dims.w || 3, d = dims.d || 3; return { name: 'Rectangle', area: w * d, w: w, d: d }; }
+      case 'prism':    { var wp = dims.w || 3, dp = dims.d || 3, width = wp * (1 - tt); return { name: 'Rectangle', area: width * dp, w: width, d: dp }; }
+      case 'cylinder': { var rB = dims.rBot || 1.5, rT = dims.rTop || 1.5, rr = rB + (rT - rB) * tt; return { name: 'Circle', area: PI * rr * rr, r: rr }; }
+      case 'cone':     { var rc = (dims.r || 1.5) * (1 - tt); return { name: 'Circle', area: PI * rc * rc, r: rc }; }
+      case 'pyramid':  { var side = 2 * (dims.r || 1.5) * (1 - tt); return { name: 'Square', area: side * side, w: side, d: side }; }
+      case 'sphere':   { var r = dims.r || 1.5, y = (tt - 0.5) * 2 * r, rad = Math.sqrt(Math.max(0, r * r - y * y)); return { name: 'Circle', area: PI * rad * rad, r: rad }; }
+      case 'torus':    { var R = dims.r || 1.5, rt = dims.tube || 0.5, yy = (tt - 0.5) * 2 * rt, a = Math.sqrt(Math.max(0, rt * rt - yy * yy)); return { name: 'Ring (annulus)', area: 4 * PI * R * a, rOuter: R + a, rInner: Math.max(0, R - a) }; }
+      default: return { name: '—', area: 0 };
+    }
+  }
+  // ── Conic sections (PURE) — tilt a plane through a cone and Dandelin says which
+  //    conic you get. σ = the side's angle from horizontal (atan h/r): tilt below
+  //    σ → ellipse (0 → circle), equal → parabola, above → hyperbola. ──
+  function geoConicSection(dims, tiltDeg) {
+    var r = dims.r || 1.5, h = dims.h || 3;
+    var sigma = Math.atan2(h, r) * 180 / Math.PI;
+    var beta = Math.max(0, Math.min(89, tiltDeg == null ? 0 : tiltDeg));
+    var name, note;
+    if (beta < 0.5) { name = 'Circle'; note = 'A horizontal cut gives a circle.'; }
+    else if (beta < sigma - 1.5) { name = 'Ellipse'; note = 'Tilted less than the side (' + Math.round(sigma) + '°) → a closed ellipse.'; }
+    else if (beta <= sigma + 1.5) { name = 'Parabola'; note = 'Tilted parallel to the side (' + Math.round(sigma) + '°) → a parabola.'; }
+    else { name = 'Hyperbola'; note = 'Tilted steeper than the side (' + Math.round(sigma) + '°) → a hyperbola.'; }
+    return { name: name, note: note, sigma: sigma, beta: beta };
+  }
+
   // ── Challenge calculations (includes lateral area for challenge) ──
   function challengeCalc(sid, rd) {
     var PI = Math.PI;
@@ -1533,6 +1565,7 @@ window.StemLab = window.StemLab || {
       geoEvalRealChallenge: geoEvalRealChallenge,
       geoEvalMaxVolPuzzle: geoEvalMaxVolPuzzle,
       geoFormulaSteps: geoFormulaSteps,
+      geoCrossSection: geoCrossSection, geoConicSection: geoConicSection,
       geoPrismNet: geoPrismNet
     };
   } catch (e) {}
@@ -1954,6 +1987,12 @@ window.StemLab = window.StemLab || {
       var fm = formulaMap[shape] || formulaMap.box;
       var showMath = !!gd.showMath;                       // "show the math" substituted steps
       var steps = geoFormulaSteps(shape, dims);
+      // Cross-section explorer (single mode)
+      var xsOn = !!gd.xsOn;
+      var xsT = gd.xsT != null ? gd.xsT : 0.5;
+      var conicTilt = gd.conicTilt != null ? gd.conicTilt : 0;
+      var xs = geoCrossSection(shape, dims, xsT);
+      var conic = shape === 'cone' ? geoConicSection(dims, conicTilt) : null;
 
       // ── Challenge state ──
       var challenge = gd.challenge || null;
@@ -3785,6 +3824,68 @@ window.StemLab = window.StemLab || {
                   )
                 ),
                 m.note && h('div', { className: 'text-[11px] text-slate-200 italic mt-1' }, m.note)
+              )
+            ),
+
+            // ═══ CROSS-SECTION EXPLORER (single mode) — slice the shape, see the 2D
+            //     face + its area; a cone reveals the conic sections. ═══
+            !gd.challengeMode && mode === 'single' && h('div', { className: 'bg-gradient-to-br from-yellow-900/30 to-slate-900/40 rounded-xl p-3 border border-yellow-500/40' },
+              h('div', { className: 'flex justify-between items-center' },
+                h('div', { className: 'text-xs font-bold text-yellow-200 uppercase tracking-wider' }, t('stem.geosandbox.cross_section', '🔪 Cross-section')),
+                h('button', {
+                  onClick: function() { upd('xsOn', !xsOn); },
+                  'aria-pressed': xsOn,
+                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (xsOn ? 'bg-yellow-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                }, xsOn ? t('stem.geosandbox.hide', 'Hide') : t('stem.geosandbox.show', 'Show'))
+              ),
+              xsOn && h('div', { className: 'space-y-2 mt-2' },
+                h('p', { className: 'text-[10.5px] text-yellow-200/70' }, t('stem.geosandbox.xs_intro', 'Slide the cut up and down. A solid is a stack of these slices — that is why volume = cross-section area × height.')),
+                h('div', { className: 'flex justify-between text-[11px] font-bold text-yellow-200' },
+                  h('span', null, t('stem.geosandbox.cut_height', 'Cut height')),
+                  h('span', { className: 'font-mono text-yellow-300' }, Math.round(xsT * 100) + '%')
+                ),
+                h('input', {
+                  type: 'range', min: '0', max: '1', step: '0.02', value: xsT,
+                  onChange: function(e) { upd('xsT', parseFloat(e.target.value)); },
+                  'aria-label': t('stem.geosandbox.cut_height_aria', 'Cross-section cut height'),
+                  className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-yellow-500'
+                }),
+                // 2D cross-section drawing + readout
+                (function() {
+                  var svgSize = 96, cx = svgSize / 2, cy = svgSize / 2, pad = 10;
+                  var maxDim = Math.max(dims.w || 3, dims.d || 3, (dims.r || 1.5) * 2, (dims.rTop || 1.5) * 2, (dims.rBot || 1.5) * 2, ((dims.r || 1.5) + (dims.tube || 0.5)) * 2, 1);
+                  var sc = (svgSize - 2 * pad) / maxDim;
+                  var kids = [];
+                  if (xs.name === 'Circle') kids.push(h('circle', { key: 'c', cx: cx, cy: cy, r: Math.max(0.5, (xs.r || 0) * sc), fill: '#facc1533', stroke: '#facc15', strokeWidth: 1.5 }));
+                  else if (xs.name === 'Ring (annulus)') { kids.push(h('circle', { key: 'o', cx: cx, cy: cy, r: Math.max(0.5, (xs.rOuter || 0) * sc), fill: '#facc1533', stroke: '#facc15', strokeWidth: 1.5 })); kids.push(h('circle', { key: 'i', cx: cx, cy: cy, r: Math.max(0, (xs.rInner || 0) * sc), fill: '#0f172a', stroke: '#facc15', strokeWidth: 1 })); }
+                  else { var ww = (xs.w || 1) * sc, dd = (xs.d || 1) * sc; kids.push(h('rect', { key: 'r', x: cx - ww / 2, y: cy - dd / 2, width: Math.max(1, ww), height: Math.max(1, dd), fill: '#facc1533', stroke: '#facc15', strokeWidth: 1.5 })); }
+                  return h('div', { className: 'flex items-center gap-3' },
+                    h('svg', { width: svgSize, height: svgSize, viewBox: '0 0 ' + svgSize + ' ' + svgSize, className: 'bg-slate-950/50 rounded border border-slate-700 flex-none' }, kids),
+                    h('div', { className: 'text-[11px] text-yellow-100 space-y-0.5' },
+                      h('div', { className: 'font-bold' }, xs.name),
+                      xs.r != null && h('div', { className: 'font-mono text-[10.5px]' }, 'r = ' + xs.r.toFixed(2)),
+                      xs.rOuter != null && h('div', { className: 'font-mono text-[10.5px]' }, 'R±: ' + xs.rInner.toFixed(2) + '–' + xs.rOuter.toFixed(2)),
+                      (xs.w != null && xs.name !== 'Circle') && h('div', { className: 'font-mono text-[10.5px]' }, xs.w.toFixed(2) + ' × ' + (xs.d || 0).toFixed(2)),
+                      h('div', { className: 'font-mono text-emerald-300' }, t('stem.geosandbox.xs_area', 'area') + ' = ' + xs.area.toFixed(2) + ' u²')
+                    )
+                  );
+                })(),
+                // Conic sections — cone only
+                conic && h('div', { className: 'border-t border-yellow-500/30 pt-2 space-y-1' },
+                  h('div', { className: 'text-[11px] font-bold text-orange-200' }, t('stem.geosandbox.conic_sections', '🍦 Conic sections (tilt the cut)')),
+                  h('div', { className: 'flex justify-between text-[11px] text-orange-200' },
+                    h('span', null, t('stem.geosandbox.tilt', 'Tilt')),
+                    h('span', { className: 'font-mono text-orange-300' }, Math.round(conic.beta) + '°')
+                  ),
+                  h('input', {
+                    type: 'range', min: '0', max: '85', step: '1', value: conicTilt,
+                    onChange: function(e) { upd('conicTilt', parseFloat(e.target.value)); },
+                    'aria-label': t('stem.geosandbox.conic_tilt_aria', 'Conic section cutting-plane tilt'),
+                    className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-orange-500'
+                  }),
+                  h('div', { className: 'text-[12px] font-bold text-orange-100' }, conic.name),
+                  h('div', { className: 'text-[10px] text-orange-200/70' }, conic.note)
+                )
               )
             ),
 

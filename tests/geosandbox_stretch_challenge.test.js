@@ -383,3 +383,35 @@ describe('geoFormulaSteps (single-mode "show the math")', () => {
     expect(P.geoFormulaSteps('cone', { r: 2, h: 6 }).vol.value).toBeCloseTo(Math.PI * 4 * 6 / 3, 4);
   });
 });
+
+describe('geoCrossSection + geoConicSection (single-mode slicing)', () => {
+  it('cone cross-section is a circle shrinking to the apex; area = πr²', () => {
+    const base = P.geoCrossSection('cone', { r: 3, h: 6 }, 0);      // bottom
+    const mid = P.geoCrossSection('cone', { r: 3, h: 6 }, 0.5);
+    const top = P.geoCrossSection('cone', { r: 3, h: 6 }, 1);       // apex
+    expect(base.name).toBe('Circle');
+    expect(base.r).toBeCloseTo(3, 6);
+    expect(mid.r).toBeCloseTo(1.5, 6);
+    expect(top.r).toBeCloseTo(0, 6);
+    expect(base.area).toBeCloseTo(Math.PI * 9, 5);
+  });
+  it('sphere slices are circles: widest at the equator, zero at the poles', () => {
+    const eq = P.geoCrossSection('sphere', { r: 2 }, 0.5);
+    const pole = P.geoCrossSection('sphere', { r: 2 }, 1);
+    expect(eq.r).toBeCloseTo(2, 6);
+    expect(pole.r).toBeCloseTo(0, 6);
+  });
+  it('box slices are a constant rectangle', () => {
+    const a = P.geoCrossSection('box', { w: 2, h: 5, d: 3 }, 0.2);
+    const b = P.geoCrossSection('box', { w: 2, h: 5, d: 3 }, 0.9);
+    expect(a.area).toBeCloseTo(6, 6);
+    expect(b.area).toBeCloseTo(6, 6);
+  });
+  it('conic classifier: circle at 0°, then ellipse → parabola → hyperbola', () => {
+    const d = { r: 3, h: 3 };                 // side angle σ = atan(3/3) = 45°
+    expect(P.geoConicSection(d, 0).name).toBe('Circle');
+    expect(P.geoConicSection(d, 20).name).toBe('Ellipse');
+    expect(P.geoConicSection(d, 45).name).toBe('Parabola');
+    expect(P.geoConicSection(d, 70).name).toBe('Hyperbola');
+  });
+});
