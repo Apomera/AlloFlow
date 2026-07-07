@@ -314,3 +314,27 @@ describe('taperRect / pyramid volume (the 1/3 and frustum formulas)', () => {
     expect(Number.isFinite(sa)).toBe(true);
   });
 });
+
+describe('revolveRect / solid of revolution (Pappus: V = θ·R̄·A)', () => {
+  it('full turn of a rect with an edge on the axis → cylinder V = πr²h', () => {
+    // rect x∈[0,2] (radius), y∈[0,3] (height along the spin axis Y), spun about Y.
+    const rect = { id: 1, type: 'rect', position: [0, 0, 0], u: [2, 0, 0], v: [0, 3, 0] };
+    const cyl = P.revolveRect(rect, 'y', 360, 48);
+    expect(cyl.type).toBe('revolution');
+    expect(P.geoStretchMeasure(cyl).value).toBeCloseTo(Math.PI * 4 * 3, 4); // πr²h = 12π
+  });
+  it('an offset rect (ring) uses the centroid radius, not the inner radius', () => {
+    // x∈[2,4] spun about Y: Pappus R̄ = centroid x = 3, A = 2×3 = 6 → V = 2π·3·6 = 36π.
+    const rect = { id: 1, type: 'rect', position: [2, 0, 0], u: [2, 0, 0], v: [0, 3, 0] };
+    const ring = P.revolveRect(rect, 'y', 360, 48);
+    expect(P.geoStretchMeasure(ring).value).toBeCloseTo(2 * Math.PI * 3 * 6, 4);
+    // sanity vs the washer formula π(R_out² − R_in²)h = π(16−4)·3 = 36π
+    expect(2 * Math.PI * 3 * 6).toBeCloseTo(Math.PI * (16 - 4) * 3, 6);
+  });
+  it('a half turn is exactly half the full-turn volume', () => {
+    const rect = { id: 1, type: 'rect', position: [0, 0, 0], u: [2, 0, 0], v: [0, 3, 0] };
+    const full = P.revolutionVolume(P.revolveRect(rect, 'y', 360, 48));
+    const half = P.revolutionVolume(P.revolveRect(rect, 'y', 180, 48));
+    expect(half).toBeCloseTo(full / 2, 5);
+  });
+});

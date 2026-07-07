@@ -948,6 +948,57 @@ window.StemLab = window.StemLab || {
     for (var i = 0; i < 4; i++) { var j = (i + 1) % 4; sa += _quadArea(b[i], b[j], t[j], t[i]); }
     return sa;
   }
+  // ── Revolve (PURE) — spin a rectangle profile around a world axis (through the
+  //    rect's origin) by `angleDeg`, making a solid of revolution: a cylinder when
+  //    an edge lies on the axis, a ring/washer when the profile is offset. Volume
+  //    comes from PAPPUS'S THEOREM: V = θ · R̄ · A (sweep angle × centroid travel
+  //    radius × profile area) — exact, no meshing needed, as long as the profile
+  //    doesn't cross the axis. ──
+  function revolveRect(rect, axis, angleDeg, segments) {
+    var axId = (axis === 'x' || axis === 'y' || axis === 'z') ? axis : 'y';
+    return { type: 'revolution', position: rect.position.slice(), u: rect.u.slice(), v: rect.v.slice(),
+      axis: axId, angleDeg: Math.max(1, Math.min(360, angleDeg == null ? 360 : angleDeg)),
+      segments: Math.max(6, Math.min(96, segments || 48)) };
+  }
+  // Rotate a point about the line through aPoint along unit aDir by phi (Rodrigues).
+  function _rotAxis(p, aPoint, aDir, phi) {
+    var v = vec3Sub(p, aPoint), c = Math.cos(phi), s = Math.sin(phi);
+    var dotv = aDir[0] * v[0] + aDir[1] * v[1] + aDir[2] * v[2];
+    var cr = vec3Cross(aDir, v);
+    return vec3Add(aPoint, [
+      v[0] * c + cr[0] * s + aDir[0] * dotv * (1 - c),
+      v[1] * c + cr[1] * s + aDir[1] * dotv * (1 - c),
+      v[2] * c + cr[2] * s + aDir[2] * dotv * (1 - c)
+    ]);
+  }
+  function _revAxisVec(o) { var a = STRETCH_AXES.find(function(x) { return x.id === (o.axis || 'y'); }); return a ? a.vec : [0, 1, 0]; }
+  // Distance from the profile centroid to the revolution axis — the world axis
+  //   line through the ORIGIN (so placing a rect away from the axis makes a ring).
+  //   This is the R̄ in Pappus.
+  function _revRadius(o) {
+    var av = _revAxisVec(o);
+    var cen = vec3Add(o.position, vec3Scale(vec3Add(o.u, o.v), 0.5));
+    var proj = cen[0] * av[0] + cen[1] * av[1] + cen[2] * av[2];
+    return vec3Mag(vec3Sub(cen, vec3Scale(av, proj)));
+  }
+  function revolutionVolume(o) {
+    if (!o || o.type !== 'revolution') return 0;
+    var A = vec3Mag(vec3Cross(o.u, o.v));
+    return (o.angleDeg || 360) * Math.PI / 180 * _revRadius(o) * A;   // Pappus
+  }
+  // Triangle-soup for the swept surface (lateral sweep of the 4 profile edges +
+  //   the two profile end-caps when the sweep is partial). Used by the GL renderer.
+  function revolutionTriangles(o) {
+    var av = _revAxisVec(o), aPoint = [0, 0, 0];   // spin about the world axis through the origin
+    var corners = [o.position.slice(), vec3Add(o.position, o.u), vec3Add(vec3Add(o.position, o.u), o.v), vec3Add(o.position, o.v)];
+    var N = o.segments || 48, theta = (o.angleDeg || 360) * Math.PI / 180, rings = [];
+    for (var k = 0; k <= N; k++) { var phi = theta * k / N; rings.push(corners.map(function(c) { return _rotAxis(c, aPoint, av, phi); })); }
+    var tris = [];
+    var pushQuad = function(a, b, c, d) { tris.push(a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2], a[0], a[1], a[2], c[0], c[1], c[2], d[0], d[1], d[2]); };
+    for (var m = 0; m < N; m++) { var R0 = rings[m], R1 = rings[m + 1]; for (var e = 0; e < 4; e++) { var e2 = (e + 1) % 4; pushQuad(R0[e], R0[e2], R1[e2], R1[e]); } }
+    if (theta < 2 * Math.PI - 1e-3) { var f = rings[0]; pushQuad(f[0], f[1], f[2], f[3]); var g = rings[N]; pushQuad(g[3], g[2], g[1], g[0]); }
+    return tris;
+  }
   // ── Resize a placed object (PURE) — set one defining edge to a new length while
   //    PRESERVING its direction (and any Cavalieri slant baked into that vector).
   //    dimIndex: segment→0 (vector); rect→0(u)/1(v); prism→0(u)/1(v)/2(w). This is
@@ -998,6 +1049,7 @@ window.StemLab = window.StemLab || {
       var s = o.topScale == null ? 0 : o.topScale;
       return base * h * (1 + s + s * s) / 3;
     }
+    if (o.type === 'revolution') return revolutionVolume(o);
     return 0;
   }
 
@@ -1022,6 +1074,11 @@ window.StemLab = window.StemLab || {
       return { dim: 3, kind: 'volume', value: objectVolume(o), unitExp: 3,
         formula: apex ? 'V = ⅓ · B · h' : 'V = ⅓h(B₁ + B₂ + √(B₁B₂))',
         label: 'Volume', surfaceArea: geoPyramidSurfaceArea(o), oblique: obliqueP, taper: s, apex: apex };
+    }
+    if (o.type === 'revolution') {
+      return { dim: 3, kind: 'volume', value: revolutionVolume(o), unitExp: 3,
+        formula: 'V = θ · R̄ · A  (Pappus)', label: 'Volume',
+        radius: _revRadius(o), angleDeg: o.angleDeg || 360, profileArea: vec3Mag(vec3Cross(o.u, o.v)) };
     }
     return null;
   }
@@ -1316,6 +1373,16 @@ window.StemLab = window.StemLab || {
         var pyGroup = new THREE.Group();
         pyGroup.add(mesh); pyGroup.add(pyEdgeLines);
         mesh = pyGroup;
+      } else if (o.type === 'revolution') {
+        // Solid of revolution: sweep the rect profile around the axis (lathe mesh).
+        var rvTris = revolutionTriangles(o);
+        var rvGeo = new THREE.BufferGeometry();
+        rvGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(rvTris), 3));
+        rvGeo.computeVertexNormals();
+        mesh = new THREE.Mesh(rvGeo, new THREE.MeshStandardMaterial({ color: color, transparent: true, opacity: 0.72, side: THREE.DoubleSide, flatShading: false }));
+        var rvGroup = new THREE.Group();
+        rvGroup.add(mesh);
+        mesh = rvGroup;
       }
       if (mesh) {
         mesh.userData.objId = o.id;
@@ -1370,6 +1437,7 @@ window.StemLab = window.StemLab || {
       geoPrismSurfaceArea: geoPrismSurfaceArea,
       stretchPoint: stretchPoint, stretchSegment: stretchSegment, stretchRect: stretchRect,
       taperRect: taperRect, taperCorners: taperCorners, geoPyramidSurfaceArea: geoPyramidSurfaceArea,
+      revolveRect: revolveRect, revolutionVolume: revolutionVolume,
       resizeObject: resizeObject,
       geoStretchMeasure: geoStretchMeasure,
       geoScaleObject: geoScaleObject,
@@ -1535,6 +1603,7 @@ window.StemLab = window.StemLab || {
       // pyramid/frustum (rect only); 'revolve' = solid of revolution (Wave 4).
       var buildVerb = gd.buildVerb || 'stretch';
       var topScale = gd.topScale != null ? gd.topScale : 0;   // taper top size (0 = apex)
+      var revolveAngle = gd.revolveAngle != null ? gd.revolveAngle : 360;   // revolve sweep (degrees)
       // ── Build Challenge (stretch-mode problem solving) ──
       var buildChallenge = gd.buildChallenge || null;
       var buildScore = gd.buildScore || { solved: 0 };
@@ -1575,11 +1644,12 @@ window.StemLab = window.StemLab || {
       }
       // Build the stretched object WITHOUT committing (so predict-mode can measure
       // the result before revealing it). Returns null if the source can't stretch.
-      function buildStretchObj(sel, ax, len, slant, verb, top) {
+      function buildStretchObj(sel, ax, len, slant, verb, top, angle) {
         if (!sel) return null;
         verb = verb || 'stretch';
-        // Taper only applies to a rectangle (rect → pyramid/frustum).
+        // Taper / Revolve only apply to a rectangle.
         if (verb === 'taper' && sel.type === 'rect') return taperRect(sel, ax, len, top, slant);
+        if (verb === 'revolve' && sel.type === 'rect') return revolveRect(sel, ax, angle, 48);
         if (sel.type === 'point')   return stretchPoint(sel, ax, len);
         if (sel.type === 'segment') return stretchSegment(sel, ax, len, slant);
         if (sel.type === 'rect')    return stretchRect(sel, ax, len, slant);
@@ -1601,7 +1671,7 @@ window.StemLab = window.StemLab || {
         var ax = (axisOverride === 'x' || axisOverride === 'y' || axisOverride === 'z') ? axisOverride : stretchAxis;
         var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
         if (!sel) { addToast('Select an object first', 'error'); return; }
-        var newObj = buildStretchObj(sel, ax, stretchLength, stretchSlant, buildVerb, topScale);
+        var newObj = buildStretchObj(sel, ax, stretchLength, stretchSlant, buildVerb, topScale, revolveAngle);
         if (!newObj) { addToast('Cannot stretch this further in this dimension', 'info'); return; }
         // Predict-then-reveal: pause and ask for a guess before committing.
         if (predictMode) {
@@ -1609,7 +1679,7 @@ window.StemLab = window.StemLab || {
           setPredictGuess('');
           setLabToolData(function(p) {
             var g = p.geoSandbox || {};
-            return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { pendingPredict: { srcId: sel.id, ax: ax, len: stretchLength, slant: stretchSlant, verb: buildVerb, top: topScale, kind: mm.kind, label: mm.label, unitExp: mm.unitExp, actual: mm.value } }) });
+            return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { pendingPredict: { srcId: sel.id, ax: ax, len: stretchLength, slant: stretchSlant, verb: buildVerb, top: topScale, angle: revolveAngle, kind: mm.kind, label: mm.label, unitExp: mm.unitExp, actual: mm.value } }) });
           });
           if (announceToSR) announceToSR('Predict the ' + mm.label.toLowerCase() + ' of the result, then reveal.');
           return;
@@ -1620,7 +1690,7 @@ window.StemLab = window.StemLab || {
       function revealPrediction() {
         var pp = gd.pendingPredict; if (!pp) return;
         var sel = construction.objects.find(function(o) { return o.id === pp.srcId; });
-        var newObj = sel && buildStretchObj(sel, pp.ax, pp.len, pp.slant, pp.verb, pp.top);
+        var newObj = sel && buildStretchObj(sel, pp.ax, pp.len, pp.slant, pp.verb, pp.top, pp.angle);
         if (!newObj) { setLabToolData(function(p) { var g = p.geoSandbox || {}; return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { pendingPredict: null }) }); }); return; }
         commitNewObject(newObj, 'Revealed —');
         var guess = parseFloat(predictGuess);
@@ -2816,7 +2886,7 @@ window.StemLab = window.StemLab || {
               h('div', null,
                 h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, t('stem.geosandbox.build_action', 'Build action:')),
                 h('div', { className: 'flex gap-1', role: 'radiogroup', 'aria-label': t('stem.geosandbox.build_action_2', 'Build action') },
-                  [{ id: 'stretch', label: t('stem.geosandbox.verb_stretch', '⤴ Stretch') }, { id: 'taper', label: t('stem.geosandbox.verb_taper', '🔺 Taper') }].map(function(vb) {
+                  [{ id: 'stretch', label: t('stem.geosandbox.verb_stretch', '⤴ Stretch') }, { id: 'taper', label: t('stem.geosandbox.verb_taper', '🔺 Taper') }, { id: 'revolve', label: t('stem.geosandbox.verb_revolve', '🌀 Revolve') }].map(function(vb) {
                     var active = buildVerb === vb.id;
                     return h('button', {
                       key: 'vb-' + vb.id, role: 'radio', 'aria-checked': active,
@@ -2827,7 +2897,9 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 buildVerb === 'taper' && h('p', { className: 'text-[10px] text-fuchsia-200/70 mt-0.5' },
-                  t('stem.geosandbox.taper_hint', 'Taper a rectangle → shrinks the top toward a point. Top 0 = pyramid (⅓ the box!), 1 = box.'))
+                  t('stem.geosandbox.taper_hint', 'Taper a rectangle → shrinks the top toward a point. Top 0 = pyramid (⅓ the box!), 1 = box.')),
+                buildVerb === 'revolve' && h('p', { className: 'text-[10px] text-teal-200/70 mt-0.5' },
+                  t('stem.geosandbox.revolve_hint', 'Revolve a rectangle around a world axis (through the origin) → a cylinder when an edge sits on the axis, a ring when you place it further out. Volume by Pappus: V = θ·R̄·A.'))
               ),
               // Taper top-size slider (taper verb only).
               buildVerb === 'taper' && h('div', null,
@@ -2841,6 +2913,21 @@ window.StemLab = window.StemLab || {
                   'aria-label': t('stem.geosandbox.top_size_aria', 'Taper top size'),
                   className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-fuchsia-500'
                 })
+              ),
+              // Revolve sweep-angle slider (revolve verb only).
+              buildVerb === 'revolve' && h('div', null,
+                h('div', { className: 'flex justify-between text-[11px] font-bold text-purple-200 mb-1' },
+                  h('span', null, t('stem.geosandbox.sweep_angle', 'Sweep angle')),
+                  h('span', { className: 'text-teal-300 font-mono' }, Math.round(revolveAngle) + '°' + (revolveAngle >= 360 ? ' ' + t('stem.geosandbox.full_turn', 'full turn') : ''))
+                ),
+                h('input', {
+                  type: 'range', min: '30', max: '360', step: '15', value: revolveAngle,
+                  onChange: function(e) { upd('revolveAngle', parseFloat(e.target.value)); },
+                  'aria-label': t('stem.geosandbox.sweep_angle_aria', 'Revolution sweep angle in degrees'),
+                  className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500'
+                }),
+                h('p', { className: 'text-[10px] text-teal-200/70 mt-0.5' },
+                  t('stem.geosandbox.revolve_axis_note', 'Uses the axis picker below as the spin axis (through the origin). Edge on the axis → solid cylinder; placed further out → a ring.'))
               ),
               // Stretch axis selector
               h('div', null,
@@ -2944,6 +3031,14 @@ window.StemLab = window.StemLab || {
                   if (buildVerb === 'taper' && sel.type === 'rect') {
                     label = topScale <= 0.001 ? 'Taper rectangle → pyramid (3D)' : topScale >= 0.999 ? 'Taper rectangle → prism (3D)' : 'Taper rectangle → frustum (3D)';
                     enabled = true;
+                  }
+                  else if (buildVerb === 'revolve' && sel.type === 'rect') {
+                    label = revolveAngle >= 360 ? 'Revolve rectangle → cylinder/ring (3D)' : 'Revolve rectangle → wedge (3D)';
+                    enabled = true;
+                  }
+                  else if ((buildVerb === 'taper' || buildVerb === 'revolve') && sel.type !== 'rect') {
+                    label = (buildVerb === 'taper' ? 'Taper' : 'Revolve') + ' needs a rectangle — select or build one';
+                    enabled = false;
                   }
                   else if (sel.type === 'point')    { label = 'Stretch point → segment (1D)'; enabled = true; }
                   else if (sel.type === 'segment')  { label = 'Stretch segment → rectangle (2D)'; enabled = true; }
