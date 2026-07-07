@@ -1953,7 +1953,7 @@ const d = labToolData.physics;
 
           ];
 
-          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+          return React.createElement("div", { id: "physics-fs-outer", className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', maxWidth: '100vw', margin: 0, overflowY: 'auto', background: '#0f172a', padding: '10px' } : { position: 'relative' } },
 
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
@@ -1966,7 +1966,7 @@ const d = labToolData.physics;
 
             ),
 
-            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', margin: 0, borderRadius: 0, background: '#0f172a' } : { height: "420px" } },
+            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: d.physFsMode ? { position: 'relative', height: '70vh' } : { height: "420px" } },
 
               // Fullscreen toggle (top-right). Real OS fullscreen only works where the host iframe
               // grants it (document.fullscreenEnabled). Inside a sandboxed iframe (e.g. Gemini
@@ -1978,7 +1978,11 @@ const d = labToolData.physics;
                 'aria-label': (d.physFsMode ? 'Exit fullscreen' : 'Fullscreen') + ' for the physics canvas',
                 title: d.physFsMode ? 'Exit fullscreen' : 'Fullscreen',
                 onClick: function() {
-                  var el = document.getElementById('physics-fs-wrap');
+                  // Fullscreen the OUTER container (header + canvas + controls),
+                  // not just the canvas, so the sim controls stay usable in
+                  // fullscreen. The canvas grows to 70vh; controls flow below in
+                  // the scrollable fixed container.
+                  var el = document.getElementById('physics-fs-outer');
                   if (d.physFsMode) { upd('physFsMode', false); return; }        // exit CSS fill-frame
                   var inReal = el && (document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el);
                   if (inReal) { try { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) { var pe = ex.call(document); if (pe && pe.catch) pe.catch(function(){}); } } catch (e) {} return; }
