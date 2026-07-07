@@ -285,6 +285,8 @@ const OSS_CREDITS = [
       { name: "OpenDyslexic", use: "dyslexia-friendly reading font", license: "SIL OFL-1.1", url: "https://opendyslexic.org" },
       { name: "Atkinson Hyperlegible", use: "low-vision font \u2014 Braille Institute", license: "free (Atkinson Hyperlegible Font License)", url: "https://brailleinstitute.org/freefont" },
       { name: "Inter & Lexend", use: "interface fonts", license: "SIL OFL-1.1", url: "https://fonts.google.com" },
+      { name: "Outfit", use: "display / heading font \u2014 Rodrigo Fuenzalida", license: "SIL OFL-1.1", url: "https://fonts.google.com/specimen/Outfit" },
+      { name: "Plus Jakarta Sans", use: "interface font \u2014 Tokotype", license: "SIL OFL-1.1", url: "https://fonts.google.com/specimen/Plus+Jakarta+Sans" },
       { name: "Noto", use: "Unicode & CJK text in PDFs \u2014 Google", license: "SIL OFL-1.1", url: "https://fonts.google.com/noto" },
       { name: "DejaVu", use: "PDF fallback font", license: "Bitstream Vera / public domain", url: "https://dejavu-fonts.github.io" }
     ]
@@ -315,7 +317,7 @@ function OpenSourceTab({ t }) {
       className: "font-bold text-indigo-600 hover:text-indigo-800 hover:underline shrink-0"
     },
     item.name
-  ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2014 ", item.use, " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\xB7"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-medium text-slate-500" }, item.license))))))))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200" }, t("about.oss_credits_footer") || "AI features also use Google\u2019s Gemini API, a hosted service (not bundled software). Full license texts ship with the source. Spot something we should credit or correct? Let us know."));
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2014 ", item.use, " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\xB7"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-medium text-slate-500" }, item.license))))))))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 leading-relaxed pt-1 border-t border-slate-200" }, t("about.oss_credits_footer") || "AI features also use Google\u2019s Gemini API, a hosted service (not bundled software). Full license texts ship with the source (THIRD_PARTY_LICENSES.md). Spot something we should credit or correct? Let us know."));
 }
 const ATLAS_DOMAINS = [
   {

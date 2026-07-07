@@ -65,6 +65,11 @@ function EducatorHubModal(props) {
     // bridge feature is reachable from the hub, not only the History sidebar tab.
     // Optional default so a host that hasn't wired the setter still renders the hub.
     setBridgeSendOpen = (() => {
+    }),
+    // Whiteboard launcher (2026-07-06): the host owns window.open now so it can
+    // retain the popup handle for two-way postMessage (Save-to-resources + future
+    // AI assist). Optional default so a host that hasn't wired it still renders.
+    openWhiteboard = (() => {
     })
   } = props;
   const [platProbe, setPlatProbe] = React.useState(null);
@@ -267,13 +272,7 @@ function EducatorHubModal(props) {
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u{1F3A8}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-purple-800" }, t("educator_hub.symbol_studio_title") || "Symbol Studio"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-purple-600 mt-1" }, t("educator_hub.symbol_studio_desc") || "AI-generated PCS-style icons for visual supports, AAC boards, and schedules \u2014 powered by image-to-image editing"))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_whiteboard_card", onClick: () => {
     setShowEducatorHub(false);
     try {
-      const _w = window.open("https://alloflow-cdn.pages.dev/whiteboard/whiteboard.html?v=1", "alloflow-whiteboard", "width=1280,height=860");
-      if (!_w && typeof window !== "undefined") {
-        try {
-          window.alert("Allow pop-ups for this page, then open the Whiteboard again.");
-        } catch (_a) {
-        }
-      }
+      openWhiteboard();
     } catch (_e) {
     }
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("educator_hub.whiteboard_title") || "Whiteboard"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("educator_hub.whiteboard_desc") || "A freehand canvas (Excalidraw) to sketch ideas, build diagrams, and map thinking \u2014 with ready-made graphic organizers (Venn, T-chart, story map, KWL, concept web, number line) and one-click image export."))), /* @__PURE__ */ React.createElement("button", { "data-help-key": "educator_hub_dynamic_assessment_card", onClick: () => {
