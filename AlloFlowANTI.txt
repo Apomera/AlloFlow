@@ -8847,6 +8847,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0 });
   const [generationStep, setGenerationStep] = useState(t('common.processing') || 'Processing...');
+  const [localStreamActivity, setLocalStreamActivity] = useState(null);
   const [error, setError] = useState(null);
   const [helpfulHint, setHelpfulHint] = useState('');
   const [isGeneratingExtension, setIsGeneratingExtension] = useState(false);
@@ -14724,6 +14725,39 @@ const parseTaggedContent = (text) => {
     _installLocalTextBridge(ai, _aiConfig);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ai, _aiConfigKey]);
+
+  // ── Local-model streaming progress sink (additive; local backends only) ────
+  // ai_backend_module streams local text generations and calls this ambient
+  // hook with { receivedChars, chunks, done }. It is registered ONLY when a
+  // genuine local backend is active, so cloud (gemini / claude / hosted-openai)
+  // never installs it and the module never fires it — zero cloud impact.
+  // Throttled so per-token deltas don't thrash React; clears on completion.
+  React.useEffect(() => {
+    const _lb = window.AIBackendLocal;
+    const _isLocal = _lb && typeof _lb.isLocalTextBackend === 'function'
+      && _lb.isLocalTextBackend(_aiConfig && _aiConfig.backend);
+    if (!_isLocal) return undefined;
+    let _last = 0;
+    const _sink = (evt) => {
+      if (!evt) return;
+      if (evt.done) { setLocalStreamActivity(null); return; }
+      const _now = Date.now();
+      if (_now - _last < 90) return; // ~11 updates/sec, not once per token
+      _last = _now;
+      setLocalStreamActivity({
+        chars: evt.receivedChars || 0,
+        backend: evt.backend || (_aiConfig && _aiConfig.backend) || 'local',
+      });
+    };
+    window.__alloLocalTextProgress = _sink;
+    return () => {
+      if (window.__alloLocalTextProgress === _sink) {
+        try { delete window.__alloLocalTextProgress; } catch (_) { window.__alloLocalTextProgress = null; }
+      }
+      setLocalStreamActivity(null);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_aiConfigKey]);
 
   const runGlossaryHealthCheck = React.useCallback(async (terms, sourceText) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
@@ -28944,6 +28978,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                              <div className="flex justify-between w-full text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                                  <span>{t('output.step_x_of_y', { current: processingProgress.current, total: processingProgress.total }) || `Step ${processingProgress.current} of ${processingProgress.total}`}</span>
                                  <span>{Math.round((processingProgress.current / processingProgress.total) * 100)}%</span>
+                             </div>
+                        )}
+                        {localStreamActivity && (
+                             <div className="flex items-center justify-center gap-2 w-full text-[11px] font-bold text-indigo-600 uppercase tracking-wider mt-1">
+                                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" aria-hidden="true"></span>
+                                 <span>{t('status_steps.local_streaming', { backend: localStreamActivity.backend, chars: localStreamActivity.chars.toLocaleString() }) || `Receiving from ${localStreamActivity.backend}… ${localStreamActivity.chars.toLocaleString()} chars`}</span>
                              </div>
                         )}
                     </div>
