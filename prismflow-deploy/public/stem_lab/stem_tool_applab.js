@@ -19153,8 +19153,15 @@ test('no a11y violations', async () => {
       // ── Reusable: structured-entry card renderer ──
       var renderEntries = function(entries, opts) {
         opts = opts || {};
+        // Some reference blocks (the HTML/CSS/JS quick refs) are authored as an
+        // object grouped by category ({ structural: [...], text: [...] });
+        // others are already flat arrays. Normalize to a flat array so every
+        // tab renders and a mis-shaped block can't throw
+        // "entries.map is not a function".
+        var list = Array.isArray(entries) ? entries
+          : (entries && typeof entries === 'object' ? Object.values(entries).flat() : []);
         return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
-          entries.map(function(entry, i) {
+          list.map(function(entry, i) {
             var title = entry[opts.titleKey || 'name'] || entry.title || entry.concept || entry.command || entry.category || entry.api || entry.pattern || entry.topic || ('Entry ' + (i + 1));
             return h('section', { key: i, style: { background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '12px 14px' } },
               h('h4', { style: { fontSize: '14px', fontWeight: 800, color: PURPLE, margin: '0 0 6px 0' } }, title),
