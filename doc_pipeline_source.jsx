@@ -8299,6 +8299,31 @@ var createDocPipeline = function(deps) {
     return out;
   };
 
+  // #H (2026-07-07): distribute a page's POSITIONED word draw calls across the per-leaf MCID runs, in
+  // reading order. The per-leaf scanned-tagging path (default since 2026-07-01, @f0615fa8) drew every
+  // word top-down at a fixed x via _alloOcrBlockLayout, so the searchable layer stopped aligning with the
+  // scanned image (Ctrl+F highlight / drag-select drifted) — a regression vs the per-word positioned layer
+  // that shipped 2026-06-07. This maps the RAW OCR boxes (what the scan shows, in reading order) onto the
+  // runs by consuming each run's word count; the LAST run soaks up any remainder so NO positioned word is
+  // ever dropped. Exact box↔leaf correspondence is secondary — positions align with the image (search
+  // works) and every box stays under a reachable MCID (the validated per-leaf tag structure is unchanged;
+  // only the glyph x/y differ, which PAC/veraPDF do not check). Every run gets an entry (possibly empty)
+  // so its BDC/EMC is still emitted and its MCR stays backed. Pure + deterministic → unit-testable.
+  const _distributeCallsToRuns = (runs, calls) => {
+    const _runs = Array.isArray(runs) ? runs : [];
+    const _calls = Array.isArray(calls) ? calls : [];
+    const out = _runs.map((r) => ({ run: r, calls: [] }));
+    if (!out.length) return out;
+    let ci = 0;
+    for (let ri = 0; ri < out.length; ri++) {
+      const isLast = ri === out.length - 1;
+      const wc = (String(out[ri].run && out[ri].run.text || '').trim().match(/\S+/g) || []).length;
+      const take = isLast ? (_calls.length - ci) : Math.min(wc, _calls.length - ci);
+      for (let k = 0; k < take && ci < _calls.length; k++, ci++) out[ri].calls.push(_calls[ci]);
+    }
+    return out;
+  };
+
   // OCR every page of a PDF with Tesseract. Renders each page at 2× to a canvas, recognises,
   // concatenates. Returns { fullText, pages: [{pageNum, text, words, pageW, pageH}], sourceCharCount }.
   // Progress callback fires per page (0..1) so the UI can show "OCR page 3 of 12" without blocking.
@@ -21809,23 +21834,59 @@ tr { page-break-inside: avoid; }
             let _font = _uniFont || (await _getHelv());
             const _fold = !_uniFont;
             if (_PLx && _PLx.PDFOperator && _PLx.PDFOperatorNames && _font) {
-              const _layout = _alloOcrBlockLayout(_runs.map(r => r.text || ' ').join('\n'), (sz && sz.height ? sz.height : 792));
-              let _y = (sz && sz.height ? sz.height : 792) - 40;
-              const _step = Math.max(10, (_layout && _layout.lineHeight) || 12);
-              for (const _run of _runs) {
+              // #H (2026-07-07): POSITIONED per-leaf draw — the regression fix. This path (default for
+              // scanned since 2026-07-01) drew every run top-down at x=36 via _alloOcrBlockLayout, so the
+              // invisible searchable layer stopped aligning with the scanned image (Ctrl+F highlight /
+              // drag-select drifted). When Tesseract word boxes are present + geometry checks out (_perWord),
+              // draw each RAW OCR word at its REAL (x,y) — box height → font size — inside its run's BDC/EMC.
+              // The tag structure is byte-identical (one BDC per run, one MCID, content present); only the
+              // glyph coordinates change, which PAC/veraPDF don't check. Every run still emits its BDC/EMC so
+              // its MCR stays backed. Fully fail-safe: no boxes / geometry mismatch / any throw → the top-down
+              // block layout below (unchanged, still searchable + SR-readable in order) runs instead.
+              let _posDrew = false;
+              if (_perWord) {
                 try {
-                  const _bdc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.BeginMarkedContentSequence,
-                    [PDFName.of(_run.role || 'P'), context.obj({ MCID: PDFNumber.of(_run.mcid) })]);
-                  const _emc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.EndMarkedContent, []);
-                  page.pushOperators(_bdc);
-                  const _txt = _fold ? _toWinAnsi(_run.text || '') : (_run.text || '');
-                  if (_txt.trim()) {
-                    try { page.drawText(_txt, { x: 36, y: _y, size: 4, font: _font, opacity: 0 }); _pageDrewAny = true; }
-                    catch (_dErr) { try { const _h = await _getHelv(); if (_h) { page.drawText(_toWinAnsi(_run.text || ''), { x: 36, y: _y, size: 4, font: _h, opacity: 0 }); _pageDrewAny = true; } } catch (_) {} }
+                  const _posCalls = _ocrWordsToDrawCalls(_ocrWords, sz.height, { sizeFactor: 0.92 });
+                  if (_posCalls.length) {
+                    const _dist = _distributeCallsToRuns(_runs, _posCalls);
+                    for (const _grp of _dist) {
+                      const _run = _grp.run;
+                      const _bdc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.BeginMarkedContentSequence,
+                        [PDFName.of(_run.role || 'P'), context.obj({ MCID: PDFNumber.of(_run.mcid) })]);
+                      const _emc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.EndMarkedContent, []);
+                      page.pushOperators(_bdc);
+                      for (const _c of _grp.calls) {
+                        const _txt = _fold ? _toWinAnsi(_c.text) : _c.text;
+                        if (!_txt.trim()) continue;
+                        try { page.drawText(_txt, { x: _c.x, y: _c.y, size: _c.size, font: _font, opacity: 0 }); _pageDrewAny = true; _posDrew = true; }
+                        catch (_dErr) { try { const _h = await _getHelv(); if (_h) { page.drawText(_toWinAnsi(_c.text), { x: _c.x, y: _c.y, size: _c.size, font: _h, opacity: 0 }); _pageDrewAny = true; _posDrew = true; } } catch (_) {} }
+                      }
+                      page.pushOperators(_emc);
+                    }
                   }
-                  page.pushOperators(_emc);
-                  _y -= _step; if (_y < 20) _y = (sz && sz.height ? sz.height : 792) - 40;
-                } catch (_runErr) { try { warnLog('[per-leaf exp] run draw failed (mcid ' + _run.mcid + '): ' + (_runErr && _runErr.message)); } catch (_) {} }
+                } catch (_posErr) { _posDrew = false; try { warnLog('[per-leaf exp] positioned draw failed p' + (pi + 1) + ' — falling back to block layout: ' + (_posErr && _posErr.message)); } catch (_) {} }
+              }
+              if (!_posDrew) {
+                // No word boxes (Vision-won / rotated / dim mismatch) OR the positioned draw produced
+                // nothing → the top-down block layout: still per-leaf MCID runs, just not pixel-aligned.
+                const _layout = _alloOcrBlockLayout(_runs.map(r => r.text || ' ').join('\n'), (sz && sz.height ? sz.height : 792));
+                let _y = (sz && sz.height ? sz.height : 792) - 40;
+                const _step = Math.max(10, (_layout && _layout.lineHeight) || 12);
+                for (const _run of _runs) {
+                  try {
+                    const _bdc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.BeginMarkedContentSequence,
+                      [PDFName.of(_run.role || 'P'), context.obj({ MCID: PDFNumber.of(_run.mcid) })]);
+                    const _emc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.EndMarkedContent, []);
+                    page.pushOperators(_bdc);
+                    const _txt = _fold ? _toWinAnsi(_run.text || '') : (_run.text || '');
+                    if (_txt.trim()) {
+                      try { page.drawText(_txt, { x: 36, y: _y, size: 4, font: _font, opacity: 0 }); _pageDrewAny = true; }
+                      catch (_dErr) { try { const _h = await _getHelv(); if (_h) { page.drawText(_toWinAnsi(_run.text || ''), { x: 36, y: _y, size: 4, font: _h, opacity: 0 }); _pageDrewAny = true; } } catch (_) {} }
+                    }
+                    page.pushOperators(_emc);
+                    _y -= _step; if (_y < 20) _y = (sz && sz.height ? sz.height : 792) - 40;
+                  } catch (_runErr) { try { warnLog('[per-leaf exp] run draw failed (mcid ' + _run.mcid + '): ' + (_runErr && _runErr.message)); } catch (_) {} }
+                }
               }
             } else {
               try { warnLog('[per-leaf exp] PDFOperator helpers or font unavailable — page ' + (pi + 1) + ' drew nothing'); } catch (_) {}
