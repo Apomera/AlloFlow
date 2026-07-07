@@ -48,6 +48,12 @@
   .privacy { padding: 5px 12px; background: var(--panel); border-top: 1px solid var(--line); font-size: 10.5px; color: #6b7aa8; flex: 0 0 auto; }
   /* Excalidraw renders light by default; give it a clean light ground below the dark chrome. */
   .excalidraw { --color-primary: #4f46e5; }
+  input.hdr { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; }
+  input.hdr::placeholder { color: var(--dim); }
+  input.hdr:focus { outline: none; border-color: var(--accent); }
+  .nameinput { max-width: 170px; }
+  button.hdr:disabled { pointer-events: none; }
+  .flash { font-size: 11px; font-weight: 600; opacity: 0; transition: opacity .3s ease; white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -67,10 +73,13 @@
       <option value="numline">Number line (0–10)</option>
     </select>
   </div>
-  <button class="hdr primary" id="exportBtn" aria-label="Export the drawing as a PNG image">⬇️ Export PNG</button>
+  <input id="nameInput" class="hdr nameinput" type="text" maxlength="120" placeholder="Name this sketch" aria-label="Name for this whiteboard resource" />
+  <button class="hdr primary" id="saveBtn" aria-label="Save this drawing into your AlloFlow resource history">📥 Save to AlloFlow</button>
+  <button class="hdr" id="exportBtn" aria-label="Export the drawing as a PNG image to this device">⬇️ Export PNG</button>
+  <span id="flashmsg" class="flash" role="status" aria-live="polite"></span>
 </header>
 <div id="excal"><div class="loadmsg" id="loadmsg">Loading the whiteboard…</div></div>
-<div class="privacy">Private: your drawing stays in this window until you export or save it. Nothing is sent anywhere. Use Export PNG here, or Excalidraw’s menu (top-left) to save an editable .excalidraw file or an SVG.</div>
+<div class="privacy">Private by default: your drawing stays in this window. <strong>Export PNG</strong> and Excalidraw’s own Save (top-left, for an editable .excalidraw file or SVG) keep it on this device. <strong>Save to AlloFlow</strong> hands this drawing to your AlloFlow window so it joins your resource history — use that only when you want it saved there.</div>
 
 <script>window.EXCALIDRAW_ASSET_PATH = "https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.17.6/dist/";</script>
 <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin></script>
@@ -86,7 +95,11 @@
   }
   var E = window.ExcalidrawLib;
   var React = window.React, ReactDOM = window.ReactDOM;
-  var toOpener = function (payload) { try { if (window.opener && !window.opener.closed) window.opener.postMessage(payload, '*'); } catch (_) {} };
+  // The opener's origin is learned from its ack (see the message listener in Boot);
+  // until then we post with '*'. Outbound is the user's own drawing, not a secret,
+  // and postMessage still only reaches window.opener regardless of targetOrigin.
+  var openerOrigin = null;
+  var toOpener = function (payload) { try { if (window.opener && !window.opener.closed) window.opener.postMessage(payload, openerOrigin || '*'); } catch (_) {} };
 
   // ── Graphic-organizer templates as Excalidraw element skeletons ──
   // convertToExcalidrawElements fills in ids/bindings; each is a starting
@@ -188,10 +201,79 @@
     }).catch(function (e) { console.warn('[Whiteboard] export failed', e); });
   }
 
+  // Small inline status line in the header (also an aria-live region).
+  function flash(msg, good) {
+    var el = document.getElementById('flashmsg');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = good === false ? '#f87171' : '#34d399';
+    el.style.opacity = '1';
+    clearTimeout(flash._t);
+    flash._t = setTimeout(function () { el.style.opacity = '0'; }, 2600);
+  }
+
+  // "Save to AlloFlow" — export the scene to a PNG and hand BOTH the image and
+  // the editable Excalidraw scene to the opener (AlloFlow), which files it in the
+  // resource history. Unlike Export PNG (a local download), this leaves the window,
+  // so it is a deliberate, separate action.
+  function saveToAlloFlow() {
+    if (!window.opener || window.opener.closed) { flash('Open the Whiteboard from AlloFlow to use this.', false); return; }
+    if (!excalidrawAPI || typeof E.exportToBlob !== 'function') return;
+    var els = excalidrawAPI.getSceneElements();
+    if (!els || !els.length) { flash('Draw something first, or pick a template.', false); return; }
+    var appState = excalidrawAPI.getAppState() || {};
+    var files = excalidrawAPI.getFiles() || {};
+    E.exportToBlob({ elements: els, appState: appState, files: files, mimeType: 'image/png', quality: 0.92, exportPadding: 16 })
+      .then(function (blob) {
+        var reader = new FileReader();
+        reader.onloadend = function () {
+          var nameEl = document.getElementById('nameInput');
+          var name = (nameEl && nameEl.value ? nameEl.value : '').trim().slice(0, 120) || 'Whiteboard sketch';
+          // The editable scene, in the .excalidraw shape, so the resource can be
+          // re-opened/edited later. Kept only when compact (drawings with big
+          // embedded photos are handed over as the PNG alone to avoid bloating
+          // saved projects).
+          var scene = null;
+          try {
+            var candidate = { type: 'excalidraw', version: 2, source: 'https://alloflow-cdn.pages.dev/whiteboard', elements: els, appState: { viewBackgroundColor: appState.viewBackgroundColor || '#ffffff' }, files: files };
+            if (JSON.stringify(candidate).length < 240000) scene = candidate;
+          } catch (_s) {}
+          toOpener({ type: 'allocwb-save', title: name, png: reader.result, scene: scene, elementCount: els.length });
+          flash('Saved “' + name + '” to AlloFlow ✓', true);
+        };
+        reader.readAsDataURL(blob);
+      })
+      .catch(function (e) { console.warn('[Whiteboard] save failed', e); flash('Could not save — try Export PNG instead.', false); });
+  }
+
   // Boot
   mount();
   document.getElementById('tplSel').addEventListener('change', function (ev) { loadTemplate(ev.target.value); });
   document.getElementById('exportBtn').addEventListener('click', exportPng);
+  var saveBtn = document.getElementById('saveBtn');
+  if (saveBtn) {
+    if (!window.opener) {
+      saveBtn.disabled = true; saveBtn.style.opacity = '0.5'; saveBtn.style.cursor = 'not-allowed';
+      saveBtn.title = 'Open the Whiteboard from AlloFlow to save into your resources.';
+    } else {
+      saveBtn.addEventListener('click', saveToAlloFlow);
+    }
+  }
+
+  // Inbound messages from the AlloFlow opener. Today this only completes the
+  // handshake: the opener answers our hello with an ack, so we learn its origin
+  // and target later posts precisely. AI-assist responses (image gen / edit
+  // plans) will be handled here in a later pass — the channel, the source check,
+  // and the origin capture are in place now.
+  window.addEventListener('message', function (ev) {
+    try {
+      if (!window.opener || ev.source !== window.opener) return;
+      var d = ev.data;
+      if (!d || typeof d !== 'object') return;
+      if (d.type === 'allocwb-ack') { openerOrigin = ev.origin; return; }
+    } catch (_) {}
+  });
+
   var hello = function () { toOpener({ type: 'allocwb-hello' }); };
   hello(); setTimeout(hello, 900);
   window.addEventListener('beforeunload', function () { toOpener({ type: 'allocwb-closed' }); });
