@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-06T16:24:53.194Z",
+ "generatedAt": "2026-07-07T04:04:08.401Z",
  "attribution": {
   "text": "Books from StoryWeaver, an open library by Pratham Books. Licensed CC BY 4.0.",
   "url": "https://storyweaver.org.in",
@@ -10,7 +10,7 @@
   {
    "name": "English",
    "code": "en",
-   "count": 48
+   "count": 80
   },
   {
    "name": "Spanish",
@@ -12123,6 +12123,692 @@
    "pageCount": 14,
    "wordCount": 203,
    "file": "books/629410-ammachi-s-amazing-machines.json"
+  },
+  {
+   "slug": "351358-how-many",
+   "title": "How Many?",
+   "description": "Crawling snails, fluttering butterflies, pigs in the mud. This book has so many animals, and more keep joining in. Can you count them all? A simple book about addition.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/527516/size3/2ce50b116586b7652ec79c738028bc67.jpg",
+   "authors": [
+    "Sudeshna  Shome Ghosh"
+   ],
+   "illustrators": [
+    "Sayan  Mukherjee"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 15,
+   "wordCount": 158,
+   "file": "books/351358-how-many.json"
+  },
+  {
+   "slug": "2-smile-please",
+   "title": "Smile Please!",
+   "description": "Follow the young deer as he races along with friends.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721917/size3/548c488c38612955cf9c42fe6894c5f1.jpg",
+   "authors": [
+    "Manisha Chaudhry"
+   ],
+   "illustrators": [
+    "Ajit Narayan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 12,
+   "wordCount": 103,
+   "file": "books/2-smile-please.json"
+  },
+  {
+   "slug": "98-rani-s-first-day-at-school",
+   "title": "Rani's First Day at School",
+   "description": "What does Rani see on her first day in school? How does she feel?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/697425/size3/c45f1e0842588b2a698606d451ae1ee1.jpg",
+   "authors": [
+    "Cheryl Rao"
+   ],
+   "illustrators": [
+    "Mayur Mistry"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 6,
+   "wordCount": 179,
+   "file": "books/98-rani-s-first-day-at-school.json"
+  },
+  {
+   "slug": "7-fat-king-thin-dog",
+   "title": "Fat King Thin Dog",
+   "description": "Run along with the Fat King after the Thin Dog!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721909/size3/578f72502f01ea8298384a08257557b2.jpg",
+   "authors": [
+    "Parismita"
+   ],
+   "illustrators": [
+    "Parismita"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 8,
+   "wordCount": 68,
+   "file": "books/7-fat-king-thin-dog.json"
+  },
+  {
+   "slug": "1042-my-best-friend",
+   "title": "My Best Friend",
+   "description": "Would you like to have a very special friend? Look into this book and you may find that you already have a very special friend!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704882/size3/b1586d957cd76fc5ad2d07442f85401c.jpg",
+   "authors": [
+    "Anupa Lal"
+   ],
+   "illustrators": [
+    "Suvidha Mistry"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 111,
+   "file": "books/1042-my-best-friend.json"
+  },
+  {
+   "slug": "49-my-fish-no-my-fish",
+   "title": "My fish! No, my fish!",
+   "description": "A funny little story about three friends and three clever fish!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721012/size3/1db7298d5b01da68f1fd305946c8895a.jpg",
+   "authors": [
+    "Suraj J Menon"
+   ],
+   "illustrators": [
+    "Soumya Menon"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 185,
+   "file": "books/49-my-fish-no-my-fish.json"
+  },
+  {
+   "slug": "1281-it-s-all-the-cat-s-fault",
+   "title": "It's All the Cat's Fault!",
+   "description": "The boy in this story could not complete his homework because of a certain mischievous cat. Sounds like a silly excuse? Well, read about what happened to him, and you'll see how one thing can lead to another, and another, and another...",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/696669/size3/8717a72070ac52bd090aeebc8e6b36e6.jpg",
+   "authors": [
+    "Anushka Ravishankar"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "StoryWeaver",
+   "hasAudio": true,
+   "pageCount": 9,
+   "wordCount": 188,
+   "file": "books/1281-it-s-all-the-cat-s-fault.json"
+  },
+  {
+   "slug": "283-annual-haircut-day",
+   "title": "Annual Haircut Day",
+   "description": "Sringeri Srinivas, the lovable farmer with very long hair, wants it cut on Annual Haircut Day. But, everyone is busy. Read this story to find out who helps him get a haircut.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/703826/size3/83b5807867d46878c98536f0356abdc2.jpg",
+   "authors": [
+    "Rohini Nilekani"
+   ],
+   "illustrators": [
+    "Angie & Upesh"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 19,
+   "wordCount": 243,
+   "file": "books/283-annual-haircut-day.json"
+  },
+  {
+   "slug": "208-too-many-bananas",
+   "title": "Too Many Bananas",
+   "description": "Sringeri Srinivas grows sweet bananas on his farm, and yet, no one wants to buy them. Find out what he did with them in this cute story.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/703951/size3/f7817aa88cb268daaa68075155cd66a0.jpg",
+   "authors": [
+    "Rohini Nilekani"
+   ],
+   "illustrators": [
+    "Angie & Upesh"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 26,
+   "wordCount": 500,
+   "file": "books/208-too-many-bananas.json"
+  },
+  {
+   "slug": "1208-singing-in-the-rain",
+   "title": "Singing in the Rain",
+   "description": "Sukhiya Kaka was a famous singer. He met Dinoo who turned out to be his biggest fan. Together they made quite a pair!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/722389/size3/d05540af9b5524776541f85d6f0d63d4.jpg",
+   "authors": [
+    "Mala Kumar",
+    "Manisha Chaudhry"
+   ],
+   "illustrators": [
+    "Rajiv Eipe"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 8,
+   "wordCount": 351,
+   "file": "books/1208-singing-in-the-rain.json"
+  },
+  {
+   "slug": "10115-what-s-neema-eating-today",
+   "title": "What's Neema Eating Today?",
+   "description": "Meet Neema who LOVES to eat. Slippery lychees, squishy jamuns, sour tamarinds, shiny spinach – she loves it all! Join Neema as she chews and chomps her way through the year. ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/712721/size3/2f46f2aea0d54ba83cce96e1c6f9d5d9.jpg",
+   "authors": [
+    "Bijal Vachharajani"
+   ],
+   "illustrators": [
+    "Priya Kuriyan"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 14,
+   "wordCount": 342,
+   "file": "books/10115-what-s-neema-eating-today.json"
+  },
+  {
+   "slug": "876-mouse-in-the-house",
+   "title": "Mouse in the House",
+   "description": "A mouse enters the house. And there is utter chaos. Here is an action-packed adventure for little ones.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/699239/size3/64aac1468dabc0be40ef455f26448dd6.jpg",
+   "authors": [
+    "Sowmya Rajendran"
+   ],
+   "illustrators": [
+    "Tanaya Vyas"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 261,
+   "file": "books/876-mouse-in-the-house.json"
+  },
+  {
+   "slug": "122-no-smiles-today",
+   "title": "No Smiles Today",
+   "description": "Shanti was a happy girl. No one had seen her sad or quiet. Then one day she went very quiet. What had happened to Shanti?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/721014/size3/3f052202b9d0ee3719cef5b8b813c31f.jpg",
+   "authors": [
+    "Cheryl Rao"
+   ],
+   "illustrators": [
+    "Saurabh Pandey"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 6,
+   "wordCount": 243,
+   "file": "books/122-no-smiles-today.json"
+  },
+  {
+   "slug": "946-too-much-noise",
+   "title": "Too Much Noise",
+   "description": "Sringeri Srinivas, the farmer,  has to take his cows along the new highway, to the cattle fair. But the highway is just too noisy. What does he do? How does he solve this problem? Read on to find out.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/703953/size3/788a320045339daf95e6616b6a80dd8e.jpg",
+   "authors": [
+    "Rohini Nilekani"
+   ],
+   "illustrators": [
+    "Angie & Upesh"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 17,
+   "wordCount": 621,
+   "file": "books/946-too-much-noise.json"
+  },
+  {
+   "slug": "150744-annual-haircut-day-once-again",
+   "title": "Annual Haircut Day - ONCE AGAIN!",
+   "description": "Sringeri Srinivas is back! It is  Annual Haircut Day, once again. But there is a lockdown in his village due to the Coronavirus pandemic. The barbershop is closed. What will the lovable banana farmer do this time?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/703827/size3/86b351e48d9884f3c7b9cdaf770d1a08.jpg",
+   "authors": [
+    "Rohini Nilekani"
+   ],
+   "illustrators": [
+    "Angie & Upesh"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 27,
+   "wordCount": 929,
+   "file": "books/150744-annual-haircut-day-once-again.json"
+  },
+  {
+   "slug": "12172-the-new-girl",
+   "title": "The New Girl",
+   "description": "There’s a new girl in Mira's class. Everyone calls her names because she looks ‘different’. But does everyone have to be the same?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/84108/size3/36834ed5f0b9321df6c0e7edc523889d.jpg",
+   "authors": [
+    "Srividhya Venkat"
+   ],
+   "illustrators": [
+    "Sayan  Mukherjee"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 11,
+   "wordCount": 548,
+   "file": "books/12172-the-new-girl.json"
+  },
+  {
+   "slug": "10963-same-same-or-different",
+   "title": "Same-same or Different?",
+   "description": "Can you only be friends with people who are exactly like you? Is it wrong to be best friends with someone who is different? SORT OUT the answers to these questions with Snake and Sparrow in this heartwarming story about friendship.   ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/713551/size3/e4d629c39bd8feb1be0de5a47991ae6b.jpg",
+   "authors": [
+    "Roopa Pai"
+   ],
+   "illustrators": [
+    "Rohit Kelkar"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 21,
+   "wordCount": 915,
+   "file": "books/10963-same-same-or-different.json"
+  },
+  {
+   "slug": "51690-the-weightlifting-princess",
+   "title": "The Weightlifting Princess",
+   "description": "Princess Nila is eager to win the Surya Championship, the famous weightlifting contest in her kingdom. But there are so many obstacles to overcome. Not least, a handsome prince and her parents’ expectations.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/128169/size3/f54d978ae723b040027c6084b41e2e86.jpg",
+   "authors": [
+    "Sowmya Rajendran"
+   ],
+   "illustrators": [
+    "Debasmita Dasgupta"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 474,
+   "file": "books/51690-the-weightlifting-princess.json"
+  },
+  {
+   "slug": "128586-the-novel-coronavirus-we-can-stay-safe",
+   "title": "The Novel Coronavirus: We Can Stay Safe",
+   "description": "Find out how to be smart, stay safe and support each other in the time of the new Coronavirus. ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/726214/size3/6f92ab75184be600ce23c907c5f18529.jpg",
+   "authors": [
+    "Bijal Vachharajani",
+    "Deepa Balsavar",
+    "Maegan  Dobson Sippy",
+    "Meera Ganapathi",
+    "Nimmy Chacko",
+    "Rajiv Eipe",
+    "Sanjana  Kapur"
+   ],
+   "illustrators": [
+    "Deepa Balsavar",
+    "Jayesh Sivan",
+    "Lavanya  Naidu",
+    "Priya Kuriyan",
+    "Rajiv Eipe",
+    "Renuka Rajiv",
+    "Sheena Deviah",
+    "Sunaina  Coelho"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 10,
+   "wordCount": 679,
+   "file": "books/128586-the-novel-coronavirus-we-can-stay-safe.json"
+  },
+  {
+   "slug": "46999-nani-s-walk-to-the-park",
+   "title": "Nani's Walk to the Park",
+   "description": "Venki's Nani has a special relationship with her neighbourhood. When Venki decides to go to the park with her, the walk turns into an adventure!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "3",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/179741/size3/b649519fde5f15ddada59312c4237cb5.jpg",
+   "authors": [
+    "Deepa Balsavar"
+   ],
+   "illustrators": [
+    "Deepa Balsavar"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 29,
+   "wordCount": 542,
+   "file": "books/46999-nani-s-walk-to-the-park.json"
+  },
+  {
+   "slug": "45980-tine-and-the-faraway-mountain",
+   "title": "Tine and the Faraway Mountain",
+   "description": "Whooshoo! Whooshoo!\r\nIn the hilly town of Echali, Tine hears a whisper. It's the mountains calling to her.\r\nAs she grows up, Tine dreams of getting closer to her beloved mountains. But can she reach the top of the highest mountain in the world?\r\nBased on the life of a mountaineer from Arunachal Pradesh, this book celebrates the power of dreams and believing in yourself.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/83442/size3/2499ede9af5c09c5a97f7cea234d4a65.jpg",
+   "authors": [
+    "Shikha Tripathi"
+   ],
+   "illustrators": [
+    "Ogin Nayam"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 19,
+   "wordCount": 891,
+   "file": "books/45980-tine-and-the-faraway-mountain.json"
+  },
+  {
+   "slug": "30972-kali-wants-to-dance",
+   "title": "Kali Wants to Dance",
+   "description": "All Kali wanted to do was dance. But how could he? After all, in his village, boys did not\r\ndance, especially not Bharatanatyam. A story about dreams and aspirations and believing in them.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722803/size3/279e3b0b11f71cddf1a84d019cdd0cb8.jpg",
+   "authors": [
+    "Aparna Karthikeyan"
+   ],
+   "illustrators": [
+    "Somesh Kumar"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 16,
+   "wordCount": 996,
+   "file": "books/30972-kali-wants-to-dance.json"
+  },
+  {
+   "slug": "106261-only-fools-go-to-school",
+   "title": "Only Fools Go to School",
+   "description": "Sambha doesn’t want to go to school, ever. He thinks school is for fools. One day, the teacher takes him to school. He secretly enjoys himself, but will he want to return the next day?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495472/size3/49f2e662fe988adbe41d7411b2b7585f.jpg",
+   "authors": [
+    "Chatura Rao"
+   ],
+   "illustrators": [
+    "Proiti Roy"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 17,
+   "wordCount": 988,
+   "file": "books/106261-only-fools-go-to-school.json"
+  },
+  {
+   "slug": "11958-kaakaasaurus",
+   "title": "Kaakaasaurus",
+   "description": "Raji is having a terrible day. First, a crow gobbled up her bajji. And now it's trying to gobble up her best friend Salim! Can it get any worse? Yes, yes, it can. A WHOLE LOT worse!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/713582/size3/b6cae5197a37599ee424fd455742c661.jpg",
+   "authors": [
+    "Shalini  Srinivasan "
+   ],
+   "illustrators": [
+    "Prabha  Mallya"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 26,
+   "wordCount": 619,
+   "file": "books/11958-kaakaasaurus.json"
+  },
+  {
+   "slug": "8881-turtle-story",
+   "title": "Turtle Story",
+   "description": "Under cover of darkness, baby olive ridley turtles hatch from sun-warmed eggs on remote beaches. One of them, the little hatchling who is the narrator of our story, is delighted to make it across the beach and into the ocean without losing her way or being captured by predators. \r\n\r\nBut can our little olive ridley survive the dangers of the ocean? Will she make it past the deadly sharks and the terrible fishing nets and reach adulthood? Will she ever have the pleasure of laying her own brood of eggs?\r\n\r\nFind out in this charming life story of an olive ridley turtle, and meet several other interesting creatures along the way.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/27753/size3/e21f0014824d4500d005ff02b9529442.jpg",
+   "authors": [
+    "Kartik Shanker"
+   ],
+   "illustrators": [
+    "Maya  Ramaswamy"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": false,
+   "pageCount": 31,
+   "wordCount": 2409,
+   "file": "books/8881-turtle-story.json"
+  },
+  {
+   "slug": "82-i-want-that-one",
+   "title": "I Want That One!",
+   "description": "'Not that one', says Anil's mother when he asks for something. 'Not that one!' say all the shopkeepers in the market too. That makes the little boy very angry indeed!",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/697280/size3/aba9bf37b8d832ad403892121fde5991.jpg",
+   "authors": [
+    "Mala Kumar"
+   ],
+   "illustrators": [
+    "Soumya Menon"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 291,
+   "file": "books/82-i-want-that-one.json"
+  },
+  {
+   "slug": "332-bheema-the-sleepyhead",
+   "title": "Bheema, the Sleepyhead",
+   "description": "Bheema has a problem that many of us have every morning. He just can't wake up on time! A little friend helps him. Would you like to find out how?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/719515/size3/0c5a8a69dc7efb78dc43f43a4384daf8.jpg",
+   "authors": [
+    "Rajesh Khar"
+   ],
+   "illustrators": [
+    "Shweta Mohapatra"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 7,
+   "wordCount": 279,
+   "file": "books/332-bheema-the-sleepyhead.json"
+  },
+  {
+   "slug": "202-bunty-and-bubbly",
+   "title": "Bunty and Bubbly",
+   "description": "Bunty does not like soaps. So, she refuses to clean up. Then one night she has a dream. What happens after that?",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/720260/size3/bfaca307e321a40d4fce0bf9bade9047.jpg",
+   "authors": [
+    "Sorit Gupto"
+   ],
+   "illustrators": [
+    "Sorit Gupto"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 120,
+   "file": "books/202-bunty-and-bubbly.json"
+  },
+  {
+   "slug": "1052-busy-ants",
+   "title": "Busy Ants",
+   "description": "Follow the ants in this book. They are sure to keep young readers busy. This book is one of the four books in the 'Animals Around Us' series.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704670/size3/241eb27666dc624a6d0b5f5b2871e868.jpg",
+   "authors": [
+    "Kanchan Bannerjee"
+   ],
+   "illustrators": [
+    "Deepa Balsavar"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 11,
+   "wordCount": 198,
+   "file": "books/1052-busy-ants.json"
+  },
+  {
+   "slug": "137-can-and-can-t",
+   "title": "Can and Can't",
+   "description": "You CAN read this little book, but you CAN'T dislike it! And if little children CAN'T read it, they CAN enjoy the charming illustrations.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "1",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/704392/size3/08e45dddd1c76f90db3c17f430dfae3b.jpg",
+   "authors": [
+    "Radha HS"
+   ],
+   "illustrators": [
+    "Ruchi Shah"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 7,
+   "wordCount": 50,
+   "file": "books/137-can-and-can-t.json"
+  },
+  {
+   "slug": "28121-look-up",
+   "title": "Look Up!",
+   "description": "Birds and bats. Kites and planes. How often do you explore the incredible world above us? Get ready to spot the odd ones out in this wonderful book of patterns. ",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/714197/size3/b769676c4189b596ea7f2c7e00825ca4.jpg",
+   "authors": [
+    "Aditi Dilip"
+   ],
+   "illustrators": [
+    "Aditi Dilip"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 22,
+   "wordCount": 253,
+   "file": "books/28121-look-up.json"
+  },
+  {
+   "slug": "28736-maths-at-the-mela",
+   "title": "Maths at the Mela",
+   "description": "Leelu is at the fair with her class of 36 students. But Sir needs to keep counting them to see how many tickets to buy and to make sure no one is lost. Is there an easier way to count to 36 than 1,2,3...? The concept of tables is introduced through a story about counting in groups.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "2",
+   "cover": "https://static.storyweaver.org.in/illustration_crops/716368/size3/ee43a59b4f099703679c055db6a7e43e.jpg",
+   "authors": [
+    "Kavitha Mandana"
+   ],
+   "illustrators": [
+    "Nirzara Verulkar"
+   ],
+   "publisher": "Pratham Books",
+   "hasAudio": true,
+   "pageCount": 12,
+   "wordCount": 376,
+   "file": "books/28736-maths-at-the-mela.json"
   }
  ]
 }
