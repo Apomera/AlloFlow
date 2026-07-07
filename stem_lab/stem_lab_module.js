@@ -5660,7 +5660,23 @@
             }
             // The deferred setState bridge uses _renderingFlag to queue updates that
             // would otherwise trigger "Cannot update a component while rendering".
-            return React.createElement(window.__stemPluginComponents[stemLabTool], { key: 'plugin-' + stemLabTool, _toolId: stemLabTool, _ctx: _ctx });
+            //
+            // Hook-safety: the bridge inlines the tool's render() into ONE fiber,
+            // and many tools dispatch to different sub-renderers per tab/subtool,
+            // each calling a DIFFERENT set of canvas hooks (useRef/useEffect).
+            // Keying only by tool ID meant a same-fiber subtool switch reordered
+            // hooks → "Rendered fewer hooks than expected" (e.g. semiconductor
+            // bandgap→gates). Fold the active tab + the tool's own mode field into
+            // the key so switching sub-views remounts a fresh fiber (correct, and
+            // the expected UX). These fields only change on an explicit switch, so
+            // normal re-renders keep the same key and don't remount.
+            var _modeTd = (_ctx.toolData && _ctx.toolData[stemLabTool]) || {};
+            var _modeSig = [
+              stemLabTool,
+              _ctx.stemLabTab || '',
+              _modeTd.subtool || _modeTd.tab || _modeTd.mode || _modeTd.activeTab || _modeTd.activeSubtool || ''
+            ].join(':');
+            return React.createElement(window.__stemPluginComponents[stemLabTool], { key: 'plugin-' + _modeSig, _toolId: stemLabTool, _ctx: _ctx });
           } catch(e) {
             console.error('[StemLab] Plugin fallback error for ' + stemLabTool, e);
             return React.createElement('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
