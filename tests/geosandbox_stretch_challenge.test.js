@@ -364,3 +364,22 @@ describe('real-world builds + fattest-solid puzzle (Wave 5)', () => {
     expect(P.geoEvalMaxVolPuzzle(54, [bar]).atOptimum).toBe(false);
   });
 });
+
+describe('geoFormulaSteps (single-mode "show the math")', () => {
+  it('cylinder substitutes πr²h and the value matches calcMeasurements', () => {
+    const s = P.geoFormulaSteps('cylinder', { rTop: 2, rBot: 2, h: 5 });
+    expect(s.vol.value).toBeCloseTo(Math.PI * 4 * 5, 4);
+    expect(s.vol.sub).toContain('(2)');
+    expect(s.vol.sub).toContain('(5)');
+    expect(s.vol.formula).toContain('r²h');
+  });
+  it('box volume substitution equals w·h·d', () => {
+    const s = P.geoFormulaSteps('box', { w: 2, h: 3, d: 4 });
+    expect(s.vol.value).toBeCloseTo(24, 6);
+    expect(s.vol.sub).toBe('(2)·(3)·(4)');
+  });
+  it('sphere and cone report the right named volume', () => {
+    expect(P.geoFormulaSteps('sphere', { r: 3 }).vol.value).toBeCloseTo(4 / 3 * Math.PI * 27, 4);
+    expect(P.geoFormulaSteps('cone', { r: 2, h: 6 }).vol.value).toBeCloseTo(Math.PI * 4 * 6 / 3, 4);
+  });
+});

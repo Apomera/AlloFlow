@@ -718,6 +718,47 @@ window.StemLab = window.StemLab || {
     }
   }
 
+  // ── "Show the math" (PURE) — the volume/SA formula with the CURRENT dimensions
+  //    substituted in, so a student sees πr²h become π·(2)²·(5) = 62.83, not just
+  //    a number. Returns symbolic + substituted + value for V and SA. Aligned with
+  //    calcMeasurements so the revealed number always matches the readout. ──
+  function geoFormulaSteps(shape, dims) {
+    var PI = Math.PI, n = function(x) { return Math.round((x || 0) * 100) / 100; };
+    var m = calcMeasurements(shape, dims), pv = 'π';
+    var mk = function(formula, sub, value) { return { formula: formula, sub: sub, value: value }; };
+    var vol, sa;
+    switch (shape) {
+      case 'box': { var w = dims.w || 3, h = dims.h || 3, d = dims.d || 3;
+        vol = mk('V = w·h·d', '(' + n(w) + ')·(' + n(h) + ')·(' + n(d) + ')', m.vol);
+        sa = mk('SA = 2(wh + wd + hd)', '2((' + n(w) + '·' + n(h) + ') + (' + n(w) + '·' + n(d) + ') + (' + n(h) + '·' + n(d) + '))', m.sa); break; }
+      case 'sphere': { var r = dims.r || 1.5;
+        vol = mk('V = ⁴⁄₃' + pv + 'r³', '⁴⁄₃·' + pv + '·(' + n(r) + ')³', m.vol);
+        sa = mk('SA = 4' + pv + 'r²', '4·' + pv + '·(' + n(r) + ')²', m.sa); break; }
+      case 'cylinder': { var rT = dims.rTop || 1.5, rB = dims.rBot || 1.5, hc = dims.h || 3;
+        if (Math.abs(rT - rB) < 1e-6) {
+          vol = mk('V = ' + pv + 'r²h', pv + '·(' + n(rT) + ')²·(' + n(hc) + ')', m.vol);
+          sa = mk('SA = 2' + pv + 'r(r + h)', '2·' + pv + '·' + n(rT) + '·(' + n(rT) + ' + ' + n(hc) + ')', m.sa);
+        } else {
+          vol = mk('V = ⅓' + pv + 'h(r₁² + r₁r₂ + r₂²)', '⅓·' + pv + '·' + n(hc) + '·(…)', m.vol);
+          sa = mk('SA = ' + pv + '(r₁² + r₂² + (r₁+r₂)l)', pv + '·(…)', m.sa);
+        } break; }
+      case 'cone': { var rc = dims.r || 1.5, hco = dims.h || 3, slc = Math.sqrt(rc * rc + hco * hco);
+        vol = mk('V = ⅓' + pv + 'r²h', '⅓·' + pv + '·(' + n(rc) + ')²·(' + n(hco) + ')', m.vol);
+        sa = mk('SA = ' + pv + 'r(r + l)', pv + '·' + n(rc) + '·(' + n(rc) + ' + ' + n(slc) + ')  [l=√(r²+h²)]', m.sa); break; }
+      case 'pyramid': { var rp = dims.r || 1.5, hp = dims.h || 3, base = 2 * rp, slp = Math.sqrt(rp * rp + hp * hp);
+        vol = mk('V = ⅓·B·h', '⅓·(' + n(base) + '²)·(' + n(hp) + ')', m.vol);
+        sa = mk('SA = B + 4·(½·base·l)', '(' + n(base) + '²) + 4·(½·' + n(base) + '·' + n(slp) + ')', m.sa); break; }
+      case 'torus': { var R = dims.r || 1.5, rt = dims.tube || 0.5;
+        vol = mk('V = 2' + pv + '²Rr²', '2·' + pv + '²·(' + n(R) + ')·(' + n(rt) + ')²', m.vol);
+        sa = mk('SA = 4' + pv + '²Rr', '4·' + pv + '²·(' + n(R) + ')·(' + n(rt) + ')', m.sa); break; }
+      case 'prism': { var wp = dims.w || 3, hpp = dims.h || 3, dp = dims.d || 3, hyp = Math.sqrt((wp / 2) * (wp / 2) + hpp * hpp);
+        vol = mk('V = (½·b·h)·d', '(½·' + n(wp) + '·' + n(hpp) + ')·(' + n(dp) + ')', m.vol);
+        sa = mk('SA = 2(½·b·h) + b·d + 2·l·d', '(' + n(wp) + '·' + n(hpp) + ') + ' + n(wp) + '·' + n(dp) + ' + 2·' + n(hyp) + '·' + n(dp), m.sa); break; }
+      default: vol = mk('—', '—', 0); sa = mk('—', '—', 0);
+    }
+    return { name: m.name, vol: vol, sa: sa };
+  }
+
   // ── Challenge calculations (includes lateral area for challenge) ──
   function challengeCalc(sid, rd) {
     var PI = Math.PI;
@@ -1491,6 +1532,7 @@ window.StemLab = window.StemLab || {
       GEO_REAL_OBJECTS: GEO_REAL_OBJECTS,
       geoEvalRealChallenge: geoEvalRealChallenge,
       geoEvalMaxVolPuzzle: geoEvalMaxVolPuzzle,
+      geoFormulaSteps: geoFormulaSteps,
       geoPrismNet: geoPrismNet
     };
   } catch (e) {}
@@ -1910,6 +1952,8 @@ window.StemLab = window.StemLab || {
       // ── Measurements ──
       var m = calcMeasurements(shape, dims);
       var fm = formulaMap[shape] || formulaMap.box;
+      var showMath = !!gd.showMath;                       // "show the math" substituted steps
+      var steps = geoFormulaSteps(shape, dims);
 
       // ── Challenge state ──
       var challenge = gd.challenge || null;
@@ -3691,15 +3735,24 @@ window.StemLab = window.StemLab || {
 
             // Measurements (hidden during challenge mode AND stretch mode — stretch has its own readouts in the object list)
             !gd.challengeMode && mode === 'single' && h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50' },
-              h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider mb-2' }, t('stem.geosandbox.measurements', '\uD83D\uDCCF Measurements')),
+              h('div', { className: 'flex justify-between items-center mb-2' },
+                h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider' }, t('stem.geosandbox.measurements', '\uD83D\uDCCF Measurements')),
+                h('button', {
+                  onClick: function() { upd('showMath', !showMath); },
+                  'aria-pressed': showMath,
+                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (showMath ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                }, showMath ? t('stem.geosandbox.hide_math', '\uD83E\uDDEE Hide the math') : t('stem.geosandbox.show_math', '\uD83E\uDDEE Show the math'))
+              ),
               h('div', { className: 'space-y-1.5' },
-                // Volume with formula
+                // Volume with formula (+ substituted steps when "show the math" is on)
                 h('div', null,
                   h('div', { className: 'flex justify-between text-xs' },
                     h('span', { className: 'text-slate-300' }, t('stem.geosandbox.volume_2', 'Volume')),
                     h('span', { className: 'text-emerald-400 font-mono font-bold' }, m.vol.toFixed(2) + ' u\u00B3')
                   ),
-                  h('div', { className: 'text-[11px] text-emerald-500/70 font-mono mt-0.5' }, fm.vol)
+                  h('div', { className: 'text-[11px] text-emerald-500/70 font-mono mt-0.5' }, fm.vol),
+                  showMath && h('div', { className: 'text-[11px] text-emerald-300 font-mono mt-0.5 pl-2 border-l-2 border-emerald-500/40' },
+                    steps.vol.sub + ' = ' + m.vol.toFixed(2))
                 ),
                 // Surface Area with formula
                 h('div', null,
@@ -3707,7 +3760,9 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-slate-300' }, t('stem.geosandbox.surface_area', 'Surface Area')),
                     h('span', { className: 'text-sky-400 font-mono font-bold' }, m.sa.toFixed(2) + ' u\u00B2')
                   ),
-                  h('div', { className: 'text-[11px] text-sky-500/70 font-mono mt-0.5' }, fm.sa)
+                  h('div', { className: 'text-[11px] text-sky-500/70 font-mono mt-0.5' }, fm.sa),
+                  showMath && h('div', { className: 'text-[11px] text-sky-300 font-mono mt-0.5 pl-2 border-l-2 border-sky-500/40' },
+                    steps.sa.sub + ' = ' + m.sa.toFixed(2))
                 ),
                 h('div', { className: 'flex justify-between text-xs' },
                   h('span', { className: 'text-slate-300' }, t('stem.geosandbox.faces', 'Faces')),
