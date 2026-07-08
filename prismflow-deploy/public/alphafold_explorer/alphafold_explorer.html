@@ -14,7 +14,7 @@
   - Look up public AlphaFold DB structures by UniProt/accession.
   - View structures in Mol*.
   - Import downloaded .cif/.mmcif/.bcif/.pdb files.
-  - Prepare AlphaFold 3 input JSON for AlphaFold Server/manual local runs.
+  - Prepare AlphaFold Server JSON or AlphaFold 3 local-code JSON.
 
   It does NOT automatically submit sequences to AlphaFold Server. The page keeps
   notes in memory only. AI coaching, when enabled by the opener, receives public
@@ -157,7 +157,7 @@
   .row { display: flex; gap: 8px; align-items: center; }
   .row > * { min-width: 0; }
   label { display: block; margin: 8px 0 5px; font-size: 12px; color: var(--soft); font-weight: 800; }
-  input[type="text"], textarea {
+  input[type="text"], input[type="number"], select, textarea {
     width: 100%;
     border: 1px solid var(--line2);
     border-radius: 8px;
@@ -168,10 +168,40 @@
     padding: 9px 10px;
     outline: none;
   }
+  select { cursor: pointer; }
   textarea {
     min-height: 96px;
     resize: vertical;
     line-height: 1.45;
+  }
+  .mini {
+    min-height: 74px;
+  }
+  .field { flex: 1 1 0; }
+  .checkrow {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 8px;
+    color: var(--soft);
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 700;
+  }
+  .checkrow input { margin-top: 2px; }
+  details.advanced {
+    margin-top: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px;
+    background: rgba(15, 23, 42, 0.48);
+  }
+  details.advanced summary {
+    cursor: pointer;
+    color: #bdeee7;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
   }
   input[type="file"] {
     width: 100%;
@@ -312,7 +342,7 @@
     <div class="mark" aria-hidden="true">aF</div>
     <div>
       <h1>AlphaFold Explorer</h1>
-      <div class="subtitle">Public structure lookup, Mol* viewing, safe input prep</div>
+      <div class="subtitle">Public structure lookup, Mol* viewing, safe complex prep</div>
     </div>
   </div>
   <div class="links">
@@ -353,15 +383,84 @@
     </section>
 
     <section aria-labelledby="sequenceTitle">
-      <h2 id="sequenceTitle">Prepare AlphaFold Server input</h2>
+      <h2 id="sequenceTitle">Prepare AlphaFold input</h2>
+      <label for="jobNameInput">Job name</label>
+      <input id="jobNameInput" type="text" autocomplete="off" placeholder="Example: class_insulin_model">
+      <label for="formatSelect">JSON format</label>
+      <select id="formatSelect">
+        <option value="server">AlphaFold Server JSON</option>
+        <option value="local">AlphaFold 3 local-code JSON</option>
+      </select>
       <label for="sequenceInput">Protein sequence or FASTA</label>
       <textarea id="sequenceInput" spellcheck="false" placeholder="Paste a public or synthetic protein sequence here."></textarea>
+      <div class="row">
+        <div class="field">
+          <label for="proteinCountInput">Protein copies</label>
+          <input id="proteinCountInput" type="number" min="1" max="12" step="1" value="1">
+        </div>
+        <div class="field">
+          <label for="seedInput">Local-code seed</label>
+          <input id="seedInput" type="number" min="1" step="1" value="1">
+        </div>
+      </div>
+      <details class="advanced">
+        <summary>Optional complex components</summary>
+        <label for="dnaInput">DNA single strand</label>
+        <textarea id="dnaInput" class="mini" spellcheck="false" placeholder="Optional public/synthetic DNA strand."></textarea>
+        <label class="checkrow" for="dnaRevCompInput">
+          <input id="dnaRevCompInput" type="checkbox">
+          Add reverse-complement strand for double-stranded DNA
+        </label>
+        <label for="rnaInput">RNA single strand</label>
+        <textarea id="rnaInput" class="mini" spellcheck="false" placeholder="Optional public/synthetic RNA strand."></textarea>
+        <div class="row">
+          <div class="field">
+            <label for="ligandSelect">Allowed ligand</label>
+            <select id="ligandSelect">
+              <option value="">None</option>
+              <option value="CCD_ATP">ATP</option>
+              <option value="CCD_ADP">ADP</option>
+              <option value="CCD_AMP">AMP</option>
+              <option value="CCD_GTP">GTP</option>
+              <option value="CCD_GDP">GDP</option>
+              <option value="CCD_HEM">Heme</option>
+              <option value="CCD_FAD">FAD</option>
+              <option value="CCD_NAD">NAD</option>
+              <option value="CCD_CIT">Citrate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ligandCountInput">Ligand copies</label>
+            <input id="ligandCountInput" type="number" min="1" max="12" step="1" value="1">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="ionSelect">Allowed ion</label>
+            <select id="ionSelect">
+              <option value="">None</option>
+              <option value="MG">Magnesium</option>
+              <option value="ZN">Zinc</option>
+              <option value="CA">Calcium</option>
+              <option value="NA">Sodium</option>
+              <option value="K">Potassium</option>
+              <option value="CL">Chloride</option>
+              <option value="FE">Iron</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ionCountInput">Ion copies</label>
+            <input id="ionCountInput" type="number" min="1" max="12" step="1" value="1">
+          </div>
+        </div>
+        <p class="help">Server JSON uses the AlphaFold Server dialect. Local-code JSON uses the open AlphaFold 3 codebase dialect.</p>
+      </details>
       <p class="status" id="sequenceStatus" role="status">No sequence entered.</p>
       <div class="row">
         <button class="primary" id="prepareBtn" type="button">Prepare JSON</button>
         <button class="secondary" id="serverBtn" type="button">Open Server</button>
       </div>
-      <p class="help">The JSON is prepared locally. You choose whether to copy it into AlphaFold Server.</p>
+      <p class="help">The JSON is prepared locally. You choose whether to use it in AlphaFold Server or a local AlphaFold 3 run.</p>
       <div id="jsonOutput" class="output" hidden></div>
       <div class="row" style="margin-top:8px">
         <button class="secondary" id="copyJsonBtn" type="button" disabled>Copy JSON</button>
@@ -425,6 +524,8 @@
     { label: 'Actin beta', accession: 'P60709', hint: 'cytoskeleton' }
   ];
   var AA = 'ACDEFGHIKLMNPQRSTVWY';
+  var DNA = 'ACGT';
+  var RNA = 'ACGU';
   var REFLECT_BANK = [
     'Look for one region that is less certain or more flexible. How might that affect what you should conclude from the model?',
     'Find one repeated shape, pocket, or surface groove. What job could that shape make possible?',
@@ -449,7 +550,18 @@
   var lookupStatus = document.getElementById('lookupStatus');
   var fileInput = document.getElementById('fileInput');
   var fileStatus = document.getElementById('fileStatus');
+  var jobNameInput = document.getElementById('jobNameInput');
+  var formatSelect = document.getElementById('formatSelect');
   var sequenceInput = document.getElementById('sequenceInput');
+  var proteinCountInput = document.getElementById('proteinCountInput');
+  var seedInput = document.getElementById('seedInput');
+  var dnaInput = document.getElementById('dnaInput');
+  var dnaRevCompInput = document.getElementById('dnaRevCompInput');
+  var rnaInput = document.getElementById('rnaInput');
+  var ligandSelect = document.getElementById('ligandSelect');
+  var ligandCountInput = document.getElementById('ligandCountInput');
+  var ionSelect = document.getElementById('ionSelect');
+  var ionCountInput = document.getElementById('ionCountInput');
   var sequenceStatus = document.getElementById('sequenceStatus');
   var prepareBtn = document.getElementById('prepareBtn');
   var serverBtn = document.getElementById('serverBtn');
@@ -604,7 +716,7 @@
       return 'Local structure file inspected in AlloFlow AlphaFold Explorer: ' + (record.name || 'uploaded structure') + '.';
     }
     if (record.source === 'Prepared sequence') {
-      return 'AlphaFold Server input JSON prepared locally in AlloFlow AlphaFold Explorer for a public, synthetic, or teacher-approved classroom sequence.';
+      return 'AlphaFold input JSON prepared locally in AlloFlow AlphaFold Explorer for a public, synthetic, or teacher-approved classroom model.';
     }
     return '';
   }
@@ -750,29 +862,166 @@
       .toUpperCase();
   }
 
-  function validateSequence(raw) {
-    var seq = cleanSequence(raw);
+  function invalidSymbols(seq, alphabet) {
     var invalid = [];
     for (var i = 0; i < seq.length; i++) {
-      if (AA.indexOf(seq[i]) === -1 && invalid.indexOf(seq[i]) === -1) invalid.push(seq[i]);
+      if (alphabet.indexOf(seq[i]) === -1 && invalid.indexOf(seq[i]) === -1) invalid.push(seq[i]);
     }
+    return invalid;
+  }
+
+  function validateSequence(raw) {
+    var seq = cleanSequence(raw);
+    var invalid = invalidSymbols(seq, AA);
     var warnings = [];
-    if (!seq) warnings.push('No amino-acid sequence detected.');
+    if (!seq) return { seq: '', valid: true, present: false, warnings: [] };
     if (seq.length > 30 && /^[ACGTUN]+$/.test(seq)) warnings.push('This looks like DNA/RNA bases, not a protein amino-acid sequence.');
     if (seq.length && seq.length < 16) warnings.push('AlphaFold DB models usually start at 16 amino acids; this is very short.');
     if (seq.length > 2700) warnings.push('This is longer than the usual AlphaFold DB single-chain range; server/runtime limits may apply.');
     if (invalid.length) warnings.push('Non-standard amino-acid symbols found: ' + invalid.join(', ') + '. Use the 20 standard one-letter amino-acid codes.');
-    return { seq: seq, valid: !!seq && invalid.length === 0 && !(seq.length > 30 && /^[ACGTUN]+$/.test(seq)), warnings: warnings };
+    return { seq: seq, valid: invalid.length === 0 && !(seq.length > 30 && /^[ACGTUN]+$/.test(seq)), present: true, warnings: warnings };
+  }
+
+  function validateNucleic(raw, alphabet, label) {
+    var seq = cleanSequence(raw);
+    var invalid = invalidSymbols(seq, alphabet);
+    var warnings = [];
+    if (!seq) return { seq: '', valid: true, present: false, warnings: [] };
+    if (invalid.length) warnings.push(label + ' contains unsupported symbols: ' + invalid.join(', ') + '.');
+    if (seq.length < 4) warnings.push(label + ' is very short.');
+    if (seq.length > 5000) warnings.push(label + ' is long; server/runtime limits may apply.');
+    return { seq: seq, valid: invalid.length === 0, present: true, warnings: warnings };
+  }
+
+  function readCount(input, fallback, max) {
+    var n = Math.round(Number(input && input.value));
+    if (!Number.isFinite(n) || n < 1) n = fallback || 1;
+    if (max && n > max) n = max;
+    if (input) input.value = String(n);
+    return n;
+  }
+
+  function safeJobName() {
+    var raw = String(jobNameInput.value || '').trim();
+    var name = raw || ('alloflow_classroom_model_' + new Date().toISOString().slice(0, 10));
+    return name.replace(/[^\w .-]+/g, '_').slice(0, 80);
+  }
+
+  function chainId(index) {
+    var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (index < 26) return letters[index];
+    return letters[Math.floor(index / 26) - 1] + letters[index % 26];
+  }
+
+  function chainIds(cursor, count) {
+    var ids = [];
+    for (var i = 0; i < count; i++) ids.push(chainId(cursor.value++));
+    return count === 1 ? ids[0] : ids;
+  }
+
+  function reverseComplementDna(seq) {
+    var comp = { A: 'T', T: 'A', G: 'C', C: 'G' };
+    return String(seq || '').split('').reverse().map(function (ch) { return comp[ch] || ch; }).join('');
+  }
+
+  function stripCcd(code) {
+    return String(code || '').replace(/^CCD_/, '');
+  }
+
+  function collectInput() {
+    var protein = validateSequence(sequenceInput.value);
+    var dna = validateNucleic(dnaInput.value, DNA, 'DNA');
+    var rna = validateNucleic(rnaInput.value, RNA, 'RNA');
+    var warnings = [].concat(protein.warnings, dna.warnings, rna.warnings);
+    var components = [];
+    var proteinCount = readCount(proteinCountInput, 1, 12);
+    var ligand = ligandSelect.value;
+    var ligandCount = readCount(ligandCountInput, 1, 12);
+    var ion = ionSelect.value;
+    var ionCount = readCount(ionCountInput, 1, 12);
+    var seed = readCount(seedInput, 1, 4294967295);
+    if (protein.present) components.push(proteinCount + ' protein chain' + (proteinCount === 1 ? '' : 's'));
+    if (dna.present) components.push(dnaRevCompInput.checked ? 'double-stranded DNA' : 'single-stranded DNA');
+    if (rna.present) components.push('RNA');
+    if (ligand) components.push(ligandCount + ' ligand' + (ligandCount === 1 ? '' : 's'));
+    if (ion) components.push(ionCount + ' ion' + (ionCount === 1 ? '' : 's'));
+    if (!protein.present && !dna.present && !rna.present) warnings.push('Add at least one protein, DNA, or RNA chain before preparing JSON.');
+    if ((ligand || ion) && !protein.present && !dna.present && !rna.present) warnings.push('Ligands and ions need a biomolecule partner for a meaningful classroom model.');
+    return {
+      protein: protein,
+      dna: dna,
+      rna: rna,
+      proteinCount: proteinCount,
+      ligand: ligand,
+      ligandCount: ligandCount,
+      ion: ion,
+      ionCount: ionCount,
+      seed: seed,
+      format: formatSelect.value === 'local' ? 'local' : 'server',
+      name: safeJobName(),
+      components: components,
+      valid: protein.valid && dna.valid && rna.valid && (protein.present || dna.present || rna.present),
+      warnings: warnings
+    };
+  }
+
+  function buildServerPayload(v) {
+    var sequences = [];
+    if (v.protein.present) sequences.push({ proteinChain: { sequence: v.protein.seq, count: v.proteinCount } });
+    if (v.dna.present) {
+      sequences.push({ dnaSequence: { sequence: v.dna.seq, count: 1 } });
+      if (dnaRevCompInput.checked) sequences.push({ dnaSequence: { sequence: reverseComplementDna(v.dna.seq), count: 1 } });
+    }
+    if (v.rna.present) sequences.push({ rnaSequence: { sequence: v.rna.seq, count: 1 } });
+    if (v.ligand) sequences.push({ ligand: { ligand: v.ligand, count: v.ligandCount } });
+    if (v.ion) sequences.push({ ion: { ion: v.ion, count: v.ionCount } });
+    return [{
+      name: v.name,
+      modelSeeds: [],
+      sequences: sequences,
+      dialect: 'alphafoldserver',
+      version: 1
+    }];
+  }
+
+  function buildLocalPayload(v) {
+    var cursor = { value: 0 };
+    var sequences = [];
+    if (v.protein.present) {
+      sequences.push({ protein: { id: chainIds(cursor, v.proteinCount), sequence: v.protein.seq, description: 'public/synthetic classroom protein' } });
+    }
+    if (v.dna.present) {
+      sequences.push({ dna: { id: chainIds(cursor, 1), sequence: v.dna.seq, description: 'public/synthetic classroom DNA strand' } });
+      if (dnaRevCompInput.checked) {
+        sequences.push({ dna: { id: chainIds(cursor, 1), sequence: reverseComplementDna(v.dna.seq), description: 'reverse complement classroom DNA strand' } });
+      }
+    }
+    if (v.rna.present) {
+      sequences.push({ rna: { id: chainIds(cursor, 1), sequence: v.rna.seq, description: 'public/synthetic classroom RNA strand' } });
+    }
+    if (v.ligand) {
+      sequences.push({ ligand: { id: chainIds(cursor, v.ligandCount), ccdCodes: [stripCcd(v.ligand)], description: 'allowed classroom ligand' } });
+    }
+    if (v.ion) {
+      sequences.push({ ligand: { id: chainIds(cursor, v.ionCount), ccdCodes: [v.ion], description: 'allowed classroom ion' } });
+    }
+    return {
+      name: v.name,
+      modelSeeds: [v.seed],
+      sequences: sequences,
+      dialect: 'alphafold3',
+      version: 4
+    };
   }
 
   function updateSequenceStatus() {
-    var v = validateSequence(sequenceInput.value);
-    if (!v.seq) {
-      setStatus(sequenceStatus, 'No sequence entered.', '');
+    var v = collectInput();
+    if (!v.components.length) {
+      setStatus(sequenceStatus, 'No protein, DNA, or RNA sequence entered.', '');
     } else if (v.warnings.length) {
-      setStatus(sequenceStatus, v.seq.length + ' amino acids. ' + v.warnings.join(' '), v.valid ? 'warn' : 'err');
+      setStatus(sequenceStatus, v.components.join(', ') + '. ' + v.warnings.join(' '), v.valid ? 'warn' : 'err');
     } else {
-      setStatus(sequenceStatus, v.seq.length + ' amino acids. Looks like a standard protein sequence.', 'ok');
+      setStatus(sequenceStatus, v.components.join(', ') + '. Ready to prepare ' + (v.format === 'server' ? 'AlphaFold Server' : 'AlphaFold 3 local-code') + ' JSON.', 'ok');
     }
     return v;
   }
@@ -780,28 +1029,20 @@
   function prepareJson() {
     var v = updateSequenceStatus();
     if (!v.valid) return;
-    var name = 'alloflow_public_or_synthetic_sequence_' + new Date().toISOString().slice(0, 10);
-    var payload = {
-      name: name,
-      sequences: [
-        { protein: { id: ['A'], sequence: v.seq } }
-      ],
-      modelSeeds: [1],
-      dialect: 'alphafold3',
-      version: 1
-    };
+    var payload = v.format === 'local' ? buildLocalPayload(v) : buildServerPayload(v);
     lastJson = JSON.stringify(payload, null, 2);
     jsonOutput.textContent = lastJson;
     jsonOutput.hidden = false;
     copyJsonBtn.disabled = false;
     downloadJsonBtn.disabled = false;
-    toOpener({ type: 'allocaf-sequence-prepared', length: v.seq.length });
+    setStatus(sequenceStatus, 'Prepared ' + (v.format === 'server' ? 'AlphaFold Server' : 'AlphaFold 3 local-code') + ' JSON for ' + v.components.join(', ') + '.', 'ok');
+    toOpener({ type: 'allocaf-sequence-prepared', length: (v.protein.seq || '').length, components: v.components.join(', ') });
     current = {
       source: 'Prepared sequence',
       accession: 'not submitted',
-      name: 'Prepared AlphaFold Server input',
+      name: 'Prepared ' + (v.format === 'server' ? 'AlphaFold Server' : 'AlphaFold 3 local-code') + ' input',
       organism: 'Not provided',
-      length: v.seq.length,
+      length: v.components.join(', '),
       confidence: 'No structure yet. Submit/run the JSON externally, then import the result file.',
       citation: citationFor({ source: 'Prepared sequence' })
     };
@@ -836,9 +1077,10 @@
 
   function copyJson() {
     if (!lastJson) return;
+    var target = formatSelect.value === 'local' ? 'AlphaFold 3 local-code runs' : 'AlphaFold Server';
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(lastJson).then(function () {
-        setStatus(sequenceStatus, 'JSON copied. Paste it into AlphaFold Server only for public/synthetic classroom sequences.', 'ok');
+        setStatus(sequenceStatus, 'JSON copied. Use it with ' + target + ' only for public/synthetic classroom sequences.', 'ok');
       }).catch(function () {
         setStatus(sequenceStatus, 'Copy failed. Select the JSON text and copy manually.', 'warn');
       });
@@ -851,7 +1093,8 @@
     if (!lastJson) return;
     var blob = new Blob([lastJson], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
-    var a = el('a', { href: url, download: 'alphafold_input.json' });
+    var suffix = formatSelect.value === 'local' ? 'local_code' : 'server';
+    var a = el('a', { href: url, download: 'alphafold_' + suffix + '_input.json' });
     document.body.appendChild(a);
     a.click();
     setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 0);
@@ -912,6 +1155,17 @@
   });
   fileInput.addEventListener('change', function () { loadLocalFile(fileInput.files && fileInput.files[0]); });
   sequenceInput.addEventListener('input', updateSequenceStatus);
+  jobNameInput.addEventListener('input', updateSequenceStatus);
+  formatSelect.addEventListener('change', updateSequenceStatus);
+  proteinCountInput.addEventListener('input', updateSequenceStatus);
+  seedInput.addEventListener('input', updateSequenceStatus);
+  dnaInput.addEventListener('input', updateSequenceStatus);
+  dnaRevCompInput.addEventListener('change', updateSequenceStatus);
+  rnaInput.addEventListener('input', updateSequenceStatus);
+  ligandSelect.addEventListener('change', updateSequenceStatus);
+  ligandCountInput.addEventListener('input', updateSequenceStatus);
+  ionSelect.addEventListener('change', updateSequenceStatus);
+  ionCountInput.addEventListener('input', updateSequenceStatus);
   prepareBtn.addEventListener('click', prepareJson);
   serverBtn.addEventListener('click', function () { window.open(SERVER_URL, 'alphafold-server'); });
   copyJsonBtn.addEventListener('click', copyJson);

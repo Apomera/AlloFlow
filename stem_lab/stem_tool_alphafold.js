@@ -7,7 +7,8 @@
 // open a top-level browser window, keep AlloFlow as the AI bridge, and avoid
 // submitting anything automatically to AlphaFold Server. Students can inspect
 // public AlphaFold DB structures, import downloaded result files, and prepare
-// AlphaFold Server input JSON for teacher-approved, non-sensitive sequences.
+// AlphaFold Server or AlphaFold 3 local-code JSON for teacher-approved,
+// non-sensitive classroom sequences.
 (function () {
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
@@ -60,7 +61,7 @@
   window.StemLab.registerTool('alphaFoldExplorer', {
     icon: '\u03b1',
     label: 'AlphaFold Explorer',
-    desc: 'Look up public AlphaFold DB protein structures by UniProt/accession, view them in Mol*, import downloaded AlphaFold result files, and prepare AlphaFold Server-ready input JSON without automatic submission. Includes clear guardrails for public or synthetic classroom sequences only.',
+    desc: 'Look up public AlphaFold DB protein structures by UniProt/accession, view them in Mol*, import downloaded AlphaFold result files, and prepare AlphaFold Server or AlphaFold 3 local-code JSON for safe classroom protein/DNA/RNA/ligand models without automatic submission.',
     color: 'teal',
     category: 'science',
     questHooks: [
@@ -147,7 +148,7 @@
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-sky-400' },
           t('stem.alphaFold.title', 'AlphaFold Explorer - public protein structures')),
         h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
-          t('stem.alphaFold.blurb', 'Look up public AlphaFold DB predictions by UniProt/accession, inspect structures in Mol*, import downloaded result files, and prepare AlphaFold Server input JSON. The tool does not automatically submit sequences to AlphaFold Server; students use public, synthetic, or teacher-approved classroom samples only.')),
+          t('stem.alphaFold.blurb', 'Look up public AlphaFold DB predictions by UniProt/accession, inspect structures in Mol*, import downloaded result files, and prepare AlphaFold Server or AlphaFold 3 local-code JSON. The tool does not automatically submit sequences anywhere; students use public, synthetic, or teacher-approved classroom samples only.')),
         h('div', { className: 'bg-slate-800/60 rounded-xl p-3 border border-slate-700 text-xs text-slate-300 space-y-1.5' },
           h('div', null, t('stem.alphaFold.guardrail1', 'Guardrail: do not enter sequences from yourself, classmates, family members, patients, private genetic tests, or medical reports.')),
           h('div', null, aiOn
