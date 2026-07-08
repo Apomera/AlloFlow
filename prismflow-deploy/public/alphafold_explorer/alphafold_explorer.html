@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AlloFlow AlphaFold Explorer</title>
+<!--
+  AlloFlow AlphaFold Explorer - companion window.
+
+  Opened by stem_lab/stem_tool_alphafold.js with window.open so it can run as a
+  top-level page even when AlloFlow is embedded in a Canvas/Gemini iframe.
+
+  Scope:
+  - Look up public AlphaFold DB structures by UniProt/accession.
+  - View structures in Mol*.
+  - Import downloaded .cif/.mmcif/.bcif/.pdb files.
+  - Prepare AlphaFold 3 input JSON for AlphaFold Server/manual local runs.
+
+  It does NOT automatically submit sequences to AlphaFold Server. The page keeps
+  notes in memory only. AI coaching, when enabled by the opener, receives public
+  structure metadata and student observations, not full sequences.
+-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.css">
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #172033;
+    --panel2: #202c43;
+    --stage: #05070d;
+    --line: #334155;
+    --line2: #475569;
+    --text: #e5edf7;
+    --muted: #9fb1c7;
+    --soft: #cbd5e1;
+    --teal: #14b8a6;
+    --teal2: #0f766e;
+    --sky: #38bdf8;
+    --amber: #f59e0b;
+    --red: #f87171;
+    --green: #4ade80;
+    --violet: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+  }
+  header {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    background: #101827;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 220px; }
+  .mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: #0f766e;
+    color: white;
+    font-weight: 900;
+    font-size: 18px;
+  }
+  h1 { margin: 0; font-size: 17px; line-height: 1.2; }
+  .subtitle { margin-top: 2px; color: var(--muted); font-size: 12px; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .links a, button.linkbtn {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line2);
+    color: var(--text);
+    background: #111a2c;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .shell {
+    min-height: calc(100vh - 58px);
+    display: grid;
+    grid-template-columns: minmax(330px, 390px) minmax(0, 1fr);
+  }
+  aside {
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    overflow: auto;
+    padding: 12px;
+  }
+  main {
+    min-width: 0;
+    display: grid;
+    grid-template-rows: minmax(360px, 1fr) auto;
+    background: var(--stage);
+  }
+  section {
+    border: 1px solid var(--line);
+    background: rgba(15, 23, 42, 0.58);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  section h2 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    color: #bdeee7;
+  }
+  .note {
+    border-color: rgba(245, 158, 11, 0.45);
+    background: rgba(245, 158, 11, 0.08);
+    color: #fde68a;
+    line-height: 1.45;
+    font-size: 12.5px;
+  }
+  .examples { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button.example, button.primary, button.secondary {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    background: var(--panel2);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 800;
+    cursor: pointer;
+    text-align: left;
+  }
+  button.example:hover, button.secondary:hover { border-color: var(--sky); }
+  button.primary {
+    background: var(--teal2);
+    border-color: var(--teal);
+    text-align: center;
+    color: white;
+  }
+  button.primary:disabled, button.secondary:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > * { min-width: 0; }
+  label { display: block; margin: 8px 0 5px; font-size: 12px; color: var(--soft); font-weight: 800; }
+  input[type="text"], textarea {
+    width: 100%;
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+    background: #0b1220;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    padding: 9px 10px;
+    outline: none;
+  }
+  textarea {
+    min-height: 96px;
+    resize: vertical;
+    line-height: 1.45;
+  }
+  input[type="file"] {
+    width: 100%;
+    color: var(--soft);
+    font-size: 12px;
+  }
+  .help, .status {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .status.ok { color: var(--green); }
+  .status.warn { color: #fcd34d; }
+  .status.err { color: var(--red); }
+  .output {
+    max-height: 150px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px;
+    background: #09111e;
+    color: #dbeafe;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .viewer {
+    position: relative;
+    min-height: 360px;
+    border-bottom: 1px solid var(--line);
+  }
+  #molstar { position: absolute; inset: 0; }
+  .placeholder, .loadmsg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+    background:
+      linear-gradient(90deg, rgba(20, 184, 166, 0.12), transparent 38%),
+      linear-gradient(180deg, rgba(56, 189, 248, 0.10), transparent 45%),
+      #05070d;
+  }
+  .loadmsg { display: none; z-index: 4; }
+  .details {
+    padding: 12px 14px;
+    background: #101827;
+    min-height: 158px;
+    max-height: 38vh;
+    overflow: auto;
+  }
+  .details h2 { margin: 0 0 8px; font-size: 14px; color: var(--text); }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 14px;
+  }
+  .detailActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+  .detailActions button.secondary {
+    width: auto;
+    min-height: 32px;
+    text-align: center;
+  }
+  .fact { min-width: 0; }
+  .fact b {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    margin-bottom: 2px;
+  }
+  .fact span, .fact a {
+    color: var(--text);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+  }
+  .fact a { color: #7dd3fc; }
+  .coachbox {
+    border: 1px solid rgba(167, 139, 250, 0.35);
+    background: rgba(167, 139, 250, 0.10);
+    border-radius: 8px;
+    padding: 9px;
+    color: #ddd6fe;
+    font-size: 12.5px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: rgba(20, 184, 166, 0.14);
+    color: #99f6e4;
+    border: 1px solid rgba(20, 184, 166, 0.34);
+    font-size: 11px;
+    font-weight: 900;
+  }
+  .checklist {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--soft);
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  .checklist li { margin: 5px 0; }
+  @media (max-width: 860px) {
+    header { align-items: flex-start; flex-direction: column; }
+    .links { justify-content: flex-start; }
+    .shell { grid-template-columns: 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); max-height: none; }
+    main { min-height: 620px; }
+    .facts { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="mark" aria-hidden="true">aF</div>
+    <div>
+      <h1>AlphaFold Explorer</h1>
+      <div class="subtitle">Public structure lookup, Mol* viewing, safe input prep</div>
+    </div>
+  </div>
+  <div class="links">
+    <a href="https://alphafold.ebi.ac.uk/" target="_blank" rel="noopener">AlphaFold DB</a>
+    <a href="https://alphafoldserver.com/" target="_blank" rel="noopener">AlphaFold Server</a>
+    <a href="https://molstar.org/" target="_blank" rel="noopener">Mol*</a>
+  </div>
+</header>
+
+<div class="shell">
+  <aside aria-label="AlphaFold Explorer controls">
+    <section class="note" aria-label="Privacy guardrail">
+      Use public, synthetic, or teacher-approved classroom sample sequences only. Do not enter sequences from yourself, classmates, family members, patients, private genetic tests, ancestry services, or medical reports.
+    </section>
+
+    <section aria-labelledby="examplesTitle">
+      <h2 id="examplesTitle">Curated public examples</h2>
+      <div class="examples" id="examples"></div>
+      <p class="help">These examples are public UniProt proteins with AlphaFold DB predictions.</p>
+    </section>
+
+    <section aria-labelledby="lookupTitle">
+      <h2 id="lookupTitle">AlphaFold DB lookup</h2>
+      <label for="accessionInput">UniProt or AlphaFold accession</label>
+      <div class="row">
+        <input id="accessionInput" type="text" autocomplete="off" placeholder="Example: P01308">
+        <button class="primary" id="lookupBtn" type="button">Load</button>
+      </div>
+      <p class="help">Accepts UniProt IDs such as P01308 or AlphaFold IDs such as AF-P01308-F1.</p>
+      <p class="status" id="lookupStatus" role="status"></p>
+    </section>
+
+    <section aria-labelledby="importTitle">
+      <h2 id="importTitle">Import result file</h2>
+      <input id="fileInput" type="file" accept=".cif,.mmcif,.bcif,.pdb,.ent">
+      <p class="help">Open a downloaded AlphaFold/PDB structure file locally. Files stay in this browser window.</p>
+      <p class="status" id="fileStatus" role="status"></p>
+    </section>
+
+    <section aria-labelledby="sequenceTitle">
+      <h2 id="sequenceTitle">Prepare AlphaFold Server input</h2>
+      <label for="sequenceInput">Protein sequence or FASTA</label>
+      <textarea id="sequenceInput" spellcheck="false" placeholder="Paste a public or synthetic protein sequence here."></textarea>
+      <p class="status" id="sequenceStatus" role="status">No sequence entered.</p>
+      <div class="row">
+        <button class="primary" id="prepareBtn" type="button">Prepare JSON</button>
+        <button class="secondary" id="serverBtn" type="button">Open Server</button>
+      </div>
+      <p class="help">The JSON is prepared locally. You choose whether to copy it into AlphaFold Server.</p>
+      <div id="jsonOutput" class="output" hidden></div>
+      <div class="row" style="margin-top:8px">
+        <button class="secondary" id="copyJsonBtn" type="button" disabled>Copy JSON</button>
+        <button class="secondary" id="downloadJsonBtn" type="button" disabled>Download</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="evidenceTitle">
+      <h2 id="evidenceTitle">Evidence checklist</h2>
+      <ul class="checklist">
+        <li>Use pLDDT/confidence to separate stronger regions from uncertain loops or tails.</li>
+        <li>Use PAE when available before making claims about domain positions or interfaces.</li>
+        <li>Treat predicted structures as models until supported by experiments or trusted references.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="coachTitle">
+      <h2 id="coachTitle">Inspection coach</h2>
+      <p class="help" id="aiState">Connecting to AlloFlow...</p>
+      <label for="noteInput">What do you notice or wonder?</label>
+      <textarea id="noteInput" placeholder="Example: I notice one region has lower confidence than the rest."></textarea>
+      <button class="primary" id="coachBtn" type="button">Ask for an inspection question</button>
+      <div id="coachOutput" class="coachbox" hidden></div>
+    </section>
+  </aside>
+
+  <main aria-label="AlphaFold structure viewer">
+    <div class="viewer">
+      <div id="molstar"></div>
+      <div class="placeholder" id="placeholder">
+        Load a public AlphaFold DB structure, import a result file, or prepare safe AlphaFold Server input from the left panel.
+      </div>
+      <div class="loadmsg" id="loadmsg" role="status"></div>
+    </div>
+    <div class="details" aria-live="polite">
+      <h2 id="detailTitle">No structure loaded</h2>
+      <div class="facts" id="facts">
+        <div class="fact"><b>Status</b><span>Choose a public example or enter an accession.</span></div>
+      </div>
+      <div class="detailActions">
+        <button class="secondary" id="copyCitationBtn" type="button" disabled>Copy citation</button>
+        <span class="status" id="citationStatus" role="status"></span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/molstar@4.9.0/build/viewer/molstar.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var API_ROOT = 'https://alphafold.ebi.ac.uk/api/prediction/';
+  var SERVER_URL = 'https://alphafoldserver.com/';
+  var EXAMPLES = [
+    { label: 'Human insulin', accession: 'P01308', hint: 'hormone, 110 aa precursor' },
+    { label: 'Hemoglobin alpha', accession: 'P69905', hint: 'oxygen transport' },
+    { label: 'Human lysozyme', accession: 'P61626', hint: 'enzyme, immune defense' },
+    { label: 'Human ubiquitin', accession: 'P0CG47', hint: 'protein tagging' },
+    { label: 'Aquaporin 1', accession: 'P29972', hint: 'water channel' },
+    { label: 'Actin beta', accession: 'P60709', hint: 'cytoskeleton' }
+  ];
+  var AA = 'ACDEFGHIKLMNPQRSTVWY';
+  var REFLECT_BANK = [
+    'Look for one region that is less certain or more flexible. How might that affect what you should conclude from the model?',
+    'Find one repeated shape, pocket, or surface groove. What job could that shape make possible?',
+    'Compare the compact parts with any loose-looking parts. Which part would you trust most, and why?',
+    'If you changed the viewer style or color scheme, what new feature became easier to notice?',
+    'What evidence would you want from a lab experiment before treating this prediction as settled?'
+  ];
+
+  var viewer = null;
+  var viewerPromise = null;
+  var current = null;
+  var lastJson = '';
+  var openerOk = false;
+  var aiAvailable = false;
+  var busy = false;
+  var pending = {};
+  var reflectIndex = 0;
+
+  var examplesEl = document.getElementById('examples');
+  var accessionInput = document.getElementById('accessionInput');
+  var lookupBtn = document.getElementById('lookupBtn');
+  var lookupStatus = document.getElementById('lookupStatus');
+  var fileInput = document.getElementById('fileInput');
+  var fileStatus = document.getElementById('fileStatus');
+  var sequenceInput = document.getElementById('sequenceInput');
+  var sequenceStatus = document.getElementById('sequenceStatus');
+  var prepareBtn = document.getElementById('prepareBtn');
+  var serverBtn = document.getElementById('serverBtn');
+  var jsonOutput = document.getElementById('jsonOutput');
+  var copyJsonBtn = document.getElementById('copyJsonBtn');
+  var downloadJsonBtn = document.getElementById('downloadJsonBtn');
+  var copyCitationBtn = document.getElementById('copyCitationBtn');
+  var citationStatus = document.getElementById('citationStatus');
+  var aiState = document.getElementById('aiState');
+  var noteInput = document.getElementById('noteInput');
+  var coachBtn = document.getElementById('coachBtn');
+  var coachOutput = document.getElementById('coachOutput');
+  var placeholder = document.getElementById('placeholder');
+  var loadmsg = document.getElementById('loadmsg');
+  var detailTitle = document.getElementById('detailTitle');
+  var facts = document.getElementById('facts');
+
+  function el(tag, attrs, text) {
+    var node = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    if (text != null) node.textContent = text;
+    return node;
+  }
+
+  function setStatus(node, text, cls) {
+    node.textContent = text || '';
+    node.className = 'status' + (cls ? ' ' + cls : '');
+  }
+
+  function toOpener(payload) {
+    try {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(payload, '*');
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  window.addEventListener('message', function (event) {
+    var data = event && event.data;
+    if (!data || typeof data.type !== 'string') return;
+    if (data.type === 'allocaf-ready') {
+      openerOk = true;
+      aiAvailable = Boolean(data.ai);
+      renderAiState();
+      return;
+    }
+    if (data.type === 'allocaf-ai-response' && data.id && pending[data.id]) {
+      var entry = pending[data.id];
+      delete pending[data.id];
+      clearTimeout(entry.timer);
+      entry.resolve(data);
+    }
+  });
+
+  function renderAiState() {
+    if (openerOk && aiAvailable) {
+      aiState.innerHTML = 'AlloFlow connected <span class="badge">AI coach on</span>. Metadata and observations only; no full sequences are sent.';
+    } else if (openerOk) {
+      aiState.innerHTML = 'AlloFlow connected. AI hints are off, so built-in inspection prompts will be used.';
+    } else {
+      aiState.innerHTML = 'Standalone mode. Built-in inspection prompts are available.';
+    }
+  }
+
+  function nextReflect() {
+    reflectIndex = (reflectIndex + 1) % REFLECT_BANK.length;
+    return REFLECT_BANK[reflectIndex];
+  }
+
+  function askAi(meta, note) {
+    var id = 'af' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    return new Promise(function (resolve) {
+      pending[id] = {
+        resolve: resolve,
+        timer: setTimeout(function () { delete pending[id]; resolve(null); }, 25000)
+      };
+      var sent = toOpener({ type: 'allocaf-ai-request', id: id, meta: meta || {}, note: note || '' });
+      if (!sent) {
+        var entry = pending[id];
+        delete pending[id];
+        if (entry) clearTimeout(entry.timer);
+        resolve(null);
+      }
+    });
+  }
+
+  function normalizeAccession(raw) {
+    var s = String(raw || '').trim();
+    s = s.replace(/^https?:\/\/alphafold\.ebi\.ac\.uk\/entry\//i, '');
+    s = s.replace(/^AF-/i, '');
+    s = s.replace(/-F\d+.*$/i, '');
+    s = s.replace(/[^A-Za-z0-9_]/g, '');
+    return s.toUpperCase();
+  }
+
+  function safeUrl(url) {
+    try {
+      var u = new URL(url);
+      if (u.protocol === 'https:' || u.protocol === 'http:' || u.protocol === 'blob:') return u.toString();
+    } catch (_) {}
+    return '';
+  }
+
+  function fallbackCifUrl(accession) {
+    return 'https://alphafold.ebi.ac.uk/files/AF-' + encodeURIComponent(accession) + '-F1-model_v4.cif';
+  }
+
+  function pickRecord(apiRecord, requested) {
+    var rec = apiRecord || {};
+    var acc = rec.uniprotAccession || rec.accession || requested;
+    var entryId = rec.entryId || ('AF-' + acc + '-F1');
+    var modelUrl = safeUrl(rec.cifUrl || rec.bcifUrl || rec.pdbUrl || fallbackCifUrl(acc));
+    return {
+      source: 'AlphaFold DB',
+      accession: acc,
+      entryId: entryId,
+      name: rec.uniprotDescription || rec.proteinDescription || rec.uniprotId || entryId,
+      organism: rec.organismScientificName || rec.organism || '',
+      gene: rec.gene || '',
+      length: rec.sequenceLength || rec.length || '',
+      modelUrl: modelUrl,
+      pdbUrl: safeUrl(rec.pdbUrl || ''),
+      cifUrl: safeUrl(rec.cifUrl || modelUrl),
+      paeUrl: safeUrl(rec.paeDocUrl || rec.paeImageUrl || ''),
+      plddtUrl: safeUrl(rec.plddtDocUrl || ''),
+      uniprotUrl: acc ? 'https://www.uniprot.org/uniprotkb/' + encodeURIComponent(acc) + '/entry' : '',
+      dbUrl: acc ? 'https://alphafold.ebi.ac.uk/entry/' + encodeURIComponent(acc) : '',
+      confidence: summarizeConfidence(rec),
+      citation: citationFor({
+        source: 'AlphaFold DB',
+        accession: acc,
+        entryId: entryId,
+        name: rec.uniprotDescription || rec.proteinDescription || rec.uniprotId || entryId,
+        organism: rec.organismScientificName || rec.organism || '',
+        url: acc ? 'https://alphafold.ebi.ac.uk/entry/' + encodeURIComponent(acc) : ''
+      })
+    };
+  }
+
+  function citationFor(record) {
+    if (!record) return '';
+    if (record.source === 'AlphaFold DB') {
+      var name = record.name ? record.name + ' ' : '';
+      var org = record.organism ? ' (' + record.organism + ')' : '';
+      var acc = record.accession || record.entryId || 'unknown accession';
+      var url = record.url || record.dbUrl || record.modelUrl || '';
+      return 'AlphaFold Protein Structure Database. ' + name + '[' + acc + ']' + org + '. Google DeepMind and EMBL-EBI. ' + url;
+    }
+    if (record.source === 'Uploaded file') {
+      return 'Local structure file inspected in AlloFlow AlphaFold Explorer: ' + (record.name || 'uploaded structure') + '.';
+    }
+    if (record.source === 'Prepared sequence') {
+      return 'AlphaFold Server input JSON prepared locally in AlloFlow AlphaFold Explorer for a public, synthetic, or teacher-approved classroom sequence.';
+    }
+    return '';
+  }
+
+  function summarizeConfidence(rec) {
+    var candidates = [
+      rec && rec.globalMetricValue,
+      rec && rec.avgPlddt,
+      rec && rec.averagePlddt,
+      rec && rec.confidenceScore,
+      rec && rec.plddt
+    ];
+    for (var i = 0; i < candidates.length; i++) {
+      var n = Number(candidates[i]);
+      if (Number.isFinite(n) && n > 0) return 'reported summary score ' + Math.round(n * 10) / 10;
+    }
+    return 'Inspect pLDDT coloring in the viewer; low-confidence regions should be interpreted cautiously.';
+  }
+
+  function ensureViewer() {
+    if (viewerPromise) return viewerPromise;
+    if (typeof window.molstar === 'undefined' || !window.molstar.Viewer) {
+      viewerPromise = Promise.reject(new Error('Mol* library did not load'));
+      return viewerPromise;
+    }
+    viewerPromise = window.molstar.Viewer.create('molstar', {
+      layoutIsExpanded: false,
+      layoutShowControls: true,
+      layoutShowRemoteState: false,
+      layoutShowSequence: true,
+      layoutShowLog: false,
+      viewportShowExpand: true,
+      viewportShowSelectionMode: false,
+      pdbProvider: 'rcsb',
+      emdbProvider: 'rcsb'
+    }).then(function (v) { viewer = v; return v; });
+    return viewerPromise;
+  }
+
+  function showLoading(text) {
+    loadmsg.textContent = text || 'Loading...';
+    loadmsg.style.display = 'flex';
+    placeholder.style.display = 'none';
+  }
+
+  function hideLoading() {
+    loadmsg.style.display = 'none';
+    placeholder.style.display = 'none';
+  }
+
+  function loadStructure(record, format, isBinary) {
+    current = record;
+    renderDetails(record);
+    showLoading('Loading structure into Mol*...');
+    return ensureViewer().then(function (v) {
+      if (typeof v.loadStructureFromUrl === 'function') {
+        return v.loadStructureFromUrl(record.modelUrl, format || 'mmcif', !!isBinary);
+      }
+      if (record.accession && typeof v.loadAlphaFoldDb === 'function') {
+        return v.loadAlphaFoldDb(record.accession);
+      }
+      throw new Error('This Mol* build does not expose URL loading');
+    }).then(function () {
+      hideLoading();
+    }).catch(function (e) {
+      loadmsg.textContent = 'Could not load the structure. ' + String((e && e.message) || e).slice(0, 130);
+      loadmsg.style.display = 'flex';
+      throw e;
+    });
+  }
+
+  function lookup(accession) {
+    var acc = normalizeAccession(accession);
+    if (!acc) {
+      setStatus(lookupStatus, 'Enter a UniProt or AlphaFold accession.', 'warn');
+      return;
+    }
+    accessionInput.value = acc;
+    lookupBtn.disabled = true;
+    setStatus(lookupStatus, 'Looking up ' + acc + ' in AlphaFold DB...', '');
+    fetch(API_ROOT + encodeURIComponent(acc), { method: 'GET' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('AlphaFold DB returned HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        var rec = Array.isArray(data) ? data[0] : data;
+        if (!rec) throw new Error('No public AlphaFold DB prediction was found for ' + acc);
+        var record = pickRecord(rec, acc);
+        setStatus(lookupStatus, 'Loaded public AlphaFold DB record for ' + record.accession + '.', 'ok');
+        toOpener({ type: 'allocaf-db-hit', accession: record.accession });
+        return loadStructure(record, 'mmcif', false);
+      })
+      .catch(function (e) {
+        setStatus(lookupStatus, String((e && e.message) || e), 'err');
+      })
+      .finally(function () {
+        lookupBtn.disabled = false;
+      });
+  }
+
+  function renderDetails(record) {
+    facts.innerHTML = '';
+    detailTitle.textContent = record && record.name ? record.name : 'Structure loaded';
+    addFact('Source', record.source || 'Unknown');
+    addFact('Accession', record.accession || record.entryId || 'Local file');
+    addFact('Organism', record.organism || 'Not provided');
+    addFact('Gene', record.gene || 'Not provided');
+    addFact('Length', record.length ? String(record.length) + ' amino acids' : 'Not provided');
+    addFact('Confidence', record.confidence || 'Not provided');
+    if (record.dbUrl) addLinkFact('AlphaFold DB', record.dbUrl);
+    if (record.uniprotUrl) addLinkFact('UniProt', record.uniprotUrl);
+    if (record.modelUrl && record.source !== 'Uploaded file') addLinkFact('Model file', record.modelUrl);
+    if (record.paeUrl) addLinkFact('PAE', record.paeUrl);
+    if (record.source === 'AlphaFold DB') addFact('Student claim check', 'Cite the record, inspect confidence, then compare with experimental or reference evidence.');
+    var citation = record.citation || citationFor(record);
+    copyCitationBtn.disabled = !citation;
+    copyCitationBtn.setAttribute('data-citation', citation);
+    setStatus(citationStatus, '', '');
+  }
+
+  function addFact(label, value) {
+    var wrap = el('div', { class: 'fact' });
+    wrap.appendChild(el('b', null, label));
+    wrap.appendChild(el('span', null, value || ''));
+    facts.appendChild(wrap);
+  }
+
+  function addLinkFact(label, href) {
+    var wrap = el('div', { class: 'fact' });
+    wrap.appendChild(el('b', null, label));
+    var a = el('a', { href: href, target: '_blank', rel: 'noopener' }, href);
+    wrap.appendChild(a);
+    facts.appendChild(wrap);
+  }
+
+  function cleanSequence(raw) {
+    return String(raw || '')
+      .split(/\r?\n/)
+      .filter(function (line) { return !/^>/.test(line.trim()); })
+      .join('')
+      .replace(/[^A-Za-z]/g, '')
+      .toUpperCase();
+  }
+
+  function validateSequence(raw) {
+    var seq = cleanSequence(raw);
+    var invalid = [];
+    for (var i = 0; i < seq.length; i++) {
+      if (AA.indexOf(seq[i]) === -1 && invalid.indexOf(seq[i]) === -1) invalid.push(seq[i]);
+    }
+    var warnings = [];
+    if (!seq) warnings.push('No amino-acid sequence detected.');
+    if (seq.length > 30 && /^[ACGTUN]+$/.test(seq)) warnings.push('This looks like DNA/RNA bases, not a protein amino-acid sequence.');
+    if (seq.length && seq.length < 16) warnings.push('AlphaFold DB models usually start at 16 amino acids; this is very short.');
+    if (seq.length > 2700) warnings.push('This is longer than the usual AlphaFold DB single-chain range; server/runtime limits may apply.');
+    if (invalid.length) warnings.push('Non-standard amino-acid symbols found: ' + invalid.join(', ') + '. Use the 20 standard one-letter amino-acid codes.');
+    return { seq: seq, valid: !!seq && invalid.length === 0 && !(seq.length > 30 && /^[ACGTUN]+$/.test(seq)), warnings: warnings };
+  }
+
+  function updateSequenceStatus() {
+    var v = validateSequence(sequenceInput.value);
+    if (!v.seq) {
+      setStatus(sequenceStatus, 'No sequence entered.', '');
+    } else if (v.warnings.length) {
+      setStatus(sequenceStatus, v.seq.length + ' amino acids. ' + v.warnings.join(' '), v.valid ? 'warn' : 'err');
+    } else {
+      setStatus(sequenceStatus, v.seq.length + ' amino acids. Looks like a standard protein sequence.', 'ok');
+    }
+    return v;
+  }
+
+  function prepareJson() {
+    var v = updateSequenceStatus();
+    if (!v.valid) return;
+    var name = 'alloflow_public_or_synthetic_sequence_' + new Date().toISOString().slice(0, 10);
+    var payload = {
+      name: name,
+      sequences: [
+        { protein: { id: ['A'], sequence: v.seq } }
+      ],
+      modelSeeds: [1],
+      dialect: 'alphafold3',
+      version: 1
+    };
+    lastJson = JSON.stringify(payload, null, 2);
+    jsonOutput.textContent = lastJson;
+    jsonOutput.hidden = false;
+    copyJsonBtn.disabled = false;
+    downloadJsonBtn.disabled = false;
+    toOpener({ type: 'allocaf-sequence-prepared', length: v.seq.length });
+    current = {
+      source: 'Prepared sequence',
+      accession: 'not submitted',
+      name: 'Prepared AlphaFold Server input',
+      organism: 'Not provided',
+      length: v.seq.length,
+      confidence: 'No structure yet. Submit/run the JSON externally, then import the result file.',
+      citation: citationFor({ source: 'Prepared sequence' })
+    };
+    renderDetails(current);
+  }
+
+  function loadLocalFile(file) {
+    if (!file) return;
+    var name = file.name || 'local structure';
+    var ext = name.toLowerCase().split('.').pop();
+    var format = (ext === 'pdb' || ext === 'ent') ? 'pdb' : 'mmcif';
+    var isBinary = ext === 'bcif';
+    var url = URL.createObjectURL(file);
+    var record = {
+      source: 'Uploaded file',
+      accession: 'local',
+      name: name,
+      organism: 'Not provided',
+      length: '',
+      confidence: 'Local file loaded. Inspect any confidence coloring or output files that came with your prediction.',
+      modelUrl: url,
+      citation: citationFor({ source: 'Uploaded file', name: name })
+    };
+    setStatus(fileStatus, 'Loading ' + name + ' locally...', '');
+    loadStructure(record, format, isBinary).then(function () {
+      setStatus(fileStatus, 'Loaded ' + name + '.', 'ok');
+      toOpener({ type: 'allocaf-file-imported', name: name });
+    }).catch(function (e) {
+      setStatus(fileStatus, 'Could not load ' + name + '. ' + String((e && e.message) || e).slice(0, 120), 'err');
+    });
+  }
+
+  function copyJson() {
+    if (!lastJson) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(lastJson).then(function () {
+        setStatus(sequenceStatus, 'JSON copied. Paste it into AlphaFold Server only for public/synthetic classroom sequences.', 'ok');
+      }).catch(function () {
+        setStatus(sequenceStatus, 'Copy failed. Select the JSON text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(sequenceStatus, 'Clipboard is unavailable. Select the JSON text and copy manually.', 'warn');
+    }
+  }
+
+  function downloadJson() {
+    if (!lastJson) return;
+    var blob = new Blob([lastJson], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = el('a', { href: url, download: 'alphafold_input.json' });
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 0);
+  }
+
+  function copyCitation() {
+    var text = copyCitationBtn.getAttribute('data-citation') || '';
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(citationStatus, 'Citation copied.', 'ok');
+      }).catch(function () {
+        setStatus(citationStatus, 'Copy failed. Select and copy from the record links instead.', 'warn');
+      });
+    } else {
+      setStatus(citationStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function coach() {
+    var note = noteInput.value.trim();
+    var meta = current || {
+      source: 'No structure loaded',
+      name: 'No structure loaded',
+      confidence: 'No confidence data yet'
+    };
+    if (!(openerOk && aiAvailable)) {
+      coachOutput.textContent = nextReflect();
+      coachOutput.hidden = false;
+      return;
+    }
+    if (busy) return;
+    busy = true;
+    coachBtn.disabled = true;
+    coachBtn.textContent = 'Thinking...';
+    askAi(meta, note).then(function (res) {
+      var text = res && !res.error && res.text ? String(res.text).trim() : '';
+      coachOutput.textContent = text || ('AI coach was unavailable. ' + nextReflect());
+      coachOutput.hidden = false;
+    }).finally(function () {
+      busy = false;
+      coachBtn.disabled = false;
+      coachBtn.textContent = 'Ask for an inspection question';
+    });
+  }
+
+  EXAMPLES.forEach(function (item) {
+    var btn = el('button', { class: 'example', type: 'button' });
+    btn.appendChild(el('div', null, item.label));
+    btn.appendChild(el('small', null, item.accession + ' - ' + item.hint));
+    btn.addEventListener('click', function () { lookup(item.accession); });
+    examplesEl.appendChild(btn);
+  });
+
+  lookupBtn.addEventListener('click', function () { lookup(accessionInput.value); });
+  accessionInput.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter') lookup(accessionInput.value);
+  });
+  fileInput.addEventListener('change', function () { loadLocalFile(fileInput.files && fileInput.files[0]); });
+  sequenceInput.addEventListener('input', updateSequenceStatus);
+  prepareBtn.addEventListener('click', prepareJson);
+  serverBtn.addEventListener('click', function () { window.open(SERVER_URL, 'alphafold-server'); });
+  copyJsonBtn.addEventListener('click', copyJson);
+  downloadJsonBtn.addEventListener('click', downloadJson);
+  copyCitationBtn.addEventListener('click', copyCitation);
+  coachBtn.addEventListener('click', coach);
+
+  var params = new URLSearchParams(window.location.search);
+  var requested = normalizeAccession(params.get('accession') || params.get('uniprot') || '');
+  if (requested) lookup(requested);
+  var hello = function () { toOpener({ type: 'allocaf-hello' }); };
+  hello();
+  setTimeout(hello, 900);
+  setTimeout(renderAiState, 2600);
+  window.addEventListener('beforeunload', function () { toOpener({ type: 'allocaf-closed' }); });
+})();
+</script>
+</body>
+</html>

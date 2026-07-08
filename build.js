@@ -864,11 +864,11 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_logiclab.js',
     'stem_lab/stem_tool_cellular.js',
     'stem_lab/stem_tool_accesslens.js',
+    'stem_lab/stem_tool_alphafold.js',
     'stem_lab/stem_tool_datalab.js',
     'stem_lab/stem_tool_simshelf.js',
     'stem_lab/stem_tool_circuitshelf.js',
     'stem_lab/stem_tool_moleculeshelf.js',
-    'stem_lab/stem_tool_timeline.js',
     'stem_lab/stem_tool_zoomgallery.js',
     'stem_lab/stem_tool_probability.js',
     'stem_lab/stem_tool_calculus.js',
@@ -1052,6 +1052,17 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_selfadvocacy.js',
     'sel_hub/sel_tool_sociallab.js',
     'sel_hub/sel_tool_voicedetective.js'
+];
+
+// Companion-window assets used by STEM Lab launchers. These are not JS modules,
+// so they must be copied as folders into prismflow-deploy/public for clean builds.
+const COMPANION_ASSET_DIRS = [
+    'alphafold_explorer',
+    'circuit_shelf',
+    'molecule_shelf',
+    'sim_shelf',
+    'timeline_studio',
+    'zoom_gallery'
 ];
 
 // ── Source → Module compilation ─────────────────────────────────
@@ -1642,7 +1653,18 @@ if (dryRun) {
             copyCount++;
         }
     });
-    console.log(`📦 Auto-copied ${copyCount} module/plugin files to prismflow-deploy/public/`);
+    let assetDirCopyCount = 0;
+    COMPANION_ASSET_DIRS.forEach(d => {
+        const src = path.join(ROOT, d);
+        const dest = path.join(PUBLIC_DIR, d);
+        if (fs.existsSync(src)) {
+            fs.rmSync(dest, { recursive: true, force: true });
+            fs.mkdirSync(path.dirname(dest), { recursive: true });
+            fs.cpSync(src, dest, { recursive: true });
+            assetDirCopyCount++;
+        }
+    });
+    console.log(`📦 Auto-copied ${copyCount} module/plugin files and ${assetDirCopyCount} companion asset folders to prismflow-deploy/public/`);
 
     // Show next steps
     console.log('\n── Next Steps ──');

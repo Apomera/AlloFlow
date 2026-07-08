@@ -29,7 +29,9 @@ const QUIET = process.argv.includes('--quiet');
 // Plugin files on disk that are intentionally NOT in PLUGIN_FILES (no CDN cache-bust needed).
 // Each entry MUST carry a reason. Add here only when a plugin is deliberately excluded.
 const ALLOW_UNLISTED = new Set([
-  // (none yet — populated as intentional exclusions are confirmed)
+  // Timeline Studio moved out of STEM tools and into learner tools; keep the
+  // legacy STEM plugin file tracked without requiring STEM CDN cache-busting.
+  'stem_lab/stem_tool_timeline.js',
 ]);
 
 function fail(msg) { console.error(msg); process.exit(2); }

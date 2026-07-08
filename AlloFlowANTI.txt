@@ -5464,6 +5464,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jul 2026: Access Lens — learner accessibility camera kit
         // (describe / read / translate / Socratic investigate).
         'stem_lab/stem_tool_accesslens.js',
+        // Jul 2026: AlphaFold Explorer - public AlphaFold DB lookup + Mol*
+        // viewer + safe AlphaFold Server input prep; launcher + AI bridge.
+        'stem_lab/stem_tool_alphafold.js',
         // Jul 2026: Data Lab — CODAP (Concord Consortium, MIT) companion window
         // with a Socratic tutor; this tool is the launcher + AI bridge.
         'stem_lab/stem_tool_datalab.js',
@@ -5476,9 +5479,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jul 2026: Molecule Shelf — Mol* (RCSB, MIT) companion window with a
         // Notice→Wonder coach; launcher + AI bridge in the tool.
         'stem_lab/stem_tool_moleculeshelf.js',
-        // Jul 2026: Timeline Studio — TimelineJS (Knight Lab, MPL) companion
-        // window + AI document→timeline; launcher + data bridge in the tool.
-        'stem_lab/stem_tool_timeline.js',
         // Jul 2026: Zoom Gallery — OpenSeadragon (BSD-3) deep-zoom companion
         // window over Smithsonian CC0 (IIIF) + NASA public-domain images with a
         // Notice→Wonder coach; launcher + AI bridge in the tool.
