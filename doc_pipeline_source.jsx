@@ -3148,6 +3148,91 @@ var createDocPipeline = function(deps) {
   // - Auto-logging: every API call logs entry (prompt size) and exit (response size, duration)
   var _rawCallGemini = deps.callGemini;
   var _rawCallGeminiVision = deps.callGeminiVision;
+  var _usesLocalTextBackend = function () {
+    try {
+      var w = typeof window !== 'undefined' ? window : null;
+      var localHelpers = w && w.AIBackendLocal;
+      var isLocal = localHelpers && typeof localHelpers.isLocalTextBackend === 'function'
+        ? localHelpers.isLocalTextBackend
+        : function (backend) { return ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'custom'].indexOf(String(backend || '')) !== -1; };
+      var backend = (_rawCallGemini && _rawCallGemini._alloflowBackend) || (w && w.__alloActiveAIBackend && w.__alloActiveAIBackend.backend) || '';
+      if (backend) return !!isLocal(backend);
+      var storage = w && w.localStorage;
+      var cfg = storage ? JSON.parse(storage.getItem('alloflow_ai_config') || 'null') : null;
+      return !!(cfg && cfg.backend && isLocal(cfg.backend));
+    } catch (_) {
+      return false;
+    }
+  };
+  var _localTextProfile = function () {
+    try {
+      var w = typeof window !== 'undefined' ? window : null;
+      var storage = w && w.localStorage;
+      var cfg = storage ? JSON.parse(storage.getItem('alloflow_ai_config') || '{}') : {};
+      var active = (w && w.__alloActiveAIBackend) || {};
+      var helpers = w && w.AIBackendLocal;
+      if (helpers && typeof helpers.buildLocalModelProfile === 'function') {
+        return helpers.buildLocalModelProfile({
+          backend: active.backend || cfg.backend,
+          model: active.model || (cfg.models && cfg.models.default),
+          localModel: cfg.localModel,
+          localModelProfile: cfg.localModelProfile || cfg.capability
+        });
+      }
+      var capability = active.capability || cfg.localModelProfile || cfg.capability || {};
+      var localEngine = cfg.localEngine || {};
+      var ctx = Number(
+        capability.contextWindow ||
+        capability.contextSize ||
+        capability.nCtx ||
+        active.contextWindow ||
+        cfg.contextWindow ||
+        cfg.localContextWindow ||
+        localEngine.contextSize ||
+        0
+      );
+      var out = Number(
+        capability.outputTokenLimit ||
+        capability.jsonOutputTokenLimit ||
+        capability.maxOutputTokens ||
+        active.outputTokenLimit ||
+        cfg.outputTokenLimit ||
+        cfg.localOutputTokenLimit ||
+        0
+      );
+      var profile = {
+        contextWindow: ctx > 0 ? ctx : 4096,
+        outputTokenLimit: out > 0 ? out : 1400,
+        id: capability.id || capability.name || active.model || (cfg.models && cfg.models.default) || cfg.localModel || 'local-detected'
+      };
+      return profile;
+    } catch (_) {}
+    return { contextWindow: 4096, outputTokenLimit: 1400, id: 'local-default' };
+  };
+  var _localHtmlChunkChars = function (defaultChars) {
+    var base = defaultChars || GEMINI_CHUNK_CHARS;
+    if (!_usesLocalTextBackend()) return base;
+    var profile = _localTextProfile();
+    var contextWindow = Math.max(2048, Number(profile && profile.contextWindow) || 4096);
+    var outputLimit = Math.max(900, Number(profile && (profile.outputTokenLimit || profile.jsonOutputTokenLimit)) || 1400);
+    var chunkTokens = Math.max(650, Math.min(Math.floor(contextWindow * 0.28), Math.floor(outputLimit * 0.75)));
+    return Math.max(2400, Math.min(base, chunkTokens * 4));
+  };
+  var _emitLocalRemediationProgress = function (current, total, label, phase) {
+    if (!_usesLocalTextBackend()) return;
+    try {
+      var w = typeof window !== 'undefined' ? window : null;
+      if (w && typeof w.__alloLocalTaskProgress === 'function') {
+        w.__alloLocalTaskProgress({
+          current: current,
+          total: total,
+          label: label || 'Local remediation',
+          type: 'remediation',
+          phase: phase || 'document'
+        });
+      }
+    } catch (_) {}
+  };
   // ── Adaptive Gemini throttle controller (2026-06-19, hardened) ──
   // The Canvas Gemini proxy THROTTLES under SUSTAINED fan-out even at a flat cap of 3 — a long
   // (~20-min) run storms with API_AUTH_FAILED and each dead chunk burns the full ~120s timeout
@@ -3319,6 +3404,15 @@ var createDocPipeline = function(deps) {
     _geminiStaggerMs = 0;
     _geminiLastStartAt = 0;
     if (_geminiStaggerTimer) { try { clearTimeout(_geminiStaggerTimer); } catch (_) {} _geminiStaggerTimer = null; }
+    if (_usesLocalTextBackend()) {
+      _geminiEffectiveMax = 1;
+      _geminiCap = 1;
+      _geminiStaggerMs = 900;
+      try {
+        var _lp = _localTextProfile();
+        _pipeLog('Local AI', 'Using local-model remediation pacing (serial calls, chunk target ' + _localHtmlChunkChars(GEMINI_CHUNK_CHARS) + ' chars, ctx ' + ((_lp && _lp.contextWindow) || 'unknown') + ')');
+      } catch (_) {}
+    }
   };
   // Proactively pace this run's Gemini calls for HEAVY/SCANNED docs: lower the concurrency ceiling + space the
   // call starts so the burst is spread over time and avoids tripping the Canvas rate-limit — WITHOUT dropping
@@ -3473,7 +3567,8 @@ var createDocPipeline = function(deps) {
     var callNum = ++_pipelineStats.apiCalls;
     _pipeLog('API→', 'callGemini #' + callNum + ' (' + Math.round(promptLen / 1000) + 'KB prompt)');
     var t0 = performance.now();
-    return _geminiCall(function() { return _rawCallGemini.apply(null, args); }, 180000, 120000, 'callGemini').then(function(result) {
+    var _localTextCall = _usesLocalTextBackend();
+    return _geminiCall(function() { return _rawCallGemini.apply(null, args); }, _localTextCall ? 420000 : 180000, _localTextCall ? 300000 : 120000, 'callGemini').then(function(result) {
       var dur = Math.round(performance.now() - t0);
       var respLen = result ? String(result).length : 0;
       _pipelineStats.totalApiMs += dur;
@@ -4045,7 +4140,7 @@ var createDocPipeline = function(deps) {
   // ── Chunked AI fix helper: split HTML on tag boundaries, fix each chunk, rejoin ──
   // Prevents the old `substring(0, 25000)` truncation by processing the full document
   // in AI-sized chunks that stay under the 8192-token output ceiling.
-  const HTML_FIX_CHUNK = GEMINI_CHUNK_CHARS; // S6: shared chunk budget
+  const HTML_FIX_CHUNK = _localHtmlChunkChars(GEMINI_CHUNK_CHARS); // S6: shared chunk budget; local backends get model-aware smaller chunks
   const splitHtmlOnTagBoundary = (html, size) => {
     if (!html || html.length <= size) return [html || ''];
     // H-6 (2026-06-24): never cut a chunk INSIDE a table/list/figure/dl. A boundary between </td> and <td>
@@ -4598,8 +4693,10 @@ var createDocPipeline = function(deps) {
         return html;
       }
     }
-    // Multi-chunk: fix ALL fragments in PARALLEL for speed
-    warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks (parallel)`);
+    // Multi-chunk: cloud stays parallel for speed; local models run explicitly serial
+    // to avoid queue pressure and make progress visible.
+    const _localTextMode = _usesLocalTextBackend();
+    warnLog(`[aiFixChunked:${label}] splitting ${html.length} chars into ${chunks.length} chunks (${_localTextMode ? 'serial local' : 'parallel'})`);
     const _deferredIdx = []; // chunk indices a Canvas THROTTLE skipped — revisited by the catch-up drain below
     const _fixOneChunk = async (part, ci) => {
       // $4: this chunk's routed violations text; null → nothing here is fixable by this
@@ -4658,7 +4755,7 @@ var createDocPipeline = function(deps) {
         } else if (part.length > 5000) {
           warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} truncated — splitting in half and retrying`);
           const halfChunks = splitHtmlOnTagBoundary(part, Math.ceil(part.length / 2));
-          const halfResults = await Promise.all(halfChunks.map(async (half, hi) => {
+          const _fixHalfChunk = async (half, hi) => {
             try {
               const halfPrompt = `Fix these WCAG violations in the HTML fragment. Change ONLY what's needed. Preserve ALL content.\n\nIMAGE PLACEHOLDERS: Any token matching __ALLOFLOW_DATAURL_*__ (including __ALLOFLOW_DATAURL_FINAL_N__) or __IMG_DATA_N__ is an image placeholder — keep it exactly and do NOT remove its containing element.\n\nVIOLATIONS:\n${_chunkV}\n\nHTML FRAGMENT:\n"""\n${half}\n"""\n\nReturn ONLY the fixed fragment — raw HTML only, do NOT wrap in JSON or a code fence.`;
               let halfOut = stripFence(await callGemini(halfPrompt, false));
@@ -4677,7 +4774,17 @@ var createDocPipeline = function(deps) {
               warnLog(`[aiFixChunked:${label}] half-chunk ${hi + 1} also rejected — keeping original half`);
               return half;
             } catch (he) { return half; }
-          }));
+          };
+          let halfResults;
+          if (_localTextMode) {
+            halfResults = [];
+            for (let hi = 0; hi < halfChunks.length; hi++) {
+              _emitLocalRemediationProgress(hi, halfChunks.length, `Retrying subchunk ${hi + 1} of ${halfChunks.length}`, 'fix-retry');
+              halfResults.push(await _fixHalfChunk(halfChunks[hi], hi));
+            }
+          } else {
+            halfResults = await Promise.all(halfChunks.map((half, hi) => _fixHalfChunk(half, hi)));
+          }
           return halfResults.join('');
         } else {
           warnLog(`[aiFixChunked:${label}] chunk ${ci + 1} rejected (in=${part.length}/${textCharCount(part)}, out=${out ? out.length : 0}/${out ? textCharCount(out) : 0}) — keeping original`);
@@ -4689,7 +4796,17 @@ var createDocPipeline = function(deps) {
         return part;
       }
     };
-    const fixed = await Promise.all(chunks.map((part, ci) => _fixOneChunk(part, ci)));
+    let fixed;
+    if (_localTextMode) {
+      fixed = new Array(chunks.length);
+      for (let ci = 0; ci < chunks.length; ci++) {
+        _emitLocalRemediationProgress(ci, chunks.length, `Fixing chunk ${ci + 1} of ${chunks.length}`, 'fix');
+        fixed[ci] = await _fixOneChunk(chunks[ci], ci);
+      }
+      _emitLocalRemediationProgress(chunks.length, chunks.length, `Fixed ${chunks.length} chunk${chunks.length === 1 ? '' : 's'}`, 'fix');
+    } else {
+      fixed = await Promise.all(chunks.map((part, ci) => _fixOneChunk(part, ci)));
+    }
     // ── Defer-and-revisit catch-up drain (2026-06-21) ── Chunks a Canvas THROTTLE skipped were kept as their
     // ORIGINAL above + recorded in _deferredIdx (vs the old behavior: grind 4 inline retries/chunk through
     // 90s cooldowns, or silently ship unfixed). A rate-limit eases over TIME, so PAUSE to let the window
@@ -4704,7 +4821,16 @@ var createDocPipeline = function(deps) {
         _pulsePipelineWatchdog(); // a deliberate catch-up pause is activity, not a stall
         await new Promise(function (r) { setTimeout(r, 8000); }); // let the rate-limit window ease before revisiting
         _deferredIdx.length = 0; // re-collect any chunk STILL throttled this round
-        const _again = await Promise.all(_todo.map(function (ci) { return _fixOneChunk(chunks[ci], ci).then(function (out) { return { ci: ci, out: out }; }); }));
+        let _again;
+        if (_localTextMode) {
+          _again = [];
+          for (const ci of _todo) {
+            _emitLocalRemediationProgress(ci, chunks.length, `Retrying chunk ${ci + 1} of ${chunks.length}`, 'fix-retry');
+            _again.push({ ci: ci, out: await _fixOneChunk(chunks[ci], ci) });
+          }
+        } else {
+          _again = await Promise.all(_todo.map(function (ci) { return _fixOneChunk(chunks[ci], ci).then(function (out) { return { ci: ci, out: out }; }); }));
+        }
         for (const { ci, out } of _again) { if (out != null) fixed[ci] = out; } // splice back at the SAME index (original-on-failure = harmless no-op)
         _todo = _deferredIdx.slice();
       }
@@ -8355,21 +8481,51 @@ var createDocPipeline = function(deps) {
     const minSize = o.minSize || 4, maxSize = o.maxSize || 300;
     const out = [];
     if (!Array.isArray(words) || typeof pageH !== 'number') return out;
+    const _num = (v) => (typeof v === 'number' && isFinite(v));
+    const targetH = _num(o.targetH) && o.targetH > 0 ? o.targetH : pageH;
+    const scaleX = _num(o.scaleX) && o.scaleX > 0 ? o.scaleX : 1;
+    const scaleY = _num(o.scaleY) && o.scaleY > 0 ? o.scaleY : 1;
+    const offsetX = _num(o.offsetX) ? o.offsetX : 0;
+    const offsetY = _num(o.offsetY) ? o.offsetY : 0;
+    const vt = Array.isArray(o.viewportTransform) && o.viewportTransform.length === 6
+      && o.viewportTransform.every(_num) ? o.viewportTransform : null;
+    let inv = null;
+    if (vt) {
+      const det = vt[0] * vt[3] - vt[1] * vt[2];
+      if (isFinite(det) && Math.abs(det) > 1e-8) {
+        inv = (x, y) => ({
+          x: (vt[3] * (x - vt[4]) - vt[2] * (y - vt[5])) / det,
+          y: (-vt[1] * (x - vt[4]) + vt[0] * (y - vt[5])) / det,
+        });
+      }
+    }
+    const _dist = (a, b) => Math.sqrt(Math.pow((a.x || 0) - (b.x || 0), 2) + Math.pow((a.y || 0) - (b.y || 0), 2));
     for (let i = 0; i < words.length; i++) {
       const w = words[i];
       if (!w || typeof w.t !== 'string') continue;
       const text = w.t.trim(); if (!text) continue;
-      const h = (typeof w.y1 === 'number' && typeof w.y0 === 'number') ? (w.y1 - w.y0) : 0;
+      const rawH = (typeof w.y1 === 'number' && typeof w.y0 === 'number') ? (w.y1 - w.y0) : 0;
+      let x, y, boxW = 0, angle = 0, h = rawH * scaleY;
+      if (inv && _num(w.x0) && _num(w.x1) && _num(w.y0) && _num(w.y1)) {
+        const p0 = inv(w.x0, w.y1);      // left baseline in PDF user space
+        const p1 = inv(w.x1, w.y1);      // right baseline in PDF user space
+        const pt = inv(w.x0, w.y0);      // top-left, for box height
+        x = p0.x; y = p0.y;
+        boxW = _dist(p0, p1);
+        h = _dist(pt, p0);
+        angle = Math.atan2(p1.y - p0.y, p1.x - p0.x) * 180 / Math.PI;
+      } else {
+        x = offsetX + (w.x0 * scaleX);
+        y = offsetY + targetH - (w.y1 * scaleY); // baseline ~= box bottom in PDF (bottom-left origin) space
+        // Carry the OCR box WIDTH so the consumer can horizontally scale the glyphs (text-matrix
+        // a-component) to span the box — size alone (from height) leaves the invisible run too
+        // narrow/wide vs the scanned word, so Ctrl+F highlight / drag-select drifts intra-word.
+        boxW = (typeof w.x1 === 'number' && typeof w.x0 === 'number') ? Math.max(0, (w.x1 - w.x0) * scaleX) : 0;
+      }
       let size = h > 0 ? h * sizeFactor : 8;
       if (size < minSize) size = minSize; else if (size > maxSize) size = maxSize;
-      const x = w.x0;
-      const y = pageH - w.y1; // baseline ≈ box bottom in PDF (bottom-left origin) space
       if (!isFinite(x) || !isFinite(y) || !isFinite(size)) continue;
-      // Carry the OCR box WIDTH so the consumer can horizontally scale the glyphs (text-matrix
-      // a-component) to span the box — size alone (from height) leaves the invisible run too
-      // narrow/wide vs the scanned word, so Ctrl+F highlight / drag-select drifts intra-word.
-      const boxW = (typeof w.x1 === 'number' && typeof w.x0 === 'number') ? Math.max(0, w.x1 - w.x0) : 0;
-      out.push({ text: text, x: x, y: y, size: size, w: boxW });
+      out.push({ text: text, x: x, y: y, size: size, w: boxW, angle: (isFinite(angle) ? angle : 0) });
     }
     return out;
   };
@@ -8529,7 +8685,7 @@ var createDocPipeline = function(deps) {
       const pages = [];
       const pageErrors = [];
       for (let p = 1; p <= pdf.numPages; p++) {
-        let canvas = null, renderScale = 2.0; // hoisted so the finally can free it on BOTH success and failure
+        let canvas = null, renderScale = 2.0, renderViewport = null; // hoisted so the finally can free it on BOTH success and failure
         try {
           if (typeof onProgress === 'function') onProgress({ page: p, total: pdf.numPages, phase: 'render' });
           const page = await _withTimeout(pdf.getPage(p), 30000, 'pdf.getPage (OCR p' + p + ')'); // bound getPage too — pdf.js worker can stall
@@ -8553,7 +8709,7 @@ var createDocPipeline = function(deps) {
             _c.width = _vp.width; _c.height = _vp.height;
             try {
               await _withTimeout(page.render({ canvasContext: _c.getContext('2d'), viewport: _vp }).promise, _sc >= 2 ? 45000 : (_sc >= 1.25 ? 35000 : 55000), 'page.render (OCR p' + p + ' @' + _sc + 'x)');
-              canvas = _c; renderScale = _sc; break;
+              canvas = _c; renderScale = _sc; renderViewport = _vp; break;
             } catch (_rErr) {
               try { _c.width = 0; _c.height = 0; } catch (_) {}
               if (_sc > 1.0) { try { warnLog('[Tesseract] page ' + p + ' render @' + _sc + 'x failed (' + ((_rErr && _rErr.message) || _rErr) + ') — retrying at a lower scale'); } catch (_) {} }
@@ -8568,7 +8724,10 @@ var createDocPipeline = function(deps) {
           const data = (result && result.data) || {};
           const pageText = (data.text || '').trim();
           const words = _collectOcrWords(data, renderScale); // normalize bboxes to PDF points (actual render scale)
-          pages.push({ pageNum: p, text: pageText, words: (words && words.length ? words : null), pageW: canvas.width / renderScale, pageH: canvas.height / renderScale });
+          const viewportTransform = (renderViewport && Array.isArray(renderViewport.transform))
+            ? renderViewport.transform.map(n => n / renderScale)
+            : null;
+          pages.push({ pageNum: p, text: pageText, words: (words && words.length ? words : null), pageW: canvas.width / renderScale, pageH: canvas.height / renderScale, viewportTransform });
         } catch (pageErr) {
           const _pmsg = (pageErr && pageErr.message) || String(pageErr);
           pages.push({ pageNum: p, text: '', words: null, error: _pmsg });
@@ -8746,7 +8905,8 @@ var createDocPipeline = function(deps) {
       merged.push({ pageNum: _pn, text: chosen.text, source: chosen.source,
         words: (Array.isArray(_tp.words) && _tp.words.length ? _tp.words : null),
         pageW: (typeof _tp.pageW === 'number' ? _tp.pageW : null),
-        pageH: (typeof _tp.pageH === 'number' ? _tp.pageH : null) });
+        pageH: (typeof _tp.pageH === 'number' ? _tp.pageH : null),
+        viewportTransform: (Array.isArray(_tp.viewportTransform) ? _tp.viewportTransform : null) });
       // B5: flag a page whose WINNING OCR is low-confidence — especially the all-Tesseract case (Vision
       // empty), where the quality-override above is skipped (it needs BOTH engines) so a garbled page
       // would otherwise ship unflagged. Vision has no per-word confidence, so we can only assess
@@ -11090,7 +11250,7 @@ Return ONLY JSON:
   // Module-level chunk constants for auditOutputAccessibility. OVERLAP doubled
   // from 400→800 because WCAG violations in tables, code blocks, and long links
   // can span more than 400 chars at a chunk boundary and slip past the audit.
-  const AUDIT_CHUNK_SIZE = GEMINI_CHUNK_CHARS; // S6: shared chunk budget
+  const AUDIT_CHUNK_SIZE = _localHtmlChunkChars(GEMINI_CHUNK_CHARS); // S6: shared chunk budget; local backends get model-aware smaller chunks
   const AUDIT_CHUNK_OVERLAP = 800;
   // $2 (deep dive 2026-07-02): chunk-level audit memoization. Audit calls run at temperature=0
   // (deterministic by design), yet the fix loop re-audits ALL chunks every pass even though a
@@ -11218,7 +11378,7 @@ Return ONLY JSON:
       // already serialized to 3 anyway) and reduces those spurious timeout failures. (audit-throttle 2026-06-29)
       const chunkResults = [];
       const _failedIdx = []; // 0-based indices of chunks whose audit returned null (a parse miss or — usually — a transient throttle)
-      const batchSize = 3;
+      const batchSize = _usesLocalTextBackend() ? 1 : 3;
       // One chunk's audit call, framed by its position (chunk 1 carries the global checks). Returns the parsed
       // audit object, or null on a transient throttle / empty-body / parse miss. Hoisted so the throttle
       // self-heal pass below can re-invoke EXACTLY the same call for a specific failed section.
@@ -11250,8 +11410,14 @@ HTML section ${chunkNum}/${chunks.length}:
       };
       for (let b = 0; b < chunks.length; b += batchSize) {
         const batch = chunks.slice(b, b + batchSize);
+        if (_usesLocalTextBackend()) {
+          _emitLocalRemediationProgress(b, chunks.length, `Auditing section ${b + 1} of ${chunks.length}`, 'audit');
+        }
         const results = await Promise.all(batch.map((chunk, idx) => _auditOneChunk(chunk, b + idx + 1)));
         results.forEach((res, idx) => { if (res) chunkResults.push(res); else _failedIdx.push(b + idx); });
+      }
+      if (_usesLocalTextBackend()) {
+        _emitLocalRemediationProgress(chunks.length, chunks.length, `Audited ${chunks.length} section${chunks.length === 1 ? '' : 's'}`, 'audit');
       }
       // Throttle self-heal (2026-06-28, hardened for SUSTAINED throttling): a chunk that returned null is almost
       // always a TRANSIENT Canvas throttle (empty body / rate-limit), not a permanent failure — and the old code
@@ -11271,6 +11437,9 @@ HTML section ${chunkNum}/${chunks.length}:
         const _next = [];
         for (let b = 0; b < _stillFailed.length; b += batchSize) {
           const slice = _stillFailed.slice(b, b + batchSize);
+          if (_usesLocalTextBackend() && slice.length) {
+            _emitLocalRemediationProgress(slice[0], chunks.length, `Re-auditing section ${slice[0] + 1} of ${chunks.length}`, 'audit-retry');
+          }
           const rr = await Promise.all(slice.map((ci) => _auditOneChunk(chunks[ci], ci + 1)));
           rr.forEach((res, k) => { if (res) chunkResults.push(res); else _next.push(slice[k]); });
         }
@@ -13844,7 +14013,7 @@ HTML section ${chunkNum}/${chunks.length}:
         // ── Chunked remediation: split large documents into sections, fix each, reassemble ──
         // This prevents truncation from Gemini's output token limit (~8K tokens).
         {
-        const MAX_CHUNK = GEMINI_CHUNK_CHARS; // S6: shared chunk budget
+        const MAX_CHUNK = _localHtmlChunkChars(GEMINI_CHUNK_CHARS); // S6: shared chunk budget; local backends get model-aware smaller chunks
 
         if (currentHtml.length <= MAX_CHUNK) {
           // Small document: single-pass fix
@@ -17640,7 +17809,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
 
           // Phase 2: AI polish with small chunks (table merging, style unification, transition smoothing)
           if (_polishPasses > 0) {
-            const POLISH_CHUNK = GEMINI_CHUNK_CHARS; // S6: shared chunk budget
+            const POLISH_CHUNK = _localHtmlChunkChars(GEMINI_CHUNK_CHARS); // S6: shared chunk budget; local backends get model-aware smaller chunks
             const polishViolations = 'TABLE CONTINUITY: Merge split table fragments.\nSTYLE CONSISTENCY: Unify inline CSS to match dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries.\nPRESERVE ALL CONTENT. Do NOT summarize or shorten.';
             const _maxPolishPasses = 1; // cap at 1 regardless of user setting — diminishing returns
             for (let polishIdx = 0; polishIdx < _maxPolishPasses; polishIdx++) {
@@ -18094,7 +18263,7 @@ ${bodyContent}
       try {
         const textForCheck = (extractedText || '').trim();
         // With 65K output, we can send much larger chunks — 20KB instead of 5KB
-        const GRAMMAR_CHUNK = 20000;
+        const GRAMMAR_CHUNK = _localHtmlChunkChars(20000);
         const grammarChunks = [];
         for (let gi = 0; gi < textForCheck.length; gi += GRAMMAR_CHUNK) {
           grammarChunks.push(textForCheck.slice(gi, Math.min(gi + GRAMMAR_CHUNK, textForCheck.length)));
@@ -18671,15 +18840,31 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // ── Final authoritative audit: re-run ONE clean audit on the finished HTML ──
       // The verification from the fix loop may have stale issues from an earlier pass.
       // This ensures the issues list matches what the user actually gets.
+      let _finalAuditThrottled = false;
+      let _finalAuditHadUsableScore = false;
+      let _finalAuditIncompleteReason = null;
+      const _lastSuccessfulAiScore = Number.isFinite(verification && verification.score)
+        && !(verification && (verification._scoreDegraded || verification.synthesized))
+        ? Math.round(verification.score)
+        : (Number.isFinite(bestAiScore) ? Math.round(bestAiScore) : null);
       try {
         // Full chunked audit for accurate final scoring
         const finalAudit = await auditOutputAccessibility(accessibleHtml);
         if (finalAudit) {
           verification = finalAudit;
+          _finalAuditHadUsableScore = Number.isFinite(finalAudit.score) && !finalAudit._scoreDegraded && !finalAudit.synthesized;
+          if (!_finalAuditHadUsableScore) _finalAuditIncompleteReason = finalAudit._partialAudit ? 'partial-final-audit' : 'final-audit-no-score';
           warnLog(`[PDF Fix] Final audit: score ${finalAudit.score}, ${(finalAudit.issues || []).length} remaining issues, ${(finalAudit.passes || []).length} passes` + (finalAudit._partialAudit ? ` — ⚠ PARTIAL (${finalAudit.chunksAudited}/${finalAudit.chunksRequested} sections audited under Canvas throttle; headline score covers audited content only — re-run for a full-coverage score)` : ''));
+        } else {
+          _finalAuditIncompleteReason = 'final-audit-empty';
+          _finalAuditThrottled = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
+            || (_geminiCap < _geminiEffectiveMax);
         }
       } catch(finalAuditErr) {
         warnLog('[PDF Fix] Final audit failed (using loop result):', finalAuditErr);
+        _finalAuditIncompleteReason = 'final-audit-error';
+        _finalAuditThrottled = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
+          || (_geminiCap < _geminiEffectiveMax);
       }
       // ── B (throttle resilience 2026-07-03): cooldown-aware deferred final re-audit ──
       // The final audit can come back PARTIAL when a Canvas rate-limit storm is active — its 3-round
@@ -18694,7 +18879,6 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // match byte-for-byte.
       // R3 (2026-07-03): remember whether the final partial was THROTTLE-caused, so D's reframe below
       // attributes the shortfall to a rate-limit ONLY when that was true (not for a malformed-JSON partial).
-      let _finalAuditThrottled = false;
       if (verification && verification._partialAudit) {
         const _throttleCaused = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
           || (_geminiCap < _geminiEffectiveMax); // R7: cap forced BELOW the run ceiling = a storm (robust vs pacing-to-1)
@@ -18739,6 +18923,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
                   + (_reFinalAudit.chunksAudited || 0) + '/' + _reFinalAudit.chunksRequested
                   + (_reFinalAudit._partialAudit ? ' (still partial — circling back)' : ' (full coverage restored)'));
                 verification = _reFinalAudit;
+                _finalAuditHadUsableScore = Number.isFinite(_reFinalAudit.score) && !_reFinalAudit._scoreDegraded && !_reFinalAudit.synthesized;
+                if (_finalAuditHadUsableScore) _finalAuditIncompleteReason = null;
               }
               // Stop-improving guard: a round that recovered NO new section while the gate is CALM is a
               // genuine content/parse failure, not a rate-limit — more rounds can't help. (An active storm
@@ -18857,7 +19043,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // audit incomplete" — never a blended/AI-verified composite (no overclaim of verification that
       // didn't finish).
       let _aiVerificationIncomplete = false;
-      const _aiDegraded = !verification || verification.score === null || verification._scoreDegraded || verification.synthesized;
+      let _estimatedMinimumScore = null;
+      let _estimatedScoreBasis = null;
+      const _finalAuditScoreMissing = !_finalAuditHadUsableScore;
+      const _aiDegraded = !verification || verification.score === null || verification._scoreDegraded || verification.synthesized || _finalAuditScoreMissing;
       if (finalAfterScore !== null && !_aiDegraded && deterministicScore !== null) {
         // Weakest-layer-governs (2026-06-21): the headline is min(AI rubric, deterministic engines), NOT
         // their mean. Averaging two scores that measure different things (the AI reads content/semantics;
@@ -18908,7 +19097,21 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // structural score (min of axe/EA, or whichever ran), flagged so the UI labels it honestly.
         finalAfterScore = deterministicScore;
         _aiVerificationIncomplete = true;
-        warnLog('[PDF Fix] AI semantic audit incomplete (degraded/partial/synthesized) — headline = deterministic structural ' + deterministicScore + ' (min of axe/EqualAccess, whichever ran); re-run for a full AI-verified score.');
+        if (Number.isFinite(_lastSuccessfulAiScore)) {
+          _estimatedMinimumScore = _alloComputeHeadline(_lastSuccessfulAiScore, deterministicScore);
+          _estimatedScoreBasis = {
+            kind: 'last-successful-ai-plus-current-automated',
+            confidence: 'lower',
+            estimatedMinimumScore: _estimatedMinimumScore,
+            lastSuccessfulAiScore: _lastSuccessfulAiScore,
+            automatedScore: deterministicScore,
+            finalAuditReason: _finalAuditIncompleteReason || (_finalAuditThrottled ? 'final-audit-throttled' : 'final-audit-incomplete'),
+            finalAuditThrottled: !!_finalAuditThrottled,
+            chunksAudited: verification && verification.chunksAudited != null ? verification.chunksAudited : null,
+            chunksRequested: verification && verification.chunksRequested != null ? verification.chunksRequested : null
+          };
+        }
+        warnLog('[PDF Fix] AI semantic audit incomplete (degraded/final-audit-missing/synthesized) — headline = deterministic structural ' + deterministicScore + ' (min of axe/EqualAccess, whichever ran)' + (Number.isFinite(_estimatedMinimumScore) ? '; estimated minimum = ' + _estimatedMinimumScore + ' from last successful AI ' + _lastSuccessfulAiScore + ' + current automated ' + deterministicScore : '') + '; re-run for a full AI-verified score.');
       } else if (deterministicScore === null) {
         // No deterministic engine produced a score (axe AND Equal Access both unavailable) — the
         // dual-engine guarantee is broken, so the headline is AI-only. Surface it so the UI can warn.
@@ -19535,6 +19738,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // as weakest-layer min().
         _scoreIsBlended: !axeCoreFailed && !_aiVerificationIncomplete && finalAfterScore !== null,
         _aiVerificationIncomplete,
+        _estimatedMinimumScore: Number.isFinite(_estimatedMinimumScore) ? _estimatedMinimumScore : null,
+        _estimatedScoreBasis: _estimatedScoreBasis,
+        _finalAuditRetryAvailable: !!(_aiVerificationIncomplete && accessibleHtml),
         _scoreSource: _aiVerificationIncomplete ? 'deterministic-only' : (axeCoreFailed ? 'content-only' : 'min'), // headline = min(content, automated) — the governing layer (2026-06-21)
         autoFixPasses,
         needsExpertReview,
@@ -19662,7 +19868,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // number, not a verified content score, and beforeScore (a blend) vs finalAfterScore
         // (deterministic-only) is not the same methodology, so the +gain is not meaningful. Mirror the
         // neutral headline; no "remediated!" claim and no success chord. (score-blend-degraded-1, 2026-06-21)
-        addToast(`⚠️ Structural/automated checks: ${finalAfterScore}/100 — but the AI semantic audit was throttled and didn't finish${fixNote}. Re-run for a full verified score.`, 'warning');
+        const _estNote = Number.isFinite(_estimatedMinimumScore) ? ` Estimated minimum from the last successful AI audit: ${_estimatedMinimumScore}/100.` : '';
+        addToast(`⚠️ Structural/automated checks: ${finalAfterScore}/100 — but the AI semantic audit was throttled and didn't finish${fixNote}.${_estNote} Re-run for a full verified score.`, 'warning');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
       } else if (_auditResult && _auditResult._slicedAudit && finalAfterScore !== null) {
         // The BEFORE audit was a page-slice approximation (the whole-document audit failed), so
@@ -19956,10 +20163,11 @@ tr { page-break-inside: avoid; }
     // artifact) so it never shows a green "+gain" the app itself refused to display. Flags ride on `d`.
     const _rptIncomplete = !!d._aiVerificationIncomplete;          // AI semantic audit throttled → after = structural-only, not verified
     const _rptSliced = !!(d._slicedAudit || d._beforeWasSliced);   // before audit was a page-slice approximation → delta is not apples-to-apples
+    const _rptEstimate = Number.isFinite(d._estimatedMinimumScore) ? d._estimatedMinimumScore : null;
     html += `<div class="score-box" style="background:${(typeof score === 'number' && !_rptIncomplete) ? scoreColor(score) + '15' : '#f8fafc'}">`;
     if (beforeScore !== null) {
       const _afterCell = _rptIncomplete
-        ? '<div class="score-num" style="color:#64748b">&mdash;</div><div class="meta-label">After (structural only)</div>'
+        ? '<div class="score-num" style="color:#64748b">&mdash;</div><div class="meta-label">After (structural only)</div>' + (_rptEstimate !== null ? '<div style="font-size:12px;color:#92400e;font-weight:700;margin-top:4px">Estimated minimum: ' + _rptEstimate + '/100</div>' : '')
         : '<div class="score-num" style="color:' + (typeof score === 'number' ? scoreColor(score) : '#64748b') + '">' + score + '</div><div class="meta-label">After</div>';
       html += `<div style="display:flex;align-items:center;justify-content:center;gap:24px">
         <div><div class="score-num" style="color:${scoreColor(beforeScore)}">${beforeScore}</div><div class="meta-label">Before${_rptSliced ? ' (approx.)' : ''}</div></div>
@@ -19971,7 +20179,7 @@ tr { page-break-inside: avoid; }
       html += `<div class="score-num" style="color:${(typeof score === 'number' && !_rptIncomplete) ? scoreColor(score) : '#64748b'}">${_rptIncomplete ? '&mdash;' : score}<span style="font-size:1.2rem;opacity:0.6">/100</span></div>`;
     }
     html += `<div style="font-size:14px;margin-top:8px;color:#475569">${esc(d.summary || d.before?.audit?.summary || '')}</div>`;
-    if (_rptIncomplete) html += `<p style="font-size:12px;color:#92400e;padding:6px 10px;margin:10px auto 0;max-width:560px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">&#9888; The AI semantic audit was throttled and did not finish &mdash; the &ldquo;after&rdquo; figure is an automated/structural-only check, NOT a verified content score. Re-run for a full score.</p>`;
+    if (_rptIncomplete) html += `<p style="font-size:12px;color:#92400e;padding:6px 10px;margin:10px auto 0;max-width:560px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">&#9888; The AI semantic audit was throttled and did not finish &mdash; the &ldquo;after&rdquo; figure is an automated/structural-only check, NOT a verified content score.${_rptEstimate !== null ? ' Estimated minimum from the last successful AI audit plus current automated checks: <strong>' + _rptEstimate + '/100</strong>.' : ''} Re-run for a full score.</p>`;
     else if (_rptSliced) html += `<p style="font-size:12px;color:#92400e;padding:6px 10px;margin:10px auto 0;max-width:560px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">&#9888; The &ldquo;before&rdquo; audit was a page-slice approximation (the document was too large for a single pass), so this change is approximate &mdash; not an exact apples-to-apples delta.</p>`;
     html += `</div>`;
 
@@ -20291,6 +20499,9 @@ tr { page-break-inside: avoid; }
     const aiOnly = aiAfter;
     const axeOnly = detAfter;
     const blendOk = fr._scoreIsBlended && aiAfter != null && detAfter != null;
+    const _frIncomplete = !!fr._aiVerificationIncomplete;
+    const _frEstimate = Number.isFinite(fr._estimatedMinimumScore) ? fr._estimatedMinimumScore : null;
+    const _frAfterColor = _frIncomplete ? '#64748b' : ((fr.afterScore || 0) >= 80 ? '#16a34a' : (fr.afterScore || 0) >= 50 ? '#d97706' : '#dc2626');
     const _scoreBlock = `
       <h2 style="font-size:18px;margin-top:32px;color:#0f172a;border-bottom:2px solid #e2e8f0;padding-bottom:6px">Content Audit Score <span style="font-size:12px;font-weight:600;color:#64748b">(HTML reconstruction — not the tagged-PDF bytes)</span></h2>
       <p style="font-size:11px;color:#64748b;margin:0 0 8px;font-style:italic">This score measures the remediated HTML/text content (AI rubric + axe-core run on a reconstruction). It is NOT a PDF/UA conformance verdict for the tagged PDF you export — see the PDF/UA Validation section for that.</p>
@@ -20301,12 +20512,13 @@ tr { page-break-inside: avoid; }
         </div>
         <div style="font-size:24px;color:#475569" aria-hidden="true">→</div>` : ''}
         <div style="flex:0 0 auto;text-align:center;padding:16px 24px;background:#f1f5f9;border-radius:12px;border:2px solid #cbd5e1">
-          <div style="font-size:36px;font-weight:900;color:${(fr.afterScore || 0) >= 80 ? '#16a34a' : (fr.afterScore || 0) >= 50 ? '#d97706' : '#dc2626'}">${fr.afterScore ?? '?'}</div>
-          <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase">Post-Remediation</div>
+          <div style="font-size:36px;font-weight:900;color:${_frAfterColor}">${_frIncomplete ? '&mdash;' : (fr.afterScore ?? '?')}</div>
+          <div style="font-size:11px;color:#475569;font-weight:600;text-transform:uppercase">${_frIncomplete ? 'Post-Remediation (pending final AI)' : 'Post-Remediation'}</div>
+          ${_frIncomplete && _frEstimate !== null ? `<div style="font-size:12px;color:#92400e;font-weight:700;margin-top:4px">Estimated minimum: ${_frEstimate}/100</div>` : ''}
         </div>
-        ${fr.beforeScore != null ? `<div style="font-size:14px;color:${(fr.afterScore - fr.beforeScore) >= 0 ? '#16a34a' : '#dc2626'};font-weight:700">${(fr.afterScore - fr.beforeScore) >= 0 ? '+' : ''}${fr.afterScore - fr.beforeScore} points</div>` : ''}
+        ${fr.beforeScore != null && !_frIncomplete && fr.afterScore != null ? `<div style="font-size:14px;color:${(fr.afterScore - fr.beforeScore) >= 0 ? '#16a34a' : '#dc2626'};font-weight:700">${(fr.afterScore - fr.beforeScore) >= 0 ? '+' : ''}${fr.afterScore - fr.beforeScore} points</div>` : ''}
       </div>
-      ${blendOk ? `<p style="font-size:12px;color:#475569;margin:0">Headline is the <strong>weakest-layer score</strong> — the LOWER (more conservative) of the AI rubric (${aiOnly}) and the deterministic engine (axe-core / IBM Equal Access, ${axeOnly}). The weakest layer governs, so neither engine's high score can mask the other's low one.</p>` : '<p style="font-size:12px;color:#475569;margin:0">Score derived from the AI rubric only (the deterministic engine did not return a score for these bytes).</p>'}
+      ${_frIncomplete ? `<p style="font-size:12px;color:#92400e;margin:0;padding:8px 12px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">Final AI semantic audit incomplete, so the post-remediation score is not verified. Automated/structural checks scored ${detAfter ?? 'n/a'}${_frEstimate !== null ? `; estimated minimum from the last successful AI audit plus current automated checks is <strong>${_frEstimate}/100</strong>` : ''}. Complete the final audit for a verified score.</p>` : (blendOk ? `<p style="font-size:12px;color:#475569;margin:0">Headline is the <strong>weakest-layer score</strong> — the LOWER (more conservative) of the AI rubric (${aiOnly}) and the deterministic engine (axe-core / IBM Equal Access, ${axeOnly}). The weakest layer governs, so neither engine's high score can mask the other's low one.</p>` : '<p style="font-size:12px;color:#475569;margin:0">Score derived from the AI rubric only (the deterministic engine did not return a score for these bytes).</p>')}
     `;
 
     // PDF/UA Validation section — the INDEPENDENT veraPDF (ISO 14289-1) verdict on the SHIPPED bytes,
@@ -21750,8 +21962,8 @@ tr { page-break-inside: avoid; }
     // drew nothing (e.g. per-word path threw for every word) gets a guaranteed last-resort block.
     let _ocrPagesWithText = 0, _ocrPagesDrew = 0, _ocrPagesEmpty = 0;
 
-    // Stage 4 pdf.js doc load (text-layer PDFs only — scanned PDFs use the
-    // Stage 3 single-MCID wrap because pdf.js on original bytes sees no text).
+    // Stage 4 pdf.js doc load. Born-digital PDFs use it for content-stream
+    // tagging; scanned PDFs use it only for OCR geometry (viewport transform).
     let pdfjsDocForTagging = null;
     // Stage 6b: set of normalized-text hashes considered artifacts (running
     // headers / footers / legal boilerplate). Populated once after the
@@ -21777,6 +21989,17 @@ tr { page-break-inside: avoid; }
         }
       } catch(s4prepErr) {
         try { warnLog('[createTaggedPdf] Stage 4 pdf.js/pako load failed, using Stage 3 for all pages: ' + (s4prepErr && s4prepErr.message)); } catch(_) {}
+        pdfjsDocForTagging = null;
+      }
+    } else {
+      try {
+        await ensurePdfJsLoaded();
+        if (window.pdfjsLib) {
+          const _srcBytes = originalPdfBytes instanceof Uint8Array ? originalPdfBytes : new Uint8Array(originalPdfBytes);
+          pdfjsDocForTagging = await _withTimeout(window.pdfjsLib.getDocument({ data: _srcBytes.slice() }).promise, 60000, 'pdf.js getDocument (OCR geometry)');
+        }
+      } catch (geomErr) {
+        try { warnLog('[createTaggedPdf] scanned OCR geometry load failed, using page box scaling: ' + (geomErr && geomErr.message)); } catch (_) {}
         pdfjsDocForTagging = null;
       }
     }
@@ -21863,13 +22086,54 @@ tr { page-break-inside: avoid; }
           // ── Per-word positioned layer (when Tesseract word boxes are present) ──
           // Draw each word at its real (x,y) with font size from the box height, so
           // Ctrl+F highlight + drag-select align with the scanned image. Guarded on
-          // geometry: unrotated page + extraction dims matching this page's MediaBox;
-          // a misplaced layer would be worse than the honest top-left block.
+          // geometry: exact pdf.js viewport transform when available; otherwise a
+          // sane CropBox/MediaBox scale. A misplaced layer would be worse than the
+          // honest top-left block.
           let _rot = 0; try { _rot = (page.getRotation && page.getRotation().angle) || 0; } catch(_) {}
           const _ocrWords = ocrEntry && Array.isArray(ocrEntry.words) ? ocrEntry.words : null;
-          const _dimsOK = !!(_ocrWords && typeof ocrEntry.pageH === 'number' && typeof ocrEntry.pageW === 'number'
-            && sz && Math.abs(sz.height - ocrEntry.pageH) <= 2 && Math.abs(sz.width - ocrEntry.pageW) <= 2);
-          const _perWord = !!(_ocrWords && _ocrWords.length && _ocrWords.length <= 8000 && _dimsOK && (!_rot || _rot % 360 === 0));
+          let _ocrViewportTransform = (ocrEntry && Array.isArray(ocrEntry.viewportTransform) && ocrEntry.viewportTransform.length === 6)
+            ? ocrEntry.viewportTransform : null;
+          if (!_ocrViewportTransform && _ocrWords && pdfjsDocForTagging) {
+            try {
+              const _pjsPage = await _withTimeout(pdfjsDocForTagging.getPage(pi + 1), 15000, 'pdf.js getPage (OCR geometry p' + (pi + 1) + ')');
+              const _vp1 = _pjsPage && _pjsPage.getViewport ? _pjsPage.getViewport({ scale: 1 }) : null;
+              if (_vp1 && Array.isArray(_vp1.transform) && _vp1.transform.length === 6) _ocrViewportTransform = _vp1.transform.slice();
+            } catch (_geoErr) { try { warnLog('[createTaggedPdf] OCR geometry transform unavailable p' + (pi + 1) + ': ' + (_geoErr && _geoErr.message)); } catch (_) {} }
+          }
+          const _frameForOcrWords = (() => {
+            const _num = (v) => typeof v === 'number' && isFinite(v);
+            const _ow = ocrEntry && _num(ocrEntry.pageW) && ocrEntry.pageW > 0 ? ocrEntry.pageW : null;
+            const _oh = ocrEntry && _num(ocrEntry.pageH) && ocrEntry.pageH > 0 ? ocrEntry.pageH : null;
+            if (!_ow || !_oh || !sz || !_num(sz.width) || !_num(sz.height)) return null;
+            const candidates = [];
+            try {
+              const cb = page.getCropBox ? page.getCropBox() : null;
+              if (cb && _num(cb.width) && _num(cb.height) && cb.width > 0 && cb.height > 0) {
+                candidates.push({ x: _num(cb.x) ? cb.x : 0, y: _num(cb.y) ? cb.y : 0, width: cb.width, height: cb.height, kind: 'CropBox' });
+              }
+            } catch (_) {}
+            candidates.push({ x: 0, y: 0, width: sz.width, height: sz.height, kind: 'MediaBox' });
+            let best = null;
+            for (const c of candidates) {
+              const sx = c.width / _ow, sy = c.height / _oh;
+              const dimScore = Math.max(Math.abs(c.width - _ow) / Math.max(c.width, _ow), Math.abs(c.height - _oh) / Math.max(c.height, _oh));
+              const aspectScore = Math.abs((c.width / c.height) - (_ow / _oh)) / Math.max(c.width / c.height, _ow / _oh);
+              const score = dimScore + aspectScore;
+              if (!best || score < best.score) best = { c, sx, sy, dimScore, aspectScore, score };
+            }
+            if (!best || !isFinite(best.sx) || !isFinite(best.sy) || best.sx <= 0 || best.sy <= 0) return null;
+            return {
+              usable: best.dimScore <= 0.35 && best.aspectScore <= 0.20,
+              opts: { targetW: best.c.width, targetH: best.c.height, offsetX: best.c.x, offsetY: best.c.y, scaleX: best.sx, scaleY: best.sy },
+              kind: best.c.kind,
+            };
+          })();
+          const _wordDrawOpts = _ocrViewportTransform
+            ? { sizeFactor: 0.92, viewportTransform: _ocrViewportTransform }
+            : (_frameForOcrWords && _frameForOcrWords.opts ? Object.assign({ sizeFactor: 0.92 }, _frameForOcrWords.opts) : { sizeFactor: 0.92 });
+          const _perWord = !!(_ocrWords && _ocrWords.length && _ocrWords.length <= 8000
+            && (_ocrViewportTransform || (_frameForOcrWords && _frameForOcrWords.usable))
+            && ((!_rot || _rot % 360 === 0) || _ocrViewportTransform));
           // Block-layer draw (single invisible top-left run) — used both as the no-word-boxes
           // fallback AND as the guaranteed LAST RESORT when the per-word path drew nothing, so
           // no scanned page with text ever ships without a searchable/SR text layer. countDrops
@@ -21913,6 +22177,50 @@ tr { page-break-inside: avoid; }
             let _font = _uniFont || (await _getHelv());
             const _fold = !_uniFont;
             if (_PLx && _PLx.PDFOperator && _PLx.PDFOperatorNames && _font) {
+              let _scaledFontKey = null, _scaledFontKeyTried = false;
+              const _ensureScaledFontKey = () => {
+                if (_scaledFontKeyTried) return _scaledFontKey;
+                _scaledFontKeyTried = true;
+                if (!(_PLx && typeof _PLx.setTextMatrix === 'function' && typeof _PLx.showText === 'function' && typeof _PLx.beginText === 'function')) return null;
+                try {
+                  // Called only after the run's BDC is open, so this resource-registration
+                  // space is covered by the same MCID and does not create unmarked content.
+                  page.drawText(' ', { x: -50, y: -50, size: 1, font: _font, opacity: 0 });
+                  const _res = page.node.Resources && page.node.Resources();
+                  const _fd = _res && _res.lookup ? _res.lookup(_PLx.PDFName.of('Font')) : null;
+                  const _ref = _font.ref;
+                  if (_fd && _fd.entries && _ref) {
+                    for (const _pair of _fd.entries()) {
+                      if (_pair[1] && _pair[1].toString() === _ref.toString()) { _scaledFontKey = _pair[0]; break; }
+                    }
+                  }
+                } catch (_) { _scaledFontKey = null; }
+                return _scaledFontKey;
+              };
+              const _drawPositionedRunWord = (_txt, _c) => {
+                const _key = _ensureScaledFontKey();
+                if (_key && _font && typeof _font.widthOfTextAtSize === 'function' && typeof _font.encodeText === 'function') {
+                  const natW = _font.widthOfTextAtSize(_txt, _c.size);
+                  let a = (_c.w > 0 && natW > 0) ? (_c.w / natW) : 1;
+                  if (!isFinite(a) || a <= 0) a = 1; else if (a < 0.1) a = 0.1; else if (a > 10) a = 10;
+                  const theta = ((_c.angle || 0) * Math.PI) / 180;
+                  const cs = Math.cos(theta), sn = Math.sin(theta);
+                  page.pushOperators(
+                    _PLx.pushGraphicsState(),
+                    _PLx.beginText(),
+                    _PLx.setTextRenderingMode(3),
+                    _PLx.setFontAndSize(_key, _c.size),
+                    _PLx.setTextMatrix(a * cs, a * sn, -sn, cs, _c.x, _c.y),
+                    _PLx.showText(_font.encodeText(_txt)),
+                    _PLx.endText(),
+                    _PLx.popGraphicsState(),
+                  );
+                  return;
+                }
+                const _opts = { x: _c.x, y: _c.y, size: _c.size, font: _font, opacity: 0 };
+                if (_c.angle && _PLx.degrees) _opts.rotate = _PLx.degrees(_c.angle);
+                page.drawText(_txt, _opts);
+              };
               // #H (2026-07-07): POSITIONED per-leaf draw — the regression fix. This path (default for
               // scanned since 2026-07-01) drew every run top-down at x=36 via _alloOcrBlockLayout, so the
               // invisible searchable layer stopped aligning with the scanned image (Ctrl+F highlight /
@@ -21925,7 +22233,7 @@ tr { page-break-inside: avoid; }
               let _posDrew = false;
               if (_perWord) {
                 try {
-                  const _posCalls = _ocrWordsToDrawCalls(_ocrWords, sz.height, { sizeFactor: 0.92 });
+                  const _posCalls = _ocrWordsToDrawCalls(_ocrWords, sz.height, _wordDrawOpts);
                   if (_posCalls.length) {
                     const _dist = _distributeCallsToRuns(_runs, _posCalls);
                     for (const _grp of _dist) {
@@ -21937,7 +22245,7 @@ tr { page-break-inside: avoid; }
                       for (const _c of _grp.calls) {
                         const _txt = _fold ? _toWinAnsi(_c.text) : _c.text;
                         if (!_txt.trim()) continue;
-                        try { page.drawText(_txt, { x: _c.x, y: _c.y, size: _c.size, font: _font, opacity: 0 }); _pageDrewAny = true; _posDrew = true; }
+                        try { _drawPositionedRunWord(_txt, _c); _pageDrewAny = true; _posDrew = true; }
                         catch (_dErr) { try { const _h = await _getHelv(); if (_h) { page.drawText(_toWinAnsi(_c.text), { x: _c.x, y: _c.y, size: _c.size, font: _h, opacity: 0 }); _pageDrewAny = true; _posDrew = true; } } catch (_) {} }
                       }
                       page.pushOperators(_emc);
@@ -21971,7 +22279,7 @@ tr { page-break-inside: avoid; }
               try { warnLog('[per-leaf exp] PDFOperator helpers or font unavailable — page ' + (pi + 1) + ' drew nothing'); } catch (_) {}
             }
           } else if (_perWord) {
-            const _calls = _ocrWordsToDrawCalls(_ocrWords, sz.height, { sizeFactor: 0.92 });
+            const _calls = _ocrWordsToDrawCalls(_ocrWords, sz.height, _wordDrawOpts);
             let _helvPW = null;
             // ── Horizontal scaling (text-matrix a-component ≈ the Tz operator) ──
             // pdf-lib's drawText has no horizontal-scale arg, so for the unicode-font path we emit
@@ -22001,12 +22309,14 @@ tr { page-break-inside: avoid; }
               const natW = _uniFont.widthOfTextAtSize(c.text, c.size);
               let a = (c.w > 0 && natW > 0) ? (c.w / natW) : 1;
               if (!isFinite(a) || a <= 0) a = 1; else if (a < 0.1) a = 0.1; else if (a > 10) a = 10;
+              const theta = ((c.angle || 0) * Math.PI) / 180;
+              const cs = Math.cos(theta), sn = Math.sin(theta);
               page.pushOperators(
                 _PL.pushGraphicsState(),
                 _PL.beginText(),
                 _PL.setTextRenderingMode(3), // invisible
                 _PL.setFontAndSize(_uniKey, c.size),
-                _PL.setTextMatrix(a, 0, 0, 1, c.x, c.y),
+                _PL.setTextMatrix(a * cs, a * sn, -sn, cs, c.x, c.y),
                 _PL.showText(_uniFont.encodeText(c.text)),
                 _PL.endText(),
                 _PL.popGraphicsState(),
@@ -22018,14 +22328,14 @@ tr { page-break-inside: avoid; }
                 if (_uniFont) {
                   if (_uniKey) {
                     try { _drawWordScaled(_c); }
-                    catch (_sErr) { page.drawText(_c.text, { x: _c.x, y: _c.y, size: _c.size, font: _uniFont, opacity: 0 }); }
+                    catch (_sErr) { const _opts = { x: _c.x, y: _c.y, size: _c.size, font: _uniFont, opacity: 0 }; if (_c.angle && _PL && _PL.degrees) _opts.rotate = _PL.degrees(_c.angle); page.drawText(_c.text, _opts); }
                   } else {
-                    page.drawText(_c.text, { x: _c.x, y: _c.y, size: _c.size, font: _uniFont, opacity: 0 });
+                    const _opts = { x: _c.x, y: _c.y, size: _c.size, font: _uniFont, opacity: 0 }; if (_c.angle && _PL && _PL.degrees) _opts.rotate = _PL.degrees(_c.angle); page.drawText(_c.text, _opts);
                   }
                 } else {
                   _ocrDroppedChars += _countNonWinAnsi(_c.text);
                   if (!_helvPW) _helvPW = await _getHelv();
-                  if (_helvPW) page.drawText(_toWinAnsi(_c.text), { x: _c.x, y: _c.y, size: _c.size, font: _helvPW, opacity: 0 });
+                  if (_helvPW) { const _opts = { x: _c.x, y: _c.y, size: _c.size, font: _helvPW, opacity: 0 }; if (_c.angle && _PL && _PL.degrees) _opts.rotate = _PL.degrees(_c.angle); page.drawText(_toWinAnsi(_c.text), _opts); }
                 }
                 _pageDrewAny = true;
               } catch(_wErr) { if (_uniFont) _ocrDroppedChars += _countNonWinAnsi(_c.text); }
@@ -24527,6 +24837,9 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         '  ],\n' +
         '  "shouldContinue": true\n' +
         '}';
+      if (_usesLocalTextBackend()) {
+        analyzePrompt += '\n\nLOCAL MODEL CONSTRAINTS: choose at most 3 high-confidence actions. Prefer deterministic tools with simple numeric/string params. Return JSON only; no markdown, no explanation outside JSON.';
+      }
 
       var plan;
       try {
@@ -24535,15 +24848,37 @@ ${_uaDeclared ? '      <pdfuaid:part>1</pdfuaid:part>' : '      <!-- pdfuaid:par
         planStr = planStr.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
         var jsonS = planStr.indexOf('{'), jsonE = planStr.lastIndexOf('}');
         if (jsonS >= 0 && jsonE > jsonS) planStr = planStr.substring(jsonS, jsonE + 1);
-        plan = JSON.parse(planStr);
+        try {
+          plan = JSON.parse(planStr);
+        } catch (firstParseErr) {
+          plan = JSON.parse(planStr.replace(/,\s*([}\]])/g, '$1'));
+        }
       } catch (e) {
         logActivity('\u26A0\uFE0F AI analysis failed to parse: ' + (e.message || e), 'error');
+        if (_usesLocalTextBackend() && typeof aiFixChunked === 'function') {
+          logActivity('Local model plan was malformed; falling back to direct chunk remediation for this pass.', 'info');
+          try {
+            _emitLocalRemediationProgress(0, 1, 'Running local fallback remediation', 'agent-fallback');
+            var fallbackHtml = await aiFixChunked(currentHtml, violationSummary.slice(0, 10).join('\n'), 'local-agent-fallback');
+            _emitLocalRemediationProgress(1, 1, 'Local fallback remediation complete', 'agent-fallback');
+            if (fallbackHtml && fallbackHtml !== currentHtml) {
+              currentHtml = fallbackHtml;
+              changedByAgent = true;
+              continue;
+            }
+          } catch (fallbackErr) {
+            logActivity('Local fallback remediation failed: ' + (fallbackErr.message || fallbackErr), 'error');
+          }
+        }
         break;
       }
 
       if (!plan || !plan.actions || plan.actions.length === 0) {
         logActivity('\uD83D\uDFE2 AI found no actionable fixes remaining.', 'complete');
         break;
+      }
+      if (_usesLocalTextBackend() && Array.isArray(plan.actions) && plan.actions.length > 3) {
+        plan.actions = plan.actions.slice(0, 3);
       }
 
       logActivity('\uD83D\uDCCB Plan: ' + plan.analysis, 'plan');

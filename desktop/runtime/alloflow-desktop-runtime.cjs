@@ -175,7 +175,10 @@ const DEFAULT_CONFIG = {
     // (a CUDA/Vulkan llama.cpp binaryUrl + a larger GGUF = the "better
     // computer" path with zero code changes).
     modelUrl: 'https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_k_m.gguf',
-    contextSize: 4096,
+    // 0 = auto. The launcher resolves this from the selected model/profile and
+    // falls back to 4096 for unknown GGUFs instead of assuming every model is
+    // the bundled starter model.
+    contextSize: 0,
     threads: 0,
     extraArgs: [],
   },
@@ -279,6 +282,15 @@ const ENGINE_BINARY_URLS = {
   arm64: 'https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-win-cpu-arm64.zip',
   x64: 'https://github.com/ggml-org/llama.cpp/releases/download/b9878/llama-b9878-bin-win-cpu-x64.zip',
 };
+const LOCAL_ENGINE_CONTEXT_FALLBACK = 4096;
+const LOCAL_ENGINE_CONTEXT_MIN = 2048;
+const LOCAL_ENGINE_CONTEXT_MAX = 131072;
+const LOCAL_ENGINE_MODEL_PROFILES = [
+  { id: 'alloflow-qwen2.5-3b', match: /qwen2?\.?5.*3b|qwen.*3b/i, contextSize: 4096, safeOutputTokens: 1400, safeJsonOutputTokens: 1100 },
+  { id: 'gemma-local', match: /gemma/i, contextSize: 8192, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
+  { id: 'llama-local', match: /llama|mistral|mixtral/i, contextSize: 8192, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
+  { id: 'qwen-local', match: /qwen/i, contextSize: 8192, safeOutputTokens: 1800, safeJsonOutputTokens: 1400 },
+];
 const managedEngine = {
   child: null,
   logs: [],
@@ -1949,6 +1961,51 @@ function engineModelFilePath(config) {
   return name ? path.join(getEngineDir(config), 'models', name) : '';
 }
 
+function clampEngineNumber(value, min, max, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return fallback;
+  return Math.max(min, Math.min(max, Math.round(n)));
+}
+
+function engineModelId(engine, modelFile = '') {
+  const source = modelFile || engine.modelUrl || '';
+  return String(source || '').split(/[\\/]/).pop().replace(/\.gguf(\?.*)?$/i, '').trim();
+}
+
+function inferEngineContextFromModelId(modelId) {
+  const text = String(modelId || '').toLowerCase();
+  const explicit = text.match(/(?:ctx|context|window)[-_ ]?(\d{1,3})k\b/i) || text.match(/\b(\d{1,3})k[-_ ]?(?:ctx|context|window)\b/i);
+  if (explicit) return clampEngineNumber(Number(explicit[1]) * 1024, LOCAL_ENGINE_CONTEXT_MIN, LOCAL_ENGINE_CONTEXT_MAX, LOCAL_ENGINE_CONTEXT_FALLBACK);
+  const plain = text.match(/\b(16|32|64|128)k\b/i);
+  if (plain) return clampEngineNumber(Number(plain[1]) * 1024, LOCAL_ENGINE_CONTEXT_MIN, LOCAL_ENGINE_CONTEXT_MAX, LOCAL_ENGINE_CONTEXT_FALLBACK);
+  return null;
+}
+
+function getEngineCapability(engine, modelFile = '') {
+  const modelId = engineModelId(engine, modelFile);
+  const configuredContext = Number(engine.contextSize);
+  const rule = LOCAL_ENGINE_MODEL_PROFILES.find((profile) => profile.match.test(modelId)) || null;
+  const inferred = inferEngineContextFromModelId(modelId);
+  const contextSize = clampEngineNumber(
+    configuredContext > 0 ? configuredContext : (inferred || (rule && rule.contextSize)),
+    LOCAL_ENGINE_CONTEXT_MIN,
+    LOCAL_ENGINE_CONTEXT_MAX,
+    LOCAL_ENGINE_CONTEXT_FALLBACK
+  );
+  const contextSource = configuredContext > 0 ? 'configured' : (inferred ? 'model-name' : (rule ? 'profile' : 'fallback'));
+  const safeOutputTokens = clampEngineNumber(rule && rule.safeOutputTokens, 256, Math.min(8192, contextSize), Math.min(1600, Math.max(768, Math.floor(contextSize * 0.28))));
+  const safeJsonOutputTokens = clampEngineNumber(rule && rule.safeJsonOutputTokens, 256, safeOutputTokens, Math.min(safeOutputTokens, 1200));
+  return {
+    profileId: (rule && rule.id) || 'local-default',
+    modelId,
+    contextSize,
+    contextSource,
+    safeInputTokens: Math.max(512, Math.floor(contextSize * 0.55)),
+    safeOutputTokens,
+    safeJsonOutputTokens,
+  };
+}
+
 async function getFreeDiskBytes(dir) {
   try {
     const stats = await fs.promises.statfs(dir);
@@ -2109,6 +2166,7 @@ async function getLocalEngineStatus(config = readConfig()) {
   const modelFile = engineModelFilePath(config);
   let modelBytes = null;
   try { modelBytes = fs.statSync(modelFile).size; } catch (_) {}
+  const capability = getEngineCapability(engine, modelFile);
   const running = isEngineRunning();
   // Normalize once: the child's exit handler is the phase's single writer,
   // but a crash between polls can leave 'running' with no child.
@@ -2128,6 +2186,7 @@ async function getLocalEngineStatus(config = readConfig()) {
       present: Boolean(modelBytes),
       bytes: modelBytes,
     },
+    capability,
     download: managedEngine.download,
     diskFreeBytes: await (async () => {
       if (managedEngine.diskFreeCache && now - managedEngine.diskFreeCache.at < 15000) return managedEngine.diskFreeCache.bytes;
@@ -2162,9 +2221,11 @@ async function launchEngineProcess(config, arch) {
   }
   managedEngine.phase = 'starting';
   managedEngine.arch = arch;
-  appendEngineLog('Starting llama-server (' + arch + ') on 127.0.0.1:' + engine.port + ' with ' + path.basename(modelFile));
+  const capability = getEngineCapability(engine, modelFile);
+  appendEngineLog('Starting llama-server (' + arch + ') on 127.0.0.1:' + engine.port + ' with ' + path.basename(modelFile) +
+    ' (ctx ' + capability.contextSize + ', ' + capability.contextSource + ')');
   const args = ['-m', modelFile, '--host', '127.0.0.1', '--port', String(engine.port),
-    '-c', String(engine.contextSize || 4096), '--no-webui'];
+    '-c', String(capability.contextSize), '--no-webui'];
   if (engine.threads) args.push('-t', String(engine.threads));
   (Array.isArray(engine.extraArgs) ? engine.extraArgs : []).forEach((arg) => args.push(String(arg)));
   let exitCode = null;
@@ -3559,6 +3620,7 @@ module.exports = {
   maybeAutostartEngine,
   stopLocalEngine,
   getLocalEngineStatus,
+  getEngineCapability,
   maybeAutostartAsr,
   startLocalAsr,
   stopLocalAsr,

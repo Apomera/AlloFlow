@@ -26,7 +26,21 @@
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
-  var TIMELINE_STUDIO_URL = 'https://alloflow-cdn.pages.dev/timeline_studio/timeline_studio.html?v=1';
+  var TIMELINE_STUDIO_CDN_URL = 'https://alloflow-cdn.pages.dev/timeline_studio/timeline_studio.html?v=1';
+  function companionUrl(path, cdnUrl) {
+    try {
+      var loc = window.location || {};
+      var host = loc.hostname || '';
+      var pathname = loc.pathname || '';
+      var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
+      var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
+      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      if (isDesktopBundled) return new URL(path, loc.href).toString();
+      if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
+    } catch (_) {}
+    return cdnUrl;
+  }
+  var TIMELINE_STUDIO_URL = companionUrl('timeline_studio/timeline_studio.html?v=1', TIMELINE_STUDIO_CDN_URL);
 
   function buildTimelinePrompt(sourceText, grade) {
     return [

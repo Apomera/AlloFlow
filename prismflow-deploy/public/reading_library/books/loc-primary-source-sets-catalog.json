@@ -1,0 +1,40 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-primary-source-sets-catalog",
+  "title": "Library of Congress Primary Source Sets",
+  "description": "A source card for Library of Congress classroom materials and primary-source sets.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": ["History", "Civics", "Primary sources", "Research"],
+  "authors": ["Library of Congress"],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/programs/teachers/classroom-materials/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Library of Congress classroom materials help teachers and students work with primary sources. Useful paths include primary-source sets, lesson plans, presentations, Chronicling America, Everyday Mysteries, research guides, and Free to Use and Reuse sets."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This source belongs in the history and primary-source shelf because it supports document analysis, sourcing, context, corroboration, and evidence-based argument. Rights note: the Library does not own every item in its collections, so item-level copyright and use restrictions must be checked."
+    }
+  ],
+  "stats": { "pages": 2, "words": 96 }
+}

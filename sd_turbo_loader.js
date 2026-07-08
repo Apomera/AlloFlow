@@ -216,13 +216,31 @@
   function makeFloatTensor(session, name, data, dims) {
     // Feed fp16 models fp16, fp32 models fp32 — read the session's declared type.
     var ort = state.ort;
-    var meta = null;
-    try { meta = session.inputMetadata && (session.inputMetadata[name] || session.inputMetadata[session.inputNames.indexOf(name)]); } catch (_) {}
+    var meta = getInputMeta(session, name);
     var type = meta && (meta.type || meta.dataType);
     if (typeof type === 'string' && /float16/.test(type)) {
       return new ort.Tensor('float16', toHalf(data), dims);
     }
     return new ort.Tensor('float32', data, dims);
+  }
+  function makeTimestepTensor(session, name, value) {
+    var ort = state.ort;
+    var meta = getInputMeta(session, name);
+    var type = meta && (meta.type || meta.dataType);
+    if (typeof type === 'string' && /int32/.test(type)) {
+      return new ort.Tensor('int32', new Int32Array([value]), [1]);
+    }
+    return new ort.Tensor('int64', new BigInt64Array([BigInt(value)]), [1]);
+  }
+  function getInputMeta(session, name) {
+    try {
+      if (!session || !session.inputMetadata) return null;
+      var byName = session.inputMetadata[name];
+      if (byName) return byName;
+      var names = Array.isArray(session.inputNames) ? session.inputNames : [];
+      var index = names.indexOf(name);
+      return index >= 0 ? session.inputMetadata[index] : null;
+    } catch (_) { return null; }
   }
   function tensorToFloat32(tensor) {
     if (tensor.type === 'float16') {
@@ -236,6 +254,43 @@
     }
     return tensor.data instanceof Float32Array ? tensor.data : new Float32Array(tensor.data);
   }
+  function looksLikeTensor(value) {
+    return Boolean(value && value.data && value.dims);
+  }
+  function pickSessionName(session, key, preferred, fallbackIndex) {
+    var names = [];
+    try { names = Array.isArray(session && session[key]) ? session[key] : []; } catch (_) {}
+    var wanted = Array.isArray(preferred) ? preferred : [preferred];
+    for (var i = 0; i < wanted.length; i++) {
+      if (names.indexOf(wanted[i]) >= 0) return wanted[i];
+    }
+    for (var w = 0; w < wanted.length; w++) {
+      var target = String(wanted[w]).toLowerCase();
+      for (var n = 0; n < names.length; n++) {
+        if (String(names[n]).toLowerCase() === target) return names[n];
+      }
+    }
+    if (typeof fallbackIndex === 'number' && names[fallbackIndex]) return names[fallbackIndex];
+    return names[0] || wanted[0];
+  }
+  function pickOutput(outputs, preferred) {
+    if (!outputs) return null;
+    var wanted = Array.isArray(preferred) ? preferred : [preferred];
+    for (var i = 0; i < wanted.length; i++) {
+      if (looksLikeTensor(outputs[wanted[i]])) return outputs[wanted[i]];
+    }
+    var keys = Object.keys(outputs);
+    for (var w = 0; w < wanted.length; w++) {
+      var target = String(wanted[w]).toLowerCase();
+      for (var k = 0; k < keys.length; k++) {
+        if (String(keys[k]).toLowerCase() === target && looksLikeTensor(outputs[keys[k]])) return outputs[keys[k]];
+      }
+    }
+    for (var j = 0; j < keys.length; j++) {
+      if (looksLikeTensor(outputs[keys[j]])) return outputs[keys[j]];
+    }
+    return null;
+  }
 
   async function generate(prompt, options) {
     if (!window._sdTurbo.ready) throw new Error('Local image generator is not loaded yet.');
@@ -247,26 +302,35 @@
     var ids = encoded.input_ids;
     var idsInt32 = new Int32Array(77);
     for (var i = 0; i < 77; i++) idsInt32[i] = Number(ids[i] || 0);
-    var textOut = await state.sessions.text_encoder.run({
-      input_ids: new ort.Tensor('int32', idsInt32, [1, 77]),
-    });
-    var hidden = textOut.last_hidden_state;
+    var textInputName = pickSessionName(state.sessions.text_encoder, 'inputNames', ['input_ids'], 0);
+    var textFeed = {};
+    textFeed[textInputName] = new ort.Tensor('int32', idsInt32, [1, 77]);
+    var textOut = await state.sessions.text_encoder.run(textFeed);
+    var hidden = pickOutput(textOut, ['last_hidden_state', 'hidden_states', 'encoder_hidden_states']);
+    if (!hidden) throw new Error('SD-Turbo text encoder returned no usable hidden-state tensor.');
 
     var latentCount = LATENT.channels * LATENT.height * LATENT.width;
     var latents = randnLatents(latentCount, SIGMA);
     var scaled = scaleModelInputs(latents, SIGMA);
-    var unetFeed = {
-      sample: makeFloatTensor(state.sessions.unet, 'sample', scaled, [1, LATENT.channels, LATENT.height, LATENT.width]),
-      timestep: new ort.Tensor('int64', new BigInt64Array([BigInt(TIMESTEP)]), [1]),
-      encoder_hidden_states: hidden,
-    };
+    var unetSampleName = pickSessionName(state.sessions.unet, 'inputNames', ['sample', 'latent_model_input', 'latents'], 0);
+    var unetTimestepName = pickSessionName(state.sessions.unet, 'inputNames', ['timestep', 'timesteps', 't'], 1);
+    var unetHiddenName = pickSessionName(state.sessions.unet, 'inputNames', ['encoder_hidden_states', 'text_embeds', 'context'], 2);
+    var unetFeed = {};
+    unetFeed[unetSampleName] = makeFloatTensor(state.sessions.unet, unetSampleName, scaled, [1, LATENT.channels, LATENT.height, LATENT.width]);
+    unetFeed[unetTimestepName] = makeTimestepTensor(state.sessions.unet, unetTimestepName, TIMESTEP);
+    unetFeed[unetHiddenName] = hidden;
     var unetOut = await state.sessions.unet.run(unetFeed);
-    var noisePred = tensorToFloat32(unetOut.out_sample);
+    var noisePredTensor = pickOutput(unetOut, ['out_sample', 'sample', 'noise_pred', 'latent']);
+    if (!noisePredTensor) throw new Error('SD-Turbo UNet returned no usable noise tensor.');
+    var noisePred = tensorToFloat32(noisePredTensor);
     var vaeLatents = denoiseToVaeLatents(latents, noisePred, SIGMA, VAE_SCALING);
-    var vaeOut = await state.sessions.vae_decoder.run({
-      latent_sample: makeFloatTensor(state.sessions.vae_decoder, 'latent_sample', vaeLatents, [1, LATENT.channels, LATENT.height, LATENT.width]),
-    });
-    var image = tensorToFloat32(vaeOut.sample);
+    var vaeInputName = pickSessionName(state.sessions.vae_decoder, 'inputNames', ['latent_sample', 'sample', 'latents'], 0);
+    var vaeFeed = {};
+    vaeFeed[vaeInputName] = makeFloatTensor(state.sessions.vae_decoder, vaeInputName, vaeLatents, [1, LATENT.channels, LATENT.height, LATENT.width]);
+    var vaeOut = await state.sessions.vae_decoder.run(vaeFeed);
+    var imageTensor = pickOutput(vaeOut, ['sample', 'out_sample', 'image', 'images']);
+    if (!imageTensor) throw new Error('SD-Turbo VAE returned no usable image tensor.');
+    var image = tensorToFloat32(imageTensor);
     var rgba = chwToRgba(image, IMAGE_SIZE, IMAGE_SIZE);
     var canvas = document.createElement('canvas');
     canvas.width = IMAGE_SIZE;
@@ -287,6 +351,8 @@
       chwToRgba: chwToRgba,
       toHalf: toHalf,
       fromHalf: fromHalf,
+      pickSessionName: pickSessionName,
+      pickOutput: pickOutput,
       constants: { SIGMA: SIGMA, TIMESTEP: TIMESTEP, VAE_SCALING: VAE_SCALING },
     },
   };

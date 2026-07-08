@@ -469,6 +469,7 @@ window.StemLab = window.StemLab || {
           var callTTS = ctx.callTTS;
           var setToolSnapshots = ctx.setToolSnapshots;
           var setStemLabTool = ctx.setStemLabTool;
+          var setStemLabTab = ctx.setStemLabTab;
 
           var band = getGradeBand(ctx);
 
@@ -826,6 +827,7 @@ window.StemLab = window.StemLab || {
           var benchRoutes = [
             { title: 'Load Starter Circuit', icon: '\uD83D\uDD34', note: 'LED + resistor baseline', action: function() { loadPreset(CIRCUIT_PRESETS[0]); }, tone: '#f97316' },
             { title: 'Open Presets', icon: '\uD83D\uDCCB', note: 'Voltage dividers, meters, short demo', action: function() { upd('showPresets', true); }, tone: '#facc15' },
+            { title: 'Advanced Simulator', icon: '\uD83D\uDD0C', note: 'CircuitJS meters and real-world challenges', action: function() { if (typeof ctx.setToolData === 'function') ctx.setToolData(function(prev) { var cur = Object.assign({}, (prev && prev._circuitShelf) || {}); cur.returnTool = 'circuit'; var next = Object.assign({}, prev); next._circuitShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('circuitShelf'); if (typeof announceToSR === 'function') announceToSR('Opening Circuit Shelf advanced simulator.'); } else if (typeof addToast === 'function') addToast('Advanced simulator is not available right now.', 'info'); }, tone: '#fb923c' },
             { title: 'Try a Target', icon: '\uD83C\uDFAF', note: challengeProgress + '/' + CHALLENGES.length + ' solved', action: function() { upd('challenge', CHALLENGES[0]); if (typeof addToast === 'function') addToast('Target ready: ' + CHALLENGES[0].label, 'info'); }, tone: '#34d399' },
             { title: band === 'g68' || band === 'g912' ? 'Show Laws' : 'Ask Tutor', icon: band === 'g68' || band === 'g912' ? '\u2696' : '\uD83E\uDD16', note: band === 'g68' || band === 'g912' ? 'Kirchhoff support' : 'Get a circuit hint', action: function() { if (band === 'g68' || band === 'g912') upd('showKirchhoff', true); else upd('showAI', true); }, tone: '#a78bfa' }
           ];

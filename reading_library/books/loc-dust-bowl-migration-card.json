@@ -1,0 +1,29 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-dust-bowl-migration-card",
+  "title": "Library of Congress: Dust Bowl Migration",
+  "description": "A source card for the Library of Congress Dust Bowl Migration primary-source set.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": ["History", "Migration", "Great Depression", "Primary sources"],
+  "authors": ["Library of Congress"],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": { "id": "loc", "name": "Library of Congress", "url": "https://www.loc.gov/classroom-materials/dust-bowl-migration/" },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    { "n": 1, "img": null, "text": "The Library of Congress Dust Bowl Migration primary-source set gathers photographs, maps, songs, poems, and classroom guides about migration during the Great Depression." },
+    { "n": 2, "img": null, "text": "Students can use the set to study how drought, soil practices, economic hardship, farm foreclosure, transportation, and public policy shaped families' decisions to move west." },
+    { "n": 3, "img": null, "text": "Rights note: Library of Congress classroom sets are excellent discovery tools, but each item can have its own rights status. Check the item page before mirroring an image or document." }
+  ],
+  "stats": { "pages": 3, "words": 103 }
+}

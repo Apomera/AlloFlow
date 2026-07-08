@@ -81,6 +81,25 @@ window.StemLab = window.StemLab || {
     document.body.appendChild(lr);
   })();
 
+  // Scoped contrast lift for the Geometry Sandbox UI. The tool uses many compact
+  // utility-class panels, so keep the override local to this root.
+  (function() {
+    if (document.getElementById('allo-geosandbox-contrast-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-geosandbox-contrast-css';
+    st.textContent = [
+      '#allo-geo-sandbox { color: #f8fafc; }',
+      '#allo-geo-sandbox button:focus-visible, #allo-geo-sandbox input:focus-visible, #allo-geo-sandbox select:focus-visible, #allo-geo-sandbox textarea:focus-visible, #allo-geo-sandbox canvas:focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px rgba(250,204,21,0.28) !important; }',
+      '#allo-geo-sandbox [class~="text-slate-600"], #allo-geo-sandbox [class~="text-slate-500"], #allo-geo-sandbox [class~="text-slate-400"] { color: #cbd5e1 !important; }',
+      '#allo-geo-sandbox [class*="text-"][class*="/50"], #allo-geo-sandbox [class*="text-"][class*="/60"], #allo-geo-sandbox [class*="text-"][class*="/70"], #allo-geo-sandbox [class*="text-"][class*="/80"] { color: #e2e8f0 !important; }',
+      '#allo-geo-sandbox input::placeholder, #allo-geo-sandbox textarea::placeholder { color: #cbd5e1 !important; opacity: 1 !important; }',
+      '#allo-geo-sandbox [class*="border-slate-700"], #allo-geo-sandbox [class*="border-slate-600"], #allo-geo-sandbox [class*="border-"][class*="/20"], #allo-geo-sandbox [class*="border-"][class*="/30"], #allo-geo-sandbox [class*="border-"][class*="/40"] { border-color: #94a3b8 !important; }',
+      '#allo-geo-sandbox .opacity-50 { opacity: 0.92 !important; }',
+      '@media (forced-colors: active) { #allo-geo-sandbox button, #allo-geo-sandbox input, #allo-geo-sandbox select, #allo-geo-sandbox textarea, #allo-geo-sandbox canvas { forced-color-adjust: auto; border: 1px solid CanvasText !important; } #allo-geo-sandbox button:focus-visible, #allo-geo-sandbox input:focus-visible, #allo-geo-sandbox select:focus-visible, #allo-geo-sandbox textarea:focus-visible, #allo-geo-sandbox canvas:focus-visible { outline: 3px solid Highlight !important; box-shadow: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
 
   // ── Three.js loader (shared with archStudio in monolith, self-contained here) ──
   function ensureThreeJS(onReady, onError) {
@@ -496,8 +515,9 @@ window.StemLab = window.StemLab || {
       // End any live VR session and stop the XR frame loop before disposing the GL.
       try { var _r = window._geoScene.renderer; if (_r && _r.xr) { var _s = _r.xr.getSession && _r.xr.getSession(); if (_s) _s.end(); _r.setAnimationLoop(null); } } catch(e){}
       try{ if(window._geoScene.renderer && window._geoScene.renderer._alloComposer){ (window._geoScene.renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); window._geoScene.renderer._alloComposer=null; } }catch(e){}
-      try { if (window._geoScene.sculptGroup) { window._geoScene.sculptGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } } catch(e){}
+      try { if (window._geoScene.sculptGroup) disposeGeoObject3D(window._geoScene.sculptGroup); } catch(e){}
       try { if (window._geoScene.sliceGroup) { window._geoScene.sliceGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } } catch(e){}
+      try { if (window._geoScene.constructionGroup) disposeGeoObject3D(window._geoScene.constructionGroup); } catch(e){}
       if (window._geoScene.renderer) window._geoScene.renderer.dispose();
       if (window._geoScene.controls) window._geoScene.controls.dispose();
       window._geoScene = null;
@@ -1473,8 +1493,144 @@ window.StemLab = window.StemLab || {
     return { faces: faces, width: a + 2 * c, height: 2 * b + 2 * c, dims: { a: a, b: b, c: c } };
   }
 
+  function disposeGeoObject3D(obj) {
+    if (!obj) return;
+    obj.traverse(function(o) {
+      if (o.geometry && o.geometry.dispose) o.geometry.dispose();
+      if (o.material) {
+        var mats = Array.isArray(o.material) ? o.material : [o.material];
+        mats.forEach(function(m) {
+          if (m.map && m.map.dispose) m.map.dispose();
+          if (m.dispose) m.dispose();
+        });
+      }
+    });
+  }
+
+  function geoLabelAnchor(o) {
+    var p = o && o.position ? o.position : [0, 0, 0];
+    var a = [p[0], p[1] + 0.55, p[2]];
+    if (!o) return a;
+    if (o.type === 'segment' && o.vector) {
+      a = [p[0] + o.vector[0] / 2, p[1] + o.vector[1] / 2 + 0.45, p[2] + o.vector[2] / 2];
+    } else if (o.type === 'rect' && o.u && o.v) {
+      a = [p[0] + (o.u[0] + o.v[0]) / 2, p[1] + (o.u[1] + o.v[1]) / 2 + 0.55, p[2] + (o.u[2] + o.v[2]) / 2];
+    } else if (o.type === 'prism' && o.u && o.v && o.w) {
+      a = [p[0] + (o.u[0] + o.v[0] + o.w[0]) / 2, p[1] + (o.u[1] + o.v[1] + o.w[1]) / 2 + 0.65, p[2] + (o.u[2] + o.v[2] + o.w[2]) / 2];
+    }
+    return a;
+  }
+
+  function geoObjectLabelText(o, unitShort) {
+    var m = geoStretchMeasure(o);
+    var names = { point: 'Point', segment: 'Segment', rect: 'Rectangle', prism: 'Prism', pyramid: 'Pyramid', revolution: 'Revolution' };
+    var name = names[o && o.type] || 'Object';
+    var id = o && o.id != null ? ' #' + o.id : '';
+    if (!m) return name + id;
+    if (m.kind === 'point') return name + id + '\n0D point';
+    var units = unitShort || 'u';
+    var suffix = units + (m.unitExp > 1 ? '^' + m.unitExp : '');
+    var value = Math.round(m.value * 100) / 100;
+    return name + id + '\n' + m.label + ': ' + value + ' ' + suffix + '\n' + m.dim + 'D';
+  }
+
+  function buildGeoLabelSprite(THREE, text, anchor) {
+    if (typeof document === 'undefined' || !text) return null;
+    var canvas = document.createElement('canvas');
+    var lines = String(text).split('\n').slice(0, 4);
+    canvas.width = 512;
+    canvas.height = 34 + lines.length * 42;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(2,6,23,0.94)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 5;
+    ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    lines.forEach(function(line, i) {
+      ctx.font = (i === 0 ? 'bold 30px' : 'bold 28px') + ' system-ui, -apple-system, Segoe UI, sans-serif';
+      ctx.fillStyle = i === 0 ? '#facc15' : '#f8fafc';
+      ctx.fillText(line, canvas.width / 2, 28 + i * 42);
+    });
+    var texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false, depthWrite: false }));
+    sprite.position.set(anchor[0], anchor[1], anchor[2]);
+    sprite.scale.set(2.4, 2.4 * (canvas.height / canvas.width), 1);
+    sprite.renderOrder = 9999;
+    sprite.userData.isGeoLabel = true;
+    return sprite;
+  }
+
+  function geoShapeTitle(shape) {
+    shape = String(shape || 'part');
+    return shape.charAt(0).toUpperCase() + shape.slice(1);
+  }
+
+  function sculptPartLabelText(part, index, recipeScale, unitShort) {
+    var pm = geoPrimitiveMeasure((part && part.shape) || 'box', (part && part.size) || []);
+    var scale = recipeScale || 1;
+    var units = unitShort || 'u';
+    var vol = Math.round(pm.vol * scale * scale * scale * 100) / 100;
+    var sa = Math.round(pm.sa * scale * scale * 100) / 100;
+    return geoShapeTitle(part && part.shape) + ' #' + (index + 1) +
+      '\nV: ' + vol + ' ' + units + '^3' +
+      '\nSA: ' + sa + ' ' + units + '^2';
+  }
+
+  function sculptPartLabelAnchor(part) {
+    var pos = (part && part.position) || [0, 0.5, 0];
+    var size = (part && part.size) || [];
+    var shape = part && part.shape;
+    var rise = 0.65;
+    if (shape === 'box') rise = (size[1] || 0.4) / 2 + 0.55;
+    else if (shape === 'sphere') rise = (size[0] || 0.35) + 0.55;
+    else if (shape === 'cylinder' || shape === 'cone') rise = (size[1] || 0.4) / 2 + 0.55;
+    else if (shape === 'torus') rise = (size[0] || 0.3) + (size[1] || 0.08) + 0.55;
+    return [pos[0] || 0, (pos[1] || 0) + rise, pos[2] || 0];
+  }
+
+  function sculptRecipeLabelText(recipe, unitShort) {
+    var sm = geoSculptMeasure(recipe);
+    var units = unitShort || 'u';
+    return 'Sculpt total' +
+      '\nV sum: ' + (Math.round(sm.totalVol * 100) / 100) + ' ' + units + '^3' +
+      '\nSA sum: ' + (Math.round(sm.totalSA * 100) / 100) + ' ' + units + '^2';
+  }
+
+  function sculptRecipeLabelAnchor(recipe) {
+    var parts = (recipe && recipe.parts) || [];
+    if (!parts.length) return [0, 1.4, 0];
+    var cx = 0, cy = 0, cz = 0, top = 0;
+    parts.forEach(function(part) {
+      var pos = (part && part.position) || [0, 0.5, 0];
+      var anchor = sculptPartLabelAnchor(part);
+      cx += pos[0] || 0; cy += pos[1] || 0; cz += pos[2] || 0;
+      top = Math.max(top, anchor[1] || 0);
+    });
+    return [cx / parts.length, Math.max(top + 0.15, (cy / parts.length) + 0.75), cz / parts.length];
+  }
+
+  function addSculptSceneLabel(THREE, group, recipe, selectedPart, unitShort) {
+    if (!THREE || !group || !recipe) return;
+    var parts = recipe.parts || [];
+    var hasSelectedPart = selectedPart != null && parts[selectedPart];
+    var text = hasSelectedPart
+      ? sculptPartLabelText(parts[selectedPart], selectedPart, recipe.scale, unitShort)
+      : sculptRecipeLabelText(recipe, unitShort);
+    var anchor = hasSelectedPart ? sculptPartLabelAnchor(parts[selectedPart]) : sculptRecipeLabelAnchor(recipe);
+    var label = buildGeoLabelSprite(THREE, text, anchor);
+    if (!label) return;
+    var scale = group.scale && group.scale.x ? group.scale.x : 1;
+    if (scale) label.scale.multiplyScalar(1 / scale);
+    group.add(label);
+  }
+
   // Render construction objects into a Three.js scene group, returns the group.
-  function buildConstructionGroup(THREE, objects, selectedId) {
+  function buildConstructionGroup(THREE, objects, selectedId, showLabels, unitShort) {
     var group = new THREE.Group();
     if (!objects) return group;
     objects.forEach(function(o) {
@@ -1591,6 +1747,13 @@ window.StemLab = window.StemLab || {
         mesh.userData.objId = o.id;
         mesh.userData.objType = o.type;
         group.add(mesh);
+        if (showLabels && isSel) {
+          var label = buildGeoLabelSprite(THREE, geoObjectLabelText(o, unitShort), geoLabelAnchor(o));
+          if (label) {
+            label.userData.objId = o.id;
+            group.add(label);
+          }
+        }
       }
     });
     return group;
@@ -1799,6 +1962,7 @@ window.StemLab = window.StemLab || {
       var savedConstructions = gd.savedConstructions || {};
       var savedSculpts = gd.savedSculpts || {};
       var showSaved = gd.showSaved || false;
+      var showSceneLabels = gd.showSceneLabels !== false;
       var unitId = gd.unitId || 'unit';
       var unitDef = GEO_UNITS.find(function(u) { return u.id === unitId; }) || GEO_UNITS[0];
       var stretchAxis = gd.stretchAxis || 'x';
@@ -2595,8 +2759,8 @@ window.StemLab = window.StemLab || {
         // Single-shape mode: render the primitive.
         // Stretch mode: hide primitive and render the construction group instead.
         // Clear the two groups the active mode won't use, so only one is ever shown.
-        var _clearSculpt = function() { if (window._geoScene.sculptGroup) { window._geoScene.scene.remove(window._geoScene.sculptGroup); try { window._geoScene.sculptGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } catch(e){} window._geoScene.sculptGroup = null; } };
-        var _clearConstruction = function() { if (window._geoScene.constructionGroup) { window._geoScene.scene.remove(window._geoScene.constructionGroup); window._geoScene.constructionGroup = null; } };
+        var _clearSculpt = function() { if (window._geoScene.sculptGroup) { window._geoScene.scene.remove(window._geoScene.sculptGroup); disposeGeoObject3D(window._geoScene.sculptGroup); window._geoScene.sculptGroup = null; } };
+        var _clearConstruction = function() { if (window._geoScene.constructionGroup) { window._geoScene.scene.remove(window._geoScene.constructionGroup); disposeGeoObject3D(window._geoScene.constructionGroup); window._geoScene.constructionGroup = null; } };
         var _clearSlice = function() { if (window._geoScene.sliceGroup) { window._geoScene.scene.remove(window._geoScene.sliceGroup); try { window._geoScene.sliceGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } catch(e){} window._geoScene.sliceGroup = null; } };
         var _clearMesh = function() { if (window._geoScene.mesh) { window._geoScene.scene.remove(window._geoScene.mesh); window._geoScene.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); window._geoScene.mesh = null; } };
         if (mode === 'single') {
@@ -2609,14 +2773,20 @@ window.StemLab = window.StemLab || {
           else if (sculptRecipe) {
             try {
               var sg = P3D.buildObject(window.THREE, sculptRecipe, { unit: 2.6 });   // ~2.5 units tall on the grid
-              if (sg) { sg.position.y = 0; sg.traverse(function(o){ if(o.isMesh){ o.castShadow = true; } }); window._geoScene.sculptGroup = sg; window._geoScene.scene.add(sg); }
+              if (sg) {
+                sg.position.y = 0;
+                sg.traverse(function(o){ if(o.isMesh){ o.castShadow = true; } });
+                if (showSceneLabels) addSculptSceneLabel(window.THREE, sg, sculptRecipe, selPart, unitDef.short);
+                window._geoScene.sculptGroup = sg;
+                window._geoScene.scene.add(sg);
+              }
             } catch (e) {}
           }
         } else {
           // Stretch mode
           _clearMesh(); _clearSculpt();
-          if (window._geoScene.constructionGroup) { window._geoScene.scene.remove(window._geoScene.constructionGroup); }
-          window._geoScene.constructionGroup = buildConstructionGroup(window.THREE, construction.objects, construction.selection);
+          _clearConstruction();
+          window._geoScene.constructionGroup = buildConstructionGroup(window.THREE, construction.objects, construction.selection, showSceneLabels, unitDef.short);
           window._geoScene.scene.add(window._geoScene.constructionGroup);
           // Cross-section slice overlay (rebuilt each render so it tracks the slider)
           _clearSlice();
@@ -2638,7 +2808,7 @@ window.StemLab = window.StemLab || {
         };
         window.addEventListener('resize', handleResize);
         return function() { window.removeEventListener('resize', handleResize); };
-      }, [shape, dims, shapeColor, wireframe, opacity, theme, mode, JSON.stringify(construction), JSON.stringify(sculptRecipe), prim3dReady, gd.sliceOn, gd.sliceT]);
+      }, [shape, dims, shapeColor, wireframe, opacity, theme, mode, JSON.stringify(construction), JSON.stringify(sculptRecipe), prim3dReady, gd.sliceOn, gd.sliceT, showSceneLabels, unitId, selPart]);
 
       // Cleanup on unmount
       React.useEffect(function() {
@@ -2666,7 +2836,7 @@ window.StemLab = window.StemLab || {
 
       // ── Loading state ──
       if (!labToolData._threeLoaded) {
-        return h('div', { className: 'flex flex-col items-center justify-center gap-4 p-12 animate-pulse' },
+        return h('div', { id: 'allo-geo-sandbox', className: 'flex flex-col items-center justify-center gap-4 p-12 animate-pulse' },
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, gd._srMsg || ''),
           h('div', { className: 'text-5xl' }, '\uD83D\uDD37'),
           h('div', { className: 'text-slate-200 text-lg' }, t('stem.geosandbox.loading_3d_engine', 'Loading 3D engine...'))
@@ -2676,7 +2846,7 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════
       // ═══ RENDER ═══
       // ══════════════════════════
-      return h('div', { className: 'flex flex-col gap-3 animate-in fade-in duration-300' },
+      return h('div', { id: 'allo-geo-sandbox', className: 'flex flex-col gap-3 animate-in fade-in duration-300' },
 
         // Header row
         h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
@@ -2693,7 +2863,7 @@ window.StemLab = window.StemLab || {
                 if (announceToSR) announceToSR('Single shape mode');
               },
               className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
-                (mode === 'single' ? 'bg-sky-600 text-white shadow' : 'text-slate-300 hover:text-slate-100')
+                (mode === 'single' ? 'bg-sky-700 text-white shadow' : 'text-slate-300 hover:text-slate-100')
             }, t('stem.geosandbox.single_shape', '\uD83D\uDCE6 Single shape')),
             h('button', {
               role: 'tab',
@@ -2704,7 +2874,7 @@ window.StemLab = window.StemLab || {
               },
               title: t('stem.geosandbox.handwaver_inspired_build_by_stretching', 'HandWaver-inspired: build by stretching point \u2192 line \u2192 plane \u2192 solid'),
               className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
-                (mode === 'stretch' ? 'bg-purple-600 text-white shadow' : 'text-slate-300 hover:text-slate-100')
+                (mode === 'stretch' ? 'bg-purple-700 text-white shadow' : 'text-slate-300 hover:text-slate-100')
             }, t('stem.geosandbox.stretch_mode', '\uD83D\uDCD0 Stretch mode')),
             h('button', {
               role: 'tab',
@@ -2716,7 +2886,7 @@ window.StemLab = window.StemLab || {
               },
               title: t('stem.geosandbox.sculpt_mode_title', 'AI Sculpt: describe an object, the AI builds it from primitives \u2014 then refine it'),
               className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
-                (mode === 'sculpt' ? 'bg-fuchsia-600 text-white shadow' : 'text-slate-300 hover:text-slate-100')
+                (mode === 'sculpt' ? 'bg-fuchsia-700 text-white shadow' : 'text-slate-300 hover:text-slate-100')
             }, t('stem.geosandbox.sculpt_mode', '\uD83E\uDDCA AI Sculpt'))
           ),
           h('div', { className: 'flex gap-2 flex-wrap' },
@@ -2748,7 +2918,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': t('stem.geosandbox.challenge', 'Challenge'),
               onClick: generateChallenge,
               title: t('stem.geosandbox.challenge_mode_c', 'Challenge Mode [C]'),
-              className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-600 to-orange-700 shadow-md shadow-amber-600/20 hover:from-amber-700 hover:to-orange-800' : 'text-amber-900 bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30')
+              className: 'px-3 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1 ' + (gd.challengeMode ? 'text-white bg-gradient-to-r from-amber-700 to-orange-800 shadow-md shadow-amber-700/20 hover:from-amber-800 hover:to-orange-900' : 'text-amber-100 bg-amber-700/30 border border-amber-300/70 hover:bg-amber-700/40')
             }, t('stem.geosandbox.challenge_2', '\uD83C\uDFAF Challenge')),
             gd.challengeMode && h('button', { 'aria-label': t('stem.geosandbox.exit', 'Exit'),
               onClick: function() { setLabToolData(function(prev) { return Object.assign({}, prev, { geoSandbox: Object.assign({}, prev.geoSandbox||{}, { challengeMode:false, challenge:null, challengeAnswer:'', challengeResult:null }) }); }); },
@@ -2757,7 +2927,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': t('stem.geosandbox.badges_b', 'Badges [B]'),
               onClick: function() { updExt({ showBadges: !showBadges }); },
               title: t('stem.geosandbox.badges_b_2', 'Badges [B]'),
-              className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (showBadges ? 'text-white bg-gradient-to-r from-purple-500 to-fuchsia-600 shadow-md' : 'text-purple-300 bg-purple-500/20 border border-purple-500/30 hover:bg-purple-500/30')
+              className: 'px-3 py-1.5 text-xs font-bold rounded-full flex items-center gap-1 transition-all ' + (showBadges ? 'text-white bg-gradient-to-r from-purple-700 to-fuchsia-800 shadow-md' : 'text-purple-200 bg-purple-700/30 border border-purple-300/70 hover:bg-purple-700/40')
             }, '\uD83C\uDFC5 ' + badgeCount + '/' + Object.keys(geoBadges).length),
             h('button', { 'aria-label': 'STL',
               onClick: askAI,
@@ -2783,10 +2953,10 @@ window.StemLab = window.StemLab || {
             Object.keys(geoBadges).map(function(id) {
               var b = geoBadges[id];
               var earned = !!(ext.badges && ext.badges[id]);
-              return h('div', { key: id, className: 'flex flex-col items-center text-center p-2 rounded-lg transition-all ' + (earned ? 'bg-purple-500/20 border border-purple-400/40' : 'bg-slate-800/40 border border-slate-700/30 opacity-50') },
+              return h('div', { key: id, className: 'flex flex-col items-center text-center p-2 rounded-lg transition-all ' + (earned ? 'bg-purple-500/20 border border-purple-400/40' : 'bg-slate-800/40 border border-slate-500/70 opacity-90') },
                 h('span', { className: 'text-xl mb-1' }, earned ? b.icon : '\uD83D\uDD12'),
                 h('span', { className: 'text-[11px] font-bold ' + (earned ? 'text-purple-200' : 'text-slate-200') }, b.name),
-                h('span', { className: 'text-[11px] ' + (earned ? 'text-purple-300/70' : 'text-slate-600') }, __alloT('stem.geosandbox.' + (id) + '_desc', b.desc))
+                h('span', { className: 'text-[11px] ' + (earned ? 'text-purple-200' : 'text-slate-300') }, __alloT('stem.geosandbox.' + (id) + '_desc', b.desc))
               );
             })
           )
@@ -3011,10 +3181,10 @@ window.StemLab = window.StemLab || {
                     return h('div', {
                       key: 'jr-' + r.d,
                       className: 'flex-1 rounded-md px-1 py-1 text-center transition-all border',
-                      style: { background: on ? (r.color + '26') : 'rgba(30,41,59,0.5)', borderColor: on ? r.color : 'transparent', opacity: on ? 1 : 0.5 }
+                      style: { background: on ? (r.color + '26') : 'rgba(15,23,42,0.86)', borderColor: on ? r.color : '#94a3b8', opacity: on ? 1 : 0.92 }
                     },
-                      h('div', { className: 'text-sm leading-none', style: { color: on ? r.color : '#64748b' } }, r.glyph),
-                      h('div', { className: 'text-[9px] font-bold mt-0.5', style: { color: on ? r.color : '#64748b' } }, r.d + 'D'),
+                      h('div', { className: 'text-sm leading-none', style: { color: on ? '#f8fafc' : '#cbd5e1' } }, r.glyph),
+                      h('div', { className: 'text-[9px] font-bold mt-0.5', style: { color: on ? '#f8fafc' : '#cbd5e1' } }, r.d + 'D'),
                       h('div', { className: 'text-[8px] text-slate-400 leading-tight' }, r.name)
                     );
                   })
@@ -3040,7 +3210,7 @@ window.StemLab = window.StemLab || {
                         return h('button', {
                           key: 'lvl-' + lvl[0],
                           onClick: function() { startBuildChallenge(lvl[0]); },
-                          className: 'flex-1 px-2 py-1.5 rounded text-[11px] font-bold bg-emerald-700/70 text-white hover:bg-emerald-600 transition-all'
+                          className: 'flex-1 px-2 py-1.5 rounded text-[11px] font-bold bg-emerald-700/70 text-white hover:bg-emerald-800 transition-all'
                         }, lvl[1]);
                       })
                     ),
@@ -3062,7 +3232,7 @@ window.StemLab = window.StemLab || {
                     }, '💡 ' + t('stem.geosandbox.hint', 'Hint')),
                     h('button', {
                       onClick: function() { startBuildChallenge(solved ? undefined : buildChallenge.level); },
-                      className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-emerald-700/70 text-white hover:bg-emerald-600'
+                      className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-emerald-700/70 text-white hover:bg-emerald-800'
                     }, solved ? ('➡ ' + t('stem.geosandbox.next_challenge', 'Next')) : ('🔄 ' + t('stem.geosandbox.new_challenge', 'New'))),
                     h('button', {
                       onClick: clearBuildChallenge,
@@ -3096,7 +3266,7 @@ window.StemLab = window.StemLab || {
                     'aria-pressed': placeArmed,
                     'aria-label': t('stem.geosandbox.click_to_place_toggle', 'Click in the 3D view to place a point'),
                     className: 'px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
-                      (placeArmed ? 'bg-emerald-600 text-white border-emerald-300 shadow-md' : 'bg-slate-800/60 text-slate-300 border-transparent hover:bg-slate-700')
+                      (placeArmed ? 'bg-emerald-700 text-white border-emerald-300 shadow-md' : 'bg-slate-800/60 text-slate-300 border-slate-300/70 hover:bg-slate-700')
                   }, placeArmed ? t('stem.geosandbox.placing_active', '🎯 Placing…') : t('stem.geosandbox.click_place', '🎯 Click-place'))
                 ),
                 placeArmed && h('p', { className: 'text-[10px] text-emerald-300/80' },
@@ -3150,7 +3320,7 @@ window.StemLab = window.StemLab || {
                       key: 'vb-' + vb.id, role: 'radio', 'aria-checked': active,
                       onClick: function() { upd('buildVerb', vb.id); },
                       className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold border-2 ' +
-                        (active ? 'bg-fuchsia-700 text-white border-fuchsia-400' : 'bg-slate-800/60 text-slate-300 border-transparent hover:bg-slate-700')
+                        (active ? 'bg-fuchsia-700 text-white border-fuchsia-400' : 'bg-slate-800/60 text-slate-300 border-slate-300/70 hover:bg-slate-700')
                     }, vb.label);
                   })
                 ),
@@ -3194,7 +3364,7 @@ window.StemLab = window.StemLab || {
                       key: 'pf-' + pf.id, role: 'radio', 'aria-checked': active,
                       onClick: function() { upd('revolveProfile', pf.id); },
                       className: 'flex-1 px-2 py-1 rounded text-[10px] font-bold border ' +
-                        (active ? 'bg-teal-700 text-white border-teal-300' : 'bg-slate-800/60 text-slate-300 border-transparent hover:bg-slate-700')
+                        (active ? 'bg-teal-700 text-white border-teal-300' : 'bg-slate-800/60 text-slate-300 border-slate-300/70 hover:bg-slate-700')
                     }, pf.label);
                   })
                 ),
@@ -3453,7 +3623,7 @@ window.StemLab = window.StemLab || {
                     onClick: function() { upd('realChallenge', active ? null : ro.id); },
                     'aria-pressed': active,
                     className: 'text-left px-2 py-1.5 rounded text-[11px] font-bold transition-all border ' +
-                      (active ? 'bg-teal-600 text-white border-teal-300' : 'bg-slate-800/60 text-slate-300 border-transparent hover:bg-slate-700')
+                      (active ? 'bg-teal-700 text-white border-teal-300' : 'bg-slate-800/60 text-slate-300 border-slate-300/70 hover:bg-slate-700')
                   }, ro.icon + ' ' + ro.name);
                 })
               ),
@@ -3494,7 +3664,7 @@ window.StemLab = window.StemLab || {
                   h('button', {
                     onClick: function() { updExt({ _netOpen: !netOpen }); },
                     'aria-expanded': netOpen,
-                    className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-sky-700/70 text-white hover:bg-sky-600'
+                    className: 'px-2 py-1 rounded text-[10.5px] font-bold bg-sky-700/70 text-white hover:bg-sky-800'
                   }, netOpen ? t('stem.geosandbox.hide', 'Hide') : t('stem.geosandbox.show', 'Show'))
                 ),
                 !net && h('p', { className: 'text-[10.5px] text-amber-300/90' }, t('stem.geosandbox.net_oblique', 'Turn off Oblique to unfold this prism — a slanted prism has non-rectangular flaps.')),
@@ -3522,7 +3692,7 @@ window.StemLab = window.StemLab || {
                           win.document.close();
                         } catch (e) {}
                       },
-                      className: 'w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-sky-700/70 text-white hover:bg-sky-600'
+                      className: 'w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-sky-700/70 text-white hover:bg-sky-800'
                     }, '🖨 ' + t('stem.geosandbox.net_print', 'Print / cut-out net'))
                   );
                 })()
@@ -3564,7 +3734,7 @@ window.StemLab = window.StemLab || {
                 h('button', {
                   onClick: function() { placeScaledCopy(k); },
                   'aria-label': t('stem.geosandbox.place_scaled_copy', 'Place a scaled copy beside the original'),
-                  className: 'w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-amber-700/70 text-white hover:bg-amber-600'
+                  className: 'w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-amber-700/70 text-white hover:bg-amber-800'
                 }, '⧉ ' + t('stem.geosandbox.place_scaled', 'Place ×{k} copy').replace('{k}', k.toFixed(2)))
               );
             })(),
@@ -3583,7 +3753,7 @@ window.StemLab = window.StemLab || {
                   h('button', {
                     onClick: function() { upd('sliceOn', !sliceOn); },
                     'aria-pressed': sliceOn,
-                    className: 'px-2 py-1 rounded text-[10.5px] font-bold ' + (sliceOn ? 'bg-yellow-600 text-white' : 'bg-slate-800/70 text-yellow-200 hover:bg-slate-700')
+                    className: 'px-2 py-1 rounded text-[10.5px] font-bold ' + (sliceOn ? 'bg-yellow-700 text-white' : 'bg-slate-800/70 text-yellow-200 hover:bg-slate-700')
                   }, sliceOn ? t('stem.geosandbox.slicing_on', 'Slicing ✓') : t('stem.geosandbox.slice_show', 'Show slice'))
                 ),
                 sliceOn && h('div', null,
@@ -3733,7 +3903,7 @@ window.StemLab = window.StemLab || {
                 ),
                 h('div', { className: 'grid grid-cols-4 gap-1 mb-2' },
                   ['point', 'segment', 'rect', 'prism'].map(function(t, di) {
-                    return h('div', { key: t, className: 'text-center p-1 rounded text-[9px]', style: { background: byDim[di] ? '#0a0a1a' : '#050510', border: '1px solid ' + (byDim[di] ? dimColors[di] : '#1a1a2a'), color: byDim[di] ? dimColors[di] : '#475569' } },
+                    return h('div', { key: t, className: 'text-center p-1 rounded text-[9px]', style: { background: byDim[di] ? '#0a0a1a' : '#0f172a', border: '1px solid ' + (byDim[di] ? dimColors[di] : '#94a3b8'), color: byDim[di] ? dimColors[di] : '#cbd5e1' } },
                       di + 'D · ' + byDim[di]
                     );
                   })
@@ -3828,7 +3998,7 @@ window.StemLab = window.StemLab || {
                       onClick: function() { upd('color', c); },
                       style: { backgroundColor: c },
                       className: 'w-5 h-5 rounded-full transition-all border-2 ' +
-                        (shapeColor === c ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105 opacity-70 hover:opacity-100')
+                        (shapeColor === c ? 'border-white scale-110 shadow-lg' : 'border-slate-200/80 hover:scale-105 opacity-100')
                     });
                   })
                 )
@@ -3876,6 +4046,18 @@ window.StemLab = window.StemLab || {
                   return h('option', { key: u.id, value: u.id }, u.short + ' — ' + u.long);
                 }))
               ),
+              (mode === 'stretch' || mode === 'sculpt') && h('label', { className: 'flex items-center gap-2 text-[11px] font-bold text-slate-200 cursor-pointer' },
+                h('input', {
+                  type: 'checkbox',
+                  checked: showSceneLabels,
+                  onChange: function(e) {
+                    upd('showSceneLabels', e.target.checked);
+                    if (announceToSR) announceToSR(e.target.checked ? 'Scene labels on' : 'Scene labels off');
+                  },
+                  'aria-label': t('stem.geosandbox.scene_labels', 'Scene labels')
+                }),
+                h('span', null, t('stem.geosandbox.scene_labels', 'Scene labels'))
+              ),
               mode === 'stretch' && h('div', { className: 'flex gap-1' },
                 h('button', {
                   onClick: function() {
@@ -3921,7 +4103,7 @@ window.StemLab = window.StemLab || {
                 h('button', {
                   onClick: function() { upd('showMath', !showMath); },
                   'aria-pressed': showMath,
-                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (showMath ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (showMath ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, showMath ? t('stem.geosandbox.hide_math', '\uD83E\uDDEE Hide the math') : t('stem.geosandbox.show_math', '\uD83E\uDDEE Show the math'))
               ),
               h('div', { className: 'space-y-1.5' },
@@ -3977,7 +4159,7 @@ window.StemLab = window.StemLab || {
                 h('button', {
                   onClick: function() { upd('xsOn', !xsOn); },
                   'aria-pressed': xsOn,
-                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (xsOn ? 'bg-yellow-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (xsOn ? 'bg-yellow-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, xsOn ? t('stem.geosandbox.hide', 'Hide') : t('stem.geosandbox.show', 'Show'))
               ),
               xsOn && h('div', { className: 'space-y-2 mt-2' },
@@ -4038,7 +4220,7 @@ window.StemLab = window.StemLab || {
                 shapeNet.unfoldable && h('button', {
                   onClick: function() { upd('singleNetOpen', !netOpen); },
                   'aria-pressed': netOpen,
-                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (netOpen ? 'bg-sky-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+                  className: 'text-[10px] font-bold px-2 py-0.5 rounded transition-all ' + (netOpen ? 'bg-sky-700 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
                 }, netOpen ? t('stem.geosandbox.hide', 'Hide') : t('stem.geosandbox.show', 'Show'))
               ),
               !shapeNet.unfoldable && h('p', { className: 'text-[11px] text-sky-200/70 italic' }, shapeNet.note),
@@ -4195,7 +4377,7 @@ window.StemLab = window.StemLab || {
             h('h3', { className: 'text-base font-black text-amber-200 flex items-center gap-2' }, t('stem.geosandbox.geometry_challenge', '\uD83C\uDFAF Geometry Challenge')),
             h('div', { className: 'flex items-center gap-3' },
               h('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2705 ' + challengeScore.correct),
-              h('span', { className: 'text-xs text-slate-600' }, '/'),
+              h('span', { className: 'text-xs text-slate-300' }, '/'),
               h('span', { className: 'text-xs font-bold text-slate-300' }, challengeScore.total + ' attempted'),
               challengeScore.total > 0 && h('span', { className: 'text-[11px] font-bold px-2 py-0.5 rounded-full ' + (challengeScore.correct/challengeScore.total >= 0.8 ? 'bg-emerald-500/30 text-emerald-300' : challengeScore.correct/challengeScore.total >= 0.5 ? 'bg-amber-500/30 text-amber-300' : 'bg-red-500/30 text-red-300') }, Math.round(challengeScore.correct/challengeScore.total*100) + '%')
             )
@@ -4223,7 +4405,7 @@ window.StemLab = window.StemLab || {
             h('button', { 'aria-label': t('stem.geosandbox.check', 'Check'),
               onClick: checkChallengeAnswer,
               disabled: !challengeAnswer.trim(),
-              className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (challengeAnswer.trim() ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700' : 'bg-slate-700 text-slate-600 cursor-not-allowed')
+              className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (challengeAnswer.trim() ? 'bg-gradient-to-r from-amber-700 to-orange-800 text-white shadow-md hover:from-amber-800 hover:to-orange-900' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
             }, t('stem.geosandbox.check_2', '\u2714 Check'))
           ),
           // Result feedback
@@ -4240,7 +4422,7 @@ window.StemLab = window.StemLab || {
             ),
             h('button', { 'aria-label': t('stem.geosandbox.next_challenge', 'Next Challenge'),
               onClick: generateChallenge,
-              className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md hover:from-amber-600 hover:to-orange-700 transition-all'
+              className: 'w-full px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-700 to-orange-800 text-white shadow-md hover:from-amber-800 hover:to-orange-900 transition-all'
             }, t('stem.geosandbox.next_challenge_2', '\u27A1 Next Challenge'))
           ),
           // Hint for numeric challenges
@@ -4250,7 +4432,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // STL note
-        h('div', { className: 'text-[11px] text-slate-600 text-center' },
+        h('div', { className: 'text-[11px] text-slate-300 text-center' },
           t('stem.geosandbox.stl_files_are_unit_less_most_3d_printe', '\uD83D\uDCA1 STL files are unit-less. Most 3D printer slicers (Cura, PrusaSlicer) default to millimeters. A shape with width=5 will print as 5mm wide.')
         )
       );

@@ -48,7 +48,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   function migrTone(f,d,tp,v) { var ac=getMigrAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxMigrClick() { migrTone(600,0.03,"sine",0.04); }
   function sfxMigrSuccess() { migrTone(523,0.08,"sine",0.07); setTimeout(function(){migrTone(659,0.08,"sine",0.07);},70); setTimeout(function(){migrTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("migr-a11y")){var _s=document.createElement("style");_s.id="migr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-200{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("migr-a11y")){var _s=document.createElement("style");_s.id="migr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
 
 
   // ── Module-scoped bird drawing ──
@@ -365,12 +365,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         if (d.perfectVFormed) _vfPerfectRef.current = true;
 
         // Initialize birds
+        function getVCanvasSize() {
+          var cv = canvasRef && canvasRef.current;
+          return {
+            W: (cv && cv.clientWidth) || 620,
+            H: (cv && cv.clientHeight) || 380
+          };
+        }
+
         function makeFlock(count) {
           var birds = [];
+          var size = getVCanvasSize();
+          var cx = size.W * 0.54;
+          var cy = size.H * 0.54;
+          var spreadX = Math.min(200, Math.max(96, size.W * 0.48));
+          var spreadY = Math.min(150, Math.max(88, size.H * 0.38));
           for (var i = 0; i < count; i++) {
             birds.push({
-              x: 300 + (Math.random() - 0.5) * 200,
-              y: 200 + (Math.random() - 0.5) * 150,
+              x: Math.max(28, Math.min(size.W - 28, cx + (Math.random() - 0.5) * spreadX)),
+              y: Math.max(34, Math.min(size.H - 34, cy + (Math.random() - 0.5) * spreadY)),
               vx: 0, vy: 0,
               energy: 80 + Math.random() * 20,
               flapPhase: Math.random() * Math.PI * 2,
@@ -382,9 +395,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
         function makeVFormation(count) {
           var birds = [];
-          var cx = 300, cy = 220;
-          var spacing = 42;
           var angle = Math.PI / 6; // 30 deg
+          var size = getVCanvasSize();
+          var maxRank = Math.max(1, Math.ceil((count - 1) / 2));
+          var spacing = Math.max(26, Math.min(42, size.W / 9));
+          var neededLeft = 42 + maxRank * spacing * Math.cos(angle);
+          var cx = Math.min(size.W - 34, Math.max(neededLeft, size.W * 0.62));
+          var cy = Math.max(86, Math.min(size.H - 86, size.H * 0.56));
           birds.push({ x: cx, y: cy, vx: 0, vy: 0, energy: 100, flapPhase: 0, role: 'leader' });
           for (var i = 1; i < count; i++) {
             var side = (i % 2 === 0) ? 1 : -1;

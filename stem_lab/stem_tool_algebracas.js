@@ -249,7 +249,7 @@
   /* ============ Register Tool ============ */
   window.StemLab.registerTool('algebraCAS', {
     icon: '\uD83E\uDDEE',
-    label: 'algebraCAS',
+    label: 'Algebra Solver',
     desc: 'Interactive algebra with equation builder, balance scale, and step-by-step AI solving',
     color: 'amber',
     category: 'math',
@@ -278,19 +278,22 @@
       var a11yClick = ctx.a11yClick;
 
       return (function() {
+        labToolData = labToolData || {};
         var d = labToolData.algebraCAS || {};
 
         var upd = function(key, val) {
           setLabToolData(function(prev) {
+            prev = prev || {};
             var next = Object.assign({}, prev);
-            next.algebraCAS = Object.assign({}, prev.algebraCAS);
+            next.algebraCAS = Object.assign({}, prev.algebraCAS || {});
             next.algebraCAS[key] = val;
             return next;
           });
         };
         var updMulti = function(obj) {
           setLabToolData(function(prev) {
-            return Object.assign({}, prev, { algebraCAS: Object.assign({}, prev.algebraCAS, obj) });
+            prev = prev || {};
+            return Object.assign({}, prev, { algebraCAS: Object.assign({}, prev.algebraCAS || {}, obj) });
           });
         };
 
@@ -417,7 +420,7 @@
             'Be rigorous. Show every step. Keep explanations concise but educational.';
           callGemini(prompt).then(function(res) {
             if (res) {
-              var _aM = res.match(/ANSWER:s*(.+)/i);
+              var _aM = res.match(/ANSWER:\s*(.+)/i);
               var _chk = (_aM && _aM[1].trim()) ? __alloCASPure.verifySolution(expression, _aM[1].trim()) : { decidable: false };
               var newH = history.slice(-9);
               newH.push({ expr: expression, mode: mode, result: res, ts: Date.now() });

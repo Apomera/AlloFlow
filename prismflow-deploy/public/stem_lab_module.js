@@ -3766,7 +3766,7 @@
               },
               {
                 id: 'lifeSkills', icon: '\uD83E\uDDED', label: 'Life Skills Lab',
-                desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, health insurance navigator, and applied science for daily life.',
+                desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, health insurance, dental care, body care ergonomics, sleep routines, and applied science for daily life.',
                 color: 'cyan', ready: true
               },
               {
@@ -3927,24 +3927,14 @@
                 color: 'indigo', ready: true
               },
               {
+                id: 'alphaFoldExplorer', icon: '\u03B1', label: 'AlphaFold Explorer',
+                desc: 'Look up public AlphaFold DB protein structures by UniProt/accession, inspect them in Mol*, import downloaded prediction files, and prepare AlphaFold Server-ready JSON with guardrails for public or synthetic classroom sequences only.',
+                color: 'teal', ready: true
+              },
+              {
                 id: 'simShelf', icon: '\uD83E\uDDEA', label: 'Sim Shelf',
                 desc: 'Sixteen hand-picked PhET simulations (University of Colorado Boulder) \u2014 forces, circuits, light, matter, orbits, evolution, fractions, probability \u2014 wrapped in a Predict \u2192 Explore \u2192 Explain coach that makes you commit to a guess before you touch anything.',
                 color: 'amber', ready: true
-              },
-              {
-                id: 'circuitShelf', icon: '\uD83D\uDD0C', label: 'Circuit Shelf',
-                desc: 'Build and run real electronic circuits in CircuitJS \u2014 Paul Falstad\u2019s open-source simulator \u2014 through Predict \u2192 Explore \u2192 Explain challenges: series vs. parallel bulbs, Ohm\u2019s law, RC charging, voltage dividers, logic gates. Lock in a guess before you wire anything.',
-                color: 'amber', ready: true
-              },
-              {
-                id: 'moleculeShelf', icon: '\uD83E\uDDEC', label: 'Molecule Shelf',
-                desc: 'Explore real 3D molecular structures in Mol* \u2014 the viewer used by the world\u2019s protein databank \u2014 from water and DNA to hemoglobin and viruses. Rotate, zoom, and switch representations, with a Notice \u2192 Wonder observation coach beside it.',
-                color: 'indigo', ready: true
-              },
-              {
-                id: 'timelineStudio', icon: '\uD83D\uDD70\uFE0F', label: 'Timeline Studio',
-                desc: 'Turn any reading \u2014 history, a biography, a science-discovery passage \u2014 into an interactive TimelineJS timeline. The AI pulls out the dated events; you scroll, zoom, and step through them, or build a timeline by hand.',
-                color: 'rose', ready: true
               },
               {
                 id: 'zoomGallery', icon: '\uD83D\uDD0D', label: 'Zoom Gallery',
@@ -3963,10 +3953,8 @@
               solarSystem: 'solar system explorer planets astronomy space orbit orrery',
               accessLens: 'camera photo picture describe scene description blind low vision ocr read text aloud large print translate translation language sign label socratic investigate object identify accessibility',
               dataLab: 'data science codap statistics dataset table graph plot scatter chart mean median analyze census concord tutor socratic data literacy spreadsheet cases attributes',
+              alphaFoldExplorer: 'alphafold alpha fold protein structure prediction uniprot accession molstar mol molecule molecular biology bioinformatics pdb cif mmcif bcif plddt pae confidence sequence amino acid fasta server deepmind ebi structure viewer',
               simShelf: 'phet simulation simulations sims physics forces energy circuits light waves matter orbits evolution fractions probability predict explore explain poe lab colorado interactive',
-              circuitShelf: 'circuit circuits circuitjs falstad electronics electronic simulator series parallel ohm ohms law resistor resistance voltage current capacitor rc logic gates and or led breadboard battery predict explore explain poe physics',
-              moleculeShelf: 'molecule molecules molecular mol star molstar protein proteins pdb rcsb structure structures 3d dna rna hemoglobin water enzyme virus chemistry biochemistry biology atoms bonds ball stick cartoon notice wonder',
-              timelineStudio: 'timeline timelines timelinejs knight lab history historical chronology chronological events dates date sequence biography social studies humanities era eras when order document reading generate ai',
               zoomGallery: 'zoom gallery deep zoom openseadragon iiif image images photo photos picture pictures magnify magnifier close up detail details observe observation notice wonder smithsonian open access nasa museum artifact artifacts space astronomy hubble webb pillars creation saturn moon apollo bootprint coral fossil low vision cc0 public domain'
             };
             function _normalizeToolSearchText(value) {
@@ -5405,6 +5393,9 @@
             // Jul 2026: Data Lab — CODAP companion window + Socratic tutor
             // (launcher + AI bridge live in stem_tool_datalab.js).
             dataLab: true,
+            // Jul 2026: AlphaFold Explorer — public AlphaFold DB lookup + Mol*
+            // viewer + safe AlphaFold Server input prep.
+            alphaFoldExplorer: true,
             // Jul 2026: Sim Shelf — PhET companion window + POE coach
             // (launcher + AI bridge live in stem_tool_simshelf.js).
             simShelf: true,
@@ -5414,9 +5405,6 @@
             // Jul 2026: Molecule Shelf — Mol* (RCSB, MIT) companion window +
             // Notice→Wonder coach (launcher + AI bridge in stem_tool_moleculeshelf.js).
             moleculeShelf: true,
-            // Jul 2026: Timeline Studio — TimelineJS (Knight Lab, MPL) companion
-            // window + AI doc→timeline (launcher + data bridge in stem_tool_timeline.js).
-            timelineStudio: true,
             // Jul 2026: Zoom Gallery — OpenSeadragon (BSD-3) deep-zoom companion
             // window over Smithsonian CC0 (IIIF) + NASA public-domain images +
             // Notice→Wonder coach (launcher + AI bridge in stem_tool_zoomgallery.js).

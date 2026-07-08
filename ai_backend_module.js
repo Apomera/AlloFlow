@@ -9,6 +9,9 @@
  */
 (function() {
     'use strict';
+    const window = (typeof globalThis !== 'undefined' && globalThis.window)
+        ? globalThis.window
+        : (typeof globalThis !== 'undefined' ? globalThis : {});
 
     // ─── Duplicate-load guard ─────────────────────────────────────────
     if (window.__aiBackendModuleLoaded) return;
@@ -842,11 +845,98 @@ const LOCAL_BACKENDS = ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'cust
 function isLocalTextBackend(backend) {
     return LOCAL_BACKENDS.indexOf(backend) !== -1;
 }
+const LOCAL_CONTEXT_FALLBACK = 4096;
+const LOCAL_CONTEXT_MIN = 2048;
+const LOCAL_CONTEXT_MAX = 131072;
+const LOCAL_MODEL_PROFILE_RULES = [
+    { id: 'alloflow-qwen2.5-3b', match: /qwen2?\.?5.*3b|qwen.*3b/i, contextWindow: 4096, outputTokenLimit: 1400, jsonOutputTokenLimit: 1100 },
+    { id: 'gemma-local', match: /gemma/i, contextWindow: 8192, outputTokenLimit: 1800, jsonOutputTokenLimit: 1400 },
+    { id: 'llama-local', match: /llama|mistral|mixtral/i, contextWindow: 8192, outputTokenLimit: 1800, jsonOutputTokenLimit: 1400 },
+    { id: 'qwen-local', match: /qwen/i, contextWindow: 8192, outputTokenLimit: 1800, jsonOutputTokenLimit: 1400 },
+];
+function clampLocalNumber(value, min, max, fallback) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n <= 0) return fallback;
+    return Math.max(min, Math.min(max, Math.round(n)));
+}
+function normalizeLocalModelId(value) {
+    return String(value || '').split(/[\\/]/).pop().replace(/\.gguf(\?.*)?$/i, '').trim();
+}
+function inferLocalContextWindow(modelId) {
+    const text = normalizeLocalModelId(modelId).toLowerCase();
+    const explicit = text.match(/(?:ctx|context|window)[-_ ]?(\d{1,3})k\b/i) || text.match(/\b(\d{1,3})k[-_ ]?(?:ctx|context|window)\b/i);
+    if (explicit) return clampLocalNumber(Number(explicit[1]) * 1024, LOCAL_CONTEXT_MIN, LOCAL_CONTEXT_MAX, LOCAL_CONTEXT_FALLBACK);
+    const plain = text.match(/\b(16|32|64|128)k\b/i);
+    if (plain) return clampLocalNumber(Number(plain[1]) * 1024, LOCAL_CONTEXT_MIN, LOCAL_CONTEXT_MAX, LOCAL_CONTEXT_FALLBACK);
+    return null;
+}
+function buildLocalModelProfile(config = {}) {
+    const backend = config.backend || 'local';
+    const supplied = config.localModelProfile || config.localModel || config.capabilities || {};
+    const modelId = normalizeLocalModelId(supplied.modelId || supplied.model || config.modelId || (config.models && config.models.default) || backend);
+    const rule = LOCAL_MODEL_PROFILE_RULES.find((item) => item.match.test(modelId)) || null;
+    const inferredContext = inferLocalContextWindow(modelId);
+    const contextWindow = clampLocalNumber(
+        supplied.contextWindow || supplied.contextSize || supplied.n_ctx || inferredContext || (rule && rule.contextWindow),
+        LOCAL_CONTEXT_MIN,
+        LOCAL_CONTEXT_MAX,
+        LOCAL_CONTEXT_FALLBACK
+    );
+    const outputTokenLimit = clampLocalNumber(
+        supplied.outputTokenLimit || supplied.safeOutputTokens || (rule && rule.outputTokenLimit) || Math.floor(contextWindow * 0.28),
+        256,
+        Math.min(8192, contextWindow),
+        Math.min(1600, Math.max(768, Math.floor(contextWindow * 0.28)))
+    );
+    const jsonOutputTokenLimit = clampLocalNumber(
+        supplied.jsonOutputTokenLimit || supplied.safeJsonOutputTokens || (rule && rule.jsonOutputTokenLimit) || Math.floor(outputTokenLimit * 0.8),
+        256,
+        outputTokenLimit,
+        Math.min(outputTokenLimit, 1200)
+    );
+    return {
+        id: supplied.id || (rule && rule.id) || 'local-default',
+        backend,
+        modelId,
+        contextWindow,
+        contextSource: supplied.contextSource || (supplied.contextWindow || supplied.contextSize || supplied.n_ctx ? 'configured' : (inferredContext ? 'model-name' : (rule ? 'profile' : 'fallback'))),
+        inputTokenBudget: clampLocalNumber(
+            supplied.inputTokenBudget || supplied.safeInputTokens || Math.floor(contextWindow * 0.55),
+            512,
+            Math.max(512, contextWindow - 512),
+            Math.max(1024, Math.floor(contextWindow * 0.55))
+        ),
+        outputTokenLimit,
+        jsonOutputTokenLimit,
+        reserveTokens: clampLocalNumber(supplied.reserveTokens, 128, 2048, 384),
+    };
+}
+function tuneLocalTextOptions(prompt, opts = {}, profile = buildLocalModelProfile()) {
+    const requested = clampLocalNumber(opts.maxTokens, 1, 65536, 8192);
+    const approxPromptTokens = Math.max(1, Math.ceil(String(prompt || '').length / 4));
+    const profileLimit = opts.json ? profile.jsonOutputTokenLimit : profile.outputTokenLimit;
+    const roomForOutput = profile.contextWindow - approxPromptTokens - profile.reserveTokens;
+    const roomLimit = roomForOutput > 0 ? roomForOutput : Math.max(128, Math.floor(profileLimit / 2));
+    const maxTokens = clampLocalNumber(
+        Math.min(requested, profileLimit, roomLimit),
+        128,
+        Math.max(128, profile.contextWindow),
+        Math.min(requested, profileLimit)
+    );
+    return {
+        maxTokens,
+        promptTokens: approxPromptTokens,
+        requestedMaxTokens: requested,
+        contextWindow: profile.contextWindow,
+        clamped: maxTokens !== requested,
+        promptLikelyTooLarge: approxPromptTokens + profile.reserveTokens >= profile.contextWindow,
+    };
+}
 // Terminal-marker sentinel for OpenAI SSE ("data: [DONE]"); a Symbol can never
 // collide with real streamed content.
 const STREAM_DONE = (typeof Symbol === 'function') ? Symbol('alloflow.stream.done') : ' __ALLO_STREAM_DONE__';
 if (typeof window !== 'undefined') {
-    window.AIBackendLocal = { LOCAL_BACKENDS: LOCAL_BACKENDS.slice(), isLocalTextBackend };
+    window.AIBackendLocal = { LOCAL_BACKENDS: LOCAL_BACKENDS.slice(), isLocalTextBackend, buildLocalModelProfile, tuneLocalTextOptions };
 }
 
 class AIProvider {
@@ -907,6 +997,15 @@ class AIProvider {
         if ((this.backend === 'ollama' || this.backend === 'localai' || this.backend === 'lmstudio') && !config.models?.tts) {
             this.models.tts = 'kokoro';
         }
+        this.localModelProfile = buildLocalModelProfile({
+            backend: this.backend,
+            models: this.models,
+            modelId: config.modelId,
+            localModel: config.localModel,
+            localModelProfile: config.localModelProfile,
+            capabilities: config.capabilities,
+        });
+        this._localRuntimeProfileAt = 0;
 
         this._debugLog(`[AIProvider] Initialized: backend=${this.backend}, isCanvas=${this.isCanvasEnv}`);
     }
@@ -927,6 +1026,40 @@ class AIProvider {
 
     // ─── TEXT GENERATION ──────────────────────────────────────────────
 
+    async _refreshAlloFlowLocalProfileFromRuntime() {
+        if (this.backend !== 'alloflow-local') return this.localModelProfile;
+        if (typeof fetch !== 'function') return this.localModelProfile;
+        const now = Date.now();
+        if (this._localRuntimeProfileAt && now - this._localRuntimeProfileAt < 30000) {
+            return this.localModelProfile;
+        }
+        this._localRuntimeProfileAt = now;
+        try {
+            const response = await fetch('/api/engine/status', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+            if (!response || !response.ok) return this.localModelProfile;
+            const status = await response.json();
+            const cap = status.capability || {};
+            const modelId = (status.model && (status.model.name || status.model.url)) || (status.engine && status.engine.modelUrl) || this.models.default;
+            this.localModelProfile = buildLocalModelProfile({
+                backend: this.backend,
+                models: this.models,
+                modelId,
+                localModelProfile: {
+                    id: cap.profileId || cap.id,
+                    modelId,
+                    contextWindow: cap.contextSize || cap.contextWindow,
+                    contextSource: cap.contextSource,
+                    safeInputTokens: cap.safeInputTokens,
+                    safeOutputTokens: cap.safeOutputTokens,
+                    safeJsonOutputTokens: cap.safeJsonOutputTokens,
+                },
+            });
+        } catch (err) {
+            this._debugLog('[AIProvider] local engine capability probe skipped:', err && err.message ? err.message : err);
+        }
+        return this.localModelProfile;
+    }
+
     /**
      * Generate text from a prompt.
      * Replaces: callGemini(prompt, jsonMode, useSearch, temperature)
@@ -942,12 +1075,26 @@ class AIProvider {
     async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192, onProgress = null } = {}) {
         if (!prompt) return json ? '{}' : '';
         this._debugLog(`[AIProvider] generateText: backend=${this.backend}, json=${json}, search=${search}`);
+        let effectiveMaxTokens = maxTokens;
+        let localUsage = null;
+        if (isLocalTextBackend(this.backend)) {
+            await this._refreshAlloFlowLocalProfileFromRuntime();
+            localUsage = tuneLocalTextOptions(prompt, { json, maxTokens }, this.localModelProfile);
+            effectiveMaxTokens = localUsage.maxTokens;
+            if (temperature === null && json) temperature = 0;
+            if (localUsage.clamped) {
+                this._debugLog(`[AIProvider] local maxTokens clamped ${localUsage.requestedMaxTokens} -> ${effectiveMaxTokens} (ctx=${localUsage.contextWindow}, prompt~${localUsage.promptTokens})`);
+            }
+            if (localUsage.promptLikelyTooLarge) {
+                this._warnLog('[AIProvider] local prompt is near/over the model context window; a resource-level chunked path is recommended.');
+            }
+        }
 
         switch (this.backend) {
             case 'gemini':
-                return this._geminiGenerateText(prompt, { json, search, temperature, maxTokens });
+                return this._geminiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens });
             case 'claude':
-                return this._claudeGenerateText(prompt, { json, search, temperature, maxTokens });
+                return this._claudeGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens });
             case 'openai':
             case 'localai':
             case 'lmstudio':
@@ -955,7 +1102,7 @@ class AIProvider {
             case 'alloflow-local':
             case 'custom':
             default:
-                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress });
+                return this._openaiGenerateText(prompt, { json, search, temperature, maxTokens: effectiveMaxTokens, onProgress, localProfile: this.localModelProfile, localUsage });
         }
     }
 
@@ -1047,7 +1194,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return text || '';
     }
 
-    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress } = {}) {
+    async _openaiGenerateText(prompt, { json, search, temperature, maxTokens, onProgress, localProfile = null, localUsage = null } = {}) {
         // ── Additive local-only streaming progress (opt-in; Phase 1) ──────────
         // Cloud is untouched: gemini/claude use their own methods, and hosted
         // 'openai' is excluded by isLocalTextBackend(). This branch engages ONLY
@@ -1061,12 +1208,24 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             : ((typeof window !== 'undefined' && typeof window.__alloLocalTextProgress === 'function')
                 ? window.__alloLocalTextProgress
                 : null);
+        const _localProgressBase = {
+            backend: this.backend,
+            model: (localProfile && localProfile.modelId) || this.models.default,
+            contextWindow: localProfile && localProfile.contextWindow,
+            contextSource: localProfile && localProfile.contextSource,
+            maxTokens,
+            promptTokens: localUsage && localUsage.promptTokens,
+            requestedMaxTokens: localUsage && localUsage.requestedMaxTokens,
+            clamped: localUsage && localUsage.clamped,
+            promptLikelyTooLarge: localUsage && localUsage.promptLikelyTooLarge,
+        };
         if (_sink && !search && isLocalTextBackend(this.backend)) {
             try {
-                const streamed = await this._openaiStreamText(prompt, { json, temperature, maxTokens }, _sink);
+                const streamed = await this._openaiStreamText(prompt, { json, temperature, maxTokens, localProfile, localUsage }, _sink);
                 if (typeof streamed === 'string') return streamed;
             } catch (streamErr) {
                 this._warnLog('[AIProvider] local stream progress failed — falling back to non-stream:', streamErr && streamErr.message ? streamErr.message : streamErr);
+                try { _sink({ ..._localProgressBase, phase: 'fallback', receivedChars: 0, chunks: 0, done: false }); } catch (_) {}
                 // fall through to the unchanged non-stream path
             }
         }
@@ -1106,12 +1265,19 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             headers['Authorization'] = `Bearer ${this.apiKey}`;
         }
 
-        const response = await this._fetchWithRetry(url, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(payload),
-        });
-        const data = await response.json();
+        let data;
+        try {
+            const response = await this._fetchWithRetry(url, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(payload),
+            });
+            data = await response.json();
+        } finally {
+            if (_sink && isLocalTextBackend(this.backend)) {
+                try { _sink({ ..._localProgressBase, phase: 'done', done: true }); } catch (_) {}
+            }
+        }
 
         const text = this.backend === 'ollama'
             ? data.message?.content || ''
@@ -1129,11 +1295,22 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     // firing `sink({ phase, backend, receivedChars, chunks, done })` as deltas
     // arrive, and returns the SAME final string the non-stream path produces.
     // Throws on any transport/parse problem so the caller falls back cleanly.
-    async _openaiStreamText(prompt, { json, temperature, maxTokens }, sink) {
+    async _openaiStreamText(prompt, { json, temperature, maxTokens, localProfile = null, localUsage = null }, sink) {
         const isOllama = this.backend === 'ollama';
         const url = isOllama
             ? `${this.baseUrl}/api/chat`
             : `${this.baseUrl}/v1/chat/completions`;
+        const progressBase = {
+            backend: this.backend,
+            model: (localProfile && localProfile.modelId) || this.models.default,
+            contextWindow: localProfile && localProfile.contextWindow,
+            contextSource: localProfile && localProfile.contextSource,
+            maxTokens,
+            promptTokens: localUsage && localUsage.promptTokens,
+            requestedMaxTokens: localUsage && localUsage.requestedMaxTokens,
+            clamped: localUsage && localUsage.clamped,
+            promptLikelyTooLarge: localUsage && localUsage.promptLikelyTooLarge,
+        };
 
         const payload = isOllama
             ? {
@@ -1158,6 +1335,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         const headers = { 'Content-Type': 'application/json' };
         if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`;
 
+        try { sink({ ...progressBase, phase: 'request', receivedChars: 0, chunks: 0, done: false }); } catch (_) {}
+
         const response = await this._fetchWithRetry(url, {
             method: 'POST',
             headers,
@@ -1178,7 +1357,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         let chunks = 0;
         const emit = (done) => {
             try {
-                sink({ phase: 'stream', backend: this.backend, receivedChars: acc.length, chunks, done: Boolean(done) });
+                sink({ ...progressBase, phase: 'stream', receivedChars: acc.length, chunks, done: Boolean(done) });
             } catch (_) { /* a broken sink must never break generation */ }
         };
         const consume = (line) => {
@@ -1300,16 +1479,52 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @param {number} [opts.quality=0.7] - JPEG quality
      * @returns {Promise<string>} data:image URL
      */
-    async generateImage(prompt, { width = 300, quality = 0.7 } = {}) {
-        this._debugLog(`[AIProvider] generateImage: ${prompt?.substring(0, 50)}`);
+    _isSdTurboEligibleImageError(err) {
+        if (!err) return false;
+        const msg = String(err.message || err || '');
+        if (/Safety|Block|content\s*policy|policy/i.test(msg)) return false;
+        return Boolean(err.isConfigState || err.isRateLimited || /401|403|429|503|quota|RESOURCE_EXHAUSTED|Rate limited|rate limit/i.test(msg));
+    }
 
-        // Check imageProvider override from AI Backend Settings
-        const _imgOvr = this._imageProvider || null;
-        if (_imgOvr === 'off') throw new Error('Image generation is disabled in AI Backend Settings');
-        if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality);
-        if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality);
+    async _trySdTurboImage(prompt, width, quality) {
+        const win = (typeof globalThis !== 'undefined' && globalThis.window)
+            ? globalThis.window
+            : ((typeof window !== 'undefined' && window.document) ? window : null);
+        if (this.isCanvasEnv || !win) return null;
+        try {
+            if (win._sdTurbo?.ready && typeof win._sdTurbo.generate === 'function') {
+                const localUrl = await win._sdTurbo.generate(prompt);
+                if (localUrl) {
+                    this._debugLog('[AIProvider] ✅ Image generated via local SD-Turbo');
+                    return await this._optimizeImage(localUrl, width, quality);
+                }
+            }
+        } catch (err) {
+            this._warnLog(`[AIProvider] Local SD-Turbo image generation failed: ${err?.message || err}`);
+        }
+        return null;
+    }
 
-        // Default: route by backend
+    _kickoffSdTurboLoad() {
+        const win = (typeof globalThis !== 'undefined' && globalThis.window)
+            ? globalThis.window
+            : ((typeof window !== 'undefined' && window.document) ? window : null);
+        if (this.isCanvasEnv || !win) return false;
+        if (win._sdTurbo?.ready || win.__sdTurboDownloading || typeof win.__loadSdTurbo !== 'function') return false;
+        const nav = win.navigator || (typeof navigator !== 'undefined' ? navigator : null);
+        if (nav && !nav.gpu) return false;
+        win.__sdTurboDownloading = true;
+        Promise.resolve(win.__loadSdTurbo(() => {})).then(
+            () => { win.__sdTurboDownloading = false; },
+            (err) => {
+                win.__sdTurboDownloading = false;
+                this._warnLog(`[AIProvider] SD-Turbo preload failed: ${err?.message || err}`);
+            }
+        );
+        return true;
+    }
+
+    async _generateImageByBackend(prompt, width, quality) {
         switch (this.backend) {
             case 'gemini':
                 return this._geminiGenerateImage(prompt, width, quality);
@@ -1323,6 +1538,42 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'custom':
             default:
                 return this._openaiGenerateImage(prompt, width, quality);
+        }
+    }
+
+    async generateImage(prompt, { width = 300, quality = 0.7 } = {}) {
+        this._debugLog(`[AIProvider] generateImage: ${prompt?.substring(0, 50)}`);
+
+        // Check imageProvider override from AI Backend Settings
+        const _imgOvr = this._imageProvider || null;
+        if (_imgOvr === 'off') throw new Error('Image generation is disabled in AI Backend Settings');
+
+        if (_imgOvr === 'sd-local') {
+            const local = await this._trySdTurboImage(prompt, width, quality);
+            if (local) return local;
+            this._kickoffSdTurboLoad();
+            if (!this.apiKey && this.backend === 'gemini') {
+                const err = new Error('Local image generator is still preparing and no cloud image API key is configured.');
+                err.isConfigState = true;
+                throw err;
+            }
+        }
+
+        const runPrimary = () => {
+            if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality);
+            if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality);
+            return this._generateImageByBackend(prompt, width, quality);
+        };
+
+        try {
+            return await runPrimary();
+        } catch (err) {
+            if (this._isSdTurboEligibleImageError(err)) {
+                const local = await this._trySdTurboImage(prompt, width, quality);
+                if (local) return local;
+                if (_imgOvr === 'sd-local') this._kickoffSdTurboLoad();
+            }
+            throw err;
         }
     }
 
@@ -2053,7 +2304,7 @@ if (typeof window !== 'undefined') {
 // Node/CommonJS export — test harness only. Guarded so the browser <script>
 // load is unaffected (`module` is undefined there). Purely additive.
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { AIProvider, LOCAL_BACKENDS: LOCAL_BACKENDS.slice(), isLocalTextBackend };
+    module.exports = { AIProvider, LOCAL_BACKENDS: LOCAL_BACKENDS.slice(), isLocalTextBackend, buildLocalModelProfile, tuneLocalTextOptions };
 }
 
     console.log('[AI Backend Module] Loaded: WebSearchProvider + AIProvider + Firebase Shim Factory');

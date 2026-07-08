@@ -837,7 +837,8 @@
     }
     setText('#engine-phase', phase);
     setText('#engine-model', status.model
-      ? (status.model.name || 'not set') + (status.model.present ? ' (downloaded)' : ' (will download)')
+      ? (status.model.name || 'not set') + (status.model.present ? ' (downloaded)' : ' (will download)') +
+        (status.capability && status.capability.contextSize ? ' - ctx ' + status.capability.contextSize : '')
       : '-');
     setText('#engine-disk', status.diskFreeBytes != null ? (status.diskFreeBytes / 1073741824).toFixed(1) + ' GB' : '-');
     const result = $('#engine-result');

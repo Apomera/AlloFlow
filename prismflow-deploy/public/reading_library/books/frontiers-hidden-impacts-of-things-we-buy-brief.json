@@ -1,0 +1,29 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "frontiers-hidden-impacts-of-things-we-buy-brief",
+  "title": "The Hidden Global Impacts of Things We Buy",
+  "description": "A Frontiers for Young Minds article seed about consumption, supply chains, and environmental and social spillovers.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "frontiers",
+  "contentType": "science-article",
+  "subjects": ["Sustainability", "Economics", "Climate", "Systems thinking"],
+  "authors": ["Arunima Malik"],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Frontiers for Young Minds",
+  "license": "CC BY 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "source": { "id": "frontiers", "name": "Frontiers for Young Minds", "url": "https://kids.frontiersin.org/articles/10.3389/frym.2026.1783561" },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    { "n": 1, "img": null, "text": "This article asks students to look behind a product and trace the wider system that made it. A purchase can connect to land, water, energy, labor, transportation, and communities far away." },
+    { "n": 2, "img": null, "text": "The reading is a useful entry point for footprint thinking. Students can compare the visible cost of a product with hidden environmental and social effects that are spread across global supply chains." },
+    { "n": 3, "img": null, "text": "Because the article is CC BY 4.0, it can support adapted classroom activities about data, equity, trade, and everyday decision-making." }
+  ],
+  "stats": { "pages": 3, "words": 101 }
+}

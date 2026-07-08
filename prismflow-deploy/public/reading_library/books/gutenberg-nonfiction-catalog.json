@@ -1,0 +1,40 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-nonfiction-catalog",
+  "title": "Project Gutenberg Nonfiction",
+  "description": "A source card for public-domain nonfiction and historical works from Project Gutenberg.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "source-card",
+  "subjects": ["Public domain", "History", "Science history", "Nonfiction"],
+  "authors": ["Project Gutenberg"],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/bookshelf/32"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg is useful for older students who are ready for historical nonfiction, speeches, memoirs, science history, engineering texts, and public-domain classics. Many texts are older and may need vocabulary support, context, or excerpting."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Rights note: many Project Gutenberg works are not restricted by US copyright law, but the Project Gutenberg trademark and license text carry rules. For classroom mirroring, prefer verified public-domain works and preserve clear source attribution."
+    }
+  ],
+  "stats": { "pages": 2, "words": 88 }
+}

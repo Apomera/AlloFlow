@@ -798,6 +798,65 @@ function computeVocabularyFit(artifacts, gradeLevel) {
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
   const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests, guidedMode, guidedStep, standardsInput, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts, standardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure } = deps;
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
+    const usesLocalTextBackend = (() => {
+        try {
+            const w = typeof window !== 'undefined' ? window : null;
+            const localHelpers = w && w.AIBackendLocal;
+            const isLocal = localHelpers && typeof localHelpers.isLocalTextBackend === 'function'
+                ? localHelpers.isLocalTextBackend
+                : (backend) => ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'custom'].includes(String(backend || ''));
+            if (w && w.__alloActiveAIBackend && w.__alloActiveAIBackend.backend) {
+                return !!isLocal(w.__alloActiveAIBackend.backend);
+            }
+            const storage = w && w.localStorage;
+            const cfg = storage ? JSON.parse(storage.getItem('alloflow_ai_config') || 'null') : null;
+            return !!(cfg && cfg.backend && isLocal(cfg.backend));
+        } catch (_) {
+            return false;
+        }
+    })();
+    const emitLocalTaskProgress = (current, total, label) => {
+        if (!usesLocalTextBackend) return;
+        try {
+            if (typeof window !== 'undefined' && typeof window.__alloLocalTaskProgress === 'function') {
+                window.__alloLocalTaskProgress({ current, total, label, type });
+            }
+        } catch (_) {}
+    };
+    const setGenerationTaskProgress = (current, total, label) => {
+        setProcessingProgress({ current, total });
+        emitLocalTaskProgress(current, total, label);
+    };
+    const localExcerpt = (text, maxChars = 6000) => {
+        const normalized = String(text || '').replace(/\s+\n/g, '\n').trim();
+        if (normalized.length <= maxChars) return normalized;
+        return normalized.slice(0, maxChars).trim() + '\n\n[Source excerpt trimmed for local model context.]';
+    };
+    const parseJsonLenient = (raw, fallback = null) => {
+        const cleaned = cleanJson(String(raw || ''));
+        const attempts = [cleaned];
+        const arrStart = cleaned.indexOf('[');
+        const arrEnd = cleaned.lastIndexOf(']');
+        if (arrStart >= 0 && arrEnd > arrStart) attempts.push(cleaned.slice(arrStart, arrEnd + 1));
+        const objStart = cleaned.indexOf('{');
+        const objEnd = cleaned.lastIndexOf('}');
+        if (objStart >= 0 && objEnd > objStart) attempts.push(cleaned.slice(objStart, objEnd + 1));
+        for (const candidate of attempts) {
+            try { return JSON.parse(candidate); } catch (_) {}
+        }
+        return fallback;
+    };
+    const unwrapArray = (value, keys = []) => {
+        if (Array.isArray(value)) return value;
+        for (const key of keys) {
+            if (value && Array.isArray(value[key])) return value[key];
+        }
+        return [];
+    };
+    const compactHistoryForLocal = (items, limit = 6) => {
+        if (!Array.isArray(items)) return '';
+        return items.slice(-limit).map(h => `- ${(h && h.type) || 'resource'}: ${(h && h.title) || 'Untitled'}`).join('\n');
+    };
     setIsMapLocked(false);
     const effectiveGrade = configOverride.grade || gradeLevel;
     const effectiveOutlineType = configOverride.outlineType || outlineType;
@@ -948,7 +1007,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     }
     setIsProcessing(true);
     setGenerationStep(t('status_steps.initializing'));
-    setProcessingProgress({ current: 0, total: 0 });
+    setGenerationTaskProgress(0, 0, t('status_steps.initializing'));
     setError(null);
     setGlossarySearchTerm('');
     setGameMode(null);
@@ -1004,6 +1063,52 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         if (effectiveLanguage !== 'English' && effectiveLanguage !== 'All Selected Languages' && !langsReq.includes(effectiveLanguage)) {
             langsReq.push(effectiveLanguage);
         }
+        if (usesLocalTextBackend) {
+            const localTermLimit = Math.max(1, Math.min(totalTerms, 8));
+            const localLangInstruction = langsReq.length > 0
+                ? `For each term, add a "translations" object for these languages: ${langsReq.join(', ')}. Use "Translated Term: Translated Definition" as each value.`
+                : 'Do not include translations.';
+            const prompt = `
+              Analyze the source excerpt and identify vocabulary for ${gradeLevel} students.
+              Choose up to ${localTermLimit} useful terms total, balancing Academic and Domain-Specific vocabulary when possible.
+              ${levelContext}
+              ${localLangInstruction}
+              ${effCustomInstructions ? `Prioritize these terms or concepts if they appear: "${effCustomInstructions}".` : ''}
+              ${useEmojis ? 'Include a helpful emoji only when it clarifies the term.' : 'Do not use emojis.'}
+              Return ONLY valid JSON with this shape:
+              { "terms": [{ "term": "Name", "def": "Student-friendly definition", "tier": "Academic" | "Domain-Specific"${langsReq.length > 0 ? ', "translations": { "Language": "Translated Term: Translated Definition" }' : ''} }] }
+              Source excerpt:
+              """
+              ${localExcerpt(textToProcess, 6000)}
+              """
+            `;
+            setGenerationStep(t('status_steps.extracting_vocab'));
+            setGenerationTaskProgress(0, 2, t('status_steps.extracting_vocab'));
+            const result = await callGemini(prompt, true);
+            setGenerationTaskProgress(1, 2, t('status_steps.extracting_vocab'));
+            const parsed = parseJsonLenient(result, {});
+            const parsedContent = unwrapArray(parsed, ['terms', 'items', 'glossary']).slice(0, localTermLimit)
+                .map(item => {
+                    const tierRaw = String((item && item.tier) || '').toLowerCase();
+                    const tier = tierRaw.includes('domain') || tierRaw.includes('tier 3') ? 'Domain-Specific' : 'Academic';
+                    const normalized = {
+                        term: String((item && item.term) || '').trim(),
+                        def: String((item && (item.def || item.definition)) || '').trim(),
+                        tier
+                    };
+                    if (item && item.translations && typeof item.translations === 'object') {
+                        normalized.translations = item.translations;
+                    }
+                    return normalized;
+                })
+                .filter(item => item.term && item.def);
+            if (!parsedContent.length) {
+                throw new Error("Failed to parse Glossary JSON. The AI response was not valid.");
+            }
+            content = parsedContent;
+            metaInfo = `${content.length} Terms - ${langsReq.length > 0 ? langsReq.join(', ') : 'English Only'} - Local`;
+            setGenerationTaskProgress(2, 2, t('status_steps.generating_icons'));
+        } else {
         if (langsReq.length > 0) {
             prompt = `
               Analyze the following text and identify vocabulary.
@@ -1176,6 +1281,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         } catch (parseErr) {
             warnLog("Glossary Parse Error:", parseErr);
             throw new Error("Failed to parse Glossary JSON. The AI response was not valid.");
+        }
         }
       } else if (type === 'simplified') {
         let complexityGuide = "";
@@ -1368,11 +1474,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               break;
           }
       }
-      const chunks = chunkText(textWithoutRefs, 9000);
+      const chunks = chunkText(textWithoutRefs, usesLocalTextBackend ? 3500 : 9000);
       const isMultiChunk = chunks.length > 1;
       if (isMultiChunk) {
             addToast(t('meta.processing_sections', { count: chunks.length }) || `Text is long. Processing ${chunks.length} sections...`, "info");
-            setProcessingProgress({ current: 0, total: chunks.length });
+            setGenerationTaskProgress(0, chunks.length, t('status_steps.adapting_text'));
       }
       const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
       const _initialMeta = `${effectiveGrade} - ${effectiveLanguage} ${textFormat !== 'Standard Text' ? `(${textFormat})` : ''}${isMultiChunk ? ` (${t('meta.multi_part') || 'Multi-part'})` : ''}`;
@@ -1409,7 +1515,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           const isLast = i === chunks.length - 1;
           if (isMultiChunk) {
               setGenerationStep(`Adapting section ${i + 1} of ${chunks.length}...`);
-              setProcessingProgress({ current: i + 1, total: chunks.length });
+              setGenerationTaskProgress(i + 1, chunks.length, `Adapting section ${i + 1} of ${chunks.length}...`);
           } else {
               setGenerationStep(t('status_steps.adapting_text'));
           }
@@ -1611,11 +1717,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           { "main": "Central Topic/Goal/Problem", ${effectiveLanguage !== 'English' ? '"main_en": "...", ' : ''}"branches": [{ "title": "Category/Step/Solution/Cause", ${effectiveLanguage !== 'English' ? '"title_en": "...", ' : ''}"items": ["Detail/Substep/Effect"], ${effectiveLanguage !== 'English' ? '"items_en": ["..."], ' : ''}"connectsTo": [1] }] }
           Note: "connectsTo" is an optional array of 0-based branch indices. Include it only for Flow Chart type when branching exists.
           ${differentiationContext}
-          Text: "${textToProcess}"
+          Text: "${usesLocalTextBackend ? localExcerpt(textToProcess, 6500) : textToProcess}"
         `;
         const result = await callGemini(prompt, true);
         try {
-            content = JSON.parse(cleanJson(result));
+            content = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
             if (!content) content = {};
             if (!content.main) content.main = "Main Topic";
             if (!content.branches || !Array.isArray(content.branches)) {
@@ -1649,12 +1755,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 throw new Error("Failed to parse Visual Organizer data. Please try regenerating.");
             }
         }
-        metaInfo = `${gradeLevel} - ${effectiveLanguage} - ${effectiveOutlineType}`;
+        metaInfo = `${gradeLevel} - ${effectiveLanguage} - ${effectiveOutlineType}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'image') {
         console.log('[VisualDebug] dispatcher routing to image branch; effectiveVisualStyle=', effectiveVisualStyle, 'visualLayoutMode=', typeof visualLayoutMode !== 'undefined' ? visualLayoutMode : '(undefined)');
         setGenerationStep(t('status_steps.analyzing_visuals'));
+        const imageSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 4500) : textToProcess;
         const promptGenPrompt = `
-            Analyze the following text to create a visual plan for an educational diagram: "${textToProcess}".
+            Analyze the following text to create a visual plan for an educational diagram: "${imageSourceText}".
             ${effCustomInstructions ? `Specific instructions: "${effCustomInstructions}".` : ''}
             Task:
             1. List key visual elements (physical objects, icons, spatial relationships) for the image generator prompt.
@@ -1667,12 +1774,14 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 "altText": "Concise description..."
             }
         `;
+        if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.analyzing_visuals'));
         const result = await callGemini(promptGenPrompt, true);
+        if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.analyzing_visuals'));
         let imagePrompt = "";
         let altText = "Educational diagram.";
         try {
-            const parsed = JSON.parse(cleanJson(result));
-            imagePrompt = parsed.visualElements;
+            const parsed = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
+            imagePrompt = parsed.visualElements || parsed.elements || result;
             altText = parsed.altText || "Educational diagram.";
         } catch (e) {
             warnLog("Image prompt JSON parse failed, falling back to raw text", e);
@@ -1695,10 +1804,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         if (visualLayoutMode !== 'single') {
             try {
                 if (visualLayoutMode === 'auto') {
-                    visualPlan = await generateVisualPlan(textToProcess.substring(0, 500), effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions);
+                    visualPlan = await generateVisualPlan(imageSourceText.substring(0, 500), effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions);
                 } else {
                     const templateHint = `You MUST use layout: "${visualLayoutMode}".`;
-                    const concept = textToProcess.substring(0, 500);
+                    const concept = imageSourceText.substring(0, 500);
                     visualPlan = await generateVisualPlan(concept + '\n\n' + templateHint, effectiveGrade, effectiveLanguage, effectiveVisualStyle, effCustomInstructions);
                     if (visualPlan) visualPlan.layout = visualLayoutMode;
                 }
@@ -1768,6 +1877,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             metaInfo = effectiveVisualStyle !== 'Default' ? effectiveVisualStyle : t('meta.visual_diagram');
         }
         }
+        if (usesLocalTextBackend && metaInfo && !String(metaInfo).includes(' - Local')) metaInfo += ' - Local';
       } else if (type === 'quiz') {
         setShowQuizAnswers(false);
         // Plan S: Quiz is now mode-aware. Default 'exit-ticket' preserves the
@@ -1787,12 +1897,12 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                  const { concepts, readingLevel } = analysisItem.data;
                  const levelStr = typeof readingLevel === 'object' ? readingLevel.range : readingLevel;
                  if (_quizMode === 'pre-check') {
-                     analysisContext = `\n                 SOURCE ANALYSIS (for prerequisite identification):\n                 - Key Concepts the Lesson Will Teach: ${concepts ? concepts.join(', ') : 'N/A'}\n                 - Lesson Reading Level: ${levelStr}\n                 INSTRUCTION: For EACH key concept above, identify ONE prerequisite the student should already know to access that concept, then write a probe testing that prerequisite. Probes should test PRIOR knowledge (e.g., for "photosynthesis" the prerequisite might be "what plants need to grow"). Do NOT test today's lesson content directly.\n                 `;
+                     analysisContext = `\n                 SOURCE ANALYSIS (for prerequisite identification):\n                 - Key Concepts the Lesson Will Teach: ${concepts ? concepts.join(', ') : 'N/A'}\n                 - Lesson Reading Level: ${levelStr}\n                 INSTRUCTION: For EACH key concept above, identify ONE source-specific prerequisite the student should already know to access that concept, then write a probe testing that prerequisite. Probes should test PRIOR knowledge while making the connection to the source concept obvious (e.g., for "photosynthesis" the prerequisite might be "what plants need to grow"). Do not assess full lesson outcomes directly.\n                 `;
                  } else if (_quizMode === 'review') {
                      // Pull historical concepts from prior history items too (multiple analyses)
                      const allAnalyses = history.filter(h => h && h.type === 'analysis');
                      const allConcepts = allAnalyses.flatMap(h => (h.data && h.data.concepts) || []).filter(Boolean);
-                     analysisContext = `\n                 PRIOR LESSON CONCEPTS FOR SPACED RETRIEVAL:\n                 - Earlier Concepts Across History: ${allConcepts.length > 0 ? allConcepts.join(', ') : 'N/A (use today\'s source as fallback)'}\n                 - Today's Concepts: ${concepts ? concepts.join(', ') : 'N/A'}\n                 INSTRUCTION: Probe retention of EARLIER concepts (not today's). If only today's concepts are available, probe deeper retention of today's content from a few angles.\n                 `;
+                     analysisContext = `\n                 PRIOR LESSON CONCEPTS FOR SPACED RETRIEVAL:\n                 - Earlier Concepts Across History: ${allConcepts.length > 0 ? allConcepts.join(', ') : 'N/A (use today\'s source as fallback)'}\n                 - Today's Concepts: ${concepts ? concepts.join(', ') : 'N/A'}\n                 INSTRUCTION: Probe retention of EARLIER concepts when available. If only today's concepts are available, quiz today's source directly from a spaced-review angle. Do not switch to unrelated review topics.\n                 `;
                  } else {
                      analysisContext = `\n                 PRIORITY CONTEXT FROM SOURCE ANALYSIS:\n                 - Key Concepts Identified: ${concepts ? concepts.join(', ') : 'N/A'}\n                 - Detected Source Level: ${levelStr}\n                 INSTRUCTION: Ensure the quiz questions specifically target these identified concepts to check for understanding.\n                 `;
                  }
@@ -1859,6 +1969,24 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         // than random plausibly-wrong options. This catches predictable errors and gives
         // teachers diagnostic data they couldn't get from random-distractor MCQs.
         const _useMisconceptionDistractors = (_quizMode === 'pre-check' || _quizMode === 'formative') && _mcqCount > 0;
+        const _sourceGroundingInstruction = (function () {
+            if (_quizMode === 'pre-check') {
+                return `SOURCE-GROUNDED READINESS RULES:
+          - Use the source text below as the anchor for every item.
+          - Each item must name or clearly connect to a concept, vocabulary term, process, setting, claim, or relationship from the source.
+          - Probe a prerequisite only when it is needed for that source-specific concept; do not drift into generic background knowledge.`;
+            }
+            if (_quizMode === 'review') {
+                return `SOURCE-GROUNDED REVIEW RULES:
+          - Prefer earlier concepts from the provided history when available, but keep each item related to the current source's topic, vocabulary, or conceptual neighborhood.
+          - If no earlier concepts are available, quiz the current source directly, like an exit ticket, from a spaced-review angle.
+          - Do not invent unrelated review topics.`;
+            }
+            return `SOURCE-GROUNDED ASSESSMENT RULES:
+          - Build every item from the source text below.
+          - Test specific facts, vocabulary, relationships, claims, processes, or inferences in that source.
+          - Do not ask generic topic questions that could be answered without reading the source.`;
+        })();
         // JSON shape varies by what's requested
         const _jsonShape = `{
             "questions": [
@@ -1871,6 +1999,40 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             ]${_includeReflections ? `,
             "reflections": [${effectiveLanguage !== 'English' ? '{ "text": "...", "text_en": "..." }' : '"Question..."'}]` : ''}
           }`;
+        let result = '';
+        if (usesLocalTextBackend) {
+        const localQuizCount = Math.max(3, Math.min(Number(_resolvedItemCount) || Number(effectiveQuizCount) || 5, 6));
+        const prompt = `
+          Create a short source-grounded quiz for ${gradeLevel} students.
+          Mode: ${_quizMode}.
+          Language: ${effectiveLanguage}.
+          ${dokInstruction}
+          ${standardsPromptString ? `Target standards: "${standardsPromptString}".` : ''}
+          ${analysisContext}
+          ${effCustomInstructions ? `Custom instructions: ${effCustomInstructions}` : ''}
+          ${useEmojis ? 'Use emojis only if they improve clarity.' : 'Do not use emojis.'}
+          Generate exactly ${localQuizCount} multiple choice questions.
+          Each question must test a specific fact, vocabulary term, relationship, process, or inference from the source excerpt.
+          Each question must have exactly 4 options.
+          The "correctAnswer" value must exactly match one option string.
+          Include "conceptLabel" as a short lowercase 2-4 word tag.
+          Return ONLY valid JSON:
+          {
+            "questions": [
+              { "type": "mcq", "question": "Question text?", "options": ["A", "B", "C", "D"], "correctAnswer": "A", "conceptLabel": "short concept" }
+            ],
+            "reflections": []
+          }
+          Source excerpt:
+          """
+          ${localExcerpt(textToProcess, 6500)}
+          """
+        `;
+        setGenerationStep(t('status_steps.drafting_quiz'));
+        setGenerationTaskProgress(0, 1, t('status_steps.drafting_quiz'));
+        result = await callGemini(prompt, true);
+        setGenerationTaskProgress(1, 1, t('status_steps.drafting_quiz'));
+        } else {
         const prompt = `
           ${_modeFraming}
           Quiz target: ${_modeQuestionTargets}.
@@ -1880,6 +2042,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${dokInstruction}
           ${standardsPromptString ? `Ensure questions align with Standards: "${standardsPromptString}".` : ''}
           ${analysisContext}
+          ${_sourceGroundingInstruction}
           Include the following item types:
           ${_itemTypeInstructions}
           ${_useMisconceptionDistractors ? 'CRITICAL FOR MCQ DISTRACTORS: For each MCQ, build the 3 wrong options from COMMON STUDENT MISCONCEPTIONS or predictable errors at this grade level — not random plausibly-wrong options. Each distractor should encode an error a real student would make. This makes the quiz a diagnostic of misconceptions, not just a check of knowledge.' : ''}
@@ -1898,12 +2061,14 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${dialectInstruction}
           Return ONLY valid JSON: ${_jsonShape}
           ${differentiationContext}
-          ${_quizMode === 'exit-ticket' ? `Text: "${textToProcess}"` : `Source text (for context only — do not directly quiz on it for ${_quizMode} mode):\n"${textToProcess}"`}
+          Source text:
+          "${textToProcess}"
         `;
         setGenerationStep(t('status_steps.drafting_quiz'));
-        const result = await callGemini(prompt, true);
+        result = await callGemini(prompt, true);
+        }
         try {
-            content = JSON.parse(cleanJson(result));
+            content = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
             if (!content) content = {};
             if (Array.isArray(content)) {
                  content = { questions: content, reflections: [] };
@@ -1965,7 +2130,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 }
                 return base;
             });
-            try {
+            if (!usesLocalTextBackend) try {
                 const checkedQuestions = await Promise.all(content.questions.map(async (q, idx) => {
                     // Only fact-check MCQ items — fill-blank and short-answer have their
                     // own grader at student-response time, no pre-grading needed.
@@ -2075,7 +2240,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         // teachers know which MCQs to inspect / edit before deploying. Cheap
         // (one Gemini call regardless of MCQ count) and never blocks: failures
         // are silent and leave content.distractorReview undefined.
-        if (_useMisconceptionDistractors && Array.isArray(content.questions)) {
+        if (!usesLocalTextBackend && _useMisconceptionDistractors && Array.isArray(content.questions)) {
             try {
                 const _mcqsForReview = content.questions
                     .map((q, qIdx) => ({ q, qIdx }))
@@ -2154,10 +2319,12 @@ ${_itemsBlock}`;
             content.mcqVisualMode = _mcqVisualMode;
             // Plan T v3+ Chunk 10: persist style hint for the refine pipeline.
             if (_imageStyle) content.imageStyle = _imageStyle;
+            if (usesLocalTextBackend) content.localModelGenerated = true;
         }
         const _modeMetaPrefix = _modeStrategy && _quizMode !== 'exit-ticket' ? _modeStrategy.label + ' · ' : '';
         const _smartSkipSuffix = _smartSkips.length > 0 ? ` · skipped: ${_smartSkips.join(', ')}` : '';
-        metaInfo = `${_modeMetaPrefix}${gradeLevel} - Quiz (${_resolvedItemCount}MC/${_quizMode === 'exit-ticket' ? quizReflectionCount : 0}Ref)${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}${_smartSkipSuffix}`;
+        const _metaQuestionCount = usesLocalTextBackend && content && Array.isArray(content.questions) ? content.questions.length : _resolvedItemCount;
+        metaInfo = `${_modeMetaPrefix}${gradeLevel} - Quiz (${_metaQuestionCount}MC/${_quizMode === 'exit-ticket' && !usesLocalTextBackend ? quizReflectionCount : 0}Ref)${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}${usesLocalTextBackend ? ' - Local' : ''}${_smartSkipSuffix}`;
         // Stamp smart-skip info onto the quiz content so the view module can
         // optionally surface it to teachers (future enhancement).
         if (content && typeof content === 'object' && _smartSkips.length > 0) {
@@ -2166,8 +2333,11 @@ ${_itemsBlock}`;
       } else if (type === 'analysis') {
         let verificationContext = "";
         let collectedSources = [];
-        let isSearchActive = checkAccuracyWithSearch;
-        if (checkAccuracyWithSearch) {
+        let isSearchActive = checkAccuracyWithSearch && !usesLocalTextBackend;
+        if (checkAccuracyWithSearch && usesLocalTextBackend) {
+            debugLog('[LocalAI] Skipping search-backed analysis verification for local text backend.');
+        }
+        if (isSearchActive) {
             try {
                 const deepResult = await performDeepVerification(textToProcess);
                 verificationContext = deepResult.text;
@@ -2182,9 +2352,9 @@ ${_itemsBlock}`;
                 isSearchActive = false;
             }
         }
-        setGenerationStep(checkAccuracyWithSearch ? t('status_steps.synthesizing_analysis') : t('status_steps.analyzing_structure'));
+        setGenerationStep(isSearchActive ? t('status_steps.synthesizing_analysis') : t('status_steps.analyzing_structure'));
         const targetUiLang = currentUiLanguage || 'English';
-        const isTranslatedAnalysis = targetUiLang !== 'English';
+        const isTranslatedAnalysis = targetUiLang !== 'English' && !usesLocalTextBackend;
         const prompt = `
           Analyze the following text for an educator.
           ${verificationContext ? `
@@ -2232,9 +2402,11 @@ ${_itemsBlock}`;
             "grammar": ["..."]${isTranslatedAnalysis ? ', \n"translatedText": "..."' : ''}
           }
           ${differentiationContext}
-          Text: "${textToProcess}"
+          Text: "${usesLocalTextBackend ? localExcerpt(textToProcess, 7000) : textToProcess}"
         `;
+        if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.analyzing_structure'));
         const result = await callGemini(prompt, true, false);
+        if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.analyzing_structure'));
         let resultText = "";
         if (typeof result === 'object' && result !== null) {
             resultText = result.text || JSON.stringify(result);
@@ -2250,11 +2422,12 @@ ${_itemsBlock}`;
              if (!cleanedResult || (!cleanedResult.trim().startsWith('{') && !cleanedResult.trim().startsWith('['))) {
                  throw new Error("Response format is not JSON");
              }
-             analysisData = JSON.parse(cleanedResult);
+             analysisData = usesLocalTextBackend ? parseJsonLenient(resultText, null) : JSON.parse(cleanedResult);
+             if (!analysisData) throw new Error("Response format is not JSON");
         } catch (parseError) {
              warnLog("Analysis JSON parse issue. Attempting AI Repair...", parseError);
              setGenerationStep('Formatting analysis results...');
-             try {
+             if (!usesLocalTextBackend) try {
                  const safeSnippet = String(resultText).substring(0, 20000);
                  const repairPrompt = `
                     The previous AI response was meant to be JSON but was returned as conversational text.
@@ -2285,6 +2458,14 @@ ${_itemsBlock}`;
                      readingLevel: { range: "N/A", explanation: "AI returned unstructured text or invalid JSON. See verification section." },
                      concepts: ["Analysis format issue"],
                      accuracy: { rating: "See Report", reason: resultText },
+                     grammar: []
+                 };
+             }
+             if (usesLocalTextBackend) {
+                 analysisData = {
+                     readingLevel: { range: "N/A", explanation: "Local model returned unstructured analysis text." },
+                     concepts: ["Analysis format issue"],
+                     accuracy: { rating: "Not verified", reason: resultText },
                      grammar: []
                  };
              }
@@ -2409,8 +2590,40 @@ ${_itemsBlock}`;
             rawEnglishText: textToProcess,
             localStats
         };
-        metaInfo = isSearchActive ? t('meta.analysis_verified') : t('meta.analysis_standard');
+        metaInfo = `${isSearchActive ? t('meta.analysis_verified') : t('meta.analysis_standard')}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'faq') {
+        if (usesLocalTextBackend) {
+            const localFaqCount = Math.max(3, Math.min(Number(faqCount) || 5, 6));
+            const prompt = `
+                Generate ${localFaqCount} clear Frequently Asked Questions based on the source excerpt.
+                Audience: ${gradeLevel} students.
+                Language: ${effectiveLanguage}.
+                ${studentInterests.length > 0 ? `Use examples related to "${studentInterests.join(', ')}" where natural.` : ''}
+                ${useEmojis ? 'Use emojis sparingly only if they improve clarity.' : 'Do not use emojis.'}
+                ${effCustomInstructions ? `Custom instructions: ${effCustomInstructions}` : ''}
+                Return ONLY valid JSON with this shape:
+                { "faqs": [{ "question": "Question?", "answer": "Short student-friendly answer." }] }
+                Source excerpt:
+                """
+                ${localExcerpt(textToProcess, 6000)}
+                """
+            `;
+            setGenerationStep(t('status_steps.identifying_misconceptions'));
+            setGenerationTaskProgress(0, 1, t('status_steps.identifying_misconceptions'));
+            const result = await callGemini(prompt, true);
+            const parsed = parseJsonLenient(result, {});
+            content = unwrapArray(parsed, ['faqs', 'questions', 'items']).slice(0, localFaqCount)
+                .map(item => ({
+                    question: String((item && item.question) || '').trim(),
+                    answer: String((item && item.answer) || '').trim()
+                }))
+                .filter(item => item.question && item.answer);
+            if (!content.length) {
+                throw new Error("Failed to parse FAQ JSON. The AI response was not valid.");
+            }
+            metaInfo = `${content.length} Questions - ${gradeLevel} - ${effectiveLanguage} - Local`;
+            setGenerationTaskProgress(1, 1, t('status_steps.identifying_misconceptions'));
+        } else {
         const prompt = `
             Generate ${faqCount} Frequently Asked Questions (FAQs) based on the text below.
             Target Audience: ${gradeLevel} students.
@@ -2440,6 +2653,7 @@ ${_itemsBlock}`;
              warnLog("FAQ Parse Error:", parseErr);
              throw new Error("Failed to parse FAQ JSON. The AI response was not valid.");
         }
+        }
       } else if (type === 'brainstorm') {
          setGenerationStep(t('status_steps.brainstorming') || "Brainstorming ideas...");
          if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.brainstorming_start') || "Ooh, let me think of some fun activities!", 'thinking');
@@ -2448,6 +2662,39 @@ ${_itemsBlock}`;
             ? "Generate a list of 5-8 'Solo Projects' and 'Real-world Experiments' suitable for one person to complete independently at home. Focus on DIY, creative application, or research challenges."
             : "Generate a list of 5-8 engaging, hands-on, or interdisciplinary activity ideas that connect the key concepts to other domains or physical activities.";
          const historySource = configOverride.historyOverride || history;
+         if (usesLocalTextBackend) {
+             const prompt = `
+                Generate 5 practical activity ideas from the source excerpt.
+                Audience: ${audienceDesc}.
+                ${taskDesc}
+                ${studentInterests.length > 0 ? `Student interests: ${studentInterests.join(', ')}.` : ''}
+                ${standardsPromptString ? `Target standards: ${standardsPromptString}.` : ''}
+                ${effCustomInstructions ? `Custom focus: ${effCustomInstructions}.` : ''}
+                Recent resource history:
+                ${compactHistoryForLocal(historySource) || 'No previous resources generated yet.'}
+                Return ONLY valid JSON with this shape:
+                { "ideas": [{ "title": "Activity Name", "description": "1-2 sentence activity description", "connection": "How it connects to the source concept" }] }
+                Source excerpt:
+                """
+                ${localExcerpt(textToProcess, 5500)}
+                """
+             `;
+             setGenerationTaskProgress(0, 1, t('status_steps.brainstorming') || "Brainstorming ideas...");
+             const result = await callGemini(prompt, true);
+             const parsed = parseJsonLenient(result, {});
+             content = unwrapArray(parsed, ['ideas', 'activities', 'items']).slice(0, 8)
+                 .map(item => ({
+                     title: String((item && item.title) || '').trim(),
+                     description: String((item && item.description) || '').trim(),
+                     connection: String((item && item.connection) || '').trim()
+                 }))
+                 .filter(item => item.title && item.description);
+             if (!content.length) {
+                 throw new Error("Failed to parse Brainstorm JSON. The AI response was not valid.");
+             }
+             metaInfo = `${t('meta.engagement_ideas')} - Local`;
+             setGenerationTaskProgress(1, 1, t('status_steps.brainstorming') || "Brainstorming ideas...");
+         } else {
          const prompt = `
             You are a creative pedagogical expert.
             Analyze the following source text and the context of previously generated resources in the user's history.
@@ -2478,7 +2725,52 @@ ${_itemsBlock}`;
              warnLog("Brainstorm Parse Error:", parseErr);
              throw new Error("Failed to parse Brainstorm JSON. The AI response was not valid.");
          }
+         }
       } else if (type === 'sentence-frames') {
+         if (usesLocalTextBackend) {
+             const localMode = frameType === 'Paragraph Frame' ? 'paragraph' : 'list';
+             const prompt = `
+                Create writing scaffolds from the source excerpt for ${gradeLevel} students.
+                Type: ${frameType}.
+                Language: ${effectiveLanguage}.
+                ${studentInterests.length > 0 ? `Relate to ${studentInterests.join(', ')} if natural.` : ''}
+                ${standardsPromptString ? `Support these standards: ${standardsPromptString}.` : ''}
+                ${effCustomInstructions ? `Instructions: ${effCustomInstructions}.` : ''}
+                ${useEmojis ? 'Use emojis only when they help students understand the scaffold.' : 'Do not use emojis.'}
+                Return ONLY valid JSON.
+                If the type is Paragraph Frame, use:
+                { "mode": "paragraph", "text": "A fill-in-the-blank paragraph using [blank].", "rubric": "| Criteria | 1 | 3 | 5 |\\n|---|---|---|---|\\n| Content | ... | ... | ... |" }
+                Otherwise use:
+                { "mode": "list", "items": [{ "text": "Sentence starter or discussion prompt" }], "rubric": "| Criteria | 1 | 3 | 5 |\\n|---|---|---|---|\\n| Content | ... | ... | ... |" }
+                Source excerpt:
+                """
+                ${localExcerpt(textToProcess, 5500)}
+                """
+             `;
+             setGenerationStep(t('status_steps.constructing_scaffolds'));
+             setGenerationTaskProgress(0, 1, t('status_steps.constructing_scaffolds'));
+             const result = await callGemini(prompt, true);
+             content = parseJsonLenient(result, {});
+             if (!content || typeof content !== 'object' || Array.isArray(content)) content = {};
+             if (!content.mode) content.mode = localMode;
+             if (content.mode === 'list' && (!content.items || !Array.isArray(content.items))) {
+                 content.items = content.starters || content.prompts || [];
+             }
+             if (content.mode === 'paragraph' && !content.text) {
+                 content.text = content.paragraph || "";
+             }
+             if (content.mode === 'list') {
+                 content.items = (content.items || []).slice(0, 8)
+                     .map(item => ({ text: String((item && item.text) || item || '').trim() }))
+                     .filter(item => item.text);
+             }
+             if ((content.mode === 'list' && (!content.items || !content.items.length)) || (content.mode === 'paragraph' && !content.text)) {
+                 throw new Error("Failed to parse Scaffolds JSON. The AI response was not valid.");
+             }
+             content.rubric = content.rubric || "| Criteria | 1 | 3 | 5 |\n|---|---|---|---|\n| Content | Needs support | Clear | Strong and specific |\n| Use of Scaffold | Incomplete | Mostly complete | Complete and thoughtful |\n| Mechanics | Many errors | Some errors | Clear and polished |";
+             metaInfo = `${frameType} - ${effectiveLanguage} - Local`;
+             setGenerationTaskProgress(1, 1, t('status_steps.constructing_scaffolds'));
+         } else {
          const prompt = `
             Create writing supports (Scaffolds) based on the text below for ${gradeLevel} students.
             Type: ${frameType}
@@ -2522,6 +2814,7 @@ ${_itemsBlock}`;
          } catch (parseErr) {
              warnLog("Scaffolds Parse Error:", parseErr);
              throw new Error("Failed to parse Scaffolds JSON. The AI response was not valid.");
+         }
          }
       } else if (type === 'alignment-report') {
          // Plan O Step 1.5: ungated. The audit runs even without target standards
@@ -3102,6 +3395,34 @@ ${modeListForAuto}
              ${modeDef.guidance}
              The progressionLabel should follow the template: "${modeDef.labelTemplate}"
          `;
+          let result = '';
+          if (usesLocalTextBackend) {
+          const localTimelineCount = Math.max(4, Math.min(Number(effectiveCount) || 6, 7));
+          const prompt = `
+             Extract one clear ordered sequence from the source excerpt.
+             Audience: ${gradeLevel} students.
+             Language: ${effectiveLanguage}.
+             Focus: "${effectiveTopic}"
+             ${isAutoMode ? 'Choose the best ordering mode from: chronological, procedural, lifecycle, size, hierarchy, cause-effect, intensity, narrative. Include it as "detectedMode".' : `Use this mode: ${modeDef.label}. Criterion: ${modeDef.description}.`}
+             Generate ${localTimelineCount} or fewer items only if the order is unambiguous.
+             Each item must be self-contained and clearly ordered.
+             Return ONLY valid JSON:
+             {
+               ${isAutoMode ? '"detectedMode": "chronological",' : ''}
+               "progressionLabel": "Order axis label",
+               "items": [
+                 { "date": "Position label", "event": "Standalone event or step" }
+               ]
+             }
+             Source excerpt:
+             """
+             ${localExcerpt(textToProcess, 6500)}
+             """
+          `;
+          setGenerationTaskProgress(0, 1, t('status_steps.extracting_sequence'));
+          result = await callGemini(prompt, true);
+          setGenerationTaskProgress(1, 1, t('status_steps.extracting_sequence'));
+          } else {
           const prompt = `
              You are a Sequence Validation Expert. Your task is to extract or CREATE a SINGLE, UNAMBIGUOUS sequence from the provided text.
              Target Audience: ${gradeLevel} students.
@@ -3152,9 +3473,10 @@ ${modeListForAuto}
              ${differentiationContext}
              Text: "${textToProcess}"
           `;
-         const result = await callGemini(prompt, true);
+         result = await callGemini(prompt, true);
+         }
          const parseTimelineResponse = (raw) => {
-             const parsed = JSON.parse(cleanJson(raw));
+             const parsed = usesLocalTextBackend ? parseJsonLenient(raw, {}) : JSON.parse(cleanJson(raw));
              let itemsArray = [];
              let progressionLabel = t('timeline.progression_label_default') || 'Sequential Order';
              let progressionLabel_en = null;
@@ -3186,14 +3508,17 @@ ${modeListForAuto}
          };
          try {
              content = parseTimelineResponse(result);
-             metaInfo = t('meta.events_count', { count: content.items.length });
+             if (usesLocalTextBackend && (!content.items || !content.items.length)) {
+                 throw new Error("Local timeline response did not include sequence items.");
+             }
+             metaInfo = `${t('meta.events_count', { count: content.items.length })}${usesLocalTextBackend ? ' - Local' : ''}`;
          } catch (parseErr) {
              warnLog("Timeline Parse Error (attempt 1):", parseErr);
              try {
                  const retryPrompt = `The previous response was not valid JSON. Return ONLY a valid JSON object matching this exact structure, with no prose, no markdown fences, and no trailing commas:\n{\n    "progressionLabel": "AXIS: ...",\n    "items": [ { "date": "...", "event": "..." } ]\n}\nPrevious response to repair:\n${result}`;
                  const retryResult = await callGemini(retryPrompt, true);
                  content = parseTimelineResponse(retryResult);
-                 metaInfo = t('meta.events_count', { count: content.items.length });
+                 metaInfo = `${t('meta.events_count', { count: content.items.length })}${usesLocalTextBackend ? ' - Local' : ''}`;
              } catch (retryErr) {
                  warnLog("Timeline Parse Error (attempt 2):", retryErr);
                  throw new Error("Failed to parse Timeline JSON. The AI response was not valid.");
@@ -3257,7 +3582,36 @@ ${modeListForAuto}
           const subject = configOverride.mathSubject || mathSubject || 'General Math';
           const mathContextPrompt = `Source Context: "${textToProcess.substring(0, 1500)}..."\nGrade Level: ${gradeLevel}\nInterests: ${studentInterests.join(', ')}`;
           let prompt = "";
-          if (mode === 'Problem Set Generator') {
+          if (usesLocalTextBackend) {
+              prompt = `
+                Create a compact math/STEM resource for ${gradeLevel} students.
+                Subject: ${subject}
+                Mode: ${mode}
+                Topic or problem: "${problemToSolve}"
+                Source excerpt:
+                """
+                ${localExcerpt(textToProcess, 4500)}
+                """
+                Requirements:
+                - If this is a problem set, create 3 problems.
+                - If this is a solver/explainer, solve or explain the given problem in 3-5 clear steps.
+                - Keep all prose concise and student-friendly.
+                - Do not generate SVG or graph markup; set "graphData" to null.
+                Return ONLY valid JSON:
+                {
+                  "title": "Short title",
+                  "problems": [
+                    {
+                      "question": "Problem or prompt",
+                      "answer": "Answer",
+                      "steps": [{ "explanation": "Step explanation", "latex": "" }],
+                      "realWorld": "Short real-world connection"
+                    }
+                  ],
+                  "graphData": null
+                }
+              `;
+          } else if (mode === 'Problem Set Generator') {
               prompt = `
                 You are an expert Math Curriculum Designer.
                 ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
@@ -3301,12 +3655,14 @@ ${modeListForAuto}
                 }
               `;
           }
+          if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.solving_visualizing'));
           const result = await callGemini(prompt, true);
+          if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.solving_visualizing'));
           let rawContent;
           let cleaned;
           try {
               cleaned = cleanJson(result);
-              rawContent = safeJsonParse(result);
+              rawContent = usesLocalTextBackend ? parseJsonLenient(result, null) : safeJsonParse(result);
               if (!rawContent) {
                 try { rawContent = JSON.parse(cleaned); } catch (_) {}
               }
@@ -3347,10 +3703,12 @@ ${modeListForAuto}
               }];
           }
           content = normalizedContent;
-          metaInfo = `${subject} - ${mode}`;
+          metaInfo = `${subject} - ${mode}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'gemini-bridge') {
-         setGenerationStep(t('status_steps.engineering_prompts', { count: bridgeStepCount }));
+         const localBridgeStepCount = usesLocalTextBackend ? Math.max(3, Math.min(Number(bridgeStepCount) || 5, 6)) : bridgeStepCount;
+         setGenerationStep(t('status_steps.engineering_prompts', { count: localBridgeStepCount }));
          const context = getLessonContext();
+         const bridgeContext = usesLocalTextBackend ? localExcerpt(context, 6500) : context;
          const stackMap = {
             'react': 'Interactive Web App (React)',
             'python': 'Data Visualization (Python)',
@@ -3364,11 +3722,11 @@ ${modeListForAuto}
             Target Tech Stack: ${techStack}
             Target Grade Level: ${gradeLevel}
             Language: ${effectiveLanguage}
-            Step Count: Exactly ${bridgeStepCount} steps.
+            Step Count: Exactly ${localBridgeStepCount} steps.
             Lesson Context:
-            ${context}
+            ${bridgeContext}
             Strategy:
-            Break the development process down into ${bridgeStepCount} logical prompts.
+            Break the development process down into ${localBridgeStepCount} logical prompts.
             - Step 1: Setup basic file structure, "Hello World", and core UI layout.
             - Middle Steps: Implement specific logic, interactivity, and educational content based on the Context.
             - Final Step: Polish, CSS styling (Tailwind), and error handling.
@@ -3376,14 +3734,16 @@ ${modeListForAuto}
             Return ONLY a JSON array of strings. Each string is the specific prompt the user should paste into Gemini.
             Example: ["Create a single file React app that...", "Now add a state variable for...", "Finally, style the component using..."]
          `;
+         if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.engineering_prompts', { count: localBridgeStepCount }));
          const result = await callGemini(prompt, true);
+         if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.engineering_prompts', { count: localBridgeStepCount }));
          try {
-             content = JSON.parse(cleanJson(result));
+             content = usesLocalTextBackend ? parseJsonLenient(result, []) : JSON.parse(cleanJson(result));
              if (!Array.isArray(content)) content = [result];
          } catch (e) {
              content = [result];
          }
-         metaInfo = t('meta.bridge_info', { type: bridgeSimType, count: bridgeStepCount });
+         metaInfo = `${t('meta.bridge_info', { type: bridgeSimType, count: localBridgeStepCount })}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'concept-sort') {
          setGenerationStep(t('status_steps.categorizing_concepts'));
          const isLowerGrade = ['Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade'].includes(gradeLevel);
@@ -3395,6 +3755,38 @@ ${modeListForAuto}
          if (selectedConcepts.length > 0) {
              categoryInstruction = `1. Use these specific categories: ${selectedConcepts.join(', ')}. Ensure items fit clearly into exactly one of these categories.`;
          }
+         let result = '';
+         if (usesLocalTextBackend) {
+         const localItemCount = isAutoCount ? 10 : Math.max(6, Math.min(Number(conceptItemCount) || 10, 12));
+         const prompt = `
+            Create a compact Concept Sort activity from the source excerpt.
+            Audience: ${gradeLevel} students.
+            Language: ${effectiveLanguage}.
+            ${categoryInstruction}
+            Generate 2 or 3 categories and up to ${localItemCount} unambiguous cards.
+            Each card must clearly belong to exactly one category.
+            Keep category labels short.
+            Keep card text short: ${isLowerGrade ? '1-5 words' : '1 short phrase'}.
+            ${effCustomInstructions ? `Custom focus: ${effCustomInstructions}` : ''}
+            Return ONLY valid JSON:
+            {
+                "categories": [
+                    { "id": "c1", "label": "Category 1", "color": "bg-indigo-500" },
+                    { "id": "c2", "label": "Category 2", "color": "bg-pink-500" }
+                ],
+                "items": [
+                    { "id": "i1", "content": "Card text", "categoryId": "c1" }
+                ]
+            }
+            Source excerpt:
+            """
+            ${localExcerpt(textToProcess, 6000)}
+            """
+         `;
+         setGenerationTaskProgress(0, 1, t('status_steps.categorizing_concepts'));
+         result = await callGemini(prompt, true);
+         setGenerationTaskProgress(1, 1, t('status_steps.categorizing_concepts'));
+         } else {
          const prompt = `
             Analyze the provided source text to create a "Concept Sort" activity.
             Target Audience: ${gradeLevel} students.
@@ -3423,16 +3815,20 @@ ${modeListForAuto}
             }
             Text: "${textToProcess.substring(0, 10000)}"
          `;
-         const result = await callGemini(prompt, true);
+         result = await callGemini(prompt, true);
+         }
          try {
-             content = JSON.parse(cleanJson(result));
+             content = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
              if (!content.categories) content.categories = [];
              if (!content.items) content.items = [];
+             if (usesLocalTextBackend && (!content.categories.length || !content.items.length)) {
+                 throw new Error("Local concept sort response did not include categories and items.");
+             }
              const wordCount = (s) => String(s || '').trim().split(/\s+/).filter(Boolean).length;
              const itemsAreShort = content.items.length > 0 && content.items.every(it => wordCount(it.content) <= 6);
              const shouldGenerateImages =
                  conceptImageMode === 'always' ||
-                 (conceptImageMode === 'auto' && itemsAreShort);
+                 (!usesLocalTextBackend && conceptImageMode === 'auto' && itemsAreShort);
              if (shouldGenerateImages && content.items.length > 0) {
                  setGenerationStep('Generating card visuals...');
                  addToast(t('toasts.generating_card_visuals'), "info");
@@ -3500,6 +3896,7 @@ ${modeListForAuto}
              metaInfo = shouldGenerateImages
                 ? t('meta.categories_visual', { count: catCount })
                 : t('meta.categories_text', { count: catCount });
+             if (usesLocalTextBackend) metaInfo += ' - Local';
          } catch (parseErr) {
              warnLog("Concept Sort Parse Error:", parseErr);
              throw new Error("Failed to parse Concept Sort JSON. The AI response was not valid.");
@@ -3516,7 +3913,7 @@ ${modeListForAuto}
          const _dbqTeacherLinks = document.getElementById('dbq-teacher-links')?.value || '';
          console.log('[DBQ] Mode=' + _dbqMode + ', focusTopic=' + _dbqFocusTopic.substring(0, 60) + ', hasCustomDocs=' + !!_dbqCustomDocs + ', hasTeacherLinks=' + !!_dbqTeacherLinks);
          let _dbqSearchResults = '';
-         if ((_dbqMode === 'search' || _dbqMode === 'links') && (window._webSearch || window._aiBackend?.webSearch)) {
+         if (!usesLocalTextBackend && (_dbqMode === 'search' || _dbqMode === 'links') && (window._webSearch || window._aiBackend?.webSearch)) {
            try {
              setGenerationStep('Searching for primary sources...');
              const searcher = window._webSearch || window._aiBackend?.webSearch;
@@ -3555,7 +3952,64 @@ ${modeListForAuto}
            : _dbqMode === 'custom' && _dbqCustomDocs.trim()
            ? `\n\nSPECIAL MODE — TEACHER-PROVIDED DOCUMENTS:\nThe teacher has provided specific documents below. You MUST use EXACTLY these documents as the document excerpts. Do NOT generate, modify, or replace them. Your job is to:\n- Preserve each document's exact text as the "excerpt"\n- Parse any "Title:" and "Source:" lines the teacher provided for each document\n- If a line starts with http, use it as the "sourceUrl" for that document\n- Add appropriate "documentType" classification (primary, secondary, data, visual, testimony, linked)\n- Generate HAPP prompts, sourcing questions, analysis questions, and sentence starters for each document\n- Create corroboration claims that connect across the teacher's documents\n- Write a synthesis essay prompt${_dbqCustomEssayFocus ? ' focused on: ' + _dbqCustomEssayFocus : ''}\n- Build the rubric appropriate to the grade level\n\nTEACHER-PROVIDED DOCUMENTS (separated by ---):\n"""\n${_dbqCustomDocs}\n"""\n`
            : '';
-         const dbqPrompt = `You are an expert social studies and ELA curriculum designer creating a Document-Based Question (DBQ) activity.
+         let dbqPrompt = '';
+         if (usesLocalTextBackend) {
+             dbqPrompt = `Create a compact Document-Based Question activity for ${gradeLevel} students.
+
+Language: ${effectiveLanguage}.
+${effCustomInstructions ? `Teacher instructions: ${effCustomInstructions}` : ''}
+
+Use the source excerpt to create a MINI DBQ.
+
+Source excerpt:
+"""
+${localExcerpt(textToProcess, 7000)}
+"""
+
+Return ONLY valid JSON:
+{
+  "title": "DBQ Title",
+  "historicalContext": "2-3 sentence context paragraph",
+  "documents": [
+    {
+      "id": "A",
+      "title": "Document A: Short title",
+      "documentType": "primary",
+      "source": "Source/context note",
+      "sourceUrl": "",
+      "excerpt": "Short excerpt or paraphrased passage, 60-120 words",
+      "happPrompts": {
+        "historical": "What was happening when this was created?",
+        "audience": "Who was this written for?",
+        "purpose": "Why was this created?",
+        "pointOfView": "What perspective is shown?"
+      },
+      "sourcingQuestions": ["Question 1"],
+      "analysisQuestions": ["Question 1"],
+      "sentenceStarters": ["This document shows...", "I know this because..."]
+    }
+  ],
+  "corroborationClaims": [
+    {
+      "claim": "A theme across the documents",
+      "supportingDocs": ["A"],
+      "challengingDocs": [],
+      "guideQuestion": "How do the documents support or complicate this claim?"
+    }
+  ],
+  "synthesisPrompt": "Writing prompt using evidence from the documents",
+  "thesisStarter": "I believe that ___ because...",
+  "rubric": [
+    {"criteria": "Claim", "1": "Needs a claim", "2": "Basic claim", "3": "Clear claim", "4": "Strong claim with context"},
+    {"criteria": "Evidence", "1": "Little evidence", "2": "Uses one document", "3": "Uses multiple documents", "4": "Uses evidence well"}
+  ],
+  "teacherNotes": "Brief teaching notes"
+}
+
+Create 2-3 documents only. Keep excerpts concise.`;
+             setGenerationTaskProgress(0, 1, 'Creating Document-Based Questions...');
+         } else {
+         dbqPrompt = `You are an expert social studies and ELA curriculum designer creating a Document-Based Question (DBQ) activity.
 
 Target Audience: ${gradeLevel} students.
 Language: ${effectiveLanguage}.${_dbqModeInstructions}
@@ -3640,14 +4094,16 @@ Return ONLY JSON:
   ],
   "teacherNotes": "Brief notes on scaffolding, differentiation, or extension ideas"
 }`;
+         }
          console.log('[DBQ] About to call Gemini. Prompt length=' + dbqPrompt.length);
          const result = await callGemini(dbqPrompt, true);
+         if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, 'Creating Document-Based Questions...');
          console.log('[DBQ] Gemini returned. Result length=' + (result?.length || 0) + '. Preview: ' + String(result || '').substring(0, 200));
          try {
-             content = JSON.parse(cleanJson(result));
+             content = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
              if (!content.documents) content.documents = [];
              if (!content.rubric) content.rubric = [];
-             metaInfo = `${content.documents?.length || 0} documents · ${content.rubric?.length || 0} rubric criteria`;
+             metaInfo = `${content.documents?.length || 0} documents · ${content.rubric?.length || 0} rubric criteria${usesLocalTextBackend ? ' - Local' : ''}`;
              console.log('[DBQ] Parsed successfully. ' + metaInfo);
          } catch (parseErr) {
              warnLog("DBQ Parse Error:", parseErr);
@@ -3667,9 +4123,33 @@ Return ONLY JSON:
          } else {
              prompt = buildLessonPlanPrompt(context, assetManifest, effectiveLanguage, effCustomInstructions);
          }
+         if (usesLocalTextBackend) {
+             prompt = `
+                Create a compact ${isIndependentMode ? 'student study guide' : (isParentMode ? 'family guide' : 'UDL-aligned lesson plan')} for ${effectiveGrade} students.
+                Language: ${effectiveLanguage}.
+                ${effCustomInstructions ? `Teacher instructions: ${effCustomInstructions}` : ''}
+                Use this lesson context excerpt:
+                """
+                ${localExcerpt(context, 6500)}
+                """
+                Return ONLY valid JSON with this shape:
+                {
+                  "essentialQuestion": "One clear essential question",
+                  "objectives": ["Objective 1", "Objective 2", "Objective 3"],
+                  "hook": "Brief opening hook",
+                  "directInstruction": "Concise teacher explanation",
+                  "guidedPractice": "Supported practice activity",
+                  "independentPractice": "Independent or partner task",
+                  "closure": "Exit check or reflection",
+                  "extensions": ["Support or extension 1", "Support or extension 2"]
+                }
+             `;
+             setGenerationTaskProgress(0, 1, isIndependentMode ? t('lesson_plan.status_creating_study') : (isParentMode ? t('lesson_plan.status_creating_family') : t('lesson_plan.status_synthesizing')));
+         }
          const result = await callGemini(prompt, true);
+         if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, isIndependentMode ? t('lesson_plan.status_creating_study') : (isParentMode ? t('lesson_plan.status_creating_family') : t('lesson_plan.status_synthesizing')));
          try {
-             content = safeJsonParse(result);
+             content = usesLocalTextBackend ? parseJsonLenient(result, null) : safeJsonParse(result);
              if (!content) {
                  const cleaned = cleanJson(result);
                  content = JSON.parse(cleaned);
@@ -3693,7 +4173,7 @@ Return ONLY JSON:
                  content.extensions = [];
              }
          }
-         metaInfo = `${effectiveGrade} - ${isIndependentMode ? t('meta.study_guide') : (isParentMode ? t('meta.family_guide') : t('meta.udl_aligned'))}`;
+         metaInfo = `${effectiveGrade} - ${isIndependentMode ? t('meta.study_guide') : (isParentMode ? t('meta.family_guide') : t('meta.udl_aligned'))}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'adventure') {
         setGenerationStep(t('status_steps.designing_adventure'));
         let langInstruction = "Language: English.";
@@ -3703,10 +4183,11 @@ Return ONLY JSON:
         const toneInstruction = isAdventureStoryMode
             ? "TONE: Story Time Mode (Family Friendly). Focus on exploration, mystery, and puzzles. Avoid combat."
             : "TONE: Standard Adventure. Balance exploration with risk and consequences.";
+        const adventureSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 3500) : textToProcess.substring(0, 3000);
         const prompt = `
           You are a dungeon master running a "Choose Your Own Adventure" educational simulation.
           ${dnaPromptBlock}
-          Source Material: "${textToProcess.substring(0, 3000)}",
+          Source Material: "${adventureSourceText}",
           --- SETTINGS ---
           Target Audience: ${gradeLevel} students.
           ${langInstruction}
@@ -3733,19 +4214,21 @@ Return ONLY JSON:
             }
           }
         `;
+        if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.designing_adventure'));
         const result = await callGemini(prompt, true);
+        if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.designing_adventure'));
         try {
-            content = JSON.parse(cleanJson(result));
+            content = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
             if (!content) content = {};
             if (!content.text) content.text = t('adventure.fallback_opening');
             if (!content.options || !Array.isArray(content.options)) content.options = [];
-            if (!content.voiceMap) content.voiceMap = {};
+            if (!content.voiceMap) content.voiceMap = content.voices || {};
         } catch (e) {
             warnLog("Adventure Parse Error", e);
             if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.feedback_error_apology'), 'confused');
             throw new Error("Failed to parse Adventure JSON.");
         }
-        metaInfo = t('meta.opening_scene');
+        metaInfo = `${t('meta.opening_scene')}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'persona') {
           setIsProcessing(true);
           setGenerationStep(t('status_steps.identifying_figures'));
@@ -3754,11 +4237,13 @@ Return ONLY JSON:
           }
           resetPersonaInterviewState();
           try {
+              const personaCount = usesLocalTextBackend ? 2 : 3;
+              const personaSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 3500) : `${textToProcess.substring(0, 3000)}...`;
               const prompt = `
                 Analyze the following text about "${sourceTopic || "the current lesson topic"}".
                 Source Text:
-                "${textToProcess.substring(0, 3000)}...",
-                Task: Identify 3 specific historical figures, experts, or fictional archetypes (e.g., 'A Union Soldier', 'Marie Curie', 'A Red Blood Cell') relevant to this content that a ${gradeLevel} student could interview to learn more.
+                "${personaSourceText}",
+                Task: Identify ${personaCount} specific historical figures, experts, or fictional archetypes (e.g., 'A Union Soldier', 'Marie Curie', 'A Red Blood Cell') relevant to this content that a ${gradeLevel} student could interview to learn more.
                 Return ONLY a JSON array of objects with this exact structure:
                 [
                     {
@@ -3771,7 +4256,9 @@ Return ONLY JSON:
                     }
                 ]
               `;
-              const result = await callGemini(prompt, false, true);
+              if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.identifying_figures'));
+              const result = await callGemini(prompt, false, !usesLocalTextBackend);
+              if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.identifying_figures'));
               let textToParse = "";
               if (typeof result === 'object' && result !== null && result.text) {
                   textToParse = result.text;
@@ -3785,7 +4272,10 @@ Return ONLY JSON:
                    throw new Error("No JSON found");
               }
               try {
-                  parsedOptions = JSON.parse(cleanJson(textToParse));
+                  parsedOptions = usesLocalTextBackend ? parseJsonLenient(textToParse, []) : JSON.parse(cleanJson(textToParse));
+                  if (usesLocalTextBackend && !Array.isArray(parsedOptions)) {
+                      parsedOptions = unwrapArray(parsedOptions, ['figures', 'characters', 'personas', 'options']);
+                  }
               } catch (e) {
                   warnLog("Standard parse failed. Attempting robust parse...");
                   parsedOptions = safeJsonParse(textToParse);
@@ -3803,7 +4293,7 @@ Return ONLY JSON:
                }));
                setPersonaState(prev => ({ ...prev, options: parsedOptions }));
                content = parsedOptions;
-               metaInfo = t('meta.interview_candidates');
+               metaInfo = `${t('meta.interview_candidates')}${usesLocalTextBackend ? ' - Local' : ''}`;
               } else {
                    throw new Error("Invalid persona format received.");
               }
@@ -3829,21 +4319,29 @@ Return ONLY JSON:
               gradeLevel: effectiveGrade,
               language: effectiveLanguage,
           };
+          const noteSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 3500) : (textToProcess || '').substring(0, 3000);
+          const parseNoteScaffold = async (prompt, fallback, progressLabel) => {
+              try {
+                  if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, progressLabel);
+                  const result = await callGemini(prompt, true);
+                  if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, progressLabel);
+                  const parsed = usesLocalTextBackend ? parseJsonLenient(result, fallback) : JSON.parse(cleanJson(result));
+                  return parsed && typeof parsed === 'object' ? parsed : fallback;
+              } catch (parseErr) {
+                  warnLog(`${progressLabel} parse failed:`, parseErr);
+                  return fallback;
+              }
+          };
           if (templateType === 'cornell-notes') {
               // Pre-fill cues column with 5-8 key terms / anticipated questions from source.
               const prompt = `
                   Analyze the following source text. Extract 5-8 key terms or anticipated student questions that would belong in the LEFT-COLUMN ("Cues") of a Cornell Notes template for a ${effectiveGrade} student. Each cue should be short (1-6 words) and act as a memory anchor or question prompt the student can return to.
-                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Source: "${noteSourceText}"
                   Return ONLY a JSON object:
                   { "title": "Lesson title", "cues": ["Cue 1", "Cue 2", "Cue 3", ...] }
               `;
               let scaffolded = { title: sourceTopic || '', cues: [] };
-              try {
-                  const result = await callGemini(prompt, true);
-                  scaffolded = JSON.parse(cleanJson(result));
-              } catch (parseErr) {
-                  warnLog('Cornell Notes scaffold parse failed:', parseErr);
-              }
+              scaffolded = await parseNoteScaffold(prompt, scaffolded, 'Cornell Notes scaffold');
               const cuesArr = Array.isArray(scaffolded.cues) ? scaffolded.cues : [];
               content = {
                   templateType: 'cornell-notes',
@@ -3857,17 +4355,12 @@ Return ONLY JSON:
           } else if (templateType === 'lab-report') {
               const prompt = `
                   Analyze the following science-related source text. Extract: 1) a research question this text raises that a student could investigate, 2) a list of likely materials needed (if the source describes any experimental setup), and 3) a relevant title for the experiment. Target audience: ${effectiveGrade} student.
-                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Source: "${noteSourceText}"
                   Return ONLY a JSON object:
                   { "title": "Experiment title", "question": "Research question?", "materials": ["material 1", "material 2", ...] }
               `;
               let scaffolded = { title: sourceTopic || '', question: '', materials: [] };
-              try {
-                  const result = await callGemini(prompt, true);
-                  scaffolded = JSON.parse(cleanJson(result));
-              } catch (parseErr) {
-                  warnLog('Lab Report scaffold parse failed:', parseErr);
-              }
+              scaffolded = await parseNoteScaffold(prompt, scaffolded, 'Lab Report scaffold');
               const matsArr = Array.isArray(scaffolded.materials) ? scaffolded.materials : [];
               content = {
                   templateType: 'lab-report',
@@ -3885,17 +4378,12 @@ Return ONLY JSON:
           } else if (templateType === 'reading-response') {
               const prompt = `
                   Analyze the following source text. Extract the title and author (if present in the text or its metadata). If not explicit, infer the best title from the content.
-                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Source: "${noteSourceText}"
                   Return ONLY a JSON object:
                   { "title": "Reading title", "author": "Author name or empty string" }
               `;
               let scaffolded = { title: sourceTopic || '', author: '' };
-              try {
-                  const result = await callGemini(prompt, true);
-                  scaffolded = JSON.parse(cleanJson(result));
-              } catch (parseErr) {
-                  warnLog('Reading Response scaffold parse failed:', parseErr);
-              }
+              scaffolded = await parseNoteScaffold(prompt, scaffolded, 'Reading Response scaffold');
               content = {
                   templateType: 'reading-response',
                   title: scaffolded.title || sourceTopic || 'Reading Response',
@@ -3911,17 +4399,12 @@ Return ONLY JSON:
               // Seed the LEFT column with salient quotes; the student writes responses.
               const prompt = `
                   Analyze the following source text. Extract 3-5 short, vivid QUOTES or passages (each 1-2 sentences, copied verbatim) that a ${effectiveGrade} student could respond to in a double-entry (dialectical) journal. Pick lines that are striking, puzzling, or important — the kind worth thinking about. Also extract the title and author if present.
-                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Source: "${noteSourceText}"
                   Return ONLY a JSON object:
                   { "title": "Reading title", "author": "Author or empty string", "quotes": ["Quote 1", "Quote 2", ...] }
               `;
               let scaffolded = { title: sourceTopic || '', author: '', quotes: [] };
-              try {
-                  const result = await callGemini(prompt, true);
-                  scaffolded = JSON.parse(cleanJson(result));
-              } catch (parseErr) {
-                  warnLog('Double-Entry scaffold parse failed:', parseErr);
-              }
+              scaffolded = await parseNoteScaffold(prompt, scaffolded, 'Double-Entry scaffold');
               const quotesArr = Array.isArray(scaffolded.quotes) ? scaffolded.quotes : [];
               const seeded = quotesArr.slice(0, 5).map((q, i) => ({ id: `de-${Date.now()}-${i}`, quote: String(q || ''), response: '' }));
               content = {
@@ -3936,17 +4419,12 @@ Return ONLY JSON:
               // AI generates fill-in-the-blank statements with the key term as the answer.
               const prompt = `
                   Create GUIDED NOTES (fill-in-the-blank) from the following source text for a ${effectiveGrade} student. Produce 6-10 statements that capture the most important facts/concepts. In each statement, blank out ONE key term (the single most important word or short phrase). Split each statement into the text BEFORE the blank, the ANSWER (the blanked term), and the text AFTER the blank. Keep statements concise and factually grounded in the source.
-                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Source: "${noteSourceText}"
                   Return ONLY a JSON object:
                   { "title": "Lesson title", "blanks": [ { "before": "The powerhouse of the cell is the ", "answer": "mitochondria", "after": "." }, ... ] }
               `;
               let scaffolded = { title: sourceTopic || '', blanks: [] };
-              try {
-                  const result = await callGemini(prompt, true);
-                  scaffolded = JSON.parse(cleanJson(result));
-              } catch (parseErr) {
-                  warnLog('Guided Notes scaffold parse failed:', parseErr);
-              }
+              scaffolded = await parseNoteScaffold(prompt, scaffolded, 'Guided Notes scaffold');
               const blanksArr = Array.isArray(scaffolded.blanks) ? scaffolded.blanks : [];
               content = {
                   templateType: 'guided-notes',
@@ -3965,17 +4443,12 @@ Return ONLY JSON:
               // Seed study questions + model answers; student edits/adds + self-quizzes.
               const prompt = `
                   Analyze the following source text. Generate 4-6 STUDY QUESTIONS a ${effectiveGrade} student could use for self-testing (active recall). Mix recall ("what/when") with higher-order ("why/how") questions. For each, also write a concise, correct model answer grounded in the source.
-                  Source: "${(textToProcess || '').substring(0, 3000)}"
+                  Source: "${noteSourceText}"
                   Return ONLY a JSON object:
                   { "title": "Study set title", "pairs": [ { "question": "Why does ...?", "answer": "Because ..." }, ... ] }
               `;
               let scaffolded = { title: sourceTopic || '', pairs: [] };
-              try {
-                  const result = await callGemini(prompt, true);
-                  scaffolded = JSON.parse(cleanJson(result));
-              } catch (parseErr) {
-                  warnLog('Q&A scaffold parse failed:', parseErr);
-              }
+              scaffolded = await parseNoteScaffold(prompt, scaffolded, 'Q&A scaffold');
               const pairsArr = Array.isArray(scaffolded.pairs) ? scaffolded.pairs : [];
               content = {
                   templateType: 'q-and-a',
@@ -3991,7 +4464,7 @@ Return ONLY JSON:
           } else {
               content = { templateType: 'cornell-notes', title: sourceTopic || 'Notes', cues: [], notes: [], summary: '', lessonRef };
           }
-          metaInfo = `${effectiveGrade} - ${templateType}`;
+          metaInfo = `${effectiveGrade} - ${templateType}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'anchor-chart') {
           // Anchor Charts — classroom visual reference.
           // Hand-drawn aesthetic. Rendering lives in anchor_charts_module.js.
@@ -4021,8 +4494,9 @@ Return ONLY JSON:
               'question-guide': 'a question guide for discussion, close reading, inquiry, or analysis. Sections should be question categories with student-friendly prompts. Use 4-6 sections.',
           };
           const chartTypeHint = chartTypeGuide[chartType] || chartTypeGuide.reference;
+          const chartSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 3500) : (textToProcess || '').substring(0, 2500);
           const prompt = `
-              Design a classroom ANCHOR CHART for a ${effectiveGrade} student. Topic: "${sourceTopic || textToProcess.substring(0, 200) || 'reference'}". Chart type request: ${chartType} - ${chartTypeHint}.
+              Design a classroom ANCHOR CHART for a ${effectiveGrade} student. Topic: "${sourceTopic || chartSourceText.substring(0, 200) || 'reference'}". Chart type request: ${chartType} - ${chartTypeHint}.
 
               An anchor chart is a poster-sized visual reference co-created in class. It should be CONCISE (each bullet 3-10 words), MEMORABLE (use language a student would actually use), and ORGANIZED (clear sections).
 
@@ -4032,7 +4506,7 @@ Return ONLY JSON:
 
               For each section, also propose a simple iconPrompt describing a SIMPLE icon (a single concrete object, no text/letters) that represents the section visually — this will be drawn in a hand-drawn marker style.
 
-              Source text for context (may be empty): "${(textToProcess || '').substring(0, 2500)}"
+              Source text for context (may be empty): "${chartSourceText}"
 
               Return ONLY a JSON object with this exact shape:
               {
@@ -4049,8 +4523,10 @@ Return ONLY JSON:
           `;
           let scaffolded = { title: sourceTopic || 'Anchor Chart', sections: [] };
           try {
+              if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, 'Designing anchor chart');
               const result = await callGemini(prompt, true);
-              scaffolded = JSON.parse(cleanJson(result));
+              if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, 'Designing anchor chart');
+              scaffolded = usesLocalTextBackend ? parseJsonLenient(result, scaffolded) : JSON.parse(cleanJson(result));
           } catch (parseErr) {
               warnLog('Anchor chart scaffold parse failed:', parseErr);
           }
@@ -4070,7 +4546,7 @@ Return ONLY JSON:
               sections,
               lessonRef,
           };
-          metaInfo = `${effectiveGrade} - ${resolvedChartType}`;
+          metaInfo = `${effectiveGrade} - ${resolvedChartType}${usesLocalTextBackend ? ' - Local' : ''}`;
       }
       let itemTitle = getDefaultTitle(type);
       if (type === 'analysis') {

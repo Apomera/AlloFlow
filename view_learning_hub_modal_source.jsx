@@ -10,7 +10,7 @@
  */
 function LearningHubModal(props) {
   const {
-    setIsAlloHavenOpen, setIsOpenGrooveOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
+    setIsAlloHavenOpen, setIsOpenGrooveOpen, setIsTimelineStudioOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
     setShowMindMap, setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
     setStemLabTab, showLearningHub,
     // Family Bridge launcher (2026-06-28): opens live two-way translation. Optional
@@ -57,6 +57,15 @@ function LearningHubModal(props) {
                   <div>
                     <h3 className="font-bold text-cyan-900">{t('learning_hub.open_groove_title') || 'Open Groove Studio'}</h3>
                     <p className="text-xs text-cyan-700 mt-1">{t('learning_hub.open_groove_desc') || 'Make beats, shape synths, and connect patterns to real composition and notation.'}</p>
+                  </div>
+                </button>
+              )}
+              {typeof setIsTimelineStudioOpen === 'function' && (
+                <button onClick={() => { setShowLearningHub(false); setIsTimelineStudioOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="text-4xl">{'\uD83D\uDD70\uFE0F'}</span>
+                  <div>
+                    <h3 className="font-bold text-rose-800">{t('learning_hub.timeline_studio_title') || 'Timeline Studio'}</h3>
+                    <p className="text-xs text-rose-700 mt-1">{t('learning_hub.timeline_studio_desc') || 'Turn readings into interactive timelines, or build one by hand.'}</p>
                   </div>
                 </button>
               )}

@@ -35,6 +35,7 @@
 function renderDictionaryPanel(dict, t) {
   if (!dict) return null;
   var kids = [];
+  var sourceUrl = dict.sourceUrl || (dict.word ? 'https://en.wiktionary.org/wiki/' + encodeURIComponent(dict.word) : '');
   kids.push(React.createElement('div', {
     key: 'hd',
     className: 'flex items-center gap-2 mb-1 flex-wrap'
@@ -77,7 +78,13 @@ function renderDictionaryPanel(dict, t) {
   kids.push(React.createElement('div', {
     key: 'src',
     className: 'text-[10px] text-slate-400 mt-1'
-  }, dict.source));
+  }, sourceUrl ? React.createElement('a', {
+    href: sourceUrl,
+    target: '_blank',
+    rel: 'noopener noreferrer',
+    className: 'text-emerald-700 hover:text-emerald-800 underline decoration-emerald-300 underline-offset-2',
+    'aria-label': 'Open dictionary source for ' + (dict.word || 'this word')
+  }, 'Source: ' + (dict.source || 'Wiktionary')) : 'Source: ' + (dict.source || 'Dictionary')));
   return React.createElement('div', {
     className: 'mt-3 pt-3 border-t border-emerald-100'
   }, kids);
@@ -305,6 +312,139 @@ function SimplifiedView(props) {
   // (backdrop just under the popup, still above the overlay).
   const _popupZ = isImmersiveReaderActive ? 'z-[220]' : 'z-[100]';
   const _popupBackdropZ = isImmersiveReaderActive ? 'z-[210]' : 'z-[90]';
+  var ttsPrepState_state = React.useState({
+    busy: false,
+    done: 0,
+    total: 0
+  });
+  var ttsPrepState = ttsPrepState_state[0];
+  var setTtsPrepState = ttsPrepState_state[1];
+  var regenAudioKey_state = React.useState(null);
+  var regenAudioKey = regenAudioKey_state[0];
+  var setRegenAudioKey = regenAudioKey_state[1];
+  var setAudioStatusTick = React.useState(0)[1];
+  React.useEffect(function () {
+    if (typeof window === 'undefined') return;
+    var onAudioUpdate = function () {
+      setAudioStatusTick(function (n) {
+        return n + 1;
+      });
+    };
+    window.addEventListener('alloflow:karaoke-audio-updated', onAudioUpdate);
+    return function () {
+      window.removeEventListener('alloflow:karaoke-audio-updated', onAudioUpdate);
+    };
+  }, []);
+  var cleanSentenceForAudio = function (sentence) {
+    return String(sentence || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\[Source\s+\d+\]/gi, '').replace(/\[\d+\]/g, '').replace(/^#{1,6}\s+/gm, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '').replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '').replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
+  };
+  var getReadAloudStore = function () {
+    try {
+      return window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+    } catch (_) {
+      return null;
+    }
+  };
+  var hasStoredReadAloudAudio = function (sentence) {
+    var st = getReadAloudStore();
+    try {
+      return !!(st && st.has(sentence));
+    } catch (_) {
+      return false;
+    }
+  };
+  var getReadAloudAudioSummary = function (sentences) {
+    var list = Array.isArray(sentences) ? sentences : [];
+    var saved = list.reduce(function (n, sentence) {
+      return n + (hasStoredReadAloudAudio(sentence) ? 1 : 0);
+    }, 0);
+    return {
+      saved: saved,
+      total: list.length
+    };
+  };
+  var getReadAloudSentencesForText = function (rawText) {
+    var text = typeof rawText === 'string' ? rawText : String(rawText || '');
+    var isTableText = function (p) {
+      return p.trim().startsWith('|') || p.indexOf('\n|') !== -1;
+    };
+    var parts = getSideBySideContent(text);
+    var list = parts ? parts.source.concat(parts.target).flatMap(function (p) {
+      return isTableText(p) ? [] : splitTextToSentences(p);
+    }) : text.split(/\n{2,}/).flatMap(function (p) {
+      return isTableText(p) ? [] : splitTextToSentences(p);
+    });
+    return list.map(cleanSentenceForAudio).filter(function (s) {
+      return s && s.trim().length > 0;
+    });
+  };
+  var handlePrepareReadAloudAudio = async function () {
+    if (ttsPrepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
+    var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
+    if (!sentences.length) return;
+    setTtsPrepState({
+      busy: true,
+      done: 0,
+      total: sentences.length
+    });
+    try {
+      await window.__alloPrepareReadAloud(sentences, function (done, total) {
+        setTtsPrepState({
+          busy: true,
+          done: done,
+          total: total || sentences.length
+        });
+      });
+    } finally {
+      setTtsPrepState({
+        busy: false,
+        done: 0,
+        total: 0
+      });
+    }
+  };
+  var handleRegenerateReadAloudSentence = async function (sentence, key) {
+    if (!sentence || regenAudioKey || typeof window.__alloRegenerateSentenceAudio !== 'function') return;
+    setRegenAudioKey(key);
+    try {
+      await window.__alloRegenerateSentenceAudio(sentence);
+    } finally {
+      setRegenAudioKey(null);
+    }
+  };
+  var renderEditAudioSentenceTools = function () {
+    if (!isTeacherMode || !isEditingLeveledText) return null;
+    var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
+    if (!sentences.length) return null;
+    var summary = getReadAloudAudioSummary(sentences);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap gap-1.5 p-2 bg-orange-50 border-t border-orange-100 max-h-32 overflow-y-auto"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "w-full flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-wide text-orange-700 pb-1"
+    }, /*#__PURE__*/React.createElement("span", null, "TTS ", summary.saved, "/", summary.total, " saved"), /*#__PURE__*/React.createElement("span", {
+      className: "text-slate-500 normal-case font-semibold"
+    }, "Click a sentence to regenerate")), sentences.map(function (sentence, i) {
+      var key = 'simplified-' + i;
+      var busy = regenAudioKey === key;
+      var isSaved = hasStoredReadAloudAudio(sentence);
+      return /*#__PURE__*/React.createElement("button", {
+        key: key,
+        type: "button",
+        onClick: () => handleRegenerateReadAloudSentence(sentence, key),
+        disabled: !!regenAudioKey,
+        className: `inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'}`,
+        title: `${isSaved ? 'TTS saved' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`,
+        "aria-label": `${isSaved ? 'Saved TTS' : 'Missing TTS'} for sentence ${i + 1}. Regenerate audio.`
+      }, busy ? /*#__PURE__*/React.createElement(RefreshCw, {
+        size: 12,
+        className: "animate-spin"
+      }) : isSaved ? /*#__PURE__*/React.createElement(CheckCircle2, {
+        size: 12
+      }) : /*#__PURE__*/React.createElement(Volume2, {
+        size: 12
+      }), /*#__PURE__*/React.createElement("span", null, i + 1));
+    }));
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, isImmersiveReaderActive && generatedContent?.immersiveData && /*#__PURE__*/React.createElement("div", {
@@ -825,7 +965,19 @@ function SimplifiedView(props) {
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement(Download, {
     size: 14
-  }), downloadingContentId === 'dl-simplified-main' ? t('common.downloading') : t('common.download_audio')))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+  }), downloadingContentId === 'dl-simplified-main' ? t('common.downloading') : t('common.download_audio')), /*#__PURE__*/React.createElement("button", {
+    onClick: handlePrepareReadAloudAudio,
+    disabled: ttsPrepState.busy,
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap",
+    title: t('immersive.prepare_all') || 'Save TTS',
+    "aria-label": t('immersive.prepare_all') || 'Save TTS',
+    "data-help-key": "simplified_save_tts"
+  }, ttsPrepState.busy ? /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 14,
+    className: "animate-spin"
+  }) : /*#__PURE__*/React.createElement(Volume2, {
+    size: 14
+  }), ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'}` : 'Save TTS'))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.toggle_edit_text'),
     onClick: handleToggleIsEditingLeveledText,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`,
@@ -1414,7 +1566,7 @@ function SimplifiedView(props) {
     className: "w-full min-h-[500px] bg-white p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 text-lg text-slate-800 font-medium leading-relaxed resize-none font-sans",
     spellCheck: "false",
     placeholder: t('simplified.revision.placeholder_edit_text')
-  })) : isSideBySide && getSideBySideContent(generatedContent?.data) ? /*#__PURE__*/React.createElement("div", {
+  }), renderEditAudioSentenceTools()) : isSideBySide && getSideBySideContent(generatedContent?.data) ? /*#__PURE__*/React.createElement("div", {
     className: `w-full min-h-[500px] font-sans ${cursorStyles[interactionMode]}`
   }, (() => {
     const {

@@ -1649,6 +1649,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // SECTION 9: TRAFFIC AI — Other vehicles on the road
   // ─────────────────────────────────────────────────────────
 
+  var RR_MIN_AI_CENTER_GAP = 3.1;
+  var RR_MIN_TRAFFIC_SPAWN_GAP = 7.0;
+
+  function hasTrafficGap(list, x, y, ignoreIndex, minGap, mode) {
+    var minSq = minGap * minGap;
+    for (var gi = 0; gi < list.length; gi++) {
+      if (ignoreIndex != null && gi === ignoreIndex) continue;
+      var other = list[gi];
+      if (!other || typeof other.x !== 'number' || typeof other.y !== 'number') continue;
+      if (mode === 'main' && other.crossStreet) continue;
+      if (mode === 'cross' && !other.crossStreet) continue;
+      var dx = other.x - x;
+      var dy = other.y - y;
+      if (dx * dx + dy * dy < minSq) return false;
+    }
+    return true;
+  }
+
   function spawnTraffic(scenario) {
     var traffic = [];
     var count = scenario.traffic === 'light' ? 3 : scenario.traffic === 'medium' ? 7 : 12;
@@ -1704,8 +1722,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // appeared to float in the middle of the lawn or sit on the wrong half of
       // the road — that's the "cars in the middle of the road" bug.
       var spawnY = Math.random() * MAP_SIZE;
+      var spawnX = roadCenterAt(spawnY) + laneOffset;
+      for (var spawnTry = 0; spawnTry < 30; spawnTry++) {
+        if (hasTrafficGap(traffic, spawnX, spawnY, null, RR_MIN_TRAFFIC_SPAWN_GAP, 'main')) break;
+        spawnY = Math.random() * MAP_SIZE;
+        spawnX = roadCenterAt(spawnY) + laneOffset;
+      }
       traffic.push({
-        x: roadCenterAt(spawnY) + laneOffset,
+        x: spawnX,
         laneOffset: laneOffset,
         y: spawnY,
         heading: direction === 1 ? Math.PI / 2 : -Math.PI / 2,
@@ -7508,16 +7532,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             } else if (infiniteWorldRef.current && !t._turning) {
               // Infinite world: respawn traffic that gets too far from player
               if (Math.abs(t.y - playerY) > MAP_SIZE * 0.6) {
-                var newDir = Math.random() < 0.5 ? 1 : -1;
-                t.y = playerY + newDir * (10 + Math.random() * MAP_SIZE * 0.4);
                 // Position in the correct lane ON the spline perpendicular at the new Y.
                 // Use heading-sign to infer direction (sign-stable even with spline bend).
                 t.laneOffset = t.heading > 0 ? -1.5 : 1.5;
                 var respawnSpline = infiniteWorldRef.current.spline;
-                var respawnCenter = respawnSpline ? respawnSpline.centerAt(t.y) : Math.floor(MAP_SIZE / 2);
+                var respawnDir = Math.random() < 0.5 ? 1 : -1;
+                var respawnY = playerY + respawnDir * (10 + Math.random() * MAP_SIZE * 0.4);
+                var respawnCenter = respawnSpline ? respawnSpline.centerAt(respawnY) : Math.floor(MAP_SIZE / 2);
+                var respawnX = respawnCenter + t.laneOffset;
+                for (var respawnTry = 0; respawnTry < 30; respawnTry++) {
+                  if (hasTrafficGap(traffic, respawnX, respawnY, idx, RR_MIN_TRAFFIC_SPAWN_GAP, 'main')) break;
+                  respawnDir = Math.random() < 0.5 ? 1 : -1;
+                  respawnY = playerY + respawnDir * (10 + Math.random() * MAP_SIZE * 0.4);
+                  respawnCenter = respawnSpline ? respawnSpline.centerAt(respawnY) : Math.floor(MAP_SIZE / 2);
+                  respawnX = respawnCenter + t.laneOffset;
+                }
+                t.y = respawnY;
                 var respawnHeadingSp = respawnSpline ? respawnSpline.headingAt(t.y) : 0;
                 // Raw X offset (matches lane paint geometry).
-                t.x = respawnCenter + t.laneOffset;
+                t.x = respawnX;
                 // Reset heading to match the new direction + local spline bend
                 var respIsSouth = t.heading > 0;
                 t.heading = respIsSouth ? (Math.PI / 2 - respawnHeadingSp) : (-Math.PI / 2 - respawnHeadingSp);
@@ -7625,6 +7658,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var signX = dx >= 0 ? 1 : -1;
                 ca.x -= signX * penX * 0.5;
                 cb.x += signX * penX * 0.5;
+              }
+            }
+          }
+          var minGapSq = RR_MIN_AI_CENTER_GAP * RR_MIN_AI_CENTER_GAP;
+          for (var gi2 = 0; gi2 < traffic.length; gi2++) {
+            var ga = traffic[gi2];
+            if (!ga || ga._turning) continue;
+            for (var gj2 = gi2 + 1; gj2 < traffic.length; gj2++) {
+              var gb = traffic[gj2];
+              if (!gb || gb._turning) continue;
+              if (ga.crossStreet !== gb.crossStreet) continue;
+              var gapDx = gb.x - ga.x;
+              var gapDy = gb.y - ga.y;
+              var gapSq = gapDx * gapDx + gapDy * gapDy;
+              if (gapSq >= minGapSq) continue;
+              if (!ga.crossStreet) {
+                var sameMainDir = Math.sign(Math.sin(ga.heading)) === Math.sign(Math.sin(gb.heading));
+                if (sameMainDir) {
+                  var neededY = Math.sqrt(Math.max(0, minGapSq - gapDx * gapDx)) + 0.05;
+                  var haveY = Math.abs(gapDy);
+                  var pushY = neededY - haveY;
+                  if (pushY > 0) {
+                    var gapSignY = gapDy >= 0 ? 1 : -1;
+                    ga.y -= gapSignY * pushY * 0.5;
+                    gb.y += gapSignY * pushY * 0.5;
+                    var gapDirY = Math.sin(ga.heading) > 0 ? 1 : -1;
+                    var gaAhead = (ga.y - gb.y) * gapDirY > 0;
+                    if (gaAhead) gb.speed = Math.min(gb.speed, ga.speed * 0.9);
+                    else ga.speed = Math.min(ga.speed, gb.speed * 0.9);
+                  }
+                } else {
+                  var neededSideX = Math.sqrt(Math.max(0, minGapSq - gapDy * gapDy)) + 0.05;
+                  var haveSideX = Math.abs(gapDx);
+                  var pushSideX = neededSideX - haveSideX;
+                  if (pushSideX > 0) {
+                    var sideSignX = gapDx >= 0 ? 1 : -1;
+                    ga.x -= sideSignX * pushSideX * 0.5;
+                    gb.x += sideSignX * pushSideX * 0.5;
+                  }
+                }
+              } else {
+                var sameCrossDir = Math.sign(Math.cos(ga.heading)) === Math.sign(Math.cos(gb.heading));
+                if (sameCrossDir) {
+                  var neededX = Math.sqrt(Math.max(0, minGapSq - gapDy * gapDy)) + 0.05;
+                  var haveX = Math.abs(gapDx);
+                  var pushX = neededX - haveX;
+                  if (pushX > 0) {
+                    var gapSignX = gapDx >= 0 ? 1 : -1;
+                    ga.x -= gapSignX * pushX * 0.5;
+                    gb.x += gapSignX * pushX * 0.5;
+                    var gapDirX = Math.cos(ga.heading) >= 0 ? 1 : -1;
+                    var gaAheadX = (ga.x - gb.x) * gapDirX > 0;
+                    if (gaAheadX) gb.speed = Math.min(gb.speed, ga.speed * 0.9);
+                    else ga.speed = Math.min(ga.speed, gb.speed * 0.9);
+                  }
+                } else {
+                  var neededSideY = Math.sqrt(Math.max(0, minGapSq - gapDx * gapDx)) + 0.05;
+                  var haveSideY = Math.abs(gapDy);
+                  var pushSideY = neededSideY - haveSideY;
+                  if (pushSideY > 0) {
+                    var sideSignY = gapDy >= 0 ? 1 : -1;
+                    ga.y -= sideSignY * pushSideY * 0.5;
+                    gb.y += sideSignY * pushSideY * 0.5;
+                  }
+                }
               }
             }
           }

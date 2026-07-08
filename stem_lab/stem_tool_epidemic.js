@@ -69,7 +69,7 @@ window.StemLab = window.StemLab || {
   function sfxEpClick() { epTone(600, 0.03, 'sine', 0.04); }
 
   // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById('ep-a11y-css')) { var _s = document.createElement('style'); _s.id = 'ep-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-200 { color: #64748b !important; }'; document.head.appendChild(_s); }
+  if (!document.getElementById('ep-a11y-css')) { var _s = document.createElement('style'); _s.id = 'ep-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'; document.head.appendChild(_s); }
 
 
   // ═══════════════════════════════════════════════════════
@@ -3300,7 +3300,7 @@ window.StemLab = window.StemLab || {
               }),
               h('div', { className: 'flex gap-2' },
                 h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, __alloT('stem.epidemic.check', 'Check')),
-                h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (activeChalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, __alloT('stem.epidemic.hint', '\uD83D\uDCA1 Hint')),
+                h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (activeChalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-800 rounded-xl border border-amber-200' }, __alloT('stem.epidemic.hint', '\uD83D\uDCA1 Hint')),
                 h('button', { onClick: chalNext, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, __alloT('stem.epidemic.skip', 'Skip \u27A1')),
                 callGemini && h('button', { 'aria-label': __alloT('stem.epidemic.ai_next', 'AI Next'), onClick: chalAINext, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl' }, __alloT('stem.epidemic.ai_next_2', '\u2728 AI Next'))
               ),
@@ -3373,7 +3373,7 @@ window.StemLab = window.StemLab || {
                   h('input', { type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: __alloT('stem.epidemic.type_your_answer_2', 'Type your answer...'), className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400', 'aria-label': __alloT('stem.epidemic.battle_answer', 'Battle answer') }),
                   h('div', { className: 'flex gap-2' },
                     h('button', { 'aria-label': 'Attack!', onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all' }, __alloT('stem.epidemic.attack', '\u2694\uFE0F Attack!')),
-                    h('button', { 'aria-label': __alloT('stem.epidemic.hint_2', 'Hint'), onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-600 rounded-xl' }, __alloT('stem.epidemic.hint_3', '\uD83D\uDCA1 Hint'))
+                    h('button', { 'aria-label': __alloT('stem.epidemic.hint_2', 'Hint'), onClick: function() { updMulti({ battleFeedback: '\uD83D\uDCA1 ' + (q.h || 'No hint') }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-800 rounded-xl border border-amber-200' }, __alloT('stem.epidemic.hint_3', '\uD83D\uDCA1 Hint'))
                   ),
                   battleFeedback && h('p', { className: 'text-sm font-bold p-2 rounded-lg ' + (battleFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, battleFeedback)
                 );

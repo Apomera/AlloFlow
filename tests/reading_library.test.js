@@ -239,8 +239,17 @@ describe('mirrored data contract (reading_library/)', () => {
     index.books.forEach((entry) => {
       const book = JSON.parse(fs.readFileSync(path.join(LIB_DIR, entry.file), 'utf8'));
       expect(book.schema).toBe('allo-reading-book@1');
-      expect(book.license).toBe('CC BY 4.0');
-      expect(book.source.url).toMatch(/^https:\/\/storyweaver\.org\.in\//);
+      expect(book.license).toBeTruthy();
+      expect(book.licenseUrl).toMatch(/^https?:\/\//);
+      expect(book.source.url).toMatch(/^https?:\/\//);
+      const sourceId = book.sourceId || (book.source && book.source.id) || entry.sourceId || 'storyweaver';
+      if (sourceId === 'storyweaver') {
+        expect(book.license).toBe('CC BY 4.0');
+        expect(book.source.url).toMatch(/^https:\/\/storyweaver\.org\.in\//);
+      } else {
+        expect(entry.sourceId).toBe(sourceId);
+        expect(['frontiers', 'nasa', 'noaa', 'usgs', 'wikisource', 'loc', 'gutenberg', 'openstax']).toContain(sourceId);
+      }
       expect(book.pages.length).toBeGreaterThan(0);
       expect(book.title.length).toBeGreaterThan(0);
       // no page is silently empty: image or text must be present

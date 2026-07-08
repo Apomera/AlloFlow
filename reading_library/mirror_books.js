@@ -37,6 +37,7 @@ const ROOT = __dirname;
 const BOOKS_DIR = path.join(ROOT, 'books');
 const CURATION_PATH = path.join(ROOT, 'curation.json');
 const INDEX_PATH = path.join(ROOT, 'index.json');
+const OPEN_CATALOG_PATH = path.join(ROOT, 'open_catalog.json');
 
 const API = 'https://storyweaver.org.in/api/v1';
 // StoryWeaver fronts with Cloudflare; a browser UA is required or every call 403s.
@@ -162,40 +163,48 @@ async function plan() {
     : [];
   const have = new Set(existing.map((p) => p.slug));
   const picks = existing.slice();
-  const baseUrl = (language, level, extra) =>
-    API + '/books-search?page=1&per_page=24&sort=Relevance' +
+  const baseUrl = (language, level, page, extra) =>
+    API + '/books-search?page=' + page + '&per_page=24&sort=Relevance' +
     '&languages%5B%5D=' + encodeURIComponent(language) + '&levels%5B%5D=' + level + (extra || '');
-  for (const langPlan of PLAN) {
-    for (const [level, want] of Object.entries(langPlan.perLevel)) {
+  // Walk result pages for one (language, level) until the target is met or the
+  // hits run out. Earlier this fetched only page 1 (top 24), so raising a
+  // target beyond ~24-minus-already added nothing; pagination lets a single
+  // --plan pull a large batch. MAX_PAGES caps a runaway (24*40 = 960 scanned).
+  const MAX_PAGES = 40;
+  async function collectLevel(langPlan, level, want, audioOnly) {
+    const extra = audioOnly ? '&story_type%5B%5D=audio' : '';
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const already = picks.filter((p) =>
+        p.language === langPlan.language && p.level === String(level) && (!audioOnly || p.isAudio)
+      ).length;
+      if (already >= Number(want)) break;
       let data;
       try {
-        data = await getJson(baseUrl(langPlan.language, level));
+        data = await getJson(baseUrl(langPlan.language, level, page, extra));
       } catch (err) {
-        console.warn('SKIP search', langPlan.language, 'L' + level, err.message);
-        continue;
+        console.warn('SKIP', audioOnly ? 'audio' : 'search', langPlan.language, 'L' + level, 'p' + page, err.message);
+        break;
       }
-      const ranked = rankAndPush(langPlan, level, data, want, have, picks, false);
-      console.log(langPlan.language, 'L' + level + ':', ranked.map((b) => b.title).join(' | '));
+      const ranked = rankAndPush(langPlan, level, data, want, have, picks, audioOnly);
+      if (ranked.length) console.log((audioOnly ? '🔊 ' : '') + langPlan.language, 'L' + level, 'p' + page + ':', ranked.map((b) => b.title).join(' | '));
+      const total = (data.metadata && data.metadata.hits) || 0;
+      const got = (data.data && data.data.length) || 0;
+      if (!got || page * 24 >= total) break; // no more result pages
       await sleep(600);
+    }
+  }
+  for (const langPlan of PLAN) {
+    for (const [level, want] of Object.entries(langPlan.perLevel)) {
+      await collectLevel(langPlan, level, want, false);
     }
     // Narration-first top-up. Languages with a deep StoryWeaver audio pool
     // (English/Hindi/Urdu/Arabic — most others have zero) get extra NARRATED
-    // books: the word-by-word karaoke is the library's highest-value feature,
-    // and the base pull barely scratches what's available. story_type=audio
-    // filters to titles that actually ship narration + VTT cues. audioPerLevel
-    // is the TARGET narrated count per level, so re-running adds nothing once met.
+    // books: the word-by-word karaoke is the library's highest-value feature.
+    // story_type=audio filters to titles that ship narration + VTT cues;
+    // audioPerLevel is the TARGET narrated count per level.
     if (langPlan.audioPerLevel) {
       for (const [level, want] of Object.entries(langPlan.audioPerLevel)) {
-        let data;
-        try {
-          data = await getJson(baseUrl(langPlan.language, level, '&story_type%5B%5D=audio'));
-        } catch (err) {
-          console.warn('SKIP audio', langPlan.language, 'L' + level, err.message);
-          continue;
-        }
-        const ranked = rankAndPush(langPlan, level, data, want, have, picks, true);
-        console.log('🔊 ' + langPlan.language, 'L' + level + ':', ranked.map((b) => b.title).join(' | '));
-        await sleep(600);
+        await collectLevel(langPlan, level, want, true);
       }
     }
   }
@@ -335,7 +344,10 @@ async function fetchBook(pick) {
     publisher: pick.publisher,
     license: 'CC BY 4.0',
     licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
+    sourceId: 'storyweaver',
+    contentType: 'story',
     source: {
+      id: 'storyweaver',
       name: 'StoryWeaver, Pratham Books',
       url: 'https://storyweaver.org.in/en/stories/' + pick.slug,
     },
@@ -344,6 +356,44 @@ async function fetchBook(pick) {
     pages,
     stats: { pages: pages.length, words: wordCount },
   };
+}
+
+function indexEntryFromBook(book, file) {
+  return {
+    slug: book.slug,
+    title: book.title,
+    description: book.description,
+    language: book.language,
+    langCode: book.langCode,
+    isRtl: book.isRtl,
+    level: book.level,
+    sourceId: book.sourceId || (book.source && book.source.id) || 'storyweaver',
+    contentType: book.contentType || 'story',
+    subjects: book.subjects || [],
+    license: book.license,
+    licenseUrl: book.licenseUrl,
+    source: book.source || null,
+    cover: book.cover && book.cover.card,
+    authors: book.authors,
+    illustrators: book.illustrators,
+    publisher: book.publisher,
+    hasAudio: !!book.audio,
+    pageCount: book.stats.pages,
+    wordCount: book.stats.words,
+    file,
+  };
+}
+
+function readOpenCatalogEntries() {
+  if (!fs.existsSync(OPEN_CATALOG_PATH)) return [];
+  const catalog = JSON.parse(fs.readFileSync(OPEN_CATALOG_PATH, 'utf8'));
+  return (catalog.items || []).map((item) => {
+    const file = item.file || ('books/' + item.slug + '.json');
+    const bookPath = path.join(ROOT, file);
+    if (!fs.existsSync(bookPath)) throw new Error('open catalog file missing: ' + file);
+    const book = JSON.parse(fs.readFileSync(bookPath, 'utf8'));
+    return indexEntryFromBook(book, file);
+  });
 }
 
 async function fetchAll(onlySlug) {
@@ -371,23 +421,7 @@ async function fetchAll(onlySlug) {
         await sleep(700);
       }
       fs.writeFileSync(bookPath, JSON.stringify(book));
-      indexBooks.push({
-        slug: book.slug,
-        title: book.title,
-        description: book.description,
-        language: book.language,
-        langCode: book.langCode,
-        isRtl: book.isRtl,
-        level: book.level,
-        cover: book.cover && book.cover.card,
-        authors: book.authors,
-        illustrators: book.illustrators,
-        publisher: book.publisher,
-        hasAudio: !!book.audio,
-        pageCount: book.stats.pages,
-        wordCount: book.stats.words,
-        file: 'books/' + book.slug + '.json',
-      });
+      indexBooks.push(indexEntryFromBook(book, 'books/' + book.slug + '.json'));
       console.log('OK', book.language, 'L' + book.level, book.title, '(' + book.stats.pages + 'p,', book.stats.words + 'w' + (book.audio ? ', audio' : '') + ')');
     } catch (err) {
       failures.push({ slug: pick.slug, error: err.message });
@@ -396,6 +430,14 @@ async function fetchAll(onlySlug) {
     }
   }
   if (onlySlug) return; // single-book refresh: don't rewrite the index
+
+  const seen = new Set(indexBooks.map((b) => b.slug));
+  for (const entry of readOpenCatalogEntries()) {
+    if (seen.has(entry.slug)) continue;
+    indexBooks.push(entry);
+    seen.add(entry.slug);
+    console.log('OK', entry.language, 'L' + entry.level, entry.title, '(open catalog)');
+  }
 
   const langs = {};
   for (const b of indexBooks) {
@@ -406,7 +448,7 @@ async function fetchAll(onlySlug) {
     schema: 'allo-reading-library-index@1',
     generatedAt: new Date().toISOString(),
     attribution: {
-      text: 'Books from StoryWeaver, an open library by Pratham Books. Licensed CC BY 4.0.',
+      text: 'Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.',
       url: 'https://storyweaver.org.in',
       licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
     },

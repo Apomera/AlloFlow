@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-07-04T05:16:38.919Z",
+  "generatedAt": "2026-07-08T21:20:53.613Z",
   "source": {
-    "stemToolFileCount": 111,
-    "registeredToolCount": 114,
+    "stemToolFileCount": 118,
+    "registeredToolCount": 121,
     "monitoredMarkerCount": 49
   },
   "summary": {
     "loadErrorCount": 0,
     "markerPassCount": 49,
     "markerFailCount": 0,
-    "monitoredIssueCount": 33,
+    "monitoredIssueCount": 13,
     "monitoredErrorCount": 0,
-    "monitoredWarningCount": 24,
+    "monitoredWarningCount": 4,
     "monitoredNoticeCount": 9,
-    "syncDriftCount": 0,
+    "syncDriftCount": 4,
     "sourcePublicDriftCount": 0,
-    "monitoredSyncDriftCount": 0
+    "monitoredSyncDriftCount": 1
   },
   "loadErrors": [],
   "markerResults": [
@@ -86,31 +86,14 @@
       "marker": "data-epidemic-triage",
       "label": "Epidemic triage panel",
       "ok": true,
-      "htmlBytes": 89119,
-      "issues": [
-        {
-          "toolId": "epidemicSim",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.space-y-4 > div.space-y-4:nth-of-type(5) > div.bg-white/70.backdrop-blur-md:nth-of-type(5) > canvas.w-full.rounded-xl"
-        },
-        {
-          "toolId": "epidemicSim",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.space-y-4 > div.space-y-4:nth-of-type(5) > div.bg-white/70.backdrop-blur-md:nth-of-type(5) > canvas.w-full.rounded-xl"
-        }
-      ],
+      "htmlBytes": 89143,
+      "issues": [],
       "metrics": {
         "buttons": 21,
         "fields": 4,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 89119
+        "htmlBytes": 89143
       }
     },
     {
@@ -148,7 +131,7 @@
       "marker": "data-climate-mission-panel",
       "label": "Climate mission panel",
       "ok": true,
-      "htmlBytes": 33302,
+      "htmlBytes": 33315,
       "issues": [
         {
           "toolId": "climateExplorer",
@@ -157,14 +140,6 @@
           "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
           "index": 0,
           "selector": "div > div > div:nth-of-type(2) > canvas"
-        },
-        {
-          "toolId": "climateExplorer",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 1,
-          "selector": "div > div:nth-of-type(6) > div > div:nth-of-type(7) > canvas"
         }
       ],
       "metrics": {
@@ -172,7 +147,7 @@
         "fields": 0,
         "canvases": 2,
         "headings": 2,
-        "htmlBytes": 33302
+        "htmlBytes": 33315
       }
     },
     {
@@ -273,23 +248,14 @@
       "marker": "data-companion-workspace-stage",
       "label": "Companion Planting workspace stage",
       "ok": true,
-      "htmlBytes": 17869,
-      "issues": [
-        {
-          "toolId": "companionPlanting",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div.max-w-6xl.mx-auto > div.grid.md:grid-cols-3:nth-of-type(4) > div.md:col-span-2:nth-of-type(1) > div.overflow-hidden.rounded-xl > canvas.w-full"
-        }
-      ],
+      "htmlBytes": 18032,
+      "issues": [],
       "metrics": {
         "buttons": 20,
         "fields": 0,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 17869
+        "htmlBytes": 18032
       }
     },
     {
@@ -298,14 +264,14 @@
       "marker": "data-dna-mission",
       "label": "DNA mission control",
       "ok": true,
-      "htmlBytes": 38423,
+      "htmlBytes": 38430,
       "issues": [],
       "metrics": {
         "buttons": 103,
         "fields": 0,
         "canvases": 1,
         "headings": 5,
-        "htmlBytes": 38423
+        "htmlBytes": 38430
       }
     },
     {
@@ -314,14 +280,14 @@
       "marker": "data-cell-mission",
       "label": "Cell Simulator mission panel",
       "ok": true,
-      "htmlBytes": 21653,
+      "htmlBytes": 21669,
       "issues": [],
       "metrics": {
         "buttons": 39,
         "fields": 3,
         "canvases": 1,
         "headings": 5,
-        "htmlBytes": 21653
+        "htmlBytes": 21669
       }
     },
     {
@@ -346,7 +312,7 @@
       "marker": "data-dinolab-command",
       "label": "Dino Lab mission deck",
       "ok": true,
-      "htmlBytes": 424134,
+      "htmlBytes": 423772,
       "issues": [
         {
           "toolId": "dinoLab",
@@ -375,7 +341,7 @@
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 424134
+        "htmlBytes": 423772
       }
     },
     {
@@ -400,47 +366,14 @@
       "marker": "data-music-command",
       "label": "Music Synth studio deck",
       "ok": true,
-      "htmlBytes": 47673,
-      "issues": [
-        {
-          "toolId": "musicSynth",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.max-w-6xl.mx-auto > div.relative.rounded-xl:nth-of-type(3) > canvas"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.max-w-6xl.mx-auto > div.relative.rounded-xl:nth-of-type(3) > canvas"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 1,
-          "selector": "div > div.max-w-6xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "musicSynth",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 1,
-          "selector": "div > div.max-w-6xl.mx-auto > div.mt-5.rounded-2xl:nth-of-type(11) > div.rounded-xl.overflow-hidden > canvas"
-        }
-      ],
+      "htmlBytes": 47879,
+      "issues": [],
       "metrics": {
         "buttons": 94,
         "fields": 19,
         "canvases": 2,
         "headings": 3,
-        "htmlBytes": 47673
+        "htmlBytes": 47879
       }
     },
     {
@@ -449,14 +382,14 @@
       "marker": "data-molecule-command",
       "label": "Molecule Lab command deck",
       "ok": true,
-      "htmlBytes": 34584,
+      "htmlBytes": 35164,
       "issues": [],
       "metrics": {
-        "buttons": 103,
+        "buttons": 104,
         "fields": 1,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 34584
+        "htmlBytes": 35164
       }
     },
     {
@@ -465,7 +398,7 @@
       "marker": "data-printingpress-command",
       "label": "PrintingPress shop dashboard",
       "ok": true,
-      "htmlBytes": 45069,
+      "htmlBytes": 45088,
       "issues": [
         {
           "toolId": "printingPress",
@@ -485,7 +418,7 @@
         "fields": 0,
         "canvases": 0,
         "headings": 5,
-        "htmlBytes": 45069
+        "htmlBytes": 45088
       }
     },
     {
@@ -510,14 +443,14 @@
       "marker": "data-raptorhunt-command",
       "label": "Raptor Hunt flight briefing",
       "ok": true,
-      "htmlBytes": 25529,
+      "htmlBytes": 25549,
       "issues": [],
       "metrics": {
         "buttons": 48,
         "fields": 1,
         "canvases": 0,
         "headings": 1,
-        "htmlBytes": 25529
+        "htmlBytes": 25549
       }
     },
     {
@@ -574,23 +507,14 @@
       "marker": "data-brainatlas-mission",
       "label": "Brain Atlas mission panel",
       "ok": true,
-      "htmlBytes": 15172,
-      "issues": [
-        {
-          "toolId": "brainAtlas",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div.brainatlas-tool-shell.max-w-6xl > div.brainatlas-main-stack:nth-of-type(5) > div.brainatlas-canvas-shell:nth-of-type(1) > div.brainatlas-canvas-stage:nth-of-type(2) > canvas.brainatlas-canvas.border-2"
-        }
-      ],
+      "htmlBytes": 17576,
+      "issues": [],
       "metrics": {
-        "buttons": 31,
+        "buttons": 39,
         "fields": 1,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 15172
+        "htmlBytes": 17576
       }
     },
     {
@@ -599,31 +523,14 @@
       "marker": "data-anatomy-mission",
       "label": "Anatomy mission panel",
       "ok": true,
-      "htmlBytes": 32942,
-      "issues": [
-        {
-          "toolId": "anatomy",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "div > div.anatomy-tool-shell.max-w-6xl > div.anatomy-workspace:nth-of-type(10) > div.anatomy-body-shell:nth-of-type(1) > canvas.anatomy-canvas.border-2"
-        },
-        {
-          "toolId": "anatomy",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "div > div.anatomy-tool-shell.max-w-6xl > div.anatomy-workspace:nth-of-type(10) > div.anatomy-body-shell:nth-of-type(1) > canvas.anatomy-canvas.border-2"
-        }
-      ],
+      "htmlBytes": 32966,
+      "issues": [],
       "metrics": {
         "buttons": 66,
         "fields": 1,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 32942
+        "htmlBytes": 32966
       }
     },
     {
@@ -632,7 +539,7 @@
       "marker": "data-birdlab-field-station",
       "label": "Bird Lab field station",
       "ok": true,
-      "htmlBytes": 142272,
+      "htmlBytes": 142251,
       "issues": [
         {
           "toolId": "birdLab",
@@ -657,7 +564,7 @@
         "fields": 0,
         "canvases": 0,
         "headings": 127,
-        "htmlBytes": 142272
+        "htmlBytes": 142251
       }
     },
     {
@@ -666,31 +573,14 @@
       "marker": "data-watercycle-focus",
       "label": "Water Cycle focus panel",
       "ok": true,
-      "htmlBytes": 18180,
-      "issues": [
-        {
-          "toolId": "waterCycle",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 0,
-          "selector": "canvas#wcCanvas"
-        },
-        {
-          "toolId": "waterCycle",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 0,
-          "selector": "canvas#wcCanvas"
-        }
-      ],
+      "htmlBytes": 18267,
+      "issues": [],
       "metrics": {
         "buttons": 18,
         "fields": 4,
         "canvases": 1,
         "headings": 6,
-        "htmlBytes": 18180
+        "htmlBytes": 18267
       }
     },
     {
@@ -699,7 +589,7 @@
       "marker": "data-playlab-gameplan",
       "label": "PlayLab game plan",
       "ok": true,
-      "htmlBytes": 17205,
+      "htmlBytes": 17742,
       "issues": [
         {
           "toolId": "playlab",
@@ -709,16 +599,16 @@
           "count": 29,
           "examples": [
             {
-              "selector": "div > div"
+              "selector": "div > div.playlab-root"
             },
             {
-              "selector": "div > div > div:nth-of-type(2) > button:nth-of-type(1)"
+              "selector": "div > div.playlab-root > div:nth-of-type(2) > button:nth-of-type(1)"
             },
             {
-              "selector": "div > div > div:nth-of-type(2) > button:nth-of-type(2)"
+              "selector": "div > div.playlab-root > div:nth-of-type(2) > button:nth-of-type(2)"
             },
             {
-              "selector": "div > div > div:nth-of-type(5) > button:nth-of-type(1)"
+              "selector": "div > div.playlab-root > div:nth-of-type(5) > button:nth-of-type(1)"
             }
           ]
         }
@@ -727,8 +617,8 @@
         "buttons": 31,
         "fields": 5,
         "canvases": 1,
-        "headings": 6,
-        "htmlBytes": 17205
+        "headings": 7,
+        "htmlBytes": 17742
       }
     },
     {
@@ -737,71 +627,14 @@
       "marker": "data-pt-sim-focus",
       "label": "Plate Tectonics sim focus",
       "ok": true,
-      "htmlBytes": 23334,
-      "issues": [
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 1,
-          "selector": "canvas#geology-earth-canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 2,
-          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 2,
-          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(7) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 3,
-          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(8) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 3,
-          "selector": "div > div.pt-sim-shell.max-w-6xl > div.mt-5.mx-4:nth-of-type(8) > div.rounded-xl.overflow-hidden > canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-name",
-          "message": "Canvas lacks a tool-specific role/accessible name before host fallback runs.",
-          "index": 4,
-          "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas"
-        },
-        {
-          "toolId": "plateTectonics",
-          "severity": "warning",
-          "code": "canvas-focus",
-          "message": "Canvas is not focusable in initial markup.",
-          "index": 4,
-          "selector": "div.pt-sim-shell.max-w-6xl > div.rounded-2xl.border-2:nth-of-type(9) > div.p-3.grid:nth-of-type(2) > div.md:col-span-2.rounded-xl:nth-of-type(1) > canvas"
-        }
-      ],
+      "htmlBytes": 23660,
+      "issues": [],
       "metrics": {
         "buttons": 22,
         "fields": 5,
         "canvases": 6,
         "headings": 5,
-        "htmlBytes": 23334
+        "htmlBytes": 23660
       }
     },
     {
@@ -826,14 +659,14 @@
       "marker": "data-moonmission-control",
       "label": "Moon Mission control panel",
       "ok": true,
-      "htmlBytes": 13364,
+      "htmlBytes": 13365,
       "issues": [],
       "metrics": {
         "buttons": 8,
         "fields": 5,
         "canvases": 0,
         "headings": 3,
-        "htmlBytes": 13364
+        "htmlBytes": 13365
       }
     },
     {
@@ -842,14 +675,14 @@
       "marker": "data-solarsystem-command-center",
       "label": "Solar System command center",
       "ok": true,
-      "htmlBytes": 16664,
+      "htmlBytes": 16665,
       "issues": [],
       "metrics": {
         "buttons": 25,
         "fields": 1,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 16664
+        "htmlBytes": 16665
       }
     },
     {
@@ -902,14 +735,14 @@
       "marker": "data-throwlab-run-focus",
       "label": "ThrowLab run focus",
       "ok": true,
-      "htmlBytes": 47636,
+      "htmlBytes": 47671,
       "issues": [],
       "metrics": {
         "buttons": 53,
         "fields": 8,
         "canvases": 1,
         "headings": 4,
-        "htmlBytes": 47636
+        "htmlBytes": 47671
       }
     },
     {
@@ -954,14 +787,14 @@
       "marker": "data-skatelab-run-focus",
       "label": "SkateLab run focus",
       "ok": true,
-      "htmlBytes": 69070,
+      "htmlBytes": 69047,
       "issues": [],
       "metrics": {
         "buttons": 58,
         "fields": 10,
         "canvases": 1,
         "headings": 3,
-        "htmlBytes": 69070
+        "htmlBytes": 69047
       }
     },
     {
@@ -1002,14 +835,14 @@
       "marker": "data-circuit-bench",
       "label": "Circuit electronics bench",
       "ok": true,
-      "htmlBytes": 40215,
+      "htmlBytes": 40678,
       "issues": [],
       "metrics": {
-        "buttons": 53,
+        "buttons": 54,
         "fields": 2,
         "canvases": 1,
         "headings": 2,
-        "htmlBytes": 40215
+        "htmlBytes": 40678
       }
     },
     {
@@ -1114,14 +947,14 @@
       "marker": "data-galaxy-canvas",
       "label": "Galaxy 3D canvas",
       "ok": true,
-      "htmlBytes": 22154,
+      "htmlBytes": 36779,
       "issues": [],
       "metrics": {
-        "buttons": 30,
-        "fields": 2,
+        "buttons": 50,
+        "fields": 3,
         "canvases": 1,
-        "headings": 2,
-        "htmlBytes": 22154
+        "headings": 3,
+        "htmlBytes": 36779
       }
     },
     {
@@ -1158,42 +991,98 @@
     }
   ],
   "sync": {
-    "drift": [],
+    "drift": [
+      {
+        "file": "stem_tool_alphafold.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": false
+        },
+        "hashes": {
+          "source": "961AACABFC3D",
+          "public": "961AACABFC3D",
+          "build": null
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_brainatlas.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "8A97BC41F8C3",
+          "public": "8A97BC41F8C3",
+          "build": "D113D7E77AB6"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_geosandbox.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "CEC58F724169",
+          "public": "CEC58F724169",
+          "build": "5A99A0628A2B"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      },
+      {
+        "file": "stem_tool_roadready.js",
+        "monitored": false,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "666A3DD3954B",
+          "public": "666A3DD3954B",
+          "build": "91D37DAEE248"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      }
+    ],
     "sourcePublicDrift": [],
-    "monitoredDrift": []
+    "monitoredDrift": [
+      {
+        "file": "stem_tool_brainatlas.js",
+        "monitored": true,
+        "exists": {
+          "source": true,
+          "public": true,
+          "build": true
+        },
+        "hashes": {
+          "source": "8A97BC41F8C3",
+          "public": "8A97BC41F8C3",
+          "build": "D113D7E77AB6"
+        },
+        "sourcePublicMatch": true,
+        "sourceBuildMatch": false,
+        "status": "build-drift"
+      }
+    ]
   },
   "topFindings": [
-    {
-      "code": "canvas-focus",
-      "severity": "warning",
-      "count": 13,
-      "toolCount": 9,
-      "exampleTools": [
-        "epidemicSim",
-        "climateExplorer",
-        "companionPlanting",
-        "musicSynth",
-        "brainAtlas",
-        "anatomy",
-        "waterCycle",
-        "plateTectonics",
-        "bikeLab"
-      ]
-    },
-    {
-      "code": "canvas-name",
-      "severity": "warning",
-      "count": 9,
-      "toolCount": 6,
-      "exampleTools": [
-        "epidemicSim",
-        "climateExplorer",
-        "musicSynth",
-        "anatomy",
-        "waterCycle",
-        "plateTectonics"
-      ]
-    },
     {
       "code": "heading",
       "severity": "warning",
@@ -1202,6 +1091,24 @@
       "exampleTools": [
         "cellularLab",
         "bikeLab"
+      ]
+    },
+    {
+      "code": "canvas-focus",
+      "severity": "warning",
+      "count": 1,
+      "toolCount": 1,
+      "exampleTools": [
+        "bikeLab"
+      ]
+    },
+    {
+      "code": "canvas-name",
+      "severity": "warning",
+      "count": 1,
+      "toolCount": 1,
+      "exampleTools": [
+        "climateExplorer"
       ]
     },
     {

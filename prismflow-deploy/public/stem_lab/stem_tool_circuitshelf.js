@@ -24,7 +24,21 @@
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
-  var CIRCUIT_SHELF_URL = 'https://alloflow-cdn.pages.dev/circuit_shelf/circuit_shelf.html?v=1';
+  var CIRCUIT_SHELF_CDN_URL = 'https://alloflow-cdn.pages.dev/circuit_shelf/circuit_shelf.html?v=1';
+  function companionUrl(path, cdnUrl) {
+    try {
+      var loc = window.location || {};
+      var host = loc.hostname || '';
+      var pathname = loc.pathname || '';
+      var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
+      var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
+      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      if (isDesktopBundled) return new URL(path, loc.href).toString();
+      if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
+    } catch (_) {}
+    return cdnUrl;
+  }
+  var CIRCUIT_SHELF_URL = companionUrl('circuit_shelf/circuit_shelf.html?v=1', CIRCUIT_SHELF_CDN_URL);
 
   function buildDebriefPrompt(challenge, prediction, explanation) {
     return [
@@ -62,6 +76,10 @@
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var announceToSR = ctx.announceToSR;
       var setLabToolData = ctx.setToolData;
+      var setStemLabTool = ctx.setStemLabTool;
+      var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
+      var shelfData = (ctx.toolData && ctx.toolData._circuitShelf) || {};
+      var returnTool = shelfData.returnTool === 'circuit' ? 'circuit' : null;
 
       var _win = React.useRef(null);
       var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
@@ -127,7 +145,21 @@
         if (announceToSR) announceToSR(t('stem.circuitShelf.opened_sr', 'Opened the Circuit Shelf in a new window.'));
       }
 
+      function returnToLab() {
+        if (typeof setStemLabTool !== 'function') return;
+        setStemLabTool(returnTool || null);
+        if (announceToSR) announceToSR(returnTool ? t('stem.circuitShelf.returned_sr', 'Returned to Circuit Builder.') : t('stem.circuitShelf.returned_catalog_sr', 'Returned to the STEM Lab tools.'));
+      }
+
       return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
+        typeof setStemLabTool === 'function' && h('button', {
+          onClick: returnToLab,
+          className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
+          'aria-label': returnTool ? t('stem.circuitShelf.back_to_builder', 'Back to Circuit Builder') : t('stem.circuitShelf.back_to_tools', 'Back to STEM Lab tools')
+        },
+          ArrowLeft ? h(ArrowLeft, { size: 16 }) : null,
+          h('span', null, returnTool ? t('stem.circuitShelf.back_to_builder', 'Back to Circuit Builder') : t('stem.circuitShelf.back_to_tools', 'Back to STEM Lab tools'))
+        ),
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400' },
           t('stem.circuitShelf.title', '🔌 Circuit Shelf — predict first, then wire it up')),
         h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
@@ -141,10 +173,14 @@
           className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-md shadow-amber-600/20 transition-all w-fit',
           'aria-label': t('stem.circuitShelf.open_title', 'Open the Circuit Shelf in a new window (CircuitJS simulator with the Predict-Explore-Explain coach)')
         }, t('stem.circuitShelf.open', '🔌 Open Circuit Shelf')),
+        popupState === 'opening' && h('p', { className: 'text-xs text-sky-300' },
+          t('stem.circuitShelf.opening_note', 'Opening Circuit Shelf. If it does not appear, check your pop-up settings.')),
         popupState === 'blocked' && h('p', { className: 'text-xs text-amber-300' },
           t('stem.circuitShelf.blocked_note', 'Pop-up blocked — allow pop-ups for this page and try again.')),
         popupState === 'open' && h('p', { className: 'text-xs text-emerald-300' },
           t('stem.circuitShelf.open_note', 'Circuit Shelf is open. Keep this AlloFlow window open too — it powers the AI coach.')),
+        popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
+          t('stem.circuitShelf.closed_note', 'Circuit Shelf was closed. You can reopen it whenever you are ready.')),
         h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
           t('stem.circuitShelf.credit', 'Circuit simulator: CircuitJS1 by Paul Falstad and Iain Sharp (github.com/pfalstad/circuitjs1), free and open source under the GPL. The simulator loads from its host, so the shelf needs internet; offline use for School Box is on the roadmap (the GPL permits it).'))
       );

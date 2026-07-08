@@ -1,0 +1,29 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-what-to-the-slave-fourth-july-excerpt",
+  "title": "What to the Slave Is the Fourth of July? (Excerpt)",
+  "description": "A public-domain excerpt from Frederick Douglass's 1852 oration.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "primary-source-excerpt",
+  "subjects": ["History", "Civics", "Slavery", "Primary sources"],
+  "authors": ["Frederick Douglass"],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain",
+  "licenseUrl": "https://en.wikisource.org/wiki/What_to_the_Slave_Is_the_Fourth_of_July%3F",
+  "source": { "id": "wikisource", "name": "Wikisource", "url": "https://en.wikisource.org/wiki/What_to_the_Slave_Is_the_Fourth_of_July%3F" },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    { "n": 1, "img": null, "text": "This speech by Frederick Douglass was given on July 5, 1852, in Rochester, New York. Douglass spoke to an audience celebrating national independence while slavery still existed in the United States." },
+    { "n": 2, "img": null, "text": "Douglass begins by acknowledging the difficulty of the task before him. He says the distance between the platform and the slave plantation from which he escaped is considerable." },
+    { "n": 3, "img": null, "text": "The speech asks students to examine perspective, audience, patriotism, and contradiction. It is a powerful primary source for studying abolition, rhetoric, and civic ideals." }
+  ],
+  "stats": { "pages": 3, "words": 100 }
+}

@@ -284,16 +284,52 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @param {number} [opts.quality=0.7] - JPEG quality
      * @returns {Promise<string>} data:image URL
      */
-    async generateImage(prompt, { width = 300, quality = 0.7 } = {}) {
-        this._debugLog(`[AIProvider] generateImage: ${prompt?.substring(0, 50)}`);
+    _isSdTurboEligibleImageError(err) {
+        if (!err) return false;
+        const msg = String(err.message || err || '');
+        if (/Safety|Block|content\s*policy|policy/i.test(msg)) return false;
+        return Boolean(err.isConfigState || err.isRateLimited || /401|403|429|503|quota|RESOURCE_EXHAUSTED|Rate limited|rate limit/i.test(msg));
+    }
 
-        // Check imageProvider override from AI Backend Settings
-        const _imgOvr = this._imageProvider || null;
-        if (_imgOvr === 'off') throw new Error('Image generation is disabled in AI Backend Settings');
-        if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality);
-        if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality);
+    async _trySdTurboImage(prompt, width, quality) {
+        const win = (typeof globalThis !== 'undefined' && globalThis.window)
+            ? globalThis.window
+            : (typeof window !== 'undefined' ? window : null);
+        if (this.isCanvasEnv || !win) return null;
+        try {
+            if (win._sdTurbo?.ready && typeof win._sdTurbo.generate === 'function') {
+                const localUrl = await win._sdTurbo.generate(prompt);
+                if (localUrl) {
+                    this._debugLog('[AIProvider] ✅ Image generated via local SD-Turbo');
+                    return await this._optimizeImage(localUrl, width, quality);
+                }
+            }
+        } catch (err) {
+            this._warnLog(`[AIProvider] Local SD-Turbo image generation failed: ${err?.message || err}`);
+        }
+        return null;
+    }
 
-        // Default: route by backend
+    _kickoffSdTurboLoad() {
+        const win = (typeof globalThis !== 'undefined' && globalThis.window)
+            ? globalThis.window
+            : (typeof window !== 'undefined' ? window : null);
+        if (this.isCanvasEnv || !win) return false;
+        if (win._sdTurbo?.ready || win.__sdTurboDownloading || typeof win.__loadSdTurbo !== 'function') return false;
+        const nav = win.navigator || (typeof navigator !== 'undefined' ? navigator : null);
+        if (nav && !nav.gpu) return false;
+        win.__sdTurboDownloading = true;
+        Promise.resolve(win.__loadSdTurbo(() => {})).then(
+            () => { win.__sdTurboDownloading = false; },
+            (err) => {
+                win.__sdTurboDownloading = false;
+                this._warnLog(`[AIProvider] SD-Turbo preload failed: ${err?.message || err}`);
+            }
+        );
+        return true;
+    }
+
+    async _generateImageByBackend(prompt, width, quality) {
         switch (this.backend) {
             case 'gemini':
                 return this._geminiGenerateImage(prompt, width, quality);
@@ -307,6 +343,42 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             case 'custom':
             default:
                 return this._openaiGenerateImage(prompt, width, quality);
+        }
+    }
+
+    async generateImage(prompt, { width = 300, quality = 0.7 } = {}) {
+        this._debugLog(`[AIProvider] generateImage: ${prompt?.substring(0, 50)}`);
+
+        // Check imageProvider override from AI Backend Settings
+        const _imgOvr = this._imageProvider || null;
+        if (_imgOvr === 'off') throw new Error('Image generation is disabled in AI Backend Settings');
+
+        if (_imgOvr === 'sd-local') {
+            const local = await this._trySdTurboImage(prompt, width, quality);
+            if (local) return local;
+            this._kickoffSdTurboLoad();
+            if (!this.apiKey && this.backend === 'gemini') {
+                const err = new Error('Local image generator is still preparing and no cloud image API key is configured.');
+                err.isConfigState = true;
+                throw err;
+            }
+        }
+
+        const runPrimary = () => {
+            if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality);
+            if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality);
+            return this._generateImageByBackend(prompt, width, quality);
+        };
+
+        try {
+            return await runPrimary();
+        } catch (err) {
+            if (this._isSdTurboEligibleImageError(err)) {
+                const local = await this._trySdTurboImage(prompt, width, quality);
+                if (local) return local;
+                if (_imgOvr === 'sd-local') this._kickoffSdTurboLoad();
+            }
+            throw err;
         }
     }
 

@@ -50,7 +50,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
   function plantTone(f,d,tp,v) { var ac=getPlantAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxPlantClick() { plantTone(600,0.03,"sine",0.04); }
   function sfxPlantSuccess() { plantTone(523,0.08,"sine",0.07); setTimeout(function(){plantTone(659,0.08,"sine",0.07);},70); setTimeout(function(){plantTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("plant-a11y")){var _s=document.createElement("style");_s.id="plant-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-200{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("plant-a11y")){var _s=document.createElement("style");_s.id="plant-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -6128,13 +6128,13 @@ var d = (labToolData.companionPlanting) || {};
           if (gardenMode === 'community') {
             return React.createElement('div', { className: 'space-y-4 animate-in fade-in duration-200' },
               renderTutorial('companionPlanting', _tutCompanionPlanting),
-              React.createElement('div', { className: 'flex items-center justify-between' },
-                React.createElement('div', { className: 'flex items-center gap-3' },
-                  React.createElement('button', { onClick: function () { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors', 'aria-label': __alloT('stem.companionplanting.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+              React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
+                React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
+                  React.createElement('button', { onClick: function () { setStemLabTool(null); }, className: 'p-1.5 rounded-lg text-emerald-100 hover:bg-white/10 transition-colors focus:ring-2 focus:ring-emerald-300 focus:outline-none', 'aria-label': __alloT('stem.companionplanting.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: 'text-emerald-100' })),
                   React.createElement('div', null,
-                    React.createElement('h3', { className: 'text-lg font-bold text-slate-800' }, __alloT('stem.companionplanting.community_garden_simulator', '🏡 Community Garden Simulator')),
-                    React.createElement('p', { className: 'text-xs text-slate-600' }, __alloT('stem.companionplanting.plan_plant_and_manage_a_diverse_garden', 'Plan, plant, and manage a diverse garden ecosystem')))),
-                React.createElement('div', { className: 'flex gap-2' },
+                    React.createElement('h3', { className: 'text-lg font-bold text-white' }, __alloT('stem.companionplanting.community_garden_simulator', '🏡 Community Garden Simulator')),
+                    React.createElement('p', { className: 'text-xs text-emerald-100' }, __alloT('stem.companionplanting.plan_plant_and_manage_a_diverse_garden', 'Plan, plant, and manage a diverse garden ecosystem')))),
+                React.createElement('div', { className: 'grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto' },
                   React.createElement('button', { onClick: function() { upd('gardenMode', 'sisters'); }, className: 'transition-colors px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-600 hover:bg-emerald-50' }, __alloT('stem.companionplanting.three_sisters_2', '🌽 Three Sisters')),
                   React.createElement('button', { className: 'px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-700 text-white' }, __alloT('stem.companionplanting.community_garden', '🏡 Community Garden')))),
               renderCommunityGarden());
@@ -6150,29 +6150,29 @@ var d = (labToolData.companionPlanting) || {};
 
             // ── Header ──
 
-            React.createElement("div", { className: "flex items-center justify-between" },
+            React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" },
 
-              React.createElement("div", { className: "flex items-center gap-3" },
+              React.createElement("div", { className: "flex items-center gap-3 min-w-0" },
 
                 React.createElement("button", {
 
                   onClick: function () { setStemLabTool(null); },
 
-                  className: "p-1.5 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": __alloT('stem.companionplanting.back_to_tools_2', "Back to tools")
+                  className: "p-1.5 rounded-lg text-emerald-100 hover:bg-white/10 transition-colors focus:ring-2 focus:ring-emerald-300 focus:outline-none", "aria-label": __alloT('stem.companionplanting.back_to_tools_2', "Back to tools")
 
-                }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+                }, React.createElement(ArrowLeft, { size: 18, className: "text-emerald-100" })),
 
                 React.createElement("div", null,
 
-                  React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, __alloT('stem.companionplanting.companion_planting_lab', "🌱 Companion Planting Lab")),
+                  React.createElement("h3", { className: "text-lg font-bold text-white" }, __alloT('stem.companionplanting.companion_planting_lab', "🌱 Companion Planting Lab")),
 
-                  React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.companionplanting.the_milpa_three_sisters_7_000_years_of', "The milpa / Three Sisters — 7,000+ years of agricultural science"))
+                  React.createElement("p", { className: "text-xs text-emerald-100" }, __alloT('stem.companionplanting.the_milpa_three_sisters_7_000_years_of', "The milpa / Three Sisters — 7,000+ years of agricultural science"))
 
                 )
 
               ),
 
-              React.createElement("div", { className: "flex items-center gap-2" },
+              React.createElement("div", { className: "grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:items-center" },
 
                 React.createElement("button", {
                   onClick: function () { upd('gardenMode', 'community'); },
@@ -6690,7 +6690,7 @@ var d = (labToolData.companionPlanting) || {};
 
                         onClick: function () { upd('growSpeed', s); },
 
-                        className: "px-2 py-0.5 rounded text-[11px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50')
+                        className: "px-2 py-0.5 rounded text-[11px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-800 border border-emerald-200 hover:bg-emerald-50')
 
                       }, s + '×');
 
@@ -7450,7 +7450,7 @@ var d = (labToolData.companionPlanting) || {};
                     React.createElement("div", { className: "text-[11px] font-black text-violet-700" }, '#' + p.num + ' ' + p.name),
                     isActive && React.createElement("div", { className: "text-left mt-1.5" },
                       React.createElement("div", { className: "text-[11px] text-slate-600" }, p.desc),
-                      React.createElement("div", { className: "text-[11px] text-emerald-600 mt-1 bg-emerald-50 rounded p-1 border border-emerald-100" }, '\uD83C\uDF31 Example: ' + p.example)
+                      React.createElement("div", { className: "text-[11px] text-emerald-800 mt-1 bg-emerald-50 rounded p-1 border border-emerald-100" }, '\uD83C\uDF31 Example: ' + p.example)
                     )
                   );
                 })

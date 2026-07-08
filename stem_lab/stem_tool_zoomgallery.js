@@ -26,7 +26,21 @@
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
-  var ZOOM_GALLERY_URL = 'https://alloflow-cdn.pages.dev/zoom_gallery/zoom_gallery.html?v=1';
+  var ZOOM_GALLERY_CDN_URL = 'https://alloflow-cdn.pages.dev/zoom_gallery/zoom_gallery.html?v=1';
+  function companionUrl(path, cdnUrl) {
+    try {
+      var loc = window.location || {};
+      var host = loc.hostname || '';
+      var pathname = loc.pathname || '';
+      var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
+      var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
+      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      if (isDesktopBundled) return new URL(path, loc.href).toString();
+      if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
+    } catch (_) {}
+    return cdnUrl;
+  }
+  var ZOOM_GALLERY_URL = companionUrl('zoom_gallery/zoom_gallery.html?v=1', ZOOM_GALLERY_CDN_URL);
 
   function buildCoachPrompt(image, meta, notice, wonder) {
     return [
@@ -64,6 +78,8 @@
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var announceToSR = ctx.announceToSR;
       var setLabToolData = ctx.setToolData;
+      var setStemLabTool = ctx.setStemLabTool;
+      var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
 
       var _win = React.useRef(null);
       var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
@@ -129,7 +145,21 @@
         if (announceToSR) announceToSR(t('stem.zoomGallery.opened_sr', 'Opened the Zoom Gallery in a new window.'));
       }
 
+      function returnToCatalog() {
+        if (typeof setStemLabTool !== 'function') return;
+        setStemLabTool(null);
+        if (announceToSR) announceToSR(t('stem.zoomGallery.returned_catalog_sr', 'Returned to the STEM Lab tools.'));
+      }
+
       return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
+        typeof setStemLabTool === 'function' && h('button', {
+          onClick: returnToCatalog,
+          className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
+          'aria-label': t('stem.zoomGallery.back_to_tools', 'Back to STEM Lab tools')
+        },
+          ArrowLeft ? h(ArrowLeft, { size: 16 }) : null,
+          h('span', null, t('stem.zoomGallery.back_to_tools', 'Back to STEM Lab tools'))
+        ),
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-cyan-400' },
           t('stem.zoomGallery.title', '🔍 Zoom Gallery — real images, up close')),
         h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
@@ -143,10 +173,14 @@
           className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 shadow-md shadow-sky-600/20 transition-all w-fit',
           'aria-label': t('stem.zoomGallery.open_title', 'Open the Zoom Gallery in a new window (OpenSeadragon deep-zoom viewer with the Notice-Wonder coach)')
         }, t('stem.zoomGallery.open', '🔍 Open Zoom Gallery')),
+        popupState === 'opening' && h('p', { className: 'text-xs text-sky-300' },
+          t('stem.zoomGallery.opening_note', 'Opening Zoom Gallery. If it does not appear, check your pop-up settings.')),
         popupState === 'blocked' && h('p', { className: 'text-xs text-amber-300' },
           t('stem.zoomGallery.blocked_note', 'Pop-up blocked — allow pop-ups for this page and try again.')),
         popupState === 'open' && h('p', { className: 'text-xs text-emerald-300' },
           t('stem.zoomGallery.open_note', 'Zoom Gallery is open. Keep this AlloFlow window open too — it powers the AI coach.')),
+        popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
+          t('stem.zoomGallery.closed_note', 'Zoom Gallery was closed. You can reopen it whenever you are ready.')),
         h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
           t('stem.zoomGallery.credit', 'Viewer: OpenSeadragon (openseadragon.github.io), free and open source under the BSD-3-Clause license. Images: Smithsonian Open Access (released CC0) served as IIIF deep-zoom tiles, and NASA photographs (public domain). Each image lists its source and a link to the original record. The viewer and images load from the web, so the gallery needs internet.'))
       );

@@ -3766,7 +3766,7 @@
               },
               {
                 id: 'lifeSkills', icon: '\uD83E\uDDED', label: 'Life Skills Lab',
-                desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, health insurance navigator, and applied science for daily life.',
+                desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, health insurance, dental care, body care ergonomics, sleep routines, and applied science for daily life.',
                 color: 'cyan', ready: true
               },
               {
@@ -3937,16 +3937,6 @@
                 color: 'amber', ready: true
               },
               {
-                id: 'circuitShelf', icon: '\uD83D\uDD0C', label: 'Circuit Shelf',
-                desc: 'Build and run real electronic circuits in CircuitJS \u2014 Paul Falstad\u2019s open-source simulator \u2014 through Predict \u2192 Explore \u2192 Explain challenges: series vs. parallel bulbs, Ohm\u2019s law, RC charging, voltage dividers, logic gates. Lock in a guess before you wire anything.',
-                color: 'amber', ready: true
-              },
-              {
-                id: 'moleculeShelf', icon: '\uD83E\uDDEC', label: 'Molecule Shelf',
-                desc: 'Explore real 3D molecular structures in Mol* \u2014 the viewer used by the world\u2019s protein databank \u2014 from water and DNA to hemoglobin and viruses. Rotate, zoom, and switch representations, with a Notice \u2192 Wonder observation coach beside it.',
-                color: 'indigo', ready: true
-              },
-              {
                 id: 'zoomGallery', icon: '\uD83D\uDD0D', label: 'Zoom Gallery',
                 desc: 'Zoom deep into real, openly-licensed images in OpenSeadragon \u2014 the viewer museums use \u2014 from the Pillars of Creation and Saturn\u2019s rings to an Apollo bootprint, the real Apollo 11 capsule, and a coral fan. Smithsonian Open Access (CC0) + NASA (public domain), with a Notice \u2192 Wonder observation coach beside it.',
                 color: 'sky', ready: true
@@ -3965,8 +3955,6 @@
               dataLab: 'data science codap statistics dataset table graph plot scatter chart mean median analyze census concord tutor socratic data literacy spreadsheet cases attributes',
               alphaFoldExplorer: 'alphafold alpha fold protein structure prediction uniprot accession molstar mol molecule molecular biology bioinformatics pdb cif mmcif bcif plddt pae confidence sequence amino acid fasta server deepmind ebi structure viewer',
               simShelf: 'phet simulation simulations sims physics forces energy circuits light waves matter orbits evolution fractions probability predict explore explain poe lab colorado interactive',
-              circuitShelf: 'circuit circuits circuitjs falstad electronics electronic simulator series parallel ohm ohms law resistor resistance voltage current capacitor rc logic gates and or led breadboard battery predict explore explain poe physics',
-              moleculeShelf: 'molecule molecules molecular mol star molstar protein proteins pdb rcsb structure structures 3d dna rna hemoglobin water enzyme virus chemistry biochemistry biology atoms bonds ball stick cartoon notice wonder',
               zoomGallery: 'zoom gallery deep zoom openseadragon iiif image images photo photos picture pictures magnify magnifier close up detail details observe observation notice wonder smithsonian open access nasa museum artifact artifacts space astronomy hubble webb pillars creation saturn moon apollo bootprint coral fossil low vision cc0 public domain'
             };
             function _normalizeToolSearchText(value) {
@@ -5405,7 +5393,7 @@
             // Jul 2026: Data Lab — CODAP companion window + Socratic tutor
             // (launcher + AI bridge live in stem_tool_datalab.js).
             dataLab: true,
-            // Jul 2026: AlphaFold Explorer - public AlphaFold DB lookup + Mol*
+            // Jul 2026: AlphaFold Explorer — public AlphaFold DB lookup + Mol*
             // viewer + safe AlphaFold Server input prep.
             alphaFoldExplorer: true,
             // Jul 2026: Sim Shelf — PhET companion window + POE coach

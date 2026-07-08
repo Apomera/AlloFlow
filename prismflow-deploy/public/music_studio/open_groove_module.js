@@ -35,14 +35,56 @@
         '.og-root button:focus-visible, .og-root input:focus-visible, .og-root select:focus-visible, .og-root [tabindex]:focus-visible { outline: 2px solid #0f766e !important; outline-offset: 2px !important; }',
         '.og-root[data-og-theme="dark"] button:focus-visible, .og-root[data-og-theme="dark"] input:focus-visible, .og-root[data-og-theme="dark"] select:focus-visible, .og-root[data-og-theme="dark"] [tabindex]:focus-visible { outline-color: #facc15 !important; }',
         '.og-root[data-og-theme="contrast"] button:focus-visible, .og-root[data-og-theme="contrast"] input:focus-visible, .og-root[data-og-theme="contrast"] select:focus-visible, .og-root[data-og-theme="contrast"] [tabindex]:focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 3px !important; }',
+        '@media (forced-colors: active) { .og-root { forced-color-adjust: none; } .og-root button, .og-root input, .og-root select, .og-root textarea { forced-color-adjust: auto; } }',
         '.og-root :focus:not(:focus-visible) { outline: none !important; }'
       ].join('\n');
       document.head.appendChild(css);
     }
   }
 
+  var OG_THEME_STORAGE_KEY = 'openGrooveThemePreference';
+
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
+  }
+
+  function ogNormalizeThemePreference(value) {
+    value = String(value || '').trim();
+    return value === 'light' || value === 'dark' || value === 'contrast' || value === 'auto' ? value : 'auto';
+  }
+
+  function ogReadThemePreference(rootLike) {
+    try {
+      return ogNormalizeThemePreference(rootLike.localStorage && rootLike.localStorage.getItem(OG_THEME_STORAGE_KEY));
+    } catch (_) {
+      return 'auto';
+    }
+  }
+
+  function ogStoreThemePreference(rootLike, value) {
+    try {
+      if (rootLike.localStorage) rootLike.localStorage.setItem(OG_THEME_STORAGE_KEY, ogNormalizeThemePreference(value));
+    } catch (_) {}
+  }
+
+  function ogMediaMatches(rootLike, query) {
+    try {
+      return !!(rootLike.matchMedia && rootLike.matchMedia(query).matches);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function ogDetectSystemTheme(rootLike) {
+    if (ogMediaMatches(rootLike, '(forced-colors: active)')) return 'contrast';
+    if (ogMediaMatches(rootLike, '(prefers-contrast: more)')) return 'contrast';
+    if (ogMediaMatches(rootLike, '(prefers-color-scheme: dark)')) return 'dark';
+    return 'light';
+  }
+
+  function ogThemeLabel(preference, effectiveTheme) {
+    if (preference === 'auto') return 'Auto (' + (effectiveTheme === 'contrast' ? 'High Contrast' : effectiveTheme === 'dark' ? 'Dark' : 'Light') + ')';
+    return preference === 'contrast' ? 'High Contrast' : preference === 'dark' ? 'Dark' : 'Light';
   }
 
   function OpenGrooveStudio(props) {
@@ -54,9 +96,13 @@
     var S = Scheduler || root.OpenGrooveScheduler || root.AlloModules && root.AlloModules.OpenGrooveScheduler;
     var A = Audio || root.OpenGrooveAudio || root.AlloModules && root.AlloModules.OpenGrooveAudio;
     var addToast = props.addToast || function () {};
-    var themePair = React.useState('light');
-    var themeMode = themePair[0];
-    var setThemeMode = themePair[1];
+    var themePreferencePair = React.useState(function () { return ogReadThemePreference(root); });
+    var themePreference = themePreferencePair[0];
+    var setThemePreference = themePreferencePair[1];
+    var systemThemePair = React.useState(function () { return ogDetectSystemTheme(root); });
+    var systemTheme = systemThemePair[0];
+    var setSystemTheme = systemThemePair[1];
+    var themeMode = themePreference === 'auto' ? systemTheme : themePreference;
     var styles = getOpenGrooveStyles(themeMode);
     var workspaceModePair = React.useState('learn');
     var workspaceMode = workspaceModePair[0];
@@ -76,6 +122,13 @@
     var dependencyTick = React.useState(0);
     var setDependencyTick = dependencyTick[1];
 
+    function changeThemePreference(value) {
+      var next = ogNormalizeThemePreference(value);
+      setThemePreference(next);
+      ogStoreThemePreference(root, next);
+      ogAnnounce('Theme ' + ogThemeLabel(next, next === 'auto' ? systemTheme : next));
+    }
+
     React.useEffect(function () {
       if (C) return undefined;
       var id = root.setInterval(function () {
@@ -91,8 +144,31 @@
       return function () { root.clearInterval(id); };
     }, [!!C]);
 
+    React.useEffect(function () {
+      if (!root.matchMedia) return undefined;
+      var queries = [
+        root.matchMedia('(forced-colors: active)'),
+        root.matchMedia('(prefers-contrast: more)'),
+        root.matchMedia('(prefers-color-scheme: dark)')
+      ];
+      function refreshTheme() {
+        setSystemTheme(ogDetectSystemTheme(root));
+      }
+      queries.forEach(function (query) {
+        if (query.addEventListener) query.addEventListener('change', refreshTheme);
+        else if (query.addListener) query.addListener(refreshTheme);
+      });
+      refreshTheme();
+      return function () {
+        queries.forEach(function (query) {
+          if (query.removeEventListener) query.removeEventListener('change', refreshTheme);
+          else if (query.removeListener) query.removeListener(refreshTheme);
+        });
+      };
+    }, []);
+
     if (!C) {
-      return h('div', { className: 'og-root', role: 'dialog', 'aria-modal': true, 'aria-label': 'Open Groove Studio', style: styles.overlay },
+      return h('div', { className: 'og-root', 'data-og-theme': themeMode, 'data-og-theme-preference': themePreference, role: 'dialog', 'aria-modal': true, 'aria-label': 'Open Groove Studio', style: styles.overlay },
         h('div', { style: styles.panel },
           h('div', { style: styles.header },
             h('strong', null, 'Open Groove Studio'),
@@ -285,10 +361,8 @@
 
     React.useEffect(function () {
       function handleComputerKey(ev) {
-        if (!ev || ev.repeat || ev.altKey || ev.ctrlKey || ev.metaKey) return;
-        var target = ev.target || {};
-        var tag = String(target.tagName || '').toLowerCase();
-        if (tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable) return;
+        if (!ev || ev.defaultPrevented || ev.repeat || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+        if (isEditableEventTarget(ev.target)) return;
         var keyName = String(ev.key || '').toUpperCase();
         var key = (keyboardLayout.keys || []).find(function (item) { return item.computerKey === keyName; });
         if (!key) return;
@@ -413,7 +487,95 @@
       update();
     }
 
+    function isEditableEventTarget(target) {
+      if (!target) return false;
+      var tag = String(target.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+      if (target.isContentEditable) return true;
+      if (target.closest && target.closest('[contenteditable="true"]')) return true;
+      if (target.closest && target.closest('[role="textbox"]')) return true;
+      return target.getAttribute && target.getAttribute('role') === 'textbox';
+    }
+
+    function isActivationEventTarget(target) {
+      if (!target) return false;
+      var node = target;
+      while (node && node.nodeType === 1) {
+        var tag = String(node.tagName || '').toLowerCase();
+        if (tag === 'button' || tag === 'a' || tag === 'input' || tag === 'select' || tag === 'textarea' || tag === 'summary') return true;
+        if (node.isContentEditable) return true;
+        var role = node.getAttribute && node.getAttribute('role');
+        if (role === 'button' || role === 'checkbox' || role === 'combobox' || role === 'menuitem' || role === 'option' || role === 'slider' || role === 'spinbutton' || role === 'switch' || role === 'tab') return true;
+        node = node.parentElement;
+      }
+      return false;
+    }
+
+    function digitShortcutIndex(ev) {
+      var key = String(ev.key || '');
+      if (/^[1-4]$/.test(key)) return Number(key) - 1;
+      var match = String(ev.code || '').match(/^Digit([1-4])$/);
+      return match ? Number(match[1]) - 1 : -1;
+    }
+
+    function jumpRelativeWorkspaceSection(direction) {
+      if (!visibleWorkspaceSections.length) return;
+      var index = visibleWorkspaceSections.map(function (section) { return section.id; }).indexOf(panelJumpValue);
+      if (index < 0) index = 0;
+      var nextIndex = (index + direction + visibleWorkspaceSections.length) % visibleWorkspaceSections.length;
+      jumpToWorkspaceSection(visibleWorkspaceSections[nextIndex].id);
+    }
+
+    function handleDialogCommandShortcut(ev) {
+      if (!ev || ev.defaultPrevented || ev.repeat) return false;
+      var key = String(ev.key || '');
+      var lowerKey = key.toLowerCase();
+      var editable = isEditableEventTarget(ev.target);
+      var commandModifier = !!(ev.ctrlKey || ev.metaKey);
+      if (!editable && commandModifier && !ev.altKey) {
+        if (lowerKey === 'z') {
+          ev.preventDefault();
+          if (ev.shiftKey) {
+            if (canRedo) redoProject();
+            else ogAnnounce('Nothing to redo');
+          } else if (canUndo) {
+            undoProject();
+          } else {
+            ogAnnounce('Nothing to undo');
+          }
+          return true;
+        }
+        if (lowerKey === 'y' && !ev.shiftKey) {
+          ev.preventDefault();
+          if (canRedo) redoProject();
+          else ogAnnounce('Nothing to redo');
+          return true;
+        }
+      }
+      if (!editable && ev.altKey && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey) {
+        var modeIndex = digitShortcutIndex(ev);
+        if (modeIndex >= 0 && workspaceModes[modeIndex]) {
+          ev.preventDefault();
+          changeWorkspaceMode(workspaceModes[modeIndex].id);
+          return true;
+        }
+        if (key === 'ArrowLeft' || key === 'ArrowRight') {
+          ev.preventDefault();
+          jumpRelativeWorkspaceSection(key === 'ArrowRight' ? 1 : -1);
+          return true;
+        }
+      }
+      if (!editable && !isActivationEventTarget(ev.target) && !ev.altKey && !ev.ctrlKey && !ev.metaKey && !ev.shiftKey && (key === ' ' || key === 'Spacebar' || ev.code === 'Space')) {
+        ev.preventDefault();
+        if (playing) stopLoop();
+        else playLoop();
+        return true;
+      }
+      return false;
+    }
+
     function handleDialogKeyDown(ev) {
+      if (handleDialogCommandShortcut(ev)) return;
       if (ev.key === 'Escape' && props.onClose) {
         ev.preventDefault();
         props.onClose();
@@ -1973,10 +2135,12 @@
       ref: dialogRef,
       className: 'og-root',
       'data-og-theme': themeMode,
+      'data-og-theme-preference': themePreference,
       role: 'dialog',
       'aria-modal': true,
       'aria-labelledby': 'og-dialog-title',
       'aria-describedby': 'og-dialog-subtitle',
+      'aria-keyshortcuts': 'Space Control+Z Meta+Z Control+Y Meta+Y Control+Shift+Z Meta+Shift+Z Alt+1 Alt+2 Alt+3 Alt+4 Alt+ArrowLeft Alt+ArrowRight',
       tabIndex: -1,
       onKeyDown: handleDialogKeyDown,
       style: styles.overlay
@@ -1990,8 +2154,8 @@
               h('div', { id: 'og-dialog-subtitle', style: styles.subtitle }, 'Music learning tool for rhythm, synthesis, and composition')),
             h('button', { style: styles.iconButton, 'aria-label': 'Close Open Groove Studio', onClick: props.onClose }, 'X')),
           h('div', { style: styles.transport, role: 'toolbar', 'aria-label': 'Transport' },
-            h('button', { style: styles.transportButton, onClick: playLoop, disabled: playing, 'aria-label': 'Play pattern' }, 'Play'),
-            h('button', { style: styles.transportButton, onClick: stopLoop, 'aria-label': 'Stop pattern' }, 'Stop'),
+            h('button', { style: styles.transportButton, onClick: playLoop, disabled: playing, 'aria-label': 'Play pattern', 'aria-keyshortcuts': 'Space' }, 'Play'),
+            h('button', { style: styles.transportButton, onClick: stopLoop, 'aria-label': 'Stop pattern', 'aria-keyshortcuts': 'Space' }, 'Stop'),
             h('button', {
               style: Object.assign({}, styles.transportButton, loopEnabled ? styles.loopButtonOn : null),
               onClick: toggleLoopMode,
@@ -2003,13 +2167,15 @@
               style: Object.assign({}, styles.transportButton, !canUndo ? styles.disabledButton : null),
               onClick: undoProject,
               disabled: !canUndo,
-              'aria-label': 'Undo last Open Groove edit'
+              'aria-label': 'Undo last Open Groove edit',
+              'aria-keyshortcuts': 'Control+Z Meta+Z'
             }, 'Undo'),
             h('button', {
               style: Object.assign({}, styles.transportButton, !canRedo ? styles.disabledButton : null),
               onClick: redoProject,
               disabled: !canRedo,
-              'aria-label': 'Redo last Open Groove edit'
+              'aria-label': 'Redo last Open Groove edit',
+              'aria-keyshortcuts': 'Control+Y Meta+Y Control+Shift+Z Meta+Shift+Z'
             }, 'Redo'),
             h('label', { style: styles.tempoLabel }, 'BPM',
               h('input', { style: styles.tempoInput, type: 'number', min: 40, max: 240, value: project.bpm, onChange: function (ev) { setTempo(ev.target.value); }, 'aria-label': 'Tempo in beats per minute' })),
@@ -2019,10 +2185,11 @@
             h('label', { style: styles.themeLabel }, 'Theme',
               h('select', {
                 style: styles.themeSelect,
-                value: themeMode,
-                onChange: function (ev) { setThemeMode(ev.target.value); },
-                'aria-label': 'Open Groove color theme'
+                value: themePreference,
+                onChange: function (ev) { changeThemePreference(ev.target.value); },
+                'aria-label': 'Open Groove color theme, currently ' + ogThemeLabel(themePreference, themeMode)
               },
+                h('option', { value: 'auto' }, 'Auto'),
                 h('option', { value: 'light' }, 'Light'),
                 h('option', { value: 'dark' }, 'Dark'),
                 h('option', { value: 'contrast' }, 'High Contrast'))))),
@@ -2044,13 +2211,14 @@
         h('div', { style: styles.workspaceBar, role: 'group', 'aria-label': 'Workspace focus' },
           h('span', { style: styles.workspaceLabel }, 'Workspace'),
           h('div', { style: styles.workspaceTabs, role: 'group', 'aria-label': 'Open Groove workspace views' },
-            workspaceModes.map(function (mode) {
+            workspaceModes.map(function (mode, modeIndex) {
               var selected = mode.id === workspaceModeConfig.id;
               return h('button', {
                 key: mode.id,
                 style: Object.assign({}, styles.workspaceTab, selected ? styles.workspaceTabOn : null),
                 'aria-pressed': selected,
                 'aria-label': mode.label + ' workspace view',
+                'aria-keyshortcuts': 'Alt+' + (modeIndex + 1),
                 onClick: function () { changeWorkspaceMode(mode.id); }
               }, mode.label);
             })),
@@ -2929,12 +3097,17 @@
       display: 'flex',
       alignItems: 'stretch',
       justifyContent: 'center',
-      padding: '18px',
-      boxSizing: 'border-box'
+      padding: 'clamp(6px, 2vw, 18px)',
+      boxSizing: 'border-box',
+      overflow: 'hidden',
+      colorScheme: 'light'
     },
     shell: {
       width: 'min(1180px, 100%)',
-      minHeight: 'min(760px, 100%)',
+      height: '100%',
+      maxHeight: '100%',
+      minHeight: 0,
+      minWidth: 0,
       background: '#f8fafc',
       color: '#111827',
       border: '1px solid #d1d5db',
@@ -2957,7 +3130,9 @@
       display: 'grid',
       gap: '10px',
       alignItems: 'stretch',
-      background: '#ffffff'
+      background: '#ffffff',
+      flex: '0 0 auto',
+      minWidth: 0
     },
     headerTop: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', minWidth: 0 },
     headerTitleBlock: { minWidth: 0, overflowWrap: 'anywhere' },
@@ -2965,45 +3140,45 @@
     title: { display: 'block', fontSize: '20px', lineHeight: 1.2, letterSpacing: 0 },
     subtitle: { color: '#475569', fontSize: '12px', fontWeight: 700, lineHeight: 1.35, marginTop: '2px' },
     transport: { display: 'flex', alignItems: 'stretch', gap: '8px', flexWrap: 'wrap', minWidth: 0, width: '100%' },
-    transportButton: { minHeight: '40px', minWidth: '78px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '6px 12px', fontWeight: 800, lineHeight: 1.15, whiteSpace: 'normal', boxSizing: 'border-box', cursor: 'pointer' },
+    transportButton: { minHeight: '40px', minWidth: '72px', flex: '1 1 72px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '6px 10px', fontWeight: 800, lineHeight: 1.15, whiteSpace: 'normal', boxSizing: 'border-box', cursor: 'pointer', overflowWrap: 'anywhere' },
     loopButtonOn: { background: '#ccfbf1', border: '1px solid #0f766e', color: '#0f172a', boxShadow: 'inset 0 0 0 2px #0f766e' },
-    tempoLabel: { minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '6px', flex: '1 1 96px', maxWidth: '132px', color: '#334155', fontSize: '12px', fontWeight: 800, lineHeight: 1.15, boxSizing: 'border-box' },
-    tempoInput: { width: '72px', minHeight: '34px', border: '1px solid #9ca3af', padding: '0 8px', fontWeight: 800, boxSizing: 'border-box' },
-    swingLabel: { minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '6px', flex: '2 1 168px', maxWidth: '230px', color: '#334155', fontSize: '12px', fontWeight: 800, lineHeight: 1.15, boxSizing: 'border-box' },
-    swingSlider: { flex: '1 1 78px', minWidth: '78px', accentColor: '#0f766e' },
+    tempoLabel: { minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '6px', flex: '1 1 94px', color: '#334155', fontSize: '12px', fontWeight: 800, lineHeight: 1.15, boxSizing: 'border-box', minWidth: 0, flexWrap: 'wrap' },
+    tempoInput: { width: '72px', minWidth: 0, minHeight: '34px', border: '1px solid #9ca3af', padding: '0 8px', fontWeight: 800, boxSizing: 'border-box' },
+    swingLabel: { minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '6px', flex: '2 1 154px', color: '#334155', fontSize: '12px', fontWeight: 800, lineHeight: 1.15, boxSizing: 'border-box', minWidth: 0, flexWrap: 'wrap' },
+    swingSlider: { flex: '1 1 70px', minWidth: '70px', accentColor: '#0f766e' },
     swingValue: { minWidth: '34px', color: '#475569', fontSize: '12px', fontWeight: 900 },
-    themeLabel: { minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '6px', flex: '1 1 154px', maxWidth: '232px', color: '#334155', fontSize: '12px', fontWeight: 800, lineHeight: 1.15, boxSizing: 'border-box' },
-    themeSelect: { maxWidth: '100%', minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800, boxSizing: 'border-box' },
+    themeLabel: { minHeight: '40px', display: 'inline-flex', alignItems: 'center', gap: '6px', flex: '1 1 148px', color: '#334155', fontSize: '12px', fontWeight: 800, lineHeight: 1.15, boxSizing: 'border-box', minWidth: 0, flexWrap: 'wrap' },
+    themeSelect: { width: '100%', maxWidth: '100%', minWidth: 0, flex: '1 1 112px', minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800, boxSizing: 'border-box' },
     iconButton: { flex: '0 0 auto', width: '40px', minWidth: '40px', height: '40px', border: '1px solid #9ca3af', background: '#111827', color: '#ffffff', fontWeight: 800, lineHeight: 1, cursor: 'pointer' },
-    playheadPanel: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '10px', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #d1d5db', background: '#f8fafc' },
+    playheadPanel: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '10px', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #d1d5db', background: '#f8fafc', flex: '0 0 auto', minWidth: 0 },
     playheadTrack: { position: 'relative', minHeight: '16px', border: '1px solid #64748b', background: '#e2e8f0', overflow: 'hidden' },
     playheadFill: { position: 'absolute', inset: '0 auto 0 0', background: '#0f766e' },
     playheadLine: { position: 'absolute', top: '-3px', bottom: '-3px', width: '3px', background: '#111827', transform: 'translateX(-1px)' },
     playheadStatus: { color: '#334155', fontSize: '12px', fontWeight: 900, overflowWrap: 'anywhere' },
-    workspaceBar: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '8px', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #d1d5db', background: '#ffffff' },
+    workspaceBar: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '8px', alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid #d1d5db', background: '#ffffff', flex: '0 0 auto', minWidth: 0 },
     workspaceLabel: { color: '#334155', fontSize: '12px', fontWeight: 900 },
-    workspaceTabs: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px', minWidth: 0 },
+    workspaceTabs: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(72px, 1fr))', gap: '6px', minWidth: 0 },
     workspaceTab: { minHeight: '34px', border: '1px solid #9ca3af', background: '#f8fafc', color: '#111827', padding: '5px 6px', fontSize: '12px', fontWeight: 900, lineHeight: 1.15, overflowWrap: 'anywhere', cursor: 'pointer' },
     workspaceTabOn: { border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a', boxShadow: 'inset 0 0 0 2px #0f766e' },
     workspaceJump: { minHeight: '34px', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#334155', fontSize: '12px', fontWeight: 900, minWidth: 0 },
     workspaceJumpSelect: { minWidth: 0, width: '100%', minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800, boxSizing: 'border-box' },
     workspaceSummary: { color: '#475569', fontSize: '12px', fontWeight: 800, lineHeight: 1.3, overflowWrap: 'anywhere' },
-    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '12px', padding: '12px', overflow: 'auto' },
-    surface: { background: '#ffffff', border: '1px solid #d1d5db', padding: '12px', minWidth: 0 },
+    grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '12px', padding: '12px', overflow: 'auto', flex: '1 1 auto', minHeight: 0, minWidth: 0, alignContent: 'start' },
+    surface: { background: '#ffffff', border: '1px solid #d1d5db', padding: '12px', minWidth: 0, overflow: 'hidden' },
     hiddenSection: { display: 'none' },
     sectionHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' },
     h2: { margin: 0, fontSize: '16px', letterSpacing: 0 },
     meta: { color: '#475569', fontSize: '12px', fontWeight: 700, overflowWrap: 'anywhere' },
-    formRow: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', marginBottom: '10px' },
-    fieldLabel: { display: 'grid', gap: '4px', color: '#334155', fontSize: '12px', fontWeight: 800 },
+    formRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: '8px', marginBottom: '10px' },
+    fieldLabel: { display: 'grid', gap: '4px', color: '#334155', fontSize: '12px', fontWeight: 800, minWidth: 0 },
     compactField: { display: 'grid', gap: '4px', color: '#334155', fontSize: '11px', fontWeight: 900, minWidth: 0 },
-    select: { width: '100%', minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800 },
+    select: { width: '100%', minHeight: '34px', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '0 8px', fontWeight: 800, boxSizing: 'border-box', minWidth: 0 },
     chipRow: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' },
     chip: { minWidth: '34px', minHeight: '28px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #94a3b8', background: '#eef2ff', color: '#1e1b4b', fontSize: '12px', fontWeight: 900 },
     theoryGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(86px, 1fr))', gap: '6px', marginBottom: '10px' },
     theoryCard: { minHeight: '66px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '7px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '4px', fontSize: '12px', overflowWrap: 'anywhere' },
-    chordButtons: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px', marginBottom: '8px' },
-    melodyControls: { display: 'grid', gridTemplateColumns: 'minmax(128px, 1fr) minmax(128px, 1fr)', gap: '8px', alignItems: 'end', marginBottom: '10px' },
+    chordButtons: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(52px, 1fr))', gap: '6px', marginBottom: '8px' },
+    melodyControls: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 128px), 1fr))', gap: '8px', alignItems: 'end', marginBottom: '10px' },
     staffEditor: { display: 'grid', gap: '8px', marginBottom: '10px' },
     staffToolbar: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px', alignItems: 'end' },
     staffSvg: { width: '100%', minHeight: '148px', display: 'block', border: '1px solid #cbd5e1', background: '#ffffff', touchAction: 'manipulation' },
@@ -3017,10 +3192,10 @@
     bridgeStepContent: { display: 'grid', gap: '2px', minHeight: '18px', fontSize: '10px', fontWeight: 900, overflowWrap: 'anywhere' },
     bridgeNotePill: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: '16px', border: '1px solid currentColor', padding: '0 3px', fontSize: '10px', lineHeight: 1.1 },
     bridgeRows: { display: 'grid', gap: '5px' },
-    bridgeRow: { display: 'grid', gridTemplateColumns: 'minmax(46px, 0.7fr) repeat(4, minmax(54px, 1fr))', gap: '5px', alignItems: 'center', borderTop: '1px solid #cbd5e1', paddingTop: '5px', color: '#334155', fontSize: '11px', fontWeight: 800, overflowWrap: 'anywhere' },
-    notationComposer: { display: 'grid', gridTemplateColumns: 'minmax(160px, 1fr) minmax(118px, 0.45fr)', gap: '8px', alignItems: 'end', marginBottom: '8px' },
+    bridgeRow: { display: 'grid', gridTemplateColumns: 'minmax(38px, 0.7fr) repeat(4, minmax(42px, 1fr))', gap: '5px', alignItems: 'center', borderTop: '1px solid #cbd5e1', paddingTop: '5px', color: '#334155', fontSize: '11px', fontWeight: 800, overflowWrap: 'anywhere', minWidth: 0 },
+    notationComposer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 136px), 1fr))', gap: '8px', alignItems: 'end', marginBottom: '8px' },
     notationTextarea: { width: '100%', minHeight: '54px', resize: 'vertical', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '7px', fontFamily: 'ui-monospace, SFMono-Regular, Consolas, monospace', fontSize: '12px', boxSizing: 'border-box' },
-    barTabs: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '10px' },
+    barTabs: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(68px, 1fr))', gap: '6px', marginBottom: '10px' },
     barTab: { minHeight: '34px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', fontSize: '12px', fontWeight: 800, cursor: 'pointer' },
     barTabOn: { background: '#ccfbf1', border: '1px solid #0f766e', color: '#0f172a' },
     starterSteps: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(72px, 1fr))', gap: '6px', marginBottom: '10px' },
@@ -3042,7 +3217,7 @@
     step: { height: '44px', border: '1px solid #cbd5e1', background: '#f1f5f9', color: '#0f172a', fontSize: '12px', fontWeight: 800, cursor: 'pointer' },
     stepBeat: { border: '1px solid #475569' },
     stepOn: { background: '#fbbf24', border: '1px solid #92400e', color: '#111827' },
-    grooveComposer: { display: 'grid', gridTemplateColumns: 'minmax(130px, 1fr) minmax(130px, 1fr)', gap: '8px', alignItems: 'end', marginTop: '10px' },
+    grooveComposer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 130px), 1fr))', gap: '8px', alignItems: 'end', marginTop: '10px' },
     grooveTools: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))', gap: '6px', marginTop: '10px' },
     stats: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px', color: '#475569', fontSize: '12px', fontWeight: 700 },
     noteGrid: { display: 'grid', gridTemplateColumns: '1fr', gap: '6px' },
@@ -3066,7 +3241,7 @@
     instrumentProfileGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(106px, 1fr))', gap: '6px' },
     instrumentProfileChip: { minHeight: '28px', display: 'inline-flex', alignItems: 'center', border: '1px solid #94a3b8', background: '#eef2ff', color: '#1e1b4b', padding: '4px 6px', fontWeight: 900 },
     instrumentProfileText: { margin: 0, color: 'inherit', fontSize: '12px', fontWeight: 800 },
-    instrumentProfileFooter: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(104px, auto)', gap: '8px', alignItems: 'center' },
+    instrumentProfileFooter: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 104px), 1fr))', gap: '8px', alignItems: 'center' },
     timeline: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px' },
     songControls: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '6px', marginBottom: '10px' },
     patternLauncher: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))', gap: '8px', marginBottom: '10px' },
@@ -3085,7 +3260,7 @@
     mixerValue: { color: '#475569', fontSize: '12px', fontWeight: 900, textAlign: 'right' },
     muteButtonOn: { background: '#fee2e2', border: '1px solid #991b1b', color: '#7f1d1d' },
     soloButtonOn: { background: '#dbeafe', border: '1px solid #1d4ed8', color: '#1e3a8a' },
-    effectHeader: { display: 'grid', gridTemplateColumns: 'minmax(136px, 1fr) minmax(112px, 0.55fr)', gap: '8px', alignItems: 'end', marginBottom: '10px' },
+    effectHeader: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 128px), 1fr))', gap: '8px', alignItems: 'end', marginBottom: '10px' },
     effectRack: { display: 'grid', gap: '8px' },
     effectRow: { display: 'grid', gap: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', padding: '8px' },
     effectRowOn: { border: '1px solid #0f766e', background: '#ecfeff', boxShadow: 'inset 0 0 0 1px #0f766e' },
@@ -3103,13 +3278,13 @@
     automationStep: { minHeight: '30px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', fontSize: '11px', fontWeight: 900, cursor: 'pointer', padding: 0 },
     automationStepOn: { background: '#fde68a', border: '1px solid #a16207', color: '#111827' },
     automationStepSelected: { boxShadow: 'inset 0 0 0 2px #0f766e', border: '1px solid #0f766e' },
-    automationActions: { display: 'grid', gridTemplateColumns: 'minmax(112px, 1fr) minmax(112px, 1fr)', gap: '6px' },
+    automationActions: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 112px), 1fr))', gap: '6px' },
     learningNote: { margin: '0 0 10px', color: '#334155', fontSize: '12px', lineHeight: 1.45 },
     barCell: { minHeight: '74px', border: '1px solid #cbd5e1', background: '#f8fafc', padding: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '8px', fontSize: '12px' },
     license: { marginTop: '10px', color: '#166534', fontWeight: 800, fontSize: '12px' },
     projectButtons: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(98px, 1fr))', gap: '6px', marginBottom: '10px' },
-    smallButton: { minHeight: '32px', border: '1px solid #9ca3af', background: '#f8fafc', color: '#111827', padding: '0 10px', fontWeight: 800, cursor: 'pointer' },
-    wideButton: { width: '100%', minHeight: '34px', border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a', padding: '0 10px', fontWeight: 900, cursor: 'pointer' },
+    smallButton: { minHeight: '32px', border: '1px solid #9ca3af', background: '#f8fafc', color: '#111827', padding: '0 10px', fontWeight: 800, cursor: 'pointer', boxSizing: 'border-box', minWidth: 0, overflowWrap: 'anywhere', lineHeight: 1.15 },
+    wideButton: { width: '100%', minHeight: '34px', border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a', padding: '0 10px', fontWeight: 900, cursor: 'pointer', boxSizing: 'border-box', minWidth: 0, overflowWrap: 'anywhere', lineHeight: 1.15 },
     disabledButton: { opacity: 0.45, cursor: 'not-allowed' },
     sampleControls: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '6px', marginBottom: '10px' },
     recordButton: { minHeight: '34px', border: '1px solid #991b1b', background: '#fee2e2', color: '#7f1d1d', padding: '0 10px', fontWeight: 900, cursor: 'pointer' },
@@ -3119,7 +3294,7 @@
     sampleRegion: { minHeight: '30px', display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', background: '#eef2ff', color: '#1e293b', padding: '6px 8px', fontSize: '12px', fontWeight: 800, marginBottom: '8px', overflowWrap: 'anywhere' },
     assetList: { display: 'grid', gap: '6px', minHeight: '54px' },
     assetRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(86px, 1fr))', gap: '6px', alignItems: 'center', border: '1px solid #cbd5e1', background: '#f8fafc', padding: '7px', fontSize: '12px', minWidth: 0, overflowWrap: 'anywhere' },
-    stemActionRow: { display: 'grid', gridTemplateColumns: 'minmax(110px, 0.7fr) minmax(130px, 1fr)', gap: '8px', alignItems: 'stretch', marginBottom: '8px' },
+    stemActionRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))', gap: '8px', alignItems: 'stretch', marginBottom: '8px' },
     stemTargetRow: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' },
     stemChip: { minHeight: '28px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a', padding: '0 8px', fontSize: '12px', fontWeight: 900 },
     readinessBadge: { minHeight: '34px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #64748b', padding: '0 8px', fontSize: '12px', fontWeight: 900, textAlign: 'center' },
@@ -3127,7 +3302,7 @@
     readinessWarning: { border: '1px solid #a16207', background: '#fef3c7', color: '#78350f' },
     readinessBlocked: { border: '1px solid #b91c1c', background: '#fee2e2', color: '#7f1d1d' },
     requirementList: { display: 'grid', gap: '6px', marginBottom: '8px' },
-    requirementRow: { display: 'grid', gridTemplateColumns: 'minmax(84px, 0.8fr) minmax(84px, 0.8fr) minmax(90px, 1fr)', gap: '6px', alignItems: 'center', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '7px', fontSize: '12px', overflowWrap: 'anywhere' },
+    requirementRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 82px), 1fr))', gap: '6px', alignItems: 'center', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '7px', fontSize: '12px', overflowWrap: 'anywhere', minWidth: 0 },
     warning: { marginTop: '10px', color: '#991b1b', fontWeight: 800, fontSize: '12px' },
     textarea: { width: '100%', minHeight: '170px', resize: 'vertical', border: '1px solid #cbd5e1', padding: '8px', fontFamily: 'ui-monospace, SFMono-Regular, Consolas, monospace', fontSize: '12px', boxSizing: 'border-box' },
     muted: { color: '#475569' }
@@ -3146,7 +3321,7 @@
 
   function getOpenGrooveStyles(themeMode) {
     var dark = {
-      overlay: { background: 'rgba(2, 6, 23, 0.86)' },
+      overlay: { background: 'rgba(2, 6, 23, 0.86)', colorScheme: 'dark' },
       shell: { background: '#0f172a', color: '#f8fafc', border: '1px solid #64748b', boxShadow: '0 24px 70px rgba(0, 0, 0, 0.52)' },
       panel: { background: '#111827', color: '#f8fafc', border: '1px solid #64748b' },
       header: { background: '#111827', borderBottom: '1px solid #64748b' },
@@ -3258,7 +3433,7 @@
     };
 
     var contrast = {
-      overlay: { background: '#000000' },
+      overlay: { background: '#000000', colorScheme: 'dark' },
       shell: { background: '#000000', color: '#ffffff', border: '2px solid #ffffff', boxShadow: 'none' },
       panel: { background: '#000000', color: '#ffffff', border: '2px solid #ffffff' },
       header: { background: '#000000', borderBottom: '2px solid #ffffff' },

@@ -285,8 +285,10 @@
           const currentGlobalIdx = sentenceCounter;
           sentenceCounter++;
           const isMessagePlaying = playingContentId === `persona-message-${idx}`;
+          // TTS plays multi-sentence chunks for voice consistency; chunkRanges maps chunk idx → sentence range
           const _activeRange = isMessagePlaying && playbackState.chunkRanges ? playbackState.chunkRanges[playbackState.currentIdx] : null;
-          const isActive = isMessagePlaying && (_activeRange ? currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1] : currentGlobalIdx === playbackState.currentIdx);
+          const _activeSentenceIdx = isMessagePlaying && typeof playbackState.currentSentenceIdx === 'number' ? playbackState.currentSentenceIdx : null;
+          const isActive = isMessagePlaying && (_activeSentenceIdx !== null ? currentGlobalIdx === _activeSentenceIdx : _activeRange ? currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1] : currentGlobalIdx === playbackState.currentIdx);
           const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
           const isHeader = s.trim().startsWith('#') || isHtmlHeader;
           const cleanText = isHeader ? isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '') : s;
@@ -790,7 +792,7 @@
       // "**English Translation:**" block inside the text.
       const _twoLang = String(msg.text || '').split(/\*{0,2}\s*English Translation\s*:?\s*\*{0,2}/i);
       const mainText = _twoLang[0].trim() || String(msg.text || '');
-      const translationText = (msg.translation && String(msg.translation).trim()) || (_twoLang.length > 1 ? _twoLang.slice(1).join(' ').trim() : null) || null;
+      const translationText = msg.translation && String(msg.translation).trim() || (_twoLang.length > 1 ? _twoLang.slice(1).join(' ').trim() : null) || null;
       const paragraphs = mainText.split(/\n{2,}/);
       let sentenceCounter = 0;
       return /*#__PURE__*/React.createElement(React.Fragment, null, paragraphs.map((para, pIdx) => {
@@ -804,7 +806,8 @@
           sentenceCounter++;
           const isMessagePlaying = playingContentId === `persona-message-${idx}`;
           const _activeRange = isMessagePlaying && playbackState.chunkRanges ? playbackState.chunkRanges[playbackState.currentIdx] : null;
-          const isActive = isMessagePlaying && (_activeRange ? currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1] : currentGlobalIdx === playbackState.currentIdx);
+          const _activeSentenceIdx = isMessagePlaying && typeof playbackState.currentSentenceIdx === 'number' ? playbackState.currentSentenceIdx : null;
+          const isActive = isMessagePlaying && (_activeSentenceIdx !== null ? currentGlobalIdx === _activeSentenceIdx : _activeRange ? currentGlobalIdx >= _activeRange[0] && currentGlobalIdx < _activeRange[1] : currentGlobalIdx === playbackState.currentIdx);
           const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
           const isHeader = s.trim().startsWith('#') || isHtmlHeader;
           const cleanText = isHeader ? isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '') : s;

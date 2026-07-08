@@ -39,5 +39,14 @@ let maxRel = 0;
 for (let i = 1; i < vals.length; i++) maxRel = Math.max(maxRel, Math.abs(rt[i] - vals[i]) / Math.abs(vals[i]));
 check('fp16 round-trip < 0.1% rel error', rt[0] === 0 && maxRel < 1e-3);
 
+// ONNX export compatibility: tolerate common input/output naming variants.
+const session = { inputNames: ['latent_model_input', 'timesteps', 'context'] };
+check('pickSessionName exact/common sample', I.pickSessionName(session, 'inputNames', ['sample', 'latent_model_input']) === 'latent_model_input');
+check('pickSessionName fallback index', I.pickSessionName(session, 'inputNames', ['encoder_hidden_states'], 2) === 'context');
+const tensorA = { data: new Float32Array([1]), dims: [1] };
+const tensorB = { data: new Float32Array([2]), dims: [1] };
+check('pickOutput preferred key', I.pickOutput({ weird: tensorA, out_sample: tensorB }, ['out_sample']) === tensorB);
+check('pickOutput first tensor fallback', I.pickOutput({ unknown_name: tensorA }, ['missing']) === tensorA);
+
 console.log('\n[SD math] ' + passed + ' passed, ' + failures.length + ' failed');
 process.exit(failures.length ? 1 : 0);

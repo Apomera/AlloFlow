@@ -1,11 +1,9 @@
 /* =========================================================================
  * AlloFlow Reading Library (CDN module)
  * =========================================================================
- * Browse + read openly-licensed picture books (StoryWeaver / Pratham Books,
- * CC BY 4.0), mirrored at build time into reading_library/ by
- * reading_library/mirror_books.js. Images and narration audio are hotlinked
- * from StoryWeaver's public bucket; text, cue timings and attribution ship
- * in the mirrored JSON.
+ * Browse + read openly licensed texts, including StoryWeaver / Pratham Books
+ * picture books (CC BY 4.0) and curated public/open education sources. Mirrored
+ * text, metadata, cue timings and attribution ship in reading_library/.
  *
  * Contract (mirrors catalog_module.js):
  *   - Loads via loadModule('ReadingLibrary', ...) + <CDNModuleGate>.
@@ -43,6 +41,7 @@
     'https://raw.githubusercontent.com/Apomera/AlloFlow/main/reading_library/',
     './reading_library/',
   ];
+  var MAX_VISIBLE_BOOKS = 240;
 
   // StoryWeaver reading levels with their approximate grade bands (their own
   // guidance: L1 emergent, L2 early, L3 fluent-ish, L4 confident). Bands are a
@@ -52,7 +51,115 @@
     2: 'Level 2 · First sentences (≈ Gr 1–2)',
     3: 'Level 3 · Reading on my own (≈ Gr 2–3)',
     4: 'Level 4 · Longer stories (≈ Gr 3–5)',
+    5: 'Level 5 · Middle-grade nonfiction (≈ Gr 6–8)',
+    6: 'Level 6 · Upper-grade source text (≈ Gr 9–12)',
   };
+
+  var SOURCE_LABELS = {
+    storyweaver: 'StoryWeaver',
+    frontiers: 'Frontiers for Young Minds',
+    nasa: 'NASA',
+    noaa: 'NOAA',
+    usgs: 'USGS',
+    wikisource: 'Wikisource',
+    loc: 'Library of Congress',
+    gutenberg: 'Project Gutenberg',
+    openstax: 'OpenStax',
+    libretexts: 'LibreTexts',
+    ck12: 'CK-12',
+    unknown: 'Other source',
+  };
+
+  var LIBRARY_COLLECTIONS = [
+    {
+      id: 'stories',
+      label: 'Stories',
+      sourceLine: 'StoryWeaver picture books',
+      summary: 'Leveled picture books for early and multilingual readers.',
+      sourceIds: ['storyweaver'],
+      defaultLanguage: 'English',
+      accent: 'emerald',
+    },
+    {
+      id: 'science',
+      label: 'Science & nonfiction',
+      sourceLine: 'Frontiers for Young Minds, NASA, NOAA, USGS',
+      summary: 'Modern science articles and public-domain explainers for older students.',
+      sourceIds: ['frontiers', 'nasa', 'noaa', 'usgs'],
+      defaultLanguage: 'English',
+      accent: 'sky',
+    },
+    {
+      id: 'history',
+      label: 'History & primary sources',
+      sourceLine: 'Wikisource, Library of Congress, Project Gutenberg',
+      summary: 'Historical documents, speeches, essays, and public-domain classics.',
+      sourceIds: ['wikisource', 'loc', 'gutenberg'],
+      defaultLanguage: 'English',
+      accent: 'amber',
+    },
+    {
+      id: 'study',
+      label: 'Textbooks & study guides',
+      sourceLine: 'OpenStax, LibreTexts, CK-12',
+      summary: 'Open textbooks and course-aligned chapters for high school and beyond.',
+      sourceIds: ['openstax', 'libretexts', 'ck12'],
+      defaultLanguage: 'English',
+      accent: 'indigo',
+    },
+    {
+      id: 'all',
+      label: 'All sources',
+      sourceLine: 'Everything currently available',
+      summary: 'A teacher-facing shelf for searching across every imported source.',
+      sourceIds: null,
+      defaultLanguage: 'English',
+      accent: 'slate',
+    },
+  ];
+
+  function sourceLabel(id) {
+    return SOURCE_LABELS[id] || id || SOURCE_LABELS.unknown;
+  }
+
+  function bookSourceId(book) {
+    if (book && book.sourceId) return String(book.sourceId).toLowerCase();
+    if (book && book.source && book.source.id) return String(book.source.id).toLowerCase();
+    var raw = [
+      book && book.source && book.source.name,
+      book && book.source && book.source.url,
+      book && book.publisher,
+    ].join(' ').toLowerCase();
+    if (raw.indexOf('storyweaver') !== -1 || raw.indexOf('pratham') !== -1) return 'storyweaver';
+    if (raw.indexOf('frontiers') !== -1) return 'frontiers';
+    if (raw.indexOf('nasa') !== -1) return 'nasa';
+    if (raw.indexOf('noaa') !== -1) return 'noaa';
+    if (raw.indexOf('usgs') !== -1) return 'usgs';
+    if (raw.indexOf('wikisource') !== -1) return 'wikisource';
+    if (raw.indexOf('loc.gov') !== -1 || raw.indexOf('library of congress') !== -1) return 'loc';
+    if (raw.indexOf('gutenberg') !== -1) return 'gutenberg';
+    if (raw.indexOf('openstax') !== -1) return 'openstax';
+    if (raw.indexOf('libretexts') !== -1) return 'libretexts';
+    if (raw.indexOf('ck-12') !== -1 || raw.indexOf('ck12') !== -1) return 'ck12';
+    if (book && book.file && String(book.file).indexOf('books/') === 0) return 'storyweaver';
+    return 'unknown';
+  }
+
+  function collectionById(id) {
+    return LIBRARY_COLLECTIONS.filter(function (c) { return c.id === id; })[0] || null;
+  }
+
+  function collectionForBook(book) {
+    var source = bookSourceId(book);
+    return LIBRARY_COLLECTIONS.filter(function (c) {
+      return c.sourceIds && c.sourceIds.indexOf(source) !== -1;
+    })[0] || LIBRARY_COLLECTIONS[0];
+  }
+
+  function bookMatchesCollection(book, collection) {
+    if (!collection || !collection.sourceIds) return true;
+    return collection.sourceIds.indexOf(bookSourceId(book)) !== -1;
+  }
 
   // --- i18n guard (free-t crash class + raw-key echo both handled) --------
   function tr(key, fallback) {
@@ -403,6 +510,8 @@
     var displayPlainText = txReady
       ? [displayTitle].concat(translation.pages).filter(Boolean).join('\n\n').trim()
       : bookPlainText(book);
+    var bookSourceName = (book.source && book.source.name) || sourceLabel(bookSourceId(book));
+    var bookSourceUrl = (book.source && book.source.url) || '#';
 
     useEffect(function () { setTranslation(null); setTxMenuOpen(false); }, [book.slug]);
 
@@ -509,8 +618,8 @@
       }
       if (mode === 'define') {
         setPopup({ type: 'define', word: clean, x: x, y: y, loading: true });
-        var dPrompt = 'A child is reading a level ' + book.level + ' picture book written in ' + displayLanguage + '. ' +
-          'In ONE short, friendly sentence written in ' + displayLanguage + ', explain what the word "' + clean + '" means in this story\'s context. Answer with only that sentence.';
+        var dPrompt = 'A student is reading a level ' + book.level + ' text written in ' + displayLanguage + '. ' +
+          'In ONE short, friendly sentence written in ' + displayLanguage + ', explain what the word "' + clean + '" means in this text\'s context. Answer with only that sentence.';
         props.callGemini(dPrompt).then(function (res) {
           setPopup(function (p) { return p && p.word === clean ? { type: 'define', word: clean, x: x, y: y, loading: false, text: String(res || '').trim() } : p; });
         }).catch(function () {
@@ -590,7 +699,7 @@
       var slug = book.slug;
       var texts = pages.map(function (p) { return p.text || ''; });
       setTranslation({ status: 'loading', language: lang });
-      var prompt = 'Translate a children\'s picture book (reading level ' + book.level + ') from ' + book.language + ' into ' + lang + '. ' +
+      var prompt = 'Translate a reading-library text (reading level ' + book.level + ') from ' + book.language + ' into ' + lang + '. ' +
         'Return ONLY minified JSON, no markdown: {"title":string,"pages":string[]} where "pages" has EXACTLY ' + texts.length + ' entries — ' +
         'each entry translating the input page at the same position. Keep empty pages as empty strings. ' +
         'Use simple, natural, age-appropriate wording for young readers; translate meaning faithfully and do not add content. ' +
@@ -626,6 +735,9 @@
         pageCount: (book.pages || []).length,
         description: book.description || '',
         attribution: attributionLine(book),
+        sourceId: bookSourceId(book),
+        sourceName: sourceLabel(bookSourceId(book)),
+        license: book.license || '',
       };
     };
 
@@ -811,8 +923,8 @@
         ),
         e('p', { className: 'text-[11px] text-slate-500 text-center mt-1.5' },
           attributionLine(book) + (txReady ? ' · 🤖 ' + tr('readinglib_attr_ai_translated', 'AI-translated into') + ' ' + translation.language : '') + ' · ',
-          e('a', { href: book.source && book.source.url, target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
-            tr('readinglib_source_link', 'StoryWeaver, Pratham Books')),
+          e('a', { href: bookSourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
+            bookSourceName),
           ' · ',
           e('a', { href: book.licenseUrl || 'https://creativecommons.org/licenses/by/4.0/', target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
             book.license || 'CC BY 4.0')
@@ -835,6 +947,8 @@
       }) : e('div', { className: 'w-full h-36 rounded-xl bg-indigo-50 flex items-center justify-center text-4xl' }, '📖'),
       e('div', { className: 'font-bold text-slate-800 leading-snug', dir: 'auto' }, b.title),
       e('div', { className: 'flex flex-wrap gap-1' },
+        bookSourceId(b) !== 'storyweaver' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-semibold' },
+          sourceLabel(bookSourceId(b))) : null,
         e('span', { className: 'px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-semibold' },
           tr('readinglib_level', 'Level') + ' ' + b.level),
         e('span', { className: 'px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[11px] font-semibold' }, b.language),
@@ -845,16 +959,85 @@
     );
   }
 
+  function collectionButtonClass(collection, available) {
+    var base = 'text-left rounded-2xl border p-4 transition-shadow flex flex-col gap-2 min-h-[168px] ';
+    if (!available) return base + 'bg-slate-50 border-slate-200 text-slate-500 opacity-80 cursor-not-allowed';
+    if (collection.accent === 'emerald') return base + 'bg-emerald-50 border-emerald-200 hover:border-emerald-400 hover:shadow-md';
+    if (collection.accent === 'sky') return base + 'bg-sky-50 border-sky-200 hover:border-sky-400 hover:shadow-md';
+    if (collection.accent === 'amber') return base + 'bg-amber-50 border-amber-200 hover:border-amber-400 hover:shadow-md';
+    if (collection.accent === 'indigo') return base + 'bg-indigo-50 border-indigo-200 hover:border-indigo-400 hover:shadow-md';
+    return base + 'bg-white border-slate-200 hover:border-slate-400 hover:shadow-md';
+  }
+
+  function collectionBadgeClass(collection, available) {
+    if (!available) return 'self-start px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500 text-[11px] font-semibold';
+    if (collection.accent === 'emerald') return 'self-start px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold';
+    if (collection.accent === 'sky') return 'self-start px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[11px] font-semibold';
+    if (collection.accent === 'amber') return 'self-start px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-semibold';
+    if (collection.accent === 'indigo') return 'self-start px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[11px] font-semibold';
+    return 'self-start px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-semibold';
+  }
+
+  function CollectionChooser(props) {
+    var books = props.books || [];
+    var counts = {};
+    books.forEach(function (b) {
+      var id = bookSourceId(b);
+      counts[id] = (counts[id] || 0) + 1;
+    });
+    return e('div', { className: 'h-full min-h-0 overflow-y-auto pb-2' },
+      e('div', { className: 'max-w-5xl mx-auto py-3' },
+        e('div', { className: 'mb-4' },
+          e('div', { className: 'text-sm font-semibold text-indigo-700' }, tr('readinglib_collections_eyebrow', 'Choose a collection')),
+          e('h3', { className: 'text-2xl font-extrabold text-slate-900 leading-tight' }, tr('readinglib_collections_title', 'Reading Collections')),
+          e('p', { className: 'mt-1 text-sm text-slate-600 max-w-2xl' },
+            tr('readinglib_collections_intro', 'Pick the shelf that matches the reading purpose. Stories, science, history, and study texts each keep their own source notes.'))
+        ),
+        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3' },
+          LIBRARY_COLLECTIONS.map(function (collection) {
+            var count = collection.sourceIds
+              ? collection.sourceIds.reduce(function (sum, id) { return sum + (counts[id] || 0); }, 0)
+              : books.length;
+            var available = count > 0;
+            var languages = {};
+            if (available) {
+              books.forEach(function (b) {
+                if (bookMatchesCollection(b, collection)) languages[b.language] = true;
+              });
+            }
+            var langCount = Object.keys(languages).length;
+            return e('button', {
+              key: collection.id,
+              className: collectionButtonClass(collection, available),
+              onClick: function () { if (available) props.onChoose(collection); },
+              disabled: !available,
+              'aria-disabled': !available,
+            },
+              e('span', { className: collectionBadgeClass(collection, available) },
+                available ? count + ' ' + tr('readinglib_books', 'books') : tr('readinglib_collection_prepared', 'Prepared shelf')),
+              e('div', { className: 'text-lg font-extrabold text-slate-900' }, collection.label),
+              e('div', { className: 'text-sm font-semibold text-slate-700' }, collection.sourceLine),
+              e('p', { className: 'text-sm text-slate-600 leading-snug flex-1' }, collection.summary),
+              e('div', { className: 'text-[11px] font-semibold text-slate-500' },
+                available ? langCount + ' ' + tr('readinglib_languages', 'languages') : tr('readinglib_collection_next', 'Ready for a licensed-source import'))
+            );
+          })
+        )
+      )
+    );
+  }
+
   function ReadingLibrary(props) {
     if (!props.isOpen) return null;
 
     var _idx = useState({ status: 'loading', data: null, base: null, error: null });
     var index = _idx[0]; var setIndex = _idx[1];
-    var _f = useState({ language: '', level: '', search: '', audio: false, sort: 'level' });
+    var _f = useState({ language: 'English', level: '', search: '', audio: false, sort: 'level', source: '' });
     var filters = _f[0]; var setFilters = _f[1];
     var _open = useState(null); var openBook = _open[0]; var setOpenBook = _open[1];
     var _loadingBook = useState(null); var loadingBook = _loadingBook[0]; var setLoadingBook = _loadingBook[1];
     var _opt = useState(false); var optionsOpen = _opt[0]; var setOptionsOpen = _opt[1];
+    var _collection = useState(null); var selectedCollectionId = _collection[0]; var setSelectedCollectionId = _collection[1];
     var containerRef = useRef(null);
 
     useEffect(function () {
@@ -887,10 +1070,16 @@
     }, [openBook, props.onClose]);
 
     var books = (index.data && index.data.books) || [];
+    var selectedCollection = collectionById(selectedCollectionId);
+    var collectionBooks = useMemo(function () {
+      if (!selectedCollection) return books;
+      return books.filter(function (b) { return bookMatchesCollection(b, selectedCollection); });
+    }, [books, selectedCollectionId]);
 
     var filtered = useMemo(function () {
       var q = filters.search.trim().toLowerCase();
-      var list = books.filter(function (b) {
+      var list = collectionBooks.filter(function (b) {
+        if (filters.source && bookSourceId(b) !== filters.source) return false;
         if (filters.language && b.language !== filters.language) return false;
         if (filters.level && String(b.level) !== filters.level) return false;
         if (filters.audio && !b.hasAudio) return false;
@@ -912,13 +1101,46 @@
         language: function (a, b) { return String(a.language).localeCompare(String(b.language)) || byLevel(a, b); },
       };
       return list.sort(sorters[filters.sort] || byLevel);
-    }, [books, filters]);
+    }, [collectionBooks, filters]);
+    var visibleBooks = filtered.length > MAX_VISIBLE_BOOKS ? filtered.slice(0, MAX_VISIBLE_BOOKS) : filtered;
 
     var languages = useMemo(function () {
-      return (index.data && index.data.languages) || [];
-    }, [index.data]);
+      var source = selectedCollection ? collectionBooks : books;
+      var counts = {};
+      source.forEach(function (b) { counts[b.language] = (counts[b.language] || 0) + 1; });
+      return Object.keys(counts).sort(function (a, b) { return a.localeCompare(b); }).map(function (name) {
+        return { name: name, count: counts[name] };
+      });
+    }, [index.data, selectedCollectionId, collectionBooks]);
+
+    var sourceOptions = useMemo(function () {
+      var counts = {};
+      collectionBooks.forEach(function (b) {
+        var id = bookSourceId(b);
+        counts[id] = (counts[id] || 0) + 1;
+      });
+      return Object.keys(counts).sort(function (a, b) { return sourceLabel(a).localeCompare(sourceLabel(b)); }).map(function (id) {
+        return { id: id, label: sourceLabel(id), count: counts[id] };
+      });
+    }, [collectionBooks]);
+
+    var chooseCollection = function (collection) {
+      setSelectedCollectionId(collection.id);
+      setFilters({
+        language: collection.defaultLanguage || '',
+        level: '',
+        search: '',
+        audio: false,
+        sort: 'level',
+        source: '',
+      });
+    };
 
     var openBookBySlug = function (b) {
+      if (!selectedCollectionId) {
+        var bookCollection = collectionForBook(b);
+        setSelectedCollectionId(bookCollection.id);
+      }
       setLoadingBook(b.slug);
       var base = index.base || DATA_BASES[0];
       var bust = base.indexOf('http') === 0 ? '?t=' + Date.now() : '';
@@ -962,10 +1184,37 @@
         isTeacherMode: props.isTeacherMode,
         onSaveToLesson: props.onSaveToLesson,
       });
+    } else if (!selectedCollection) {
+      body = e('div', { className: 'flex flex-col h-full min-h-0' },
+        index.status === 'loading' ? e('div', { className: 'text-sm text-slate-500 p-4' }, tr('readinglib_loading', 'Loading the library…')) :
+        index.status === 'error' ? e('div', { className: 'text-sm text-red-600 p-4' },
+          tr('readinglib_load_error', 'Could not load the library:') + ' ' + index.error) :
+        e(CollectionChooser, { books: books, onChoose: chooseCollection })
+      );
     } else {
       body = e('div', { className: 'flex flex-col h-full min-h-0' },
+        e('div', { className: 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3' },
+          e('div', { className: 'min-w-0' },
+            e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-slate-400' }, tr('readinglib_collection_label', 'Collection')),
+            e('div', { className: 'text-lg font-extrabold text-slate-900 truncate' }, selectedCollection.label),
+            e('div', { className: 'text-sm text-slate-500 truncate' }, selectedCollection.sourceLine)
+          ),
+          e('button', {
+            className: 'self-start sm:self-center px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold',
+            onClick: function () { stopSpeech(); setOpenBook(null); setSelectedCollectionId(null); },
+          }, tr('readinglib_change_collection', 'Change collection'))
+        ),
         // filters
-        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 pb-3' },
+        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2 pb-3' },
+          sourceOptions.length > 1 ? e('select', {
+            className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
+            value: filters.source,
+            onChange: function (ev) { setFilters(Object.assign({}, filters, { source: ev.target.value })); },
+            'aria-label': tr('readinglib_filter_source', 'Source'),
+          },
+            e('option', { value: '' }, tr('readinglib_all_sources', 'All sources')),
+            sourceOptions.map(function (s) { return e('option', { key: s.id, value: s.id }, s.label + ' (' + s.count + ')'); })
+          ) : null,
           e('select', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
             value: filters.language,
@@ -982,7 +1231,7 @@
             'aria-label': tr('readinglib_filter_level', 'Reading level'),
           },
             e('option', { value: '' }, tr('readinglib_all_levels', 'All levels')),
-            ['1', '2', '3', '4'].map(function (lv) { return e('option', { key: lv, value: lv }, LEVEL_LABELS[lv] || ('Level ' + lv)); })
+            ['1', '2', '3', '4', '5', '6'].map(function (lv) { return e('option', { key: lv, value: lv }, LEVEL_LABELS[lv] || ('Level ' + lv)); })
           ),
           e('select', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
@@ -1015,11 +1264,13 @@
           index.status === 'error' ? e('span', { className: 'text-red-600' },
             tr('readinglib_load_error', 'Could not load the library:') + ' ' + index.error) :
           filtered.length === 0 ? tr('readinglib_empty', 'No books match those filters yet.') :
-          filtered.length + ' ' + tr('readinglib_of', 'of') + ' ' + books.length + ' ' + tr('readinglib_books', 'books')),
+          (visibleBooks.length < filtered.length
+            ? visibleBooks.length + ' ' + tr('readinglib_shown_of', 'shown of') + ' ' + filtered.length + ' ' + tr('readinglib_matches', 'matches') + ' · ' + collectionBooks.length + ' ' + tr('readinglib_books', 'books')
+            : filtered.length + ' ' + tr('readinglib_of', 'of') + ' ' + collectionBooks.length + ' ' + tr('readinglib_books', 'books'))),
         // grid
         e('div', { className: 'flex-1 min-h-0 overflow-y-auto' },
           e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pb-2' },
-            filtered.map(function (b) {
+            visibleBooks.map(function (b) {
               return e(BookCard, { key: b.slug, book: b, onOpen: openBookBySlug });
             })
           ),
@@ -1047,6 +1298,10 @@
         e('div', { className: 'flex items-center justify-between gap-2 pb-2' },
           e('h2', { className: 'text-xl font-extrabold text-slate-800' }, '📚 ' + tr('readinglib_title', 'Reading Library')),
           e('div', { className: 'flex items-center gap-2' },
+            selectedCollection && !openBook ? e('button', {
+              className: 'px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold border border-slate-200',
+              onClick: function () { setSelectedCollectionId(null); },
+            }, tr('readinglib_collections_button', 'Collections')) : null,
             props.isTeacherMode && !openBook ? e('button', {
               className: 'px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-sm font-semibold border border-indigo-200',
               onClick: function () { setOptionsOpen(true); },

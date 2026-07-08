@@ -56,7 +56,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   function sfxSEClick() { seTone(600, 0.03, 'sine', 0.04); }
 
   // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById('se-a11y-css')) { var _s = document.createElement('style'); _s.id = 'se-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-200 { color: #64748b !important; }'; document.head.appendChild(_s); }
+  if (!document.getElementById('se-a11y-css')) { var _s = document.createElement('style'); _s.id = 'se-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'; document.head.appendChild(_s); }
 
 
   // WCAG live region
@@ -645,6 +645,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var revealedHiddenOption = d.revealedHiddenOption || false;
       var minigamePending = d.minigamePending || null;
       var minigameResult = d.minigameResult || null;
+      var viewportWidth = ctx.viewportWidth || (typeof window !== 'undefined' ? window.innerWidth : 1024);
+      var isCompactViewport = viewportWidth < 640;
 
       function log(msg) {
         var nl = missionLog.slice();
@@ -974,12 +976,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         return h('div', { className: 'space-y-3 ' + animClass('animate-in fade-in duration-300'), role: 'main', 'aria-label': t('stem.spaceexplorer.space_explorer_mission_select', 'Space Explorer mission select') },
           // Header
           // \u2500\u2500 Pre-game brief: how a run works \u2500\u2500
-          // Collapsible <details>. Auto-opens for first-timers
-          // (completedMissions === 0); collapses by default once the
-          // student has flown at least one mission. Re-openable from
-          // the summary chevron.
+          // Collapsible <details>. Auto-opens for first-timers on larger
+          // screens, while phones keep mission choices in the first view.
           h('details', {
-            open: completedMissions === 0,
+            open: completedMissions === 0 && !isCompactViewport,
             className: 'rounded-xl border border-purple-700/50 bg-gradient-to-br from-slate-900 to-purple-950'
           },
             h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none text-purple-200' }, t('stem.spaceexplorer.how_space_explorer_works_click_to_togg', '\uD83D\uDCDC How Space Explorer works (click to toggle)')),

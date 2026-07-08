@@ -1,0 +1,29 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "noaa-climate-change-impacts-card",
+  "title": "NOAA Climate Change Impacts",
+  "description": "A source card for NOAA's climate-change impacts collection and linked classroom resources.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "noaa",
+  "contentType": "source-card",
+  "subjects": ["Climate", "Weather", "Human impacts", "Data literacy"],
+  "authors": ["NOAA Education"],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "license": "U.S. Government Work / item-level rights vary",
+  "licenseUrl": "https://www.noaa.gov/education/resource-collections/climate/climate-change-impacts",
+  "source": { "id": "noaa", "name": "NOAA Education", "url": "https://www.noaa.gov/education/resource-collections/climate/climate-change-impacts" },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    { "n": 1, "img": null, "text": "NOAA's climate change impacts collection gathers classroom-ready resources about rising temperatures, sea level, drought, flooding, wildfire, snow, ice, ecosystems, infrastructure, and human health." },
+    { "n": 2, "img": null, "text": "The collection is especially useful for evidence-based writing because it points students toward data tools, climate dashboards, regional reports, lesson plans, videos, and background explainers." },
+    { "n": 3, "img": null, "text": "Rights note: NOAA is a U.S. government source, but this collection also links to partners and offsite resources. Check item-level rights before mirroring linked materials." }
+  ],
+  "stats": { "pages": 3, "words": 111 }
+}

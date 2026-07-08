@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════════════════
-// stem_tool_lifeskills.js — Life Skills Lab  v5.0
-// Enhanced STEM Lab tool — 16 sub-tools
-// Paycheck · Data Literacy · Decisions · Contracts
+// stem_tool_lifeskills.js — Life Skills Lab  v5.3
+// Enhanced STEM Lab tool — 18 sub-tools
+// Start Here · Paycheck · Data Literacy · Decisions · Contracts
 // Insurance · Applied Science · Car Care · Home Repair
 // Home Systems · Budget · Credit · Cooking · Laundry Lab
-// Challenge · Battle · Learn
+// Dental Care · Challenge · Battle · Learn
 // ═══════════════════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
@@ -68,11 +68,15 @@ window.StemLab = window.StemLab || {
   // ═══════════════════════════════════════════════════════
 
   var SUBTOOLS = [
+    { id: 'overview',   icon: '\uD83E\uDDED', label: 'Start Here' },
     { id: 'paycheck',   icon: '\uD83E\uDDFE', label: 'Paycheck' },
     { id: 'data',       icon: '\uD83D\uDCCA', label: 'Data Literacy' },
     { id: 'decision',   icon: '\uD83E\uDDE0', label: 'Decisions' },
     { id: 'contract',   icon: '\uD83D\uDCDD', label: 'Contracts' },
     { id: 'insurance',  icon: '\uD83C\uDFE5', label: 'Insurance' },
+    { id: 'dental',     icon: '\uD83E\uDDB7', label: 'Dental Care' },
+    { id: 'bodycare',   icon: '\uD83E\uDDCD', label: 'Body Care' },
+    { id: 'sleep',      icon: '\uD83C\uDF19', label: 'Sleep & Energy' },
     { id: 'science',    icon: '\uD83D\uDD2C', label: 'Applied Science' },
     { id: 'carcare',    icon: '\uD83D\uDE97', label: 'Car Care' },
     { id: 'homerepair', icon: '\uD83D\uDD27', label: 'Home Repair' },
@@ -86,6 +90,14 @@ window.StemLab = window.StemLab || {
     { id: 'learn',      icon: '\uD83D\uDCDA', label: 'Learn' }
   ];
 
+  var LIFE_SKILL_PATHS = [
+    { id: 'money', icon: '\uD83D\uDCB0', title: 'Money basics', desc: 'Take-home pay, budgets, credit, insurance, and smart borrowing.', start: 'paycheck', accent: '#059669', steps: ['Paycheck', 'Budget', 'Credit', 'Insurance'] },
+    { id: 'choices', icon: '\uD83E\uDDE0', title: 'Better decisions', desc: 'Use evidence, spot misleading data, compare options, and read fine print.', start: 'data', accent: '#2563eb', steps: ['Data', 'Decisions', 'Contracts'] },
+    { id: 'care', icon: '\uD83E\uDDCD', title: 'Health routines', desc: 'Practice body care, sleep, dental care, food safety, and everyday prevention habits.', start: 'bodycare', accent: '#0f766e', steps: ['Body Care', 'Sleep', 'Dental', 'Cooking', 'Insurance'] },
+    { id: 'home', icon: '\uD83C\uDFE0', title: 'Home confidence', desc: 'Understand repairs, home systems, car care, laundry, and applied science.', start: 'homerepair', accent: '#d97706', steps: ['Home Repair', 'Home Systems', 'Car Care', 'Laundry'] },
+    { id: 'practice', icon: '\uD83C\uDFAF', title: 'Practice mode', desc: 'Build fluency with challenge questions and the Adulting Defense battle.', start: 'challenge', accent: '#7c3aed', steps: ['Challenge', 'Battle', 'Learn'] }
+  ];
+
   // ── Badges ──
   var LS_BADGES = [
     { id: 'firstPay',    icon: '\uD83E\uDDFE', name: 'First Paycheck', desc: 'Calculate your first paycheck' },
@@ -93,6 +105,13 @@ window.StemLab = window.StemLab || {
     { id: 'decisionPro', icon: '\uD83E\uDDE0', name: 'Decision Pro', desc: 'Build a decision matrix' },
     { id: 'trapFinder',  icon: '\uD83D\uDCDD', name: 'Trap Finder', desc: 'Find all traps in a contract' },
     { id: 'insured',     icon: '\uD83C\uDFE5', name: 'Plan Analyst', desc: 'Compare health insurance plans' },
+    { id: 'dentalReady', icon: '\uD83E\uDDB7', name: 'Dental Ready', desc: 'Build a daily oral-care plan' },
+    { id: 'toothTriage', icon: '\uD83E\uDDB7', name: 'Tooth Trouble Solver', desc: 'Practice 3 dental care decisions' },
+    { id: 'bodyCareReady', icon: '\uD83E\uDDCD', name: 'Body Care Ready', desc: 'Build an ergonomic comfort routine' },
+    { id: 'ergoSolver', icon: '\uD83E\uDE91', name: 'Ergonomics Solver', desc: 'Practice 3 body-care decisions' },
+    { id: 'sleepPlanner', icon: '\uD83C\uDF19', name: 'Sleep Planner', desc: 'Build a wind-down and wake-time plan' },
+    { id: 'energyCoach', icon: '\u26A1', name: 'Energy Coach', desc: 'Practice 3 sleep and energy decisions' },
+    { id: 'planMaker',   icon: '\uD83E\uDDED', name: 'Plan Maker', desc: 'Save a personal Life Skills action step' },
     { id: 'appliedSci',  icon: '\uD83D\uDD2C', name: 'Applied Scientist', desc: 'Use 3 applied science tools' },
     { id: 'mechanic',    icon: '\uD83D\uDE97', name: 'Shade Tree Mechanic', desc: 'Complete 3 car care exercises' },
     { id: 'handyman',    icon: '\uD83D\uDD27', name: 'Handy Person', desc: 'Diagnose a plumbing problem' },
@@ -186,13 +205,22 @@ window.StemLab = window.StemLab || {
 
     { tier: 1, q: 'What is the 50/30/20 budgeting rule?', a: 'needs wants savings', h: '50% needs, 30% wants, 20% savings.' },
     { tier: 1, q: 'What is the minimum safe temperature for cooked chicken (\u00B0F)?', a: '165', h: 'Poultry must reach this temperature.' },
+    { tier: 1, q: 'How many minutes should a careful toothbrushing session usually last?', a: '2', h: 'Think of the common two-minute timer.' },
+    { tier: 1, q: 'What body part should stay relaxed instead of raised while typing?', a: 'shoulders', h: 'Check whether they are creeping up toward your ears.' },
+    { tier: 1, q: 'What is a good name for the quiet routine before bedtime?', a: 'wind down', h: 'It helps your body shift from busy to restful.' },
     { tier: 1, q: 'Why should you empty pockets before washing clothes?', a: 'damage', h: 'Pens, coins, and tissues can damage clothing or the washer.' },
     { tier: 1, q: 'What is a credit score used for?', a: 'borrowing', h: 'Lenders check this before giving you a loan.' },
     { tier: 2, q: 'What is the #1 factor in your FICO credit score?', a: 'payment history', h: 'It accounts for 35% of your score.' },
+    { tier: 2, q: 'What do plaque bacteria use from sugary foods to make acids?', a: 'sugar', h: 'The same ingredient that makes candy sweet.' },
+    { tier: 2, q: 'What is the word for designing a setup to fit the person and task?', a: 'ergonomics', h: 'It is about fit, comfort, access, and safer work habits.' },
+    { tier: 2, q: 'What sleep habit means waking up at about the same time most days?', a: 'consistent', h: 'Your body clock likes patterns.' },
     { tier: 2, q: 'A recipe makes 24 cookies. You want 36. What is the scaling factor?', a: '1.5', h: '36 / 24 = ?' },
     { tier: 2, q: 'What kind of detergent molecules help lift oil away from fabric?', a: 'surfactant', h: 'They have one water-loving end and one oil-loving end.' },
     { tier: 2, q: 'Credit utilization should be below what percentage for best scores?', a: '30', h: 'Below 10% is even better.' },
     { tier: 3, q: '$1,000 at 7% annual interest compounded yearly for 10 years equals?', a: '1967', h: 'FV = PV \u00D7 (1+r)^n.' },
+    { tier: 3, q: 'If you replace a toothbrush every 3 months, how many toothbrushes do you need per year?', a: '4', h: '12 months / 3 months each.' },
+    { tier: 3, q: 'If 50 minutes of desk work is followed by a 5-minute reset, what percent of the 55-minute block is reset time? Round to the nearest whole percent.', a: '9', h: '5 divided by 55 is about 0.09.' },
+    { tier: 3, q: 'You need 8 hours of sleep and wake at 6:30 AM. What bedtime gives 8 hours?', a: '10:30', h: 'Count backward 8 hours from 6:30 AM.' },
     { tier: 3, q: 'Why can too much laundry detergent make clothes feel stiff or itchy?', a: 'residue', h: 'Extra detergent can stay in fabric when the rinse cannot remove it all.' },
     { tier: 3, q: 'Paying minimum ($25) on $5,000 at 24.99% APR \u2014 roughly how many years to pay off?', a: '30', h: 'Minimum payments are designed to maximize interest.' }
   ];
@@ -207,6 +235,12 @@ window.StemLab = window.StemLab || {
     { q: 'What is the rubber seal at the bottom of a toilet tank called?', a: 'flapper', h: 'Lifts when you flush.' },
     { q: 'What type of breaker is required near water (bathroom, kitchen)?', a: 'gfci', h: 'Ground-fault circuit interrupter.' },
     { q: 'How often should smoke detectors be replaced?', a: '10 years', h: 'Sensors degrade over time.' },
+    { q: 'What tool cleans between teeth where a toothbrush cannot reach?', a: 'floss', h: 'String, picks, or water flossers all target between-teeth spaces.' },
+    { q: 'A knocked-out adult tooth needs what kind of dental help?', a: 'urgent', h: 'This is a same-day professional-care situation.' },
+    { q: 'What is the name for designing a workspace to fit the person and task?', a: 'ergonomics', h: 'It includes reach, height, lighting, breaks, and access needs.' },
+    { q: 'Should numbness, weakness, or worsening pain during an activity be ignored?', a: 'no', h: 'Stop, tell a trusted adult if needed, and get appropriate support.' },
+    { q: 'What do we call a calm routine before bedtime?', a: 'wind down', h: 'It is a transition from busy time to rest time.' },
+    { q: 'Is a consistent wake time helpful for sleep routines?', a: 'yes', h: 'Regular timing supports the body clock.' },
     { q: 'What does R-value measure?', a: 'insulation', h: 'Higher R = better insulating.' },
     { q: 'A heat pump with COP of 3 produces how many units of heat per unit of electricity?', a: '3', h: 'COP = output/input.' },
     { q: 'What temperature is the food danger zone lower bound (\u00B0F)?', a: '40', h: 'Bacteria grow fast between 40\u00B0F and 140\u00B0F.' },
@@ -261,6 +295,24 @@ window.StemLab = window.StemLab || {
       '3-5': 'Food safety is super important! Keep hot food hot (above 140\u00B0F) and cold food cold (below 40\u00B0F). Always wash hands before cooking. Use a thermometer to check meat is fully cooked. And reading nutrition labels helps you make healthy choices!',
       '6-8': 'Kitchen science: Maillard reaction (browning at 280\u00B0F), caramelization (320\u00B0F), protein denaturation (160\u00B0F). Food safety: the Danger Zone (40-140\u00B0F where bacteria double every 20 min), the 2-hour rule (discard food left out >2 hrs), and cross-contamination prevention. Recipe math: scaling ratios, unit conversions, and nutrition label literacy.',
       '9-12': 'Advanced food science: pH and food preservation (acids inhibit bacteria), water activity and shelf stability, smoke points of different oils, emulsification (mayo = oil + water + lecithin), and leavening chemistry (baking soda = base, baking powder = base + acid). FDA nutrition labeling: Daily Values (%DV), added sugars vs natural, and why "serving size" is the food industry\'s greatest marketing trick.'
+    }},
+    { title: 'Oral Health & Dental Care', icon: '\uD83E\uDDB7', tryIt: 'dental', content: {
+      'K-2': 'Teeth help you bite, chew, smile, and talk. A simple care routine is brushing, cleaning between teeth with help when needed, drinking water, and telling a grown-up if a tooth hurts.',
+      '3-5': 'Dental care is a daily life skill. Brush carefully for about 2 minutes, clean between teeth, choose water often, and visit a dentist for checkups. If a tooth is hurt, swollen, or very painful, ask a trusted adult for dental help.',
+      '6-8': 'Oral health connects biology, chemistry, and habits. Plaque bacteria use sugars to make acids that can weaken enamel. Fluoride can help enamel resist acid, cleaning between teeth removes plaque in tight spaces, and urgent symptoms like swelling, trauma, or severe pain need professional dental care.',
+      '9-12': 'Dental literacy includes prevention, decision-making, and cost navigation. Compare preventive care, deductibles, coinsurance, annual maximums, in-network providers, and urgent-care signals. This tool is educational, not a diagnosis: ongoing pain, swelling, trauma, fever, or a knocked-out permanent tooth should be handled with professional dental guidance.'
+    }},
+    { title: 'Body Care & Ergonomics', icon: '\uD83E\uDDCD', tryIt: 'bodycare', content: {
+      'K-2': 'Your body likes to move, rest, and feel supported. Body care means noticing comfort, relaxing tight shoulders, using both feet or supports when you can, and telling a grown-up if something hurts or feels strange.',
+      '3-5': 'Body care is a daily life skill. There is no single perfect posture. A better goal is a setup that fits you, regular movement breaks, relaxed shoulders, screen and book positions that do not strain your neck, and asking for help when pain, numbness, or weakness shows up.',
+      '6-8': 'Ergonomics means designing a task, tool, or workspace to fit the person. Good setups reduce awkward reach, glare, neck bend, wrist strain, and long periods without movement. Comfort checks and small resets help people learn what their bodies need while respecting disability, mobility, and sensory differences.',
+      '9-12': 'Ergonomic literacy blends biomechanics, accessibility, habit design, and self-advocacy. Instead of chasing one rigid posture, compare task demands: reach distance, monitor height, input devices, load weight, lighting, recovery breaks, and support options. Persistent, severe, or neurological symptoms need appropriate adult or clinical guidance.'
+    }},
+    { title: 'Sleep & Energy Routines', icon: '\uD83C\uDF19', tryIt: 'sleep', content: {
+      'K-2': 'Sleep helps your brain and body recharge. A calm bedtime routine, a cozy sleep space, and telling a grown-up when sleep feels hard are everyday life skills.',
+      '3-5': 'Sleep and energy routines are about patterns. A steady wake time, wind-down routine, less bright screen time before bed, and a morning light-and-movement plan can make the day feel easier. Ask for help if sleep problems keep happening.',
+      '6-8': 'Sleep literacy includes body clocks, routines, light, caffeine timing, stress, and recovery. The goal is not perfection; it is noticing what helps attention, mood, learning, and safety. Persistent insomnia, snoring, extreme sleepiness, or sleep worries deserve trusted adult or clinical support.',
+      '9-12': 'Sleep and energy planning combines circadian rhythm, habit design, executive function, and self-advocacy. Compare fixed wake time, target sleep opportunity, wind-down length, caffeine cutoff, device boundaries, naps, and morning activation. Educational practice only: ongoing sleep disruption or unsafe sleepiness should be discussed with a professional.'
     }},
     { title: 'Laundry Science', icon: '\uD83E\uDDFA', tryIt: 'laundry', content: {
       'K-2': 'Laundry keeps clothes clean and safe to wear. You sort clothes, add a small amount of soap, choose a wash setting, dry them safely, and clean the lint trap.',
@@ -475,7 +527,105 @@ window.StemLab = window.StemLab || {
     { name: 'Odor and sweat', icon: '\uD83C\uDFC3', first: 'Wash promptly and skip fabric softener on performance fabrics.', avoid: 'Do not seal damp gear in a bag.', science: 'Body oils and microbes cling to synthetic fibers and can be trapped by coatings.', examples: 'Gym clothes, socks, uniforms' }
   ];
 
+  // ── Dental Care Data ──
+  var DENTAL_ROUTINE_STEPS = [
+    { id: 'brush_am', icon: '\u2600\uFE0F', title: 'Morning brush', action: 'Brush all tooth surfaces for about 2 minutes.', why: 'Brushing disrupts plaque before it sits on enamel all day.' },
+    { id: 'between', icon: '\uD83E\uDDF5', title: 'Clean between teeth', action: 'Use floss, picks, or another between-teeth tool that works for your needs.', why: 'A toothbrush misses the tight spaces where plaque and food can collect.' },
+    { id: 'water', icon: '\uD83D\uDCA7', title: 'Choose water often', action: 'Drink water after snacks or sweet/acidic drinks when brushing is not practical.', why: 'Water helps rinse sugars and acids away from teeth.' },
+    { id: 'brush_pm', icon: '\uD83C\uDF19', title: 'Night brush', action: 'Brush before sleep and avoid going to bed with sugary drinks.', why: 'Less saliva flows during sleep, so nighttime plaque has more time to act.' },
+    { id: 'checkups', icon: '\uD83D\uDCC5', title: 'Plan checkups', action: 'Keep dental appointments and ask questions about pain, braces, sealants, or sensitivity.', why: 'Dentists and hygienists can catch small problems before they become bigger.' }
+  ];
+
+  var DENTAL_ACTIONS = [
+    { id: 'home', label: 'Home care + watch', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'schedule', label: 'Schedule a dentist visit', tone: 'bg-teal-50 text-teal-800 border-teal-200' },
+    { id: 'urgent', label: 'Urgent dental help', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var DENTAL_SCENARIOS = [
+    { prompt: 'Your gums bleed a little when you start flossing after a long break, but there is no swelling or severe pain.', best: 'schedule', explain: 'Gentle daily cleaning may help, but bleeding gums are worth mentioning at a dental visit. Ask a dentist or hygienist if it continues.' },
+    { prompt: 'A permanent tooth is knocked out during sports.', best: 'urgent', explain: 'A knocked-out adult tooth needs same-day urgent dental help. Tell an adult immediately and follow professional instructions.' },
+    { prompt: 'You feel brief cold sensitivity in one tooth for several days.', best: 'schedule', explain: 'Sensitivity can have several causes. A dentist can check for enamel wear, cavities, cracks, or gum changes.' },
+    { prompt: 'You have face swelling, fever, or severe tooth pain.', best: 'urgent', explain: 'Swelling, fever, or severe pain can signal a serious problem. Get urgent professional care.' },
+    { prompt: 'You had a sweet drink and cannot brush for a while.', best: 'home', explain: 'Rinsing or drinking water is a helpful short-term step. Brush later when you can.' }
+  ];
+
+  var DENTAL_SNACKS = [
+    { name: 'Water', icon: '\uD83D\uDCA7', risk: 'Low', score: 1, why: 'Water does not feed plaque bacteria and can help rinse the mouth.', better: 'Great default drink.' },
+    { name: 'Cheese or yogurt', icon: '\uD83E\uDDC0', risk: 'Low', score: 2, why: 'Unsweetened dairy is less sugary and can be part of a balanced snack.', better: 'Choose low-sugar versions.' },
+    { name: 'Apple slices', icon: '\uD83C\uDF4E', risk: 'Medium', score: 3, why: 'Fruit has natural sugar and acid, but it is usually less sticky than candy.', better: 'Pair with water and eat with a meal.' },
+    { name: 'Sports drink', icon: '\uD83E\uDD64', risk: 'High', score: 4, why: 'Many sports drinks combine sugar and acid, especially risky when sipped slowly.', better: 'Use water for everyday hydration.' },
+    { name: 'Sticky candy', icon: '\uD83C\uDF6C', risk: 'High', score: 5, why: 'Sticky sweets can cling to teeth and keep sugar available longer.', better: 'Keep sweets occasional, rinse with water, and brush later.' }
+  ];
+
   // ── Helper Functions ──
+  // Body Care & Ergonomics Data
+  var BODYCARE_CHECKS = [
+    { id: 'neck', icon: '\uD83E\uDD37', title: 'Neck and shoulders', action: 'Let shoulders drop, bring work closer, and avoid holding the neck bent for a long stretch.', why: 'Small changes in reach and height can reduce strain during reading, typing, or drawing.' },
+    { id: 'back', icon: '\uD83E\uDE91', title: 'Back and hips', action: 'Use a chair, cushion, foot support, or position that feels stable and lets you change positions.', why: 'Support plus movement usually works better than trying to freeze in one perfect pose.' },
+    { id: 'wrists', icon: '\u270B', title: 'Wrists and hands', action: 'Keep tools close, relax grip pressure, and take short pauses from repeated tapping or writing.', why: 'Repeated small movements add up when hands, wrists, or fingers stay tense.' },
+    { id: 'eyes', icon: '\uD83D\uDC40', title: 'Eyes and light', action: 'Reduce glare, look away from screens regularly, and make text large enough to read without leaning in.', why: 'Eyes work harder when light, distance, or text size fights the task.' },
+    { id: 'feet', icon: '\uD83E\uDDB6', title: 'Feet or base of support', action: 'Rest feet, wheels, or supports in a stable position and keep needed items within easy reach.', why: 'A stable base makes the rest of the body work less to stay balanced.' },
+    { id: 'reset', icon: '\u23F1\uFE0F', title: 'Reset rhythm', action: 'Plan a short movement, stretch, breathing, or position-change break before discomfort gets loud.', why: 'Brief resets support attention, circulation, and comfort during long tasks.' }
+  ];
+
+  var BODYCARE_ACTIONS = [
+    { id: 'adjust', label: 'Adjust setup', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'reset', label: 'Take a reset break', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'support', label: 'Ask for support', tone: 'bg-amber-50 text-amber-800 border-amber-200' },
+    { id: 'help', label: 'Get medical help', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var BODYCARE_SCENARIOS = [
+    { prompt: 'You notice your shoulders are up near your ears while typing, but there is no pain or numbness.', best: 'adjust', explain: 'Relax the shoulders, bring the keyboard or work closer, and check whether the chair and desk height fit the task.' },
+    { prompt: 'You have been drawing for 45 minutes and your hand feels tired from gripping the pencil tightly.', best: 'reset', explain: 'A short reset, looser grip, and changing hand position can help before fatigue turns into discomfort.' },
+    { prompt: 'A screen is low, so you keep bending your neck to read it during a long assignment.', best: 'adjust', explain: 'Raise the screen or book if possible, enlarge text, or change the work surface so the task fits you better.' },
+    { prompt: 'A backpack, instrument case, or supply bin feels too heavy or awkward to carry safely.', best: 'support', explain: 'Ask for help, split the load, use wheels, or make another plan. Carrying strain is a setup problem, not a character test.' },
+    { prompt: 'You feel numbness, weakness, severe pain, trouble breathing, or pain after an injury.', best: 'help', explain: 'Stop the activity and get appropriate adult or medical support. This tool is practice, not a diagnosis.' },
+    { prompt: 'A wheelchair tray, desk, or table blocks comfortable reach to materials you need often.', best: 'support', explain: 'Self-advocacy is part of ergonomics. Ask to adjust placement, height, tools, or access so the environment fits the learner.' }
+  ];
+
+  var BODYCARE_RESETS = [
+    { id: 'micro', label: '30 seconds', title: 'Micro reset', goodFor: 'Between short tasks', steps: ['Look far away for a few breaths.', 'Let shoulders drop and unclench hands.', 'Change one position: feet, chair, screen, or tool.'] },
+    { id: 'two', label: '2 minutes', title: 'Desk reset', goodFor: 'After focused screen or writing work', steps: ['Stand, sit tall, or shift position in a way that works for your body.', 'Roll shoulders gently or reach arms forward and back.', 'Check screen height, light, and whether tools are close enough.'] },
+    { id: 'five', label: '5 minutes', title: 'Full comfort check', goodFor: 'Before starting another long block', steps: ['Walk, wheel, stretch, breathe, or change scenery.', 'Refill water and rest eyes from close work.', 'Fix the biggest setup issue before returning.'] },
+    { id: 'seated', label: 'Seated option', title: 'Seated reset', goodFor: 'Low-mobility or classroom-friendly moments', steps: ['Press feet, wheels, or supports into a stable position.', 'Slowly open and close hands, then relax grip.', 'Turn head only within a comfortable range or look side to side with the eyes.'] }
+  ];
+
+  var SLEEP_ROUTINE_STEPS = [
+    { id: 'wake', icon: '\u23F0', title: 'Steady wake time', action: 'Pick a wake time you can use on most days.', why: 'A regular morning anchor helps the body clock learn the pattern.' },
+    { id: 'light', icon: '\u2600\uFE0F', title: 'Morning light and movement', action: 'Get light, stretch, walk, wheel, or move in a way that fits your body.', why: 'Morning signals tell the brain it is daytime and can help alertness.' },
+    { id: 'caffeine', icon: '\u2615', title: 'Caffeine cutoff', action: 'Choose a latest time for caffeine or energy drinks, especially on school nights.', why: 'Caffeine can stay active for hours and make sleep feel harder later.' },
+    { id: 'screen', icon: '\uD83D\uDCF1', title: 'Screen wind-down', action: 'Plan a softer screen setting, device parking spot, or non-screen option near bedtime.', why: 'Bright, exciting, or endless content can keep the brain switched on.' },
+    { id: 'routine', icon: '\uD83D\uDCDD', title: 'Wind-down routine', action: 'Choose 2-4 repeatable steps: wash up, clothes ready, read, music, breathing, or quiet hobby.', why: 'A repeated sequence lowers the decision load when you are tired.' },
+    { id: 'support', icon: '\uD83E\uDD1D', title: 'Ask for support', action: 'Tell a trusted adult if sleep trouble, nightmares, snoring, or daytime sleepiness keeps happening.', why: 'Some sleep problems need help beyond a better routine.' }
+  ];
+
+  var SLEEP_ACTIONS = [
+    { id: 'routine', label: 'Build a routine', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'adjust', label: 'Adjust timing or light', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'support', label: 'Ask for support', tone: 'bg-amber-50 text-amber-800 border-amber-200' },
+    { id: 'help', label: 'Get medical help', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var SLEEP_SCENARIOS = [
+    { prompt: 'You want to wake at 6:30 AM and need about 8 hours of sleep, but you keep starting homework at 10 PM.', best: 'adjust', explain: 'Work backward from wake time, then move homework or wind-down earlier so the plan has enough room.' },
+    { prompt: 'You scroll short videos in bed and suddenly it is much later than planned.', best: 'routine', explain: 'A device parking spot, timer, grayscale, or non-screen wind-down option can make the next choice easier.' },
+    { prompt: 'You drink an energy drink late afternoon and then feel wide awake at bedtime.', best: 'adjust', explain: 'Try a caffeine cutoff earlier in the day and use food, water, light, or movement for later energy.' },
+    { prompt: 'You feel sleepy during class every day even after trying a better routine for two weeks.', best: 'support', explain: 'Persistent daytime sleepiness deserves help from a trusted adult, school support person, or clinician.' },
+    { prompt: 'Someone has trouble breathing during sleep, loud frequent snoring, or falls asleep during unsafe moments.', best: 'help', explain: 'Breathing problems or unsafe sleepiness need professional guidance. This tool is practice, not a diagnosis.' },
+    { prompt: 'Stress thoughts keep looping at night before a big test.', best: 'routine', explain: 'A worry list, next-step note, breathing routine, or trusted-adult check-in can help the brain stop trying to solve everything in bed.' }
+  ];
+
+  var SLEEP_ENERGY_TOOLS = [
+    { id: 'water', icon: '\uD83D\uDCA7', title: 'Water + snack check', use: 'Low energy can be worse when you are thirsty or have not eaten enough.' },
+    { id: 'light', icon: '\u2600\uFE0F', title: 'Light reset', use: 'Bright morning light or a brighter room can help wakefulness.' },
+    { id: 'move', icon: '\uD83D\uDEB6', title: 'Movement reset', use: 'A short walk, stretch, wheel, or body-friendly movement can restart attention.' },
+    { id: 'chunk', icon: '\uD83E\uDDF1', title: 'Task chunking', use: 'Smaller steps reduce the energy cost of starting.' },
+    { id: 'quiet', icon: '\uD83C\uDFA7', title: 'Quiet break', use: 'A short sensory break can help when the problem is overload, not laziness.' },
+    { id: 'ask', icon: '\uD83E\uDD1D', title: 'Ask for help', use: 'Support matters when tiredness, stress, or sleep trouble keeps repeating.' }
+  ];
+
   function getGradeBand(ctx) {
     var g = parseInt(ctx.gradeLevel) || 5;
     if (g <= 2) return 'K-2';
@@ -493,6 +643,15 @@ window.StemLab = window.StemLab || {
 
   function fmtMoney(n) {
     return '$' + Math.round(n).toLocaleString();
+  }
+
+  function fmtClockMinutes(totalMinutes) {
+    var mins = ((Math.round(totalMinutes) % 1440) + 1440) % 1440;
+    var hour = Math.floor(mins / 60);
+    var minute = mins % 60;
+    var suffix = hour >= 12 ? 'PM' : 'AM';
+    var hour12 = hour % 12 || 12;
+    return hour12 + ':' + (minute < 10 ? '0' : '') + minute + ' ' + suffix;
   }
 
   // ── Federal Tax Calculator ──
@@ -552,7 +711,7 @@ window.StemLab = window.StemLab || {
   window.StemLab.registerTool('lifeSkills', {
     title: 'Life Skills Lab',
     icon: '\uD83E\uDDED',
-    description: 'Essential knowledge for adulting \u2014 taxes, data literacy, contracts, car care, laundry science, home systems, and critical thinking.',
+    description: 'Essential knowledge for adulting \u2014 taxes, data literacy, contracts, dental care, body care, sleep routines, car care, laundry science, home systems, and critical thinking.',
     category: 'Life Skills',
     gradeRange: 'K-12',
     render: function(ctx) {
@@ -601,8 +760,22 @@ window.StemLab = window.StemLab || {
       function announceToSR(msg) { upd('srMsg', msg); }
 
       // ── Defaults ──
-      var tab = d.tab || 'paycheck';
+      var tab = d.tab || 'overview';
       var glassCard = 'bg-white/70 backdrop-blur-md rounded-2xl border border-white/40 shadow-lg p-4';
+      var overviewFocus = d.overviewFocus || 'money';
+      var overviewConfidence = d.overviewConfidence != null ? d.overviewConfidence : 3;
+      var overviewNextStep = d.overviewNextStep || '';
+      var overviewPath = LIFE_SKILL_PATHS.find(function(path) { return path.id === overviewFocus; }) || LIFE_SKILL_PATHS[0];
+
+      function saveOverviewPlan() {
+        if (!overviewNextStep.trim()) {
+          upd('overviewPlanMsg', 'Write one small next step first.');
+          return;
+        }
+        updMulti({ overviewPlanSaved: Date.now(), overviewPlanMsg: 'Plan saved: ' + overviewNextStep.trim() });
+        checkBadge('planMaker');
+        announceToSR('Life Skills plan saved');
+      }
 
       // ══════════════════════════════════════════
       // PAYCHECK STATE
@@ -892,6 +1065,131 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════
       // CHALLENGE STATE
       // ══════════════════════════════════════════
+      // DENTAL CARE STATE
+      var dentalRoutine = d.dentalRoutine || {};
+      var dentalRoutineDone = DENTAL_ROUTINE_STEPS.filter(function(step) { return !!dentalRoutine[step.id]; }).length;
+      var dentalScenarioIdx = d.dentalScenarioIdx || 0;
+      var dentalScenarioChoice = d.dentalScenarioChoice || '';
+      var dentalScenarioFb = d.dentalScenarioFb || '';
+      var dentalScenarioScore = d.dentalScenarioScore || 0;
+      var dentalCurrentScenario = DENTAL_SCENARIOS[dentalScenarioIdx % DENTAL_SCENARIOS.length];
+      var dentalVisitCost = d.dentalVisitCost != null ? d.dentalVisitCost : 180;
+      var dentalDeductible = d.dentalDeductible != null ? d.dentalDeductible : 50;
+      var dentalCoinsurance = d.dentalCoinsurance != null ? d.dentalCoinsurance : 20;
+      var dentalAnnualMax = d.dentalAnnualMax != null ? d.dentalAnnualMax : 1500;
+      var dentalAfterDeductible = Math.max(0, dentalVisitCost - dentalDeductible);
+      var dentalPlanPayBeforeMax = dentalAfterDeductible * (1 - dentalCoinsurance / 100);
+      var dentalPlanPay = Math.min(dentalPlanPayBeforeMax, dentalAnnualMax);
+      var dentalYouPay = Math.max(0, dentalVisitCost - dentalPlanPay);
+      var dentalSnackIdx = d.dentalSnackIdx || 0;
+      var dentalSnack = DENTAL_SNACKS[dentalSnackIdx % DENTAL_SNACKS.length];
+      var dentalSnackColor = dentalSnack.score <= 2 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : dentalSnack.score <= 3 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-red-700 bg-red-50 border-red-200';
+
+      function setDentalRoutine(id, checked) {
+        var next = Object.assign({}, dentalRoutine);
+        next[id] = checked;
+        upd('dentalRoutine', next);
+        if (DENTAL_ROUTINE_STEPS.every(function(step) { return !!next[step.id]; })) checkBadge('dentalReady');
+      }
+
+      function answerDentalScenario(choice) {
+        var correct = choice === dentalCurrentScenario.best;
+        var action = DENTAL_ACTIONS.find(function(a) { return a.id === dentalCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          dentalScenarioChoice: choice,
+          dentalScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : dentalCurrentScenario.best) + '. ') + dentalCurrentScenario.explain,
+          dentalScenarioScore: dentalScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && dentalScenarioScore + 1 >= 3) checkBadge('toothTriage');
+      }
+
+      // BODY CARE STATE
+      var bodyCareChecklist = d.bodyCareChecklist || {};
+      var bodyCareDone = BODYCARE_CHECKS.filter(function(step) { return !!bodyCareChecklist[step.id]; }).length;
+      var bodyScreenHeight = d.bodyScreenHeight != null ? d.bodyScreenHeight : 3;
+      var bodyReach = d.bodyReach != null ? d.bodyReach : 3;
+      var bodyLighting = d.bodyLighting != null ? d.bodyLighting : 3;
+      var bodyBreaks = d.bodyBreaks != null ? d.bodyBreaks : 2;
+      var bodyResetIdx = d.bodyResetIdx || 0;
+      var bodyReset = BODYCARE_RESETS[bodyResetIdx % BODYCARE_RESETS.length];
+      var bodyScenarioIdx = d.bodyScenarioIdx || 0;
+      var bodyScenarioChoice = d.bodyScenarioChoice || '';
+      var bodyScenarioFb = d.bodyScenarioFb || '';
+      var bodyScenarioScore = d.bodyScenarioScore || 0;
+      var bodyCurrentScenario = BODYCARE_SCENARIOS[bodyScenarioIdx % BODYCARE_SCENARIOS.length];
+      var bodySetupTips = [];
+      if (bodyScreenHeight < 3) bodySetupTips.push('Raise the screen, book, or work surface so the neck does less bending.');
+      if (bodyScreenHeight > 4) bodySetupTips.push('Lower the screen or task if you have to tilt the head up.');
+      if (bodyReach < 3) bodySetupTips.push('Move tools a little closer so shoulders and elbows can relax.');
+      if (bodyReach > 4) bodySetupTips.push('Give hands and wrists more room so they are not cramped.');
+      if (bodyLighting < 3) bodySetupTips.push('Add light, reduce glare, or enlarge text so eyes do not have to strain.');
+      if (bodyBreaks < 2) bodySetupTips.push('Plan more short resets during long work blocks.');
+      var bodyReadiness = Math.max(0, Math.min(100, 45 + bodyCareDone * 7 + Math.min(bodyBreaks, 4) * 5 - bodySetupTips.length * 8));
+
+      function setBodyCareCheck(id, checked) {
+        var next = Object.assign({}, bodyCareChecklist);
+        next[id] = checked;
+        upd('bodyCareChecklist', next);
+        if (BODYCARE_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('bodyCareReady');
+      }
+
+      function answerBodyCareScenario(choice) {
+        var correct = choice === bodyCurrentScenario.best;
+        var action = BODYCARE_ACTIONS.find(function(a) { return a.id === bodyCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          bodyScenarioChoice: choice,
+          bodyScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : bodyCurrentScenario.best) + '. ') + bodyCurrentScenario.explain,
+          bodyScenarioScore: bodyScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && bodyScenarioScore + 1 >= 3) checkBadge('ergoSolver');
+      }
+
+      // SLEEP & ENERGY STATE
+      var sleepRoutine = d.sleepRoutine || {};
+      var sleepRoutineDone = SLEEP_ROUTINE_STEPS.filter(function(step) { return !!sleepRoutine[step.id]; }).length;
+      var sleepWakeMinutes = d.sleepWakeMinutes != null ? d.sleepWakeMinutes : 390;
+      var sleepNeedHours = d.sleepNeedHours != null ? d.sleepNeedHours : 8;
+      var sleepWindDown = d.sleepWindDown != null ? d.sleepWindDown : 30;
+      var sleepCaffeineCutoff = d.sleepCaffeineCutoff != null ? d.sleepCaffeineCutoff : 14;
+      var sleepScreenMinutes = d.sleepScreenMinutes != null ? d.sleepScreenMinutes : 45;
+      var sleepScenarioIdx = d.sleepScenarioIdx || 0;
+      var sleepScenarioChoice = d.sleepScenarioChoice || '';
+      var sleepScenarioFb = d.sleepScenarioFb || '';
+      var sleepScenarioScore = d.sleepScenarioScore || 0;
+      var sleepCurrentScenario = SLEEP_SCENARIOS[sleepScenarioIdx % SLEEP_SCENARIOS.length];
+      var sleepEnergyTools = d.sleepEnergyTools || {};
+      var sleepBedMinutes = sleepWakeMinutes - sleepNeedHours * 60;
+      var sleepWindDownStart = sleepBedMinutes - sleepWindDown;
+      var sleepPlanScore = Math.max(0, Math.min(100, 35 + sleepRoutineDone * 8 + Math.min(sleepNeedHours, 9) * 3 + Math.max(0, 90 - sleepScreenMinutes) / 3 + (sleepCaffeineCutoff <= 15 ? 8 : 0)));
+
+      function setSleepRoutine(id, checked) {
+        var next = Object.assign({}, sleepRoutine);
+        next[id] = checked;
+        upd('sleepRoutine', next);
+        if (SLEEP_ROUTINE_STEPS.every(function(step) { return !!next[step.id]; })) checkBadge('sleepPlanner');
+      }
+
+      function toggleSleepEnergyTool(id) {
+        var next = Object.assign({}, sleepEnergyTools);
+        next[id] = !next[id];
+        upd('sleepEnergyTools', next);
+        if (Object.keys(next).filter(function(k) { return !!next[k]; }).length >= 3) checkBadge('energyCoach');
+      }
+
+      function answerSleepScenario(choice) {
+        var correct = choice === sleepCurrentScenario.best;
+        var action = SLEEP_ACTIONS.find(function(a) { return a.id === sleepCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          sleepScenarioChoice: choice,
+          sleepScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : sleepCurrentScenario.best) + '. ') + sleepCurrentScenario.explain,
+          sleepScenarioScore: sleepScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && sleepScenarioScore + 1 >= 3) checkBadge('energyCoach');
+      }
+
       var chalTier = d.chalTier || 1;
       var chalIdx = d.chalIdx != null ? d.chalIdx : 0;
       var chalAnswer = d.chalAnswer || '';
@@ -937,7 +1235,7 @@ window.StemLab = window.StemLab || {
         updMulti({ battleActive: true, battleRound: 0, battlePlayerHP: 100, battleEnemyHP: 100, battleAnswer: '', battleFeedback: '', battleOver: false, battleWon: false, battleUseAI: !!useAI, battleOrder: order, battleAIQ: null, battleAILoading: false });
         if (useAI && callGemini) {
           upd('battleAILoading', true);
-          callGemini('Generate one life skills question for a ' + gradeBand + ' student about taxes, insurance, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+          callGemini('Generate one life skills question for a ' + gradeBand + ' student about taxes, insurance, dental care, body care and ergonomics, sleep and energy routines, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
             try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ battleAIQ: { q: p.q, a: p.a, h: p.h || 'Think practically!' }, battleAILoading: false }); } catch(e) { upd('battleAILoading', false); }
           }).catch(function() { upd('battleAILoading', false); });
         }
@@ -1030,11 +1328,15 @@ window.StemLab = window.StemLab || {
         // ═══ Topic-accent hero band per sub-tool ═══
         (function() {
           var TAB_META = {
+            overview:   { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)',  icon: '\uD83E\uDDED', title: __alloT('stem.lifeskills.start_here', 'Start Here'),              hint: __alloT('stem.lifeskills.choose_a_path', 'Choose a practical path, then jump into the first activity. This keeps Life Skills approachable while still letting students explore freely.') },
             paycheck:   { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83E\uDDFE', title: __alloT('stem.lifeskills.paycheck_tax_math', 'Paycheck + tax math'),     hint: __alloT('stem.lifeskills.federal_marginal_brackets_fica_cap_6_2', 'Federal marginal brackets, FICA cap (6.2% Social Security up to $168,600), state withholding. Effective rate \u2260 marginal rate \u2014 most students conflate them.') },
             data:       { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCCA', title: __alloT('stem.lifeskills.data_literacy', 'Data literacy'),           hint: __alloT('stem.lifeskills.spot_check_claims_with_order_of_magnit', 'Spot-check claims with order-of-magnitude reasoning. Per-capita vs total. Mean vs median. Sample size and selection bias \u2014 the four most-misrepresented quantities in everyday news.') },
             decision:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDE0', title: __alloT('stem.lifeskills.decision_frameworks', 'Decision frameworks'),     hint: __alloT('stem.lifeskills.pros_cons_opportunity_cost_reversibili', 'Pros/cons + opportunity cost + reversibility. Annie Duke\'s decision-quality model: "good decision" \u2260 "good outcome." Decide on process, not outcome.') },
             contract:   { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCDD', title: __alloT('stem.lifeskills.contracts_agreements', 'Contracts + agreements'),  hint: __alloT('stem.lifeskills.read_the_whole_thing_before_signing_wa', 'Read the whole thing before signing. Watch for arbitration clauses, auto-renewal, early-termination fees, and limit-of-liability caps. "Click to agree" is a contract.') },
             insurance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFE5', title: __alloT('stem.lifeskills.insurance_basics', 'Insurance basics'),        hint: __alloT('stem.lifeskills.premium_deductible_out_of_pocket_max_n', 'Premium / deductible / out-of-pocket max / network. Insurance protects against catastrophic loss \u2014 not against everyday cost. High-deductible plans + HSA can beat low-deductible for healthy people.') },
+            dental:     { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)',  icon: '\uD83E\uDDB7', title: __alloT('stem.lifeskills.dental_care', 'Dental care'),              hint: __alloT('stem.lifeskills.daily_oral_health_habits', 'Daily prevention, brushing and between-teeth cleaning, snack choices, dental plan math, and knowing when symptoms need a dentist. Educational practice only - not a diagnosis.') },
+            bodycare:   { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)',  icon: '\uD83E\uDDCD', title: __alloT('stem.lifeskills.body_care_ergonomics', 'Body care + ergonomics'), hint: __alloT('stem.lifeskills.body_care_fit_task', 'Comfort checks, workspace fit, movement resets, accessibility options, and knowing when to ask for support. The goal is flexible comfort, not one perfect posture.') },
+            sleep:      { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',   icon: '\uD83C\uDF19', title: __alloT('stem.lifeskills.sleep_energy', 'Sleep + energy'),            hint: __alloT('stem.lifeskills.sleep_energy_routines', 'Wind-down routines, wake-time math, caffeine timing, screen boundaries, and energy supports. Educational practice only - persistent sleep problems deserve real support.') },
             science:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: __alloT('stem.lifeskills.applied_science_at_home', 'Applied science at home'), hint: __alloT('stem.lifeskills.pressure_cookers_microwaves_refrigerat', 'Pressure cookers, microwaves, refrigeration, thermostats, water heaters \u2014 the physics is in your kitchen. Knowing the principle saves you from googling "why is my fridge warm" at 2 AM.') },
             carcare:    { accent: '#1f2937', soft: 'rgba(31,41,55,0.10)',   icon: '\uD83D\uDE97', title: __alloT('stem.lifeskills.car_care_basics', 'Car care basics'),         hint: __alloT('stem.lifeskills.oil_tire_pressure_battery_brakes_fluid', 'Oil + tire pressure + battery + brakes + fluids. Maintenance prevents 80% of breakdowns. Pairs with the Auto Repair Shop tool for deeper dives.') },
             homerepair: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDD27', title: __alloT('stem.lifeskills.home_repair_basics', 'Home repair basics'),      hint: __alloT('stem.lifeskills.toilet_flapper_faucet_washers_drywall_', 'Toilet flapper, faucet washers, drywall patches, GFCI resets, breaker tripping. Five repairs a homeowner does themselves vs five they call a pro for.') },
@@ -1067,6 +1369,92 @@ window.StemLab = window.StemLab || {
         })(),
 
         // ═══ PAYCHECK TAB ═══
+        tab === 'overview' && h('div', { className: 'space-y-4', 'data-lifeskills-overview': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Choose a path'),
+                h('h4', { className: 'text-base font-black text-slate-800' }, 'What do you want to practice today?')
+              ),
+              h('div', { className: 'flex items-center gap-2 text-[11px] font-bold text-slate-600' },
+                h('span', { className: 'px-2 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200' }, Object.keys(d.badges || {}).length + '/' + LS_BADGES.length + ' badges'),
+                h('span', { className: 'px-2 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200' }, Object.keys(learnRead || {}).length + '/' + LEARN_TOPICS.length + ' topics')
+              )
+            ),
+            h('div', { className: 'grid sm:grid-cols-2 xl:grid-cols-5 gap-3' },
+              LIFE_SKILL_PATHS.map(function(path) {
+                return h('button', { key: path.id, onClick: function() { updMulti({ tab: path.start }); announceToSR('Opened ' + path.title); }, className: 'text-left rounded-2xl border border-slate-200 bg-white p-3 shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-teal-700' },
+                  h('div', { className: 'flex items-center gap-2 mb-2' },
+                    h('span', { className: 'text-xl', 'aria-hidden': 'true' }, path.icon),
+                    h('span', { className: 'text-sm font-black', style: { color: path.accent } }, path.title)
+                  ),
+                  h('p', { className: 'text-[11px] text-slate-600 leading-relaxed min-h-[44px]' }, path.desc),
+                  h('div', { className: 'flex flex-wrap gap-1 mt-3' },
+                    path.steps.map(function(step) {
+                      return h('span', { key: step, className: 'px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold' }, step);
+                    })
+                  )
+                );
+              })
+            )
+          ),
+          h('div', { className: 'grid md:grid-cols-5 gap-3' },
+            [
+              { title: '10-minute money check', icon: '\uD83E\uDDFE', body: 'Estimate take-home pay, then jump to budget if there is time.', tab: 'paycheck' },
+              { title: 'Body comfort reset', icon: '\uD83E\uDDCD', body: 'Check posture, setup, movement breaks, and access needs.', tab: 'bodycare' },
+              { title: 'Sleep wind-down', icon: '\uD83C\uDF19', body: 'Plan bedtime, wake time, screens, caffeine, and energy supports.', tab: 'sleep' },
+              { title: 'Daily care reset', icon: '\uD83E\uDDB7', body: 'Build an oral-care routine and compare snack choices.', tab: 'dental' },
+              { title: 'Fast practice', icon: '\uD83C\uDFAF', body: 'Answer a few challenge questions and grow a streak.', tab: 'challenge' }
+            ].map(function(card) {
+              return h('button', { key: card.title, onClick: function() { updMulti({ tab: card.tab }); announceToSR('Opened ' + card.title); }, className: 'text-left rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:border-teal-300 hover:shadow-md transition-all' },
+                h('div', { className: 'flex items-center gap-2 mb-2' }, h('span', { className: 'text-xl', 'aria-hidden': 'true' }, card.icon), h('span', { className: 'text-sm font-black text-slate-800' }, card.title)),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, card.body)
+              );
+            })
+          ),
+          h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-action-plan': 'true' },
+            h('div', { className: 'flex items-center justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'My Life Skills Plan'),
+                h('h4', { className: 'text-sm font-black text-slate-800' }, 'Pick one focus and one next step')
+              ),
+              h('span', { className: 'px-2 py-1 rounded-full text-[11px] font-bold border', style: { color: overviewPath.accent, borderColor: overviewPath.accent + '55', background: overviewPath.accent + '12' } }, overviewPath.icon + ' ' + overviewPath.title)
+            ),
+            h('div', { className: 'grid md:grid-cols-[1fr_1fr] gap-3' },
+              h('div', { className: 'space-y-2' },
+                h('label', { className: 'block text-[11px] font-bold text-slate-600 uppercase' }, 'Focus area'),
+                h('select', { value: overviewFocus, onChange: function(e) { upd('overviewFocus', e.target.value); }, className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-bold bg-white text-slate-800' },
+                  LIFE_SKILL_PATHS.map(function(path) { return h('option', { key: path.id, value: path.id }, path.title); })
+                )
+              ),
+              h('div', { className: 'space-y-2' },
+                h('div', { className: 'flex items-center justify-between' },
+                  h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, 'Confidence right now'),
+                  h('span', { className: 'text-xs font-black text-slate-800' }, overviewConfidence + '/5')
+                ),
+                h('input', { type: 'range', min: 1, max: 5, step: 1, value: overviewConfidence, onChange: function(e) { upd('overviewConfidence', parseInt(e.target.value, 10) || 1); }, className: 'w-full', style: { accentColor: overviewPath.accent }, 'aria-label': 'Confidence right now', 'aria-valuetext': overviewConfidence + ' out of 5' })
+              )
+            ),
+            h('div', { className: 'space-y-2' },
+              h('label', { className: 'block text-[11px] font-bold text-slate-600 uppercase' }, 'One small next step'),
+              h('textarea', { value: overviewNextStep, onChange: function(e) { upd('overviewNextStep', e.target.value); }, rows: 3, placeholder: 'Example: Compare two phone plans before I choose one.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'One small next step' })
+            ),
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, 'Suggested first activity: ' + overviewPath.steps[0] + '. Confidence can change after practice.'),
+              h('div', { className: 'flex gap-2' },
+                h('button', { onClick: saveOverviewPlan, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-800' }, 'Save plan'),
+                h('button', { onClick: function() { updMulti({ tab: overviewPath.start }); announceToSR('Opened ' + overviewPath.title); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Start this path')
+              )
+            ),
+            d.overviewPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.overviewPlanSaved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200') }, d.overviewPlanMsg)
+          ),
+          h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
+            h('div', { className: 'rounded-xl bg-teal-50 border border-teal-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-teal-800' }, 'Most practical first'), h('p', { className: 'text-sm font-black text-teal-900' }, 'Paycheck + Budget'), h('p', { className: 'text-[11px] text-teal-800 leading-relaxed' }, 'Start with what money comes in, then decide where it goes.')),
+            h('div', { className: 'rounded-xl bg-indigo-50 border border-indigo-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-indigo-800' }, 'Best for confidence'), h('p', { className: 'text-sm font-black text-indigo-900' }, 'Home + Car + Laundry'), h('p', { className: 'text-[11px] text-indigo-800 leading-relaxed' }, 'Use everyday systems as low-stakes STEM practice.')),
+            h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-amber-800' }, 'Best for review'), h('p', { className: 'text-sm font-black text-amber-900' }, 'Challenge + Learn'), h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' }, 'Use quick questions, then read the matching concept card.'))
+          )
+        ),
+
         tab === 'paycheck' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard + ' space-y-3' },
             h('h4', { className: 'text-sm font-bold text-slate-700' }, __alloT('stem.lifeskills.paycheck_tax_calculator', '\uD83E\uDDFE Paycheck & Tax Calculator')),
@@ -1322,6 +1710,323 @@ window.StemLab = window.StemLab || {
         ),
 
         // ═══ APPLIED SCIENCE TAB ═══
+        tab === 'dental' && h('div', { className: 'space-y-4', 'data-lifeskills-dental-care': 'true' },
+          h('div', { className: glassCard + ' space-y-2' },
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.dental_care_lab', '\uD83E\uDDB7 Dental Care Lab')),
+            h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, gradeText(gradeBand,
+              'Practice tooth-care habits and learn when to ask a grown-up for help.',
+              'Build a daily oral-care routine, spot tooth trouble, and compare snack choices.',
+              'Connect enamel, plaque, acids, prevention, and dental plan math to everyday decisions.',
+              'Explore prevention habits, symptom decision-making, dental benefit math, and oral-health risk tradeoffs.')),
+            h('p', { className: 'text-[11px] text-slate-600 bg-teal-50 border border-teal-200 rounded-xl p-2' }, 'Educational practice only. Ongoing pain, swelling, injury, fever, or a knocked-out permanent tooth should be handled with professional dental guidance.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Daily routine builder'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, dentalRoutineDone + '/' + DENTAL_ROUTINE_STEPS.length + ' habits planned')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-200' }, Math.round(dentalRoutineDone / DENTAL_ROUTINE_STEPS.length * 100) + '% ready')
+              ),
+              DENTAL_ROUTINE_STEPS.map(function(step) {
+                var checked = !!dentalRoutine[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-teal-200') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setDentalRoutine(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-600 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-teal-700 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Tooth trouble decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold' }, 'Score ' + dentalScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, dentalCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                DENTAL_ACTIONS.map(function(action) {
+                  var chosen = dentalScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerDentalScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all ' + (chosen ? action.tone + ' ring-2 ring-offset-1' : 'bg-white border-slate-300 text-slate-700 hover:border-teal-300') }, action.label);
+                })
+              ),
+              dentalScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (dentalScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800') }, dentalScenarioFb),
+              h('button', { onClick: function() { updMulti({ dentalScenarioIdx: dentalScenarioIdx + 1, dentalScenarioChoice: '', dentalScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-teal-700 text-white' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Dental plan math'),
+              h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, 'Estimate a simplified dental bill. Real plans vary by network, procedure type, waiting periods, and annual maximum rules.'),
+              slider('Procedure cost', dentalVisitCost, 50, 2500, 25, 'dentalVisitCost', fmtMoney),
+              slider('Deductible left', dentalDeductible, 0, 500, 25, 'dentalDeductible', fmtMoney),
+              slider('Your coinsurance', dentalCoinsurance, 0, 60, 5, 'dentalCoinsurance', function(v) { return v + '%'; }),
+              slider('Annual max left', dentalAnnualMax, 100, 3000, 100, 'dentalAnnualMax', fmtMoney),
+              h('div', { className: 'grid grid-cols-3 gap-2' },
+                h('div', { className: 'text-center p-2 rounded-xl bg-blue-50 border border-blue-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-700' }, 'Plan pays'), h('p', { className: 'text-lg font-black text-blue-700' }, fmtMoney(dentalPlanPay))),
+                h('div', { className: 'text-center p-2 rounded-xl bg-emerald-50 border border-emerald-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-emerald-700' }, 'You pay'), h('p', { className: 'text-lg font-black text-emerald-700' }, fmtMoney(dentalYouPay))),
+                h('div', { className: 'text-center p-2 rounded-xl bg-slate-50 border border-slate-200' }, h('p', { className: 'text-[10px] uppercase font-bold text-slate-700' }, 'Bill'), h('p', { className: 'text-lg font-black text-slate-700' }, fmtMoney(dentalVisitCost)))
+              ),
+              h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, 'Formula: deductible first, then plan pays the remaining covered amount after your coinsurance, up to the annual max left.')
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Snack and drink risk check'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, dentalSnack.icon + ' ' + dentalSnack.name)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full text-[11px] font-bold border ' + dentalSnackColor }, dentalSnack.risk + ' risk')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                DENTAL_SNACKS.map(function(snack, i) {
+                  var active = i === dentalSnackIdx % DENTAL_SNACKS.length;
+                  return h('button', { key: snack.name, onClick: function() { upd('dentalSnackIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border ' + (active ? 'bg-teal-700 text-white border-teal-700' : 'bg-white border-slate-300 text-slate-700 hover:border-teal-300') }, snack.icon + ' ' + snack.name);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-bold text-slate-800' }, dentalSnack.why),
+                h('p', { className: 'text-[11px] text-teal-700 font-medium' }, 'Try this: ' + dentalSnack.better)
+              ),
+              h('div', { className: 'rounded-2xl bg-slate-900 text-white p-3 space-y-2' },
+                h('p', { className: 'text-[11px] uppercase font-bold text-cyan-200' }, 'Signals to ask for help'),
+                h('ul', { className: 'space-y-1 text-[11px] text-slate-100 leading-relaxed' },
+                  h('li', null, 'Pain that does not go away or wakes you up.'),
+                  h('li', null, 'Swelling, fever, pus, or trouble swallowing.'),
+                  h('li', null, 'A broken, loose, or knocked-out permanent tooth.'),
+                  h('li', null, 'Bleeding or sores that keep returning.')
+                )
+              )
+            )
+          )
+        ),
+
+        tab === 'bodycare' && h('div', { className: 'space-y-4', 'data-lifeskills-body-care': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.body_care_lab', '\uD83E\uDDCD Body Care & Ergonomics Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Notice comfort, move gently, and ask a grown-up when something hurts.',
+                  'Practice a comfortable setup, small movement breaks, and asking for help when your body sends a warning sign.',
+                  'Use ergonomics to fit the task to the person: reach, light, screen height, support, breaks, and accessibility needs.',
+                  'Model body care as applied ergonomics: task demands, biomechanics, accessibility, recovery breaks, and self-advocacy.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-teal-50 border border-teal-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-teal-700' }, 'Comfort readiness'),
+                h('p', { className: 'text-2xl font-black text-teal-800 leading-none' }, bodyReadiness + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-600 bg-teal-50 border border-teal-200 rounded-xl p-2' }, 'Educational practice only. Pain that is severe, worsening, injury-related, or paired with numbness, weakness, trouble breathing, or other concerning symptoms should be shared with a trusted adult or health professional.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Comfort check'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, bodyCareDone + '/' + BODYCARE_CHECKS.length + ' areas checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-200' }, Math.round(bodyCareDone / BODYCARE_CHECKS.length * 100) + '% complete')
+              ),
+              BODYCARE_CHECKS.map(function(step) {
+                var checked = !!bodyCareChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-teal-200') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setBodyCareCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-600 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-teal-700 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Setup builder'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, bodySetupTips.length ? bodySetupTips.length + ' adjustment ideas' : 'Setup looks balanced')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold' }, 'Fit the task to you')
+              ),
+              slider('Screen or book height', bodyScreenHeight, 1, 5, 1, 'bodyScreenHeight', function(v) { return ['Very low', 'Low', 'Comfortable', 'High', 'Very high'][v - 1] || v; }),
+              slider('Reach distance', bodyReach, 1, 5, 1, 'bodyReach', function(v) { return ['Cramped', 'Close', 'Relaxed', 'Reaching', 'Far'][v - 1] || v; }),
+              slider('Light and glare', bodyLighting, 1, 5, 1, 'bodyLighting', function(v) { return ['Hard to see', 'Dim', 'Readable', 'Bright', 'Glare risk'][v - 1] || v; }),
+              slider('Resets per hour', bodyBreaks, 0, 6, 1, 'bodyBreaks', function(v) { return v + ' reset' + (v === 1 ? '' : 's'); }),
+              h('div', { className: 'space-y-1.5' },
+                bodySetupTips.length ? bodySetupTips.map(function(tip, i) {
+                  return h('p', { key: i, className: 'text-[11px] rounded-lg bg-amber-50 border border-amber-200 text-amber-800 p-2 font-medium' }, '\uD83D\uDCA1 ' + tip);
+                }) : h('p', { className: 'text-[11px] rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 p-2 font-bold' }, '\u2705 Nice: the setup is flexible, readable, reachable, and includes breaks.')
+              )
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Body-care decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold' }, 'Score ' + bodyScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, bodyCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                BODYCARE_ACTIONS.map(function(action) {
+                  var chosen = bodyScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerBodyCareScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all ' + (chosen ? action.tone + ' ring-2 ring-offset-1' : 'bg-white border-slate-300 text-slate-700 hover:border-teal-300') }, action.label);
+                })
+              ),
+              bodyScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (bodyScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800') }, bodyScenarioFb),
+              h('button', { onClick: function() { updMulti({ bodyScenarioIdx: bodyScenarioIdx + 1, bodyScenarioChoice: '', bodyScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-teal-700 text-white' }, 'Next scenario')
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Reset routine cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, bodyReset.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-200' }, bodyReset.label)
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                BODYCARE_RESETS.map(function(reset, i) {
+                  var active = i === bodyResetIdx % BODYCARE_RESETS.length;
+                  return h('button', { key: reset.id, onClick: function() { upd('bodyResetIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border ' + (active ? 'bg-teal-700 text-white border-teal-700' : 'bg-white border-slate-300 text-slate-700 hover:border-teal-300') }, reset.label);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-bold text-slate-800' }, 'Good for: ' + bodyReset.goodFor),
+                h('ol', { className: 'space-y-1 text-[11px] text-slate-700 leading-relaxed list-decimal pl-4' },
+                  bodyReset.steps.map(function(step) { return h('li', { key: step }, step); })
+                )
+              ),
+              h('button', { onClick: function() { checkBadge('bodyCareReady'); awardXP(10, 'Body care reset practiced'); announceToSR('Body care reset practiced'); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Mark reset practiced')
+            )
+          ),
+          h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
+            h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Flexible posture'), h('p', { className: 'text-sm font-black text-blue-900' }, 'Change beats freeze'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'The best position is one you can comfortably change.')),
+            h('div', { className: 'rounded-xl bg-emerald-50 border border-emerald-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-emerald-800' }, 'Accessibility'), h('p', { className: 'text-sm font-black text-emerald-900' }, 'Fit the environment'), h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, 'Seated, standing, wheeled, sensory, and assistive-tool needs all count.')),
+            h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'Ask for help'), h('p', { className: 'text-sm font-black text-red-900' }, 'Do not ignore red flags'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Numbness, weakness, severe pain, injury, or symptoms that do not improve need support.'))
+          )
+        ),
+
+        tab === 'sleep' && h('div', { className: 'space-y-4', 'data-lifeskills-sleep-energy': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.sleep_energy_lab', '\uD83C\uDF19 Sleep & Energy Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice bedtime routines, wake-up routines, and asking for help when sleep feels hard.',
+                  'Plan a wind-down routine, wake time, screen choices, and daytime energy supports.',
+                  'Connect sleep routines to attention, mood, learning, light, caffeine timing, and recovery.',
+                  'Model sleep as a practical planning system: circadian anchors, sleep opportunity, stimulation, stress loops, and support pathways.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-blue-50 border border-blue-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-blue-700' }, 'Plan readiness'),
+                h('p', { className: 'text-2xl font-black text-blue-800 leading-none' }, Math.round(sleepPlanScore) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-600 bg-blue-50 border border-blue-200 rounded-xl p-2' }, 'Educational practice only. Ongoing insomnia, nightmares, loud frequent snoring, trouble breathing during sleep, or unsafe daytime sleepiness should be discussed with a trusted adult or health professional.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Wind-down routine builder'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, sleepRoutineDone + '/' + SLEEP_ROUTINE_STEPS.length + ' habits planned')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, Math.round(sleepRoutineDone / SLEEP_ROUTINE_STEPS.length * 100) + '% ready')
+              ),
+              SLEEP_ROUTINE_STEPS.map(function(step) {
+                var checked = !!sleepRoutine[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-blue-200') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setSleepRoutine(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-600 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-blue-700 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Bedtime calculator'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, fmtClockMinutes(sleepWindDownStart) + ' wind-down')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold' }, fmtClockMinutes(sleepBedMinutes) + ' bedtime')
+              ),
+              slider('Wake time', sleepWakeMinutes, 300, 660, 15, 'sleepWakeMinutes', fmtClockMinutes),
+              slider('Sleep target', sleepNeedHours, 6, 10.5, 0.5, 'sleepNeedHours', function(v) { return v + ' hours'; }),
+              slider('Wind-down length', sleepWindDown, 10, 90, 5, 'sleepWindDown', function(v) { return v + ' minutes'; }),
+              slider('Latest caffeine time', sleepCaffeineCutoff, 10, 19, 1, 'sleepCaffeineCutoff', function(v) { return fmtClockMinutes(v * 60); }),
+              slider('Exciting screen time near bed', sleepScreenMinutes, 0, 120, 5, 'sleepScreenMinutes', function(v) { return v + ' minutes'; }),
+              h('div', { className: 'grid grid-cols-3 gap-2' },
+                h('div', { className: 'text-center p-2 rounded-xl bg-indigo-50 border border-indigo-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-indigo-700' }, 'Wind down'), h('p', { className: 'text-sm font-black text-indigo-700' }, fmtClockMinutes(sleepWindDownStart))),
+                h('div', { className: 'text-center p-2 rounded-xl bg-blue-50 border border-blue-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-700' }, 'Bedtime'), h('p', { className: 'text-sm font-black text-blue-700' }, fmtClockMinutes(sleepBedMinutes))),
+                h('div', { className: 'text-center p-2 rounded-xl bg-emerald-50 border border-emerald-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-emerald-700' }, 'Wake'), h('p', { className: 'text-sm font-black text-emerald-700' }, fmtClockMinutes(sleepWakeMinutes)))
+              ),
+              h('button', { onClick: function() { checkBadge('sleepPlanner'); awardXP(10, 'Sleep plan saved'); announceToSR('Sleep plan saved'); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-blue-700 text-white hover:bg-blue-800' }, 'Save sleep plan')
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Sleep and energy decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold' }, 'Score ' + sleepScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, sleepCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                SLEEP_ACTIONS.map(function(action) {
+                  var chosen = sleepScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerSleepScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all ' + (chosen ? action.tone + ' ring-2 ring-offset-1' : 'bg-white border-slate-300 text-slate-700 hover:border-blue-300') }, action.label);
+                })
+              ),
+              sleepScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (sleepScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800') }, sleepScenarioFb),
+              h('button', { onClick: function() { updMulti({ sleepScenarioIdx: sleepScenarioIdx + 1, sleepScenarioChoice: '', sleepScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-blue-700 text-white' }, 'Next scenario')
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Daytime energy supports'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, Object.keys(sleepEnergyTools).filter(function(k) { return !!sleepEnergyTools[k]; }).length + ' selected')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Pick useful supports')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 gap-2' },
+                SLEEP_ENERGY_TOOLS.map(function(tool) {
+                  var active = !!sleepEnergyTools[tool.id];
+                  return h('button', { key: tool.id, type: 'button', 'aria-pressed': active, onClick: function() { toggleSleepEnergyTool(tool.id); }, className: 'text-left p-3 rounded-xl border transition-all ' + (active ? 'bg-blue-50 border-blue-400 shadow-sm' : 'bg-white border-slate-300 hover:border-blue-300') },
+                    h('div', { className: 'flex items-start gap-2' },
+                      h('span', { className: 'text-xl', 'aria-hidden': 'true' }, tool.icon),
+                      h('span', { className: 'min-w-0' },
+                        h('span', { className: 'block text-xs font-black text-slate-800' }, tool.title),
+                        h('span', { className: 'block text-[11px] text-slate-600 leading-relaxed' }, tool.use)
+                      )
+                    )
+                  );
+                })
+              ),
+              h('p', { className: 'text-[11px] text-slate-600 leading-relaxed bg-slate-50 border border-slate-200 rounded-xl p-2' }, 'Energy planning is not about forcing through exhaustion. It is about matching the support to the reason: sleep debt, hunger, dehydration, overload, stress, boredom, or task size.')
+            )
+          ),
+          h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
+            h('div', { className: 'rounded-xl bg-indigo-50 border border-indigo-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-indigo-800' }, 'Anchor'), h('p', { className: 'text-sm font-black text-indigo-900' }, 'Wake time first'), h('p', { className: 'text-[11px] text-indigo-800 leading-relaxed' }, 'A steady wake time makes bedtime math easier.')),
+            h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Transition'), h('p', { className: 'text-sm font-black text-blue-900' }, 'Wind down before bed'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'The routine starts before the pillow.')),
+            h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'Support'), h('p', { className: 'text-sm font-black text-red-900' }, 'Ask when it repeats'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Ongoing sleep trouble or unsafe sleepiness is a support signal.'))
+          )
+        ),
+
         tab === 'science' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.applied_science', '\uD83D\uDD2C Applied Science')),
@@ -2188,7 +2893,7 @@ window.StemLab = window.StemLab || {
               callGemini && h('button', { onClick: function() {
                 upd('chalAILoading', true);
                 var tierLabel = chalTier === 1 ? 'easy' : chalTier === 2 ? 'medium' : 'hard';
-                callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+                callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, dental care, body care and ergonomics, sleep and energy routines, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
                   try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ chalAILoading: false, chalFeedback: '', chalAnswer: '', chalAIQ: p }); } catch(e) { updMulti({ chalAILoading: false }); }
                 }).catch(function() { upd('chalAILoading', false); });
               }, disabled: d.chalAILoading, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl disabled:opacity-50' }, d.chalAILoading ? '\uD83E\uDDE0...' : '\u2728 AI Next')
@@ -2287,5 +2992,5 @@ window.StemLab = window.StemLab || {
     }
   });
 
-  console.log('[StemLab] stem_tool_lifeskills.js v5.0 loaded');
+  console.log('[StemLab] stem_tool_lifeskills.js v5.5 loaded');
 })();

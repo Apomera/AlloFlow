@@ -211,17 +211,25 @@ const intentionallyHiddenRegisteredIds = new Set([
   // Teacher/developer authoring surface. Loaded for contract tests and direct
   // entry points, but not exposed as a general student-facing catalog tile yet.
   'forge',
+  // Advanced simulator/viewer routes launched from their in-house parent labs.
+  'circuitShelf',
+  'moleculeShelf',
+  // Rehomed to Learning Hub as a standalone learner tool.
+  'timelineStudio',
 ]);
+function isIntentionallyHiddenRegisteredId(id) {
+  return intentionallyHiddenRegisteredIds.has(id) && !catalogIds.has(id);
+}
 const registeredButNotInCatalog = [];
 for (const [id, file] of registeredIds) {
-  if (intentionallyHiddenRegisteredIds.has(id)) continue;
+  if (isIntentionallyHiddenRegisteredId(id)) continue;
   if (!catalogIds.has(id)) registeredButNotInCatalog.push({ id, file });
 }
 const inCatalogButNotRegistered = [];
 for (const [id, line] of catalogIds) {
   if (!registeredIds.has(id)) inCatalogButNotRegistered.push({ id, line });
 }
-const hiddenRegisteredCount = [...intentionallyHiddenRegisteredIds].filter(function (id) { return registeredIds.has(id); }).length;
+const hiddenRegisteredCount = [...registeredIds.keys()].filter(isIntentionallyHiddenRegisteredId).length;
 const visibleRegisteredCount = registeredIds.size - hiddenRegisteredCount;
 
 // ──────────────────────────────────────────────────────────────────────────

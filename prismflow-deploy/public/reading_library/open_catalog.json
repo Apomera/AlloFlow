@@ -1,0 +1,29 @@
+{
+  "schema": "allo-open-catalog@1",
+  "items": [
+    { "slug": "frontiers-bacteria-greenhouse-gases-brief", "file": "books/frontiers-bacteria-greenhouse-gases-brief.json" },
+    { "slug": "nasa-learning-resources-catalog", "file": "books/nasa-learning-resources-catalog.json" },
+    { "slug": "noaa-education-resource-collections", "file": "books/noaa-education-resource-collections.json" },
+    { "slug": "usgs-science-of-earthquakes-excerpt", "file": "books/usgs-science-of-earthquakes-excerpt.json" },
+    { "slug": "wikisource-declaration-of-sentiments-excerpt", "file": "books/wikisource-declaration-of-sentiments-excerpt.json" },
+    { "slug": "loc-primary-source-sets-catalog", "file": "books/loc-primary-source-sets-catalog.json" },
+    { "slug": "gutenberg-nonfiction-catalog", "file": "books/gutenberg-nonfiction-catalog.json" },
+    { "slug": "openstax-biology-2e-catalog", "file": "books/openstax-biology-2e-catalog.json" },
+    { "slug": "frontiers-soil-microbes-microplastics-brief", "file": "books/frontiers-soil-microbes-microplastics-brief.json" },
+    { "slug": "frontiers-ocean-acidification-brief", "file": "books/frontiers-ocean-acidification-brief.json" },
+    { "slug": "frontiers-hidden-impacts-of-things-we-buy-brief", "file": "books/frontiers-hidden-impacts-of-things-we-buy-brief.json" },
+    { "slug": "frontiers-rice-without-harming-planet-brief", "file": "books/frontiers-rice-without-harming-planet-brief.json" },
+    { "slug": "nasa-climate-change-science-card", "file": "books/nasa-climate-change-science-card.json" },
+    { "slug": "nasa-exoplanets-science-card", "file": "books/nasa-exoplanets-science-card.json" },
+    { "slug": "noaa-climate-change-impacts-card", "file": "books/noaa-climate-change-impacts-card.json" },
+    { "slug": "noaa-coral-reef-ecosystems-card", "file": "books/noaa-coral-reef-ecosystems-card.json" },
+    { "slug": "usgs-water-cycle-excerpt", "file": "books/usgs-water-cycle-excerpt.json" },
+    { "slug": "usgs-volcanoes-affect-climate-excerpt", "file": "books/usgs-volcanoes-affect-climate-excerpt.json" },
+    { "slug": "wikisource-gettysburg-address-excerpt", "file": "books/wikisource-gettysburg-address-excerpt.json" },
+    { "slug": "wikisource-what-to-the-slave-fourth-july-excerpt", "file": "books/wikisource-what-to-the-slave-fourth-july-excerpt.json" },
+    { "slug": "loc-dust-bowl-migration-card", "file": "books/loc-dust-bowl-migration-card.json" },
+    { "slug": "loc-irish-immigration-relocation-card", "file": "books/loc-irish-immigration-relocation-card.json" },
+    { "slug": "openstax-astronomy-2e-catalog", "file": "books/openstax-astronomy-2e-catalog.json" },
+    { "slug": "openstax-us-history-catalog", "file": "books/openstax-us-history-catalog.json" }
+  ]
+}

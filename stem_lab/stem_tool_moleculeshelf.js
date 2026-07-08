@@ -28,7 +28,21 @@
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
-  var MOLECULE_SHELF_URL = 'https://alloflow-cdn.pages.dev/molecule_shelf/molecule_shelf.html?v=1';
+  var MOLECULE_SHELF_CDN_URL = 'https://alloflow-cdn.pages.dev/molecule_shelf/molecule_shelf.html?v=1';
+  function companionUrl(path, cdnUrl) {
+    try {
+      var loc = window.location || {};
+      var host = loc.hostname || '';
+      var pathname = loc.pathname || '';
+      var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
+      var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
+      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      if (isDesktopBundled) return new URL(path, loc.href).toString();
+      if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
+    } catch (_) {}
+    return cdnUrl;
+  }
+  var MOLECULE_SHELF_URL = companionUrl('molecule_shelf/molecule_shelf.html?v=1', MOLECULE_SHELF_CDN_URL);
 
   function buildCoachPrompt(structure, notice, wonder) {
     return [
@@ -66,6 +80,10 @@
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var announceToSR = ctx.announceToSR;
       var setLabToolData = ctx.setToolData;
+      var setStemLabTool = ctx.setStemLabTool;
+      var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
+      var shelfData = (ctx.toolData && ctx.toolData._moleculeShelf) || {};
+      var returnTool = shelfData.returnTool === 'molecule' ? 'molecule' : null;
 
       var _win = React.useRef(null);
       var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
@@ -131,7 +149,21 @@
         if (announceToSR) announceToSR(t('stem.moleculeShelf.opened_sr', 'Opened the Molecule Shelf in a new window.'));
       }
 
+      function returnToLab() {
+        if (typeof setStemLabTool !== 'function') return;
+        setStemLabTool(returnTool || null);
+        if (announceToSR) announceToSR(returnTool ? t('stem.moleculeShelf.returned_sr', 'Returned to Molecule Lab.') : t('stem.moleculeShelf.returned_catalog_sr', 'Returned to the STEM Lab tools.'));
+      }
+
       return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
+        typeof setStemLabTool === 'function' && h('button', {
+          onClick: returnToLab,
+          className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
+          'aria-label': returnTool ? t('stem.moleculeShelf.back_to_lab', 'Back to Molecule Lab') : t('stem.moleculeShelf.back_to_tools', 'Back to STEM Lab tools')
+        },
+          ArrowLeft ? h(ArrowLeft, { size: 16 }) : null,
+          h('span', null, returnTool ? t('stem.moleculeShelf.back_to_lab', 'Back to Molecule Lab') : t('stem.moleculeShelf.back_to_tools', 'Back to STEM Lab tools'))
+        ),
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400' },
           t('stem.moleculeShelf.title', '🧬 Molecule Shelf — real 3D structures, up close')),
         h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
@@ -145,10 +177,14 @@
           className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-md shadow-indigo-600/20 transition-all w-fit',
           'aria-label': t('stem.moleculeShelf.open_title', 'Open the Molecule Shelf in a new window (Mol* viewer with the Notice-Wonder coach)')
         }, t('stem.moleculeShelf.open', '🧬 Open Molecule Shelf')),
+        popupState === 'opening' && h('p', { className: 'text-xs text-sky-300' },
+          t('stem.moleculeShelf.opening_note', 'Opening Molecule Shelf. If it does not appear, check your pop-up settings.')),
         popupState === 'blocked' && h('p', { className: 'text-xs text-amber-300' },
           t('stem.moleculeShelf.blocked_note', 'Pop-up blocked — allow pop-ups for this page and try again.')),
         popupState === 'open' && h('p', { className: 'text-xs text-emerald-300' },
           t('stem.moleculeShelf.open_note', 'Molecule Shelf is open. Keep this AlloFlow window open too — it powers the AI coach.')),
+        popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
+          t('stem.moleculeShelf.closed_note', 'Molecule Shelf was closed. You can reopen it whenever you are ready.')),
         h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
           t('stem.moleculeShelf.credit', 'Molecular viewer: Mol* (molstar.org), free and open source under the MIT license — the viewer used by the RCSB Protein Data Bank and PDBe. Structures are fetched from the PDB by ID. The viewer and structures load from the web, so the shelf needs internet.'))
       );

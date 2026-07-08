@@ -148,7 +148,8 @@ if (!window._galaxyHasLoadedOnce) {
     }
 }
 
-          var upd = function (key, val) { setLabToolData(function (prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, (function () { var o = {}; o[key] = val; return o; })()) }); }); };
+          var patchGalaxy = function (patch) { setLabToolData(function (prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, patch) }); }); };
+          var upd = function (key, val) { patchGalaxy((function () { var o = {}; o[key] = val; return o; })()); };
 
 
 
@@ -172,6 +173,10 @@ if (!window._galaxyHasLoadedOnce) {
           var simMode = d.simMode || 'galaxy';
 
           var rotMode = d.rotMode || 'flat';
+
+          var observeMode = d.observeMode || 'visible';
+
+          var dopplerVelocity = d.dopplerVelocity !== undefined ? d.dopplerVelocity : 0;
 
 
 
@@ -236,6 +241,25 @@ if (!window._galaxyHasLoadedOnce) {
           };
 
           var gType = GALAXY_TYPES[galaxyType] || GALAXY_TYPES.barredSpiral;
+
+          var OBSERVE_MODES = [
+            { key: 'visible', icon: '\uD83D\uDC41\uFE0F', label: 'Visible', target: 'galaxyType', accent: '#6366f1', desc: 'Human-eye color shows stars, dust shadows, and the overall shape of the galaxy.', note: 'Best for classifying galaxy shape and comparing star colors.' },
+            { key: 'infrared', icon: '\uD83D\uDD25', label: 'Infrared', target: 'dustLanes', accent: '#f97316', desc: 'Infrared light passes through dusty lanes and reveals warm star-forming regions.', note: 'Great for seeing through dust that blocks visible light.' },
+            { key: 'radio', icon: '\uD83D\uDCE1', label: 'Radio', target: 'gasClouds', accent: '#06b6d4', desc: 'Radio maps trace cold hydrogen gas that outlines spiral arms and future star birth.', note: 'Hydrogen at 21 cm is one of the best maps of hidden galactic gas.' },
+            { key: 'xray', icon: '\u26A1', label: 'X-ray', target: 'blackHole', accent: '#38bdf8', desc: 'X-rays highlight the hottest, most energetic regions near compact objects and young massive stars.', note: 'Useful for black-hole accretion, neutron stars, and supernova remnants.' },
+            { key: 'gravity', icon: '\uD83C\uDF0C', label: 'Gravity', target: 'darkMatter', accent: '#c084fc', desc: 'A gravity view shows the invisible mass halo inferred from star motions.', note: 'This is evidence-based, not a photograph: motion reveals the dark matter halo.' }
+          ];
+          var activeObserve = OBSERVE_MODES.find(function (m) { return m.key === observeMode; }) || OBSERVE_MODES[0];
+
+          var DOPPLER_PRESETS = [
+            { label: 'Approaching star', value: -450, icon: '\uD83D\uDD35' },
+            { label: 'No motion', value: 0, icon: '\u26AA' },
+            { label: 'Receding galaxy', value: 900, icon: '\uD83D\uDD34' },
+            { label: 'Fast quasar', value: 1800, icon: '\u2728' }
+          ];
+          var dopplerDirection = dopplerVelocity < -8 ? 'blueshift' : dopplerVelocity > 8 ? 'redshift' : 'no shift';
+          var dopplerColor = dopplerVelocity < -8 ? '#2563eb' : dopplerVelocity > 8 ? '#dc2626' : '#64748b';
+          var dopplerZ = dopplerVelocity / 299792.458;
 
 
 
@@ -639,6 +663,7 @@ if (!window._galaxyHasLoadedOnce) {
             var camera = new THREE.PerspectiveCamera(60, W / H, 0.01, 100);
 
             camera.position.set(0, 0.5, 1.2); camera.lookAt(0, 0, 0);
+            scene.add(camera);
 
             var renderer;
             try {
@@ -655,7 +680,7 @@ if (!window._galaxyHasLoadedOnce) {
             if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
             if (THREE.ACESFilmicToneMapping) {
               renderer.toneMapping = THREE.ACESFilmicToneMapping;
-              renderer.toneMappingExposure = 1.05;
+              renderer.toneMappingExposure = 1.12;
             }
             renderer.setClearColor(0x020208, 1);
 
@@ -677,9 +702,19 @@ if (!window._galaxyHasLoadedOnce) {
 
             var labelGroup = new THREE.Group(); labelGroup.name = 'labels'; labelGroup.visible = false;
 
+            var infraredGroup = new THREE.Group(); infraredGroup.name = 'infrared';
+
+            var radioGroup = new THREE.Group(); radioGroup.name = 'radio';
+
+            var xrayGroup = new THREE.Group(); xrayGroup.name = 'xray';
+
+            var darkHaloGroup = new THREE.Group(); darkHaloGroup.name = 'darkMatterHalo';
+
             scene.add(bgGroup); scene.add(armGroup); scene.add(bulgeGroup);
 
             scene.add(bhGroup); scene.add(nebGroup); scene.add(gridGroup); scene.add(labelGroup);
+
+            scene.add(infraredGroup); scene.add(radioGroup); scene.add(xrayGroup); scene.add(darkHaloGroup);
 
 
 
@@ -693,6 +728,164 @@ if (!window._galaxyHasLoadedOnce) {
 
             bgGroup.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0xccccff, size: 0.015, transparent: true, opacity: 0.3, sizeAttenuation: true })));
 
+            var deepFieldGroup = new THREE.Group(); deepFieldGroup.name = 'deepField';
+            var cosmicFilamentGroup = new THREE.Group(); cosmicFilamentGroup.name = 'cosmicFilaments';
+            bgGroup.add(deepFieldGroup); bgGroup.add(cosmicFilamentGroup);
+            var deepFieldMats = [], distantGalaxySprites = [], filamentMats = [];
+            var deepFieldGlow = { galaxies: 0.28, filaments: 0.16 };
+            var foregroundGroup = new THREE.Group(); foregroundGroup.name = 'cinematicForeground';
+            var warpStreakGroup = new THREE.Group(); warpStreakGroup.name = 'warpStreaks'; warpStreakGroup.visible = false;
+            warpStreakGroup.position.set(0, 0, -0.62);
+            bgGroup.add(foregroundGroup); camera.add(warpStreakGroup);
+            var foregroundSprites = [], warpStreakSprites = [];
+            var cinematicMotion = { warp: 0, foreground: 1 };
+
+            (function () {
+              var fgCv = document.createElement('canvas'); fgCv.width = 96; fgCv.height = 96;
+              var fgCtx = fgCv.getContext('2d');
+              fgCtx.translate(48, 48);
+              var fgCore = fgCtx.createRadialGradient(0, 0, 0, 0, 0, 45);
+              fgCore.addColorStop(0, 'rgba(255,255,255,1)');
+              fgCore.addColorStop(0.2, 'rgba(191,219,254,0.52)');
+              fgCore.addColorStop(0.55, 'rgba(125,211,252,0.12)');
+              fgCore.addColorStop(1, 'rgba(0,0,0,0)');
+              fgCtx.fillStyle = fgCore; fgCtx.fillRect(-48, -48, 96, 96);
+              for (var fsr = 0; fsr < 2; fsr++) {
+                var fgLine = fgCtx.createLinearGradient(-44, 0, 44, 0);
+                fgLine.addColorStop(0, 'rgba(255,255,255,0)');
+                fgLine.addColorStop(0.5, 'rgba(255,255,255,0.52)');
+                fgLine.addColorStop(1, 'rgba(255,255,255,0)');
+                fgCtx.strokeStyle = fgLine; fgCtx.lineWidth = 1.4;
+                fgCtx.beginPath(); fgCtx.moveTo(-44, 0); fgCtx.lineTo(44, 0); fgCtx.stroke();
+                fgCtx.rotate(Math.PI * 0.5);
+              }
+              var fgTex = new THREE.CanvasTexture(fgCv);
+
+              var streakCv = document.createElement('canvas'); streakCv.width = 192; streakCv.height = 32;
+              var streakCtx = streakCv.getContext('2d');
+              var streakGrad = streakCtx.createLinearGradient(0, 16, 192, 16);
+              streakGrad.addColorStop(0, 'rgba(255,255,255,0)');
+              streakGrad.addColorStop(0.28, 'rgba(96,165,250,0.18)');
+              streakGrad.addColorStop(0.52, 'rgba(255,255,255,0.92)');
+              streakGrad.addColorStop(0.72, 'rgba(244,114,182,0.18)');
+              streakGrad.addColorStop(1, 'rgba(255,255,255,0)');
+              streakCtx.fillStyle = streakGrad; streakCtx.fillRect(0, 13, 192, 6);
+              streakCtx.fillStyle = 'rgba(255,255,255,0.32)'; streakCtx.fillRect(44, 15, 104, 2);
+              var streakTex = new THREE.CanvasTexture(streakCv);
+
+              for (var fg = 0; fg < 42; fg++) {
+                var fgMat = new THREE.SpriteMaterial({ map: fgTex, transparent: true, opacity: 0.06 + Math.random() * 0.16, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, color: Math.random() < 0.6 ? 0xdbeafe : 0xfbcfe8, rotation: Math.random() * Math.PI });
+                var fgSprite = new THREE.Sprite(fgMat);
+                var fgA = Math.random() * Math.PI * 2;
+                var fgR = 1.35 + Math.random() * 2.2;
+                fgSprite.position.set(Math.cos(fgA) * fgR, (Math.random() - 0.5) * 1.7, Math.sin(fgA) * fgR + 0.35);
+                var fgScale = 0.018 + Math.random() * 0.052;
+                fgSprite.scale.set(fgScale, fgScale, 1);
+                fgSprite.userData = { baseOpacity: fgMat.opacity, baseScale: fgScale, phase: Math.random() * Math.PI * 2, drift: 0.00016 + Math.random() * 0.00026 };
+                foregroundGroup.add(fgSprite);
+                foregroundSprites.push(fgSprite);
+              }
+
+              for (var ws = 0; ws < 54; ws++) {
+                var wsMat = new THREE.SpriteMaterial({ map: streakTex, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: Math.random() * Math.PI });
+                var wsSprite = new THREE.Sprite(wsMat);
+                var wsA = Math.random() * Math.PI * 2;
+                var wsR = 0.08 + Math.random() * 0.82;
+                wsSprite.position.set(Math.cos(wsA) * wsR, Math.sin(wsA) * wsR * 0.58, -0.16 - Math.random() * 0.5);
+                wsSprite.scale.set(0.22 + Math.random() * 0.28, 0.025 + Math.random() * 0.018, 1);
+                wsSprite.userData = { angle: wsA, radius: wsR, speed: 0.006 + Math.random() * 0.012, baseScaleX: wsSprite.scale.x, baseScaleY: wsSprite.scale.y };
+                warpStreakGroup.add(wsSprite);
+                warpStreakSprites.push(wsSprite);
+              }
+
+              var cloudCv = document.createElement('canvas'); cloudCv.width = 256; cloudCv.height = 256;
+              var cloudCtx = cloudCv.getContext('2d');
+              var cloudGrad = cloudCtx.createRadialGradient(128, 128, 0, 128, 128, 128);
+              cloudGrad.addColorStop(0, 'rgba(125,211,252,0.36)');
+              cloudGrad.addColorStop(0.28, 'rgba(244,114,182,0.18)');
+              cloudGrad.addColorStop(0.58, 'rgba(167,139,250,0.08)');
+              cloudGrad.addColorStop(1, 'rgba(0,0,0,0)');
+              cloudCtx.fillStyle = cloudGrad; cloudCtx.fillRect(0, 0, 256, 256);
+              for (var cs = 0; cs < 95; cs++) {
+                var ca = Math.random() * Math.PI * 2;
+                var cr = Math.pow(Math.random(), 0.55) * 118;
+                var cx = 128 + Math.cos(ca) * cr;
+                var cy = 128 + Math.sin(ca) * cr * 0.72;
+                cloudCtx.fillStyle = cs % 3 === 0 ? 'rgba(253,224,71,0.06)' : cs % 3 === 1 ? 'rgba(96,165,250,0.07)' : 'rgba(244,114,182,0.06)';
+                cloudCtx.beginPath(); cloudCtx.arc(cx, cy, 2 + Math.random() * 9, 0, Math.PI * 2); cloudCtx.fill();
+              }
+              var cloudTex = new THREE.CanvasTexture(cloudCv);
+              for (var cvI = 0; cvI < 5; cvI++) {
+                var cloudMat = new THREE.SpriteMaterial({ map: cloudTex, transparent: true, opacity: 0.07 + cvI * 0.012, depthWrite: false, blending: THREE.AdditiveBlending, rotation: cvI * 0.7 });
+                var cloud = new THREE.Sprite(cloudMat);
+                cloud.position.set(Math.cos(cvI * 1.37) * (2.5 + cvI * 0.28), (cvI - 2) * 0.34, Math.sin(cvI * 1.1) * 2.2 - 2.2);
+                cloud.scale.set(1.7 + cvI * 0.28, 1.05 + cvI * 0.2, 1);
+                cloud.userData = { baseOpacity: cloudMat.opacity, phase: cvI * 1.9 };
+                deepFieldGroup.add(cloud);
+                deepFieldMats.push(cloudMat);
+              }
+
+              var galaxyCv = document.createElement('canvas'); galaxyCv.width = 128; galaxyCv.height = 128;
+              var galaxyCtx = galaxyCv.getContext('2d');
+              galaxyCtx.translate(64, 64);
+              var gBack = galaxyCtx.createRadialGradient(0, 0, 0, 0, 0, 58);
+              gBack.addColorStop(0, 'rgba(255,255,255,0.95)');
+              gBack.addColorStop(0.14, 'rgba(254,240,138,0.58)');
+              gBack.addColorStop(0.35, 'rgba(125,211,252,0.2)');
+              gBack.addColorStop(0.7, 'rgba(168,85,247,0.1)');
+              gBack.addColorStop(1, 'rgba(0,0,0,0)');
+              galaxyCtx.fillStyle = gBack; galaxyCtx.fillRect(-64, -64, 128, 128);
+              for (var ga2 = 0; ga2 < 2; ga2++) {
+                galaxyCtx.beginPath();
+                for (var gst = 0; gst <= 80; gst++) {
+                  var gf = gst / 80;
+                  var gr2 = 5 + gf * 52;
+                  var gt2 = ga2 * Math.PI + gf * 4.7;
+                  var gx2 = Math.cos(gt2) * gr2;
+                  var gy2 = Math.sin(gt2) * gr2 * 0.38;
+                  if (gst === 0) galaxyCtx.moveTo(gx2, gy2);
+                  else galaxyCtx.lineTo(gx2, gy2);
+                }
+                galaxyCtx.strokeStyle = ga2 ? 'rgba(244,114,182,0.34)' : 'rgba(125,211,252,0.38)';
+                galaxyCtx.lineWidth = 5.5;
+                galaxyCtx.lineCap = 'round';
+                galaxyCtx.stroke();
+              }
+              var distantGalaxyTex = new THREE.CanvasTexture(galaxyCv);
+              for (var dg = 0; dg < 22; dg++) {
+                var dgMat = new THREE.SpriteMaterial({ map: distantGalaxyTex, transparent: true, opacity: 0.1 + Math.random() * 0.16, depthWrite: false, blending: THREE.AdditiveBlending, rotation: Math.random() * Math.PI });
+                var dgSprite = new THREE.Sprite(dgMat);
+                var dgAng = Math.random() * Math.PI * 2;
+                var dgRad = 2.3 + Math.random() * 4.6;
+                dgSprite.position.set(Math.cos(dgAng) * dgRad, (Math.random() - 0.5) * 3.8, Math.sin(dgAng) * dgRad - 2.7);
+                var dgScale = 0.08 + Math.random() * 0.2;
+                dgSprite.scale.set(dgScale * (1.2 + Math.random()), dgScale, 1);
+                dgSprite.userData = { baseOpacity: dgMat.opacity, phase: Math.random() * Math.PI * 2 };
+                deepFieldGroup.add(dgSprite);
+                distantGalaxySprites.push(dgSprite);
+                deepFieldMats.push(dgMat);
+              }
+
+              for (var fi = 0; fi < 6; fi++) {
+                var fGeo = new THREE.BufferGeometry();
+                var fPos = new Float32Array(90 * 3);
+                for (var fp = 0; fp < 90; fp++) {
+                  var ff = fp / 89;
+                  var fa = -1.1 + ff * 2.2 + fi * 0.36;
+                  var fr2 = 1.6 + fi * 0.18 + 0.08 * Math.sin(ff * Math.PI * 3 + fi);
+                  fPos[fp * 3] = Math.cos(fa) * fr2;
+                  fPos[fp * 3 + 1] = -0.78 + fi * 0.31 + 0.05 * Math.sin(ff * Math.PI * 4);
+                  fPos[fp * 3 + 2] = Math.sin(fa) * fr2 - 0.55;
+                }
+                fGeo.setAttribute('position', new THREE.BufferAttribute(fPos, 3));
+                var fMat = new THREE.LineBasicMaterial({ color: fi % 2 ? 0x60a5fa : 0xe879f9, transparent: true, opacity: 0.1 + fi * 0.011, blending: THREE.AdditiveBlending, depthWrite: false });
+                var line = new THREE.Line(fGeo, fMat);
+                line.userData = { phase: fi * 1.3 };
+                cosmicFilamentGroup.add(line);
+                filamentMats.push(fMat);
+              }
+            })();
+
 
 
             // Spiral galaxy stars
@@ -701,7 +894,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             var starShaderMat = new THREE.ShaderMaterial({
 
-              uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() }, uRotMode: { value: rotMode === 'rigid' ? 0 : rotMode === 'keplerian' ? 1 : 2 } },
+              uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() }, uRotMode: { value: rotMode === 'rigid' ? 0 : rotMode === 'keplerian' ? 1 : 2 }, uObserve: { value: observeMode === 'infrared' ? 1 : observeMode === 'radio' ? 2 : observeMode === 'xray' ? 3 : observeMode === 'gravity' ? 4 : 0 } },
 
               vertexShader: [
 
@@ -769,6 +962,8 @@ if (!window._galaxyHasLoadedOnce) {
 
                 'varying float vType;',
 
+                'uniform float uObserve;',
+
                 'void main() {',
 
                 '  float d = length(gl_PointCoord - 0.5) * 2.0;',
@@ -783,7 +978,37 @@ if (!window._galaxyHasLoadedOnce) {
 
                 '  vec3 col = vSC * (0.2 + 0.8 * glow) * brightness;',
 
-                '  gl_FragColor = vec4(col, core * vA * 0.75);',
+                '  float alpha = core * vA * 0.75;',
+
+                '  if (uObserve > 0.5 && uObserve < 1.5) {',
+
+                '    col = mix(col, vec3(1.0, 0.42, 0.12), 0.42) * mix(1.24, 0.75, vType / 6.0);',
+
+                '    alpha *= 0.9;',
+
+                '  } else if (uObserve > 1.5 && uObserve < 2.5) {',
+
+                '    col = vec3(0.07, 0.72, 0.88) * (0.16 + 0.35 * glow);',
+
+                '    alpha *= 0.42;',
+
+                '  } else if (uObserve > 2.5 && uObserve < 3.5) {',
+
+                '    float hot = 1.0 - smoothstep(0.0, 2.6, vType);',
+
+                '    col = mix(vec3(0.02, 0.04, 0.08), vec3(0.55, 0.85, 1.0), hot) * (0.25 + glow);',
+
+                '    alpha *= max(0.05, hot);',
+
+                '  } else if (uObserve > 3.5) {',
+
+                '    col = vec3(0.58, 0.28, 0.95) * (0.12 + 0.25 * glow);',
+
+                '    alpha *= 0.34;',
+
+                '  }',
+
+                '  gl_FragColor = vec4(col, alpha);',
 
                 '}'
 
@@ -802,8 +1027,206 @@ if (!window._galaxyHasLoadedOnce) {
             var starPoints = new THREE.Points(starResult.geo, starShaderMat);
 
             armGroup.add(starPoints);
+            starPoints.renderOrder = 2;
 
             var starData = starResult.data;
+
+            var visualGlow = { disk: 0.16, arms: 0.18, core: 0.42 };
+            var diskSheenMat = null, armGlowMat = null, coreFlare = null;
+            var coreLightBars = [];
+            var sparkleGroup = new THREE.Group(); sparkleGroup.name = 'stellarGlints'; sparkleGroup.renderOrder = 3; armGroup.add(sparkleGroup);
+            var sparkleSprites = [];
+            var sparkleTex = null;
+
+            (function () {
+              var softCv = document.createElement('canvas'); softCv.width = 64; softCv.height = 64;
+              var softCtx = softCv.getContext('2d');
+              var softGrad = softCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+              softGrad.addColorStop(0, 'rgba(255,255,255,1)');
+              softGrad.addColorStop(0.28, 'rgba(255,255,255,0.42)');
+              softGrad.addColorStop(1, 'rgba(255,255,255,0)');
+              softCtx.fillStyle = softGrad; softCtx.fillRect(0, 0, 64, 64);
+              var softTex = new THREE.CanvasTexture(softCv);
+
+              var diskCv = document.createElement('canvas'); diskCv.width = 512; diskCv.height = 512;
+              var diskCtx = diskCv.getContext('2d');
+              var diskGrad = diskCtx.createRadialGradient(256, 256, 0, 256, 256, 245);
+              diskGrad.addColorStop(0, 'rgba(255,239,196,0.56)');
+              diskGrad.addColorStop(0.16, 'rgba(251,191,36,0.24)');
+              diskGrad.addColorStop(0.44, 'rgba(96,165,250,0.13)');
+              diskGrad.addColorStop(0.72, 'rgba(217,70,239,0.08)');
+              diskGrad.addColorStop(1, 'rgba(2,6,23,0)');
+              diskCtx.fillStyle = diskGrad; diskCtx.fillRect(0, 0, 512, 512);
+              diskCtx.save(); diskCtx.translate(256, 256); diskCtx.scale(1, 0.68);
+              var diskArms = Math.max(2, gType.arms || (galaxyType === 'elliptical' ? 2 : 3));
+              for (var da = 0; da < diskArms; da++) {
+                for (var pass = 0; pass < 3; pass++) {
+                  diskCtx.beginPath();
+                  for (var step = 0; step <= 95; step++) {
+                    var frac = step / 95;
+                    var rr = 18 + frac * 224;
+                    var aa = da / diskArms * Math.PI * 2 + frac * (gType.windTightness || 2.4) * 2.2 + pass * 0.038;
+                    var px = Math.cos(aa) * rr;
+                    var py = Math.sin(aa) * rr;
+                    if (step === 0) diskCtx.moveTo(px, py);
+                    else diskCtx.lineTo(px, py);
+                  }
+                  diskCtx.strokeStyle = pass === 0 ? 'rgba(125,211,252,0.22)' : pass === 1 ? 'rgba(244,114,182,0.16)' : 'rgba(253,224,71,0.11)';
+                  diskCtx.lineWidth = pass === 0 ? 16 : 9;
+                  diskCtx.lineCap = 'round';
+                  diskCtx.stroke();
+                }
+              }
+              diskCtx.restore();
+              var diskTex = new THREE.CanvasTexture(diskCv);
+              diskSheenMat = new THREE.MeshBasicMaterial({ map: diskTex, transparent: true, opacity: visualGlow.disk, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+              var diskSheen = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.9), diskSheenMat);
+              diskSheen.rotation.x = Math.PI * 0.5;
+              diskSheen.position.y = -0.012;
+              diskSheen.renderOrder = -2;
+              armGroup.add(diskSheen);
+
+              var glowCount = galaxyType === 'elliptical' ? 1800 : galaxyType === 'irregular' ? 2400 : 4200;
+              var glowGeo = new THREE.BufferGeometry();
+              var glowPos = new Float32Array(glowCount * 3);
+              var glowCol = new Float32Array(glowCount * 3);
+              for (var gi2 = 0; gi2 < glowCount; gi2++) {
+                var gx, gy, gz, hue;
+                if (galaxyType === 'elliptical') {
+                  var er = Math.pow(Math.random(), 0.38) * 0.74;
+                  var et = Math.random() * Math.PI * 2;
+                  var ep = (Math.random() - 0.5) * Math.PI * 0.72;
+                  gx = Math.cos(et) * Math.cos(ep) * er;
+                  gy = Math.sin(ep) * er * 0.34;
+                  gz = Math.sin(et) * Math.cos(ep) * er * 0.78;
+                  hue = 0.10 + Math.random() * 0.05;
+                } else if (galaxyType === 'irregular') {
+                  var clumpA = (gi2 % 7) / 7 * Math.PI * 2 + Math.sin(gi2) * 0.3;
+                  var clumpR = 0.12 + ((gi2 * 37) % 100) / 100 * 0.48;
+                  gx = Math.cos(clumpA) * clumpR + (Math.random() - 0.5) * 0.18;
+                  gy = (Math.random() - 0.5) * 0.18;
+                  gz = Math.sin(clumpA) * clumpR * 0.74 + (Math.random() - 0.5) * 0.16;
+                  hue = Math.random() < 0.5 ? 0.55 + Math.random() * 0.05 : 0.90 + Math.random() * 0.07;
+                } else {
+                  var ga = gi2 % (gType.arms || 4);
+                  var ga0 = ga / (gType.arms || 4) * Math.PI * 2;
+                  var gr = Math.pow(Math.random(), 0.58) * 0.86;
+                  var gw = gType.windTightness || 2.5;
+                  var armWidth = 0.035 + gr * 0.07;
+                  var gang = ga0 + gr * gw + (Math.random() - 0.5) * armWidth;
+                  if (gType.barLength && gr < gType.barLength) {
+                    var barAng = ga % 2 === 0 ? 0 : Math.PI;
+                    gx = Math.cos(barAng) * gr + (Math.random() - 0.5) * 0.05;
+                    gz = Math.sin(barAng) * gr * 0.18 + (Math.random() - 0.5) * 0.04;
+                  } else {
+                    gx = Math.cos(gang) * gr + (Math.random() - 0.5) * armWidth;
+                    gz = Math.sin(gang) * gr + (Math.random() - 0.5) * armWidth;
+                  }
+                  gy = (Math.random() - 0.5) * 0.045 * (1 - gr * 0.45);
+                  hue = Math.random() < 0.54 ? 0.56 + Math.random() * 0.05 : Math.random() < 0.78 ? 0.91 + Math.random() * 0.06 : 0.12;
+                }
+                glowPos[gi2 * 3] = gx; glowPos[gi2 * 3 + 1] = gy; glowPos[gi2 * 3 + 2] = gz;
+                var glowColor = new THREE.Color().setHSL(hue, 0.88, galaxyType === 'elliptical' ? 0.44 : 0.5 + Math.random() * 0.14);
+                glowCol[gi2 * 3] = glowColor.r; glowCol[gi2 * 3 + 1] = glowColor.g; glowCol[gi2 * 3 + 2] = glowColor.b;
+              }
+              glowGeo.setAttribute('position', new THREE.BufferAttribute(glowPos, 3));
+              glowGeo.setAttribute('color', new THREE.BufferAttribute(glowCol, 3));
+              armGlowMat = new THREE.PointsMaterial({ size: galaxyType === 'elliptical' ? 0.06 : 0.046, map: softTex, vertexColors: true, transparent: true, opacity: visualGlow.arms, depthWrite: false, blending: THREE.AdditiveBlending });
+              var armGlowPoints = new THREE.Points(glowGeo, armGlowMat);
+              armGlowPoints.renderOrder = 0;
+              armGroup.add(armGlowPoints);
+
+              var spCv = document.createElement('canvas'); spCv.width = 96; spCv.height = 96;
+              var spCtx = spCv.getContext('2d');
+              spCtx.translate(48, 48);
+              var spGrad = spCtx.createRadialGradient(0, 0, 0, 0, 0, 42);
+              spGrad.addColorStop(0, 'rgba(255,255,255,1)');
+              spGrad.addColorStop(0.18, 'rgba(191,219,254,0.74)');
+              spGrad.addColorStop(0.54, 'rgba(244,114,182,0.2)');
+              spGrad.addColorStop(1, 'rgba(255,255,255,0)');
+              spCtx.fillStyle = spGrad; spCtx.fillRect(-48, -48, 96, 96);
+              for (var sr = 0; sr < 4; sr++) {
+                spCtx.rotate(Math.PI * 0.25);
+                var rayGrad = spCtx.createLinearGradient(-44, 0, 44, 0);
+                rayGrad.addColorStop(0, 'rgba(255,255,255,0)');
+                rayGrad.addColorStop(0.48, 'rgba(255,255,255,0.65)');
+                rayGrad.addColorStop(0.52, 'rgba(255,255,255,0.65)');
+                rayGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                spCtx.strokeStyle = rayGrad; spCtx.lineWidth = sr < 2 ? 2.2 : 1.2;
+                spCtx.beginPath(); spCtx.moveTo(-44, 0); spCtx.lineTo(44, 0); spCtx.stroke();
+              }
+              sparkleTex = new THREE.CanvasTexture(spCv);
+
+              var flareCv = document.createElement('canvas'); flareCv.width = 192; flareCv.height = 192;
+              var flareCtx = flareCv.getContext('2d');
+              flareCtx.translate(96, 96);
+              var flareGrad = flareCtx.createRadialGradient(0, 0, 0, 0, 0, 92);
+              flareGrad.addColorStop(0, 'rgba(255,255,255,0.98)');
+              flareGrad.addColorStop(0.12, 'rgba(254,240,138,0.76)');
+              flareGrad.addColorStop(0.36, 'rgba(251,146,60,0.28)');
+              flareGrad.addColorStop(0.72, 'rgba(96,165,250,0.1)');
+              flareGrad.addColorStop(1, 'rgba(0,0,0,0)');
+              flareCtx.fillStyle = flareGrad; flareCtx.fillRect(-96, -96, 192, 192);
+              for (var fr = 0; fr < 18; fr++) {
+                flareCtx.rotate(Math.PI * 2 / 18);
+                var fg = flareCtx.createLinearGradient(0, 0, 86, 0);
+                fg.addColorStop(0, 'rgba(255,255,255,0.32)');
+                fg.addColorStop(1, 'rgba(255,255,255,0)');
+                flareCtx.strokeStyle = fg; flareCtx.lineWidth = fr % 3 === 0 ? 3 : 1.3;
+                flareCtx.beginPath(); flareCtx.moveTo(10, 0); flareCtx.lineTo(86, 0); flareCtx.stroke();
+              }
+              var flareTex = new THREE.CanvasTexture(flareCv);
+              coreFlare = new THREE.Sprite(new THREE.SpriteMaterial({ map: flareTex, transparent: true, opacity: visualGlow.core, depthWrite: false, blending: THREE.AdditiveBlending, rotation: 0 }));
+              coreFlare.scale.set(0.58, 0.24, 1);
+              coreFlare.renderOrder = 4;
+              bulgeGroup.add(coreFlare);
+
+              var barCv = document.createElement('canvas'); barCv.width = 384; barCv.height = 48;
+              var barCtx = barCv.getContext('2d');
+              var barGrad = barCtx.createLinearGradient(0, 24, 384, 24);
+              barGrad.addColorStop(0, 'rgba(255,255,255,0)');
+              barGrad.addColorStop(0.36, 'rgba(96,165,250,0.1)');
+              barGrad.addColorStop(0.5, 'rgba(255,255,255,0.66)');
+              barGrad.addColorStop(0.64, 'rgba(244,114,182,0.12)');
+              barGrad.addColorStop(1, 'rgba(255,255,255,0)');
+              barCtx.fillStyle = barGrad; barCtx.fillRect(0, 18, 384, 12);
+              var barCore = barCtx.createRadialGradient(192, 24, 0, 192, 24, 40);
+              barCore.addColorStop(0, 'rgba(255,246,209,0.55)');
+              barCore.addColorStop(1, 'rgba(255,255,255,0)');
+              barCtx.fillStyle = barCore; barCtx.fillRect(144, 0, 96, 48);
+              var barTex = new THREE.CanvasTexture(barCv);
+              [0, 1].forEach(function (barIdx) {
+                var barMat = new THREE.SpriteMaterial({ map: barTex, transparent: true, opacity: barIdx ? 0.16 : 0.24, depthWrite: false, blending: THREE.AdditiveBlending, rotation: barIdx ? 0.08 : -0.05 });
+                var barSprite = new THREE.Sprite(barMat);
+                barSprite.scale.set(barIdx ? 0.82 : 1.12, barIdx ? 0.065 : 0.08, 1);
+                barSprite.userData = { baseOpacity: barMat.opacity, baseScaleX: barSprite.scale.x, baseScaleY: barSprite.scale.y, phase: barIdx * 1.7 };
+                barSprite.renderOrder = 5;
+                bulgeGroup.add(barSprite);
+                coreLightBars.push(barSprite);
+              });
+            })();
+
+            function rebuildSparkles() {
+              sparkleSprites.forEach(function (s) { sparkleGroup.remove(s); if (s.material && s.material.dispose) s.material.dispose(); });
+              sparkleSprites = [];
+              if (!sparkleTex || !starData || !starData.length) return;
+              var sparkleCount = Math.min(72, Math.max(30, Math.floor(starData.length / 650)));
+              for (var si2 = 0; si2 < sparkleCount; si2++) {
+                var idx = Math.floor(Math.random() * starData.length);
+                for (var tries = 0; tries < 8 && starData[idx].type && ['O', 'B', 'A', 'F'].indexOf(starData[idx].type.id) < 0; tries++) idx = Math.floor(Math.random() * starData.length);
+                var sd2 = starData[idx];
+                var sm = new THREE.SpriteMaterial({ map: sparkleTex, transparent: true, opacity: 0.18, depthWrite: false, blending: THREE.AdditiveBlending, color: sd2.type && sd2.type.color ? sd2.type.color : '#ffffff' });
+                var sprite = new THREE.Sprite(sm);
+                sprite.position.set(sd2.x, sd2.y + 0.002, sd2.z);
+                var baseScale = 0.018 + Math.random() * 0.026;
+                sprite.scale.set(baseScale, baseScale, 1);
+                sprite.userData = { baseScale: baseScale, phase: Math.random() * Math.PI * 2, baseOpacity: 0.12 + Math.random() * 0.18 };
+                sparkleGroup.add(sprite);
+                sparkleSprites.push(sprite);
+              }
+            }
+
+            rebuildSparkles();
 
 
 
@@ -934,6 +1357,78 @@ if (!window._galaxyHasLoadedOnce) {
               gasGroup.add(new THREE.Points(gasGeo, gasMat));
             })();
 
+            // ── Multiwavelength observing overlays ──
+            (function () {
+              var irCount = 1400;
+              var irGeo = new THREE.BufferGeometry();
+              var irPos = new Float32Array(irCount * 3);
+              var irCol = new Float32Array(irCount * 3);
+              for (var ii = 0; ii < irCount; ii++) {
+                var irArm = ii % (gType.arms || 4);
+                var irAngle = (irArm / (gType.arms || 4)) * Math.PI * 2;
+                var irDist = 0.12 + Math.pow(Math.random(), 0.72) * 0.72;
+                var irWind = gType.windTightness || 2.5;
+                var irA = irAngle + irDist * irWind + (Math.random() - 0.5) * 0.18;
+                irPos[ii * 3] = Math.cos(irA) * irDist + (Math.random() - 0.5) * 0.035;
+                irPos[ii * 3 + 1] = (Math.random() - 0.5) * 0.028;
+                irPos[ii * 3 + 2] = Math.sin(irA) * irDist + (Math.random() - 0.5) * 0.035;
+                var irC = new THREE.Color().setHSL(0.06 + Math.random() * 0.04, 0.95, 0.45 + Math.random() * 0.18);
+                irCol[ii * 3] = irC.r; irCol[ii * 3 + 1] = irC.g; irCol[ii * 3 + 2] = irC.b;
+              }
+              irGeo.setAttribute('position', new THREE.BufferAttribute(irPos, 3));
+              irGeo.setAttribute('color', new THREE.BufferAttribute(irCol, 3));
+              infraredGroup.add(new THREE.Points(irGeo, new THREE.PointsMaterial({ size: 0.018, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending })));
+
+              for (var rr = 0; rr < 6; rr++) {
+                var rad = 0.18 + rr * 0.115;
+                var ringMat = new THREE.MeshBasicMaterial({ color: rr % 2 ? 0x22d3ee : 0x67e8f9, side: THREE.DoubleSide, transparent: true, opacity: 0.14, depthWrite: false, blending: THREE.AdditiveBlending });
+                var hRing = new THREE.Mesh(new THREE.RingGeometry(rad, rad + 0.0035, 160), ringMat);
+                hRing.rotation.x = Math.PI * 0.5;
+                hRing.scale.set(1, 1, 0.35);
+                radioGroup.add(hRing);
+              }
+              var radioCount = 900;
+              var radioGeo = new THREE.BufferGeometry();
+              var radioPos = new Float32Array(radioCount * 3);
+              for (var ri = 0; ri < radioCount; ri++) {
+                var rDist = 0.12 + Math.pow(Math.random(), 0.6) * 0.78;
+                var rAngle = Math.random() * Math.PI * 2;
+                radioPos[ri * 3] = Math.cos(rAngle) * rDist;
+                radioPos[ri * 3 + 1] = (Math.random() - 0.5) * 0.02;
+                radioPos[ri * 3 + 2] = Math.sin(rAngle) * rDist;
+              }
+              radioGeo.setAttribute('position', new THREE.BufferAttribute(radioPos, 3));
+              radioGroup.add(new THREE.Points(radioGeo, new THREE.PointsMaterial({ color: 0x67e8f9, size: 0.01, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending })));
+
+              var xrayCount = 520;
+              var xrayGeo = new THREE.BufferGeometry();
+              var xrayPos = new Float32Array(xrayCount * 3);
+              for (var xi = 0; xi < xrayCount; xi++) {
+                var xHot = Math.random() < 0.68;
+                var xR = xHot ? Math.pow(Math.random(), 2.2) * 0.16 : 0.2 + Math.random() * 0.55;
+                var xA = Math.random() * Math.PI * 2;
+                xrayPos[xi * 3] = Math.cos(xA) * xR;
+                xrayPos[xi * 3 + 1] = (Math.random() - 0.5) * (xHot ? 0.035 : 0.08);
+                xrayPos[xi * 3 + 2] = Math.sin(xA) * xR;
+              }
+              xrayGeo.setAttribute('position', new THREE.BufferAttribute(xrayPos, 3));
+              xrayGroup.add(new THREE.Points(xrayGeo, new THREE.PointsMaterial({ color: 0x7dd3fc, size: 0.012, transparent: true, opacity: 0.82, depthWrite: false, blending: THREE.AdditiveBlending })));
+              var jetMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.18, depthWrite: false, blending: THREE.AdditiveBlending });
+              var jetA = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.34, 32, 1, true), jetMat);
+              jetA.position.y = 0.16;
+              var jetB = jetA.clone(); jetB.rotation.x = Math.PI; jetB.position.y = -0.16;
+              xrayGroup.add(jetA); xrayGroup.add(jetB);
+
+              var haloMat = new THREE.MeshBasicMaterial({ color: 0xc084fc, wireframe: true, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending });
+              var halo = new THREE.Mesh(new THREE.SphereGeometry(0.94, 48, 24), haloMat);
+              halo.scale.set(1.15, 0.62, 1.15);
+              darkHaloGroup.add(halo);
+              var haloGlowMat = new THREE.MeshBasicMaterial({ color: 0x6d28d9, transparent: true, opacity: 0.06, depthWrite: false, blending: THREE.AdditiveBlending });
+              var haloGlow = new THREE.Mesh(new THREE.SphereGeometry(0.86, 48, 24), haloGlowMat);
+              haloGlow.scale.set(1.2, 0.7, 1.2);
+              darkHaloGroup.add(haloGlow);
+            })();
+
 
 
             // Black hole + enhanced accretion disk
@@ -985,6 +1480,40 @@ if (!window._galaxyHasLoadedOnce) {
 
             bhGlow.scale.set(0.25, 0.25, 1); bhGroup.add(bhGlow);
 
+            var blackHoleDrama = { photon: 0.36, lens: 0.18, jet: 0.1 };
+            var photonRings = [], lensingArcs = [], coreJets = [];
+            var horizon = new THREE.Mesh(new THREE.SphereGeometry(0.018, 32, 32), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.96 }));
+            bhGroup.add(horizon);
+
+            for (var pr = 0; pr < 3; pr++) {
+              var prMat = new THREE.MeshBasicMaterial({ color: pr === 0 ? 0xfff7ad : pr === 1 ? 0xf97316 : 0x7dd3fc, side: THREE.DoubleSide, transparent: true, opacity: blackHoleDrama.photon - pr * 0.08, depthWrite: false, blending: THREE.AdditiveBlending });
+              var prRing = new THREE.Mesh(new THREE.RingGeometry(0.074 + pr * 0.014, 0.078 + pr * 0.014, 160), prMat);
+              prRing.rotation.x = Math.PI * 0.5;
+              prRing.rotation.z = pr * 0.35;
+              prRing.scale.set(1.55 - pr * 0.16, 0.62 + pr * 0.1, 1);
+              bhGroup.add(prRing);
+              photonRings.push(prRing);
+            }
+
+            for (var la = 0; la < 5; la++) {
+              var arcMat = new THREE.MeshBasicMaterial({ color: la % 2 ? 0x60a5fa : 0xe879f9, side: THREE.DoubleSide, transparent: true, opacity: blackHoleDrama.lens, depthWrite: false, blending: THREE.AdditiveBlending });
+              var arc = new THREE.Mesh(new THREE.RingGeometry(0.14 + la * 0.018, 0.143 + la * 0.018, 96, 1, la * 0.92, Math.PI * (0.42 + (la % 2) * 0.16)), arcMat);
+              arc.rotation.x = Math.PI * 0.5 + (la - 2) * 0.04;
+              arc.rotation.z = la * 0.74;
+              arc.scale.set(1.18 + la * 0.06, 0.5 + la * 0.045, 1);
+              bhGroup.add(arc);
+              lensingArcs.push(arc);
+            }
+
+            var jetMatA = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: blackHoleDrama.jet, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+            var jetMatB = new THREE.MeshBasicMaterial({ color: 0xc084fc, transparent: true, opacity: blackHoleDrama.jet * 0.72, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+            var jetTop = new THREE.Mesh(new THREE.ConeGeometry(0.026, 0.62, 36, 1, true), jetMatA);
+            jetTop.position.y = 0.31;
+            var jetBottom = new THREE.Mesh(new THREE.ConeGeometry(0.026, 0.62, 36, 1, true), jetMatB);
+            jetBottom.position.y = -0.31; jetBottom.rotation.x = Math.PI;
+            bhGroup.add(jetTop); bhGroup.add(jetBottom);
+            coreJets.push(jetTop); coreJets.push(jetBottom);
+
 
 
             // Scale grid
@@ -1007,7 +1536,7 @@ if (!window._galaxyHasLoadedOnce) {
 
             var nebCanvas = document.createElement('canvas'); nebCanvas.width = 64; nebCanvas.height = 64;
 
-            var nCtx = nebCanvas.getContext('2d'), nebulaSprites = [];
+            var nCtx = nebCanvas.getContext('2d'), nebulaSprites = [], nebulaWispSprites = [];
 
             NEBULAE.forEach(function (neb) {
 
@@ -1026,6 +1555,33 @@ if (!window._galaxyHasLoadedOnce) {
               sprite.position.set(neb.x, neb.y, neb.z); sprite.scale.set(neb.r * 2, neb.r * 2, 1);
 
               sprite.userData = neb; nebGroup.add(sprite); nebulaSprites.push(sprite);
+
+              for (var wi = 0; wi < 3; wi++) {
+                var wCv = document.createElement('canvas'); wCv.width = 96; wCv.height = 96;
+                var wCtx = wCv.getContext('2d');
+                wCtx.translate(48, 48);
+                wCtx.rotate((wi + 1) * 0.58);
+                wCtx.scale(1.4, 0.72);
+                var wGrad = wCtx.createRadialGradient(0, 0, 0, 0, 0, 42);
+                wGrad.addColorStop(0, 'rgba(255,255,255,0.42)');
+                wGrad.addColorStop(0.18, neb.color + '88');
+                wGrad.addColorStop(0.58, neb.color + '28');
+                wGrad.addColorStop(1, neb.color + '00');
+                wCtx.fillStyle = wGrad;
+                wCtx.beginPath(); wCtx.arc(0, 0, 42, 0, Math.PI * 2); wCtx.fill();
+                for (var wh = 0; wh < 26; wh++) {
+                  wCtx.fillStyle = wh % 2 ? 'rgba(255,255,255,0.06)' : neb.color + '18';
+                  wCtx.beginPath(); wCtx.arc((Math.random() - 0.5) * 62, (Math.random() - 0.5) * 38, 2 + Math.random() * 6, 0, Math.PI * 2); wCtx.fill();
+                }
+                var wTex = new THREE.CanvasTexture(wCv);
+                var wMat = new THREE.SpriteMaterial({ map: wTex, transparent: true, opacity: 0.14 + wi * 0.035, depthWrite: false, blending: THREE.AdditiveBlending, rotation: wi * 0.8 });
+                var wSprite = new THREE.Sprite(wMat);
+                wSprite.position.set(neb.x + (Math.random() - 0.5) * neb.r * 0.75, neb.y + (Math.random() - 0.5) * neb.r * 0.34, neb.z + (Math.random() - 0.5) * neb.r * 0.75);
+                wSprite.scale.set(neb.r * (3.1 + wi * 0.55), neb.r * (1.7 + wi * 0.42), 1);
+                wSprite.userData = { baseOpacity: wMat.opacity, baseScaleX: wSprite.scale.x, baseScaleY: wSprite.scale.y, phase: Math.random() * Math.PI * 2 };
+                nebGroup.add(wSprite);
+                nebulaWispSprites.push(wSprite);
+              }
 
             });
 
@@ -1074,10 +1630,12 @@ if (!window._galaxyHasLoadedOnce) {
               var result = generateStars(THREE, count, gType, galaxyType);
 
               starPoints = new THREE.Points(result.geo, starShaderMat);
+              starPoints.renderOrder = 2;
 
               armGroup.add(starPoints);
 
               starData = result.data;
+              rebuildSparkles();
 
             };
 
@@ -1101,7 +1659,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               composer.addPass(new THREE.RenderPass(scene, camera));
 
-              var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 1.2, 0.25, 0.9);
+              var bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(W, H), 1.35, 0.3, 0.84);
 
               composer.addPass(bloomPass);
 
@@ -1109,35 +1667,96 @@ if (!window._galaxyHasLoadedOnce) {
 
             }
 
+            var currentObserveMode = observeMode || 'visible';
+            function setObserveMode(mode) {
+              currentObserveMode = mode || 'visible';
+              var obsIndex = currentObserveMode === 'infrared' ? 1 : currentObserveMode === 'radio' ? 2 : currentObserveMode === 'xray' ? 3 : currentObserveMode === 'gravity' ? 4 : 0;
+              starShaderMat.uniforms.uObserve.value = obsIndex;
+              infraredGroup.visible = currentObserveMode === 'infrared';
+              radioGroup.visible = currentObserveMode === 'radio';
+              xrayGroup.visible = currentObserveMode === 'xray';
+              darkHaloGroup.visible = currentObserveMode === 'gravity';
+              if (gasGroup.children[0] && gasGroup.children[0].material) gasGroup.children[0].material.opacity = currentObserveMode === 'radio' ? 0.18 : currentObserveMode === 'infrared' ? 0.1 : 0.06;
+              if (dustGroup.children[0] && dustGroup.children[0].material) dustGroup.children[0].material.opacity = currentObserveMode === 'infrared' ? 0.04 : currentObserveMode === 'visible' ? 0.12 : 0.07;
+              if (bulgeGlow && bulgeGlow.material) bulgeGlow.material.opacity = currentObserveMode === 'xray' ? 0.35 : currentObserveMode === 'gravity' ? 0.2 : 1;
+              if (bhGlow && bhGlow.material) bhGlow.material.opacity = currentObserveMode === 'xray' ? 0.95 : currentObserveMode === 'gravity' ? 0.45 : 0.7;
+              visualGlow.disk = currentObserveMode === 'infrared' ? 0.24 : currentObserveMode === 'radio' ? 0.08 : currentObserveMode === 'xray' ? 0.05 : currentObserveMode === 'gravity' ? 0.07 : 0.16;
+              visualGlow.arms = currentObserveMode === 'infrared' ? 0.32 : currentObserveMode === 'radio' ? 0.1 : currentObserveMode === 'xray' ? 0.07 : currentObserveMode === 'gravity' ? 0.08 : 0.18;
+              visualGlow.core = currentObserveMode === 'xray' ? 0.72 : currentObserveMode === 'infrared' ? 0.48 : currentObserveMode === 'gravity' ? 0.24 : currentObserveMode === 'radio' ? 0.16 : 0.42;
+              sparkleGroup.visible = currentObserveMode !== 'radio' && currentObserveMode !== 'gravity';
+              if (diskSheenMat) diskSheenMat.opacity = visualGlow.disk;
+              if (armGlowMat) armGlowMat.opacity = visualGlow.arms;
+              if (coreFlare && coreFlare.material) coreFlare.material.opacity = visualGlow.core;
+              cinematicMotion.foreground = currentObserveMode === 'radio' ? 0.55 : currentObserveMode === 'gravity' ? 0.68 : currentObserveMode === 'xray' ? 0.72 : 1;
+              coreLightBars.forEach(function (bar, idx) { if (bar.material) bar.material.opacity = (bar.userData.baseOpacity || 0.18) * (visualGlow.core / 0.42) * (idx ? 0.82 : 1); });
+              deepFieldGlow.galaxies = currentObserveMode === 'xray' ? 0.16 : currentObserveMode === 'radio' ? 0.18 : currentObserveMode === 'gravity' ? 0.24 : currentObserveMode === 'infrared' ? 0.26 : 0.28;
+              deepFieldGlow.filaments = currentObserveMode === 'gravity' ? 0.28 : currentObserveMode === 'radio' ? 0.22 : currentObserveMode === 'xray' ? 0.1 : 0.16;
+              blackHoleDrama.photon = currentObserveMode === 'xray' ? 0.62 : currentObserveMode === 'gravity' ? 0.28 : currentObserveMode === 'radio' ? 0.18 : 0.36;
+              blackHoleDrama.lens = currentObserveMode === 'gravity' ? 0.36 : currentObserveMode === 'xray' ? 0.26 : currentObserveMode === 'radio' ? 0.12 : 0.18;
+              blackHoleDrama.jet = currentObserveMode === 'xray' ? 0.28 : currentObserveMode === 'gravity' ? 0.12 : currentObserveMode === 'radio' ? 0.06 : 0.1;
+              photonRings.forEach(function (r, idx) { if (r.material) r.material.opacity = Math.max(0, blackHoleDrama.photon - idx * 0.08); });
+              lensingArcs.forEach(function (a, idx) { if (a.material) a.material.opacity = Math.max(0, blackHoleDrama.lens - idx * 0.018); });
+              coreJets.forEach(function (j, idx) { if (j.material) j.material.opacity = blackHoleDrama.jet * (idx ? 0.72 : 1); });
+              if (composer && canvasEl._bloomPass) {
+                canvasEl._bloomPass.strength = currentObserveMode === 'xray' ? 1.85 : currentObserveMode === 'infrared' ? 1.5 : currentObserveMode === 'radio' ? 1.05 : currentObserveMode === 'gravity' ? 1.24 : 1.35;
+              }
+            }
+            canvasEl._setObserveMode = setObserveMode;
+            setObserveMode(currentObserveMode);
+
 
 
             // Supernova flash system for time-lapse
 
             var supernovae = [];
+            var disposeSNPart = function (obj) {
+              if (!obj) return;
+              scene.remove(obj);
+              if (obj.material) {
+                if (obj.material.map && obj.material.map.dispose) obj.material.map.dispose();
+                if (obj.material.dispose) obj.material.dispose();
+              }
+              if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose();
+            };
 
             canvasEl._triggerSupernova = function () {
 
-              if (starData.length === 0) return;
+              if (starData.length === 0) return null;
 
               var idx = Math.floor(Math.random() * starData.length);
 
               var sd = starData[idx];
 
-              var snCv = document.createElement('canvas'); snCv.width = 64; snCv.height = 64;
+              var snCv = document.createElement('canvas'); snCv.width = 160; snCv.height = 160;
 
               var sc = snCv.getContext('2d');
 
-              var sg = sc.createRadialGradient(32, 32, 0, 32, 32, 32);
+              var sg = sc.createRadialGradient(80, 80, 0, 80, 80, 80);
 
-              sg.addColorStop(0, 'rgba(255,255,255,1)'); sg.addColorStop(0.2, 'rgba(200,220,255,0.8)');
+              sg.addColorStop(0, 'rgba(255,255,255,1)'); sg.addColorStop(0.13, 'rgba(255,244,214,0.98)');
 
-              sg.addColorStop(0.5, 'rgba(100,150,255,0.3)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
+              sg.addColorStop(0.34, 'rgba(251,191,36,0.64)'); sg.addColorStop(0.62, 'rgba(96,165,250,0.28)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
 
-              sc.fillStyle = sg; sc.fillRect(0, 0, 64, 64);
+              sc.fillStyle = sg; sc.fillRect(0, 0, 160, 160);
+              sc.save();
+              sc.translate(80, 80);
+              for (var ray = 0; ray < 18; ray++) {
+                var a = (ray / 18) * Math.PI * 2;
+                var len = 42 + (ray % 3) * 12;
+                sc.rotate(a);
+                var rg = sc.createLinearGradient(0, 0, len, 0);
+                rg.addColorStop(0, 'rgba(255,255,255,0.7)');
+                rg.addColorStop(1, 'rgba(251,191,36,0)');
+                sc.strokeStyle = rg;
+                sc.lineWidth = ray % 2 ? 2 : 3;
+                sc.beginPath(); sc.moveTo(10, 0); sc.lineTo(len, 0); sc.stroke();
+                sc.rotate(-a);
+              }
+              sc.restore();
 
               var snTex = new THREE.CanvasTexture(snCv);
 
-              var snSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: snTex, transparent: true, blending: THREE.AdditiveBlending }));
+              var snSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: snTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 }));
 
               snSprite.position.set(sd.x, sd.y, sd.z);
 
@@ -1145,7 +1764,32 @@ if (!window._galaxyHasLoadedOnce) {
 
               scene.add(snSprite);
 
-              supernovae.push({ sprite: snSprite, birth: Date.now(), duration: 2000 });
+              var shockRing = new THREE.Mesh(
+                new THREE.RingGeometry(0.52, 0.56, 96),
+                new THREE.MeshBasicMaterial({ color: 0xfbbf24, side: THREE.DoubleSide, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })
+              );
+              shockRing.position.set(sd.x, sd.y, sd.z);
+              shockRing.rotation.x = Math.PI * 0.5;
+              shockRing.scale.set(0.001, 0.001, 0.001);
+              scene.add(shockRing);
+
+              var labelCv = document.createElement('canvas'); labelCv.width = 256; labelCv.height = 64;
+              var labelCtx = labelCv.getContext('2d');
+              labelCtx.fillStyle = 'rgba(15,23,42,0.72)'; labelCtx.fillRect(24, 10, 208, 38);
+              labelCtx.strokeStyle = 'rgba(251,191,36,0.8)'; labelCtx.strokeRect(24.5, 10.5, 207, 37);
+              labelCtx.font = 'bold 20px sans-serif'; labelCtx.textAlign = 'center';
+              labelCtx.fillStyle = '#fef3c7'; labelCtx.fillText('SUPERNOVA', 128, 35);
+              var labelTex = new THREE.CanvasTexture(labelCv);
+              var labelSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex, transparent: true, opacity: 0 }));
+              labelSprite.position.set(sd.x, sd.y + 0.075, sd.z);
+              labelSprite.scale.set(0.16, 0.04, 1);
+              scene.add(labelSprite);
+
+              var flashLight = THREE.PointLight ? new THREE.PointLight(0xfff1b8, 0, 0.9) : null;
+              if (flashLight) { flashLight.position.set(sd.x, sd.y, sd.z); scene.add(flashLight); }
+
+              supernovae.push({ sprite: snSprite, ring: shockRing, label: labelSprite, light: flashLight, birth: Date.now(), duration: 3000 });
+              return { type: (sd.type && sd.type.label) || 'unknown', spectral: (sd.type && sd.type.id) || '?' };
 
             };
 
@@ -1292,6 +1936,8 @@ if (!window._galaxyHasLoadedOnce) {
               while (dTheta < -Math.PI) dTheta += Math.PI * 2;
 
               warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: dTheta, dp: toPhi - spherical.phi, dr: toR - spherical.r, start: Date.now(), dur: 1600 };
+              cinematicMotion.warp = 1;
+              warpStreakGroup.visible = true;
 
             };
 
@@ -1324,12 +1970,106 @@ if (!window._galaxyHasLoadedOnce) {
 
               } else if (!isDragging) { spherical.theta -= 0.0003; updateCamera(); }
               starShaderMat.uniforms.uTime.value = elapsed;
+              var targetFov = 60 - cinematicMotion.warp * 4.5 + Math.sin(elapsed * 0.18) * 0.35;
+              if (Math.abs(camera.fov - targetFov) > 0.02) { camera.fov = targetFov; camera.updateProjectionMatrix(); }
 
               // Stars orbit per-vertex in the shader (rotation-curve model); the dust/gas
               // pattern deliberately stays fixed so stars visibly stream through the arms —
               // the density-wave picture of spiral structure.
 
-              nebulaSprites.forEach(function (s, i) { s.material.opacity = 0.25 + 0.15 * Math.sin(elapsed * 0.5 + i * 1.8); });
+              if (diskSheenMat) diskSheenMat.opacity = Math.max(0, visualGlow.disk + 0.018 * Math.sin(elapsed * 0.45));
+              if (armGlowMat) armGlowMat.opacity = Math.max(0, visualGlow.arms + 0.035 * Math.sin(elapsed * 0.62 + 0.8));
+              if (coreFlare && coreFlare.material) {
+                coreFlare.material.opacity = Math.max(0, visualGlow.core + 0.08 * Math.sin(elapsed * 1.1));
+                coreFlare.material.rotation = elapsed * 0.08;
+                var coreScale = 1 + 0.035 * Math.sin(elapsed * 1.35);
+                coreFlare.scale.set(0.58 * coreScale, 0.24 * coreScale, 1);
+              }
+              coreLightBars.forEach(function (bar, idx) {
+                var barPulse = 0.72 + 0.28 * Math.sin(elapsed * 0.95 + bar.userData.phase);
+                bar.material.opacity = (bar.userData.baseOpacity || 0.18) * (visualGlow.core / 0.42) * barPulse;
+                bar.material.rotation += idx ? 0.0007 : -0.0005;
+                var barScale = 1 + 0.05 * Math.sin(elapsed * 0.7 + idx);
+                bar.scale.set(bar.userData.baseScaleX * barScale, bar.userData.baseScaleY, 1);
+              });
+              if (sparkleGroup.visible) {
+                sparkleSprites.forEach(function (sp, idx) {
+                  var phase = elapsed * (1.4 + (idx % 5) * 0.11) + sp.userData.phase;
+                  var pulse = 0.5 + 0.5 * Math.sin(phase);
+                  var scalePulse = sp.userData.baseScale * (0.78 + pulse * 0.62);
+                  sp.scale.set(scalePulse, scalePulse, 1);
+                  sp.material.opacity = sp.userData.baseOpacity * (0.55 + pulse * 0.8);
+                });
+              }
+
+              foregroundGroup.rotation.y += 0.00034 + cinematicMotion.warp * 0.0024;
+              foregroundGroup.rotation.x = Math.sin(elapsed * 0.16) * 0.018;
+              foregroundSprites.forEach(function (fg, idx) {
+                fg.material.rotation += fg.userData.drift * (1 + cinematicMotion.warp * 9);
+                var fgPulse = 0.64 + 0.36 * Math.sin(elapsed * (0.55 + (idx % 4) * 0.08) + fg.userData.phase);
+                fg.material.opacity = fg.userData.baseOpacity * cinematicMotion.foreground * fgPulse;
+                var fgScale = fg.userData.baseScale * (0.82 + fgPulse * 0.42 + cinematicMotion.warp * 1.4);
+                fg.scale.set(fgScale, fgScale, 1);
+              });
+
+              if (cinematicMotion.warp > 0.01) {
+                cinematicMotion.warp *= 0.94;
+                warpStreakGroup.visible = true;
+                warpStreakGroup.rotation.z += 0.018;
+                warpStreakSprites.forEach(function (ws, idx) {
+                  var wd = ws.userData;
+                  wd.radius += wd.speed * (1 + cinematicMotion.warp * 7);
+                  if (wd.radius > 1.16) wd.radius = 0.08 + (idx % 6) * 0.018;
+                  ws.position.x = Math.cos(wd.angle) * wd.radius;
+                  ws.position.y = Math.sin(wd.angle) * wd.radius * 0.6;
+                  ws.material.rotation = Math.atan2(ws.position.y, ws.position.x);
+                  ws.material.opacity = cinematicMotion.warp * (0.22 + (idx % 5) * 0.035);
+                  ws.scale.set(wd.baseScaleX * (1 + cinematicMotion.warp * 2.8), wd.baseScaleY * (1 + cinematicMotion.warp * 0.4), 1);
+                });
+              } else if (warpStreakGroup.visible) {
+                warpStreakGroup.visible = false;
+                warpStreakSprites.forEach(function (ws) { if (ws.material) ws.material.opacity = 0; });
+              }
+
+              deepFieldGroup.rotation.y += 0.00008;
+              deepFieldGroup.children.forEach(function (obj, idx) {
+                if (!obj.material || obj.material.opacity === undefined || !obj.userData) return;
+                var base = obj.userData.baseOpacity || 0.08;
+                obj.material.opacity = Math.max(0, base * (deepFieldGlow.galaxies / 0.28) * (0.86 + 0.14 * Math.sin(elapsed * 0.28 + (obj.userData.phase || idx))));
+                if (obj.material.rotation !== undefined) obj.material.rotation += 0.00055 + idx * 0.000015;
+              });
+              cosmicFilamentGroup.rotation.y -= 0.00012;
+              cosmicFilamentGroup.children.forEach(function (line, idx) {
+                if (line.material && line.material.opacity !== undefined) line.material.opacity = Math.max(0, deepFieldGlow.filaments * (0.38 + 0.22 * Math.sin(elapsed * 0.5 + line.userData.phase)));
+              });
+
+              nebulaSprites.forEach(function (s, i) {
+                var nebBase = currentObserveMode === 'radio' ? 0.1 : currentObserveMode === 'xray' ? 0.05 : currentObserveMode === 'infrared' ? 0.18 : 0.25;
+                var nebPulse = currentObserveMode === 'radio' ? 0.06 : currentObserveMode === 'xray' ? 0.03 : 0.15;
+                s.material.opacity = nebBase + nebPulse * Math.sin(elapsed * 0.5 + i * 1.8);
+              });
+              nebulaWispSprites.forEach(function (w, i) {
+                var wMode = currentObserveMode === 'infrared' ? 1.45 : currentObserveMode === 'radio' ? 0.62 : currentObserveMode === 'xray' ? 0.38 : currentObserveMode === 'gravity' ? 0.5 : 1;
+                var wPulse = 0.72 + 0.28 * Math.sin(elapsed * 0.44 + w.userData.phase);
+                w.material.opacity = w.userData.baseOpacity * wMode * wPulse;
+                w.material.rotation += 0.0009 + (i % 3) * 0.00035;
+                var wScale = 0.96 + 0.05 * Math.sin(elapsed * 0.38 + w.userData.phase);
+                w.scale.set(w.userData.baseScaleX * wScale, w.userData.baseScaleY * (1.02 - (wScale - 0.96)), 1);
+              });
+
+              if (infraredGroup.visible) infraredGroup.rotation.y += 0.0009;
+
+              if (radioGroup.visible) radioGroup.rotation.y -= 0.0012;
+
+              if (xrayGroup.visible) {
+                xrayGroup.rotation.y += 0.006;
+                xrayGroup.children.forEach(function (obj, idx) { if (obj.material && obj.material.opacity !== undefined) obj.material.opacity = idx === 0 ? 0.68 + 0.18 * Math.sin(elapsed * 2.4) : 0.14 + 0.08 * Math.sin(elapsed * 3.2 + idx); });
+              }
+
+              if (darkHaloGroup.visible) {
+                darkHaloGroup.rotation.y += 0.001;
+                darkHaloGroup.children.forEach(function (obj, idx) { if (obj.material && obj.material.opacity !== undefined) obj.material.opacity = idx === 0 ? 0.18 + 0.04 * Math.sin(elapsed * 0.9) : 0.045 + 0.018 * Math.sin(elapsed * 0.7); });
+              }
 
               if (bhGroup.visible) {
 
@@ -1338,6 +2078,20 @@ if (!window._galaxyHasLoadedOnce) {
                 bhGlow.material.opacity = 0.6 + 0.3 * Math.sin(elapsed * 0.8);
 
                 bhGlow.scale.set(0.12 + 0.01 * Math.sin(elapsed * 1.5), 0.12 + 0.01 * Math.sin(elapsed * 1.5), 1);
+
+                photonRings.forEach(function (r, idx) {
+                  r.rotation.z += 0.012 + idx * 0.004;
+                  if (r.material) r.material.opacity = Math.max(0, blackHoleDrama.photon - idx * 0.08 + 0.045 * Math.sin(elapsed * 1.9 + idx));
+                });
+                lensingArcs.forEach(function (a, idx) {
+                  a.rotation.z += (idx % 2 ? -0.006 : 0.0045);
+                  if (a.material) a.material.opacity = Math.max(0, blackHoleDrama.lens - idx * 0.015 + 0.035 * Math.sin(elapsed * 1.25 + idx * 0.8));
+                });
+                coreJets.forEach(function (j, idx) {
+                  var jetPulse = 1 + 0.08 * Math.sin(elapsed * 2.1 + idx);
+                  j.scale.set(1, jetPulse, 1);
+                  if (j.material) j.material.opacity = blackHoleDrama.jet * (idx ? 0.72 : 1) * (0.78 + 0.22 * Math.sin(elapsed * 1.7 + idx));
+                });
 
               }
 
@@ -1349,13 +2103,25 @@ if (!window._galaxyHasLoadedOnce) {
 
                 var prog = (Date.now() - sn.birth) / sn.duration;
 
-                if (prog > 1) { scene.remove(sn.sprite); sn.sprite.material.dispose(); supernovae.splice(sni, 1); continue; }
+                if (prog > 1) { disposeSNPart(sn.sprite); disposeSNPart(sn.ring); disposeSNPart(sn.label); if (sn.light) scene.remove(sn.light); supernovae.splice(sni, 1); continue; }
 
-                var scale = 0.001 + prog * 0.08;
+                var grow = 1 - Math.pow(1 - prog, 3);
+                var flash = prog < 0.22 ? prog / 0.22 : Math.max(0, 1 - (prog - 0.22) / 0.78);
+                var scale = 0.025 + grow * 0.18;
 
                 sn.sprite.scale.set(scale, scale, 1);
 
-                sn.sprite.material.opacity = prog < 0.3 ? prog / 0.3 : 1 - (prog - 0.3) / 0.7;
+                sn.sprite.material.opacity = Math.min(1, flash * 1.25);
+                if (sn.ring) {
+                  var ringScale = 0.001 + grow * 0.55;
+                  sn.ring.scale.set(ringScale, ringScale, ringScale);
+                  sn.ring.material.opacity = Math.max(0, 0.82 * (1 - prog));
+                }
+                if (sn.label) {
+                  sn.label.position.y += 0.00008;
+                  sn.label.material.opacity = prog < 0.18 ? prog / 0.18 : Math.max(0, 1 - Math.max(0, prog - 0.46) / 0.54);
+                }
+                if (sn.light) sn.light.intensity = 2.4 * flash;
 
               }
 
@@ -1416,7 +2182,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               if (composer) { composer.passes.forEach(function (p) { if (p.dispose) p.dispose(); }); }
 
-              supernovae.forEach(function (sn) { scene.remove(sn.sprite); sn.sprite.material.dispose(); });
+              supernovae.forEach(function (sn) { disposeSNPart(sn.sprite); disposeSNPart(sn.ring); disposeSNPart(sn.label); if (sn.light) scene.remove(sn.light); });
 
               renderer.dispose();
 
@@ -1431,6 +2197,173 @@ if (!window._galaxyHasLoadedOnce) {
           var selNeb = d.selectedNebula ? NEBULAE.find(function (n) { return n.name === d.selectedNebula; }) : null;
 
           var ACTIVE_BANK = d.dynamicQuiz || QUIZ_BANK; var quizQ = d.quizMode && ACTIVE_BANK[d.quizIdx || 0] ? ACTIVE_BANK[d.quizIdx || 0] : null;
+
+          var inspectLog = d.inspectLog || {};
+          var addInspectKey = function (key) {
+            var next = Object.assign({}, d.inspectLog || {});
+            next[key] = true;
+            return next;
+          };
+          var inspectTarget = d.inspectTarget || (selStar ? 'star:' + selStar.id : selNeb ? 'nebula:' + selNeb.name : 'galaxyType');
+          var INSPECT_TARGETS = {
+            galaxyType: {
+              icon: gType.icon,
+              title: gType.label,
+              type: 'Galaxy shape',
+              color: '#6366f1',
+              desc: gType.desc,
+              facts: ['Example: ' + gType.example, (gType.arms ? gType.arms + ' visible arm pattern' : 'No spiral arm pattern'), gType.barLength ? 'Central stellar bar present' : 'No central bar'],
+              evidence: 'Astronomers classify galaxies by wide-field images, color, gas content, and the motion of stars and dust.',
+              question: 'Which visible features helped you classify this galaxy?'
+            },
+            blackHole: {
+              icon: '\uD83D\uDD73\uFE0F',
+              title: 'Central black hole',
+              type: 'Galactic core',
+              color: '#f59e0b',
+              desc: 'The Milky Way contains Sagittarius A*, a compact object of about four million solar masses at the galactic center.',
+              facts: ['Invisible event horizon', 'Bright accretion disk when gas falls in', 'Nearby stars orbit at extreme speeds'],
+              evidence: 'The strongest evidence is motion: stars whip around an unseen, tiny, massive object in the core.',
+              question: 'What evidence would convince you the mass is compact instead of spread out?'
+            },
+            spiralArms: {
+              icon: '\uD83C\uDF00',
+              title: 'Spiral arms',
+              type: 'Density wave',
+              color: '#60a5fa',
+              desc: 'Spiral arms are traffic jams of stars, gas, and dust. Stars move through them while gas compresses and forms new stars.',
+              facts: ['Young blue stars trace arms', 'Gas clouds collect there', 'Dust lanes outline the wave'],
+              evidence: 'Blue star clusters, emission nebulae, and radio maps of hydrogen reveal where arms are strongest.',
+              question: 'Why do blue stars mark recent star formation better than red stars?'
+            },
+            gasClouds: {
+              icon: '\uD83C\uDF0C',
+              title: 'Gas clouds',
+              type: 'Star-forming material',
+              color: '#22d3ee',
+              desc: 'Cold hydrogen and glowing ionized gas are the raw materials for new stars and nebulae.',
+              facts: ['Compressed gas can collapse', 'Massive stars ionize nearby gas', 'Radio telescopes map hidden hydrogen'],
+              evidence: 'Hydrogen emission and radio wavelengths show gas that visible-light images can miss.',
+              question: 'Where would you look for the next generation of stars?'
+            },
+            dustLanes: {
+              icon: '\uD83C\uDF2B\uFE0F',
+              title: 'Dust lanes',
+              type: 'Light-blocking grains',
+              color: '#a16207',
+              desc: 'Dust is not empty darkness. Tiny grains absorb visible light and help cool gas clouds so stars can form.',
+              facts: ['Blocks visible starlight', 'Glows in infrared', 'Outlines spiral structure'],
+              evidence: 'Compare visible and infrared views: dust hides stars in one wavelength and glows in another.',
+              question: 'Why can infrared telescopes see deeper through dusty regions?'
+            },
+            darkMatter: {
+              icon: '\uD83C\uDF0C',
+              title: 'Dark matter halo',
+              type: 'Invisible gravity',
+              color: '#e879f9',
+              desc: 'Outer stars orbit too fast for visible matter alone. A large invisible halo must be adding gravity.',
+              facts: ['Does not emit light', 'Revealed by motion', 'Dominates a galaxy mass budget'],
+              evidence: 'Rotation curves stay flat instead of falling, showing extra unseen mass around the galaxy.',
+              question: 'Why is motion better evidence here than a photograph?'
+            }
+          };
+          var getInspector = function () {
+            if (selStar) {
+              return {
+                key: 'star:' + selStar.id,
+                icon: '\u2B50',
+                title: selStar.label + ' star',
+                type: 'Spectral class ' + selStar.id,
+                color: selStar.color,
+                desc: selStar.desc,
+                facts: [selStar.temp + ' K', selStar.mass || 'Mass varies', selStar.lifetime || 'Lifetime varies'],
+                evidence: 'A spectrum reveals temperature, composition, motion, and class from the pattern of absorption lines.',
+                question: 'How would this star change the galaxy if many formed at once?'
+              };
+            }
+            if (selNeb) {
+              return {
+                key: 'nebula:' + selNeb.name,
+                icon: '\u2728',
+                title: selNeb.name,
+                type: selNeb.type || 'Nebula',
+                color: selNeb.color,
+                desc: selNeb.desc,
+                facts: [selNeb.dist || 'Distance varies', 'Gas and dust cloud', selNeb.type || 'Deep-sky object'],
+                evidence: 'Color, emission lines, shape, and nearby stars tell whether this is a nursery, remnant, or dying-star shell.',
+                question: 'Is this object making stars, showing a dead star, or blocking light?'
+              };
+            }
+            return INSPECT_TARGETS[inspectTarget] || INSPECT_TARGETS.galaxyType;
+          };
+          var currentInspector = getInspector();
+          var inspectButtons = [
+            { key: 'galaxyType', label: 'Shape', icon: gType.icon },
+            { key: 'spiralArms', label: 'Arms', icon: '\uD83C\uDF00' },
+            { key: 'gasClouds', label: 'Gas', icon: '\uD83C\uDF0C' },
+            { key: 'dustLanes', label: 'Dust', icon: '\uD83C\uDF2B\uFE0F' },
+            { key: 'blackHole', label: 'Core', icon: '\uD83D\uDD73\uFE0F' },
+            { key: 'darkMatter', label: 'Dark halo', icon: '\uD83C\uDF0C' }
+          ];
+          var observeSeenCount = Object.keys(inspectLog).filter(function (k) { return k.indexOf('observe:') === 0; }).length;
+          var dopplerTouched = !!inspectLog.dopplerShift || Math.abs(dopplerVelocity) > 8;
+          var countDone = function (items) { return items.filter(function (x) { return !!x.done; }).length; };
+          var missionDefs = [
+            {
+              id: 'cartographer',
+              icon: '\uD83D\uDDFA\uFE0F',
+              title: 'Map the Galaxy',
+              steps: [
+                { label: 'Toggle 3 layers', done: Object.keys(d.layersToggled || {}).length >= 3 },
+                { label: 'Inspect a structure', done: !!(inspectLog.spiralArms || inspectLog.gasClouds || inspectLog.dustLanes || inspectLog.blackHole) },
+                { label: 'Warp to a landmark', done: !!d.warpInfo }
+              ]
+            },
+            {
+              id: 'nursery',
+              icon: '\u2728',
+              title: 'Find Star Birth',
+              steps: [
+                { label: 'Show gas or nebulae', done: layers.gas !== false || layers.nebulae !== false },
+                { label: 'Inspect a nebula or gas cloud', done: !!(selNeb || inspectLog.gasClouds) },
+                { label: 'Click any star', done: !!selStar || Object.keys(inspectLog).some(function (k) { return k.indexOf('star:') === 0; }) }
+              ]
+            },
+            {
+              id: 'darkMatter',
+              icon: '\uD83C\uDF0C',
+              title: 'Prove the Invisible',
+              steps: [
+                { label: 'Try 2 rotation models', done: Object.keys(d.rotTried || {}).length >= 2 },
+                { label: 'Use the flat curve', done: rotMode === 'flat' },
+                { label: 'Inspect dark halo evidence', done: !!inspectLog.darkMatter || !!inspectLog['observe:gravity'] }
+              ]
+            },
+            {
+              id: 'multiwavelength',
+              icon: '\uD83D\uDD2D',
+              title: 'Decode Hidden Light',
+              steps: [
+                { label: 'Try 2 observing filters', done: observeSeenCount >= 2 },
+                { label: 'Use radio or infrared', done: !!(inspectLog['observe:radio'] || inspectLog['observe:infrared']) },
+                { label: 'Use gravity view', done: !!inspectLog['observe:gravity'] },
+                { label: 'Test Doppler shift', done: dopplerTouched }
+              ]
+            },
+            {
+              id: 'stellarDeath',
+              icon: '\uD83D\uDCA5',
+              title: 'Track Stellar Death',
+              steps: [
+                { label: 'Trigger a supernova', done: !!d.lastGalaxyEvent },
+                { label: 'Inspect the core', done: !!inspectLog.blackHole },
+                { label: 'Open Star Life', done: !!showLifecycle }
+              ]
+            }
+          ];
+          var activeMissionId = d.activeGalaxyMission || 'cartographer';
+          var activeMission = missionDefs.find(function (m) { return m.id === activeMissionId; }) || missionDefs[0];
+          var activeMissionDone = countDone(activeMission.steps);
 
 
 
@@ -1665,6 +2598,83 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, "Each dark line is the fingerprint of the same element. In a more distant galaxy those lines sit farther toward red — expanding space stretched the light on its way here (Hubble's law: recession speed ∝ distance).")
               ),
 
+              // ── Doppler shift lab: motion toward/away changes wavelength ──
+              React.createElement("div", { "data-galaxy-doppler": "true", className: "mb-3 p-3 rounded-xl border bg-white shadow-sm", style: { borderColor: dopplerColor + '66' } },
+                React.createElement("div", { className: "flex flex-wrap items-start gap-2 mb-2" },
+                  React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, dopplerVelocity < -8 ? "\uD83D\uDD35" : dopplerVelocity > 8 ? "\uD83D\uDD34" : "\u26AA"),
+                  React.createElement("div", { className: "min-w-0 flex-1" },
+                    React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider", style: { color: dopplerColor } }, "Doppler Shift Lab — toward = blue, away = red"),
+                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, "Move the source along your line of sight. Negative radial velocity moves spectral lines toward blue; positive radial velocity moves them toward red.")
+                  ),
+                  React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[11px] font-black border", style: { color: dopplerColor, borderColor: dopplerColor + '66', background: dopplerColor + '12' } }, dopplerDirection + " • " + dopplerVelocity + " km/s")
+                ),
+                (function () {
+                  var W = 420, H = 150, rowH = 26, lines = [0.24, 0.43, 0.65], visualShift = Math.max(-0.24, Math.min(0.24, dopplerVelocity / 7500));
+                  var lineX = function (lp, shift) { return Math.max(12, Math.min(W - 12, (lp + shift) * W)); };
+                  var spectrum = function (y, shift, label, tint) {
+                    return React.createElement("g", { key: label },
+                      React.createElement("text", { x: 2, y: y - 4, fontSize: 8, fill: "#475569", fontWeight: 800 }, label),
+                      React.createElement("rect", { x: 0, y: y, width: W, height: rowH, rx: 4, fill: "url(#galDopplerGrad)" }),
+                      React.createElement("rect", { x: 0, y: y, width: W, height: rowH, rx: 4, fill: tint, opacity: Math.min(0.26, Math.abs(visualShift) * 0.9) }),
+                      lines.map(function (lp, i) {
+                        return React.createElement("rect", { key: i, x: lineX(lp, shift), y: y, width: 2.4, height: rowH, fill: "#0f172a", opacity: 0.9 });
+                      })
+                    );
+                  };
+                  return React.createElement("svg", { viewBox: "0 0 " + W + " " + H, className: "w-full", style: { maxHeight: '168px' }, role: "img", "aria-label": "Doppler shift spectrum: absorption lines move left for blueshift and right for redshift." },
+                    React.createElement("defs", null,
+                      React.createElement("linearGradient", { id: "galDopplerGrad", x1: "0", y1: "0", x2: "1", y2: "0" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#4338ca" }),
+                        React.createElement("stop", { offset: "24%", stopColor: "#2563eb" }),
+                        React.createElement("stop", { offset: "48%", stopColor: "#16a34a" }),
+                        React.createElement("stop", { offset: "72%", stopColor: "#eab308" }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#dc2626" }))),
+                    spectrum(20, 0, "Rest spectrum", "transparent"),
+                    spectrum(80, visualShift, "Observed spectrum", dopplerVelocity < -8 ? "#2563eb" : dopplerVelocity > 8 ? "#dc2626" : "transparent"),
+                    React.createElement("line", { x1: lineX(0.43, 0), y1: 54, x2: lineX(0.43, visualShift), y2: 76, stroke: dopplerColor, strokeWidth: 2, strokeDasharray: "4 3" }),
+                    React.createElement("text", { x: lineX(0.43, visualShift), y: 124, fill: dopplerColor, textAnchor: "middle", style: { fontSize: '9px', fontWeight: '900' } }, dopplerVelocity < -8 ? "compressed toward blue" : dopplerVelocity > 8 ? "stretched toward red" : "same wavelength"),
+                    React.createElement("text", { x: 2, y: 144, fill: "#64748b", style: { fontSize: '8px', fontWeight: '700' } }, "Screen shift magnified for clarity; actual z = " + dopplerZ.toFixed(5))
+                  );
+                })(),
+                React.createElement("div", { className: "mt-2" },
+                  React.createElement("div", { className: "flex items-center justify-between text-[10px] font-bold mb-1" },
+                    React.createElement("span", { className: "text-blue-700" }, "\u2190 Toward us / blueshift"),
+                    React.createElement("span", { className: "text-slate-500" }, "Radial velocity"),
+                    React.createElement("span", { className: "text-red-700" }, "Away / redshift \u2192")
+                  ),
+                  React.createElement("input", {
+                    type: "range", min: -1800, max: 1800, step: 25, value: dopplerVelocity,
+                    "aria-label": "Doppler radial velocity in kilometers per second",
+                    onChange: function (e) {
+                      var val = parseInt(e.target.value, 10);
+                      var nextLog = addInspectKey('dopplerShift');
+                      patchGalaxy({ dopplerVelocity: val, inspectLog: nextLog });
+                      if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'dopplerShift', (val < 0 ? 'Blueshift: source moving toward us at ' : val > 0 ? 'Redshift: source moving away at ' : 'No Doppler shift: source has zero radial velocity. ') + Math.abs(val) + ' kilometers per second.', { debounce: 500 });
+                    },
+                    className: "w-full h-1.5 accent-indigo-500"
+                  })
+                ),
+                React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-1.5 mt-2" },
+                  DOPPLER_PRESETS.map(function (preset) {
+                    var on = Math.abs(dopplerVelocity - preset.value) < 1;
+                    return React.createElement("button", {
+                      type: "button",
+                      key: preset.label,
+                      onClick: function () {
+                        var nextLog = addInspectKey('dopplerShift');
+                        patchGalaxy({ dopplerVelocity: preset.value, inspectLog: nextLog });
+                        if (typeof awardStemXP === 'function') awardStemXP('galaxy_doppler', 1, 'Tested Doppler shift');
+                      },
+                      className: "rounded-lg border px-2 py-1.5 text-left text-[11px] font-bold transition-all " + (on ? "bg-slate-900 text-white border-slate-900" : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-white")
+                    }, preset.icon + " " + preset.label, React.createElement("span", { className: "block text-[10px] font-semibold opacity-70" }, (preset.value > 0 ? "+" : "") + preset.value + " km/s"));
+                  })
+                ),
+                React.createElement("div", { className: "mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]" },
+                  React.createElement("div", { className: "rounded-lg border border-blue-100 bg-blue-50 p-2 text-blue-900" }, React.createElement("span", { className: "font-black" }, "Blueshift: "), "the source is moving toward us, so wave crests arrive closer together and wavelengths get shorter."),
+                  React.createElement("div", { className: "rounded-lg border border-red-100 bg-red-50 p-2 text-red-900" }, React.createElement("span", { className: "font-black" }, "Redshift: "), "the source is moving away, so wave crests arrive farther apart and wavelengths get longer.")
+                )
+              ),
+
               // ── Cosmic myth-busters ──
               React.createElement("div", { className: "mb-3 p-2.5 rounded-lg border border-amber-200 bg-amber-50 text-[11px] text-amber-900 leading-relaxed" },
                 React.createElement("p", { className: "font-bold mb-1" }, "⚠ Cosmic myth-busters"),
@@ -1673,6 +2683,82 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("li", null, "A galaxy is NOT a solar system. Our entire solar system is just one of ~100–400 billion star systems in the Milky Way."),
                   React.createElement("li", null, "Stars in a constellation only LOOK close together — they're often wildly different distances away, just along the same line of sight."),
                   React.createElement("li", null, "Cosmic expansion stretches SPACE ITSELF — galaxies aren't flying outward through space, and there's no center. The Big Bang happened everywhere at once, not at one spot.")
+                )
+              ),
+
+              // ── Mission Control ──
+              React.createElement("div", { className: "mb-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2" },
+                  React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, activeMission.icon),
+                  React.createElement("div", { className: "min-w-0" },
+                    React.createElement("p", { className: "text-xs font-black text-slate-800" }, "Mission Control"),
+                    React.createElement("p", { className: "text-[11px] text-slate-500" }, activeMission.title + " • " + activeMissionDone + "/" + activeMission.steps.length + " complete")
+                  ),
+                  React.createElement("div", { className: "ml-auto h-2 w-24 rounded-full bg-slate-100 overflow-hidden", "aria-hidden": "true" },
+                    React.createElement("div", { className: "h-full rounded-full bg-emerald-500 transition-all", style: { width: Math.round((activeMissionDone / activeMission.steps.length) * 100) + "%" } })
+                  )
+                ),
+                React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
+                  missionDefs.map(function (m) {
+                    var on = m.id === activeMission.id;
+                    return React.createElement("button", {
+                      type: "button",
+                      key: m.id,
+                      onClick: function () { upd("activeGalaxyMission", m.id); },
+                      className: "px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition-all " + (on ? "bg-slate-900 text-white border-slate-900 shadow-sm" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-white")
+                    }, m.icon + " " + m.title);
+                  })
+                ),
+                React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-2" },
+                  activeMission.steps.map(function (step, i) {
+                    return React.createElement("div", {
+                      key: step.label,
+                      className: "rounded-lg border px-2.5 py-2 text-[11px] " + (step.done ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-slate-200 bg-slate-50 text-slate-600")
+                    },
+                      React.createElement("span", { className: "font-black mr-1" }, step.done ? "✓" : (i + 1) + "."),
+                      step.label
+                    );
+                  })
+                )
+              ),
+
+              // ── Observatory Filters ──
+              React.createElement("div", { "data-galaxy-observatory": "true", className: "mb-3 rounded-xl border border-cyan-100 bg-white p-3 shadow-sm" },
+                React.createElement("div", { className: "flex flex-wrap items-start gap-2 mb-2" },
+                  React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, activeObserve.icon),
+                  React.createElement("div", { className: "min-w-0 flex-1" },
+                    React.createElement("p", { className: "text-xs font-black text-slate-800" }, "Observatory Filters"),
+                    React.createElement("p", { className: "text-[11px] text-slate-500 leading-relaxed" }, activeObserve.label + ": " + activeObserve.desc)
+                  )
+                ),
+                React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-5 gap-1.5" },
+                  OBSERVE_MODES.map(function (mode) {
+                    var on = mode.key === observeMode;
+                    var seen = !!inspectLog['observe:' + mode.key];
+                    return React.createElement("button", {
+                      type: "button",
+                      key: mode.key,
+                      "aria-pressed": on ? "true" : "false",
+                      onClick: function () {
+                        var cv = document.querySelector('[data-galaxy-canvas]');
+                        if (cv && cv._setObserveMode) cv._setObserveMode(mode.key);
+                        var nextLog = addInspectKey('observe:' + mode.key);
+                        nextLog[mode.target] = true;
+                        patchGalaxy({ observeMode: mode.key, selectedStar: null, selectedNebula: null, inspectTarget: mode.target, inspectLog: nextLog });
+                        if (!seen && typeof awardStemXP === 'function') awardStemXP('galaxy_observe', 1, 'Used ' + mode.label + ' filter');
+                        if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'observeMode', {
+                          first: mode.label + ' observing mode. ' + mode.desc,
+                          repeat: mode.label + ' observing mode active.',
+                          terse: mode.label
+                        }, { debounce: 500 });
+                      },
+                      className: "text-left rounded-lg border px-2.5 py-2 transition-all " + (on ? "bg-slate-900 text-white shadow-sm" : "bg-slate-50 text-slate-700 hover:bg-white"),
+                      style: { borderColor: on || seen ? mode.accent : '#e2e8f0' }
+                    },
+                      React.createElement("span", { className: "block text-[11px] font-black leading-tight" }, mode.icon + " " + mode.label + (seen ? " ✓" : "")),
+                      React.createElement("span", { className: "block text-[10px] leading-tight mt-0.5", style: { color: on ? '#cbd5e1' : '#64748b' } }, mode.note)
+                    );
+                  })
                 )
               ),
 
@@ -1699,7 +2785,7 @@ if (!window._galaxyHasLoadedOnce) {
                   ) :
                   React.createElement("canvas", {
 
-                    "data-galaxy-canvas": "true", tabIndex: 0, role: "application", "aria-label": "Galaxy simulation — use arrow keys to orbit, +/- to zoom, R to reset view", ref: function (el) { if (!el) { canvasRefCb(null); return; } el._onSelectStar = function (sd) { upd("selectedStar", sd.type.id); upd("selectedNebula", null); awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star'); }; el._onSelectNebula = function (neb) { upd("selectedNebula", neb.name); upd("selectedStar", null); awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name); }; canvasRefCb(el); }, onKeyDown: function (e) {
+                    "data-galaxy-canvas": "true", tabIndex: 0, role: "application", "aria-label": "Galaxy simulation — use arrow keys to orbit, +/- to zoom, R to reset view", ref: function (el) { if (!el) { canvasRefCb(null); return; } el._onSelectStar = function (sd) { var key = 'star:' + sd.type.id; patchGalaxy({ selectedStar: sd.type.id, selectedNebula: null, inspectTarget: key, inspectLog: addInspectKey(key) }); if (typeof awardStemXP === 'function') awardStemXP('galaxy_explore', 2, 'Discovered ' + sd.type.label + ' star'); }; el._onSelectNebula = function (neb) { var key = 'nebula:' + neb.name; patchGalaxy({ selectedNebula: neb.name, selectedStar: null, inspectTarget: key, inspectLog: addInspectKey(key) }); if (typeof awardStemXP === 'function') awardStemXP('galaxy_explore', 3, 'Discovered ' + neb.name); }; canvasRefCb(el); }, onKeyDown: function (e) {
 
                     var cv = e.target; if (!cv || !cv._galaxyOrbit) return;
 
@@ -1725,6 +2811,9 @@ if (!window._galaxyHasLoadedOnce) {
                 }),
 
                 React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 46%, transparent 34%, rgba(2,6,23,0.62) 100%), linear-gradient(rgba(129,140,248,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(129,140,248,0.045) 1px, transparent 1px)', backgroundSize: '100% 100%, 34px 34px, 34px 34px', mixBlendMode: 'screen', opacity: 0.72 } }),
+                React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(2,6,23,0.82) 0%, rgba(2,6,23,0.3) 9%, rgba(2,6,23,0) 20%, rgba(2,6,23,0) 80%, rgba(2,6,23,0.34) 91%, rgba(2,6,23,0.88) 100%)', opacity: 0.86 } }),
+                React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', left: '10%', right: '10%', top: '50%', height: 1, pointerEvents: 'none', background: 'linear-gradient(90deg, transparent, rgba(125,211,252,0.24), rgba(255,255,255,0.42), rgba(244,114,182,0.18), transparent)', boxShadow: '0 0 20px rgba(125,211,252,0.24)', mixBlendMode: 'screen', opacity: 0.48 } }),
+                React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: '14px', pointerEvents: 'none', border: '1px solid rgba(191,219,254,0.07)', boxShadow: 'inset 0 0 30px rgba(15,23,42,0.5)', backgroundImage: 'linear-gradient(90deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(90deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.68), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.68), rgba(226,232,240,0))', backgroundPosition: 'top left, top left, top right, top right, bottom left, bottom left, bottom right, bottom right', backgroundSize: '92px 1px, 1px 58px, 92px 1px, 1px 58px, 92px 1px, 1px 58px, 92px 1px, 1px 58px', backgroundRepeat: 'no-repeat', opacity: 0.62 } }),
 
                 // Star type legend
 
@@ -1741,7 +2830,8 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("div", { className: "flex justify-between gap-4 mt-1" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Type"), React.createElement("span", { className: "font-bold" }, gType.label)),
                   React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Stars"), React.createElement("span", { className: "font-bold" }, starCount.toLocaleString())),
                   React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Age"), React.createElement("span", { className: "font-bold" }, cosmicAge.toFixed(1) + " Gyr")),
-                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Rotation"), React.createElement("span", { className: "font-bold" }, rotMode === 'rigid' ? 'Rigid (toy)' : rotMode === 'keplerian' ? 'Keplerian' : 'Flat ✓'))
+                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Rotation"), React.createElement("span", { className: "font-bold" }, rotMode === 'rigid' ? 'Rigid (toy)' : rotMode === 'keplerian' ? 'Keplerian' : 'Flat ✓')),
+                  React.createElement("div", { className: "flex justify-between gap-4" }, React.createElement("span", { style: { color: '#94a3b8' } }, "Filter"), React.createElement("span", { className: "font-bold", style: { color: activeObserve.accent } }, activeObserve.label))
                 ),
 
                 // Scale info overlay
@@ -2071,29 +3161,40 @@ if (!window._galaxyHasLoadedOnce) {
 
                   }, window._galaxyTimeLapse ? "\u23F9 Stop" : "\u25B6 Play Time-Lapse"),
 
-                  React.createElement("button", { "aria-label": "Supernova!",
+                  React.createElement("button", { "aria-label": "Trigger a random supernova in the galaxy view", title: "Trigger a random supernova flash in the galaxy view",
 
                     onClick: function () {
 
                       var cv = document.querySelector('[data-galaxy-canvas]');
 
-                      if (cv && cv._triggerSupernova) cv._triggerSupernova();
+                      var evt = (cv && cv._triggerSupernova) ? cv._triggerSupernova() : null;
+                      var msg = evt ? "Random supernova: " + evt.type + " star (" + evt.spectral + "-type)" : "Supernova effect is not available yet.";
+                      patchGalaxy({ lastGalaxyEvent: msg, inspectLog: evt ? addInspectKey('supernovaEvent') : inspectLog });
+                      if (evt && typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'supernovaEvent', {
+                        first: msg + ". The flash marks a massive star exploding and spreading heavy elements into space.",
+                        repeat: msg,
+                        terse: "Supernova flash"
+                      }, { debounce: 600 });
+                      if (evt && typeof awardStemXP === 'function') awardStemXP('galaxy_supernova', 2, 'Triggered a galaxy supernova');
+                      if (evt && typeof addToast === 'function') addToast('Supernova flash triggered', 'success');
 
                     },
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-600 transition-all"
 
-                  }, "\uD83D\uDCA5 Supernova!"),
+                  }, "\uD83D\uDCA5 Random supernova"),
 
                   React.createElement("button", { "aria-label": "Star Life",
 
-                    onClick: function () { upd("quizMode", false); upd("simMode", "star"); upd("showLifecycle", true); },
+                    onClick: function () { patchGalaxy({ quizMode: false, simMode: "star", showLifecycle: true }); },
 
                     className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-600 border border-indigo-200 transition-all hover:bg-indigo-50"
 
                   }, "\u2B50 Star Life \u2192")
 
                 ),
+
+                d.lastGalaxyEvent && React.createElement("div", { className: "mt-2 rounded-lg border border-amber-300/30 bg-amber-300/10 px-2.5 py-1.5 text-[11px] font-bold text-amber-100" }, d.lastGalaxyEvent),
 
                 // Milestone labels
 
@@ -2168,7 +3269,12 @@ if (!window._galaxyHasLoadedOnce) {
               React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
 
                 WARP_POINTS.map(function (wp) { return React.createElement("button", { "aria-label": "Warp to " + wp.label, key: wp.label, onClick: function () {
-                  var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc);
+                  var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp);
+                  var warpInspect = (wp.zoom === 2 && wp.x === 0 && wp.z === 0) ? 'blackHole' : (wp.zoom === 0.8 ? 'galaxyType' : 'spiralArms');
+                  var warpDesc = wp.desc || (warpInspect === 'blackHole' ? 'Sagittarius A* sits in this crowded core; stars orbit it so quickly that an unseen compact mass is required.' : null);
+                  var warpPatch = { selectedStar: null, selectedNebula: null, inspectTarget: warpInspect, inspectLog: addInspectKey(warpInspect) };
+                  if (warpDesc) warpPatch.warpInfo = warpDesc;
+                  patchGalaxy(warpPatch);
                   // Canvas Narration: warp navigation
                   if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'warp', {
                     first: 'Warping to ' + wp.label + '. ' + (wp.desc || 'Camera repositioning to this location.'),
@@ -2193,37 +3299,66 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
-              // ── Star info card ──
+              // ── Object Inspector ──
 
-              selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selStar.color } },
+              currentInspector && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 shadow-sm animate-in fade-in", style: { borderColor: currentInspector.color } },
 
-                React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selStar.color } }, "\u2B50 " + selStar.label + " Star (" + selStar.example + ")"),
+                React.createElement("div", { className: "flex items-start gap-3" },
 
-                React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mb-2" }, selStar.desc),
+                  React.createElement("div", { className: "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-xl", style: { background: currentInspector.color + '18', color: currentInspector.color } }, currentInspector.icon),
 
-                React.createElement("div", { className: "grid grid-cols-3 gap-2 text-[11px]" },
+                  React.createElement("div", { className: "min-w-0 flex-1" },
 
-                  [
+                    React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
 
-                    { label: t('stem.galaxy.temperature'), val: selStar.temp + ' K' },
+                      React.createElement("h4", { className: "font-black text-sm", style: { color: currentInspector.color } }, "Object Inspector"),
 
-                    { label: '% of Stars', val: selStar.pct + '%' },
+                      React.createElement("span", { className: "px-2 py-0.5 rounded-full text-[10px] font-bold", style: { background: currentInspector.color + '18', color: currentInspector.color } }, currentInspector.type)
 
-                    { label: t('stem.galaxy.luminosity'), val: selStar.luminosity },
+                    ),
 
-                    { label: t('stem.galaxy.mass'), val: selStar.mass || '?' },
+                    React.createElement("p", { className: "text-sm font-bold text-slate-800 mt-0.5" }, currentInspector.title),
 
-                    { label: t('stem.galaxy.lifetime'), val: selStar.lifetime || '?' },
+                    React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed mt-1" }, currentInspector.desc)
 
-                    { label: t('stem.galaxy.example'), val: selStar.example }
+                  )
 
-                  ].map(function (item) {
+                ),
 
-                    return React.createElement("div", { key: item.label, className: "bg-slate-50 rounded-lg p-2 text-center" },
+                React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
 
-                      React.createElement("div", { className: "font-bold text-slate-600" }, item.label),
+                  inspectButtons.map(function (item) {
 
-                      React.createElement("div", { className: "font-bold", style: { color: selStar.color } }, item.val)
+                    var target = INSPECT_TARGETS[item.key] || INSPECT_TARGETS.galaxyType;
+                    var on = !selStar && !selNeb && currentInspector.key === item.key;
+                    var seen = !!inspectLog[item.key];
+
+                    return React.createElement("button", {
+                      type: "button",
+                      key: item.key,
+                      "aria-pressed": on ? "true" : "false",
+                      onClick: function () {
+                        var alreadySeen = !!inspectLog[item.key];
+                        patchGalaxy({ selectedStar: null, selectedNebula: null, inspectTarget: item.key, inspectLog: addInspectKey(item.key) });
+                        if (!alreadySeen && typeof awardStemXP === 'function') awardStemXP('galaxy_inspect', 1, 'Inspected ' + item.label);
+                      },
+                      className: "px-2.5 py-1.5 rounded-lg border text-[11px] font-bold transition-all " + (on ? "bg-slate-900 text-white shadow-sm" : "bg-slate-50 text-slate-600 hover:bg-white"),
+                      style: { borderColor: on || seen ? target.color : '#e2e8f0' }
+                    }, item.icon + " " + item.label + (seen ? " ✓" : ""));
+
+                  })
+
+                ),
+
+                React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] mt-3" },
+
+                  (currentInspector.facts || []).map(function (fact, idx) {
+
+                    return React.createElement("div", { key: currentInspector.key + "-fact-" + idx, className: "rounded-lg bg-slate-50 border border-slate-100 p-2 text-center" },
+
+                      React.createElement("div", { className: "font-black text-slate-500" }, "Signal " + (idx + 1)),
+
+                      React.createElement("div", { className: "font-bold leading-tight", style: { color: currentInspector.color } }, fact)
 
                     );
 
@@ -2231,9 +3366,27 @@ if (!window._galaxyHasLoadedOnce) {
 
                 ),
 
-                // Why It Matters
+                React.createElement("div", { className: "mt-3 grid grid-cols-1 md:grid-cols-2 gap-2" },
 
-                selStar.whyItMatters && React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200" },
+                  React.createElement("div", { className: "rounded-lg border border-slate-200 bg-slate-50 p-2.5" },
+
+                    React.createElement("p", { className: "text-[11px] font-black text-slate-700 mb-1" }, "Evidence"),
+
+                    React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, currentInspector.evidence)
+
+                  ),
+
+                  React.createElement("div", { className: "rounded-lg border border-cyan-100 bg-cyan-50 p-2.5" },
+
+                    React.createElement("p", { className: "text-[11px] font-black text-cyan-800 mb-1" }, "Astronomer Note"),
+
+                    React.createElement("p", { className: "text-[11px] text-cyan-900 leading-relaxed" }, currentInspector.question)
+
+                  )
+
+                ),
+
+                selStar && selStar.whyItMatters && React.createElement("div", { className: "mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200" },
 
                   React.createElement("p", { className: "text-[11px] font-bold text-amber-700 mb-1" }, "\uD83D\uDCA1 Why It Matters"),
 
@@ -2241,33 +3394,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                 ),
 
-                // Scale comparison
-
-                React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-indigo-50 border border-indigo-100 text-center" },
+                selStar && React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-indigo-50 border border-indigo-100 text-center" },
 
                   React.createElement("p", { className: "text-[11px] text-indigo-600" }, "\uD83D\uDD2D If our Sun were a basketball, a" + (selStar.id === 'O' ? 'n' : '') + " " + selStar.id + "-type star would be " + ({ 'O': 'a hot tub (6\u201315x wider)', 'B': 'a beach ball (2\u20137x wider)', 'A': 'a soccer ball (1.4\u20132x wider)', 'F': 'a volleyball (slightly bigger)', 'G': 'another basketball (same size!)', 'K': 'a softball (a bit smaller)', 'M': 'a tennis ball or smaller' }[selStar.id] || 'similar in size') + ".")
 
                 )
-
-              ),
-
-
-
-              // ── Nebula info card ──
-
-              selNeb && !selStar && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selNeb.color } },
-
-                React.createElement("h4", { className: "font-bold text-sm mb-1", style: { color: selNeb.color } }, "\u2728 " + selNeb.name),
-
-                React.createElement("div", { className: "flex gap-3 mb-2 text-[11px]" },
-
-                  React.createElement("span", { className: "px-2 py-0.5 rounded-full font-bold", style: { background: selNeb.color + '20', color: selNeb.color } }, selNeb.type || t('stem.galaxy.nebula')),
-
-                  selNeb.dist && React.createElement("span", { className: "text-slate-200" }, "\uD83D\uDCCD " + selNeb.dist)
-
-                ),
-
-                React.createElement("p", { className: "text-xs text-slate-600 leading-relaxed" }, selNeb.desc)
 
               ),
 
@@ -2924,7 +4055,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     React.createElement("h4", { className: "text-sm font-bold text-white" }, "Star Mass & Classification"),
 
-                    React.createElement("p", { className: "text-[11px] text-slate-600" }, "Adjust mass to explore how different stars live and die")
+                    React.createElement("p", { className: "text-[11px] text-slate-300" }, "Adjust mass to explore how different stars live and die")
 
                   ),
 
@@ -2998,7 +4129,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   ),
 
-                  React.createElement("span", { className: "text-[11px] text-slate-600 italic" },
+                  React.createElement("span", { className: "text-[11px] text-slate-300 italic" },
 
                     lifecycleMass < 0.5 ? "Too small for hydrogen fusion" :
 
@@ -3013,6 +4144,29 @@ if (!window._galaxyHasLoadedOnce) {
                               "Lives < 5 million years"
 
                   )
+
+                ),
+
+                React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-4" },
+                  [
+                    { key: 'supernova', label: "\uD83D\uDCA5 Supernova path", sub: "12 M\u2609 core collapse", mass: 12, stage: 'supernova', border: 'rgba(251,191,36,0.55)', bg: 'rgba(251,191,36,0.12)', text: '#fde68a' },
+                    { key: 'blackhole', label: "\uD83D\uDD73\uFE0F Black-hole path", sub: "30 M\u2609 remnant", mass: 30, stage: 'black_hole', border: 'rgba(168,85,247,0.55)', bg: 'rgba(168,85,247,0.14)', text: '#ddd6fe' }
+                  ].map(function (path) {
+                    return React.createElement("button", {
+                      key: path.key,
+                      type: "button",
+                      onClick: function () {
+                        patchGalaxy({ quizMode: false, simMode: "star", showLifecycle: true, lifecycleMass: path.mass, activeStage: path.stage });
+                        if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'lifePathPreset', path.label.replace(/^[^\s]+\s/, '') + " selected at " + path.mass + " solar masses.", { debounce: 500 });
+                        if (typeof awardStemXP === 'function') awardStemXP('galaxy_life_path', 2, 'Explored ' + path.label.replace(/^[^\s]+\s/, ''));
+                      },
+                      className: "text-left rounded-xl border px-3 py-2 transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-amber-300",
+                      style: { borderColor: path.border, background: path.bg }
+                    },
+                      React.createElement("span", { className: "block text-[11px] font-black leading-tight", style: { color: path.text } }, path.label),
+                      React.createElement("span", { className: "block text-[10px] text-slate-300 mt-0.5" }, path.sub)
+                    );
+                  })
 
                 )
 
@@ -3071,9 +4225,9 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("div", { className: "w-8 h-8 rounded-lg flex items-center justify-center text-xl flex-shrink-0", style: { background: s.color + '25' } }, s.emoji),
                         React.createElement("div", { className: "flex-1 min-w-0" },
                           React.createElement("p", { className: "text-[11px] font-bold leading-tight", style: { color: s.color } }, s.name),
-                          React.createElement("p", { className: "text-[11px] text-slate-600 leading-tight" }, s.desc)
+                          React.createElement("p", { className: "text-[11px] text-slate-300 leading-tight" }, s.desc)
                         ),
-                        React.createElement("span", { className: "text-[11px] text-slate-600 flex-shrink-0" },
+                        React.createElement("span", { className: "text-[11px] text-slate-300 flex-shrink-0" },
                           s.id === 'nebula' ? "" :
                           s.id === 'protostar' ? "~100K yr" :
                           s.id === 'main_sequence' ? (lifecycleMass < 0.8 ? "~Trillions of yr" : lifecycleMass < 2 ? "~10 Gyr" : lifecycleMass < 8 ? "~1 Gyr" : lifecycleMass < 25 ? "~10 Myr" : "~3 Myr") :
@@ -3096,6 +4250,58 @@ if (!window._galaxyHasLoadedOnce) {
 
               ),
 
+
+
+              // Core-collapse outcome panel
+              (function () {
+                var collapseState = lifecycleMass < 8 ? {
+                  title: 'No core-collapse supernova',
+                  badge: 'Gentle ending',
+                  desc: 'This star will shed outer layers and cool as a white dwarf instead of forming a neutron star or black hole.',
+                  accent: '#818cf8',
+                  final: 'White dwarf'
+                } : lifecycleMass < 25 ? {
+                  title: 'Core collapse makes a neutron star',
+                  badge: '8-25 M\u2609',
+                  desc: 'The iron core collapses, rebounds as a supernova shock, and leaves an ultra-dense neutron-star remnant.',
+                  accent: '#38bdf8',
+                  final: 'Neutron star'
+                } : {
+                  title: 'Core collapse can form a black hole',
+                  badge: '25+ M\u2609',
+                  desc: 'After the supernova, the remaining core is massive enough that gravity wins and an event horizon forms.',
+                  accent: '#c084fc',
+                  final: 'Black hole'
+                };
+                var collapseSteps = [
+                  { label: 'Massive star', active: lifecycleMass >= 8, color: '#60a5fa' },
+                  { label: 'Iron core collapse', active: lifecycleMass >= 8, color: '#f59e0b' },
+                  { label: 'Supernova shock', active: lifecycleMass >= 8, color: '#fbbf24' },
+                  { label: collapseState.final, active: true, color: collapseState.accent }
+                ];
+                return React.createElement("div", { className: "bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 rounded-2xl border border-violet-400/30 p-4 shadow-lg" },
+                  React.createElement("div", { className: "flex items-start gap-3" },
+                    React.createElement("div", { className: "w-9 h-9 rounded-xl flex items-center justify-center text-lg border", style: { color: collapseState.accent, borderColor: collapseState.accent + '66', background: collapseState.accent + '18' } }, lifecycleMass < 8 ? "\u26AA" : lifecycleMass < 25 ? "\u2B50" : "\uD83D\uDD73\uFE0F"),
+                    React.createElement("div", { className: "min-w-0 flex-1" },
+                      React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
+                        React.createElement("h4", { className: "text-sm font-bold text-white" }, collapseState.title),
+                        React.createElement("span", { className: "text-[10px] font-black px-2 py-0.5 rounded-full border", style: { color: collapseState.accent, borderColor: collapseState.accent + '66', background: collapseState.accent + '16' } }, collapseState.badge)
+                      ),
+                      React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mt-1" }, collapseState.desc)
+                    )
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-3" },
+                    collapseSteps.map(function (step, idx) {
+                      return React.createElement("div", { key: step.label, className: "rounded-xl border px-2.5 py-2", style: { borderColor: step.active ? step.color + '66' : 'rgba(100,116,139,0.32)', background: step.active ? step.color + '14' : 'rgba(15,23,42,0.42)' } },
+                        React.createElement("div", { className: "flex items-center gap-2" },
+                          React.createElement("span", { className: "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black", style: { background: step.active ? step.color + '2b' : 'rgba(71,85,105,0.5)', color: step.active ? step.color : '#94a3b8' } }, idx + 1),
+                          React.createElement("span", { className: "text-[11px] font-bold leading-tight", style: { color: step.active ? '#e2e8f0' : '#94a3b8' } }, step.label)
+                        )
+                      );
+                    })
+                  )
+                );
+              })(),
 
 
               // ── H-R Diagram — live map of the star's journey ──

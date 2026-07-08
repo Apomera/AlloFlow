@@ -51,7 +51,7 @@ window.StemLab = window.StemLab || {
   function semiTone(f,d,tp,v) { var ac=getSemiAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxSemiClick() { semiTone(600,0.03,"sine",0.04); }
   function sfxSemiSuccess() { semiTone(523,0.08,"sine",0.07); setTimeout(function(){semiTone(659,0.08,"sine",0.07);},70); setTimeout(function(){semiTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("semi-a11y")){var _s=document.createElement("style");_s.id="semi-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}.text-slate-200{color:#64748b!important}";document.head.appendChild(_s);}
+  if(!document.getElementById("semi-a11y")){var _s=document.createElement("style");_s.id="semi-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}";document.head.appendChild(_s);}
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -246,7 +246,14 @@ window.StemLab = window.StemLab || {
         // Default values below render the real lab on the first pass.
       }
 
-      var upd = function(key, val) { setLabToolData(function(prev) { return Object.assign({}, prev, { semiconductor: Object.assign({}, prev.semiconductor, (typeof key === 'object' ? key : (function() { var o = {}; o[key] = val; return o; })()))}); }); };
+      var upd = function(key, val) {
+        setLabToolData(function(prev) {
+          prev = prev || {};
+          return Object.assign({}, prev, {
+            semiconductor: Object.assign({}, prev.semiconductor || {}, (typeof key === 'object' ? key : (function() { var o = {}; o[key] = val; return o; })()))
+          });
+        });
+      };
       var updMulti = function(obj) { upd(obj); };
 
       // Canvas Narration: Semiconductor Lab init
@@ -317,16 +324,23 @@ window.StemLab = window.StemLab || {
         { id: 'dopeHunt',  icon: '\u2697\uFE0F', label: t('stem.semiconductor.doping_discovery', 'Doping Discovery'), short: 'Dope?' }
       ];
 
+      function getSubtoolLabel(id) {
+        var st = SUBTOOLS.find(function(item) { return item.id === id; });
+        return st ? st.label : id;
+      }
+
       // ═══ SHARED HELPERS ═══
-      function btn(label, onClick, extraClass) {
+      function btn(label, onClick, extraClass, key) {
         return h('button', Object.assign({
+          key: key != null ? key : label,
           onClick: onClick,
           className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md ' + (extraClass || 'bg-cyan-700 text-white hover:bg-cyan-700')
         }, a11yClick ? a11yClick(onClick) : {}), label);
       }
 
-      function pill(label, active, onClick) {
+      function pill(label, active, onClick, key) {
         return h('button', Object.assign({
+          key: key != null ? key : label,
           onClick: onClick,
           className: 'px-2.5 py-1 text-xs font-semibold rounded-full transition-all ' +
             (active ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
@@ -354,8 +368,8 @@ window.StemLab = window.StemLab || {
            'bg-slate-800/60 border-slate-700 text-slate-300') }, text);
       }
 
-      function statBadge(label, value, color) {
-        return h('div', { className: 'flex flex-col items-center px-2 py-1 rounded-lg bg-slate-800/60 border border-slate-700' },
+      function statBadge(label, value, color, key) {
+        return h('div', { key: key != null ? key : label, className: 'flex flex-col items-center px-2 py-1 rounded-lg bg-slate-800/60 border border-slate-700' },
           h('span', { className: 'text-[11px] text-slate-600 uppercase tracking-wider' }, label),
           h('span', { className: 'text-sm font-bold ' + (color || 'text-cyan-400') }, value)
         );
@@ -364,18 +378,26 @@ window.StemLab = window.StemLab || {
       // ═══ AI EXPLAIN (grade-aware) ═══
       function askAI(topic) {
         if (d.aiLoading) return;
+        if (typeof callGemini !== 'function') {
+          updMulti({ aiExplain: 'AI explanation is not available in this session yet.', aiLoading: false });
+          return;
+        }
         updMulti({ aiLoading: true, aiExplain: null });
         var gradeCtx = gradeBand === 'K-2' ? 'kindergarten, very simple with fun analogies'
           : gradeBand === '3-5' ? '3rd-5th grade, simple but accurate'
           : gradeBand === '6-8' ? '6th-8th grade, include basic equations'
           : '9th-12th grade AP Physics, include equations and Fermi level concepts';
         var prompt = 'Explain "' + topic + '" for a ' + gradeCtx + ' student in 3-4 sentences. Focus on semiconductor physics. Be concise.';
-        callGemini(prompt).then(function(resp) {
-          updMulti({ aiExplain: resp, aiLoading: false });
-          if (announceToSR) announceToSR('AI explanation loaded for ' + topic);
-        }).catch(function() {
+        try {
+          Promise.resolve(callGemini(prompt)).then(function(resp) {
+            updMulti({ aiExplain: resp || 'No explanation was returned.', aiLoading: false });
+            if (announceToSR) announceToSR('AI explanation loaded for ' + topic);
+          }).catch(function() {
+            updMulti({ aiExplain: 'Could not load AI explanation.', aiLoading: false });
+          });
+        } catch(e) {
           updMulti({ aiExplain: 'Could not load AI explanation.', aiLoading: false });
-        });
+        }
       }
 
       // ═══ TTS HELPER ═══
@@ -388,7 +410,7 @@ window.StemLab = window.StemLab || {
       // ═══ XP HELPER ═══
       function tryAwardXP(key, amount, reason) {
         if (d.xpAwardedKeys && d.xpAwardedKeys[key]) return;
-        awardStemXP('semi-' + key, amount, reason);
+        if (awardStemXP) awardStemXP('semi-' + key, amount, reason);
         var newKeys = Object.assign({}, d.xpAwardedKeys || {});
         newKeys[key] = true;
         upd('xpAwardedKeys', newKeys);
@@ -400,14 +422,14 @@ window.StemLab = window.StemLab || {
       function aiBox() {
         if (!d.aiExplain && !d.aiLoading) return null;
         return h('div', { className: 'mt-2 p-2 rounded-lg bg-indigo-900/40 border border-indigo-700 text-xs text-indigo-200' },
-          d.aiLoading ? h('span', { className: 'animate-pulse' }, t('stem.semiconductor.thinking', '\u2728 Thinking\u2026')) : [
-            d.aiExplain,
+          d.aiLoading ? h('span', { className: 'animate-pulse' }, t('stem.semiconductor.thinking', '\u2728 Thinking\u2026')) : h(React.Fragment, null,
+            h('span', null, d.aiExplain),
             callTTS ? h('button', {
               onClick: function() { speakText(d.aiExplain); },
               className: 'ml-2 px-1.5 py-0.5 text-[11px] bg-indigo-700 rounded hover:bg-indigo-600 transition-colors',
               'aria-label': t('stem.semiconductor.read_aloud', 'Read aloud')
             }, '\uD83D\uDD0A') : null
-          ]
+          )
         );
       }
 
@@ -612,7 +634,7 @@ window.StemLab = window.StemLab || {
                 tryAwardXP('mat-' + key, 5, 'Explored ' + m.name);
                 if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'materialSelect', 'Selected ' + m.name + '. Band gap: ' + m.bandGap + ' electron volts. Lattice: ' + m.lattice + '.', { debounce: 500 });
                 if (announceToSR) announceToSR('Selected ' + m.name + ', band gap ' + m.bandGap + ' eV');
-              });
+              }, 'mat-' + key);
             })
           ),
           h('canvas', { 
@@ -785,7 +807,7 @@ window.StemLab = window.StemLab || {
                 if (key !== 'none') tryAwardXP('dope-' + key, 8, 'Tried ' + dp.name + ' doping');
                 if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'dopantSelect', dp.name + (dp.type ? ', ' + dp.type + '-type doping. Majority carriers: ' + (dp.type === 'n' ? 'electrons' : 'holes') + '.' : '. Intrinsic silicon, no doping.'), { debounce: 500 });
                 if (announceToSR) announceToSR('Selected dopant: ' + dp.name + (dp.type ? ', ' + dp.type + '-type' : ''));
-              });
+              }, 'dop-' + key);
             })
           ),
           h('canvas', { 
@@ -1415,7 +1437,7 @@ window.StemLab = window.StemLab || {
               return pill(key, gateType === key, function() {
                 upd('gateType', key);
                 tryAwardXP('gate-' + key, 5, 'Explored ' + key + ' gate');
-              });
+              }, 'gate-' + key);
             })
           ),
           h('canvas', { 
@@ -1689,7 +1711,7 @@ window.StemLab = window.StemLab || {
           // Palette
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
             COMP_PALETTE.map(function(comp) {
-              return btn(comp.icon + ' ' + comp.label, function() { addComponent(comp.type); }, 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600');
+              return btn(comp.icon + ' ' + comp.label, function() { addComponent(comp.type); }, 'transition-colors bg-slate-700 text-slate-200 hover:bg-slate-600', 'comp-' + comp.type);
             })
           ),
           // Circuit board
@@ -2285,7 +2307,7 @@ window.StemLab = window.StemLab || {
               return pill(sm.name, material === key, function() {
                 upd('solarMaterial', key);
                 tryAwardXP('solar-' + key, 8, 'Explored ' + sm.name + ' solar cell');
-              });
+              }, 'solar-' + key);
             })
           ),
           h('canvas', { 
@@ -2642,7 +2664,7 @@ window.StemLab = window.StemLab || {
               return pill(m.name, (d.qwMaterial || 'gaas-algaas') === key, function() {
                 upd('qwMaterial', key);
                 tryAwardXP('qw-' + key, 8, 'Explored ' + m.name + ' quantum well');
-              });
+              }, 'qw-' + key);
             })
           ),
           h('canvas', { 
@@ -2663,7 +2685,7 @@ window.StemLab = window.StemLab || {
           // Energy level stats
           h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
             levels.map(function(lev) {
-              return statBadge('E' + lev.n, lev.E.toFixed(3) + ' eV', lev.bound ? 'text-cyan-400' : 'text-slate-200');
+              return statBadge('E' + lev.n, lev.E.toFixed(3) + ' eV', lev.bound ? 'text-cyan-400' : 'text-slate-200', 'level-' + lev.n);
             })
           ),
           // Transition energies
@@ -2923,7 +2945,7 @@ window.StemLab = window.StemLab || {
               return pill(m.name, memType === key, function() {
                 upd('memType', key);
                 tryAwardXP('mem-' + key, 8, 'Explored ' + m.name + ' memory');
-              });
+              }, 'mem-' + key);
             })
           ),
           h('canvas', { 
@@ -3119,7 +3141,7 @@ window.StemLab = window.StemLab || {
               return pill(a.icon + ' ' + a.name.split(' ')[0], ampType === key, function() {
                 upd('ampType', key);
                 tryAwardXP('amp-' + key, 8, 'Explored ' + a.name + ' amplifier');
-              });
+              }, 'amp-' + key);
             })
           ),
           h('canvas', { 
@@ -3287,7 +3309,7 @@ window.StemLab = window.StemLab || {
             !d.challengeFeedback && h('div', { className: 'mt-2' },
               d.challengeShowHint
                 ? h('div', { className: 'text-xs text-amber-400 bg-amber-900/20 rounded p-2 border border-amber-800' }, '\uD83D\uDCA1 ' + current.hint)
-                : btn('\uD83D\uDCA1 Hint (-5 XP)', function() { upd('challengeShowHint', true); }, 'transition-colors bg-amber-700/50 text-amber-300 hover:bg-amber-700/70')
+                : btn('\uD83D\uDCA1 Hint', function() { upd('challengeShowHint', true); }, 'transition-colors bg-amber-700/50 text-amber-300 hover:bg-amber-700/70')
             )
           ),
           // Feedback
@@ -3298,13 +3320,18 @@ window.StemLab = window.StemLab || {
                 : '\u274C The answer is: ' + current.a
             ),
             d.challengeFeedback === 'wrong' && current.hint && h('div', { className: 'text-xs text-amber-400 mt-1' }, '\uD83D\uDCA1 ' + current.hint),
-            h('div', { className: 'mt-2' },
+            h('div', { className: 'mt-2 flex justify-center gap-2 flex-wrap' },
               btn('Next Question \u2192', function() {
                 var newScore = d.challengeFeedback === 'correct' ? score + 1 : score;
                 var newTier = newScore >= 15 ? 5 : newScore >= 11 ? 4 : newScore >= 8 ? 3 : newScore >= 5 ? 2 : newScore >= 3 ? 1 : 0;
                 var newAvailable = CHALLENGES.filter(function(c) { return c.tier <= newTier; });
                 updMulti({ challengeScore: newScore, challengeTier: newTier, challengeFeedback: null, challengeAnswer: null, challengeIdx: Math.floor(Math.random() * newAvailable.length), challengeShowHint: false });
-              })
+              }),
+              current.topic && btn('Open ' + getSubtoolLabel(current.topic), function() {
+                setStemLabTab('explore');
+                updMulti({ subtool: current.topic, challengeActive: false, challengeFeedback: null, challengeAnswer: null, challengeShowHint: false, aiExplain: null });
+                if (announceToSR) announceToSR('Opened ' + getSubtoolLabel(current.topic) + ' simulator');
+              }, 'transition-colors bg-cyan-700 text-white hover:bg-cyan-600')
             )
           )
         );
@@ -3366,7 +3393,6 @@ window.StemLab = window.StemLab || {
               statBadge('Rounds', round + '/' + BATTLE_ROUNDS.length),
               statBadge('HP Left', String(playerHP))
             ),
-            victory && (function() { tryAwardXP('battle-victory', 100, 'Defeated all enemies in Chip Defense!'); return null; })(),
             // Battle log
             log.length > 0 && h('div', { className: 'max-h-32 overflow-y-auto text-xs text-left bg-slate-800/60 rounded-lg border border-slate-700 p-2 mb-3' },
               log.map(function(entry, i) {
@@ -3416,17 +3442,22 @@ window.StemLab = window.StemLab || {
                   onClick: function() {
                     var hit = opt === currentRound.answer;
                     var newLog = log.concat([{
-                      text: (hit ? '\u2694\uFE0F Hit! ' : '\uD83D\uDCA5 Miss! ') + 'R' + (round + 1) + ': ' + currentRound.enemy + (hit ? ' takes damage!' : ' attacks! -' + currentRound.damage + ' HP'),
+                      text: (hit ? '\u2694\uFE0F Hit! ' : '\uD83D\uDCA5 Miss! ') + 'R' + (round + 1) + ': ' + currentRound.enemy + (hit ? ' neutralized!' : ' attacks! -' + currentRound.damage + ' HP'),
                       hit: hit
                     }]);
                     var newPlayerHP = hit ? playerHP : playerHP - currentRound.damage;
-                    var newEnemyHP = hit ? enemyHP - 1 : enemyHP;
-                    updMulti({
+                    var newEnemyHP = hit ? 0 : enemyHP;
+                    var completedRounds = hit ? round + 1 : round;
+                    var battlePatch = {
                       battleFeedback: hit ? 'correct' : 'wrong-' + opt,
                       battleHP: Math.max(0, newPlayerHP),
                       battleEnemyHP: Math.max(0, newEnemyHP),
                       battleLog: newLog
-                    });
+                    };
+                    if (Math.max(0, newPlayerHP) <= 0 || completedRounds >= BATTLE_ROUNDS.length) {
+                      battlePatch.battleScore = Math.max(d.battleScore || 0, completedRounds);
+                    }
+                    updMulti(battlePatch);
                     if (hit) {
                       tryAwardXP('battle-r' + round, currentRound.xp, 'Defeated ' + currentRound.enemy);
                       if (stemBeep) stemBeep();
@@ -3440,7 +3471,9 @@ window.StemLab = window.StemLab || {
           // Next round
           feedback && h('div', { className: 'text-center' },
             btn('Next Round \u2192', function() {
-              updMulti({ battleRound: round + 1, battleFeedback: null, battleEnemyHP: 5 });
+              var nextRound = round + 1;
+              if (nextRound >= BATTLE_ROUNDS.length) tryAwardXP('battle-victory', 100, 'Survived all rounds in Chip Defense!');
+              updMulti({ battleRound: nextRound, battleFeedback: null, battleEnemyHP: 5, battleScore: Math.max(d.battleScore || 0, nextRound) });
             }, feedback === 'correct' ? 'bg-emerald-700 text-white' : 'bg-red-600 text-white')
           ),
           // Log
@@ -3605,7 +3638,7 @@ window.StemLab = window.StemLab || {
       var tabBar = h('div', { className: 'flex gap-1 mb-3 border-b border-slate-700 pb-2', role: 'tablist' },
         ['explore', 'challenge', 'battle', 'learn'].map(function(tb) {
           var labels = { explore: '\uD83D\uDD2C Explore', challenge: '\uD83C\uDFC6 Challenge', battle: '\u2694\uFE0F Battle', learn: '\uD83D\uDCDA Learn' };
-          return pill(labels[tb], tab === tb, function() { setStemLabTab(tb); if (announceToSR) announceToSR(tb + ' tab selected'); });
+          return pill(labels[tb], tab === tb, function() { setStemLabTab(tb); if (announceToSR) announceToSR(tb + ' tab selected'); }, 'tab-' + tb);
         })
       );
 
@@ -3641,7 +3674,7 @@ window.StemLab = window.StemLab || {
             updMulti({ subtool: st.id, aiExplain: null });
             if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'subtoolSwitch', 'Switched to ' + st.label + ' simulation.', { debounce: 500 });
             if (announceToSR) announceToSR('Selected ' + st.label + ' tool');
-          });
+          }, 'subtool-' + st.id);
         }),
         h('span', { className: 'text-[11px] text-slate-600 self-center ml-1' }, t('stem.semiconductor.keys', '\u2190\u2192 keys'))
       ) : null;
@@ -3693,35 +3726,35 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2' },
               ['Si', 'Ge', 'GaAs'].map(function(m) {
                 var active = iq.material === m;
-                return h('button', { key: m, onClick: function() { setIQ({ material: m }); }, className: 'px-2 py-1 rounded text-[11px] font-bold border ' + (active ? 'bg-amber-200 text-amber-900 border-amber-400' : 'bg-white text-slate-600 border-slate-300') }, m);
+                return h('button', { key: m, onClick: function() { setIQ({ material: m }); }, className: 'px-2 py-1 rounded text-[11px] font-bold border ' + (active ? 'bg-amber-300 text-slate-950 border-amber-400' : 'bg-slate-900/70 text-slate-300 border-slate-700') }, m);
               })
             ),
             h('div', { className: 'grid grid-cols-2 gap-3' },
               [{ k: 'conc', l: 'Dopant log10 conc', mn: 0, mx: 15, st: 1 },
                { k: 'tempK', l: 'Temperature (K)', mn: 100, mx: 500, st: 10 }].map(function(s) {
                 return h('div', { key: s.k },
-                  h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-700' }, iq[s.k])),
+                  h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-300' }, s.l + ': ', h('span', { className: 'font-mono text-amber-300' }, iq[s.k])),
                   h('input', { id: 'dh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                     onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                     className: 'w-full', 'aria-label': s.l }));
               })
             ),
             h('div', { className: 'flex gap-2 items-center flex-wrap' },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.conc, t: iq.tempK, m: iq.material, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.semiconductor.log', '📋 Log')),
-              h('button', { onClick: function() { setIQ({ conc: 5, tempK: 300, material: 'Si', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.semiconductor.reset', '↺ Reset'))
+              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.conc, t: iq.tempK, m: iq.material, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-700 text-[11px] font-bold text-slate-100 border border-slate-600' }, t('stem.semiconductor.log', '📋 Log')),
+              h('button', { onClick: function() { setIQ({ conc: 5, tempK: 300, material: 'Si', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-slate-900/70 text-[11px] font-semibold text-slate-300 border border-slate-700' }, t('stem.semiconductor.reset', '↺ Reset'))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.semiconductor.hypothesis_how_does_temperature_affect', 'Hypothesis: How does temperature affect carrier concentration?'),
-              className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.semiconductor.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
+              className: 'w-full text-[12px] border border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500 rounded p-2 font-mono leading-snug', rows: 3 }),
+            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-900/30 text-[11px] font-bold text-amber-200 border border-amber-700' }, t('stem.semiconductor.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+            iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-amber-100 leading-relaxed' },
               h('ul', { className: 'list-disc pl-5 space-y-1' },
                 h('li', null, t('stem.semiconductor.compare_si_and_gaas_at_same_concentrat', 'Compare Si and GaAs at same concentration. Why differ?')),
                 h('li', null, t('stem.semiconductor.find_two_settings_producing_same_regim', 'Find two settings producing same regime.')))),
-            h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+            h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-300 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
               t('stem.semiconductor.i_understand_explain_in_own_words', 'I understand — explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.semiconductor.explain_how_concentration_temperature_', 'Explain how concentration, temperature, and material jointly set the regime.'),
-              className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
+              className: 'w-full text-[12px] border border-emerald-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
             h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.semiconductor.design_note_discrete_4_state_marker_no', 'Design note: discrete 4-state marker; no carrier-density score; no reveal — by design.'))
           );
         })();

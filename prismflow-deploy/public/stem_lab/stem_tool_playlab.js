@@ -82,25 +82,35 @@ window.StemLab = window.StemLab || {
       '.playlab-status-pill{border:1px solid rgba(16,185,129,.55);background:rgba(16,185,129,.16);color:#bbf7d0;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;white-space:nowrap}',
       '.playlab-metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}',
       '.playlab-metric{border:1px solid rgba(148,163,184,.24);background:rgba(15,23,42,.64);border-radius:12px;padding:9px;min-height:64px}',
-      '.playlab-metric span{display:block;color:#94a3b8;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}',
+      '.playlab-metric span{display:block;color:#cbd5e1;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}',
       '.playlab-metric b{display:block;color:#f8fafc;font-size:13px;line-height:1.25;margin-top:3px}',
+      '.playlab-setup-panel{margin-bottom:12px;padding:12px;border:1px solid #64748b;border-radius:14px;background:rgba(15,23,42,.82)}',
+      '.playlab-setup-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}',
+      '.playlab-setup-title{margin:0;color:#f8fafc;font-size:14px;font-weight:900;line-height:1.2}',
+      '.playlab-setup-note{color:#e2e8f0;font-size:11px;font-weight:700}',
+      '.playlab-setup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}',
+      '.playlab-choice-group{min-width:0;border:1px solid rgba(148,163,184,.45);border-radius:12px;background:rgba(2,6,23,.34);padding:9px}',
+      '.playlab-choice-group-wide{grid-column:1/-1}',
+      '.playlab-choice-label{display:block;color:#f8fafc;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}',
+      '.playlab-choice-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
+      '.playlab-native-control{min-height:32px;border:1px solid #94a3b8!important;background:#0f172a!important;color:#f8fafc!important;border-radius:6px}',
       '.playlab-field-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(290px,320px);gap:16px;align-items:start}',
       '.playlab-field-column,.playlab-info-column{min-width:0}',
-      '.playlab-field-shell{position:relative;overflow:hidden;border:1px solid rgba(125,211,252,.34);border-radius:18px;background:linear-gradient(180deg,#020617,#0f172a);padding:12px;box-shadow:0 18px 42px rgba(2,6,23,.34)}',
+      '.playlab-field-shell{position:relative;overflow:hidden;border:1px solid #64748b;border-radius:18px;background:linear-gradient(180deg,#020617,#0f172a);padding:12px;box-shadow:0 18px 42px rgba(2,6,23,.34)}',
       '.playlab-field-shell:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(56,189,248,.12),transparent 38%),linear-gradient(300deg,rgba(251,191,36,.10),transparent 34%);pointer-events:none}',
       '.playlab-field-topbar{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:9px}',
       '.playlab-field-title{margin:0;color:#f8fafc;font-size:14px;font-weight:900;line-height:1.2}',
       '.playlab-chip-row{display:flex;gap:6px;flex-wrap:wrap}',
-      '.playlab-chip{border:1px solid rgba(148,163,184,.32);background:rgba(15,23,42,.72);color:#cbd5e1;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:800}',
-      '.playlab-field-canvas{position:relative;z-index:1;width:100%;max-width:720px;height:auto;border-radius:14px;border:1px solid rgba(148,163,184,.35);background:#0f172a;cursor:pointer;touch-action:none;display:block;margin:0 auto;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}',
+      '.playlab-chip{border:1px solid #94a3b8;background:rgba(15,23,42,.86);color:#f8fafc;border-radius:999px;padding:5px 8px;font-size:11px;font-weight:800}',
+      '.playlab-field-canvas{position:relative;z-index:1;width:100%;max-width:720px;height:auto;border-radius:14px;border:1px solid #94a3b8;background:#0f172a;cursor:pointer;touch-action:none;display:block;margin:0 auto;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}',
       '.playlab-run-rack{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}',
-      '.playlab-run-button{padding:11px 18px;min-height:40px;border-radius:999px;cursor:pointer;border:1px solid #10b981;background:linear-gradient(135deg,#34d399,#059669);color:#052e16;font-size:14px;font-weight:900;box-shadow:0 10px 22px rgba(16,185,129,.22)}',
-      '.playlab-run-button:disabled{cursor:wait;background:#1e293b;color:#94a3b8;box-shadow:none}',
+      '.playlab-run-button{padding:11px 18px;min-height:42px;border-radius:999px;cursor:pointer;border:1px solid #86efac;background:linear-gradient(135deg,#86efac,#22c55e);color:#052e16;font-size:14px;font-weight:900;box-shadow:0 10px 22px rgba(16,185,129,.22)}',
+      '.playlab-run-button:disabled{cursor:wait;background:#334155;color:#e2e8f0;box-shadow:none;border-color:#94a3b8}',
       '.playlab-last-result{font-size:12px;color:#cbd5e1;font-style:italic}',
-      '.playlab-toggle-rack{margin-top:9px;display:flex;gap:8px;font-size:12px;color:#cbd5e1;flex-wrap:wrap;align-items:center;padding:9px 10px;border:1px solid rgba(148,163,184,.20);border-radius:12px;background:rgba(15,23,42,.36)}',
+      '.playlab-toggle-rack{margin-top:9px;display:flex;gap:8px;font-size:12px;color:#f8fafc;flex-wrap:wrap;align-items:center;padding:9px 10px;border:1px solid #64748b;border-radius:12px;background:rgba(15,23,42,.78)}',
       '.playlab-toggle-rack label{cursor:pointer;display:inline-flex;align-items:center;gap:6px}',
-      '@media (max-width:920px){.playlab-field-layout{grid-template-columns:1fr}.playlab-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.playlab-info-column{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.playlab-info-column>section,.playlab-info-column>div{margin-bottom:0!important}}',
-      '@media (max-width:560px){.playlab-gameplan-card,.playlab-field-shell{border-radius:14px;padding:11px}.playlab-metric-grid,.playlab-info-column{grid-template-columns:1fr}.playlab-gameplan-title{font-size:16px}.playlab-run-button{width:100%}}'
+      '@media (max-width:920px){.playlab-field-layout{grid-template-columns:1fr}.playlab-metric-grid,.playlab-setup-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.playlab-info-column{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.playlab-info-column>section,.playlab-info-column>div{margin-bottom:0!important}}',
+      '@media (max-width:560px){.playlab-gameplan-card,.playlab-field-shell,.playlab-setup-panel{border-radius:14px;padding:11px}.playlab-metric-grid,.playlab-info-column,.playlab-setup-grid{grid-template-columns:1fr}.playlab-gameplan-title{font-size:16px}.playlab-run-button{width:100%}}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -3573,21 +3583,60 @@ window.StemLab = window.StemLab || {
           d.down, d.yardsToGoal, d.drillStats]);
 
       // ── UI ──
+      function playLabChoiceButtonStyle(sel, opts) {
+        opts = opts || {};
+        var accent = opts.accent || '#facc15';
+        var activeText = opts.activeText || '#111827';
+        return {
+          padding: opts.small ? '6px 10px' : (opts.compact ? '7px 13px' : '8px 14px'),
+          borderRadius: opts.square ? 8 : 999,
+          cursor: 'pointer',
+          minHeight: opts.small ? 30 : 34,
+          border: '1px solid ' + (sel ? (opts.activeBorder || '#fde68a') : '#94a3b8'),
+          background: sel ? accent : '#0f172a',
+          color: sel ? activeText : '#f8fafc',
+          fontSize: opts.small ? 11 : (opts.compact ? 12 : 13),
+          fontWeight: sel ? 900 : 700,
+          boxShadow: sel ? '0 0 0 2px rgba(250,204,21,0.18)' : 'none'
+        };
+      }
+
+      function playLabSecondaryButtonStyle(extra) {
+        return Object.assign({
+          padding: '6px 12px',
+          minHeight: 32,
+          borderRadius: 6,
+          cursor: 'pointer',
+          border: '1px solid #94a3b8',
+          background: '#0f172a',
+          color: '#f8fafc',
+          fontSize: 12,
+          fontWeight: 700
+        }, extra || {});
+      }
+
+      function playLabNativeControlStyle(extra) {
+        return Object.assign({
+          padding: '5px 8px',
+          minHeight: 32,
+          borderRadius: 6,
+          border: '1px solid #94a3b8',
+          background: '#0f172a',
+          color: '#f8fafc',
+          fontSize: 12
+        }, extra || {});
+      }
+
       function pillBtn(label, sel, onClick, opts) {
         opts = opts || {};
         return h('button', {
           key: opts.key,
           onClick: onClick, 'aria-pressed': sel, 'data-pl-focusable': 'true',
-          style: {
-            padding: opts.small ? '6px 10px' : '8px 14px', borderRadius: 999, cursor: 'pointer',
-            border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
-            background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-            color: 'var(--allo-stem-text, #f1f5f9)', fontSize: opts.small ? 11 : 13, fontWeight: 600
-          }
+          style: playLabChoiceButtonStyle(sel, opts)
         }, label);
       }
 
-      return h('div', { style: { padding: 16, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: 1100, margin: '0 auto' } },
+      return h('div', { className: 'playlab-root', style: { padding: 16, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: 1100, margin: '0 auto' } },
         // Scenario intro card — pops when a one-click teaching demo loads.
         // Surfaces the scenario's `teach` paragraph + discussion questions
         // before the play runs (previously hover-only on the chip).
@@ -3614,7 +3663,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() { setScenarioIntro(null); },
                 'aria-label': __alloT('stem.playlab.close_scenario_intro', 'Close scenario intro'),
-                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)',
+                style: { background: '#0f172a', border: '1px solid #94a3b8', color: '#f8fafc',
                          width: 32, height: 32, borderRadius: 6, cursor: 'pointer',
                          fontSize: 16, lineHeight: 1, fontWeight: 700 }
               }, '×')
@@ -3641,16 +3690,16 @@ window.StemLab = window.StemLab || {
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 } },
               h('button', {
                 onClick: function() { setScenarioIntro(null); startRun(); },
+                'data-pl-focusable': 'true',
                 style: { flex: '1 1 200px', padding: '10px 14px', borderRadius: 8,
-                         border: 'none', background: 'linear-gradient(135deg, #16a34a, #06b6d4)',
-                         color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
-                         boxShadow: '0 4px 12px rgba(6,182,212,0.3)' }
+                         border: '1px solid #86efac', background: 'linear-gradient(135deg, #86efac, #22c55e)',
+                         color: '#052e16', fontSize: 14, fontWeight: 900, cursor: 'pointer',
+                         boxShadow: '0 4px 12px rgba(34,197,94,0.25)' }
               }, __alloT('stem.playlab.run_it_now', '▶ Run it now')),
               h('button', {
                 onClick: function() { setScenarioIntro(null); },
-                style: { flex: '1 1 160px', padding: '10px 14px', borderRadius: 8,
-                         border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)',
-                         color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+                'data-pl-focusable': 'true',
+                style: playLabSecondaryButtonStyle({ flex: '1 1 160px', padding: '10px 14px', borderRadius: 8, fontSize: 13 })
               }, __alloT('stem.playlab.explore_the_field_first', '🔧 Explore the field first'))
             )
           )
@@ -3683,7 +3732,7 @@ window.StemLab = window.StemLab || {
           ArrowLeft && h('button', {
             onClick: function() { setStemLabTool && setStemLabTool(null); },
             'data-pl-focusable': 'true', 'aria-label': __alloT('stem.playlab.back_to_stem_lab', 'Back to STEM Lab'),
-            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #f1f5f9)', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
+            style: playLabSecondaryButtonStyle({ padding: '6px 10px' })
           }, __alloT('stem.playlab.back', '← Back')),
           h('h2', { style: { margin: 0, fontSize: 20 } },
             (isSoccer ? '⚽ PlayLab — Soccer Tactics' : '🏈 PlayLab — Football Play & Coverage')),
@@ -3748,12 +3797,7 @@ window.StemLab = window.StemLab || {
               },
               'aria-selected': sel,
               'data-pl-focusable': 'true',
-              style: {
-                padding: '8px 14px', borderRadius: 999, cursor: 'pointer',
-                border: '1px solid ' + (sel ? '#fbbf24' : '#334155'),
-                background: sel ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, fontWeight: 600
-              }
+              style: playLabChoiceButtonStyle(sel)
             }, sp.label);
           })
         ),
@@ -3777,13 +3821,7 @@ window.StemLab = window.StemLab || {
               'aria-selected': sel,
               'data-pl-focusable': 'true',
               title: wt.title,
-              style: {
-                padding: '7px 13px', borderRadius: 8, cursor: 'pointer',
-                border: '1px solid ' + (sel ? '#38bdf8' : '#334155'),
-                background: sel ? 'rgba(56,189,248,0.16)' : '#1e293b',
-                color: sel ? '#7dd3fc' : 'var(--allo-stem-text, #cbd5e1)',
-                fontSize: 12, fontWeight: sel ? 800 : 600
-              }
+              style: playLabChoiceButtonStyle(sel, { compact: true, square: true, accent: '#7dd3fc', activeBorder: '#bae6fd', activeText: '#082f49' })
             }, wt.label);
           })
         ),
@@ -3840,9 +3878,9 @@ window.StemLab = window.StemLab || {
                 title: sc.teach,
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid var(--allo-stem-border, #334155)',
-                  background: 'var(--allo-stem-panel, #1e293b)',
-                  color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600
+                  border: '1px solid #94a3b8',
+                  background: '#0f172a',
+                  color: '#f8fafc', fontSize: 11, fontWeight: 700
                 }
               }, sc.icon + ' ' + sc.label);
             }).concat(
@@ -3904,8 +3942,8 @@ window.StemLab = window.StemLab || {
                 title: __alloT('stem.playlab.save_the_current_sport_play_concept_co', 'Save the current sport + play/concept + coverage/shape + custom edits as a personalized scenario'),
                 style: {
                   padding: '6px 11px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px dashed #a78bfa', background: 'transparent',
-                  color: '#a78bfa', fontSize: 11, fontWeight: 700
+                  border: '1px dashed #c4b5fd', background: 'rgba(30,41,59,0.78)',
+                  color: '#ddd6fe', fontSize: 11, fontWeight: 800
                 }
               }, __alloT('stem.playlab.save_current', '⭐ Save current')),
               h('button', {
@@ -3998,11 +4036,11 @@ window.StemLab = window.StemLab || {
                 title: b.hint,
                 style: {
                   padding: '5px 10px', borderRadius: 999,
-                  border: '1px solid ' + (earned ? '#fbbf24' : '#334155'),
-                  background: earned ? 'rgba(251,191,36,0.18)' : '#1e293b',
-                  color: earned ? '#fbbf24' : '#475569',
-                  fontSize: 11, fontWeight: earned ? 700 : 500,
-                  opacity: earned ? 1 : 0.6
+                  border: '1px solid ' + (earned ? '#fbbf24' : '#94a3b8'),
+                  background: earned ? 'rgba(251,191,36,0.18)' : '#0f172a',
+                  color: earned ? '#facc15' : '#cbd5e1',
+                  fontSize: 11, fontWeight: earned ? 800 : 700,
+                  opacity: 1
                 }
               }, b.emoji + ' ' + b.label);
             })
@@ -4100,8 +4138,8 @@ window.StemLab = window.StemLab || {
                 'data-pl-focusable': 'true',
                 style: {
                   padding: '2px 8px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid var(--allo-stem-border, #475569)', background: 'transparent',
-                  color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11
+                  border: '1px solid #94a3b8', background: '#0f172a',
+                  color: '#f8fafc', fontSize: 11, fontWeight: 700
                 }
               }, __alloT('stem.playlab.dismiss', '✕ Dismiss'))
             ),
@@ -4118,6 +4156,20 @@ window.StemLab = window.StemLab || {
             ) : null
           );
         })(),
+
+        h('section', {
+          className: 'playlab-setup-panel',
+          'data-playlab-setup': 'true',
+          'aria-labelledby': 'pl-setup-heading'
+        },
+          h('div', { className: 'playlab-setup-header' },
+            h('h3', { id: 'pl-setup-heading', className: 'playlab-setup-title' },
+              isSoccer ? 'Soccer setup' : 'Football setup'),
+            h('span', { className: 'playlab-setup-note' },
+              isSoccer ? (formationDef.label + ' / ' + concept.label + ' / ' + soccerShape.label)
+                : (play.label + ' / ' + coverage.label + ' / ' + (d.down || 1) + ' down'))
+          )
+        ),
 
         // Play / Formation picker
         h('div', { role: 'group', 'aria-label': isSoccer ? 'Formation library' : 'Play library',
@@ -4160,7 +4212,8 @@ window.StemLab = window.StemLab || {
             id: 'pl-down', value: String(d.down || 1),
             onChange: function(e) { upd('down', parseInt(e.target.value, 10) || 1); },
             'data-pl-focusable': 'true',
-            style: { padding: '4px 6px', borderRadius: 4, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12 }
+            className: 'playlab-native-control',
+            style: playLabNativeControlStyle()
           },
             [1, 2, 3, 4].map(function(n) { return h('option', { key: n, value: String(n) }, n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th')); })
           ),
@@ -4170,7 +4223,8 @@ window.StemLab = window.StemLab || {
             value: d.yardsToGoal || 75,
             onChange: function(e) { upd('yardsToGoal', Math.max(1, Math.min(99, parseInt(e.target.value, 10) || 75))); },
             'data-pl-focusable': 'true',
-            style: { width: 60, padding: '4px 6px', borderRadius: 4, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12 }
+            className: 'playlab-native-control',
+            style: playLabNativeControlStyle({ width: 72 })
           }),
           h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
             __alloT('stem.playlab.ep_at_this_state', 'EP at this state: '), h('span', { style: { color: '#fbbf24', fontWeight: 700 } },
@@ -4408,8 +4462,7 @@ window.StemLab = window.StemLab || {
                 },
                 'aria-label': __alloT('stem.playlab.stop_the_current_drill', 'Stop the current drill'),
                 'data-pl-focusable': 'true',
-                style: { padding: '4px 8px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
-                  border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11 }
+                style: playLabSecondaryButtonStyle({ padding: '4px 8px', minHeight: 28, borderRadius: 4, fontSize: 11 })
               }, allDone ? 'Close' : 'Stop')),
             allDone
               ? h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)' } },
@@ -4598,10 +4651,7 @@ window.StemLab = window.StemLab || {
                 onClick: resetPositions,
                 'data-pl-focusable': 'true',
                 'aria-label': __alloT('stem.playlab.reset_all_custom_player_positions_to_t', 'Reset all custom player positions to the play preset'),
-                style: {
-                  padding: '4px 10px', minHeight: 24, borderRadius: 4, cursor: 'pointer',
-                  border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11
-                }
+                style: playLabSecondaryButtonStyle({ padding: '4px 10px', minHeight: 28, borderRadius: 4, fontSize: 11 })
               }, __alloT('stem.playlab.reset_positions', 'Reset positions')) : null,
               // Save play — only renders when there's something custom to save
               Object.keys(d.customPositions || {}).length > 0 ? h('button', {
@@ -4630,7 +4680,8 @@ window.StemLab = window.StemLab || {
                   else if (e.key === 'Escape') cancelSavePrompt();
                 },
                 'data-pl-focusable': 'true', autoFocus: true,
-                style: { flex: 1, minWidth: 200, padding: '6px 8px', borderRadius: 4, border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12 }
+                className: 'playlab-native-control',
+                style: playLabNativeControlStyle({ flex: 1, minWidth: 200 })
               }),
               h('button', {
                 onClick: commitSavePlay, 'data-pl-focusable': 'true',
@@ -4638,7 +4689,7 @@ window.StemLab = window.StemLab || {
               }, __alloT('stem.playlab.save', 'Save')),
               h('button', {
                 onClick: cancelSavePrompt, 'data-pl-focusable': 'true',
-                style: { padding: '6px 12px', minHeight: 30, borderRadius: 4, cursor: 'pointer', border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11 }
+                style: playLabSecondaryButtonStyle({ padding: '6px 12px', minHeight: 30, borderRadius: 4, fontSize: 11 })
               }, __alloT('stem.playlab.cancel', 'Cancel'))
             ) : null,
             // Drag hint — only on first load (no custom edits yet) so it
@@ -4671,8 +4722,11 @@ window.StemLab = window.StemLab || {
               style: { marginTop: 10, padding: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10 }
             },
               h('h3', { id: 'pl-analysis-heading', style: { fontSize: 12, margin: 0, marginBottom: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 } },
-                __alloT('stem.playlab.open_receiver_analysis', 'Open-receiver analysis')),
-              analysis.length === 0
+                isSoccer ? __alloT('stem.playlab.chance_analysis', 'Chance analysis') : __alloT('stem.playlab.open_receiver_analysis', 'Open-receiver analysis')),
+              isSoccer
+                ? h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, lineHeight: 1.5 } },
+                    __alloT('stem.playlab.soccer_chance_analysis_copy', 'The live read tracks the final shot location, xG, and how the passing pattern stretches the defensive shape.'))
+                : analysis.length === 0
                 ? h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, fontStyle: 'italic' } }, __alloT('stem.playlab.no_eligible_receivers_running_routes', 'No eligible receivers running routes.'))
                 : h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, fontSize: 12 } },
                     analysis.slice(0, 3).map(function(r, idx) {
@@ -4747,9 +4801,9 @@ window.StemLab = window.StemLab || {
                     title: p.prepend,
                     style: {
                       padding: '4px 9px', borderRadius: 999, cursor: 'pointer',
-                      border: '1px solid ' + (sel ? '#d946ef' : '#334155'),
-                      background: sel ? 'rgba(217,70,239,0.18)' : '#1e293b',
-                      color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: sel ? 700 : 500
+                      border: '1px solid ' + (sel ? '#f5d0fe' : '#94a3b8'),
+                      background: sel ? '#f0abfc' : '#0f172a',
+                      color: sel ? '#3b0764' : '#f8fafc', fontSize: 11, fontWeight: sel ? 900 : 700
                     }
                   }, p.icon + ' ' + p.label);
                 })
@@ -4785,7 +4839,7 @@ window.StemLab = window.StemLab || {
                 d.savedPlays.slice().reverse().map(function(entry) {
                   return h('li', {
                     key: entry.id,
-                    style: { display: 'flex', gap: 6, alignItems: 'center', padding: '4px 6px', borderRadius: 4, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' }
+                    style: { display: 'flex', gap: 6, alignItems: 'center', padding: '4px 6px', borderRadius: 4, background: '#0f172a', border: '1px solid #64748b' }
                   },
                     h('span', { style: { fontSize: 14 } }, entry.sport === 'soccer' ? '⚽' : '🏈'),
                     h('button', {
@@ -4793,15 +4847,14 @@ window.StemLab = window.StemLab || {
                       'aria-label': 'Load saved play ' + entry.name,
                       'data-pl-focusable': 'true',
                       style: { flex: 1, padding: '4px 6px', borderRadius: 4, cursor: 'pointer',
-                        border: '1px solid transparent', background: 'transparent',
-                        color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 12, textAlign: 'left' }
+                        border: '1px solid #94a3b8', background: '#0f172a',
+                        color: '#f8fafc', fontSize: 12, textAlign: 'left' }
                     }, entry.name),
                     h('button', {
                       onClick: function() { if (confirm('Delete saved play "' + entry.name + '"?')) deleteSavedPlay(entry.id); },
                       'aria-label': 'Delete saved play ' + entry.name,
                       'data-pl-focusable': 'true',
-                      style: { padding: '4px 8px', minHeight: 24, minWidth: 24, borderRadius: 4, cursor: 'pointer',
-                        border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12 }
+                      style: playLabSecondaryButtonStyle({ padding: '4px 8px', minHeight: 28, minWidth: 28, borderRadius: 4, fontSize: 12 })
                     }, '✕')
                   );
                 })

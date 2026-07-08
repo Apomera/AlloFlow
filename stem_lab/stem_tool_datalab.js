@@ -25,7 +25,21 @@
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
-  var DATA_LAB_URL = 'https://alloflow-cdn.pages.dev/data_lab/data_lab.html?v=1';
+  var DATA_LAB_CDN_URL = 'https://alloflow-cdn.pages.dev/data_lab/data_lab.html?v=1';
+  function companionUrl(path, cdnUrl) {
+    try {
+      var loc = window.location || {};
+      var host = loc.hostname || '';
+      var pathname = loc.pathname || '';
+      var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
+      var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
+      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      if (isDesktopBundled) return new URL(path, loc.href).toString();
+      if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
+    } catch (_) {}
+    return cdnUrl;
+  }
+  var DATA_LAB_URL = companionUrl('data_lab/data_lab.html?v=1', DATA_LAB_CDN_URL);
 
   function buildTutorPrompt(question, snapshot, history) {
     var lines = [
@@ -75,6 +89,8 @@
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
       var announceToSR = ctx.announceToSR;
       var setLabToolData = ctx.setToolData;
+      var setStemLabTool = ctx.setStemLabTool;
+      var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var labToolData = ctx.toolData || {};
       var slice = labToolData._dataLab || {};
 
@@ -144,7 +160,21 @@
         if (announceToSR) announceToSR(t('stem.dataLab.opened_sr', 'Opened the Data Lab in a new window.'));
       }
 
+      function returnToCatalog() {
+        if (typeof setStemLabTool !== 'function') return;
+        setStemLabTool(null);
+        if (announceToSR) announceToSR(t('stem.dataLab.returned_catalog_sr', 'Returned to the STEM Lab tools.'));
+      }
+
       return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
+        typeof setStemLabTool === 'function' && h('button', {
+          onClick: returnToCatalog,
+          className: 'inline-flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-slate-800 active:scale-[0.97]',
+          'aria-label': t('stem.dataLab.back_to_tools', 'Back to STEM Lab tools')
+        },
+          ArrowLeft ? h(ArrowLeft, { size: 16 }) : null,
+          h('span', null, t('stem.dataLab.back_to_tools', 'Back to STEM Lab tools'))
+        ),
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-sky-400' },
           t('stem.dataLab.title', '📊 Data Lab — real data science, Socratic style')),
         h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
@@ -159,10 +189,14 @@
           className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 shadow-md shadow-indigo-600/20 transition-all w-fit',
           'aria-label': t('stem.dataLab.open_title', 'Open the Data Lab in a new window (CODAP workspace with the AlloFlow tutor)')
         }, t('stem.dataLab.open', '📊 Open Data Lab')),
+        popupState === 'opening' && h('p', { className: 'text-xs text-sky-300' },
+          t('stem.dataLab.opening_note', 'Opening Data Lab. If it does not appear, check your pop-up settings.')),
         popupState === 'blocked' && h('p', { className: 'text-xs text-amber-300' },
           t('stem.dataLab.blocked_note', 'Pop-up blocked — allow pop-ups for this page and try again.')),
         popupState === 'open' && h('p', { className: 'text-xs text-emerald-300' },
           t('stem.dataLab.open_note', 'Data Lab is open. Keep this AlloFlow window open too — it powers the AI tutor.')),
+        popupState === 'closed' && h('p', { className: 'text-xs text-slate-400' },
+          t('stem.dataLab.closed_note', 'Data Lab was closed. You can reopen it whenever you are ready.')),
         h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
           t('stem.dataLab.credit', 'CODAP is free and open source (MIT) from the Concord Consortium. The workspace loads from codap.concord.org, so the Data Lab needs internet; an offline School Box copy is on the roadmap.'))
       );

@@ -33,8 +33,10 @@
 <script src="vendor/aframe.min.js"></script>
 <style>
   :root {
-    --bg: #0b1020; --panel: rgba(17,24,44,0.92); --line: #2a3556;
-    --text: #e6ecff; --dim: #9fb0dc; --accent: #6366f1; --accent2: #818cf8;
+    --bg: #0b1020; --panel: #0f172a; --line: #7086c8;
+    --text: #f7faff; --dim: #c8d6ff; --muted: #b6c6f4;
+    --accent: #665cf5; --accent-hover: #5a4ee6; --accent2: #b8c6ff;
+    --focus: #facc15; --control: #16213d;
     --p0: #f5b301; --p1: #22d3ee; --p2: #4ade80; --p3: #a78bfa;
   }
   * { box-sizing: border-box; }
@@ -48,26 +50,31 @@
     box-shadow: 0 18px 50px rgba(0,0,0,0.45); backdrop-filter: blur(6px);
   }
   #hud h1 { font-size: 15px; margin: 0 0 2px; font-weight: 800; letter-spacing: 0.01em; }
-  #hud .sub { color: var(--dim); font-size: 11.5px; margin-bottom: 11px; }
+  #hud .sub { color: var(--dim); font-size: 12px; margin-bottom: 11px; }
   .stateline { font-size: 13px; font-weight: 700; margin: 0 0 3px; }
   #measure { color: var(--dim); font-size: 12.5px; min-height: 32px; margin-bottom: 11px; line-height: 1.4; }
   #measure b { color: var(--text); font-variant-numeric: tabular-nums; }
   .btnrow { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 8px; }
-  button.act { flex: 1 1 auto; background: var(--accent); color: #fff; border: none; border-radius: 9px; padding: 10px 12px; font-size: 13px; font-weight: 700; cursor: pointer; min-width: 120px; }
-  button.act:hover { background: #4f46e5; }
-  button.act:disabled { background: #313a5c; color: #7d86ad; cursor: not-allowed; }
-  button.q { flex: 1 1 auto; background: #1a2340; color: var(--text); border: 1px solid var(--line); border-radius: 9px; padding: 9px 12px; font-size: 13px; font-weight: 600; cursor: pointer; min-width: 56px; }
+  button.act { flex: 1 1 auto; background: var(--accent); color: #fff; border: 1px solid transparent; border-radius: 9px; padding: 10px 12px; font-size: 13px; font-weight: 700; cursor: pointer; min-width: 120px; }
+  button.act:hover { background: var(--accent-hover); }
+  button.act:disabled { background: #2a3354; color: #d5defc; border-color: #7f94d6; cursor: not-allowed; opacity: 1; }
+  button.q { flex: 1 1 auto; background: var(--control); color: var(--text); border: 1px solid var(--line); border-radius: 9px; padding: 9px 12px; font-size: 13px; font-weight: 600; cursor: pointer; min-width: 56px; }
   button.q:hover { border-color: var(--accent2); }
+  button.act:focus-visible, button.q:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 5px rgba(250,204,21,0.24); }
   .kbd { color: var(--dim); font-size: 11px; margin-top: 9px; line-height: 1.5; border-top: 1px solid var(--line); padding-top: 9px; }
-  .kbd kbd { background: #1a2340; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px; font-family: inherit; font-size: 10.5px; color: var(--text); }
-  .credit { color: #6b7aa8; font-size: 10.5px; margin-top: 9px; line-height: 1.45; }
+  .kbd kbd { background: var(--control); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px; font-family: inherit; font-size: 10.5px; color: var(--text); }
+  .credit { color: var(--muted); font-size: 11px; margin-top: 9px; line-height: 1.45; }
   .dimchips { display: flex; gap: 4px; margin: 0 0 11px; }
-  .dimchips span { flex: 1; text-align: center; font-size: 10.5px; font-weight: 700; padding: 4px 2px; border-radius: 6px; background: #141c34; color: #5f6d99; border: 1px solid transparent; }
+  .dimchips span { flex: 1; text-align: center; font-size: 10.5px; font-weight: 700; padding: 4px 2px; border-radius: 6px; background: #111b33; color: var(--dim); border: 1px solid var(--line); }
   .dimchips span.on0 { background: rgba(245,179,1,0.16); color: var(--p0); border-color: var(--p0); }
   .dimchips span.on1 { background: rgba(34,211,238,0.16); color: var(--p1); border-color: var(--p1); }
   .dimchips span.on2 { background: rgba(74,222,128,0.16); color: var(--p2); border-color: var(--p2); }
   .dimchips span.on3 { background: rgba(167,139,250,0.16); color: var(--p3); border-color: var(--p3); }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  @media (forced-colors: active) {
+    #hud, button.act, button.q, .dimchips span, .kbd kbd { border: 1px solid CanvasText; }
+    button.act:focus-visible, button.q:focus-visible { outline: 3px solid Highlight; box-shadow: none; }
+  }
 </style>
 </head>
 <body>
@@ -126,28 +133,34 @@
   <a-entity id="figure" position="0 1.1 -2.4"></a-entity>
 
   <!-- Floating measure label above the figure -->
-  <a-entity id="label3d" position="0 2.5 -2.4"
-            text="value: A point; align: center; width: 4; color: #e6ecff; wrapCount: 28"></a-entity>
+  <a-entity id="labelWrap" position="0 2.5 -2.4">
+    <a-plane width="3.55" height="0.78" position="0 0 -0.01"
+             material="color: #050816; opacity: 0.86; transparent: true; side: double"></a-plane>
+    <a-entity id="label3d" position="0 0 0.02"
+              text="value: A point; align: center; width: 4; color: #f7faff; wrapCount: 28"></a-entity>
+  </a-entity>
 
   <!-- In-scene control panel (used in VR; also clickable with the mouse on desktop) -->
   <a-entity id="panel" position="0 0.95 -1.35" rotation="-22 0 0">
+    <a-plane width="1.76" height="0.5" position="0 -0.055 -0.035"
+             material="color: #050816; opacity: 0.9; transparent: true; side: double"></a-plane>
     <a-entity class="clickable vrbtn" id="vrStretch"
               geometry="primitive: box; width: 0.52; height: 0.17; depth: 0.04"
-              material="color: #4f46e5; emissive: #4f46e5; emissiveIntensity: 0.25" position="-0.58 0 0">
+              material="color: #665cf5; emissive: #665cf5; emissiveIntensity: 0.18" position="-0.58 0 0">
       <a-text value="Stretch ^" align="center" position="0 0 0.03" width="1.7" color="#fff"></a-text>
     </a-entity>
     <a-entity class="clickable vrbtn" id="vrCollapse"
               geometry="primitive: box; width: 0.32; height: 0.17; depth: 0.04"
-              material="color: #26304f" position="0 0 0">
-      <a-text value="v" align="center" position="0 0 0.03" width="1.7" color="#cdd7f5"></a-text>
+              material="color: #4a6094" position="0 0 0">
+      <a-text value="v" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
     </a-entity>
     <a-entity class="clickable vrbtn" id="vrReset"
               geometry="primitive: box; width: 0.42; height: 0.17; depth: 0.04"
-              material="color: #26304f" position="0.5 0 0">
-      <a-text value="reset" align="center" position="0 0 0.03" width="1.7" color="#cdd7f5"></a-text>
+              material="color: #4a6094" position="0.5 0 0">
+      <a-text value="reset" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
     </a-entity>
     <a-text value="Point the ray and pull the trigger. Thumbstick up/down = longer/shorter."
-            align="center" position="0 -0.17 0" width="2.1" color="#7f8fbf"></a-text>
+            align="center" position="0 -0.17 0.02" width="2.1" color="#dbe7ff"></a-text>
   </a-entity>
 
   <!-- Rig: camera + laser controllers + mouse cursor -->

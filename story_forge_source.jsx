@@ -69,6 +69,55 @@ const smartTruncate = (str, max = 200) => {
 //    localStorage). Prevents render crashes from malformed paragraph shapes and closes
 //    the stored-XSS vector where imported image URLs are interpolated into export HTML. ──
 const MAX_DRAFT_PARAGRAPHS = 8; // mirrors the in-app maxParagraphs cap
+const COMIC_SHOT_OPTIONS = [
+  { value: '', label: 'Shot' },
+  { value: 'wide', label: 'Wide' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'close-up', label: 'Close-up' },
+  { value: 'over-shoulder', label: 'Over shoulder' },
+  { value: 'reaction', label: 'Reaction' },
+  { value: 'detail', label: 'Detail' },
+];
+const COMIC_ANGLE_OPTIONS = [
+  { value: '', label: 'Angle' },
+  { value: 'eye-level', label: 'Eye-level' },
+  { value: 'low', label: 'Low angle' },
+  { value: 'high', label: 'High angle' },
+  { value: 'birds-eye', label: "Bird's-eye" },
+  { value: 'worms-eye', label: "Worm's-eye" },
+  { value: 'tilted', label: 'Tilted' },
+];
+const COMIC_MOOD_OPTIONS = [
+  { value: '', label: 'Mood' },
+  { value: 'neutral', label: 'Neutral' },
+  { value: 'tense', label: 'Tense' },
+  { value: 'wonder', label: 'Wonder' },
+  { value: 'funny', label: 'Funny' },
+  { value: 'dramatic', label: 'Dramatic' },
+  { value: 'quiet', label: 'Quiet' },
+];
+const COMIC_DIRECTION_OPTIONS = {
+  shot: COMIC_SHOT_OPTIONS,
+  angle: COMIC_ANGLE_OPTIONS,
+  mood: COMIC_MOOD_OPTIONS,
+};
+const normalizeComicDirectionValue = (field, value) => {
+  const options = COMIC_DIRECTION_OPTIONS[field] || [];
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return '';
+  const normalized = raw.replace(/['.]/g, '').replace(/\s+/g, '-').replace(/_+/g, '-');
+  const match = options.find((opt) => {
+    if (!opt.value) return false;
+    const labelKey = String(opt.label || '').trim().toLowerCase().replace(/['.]/g, '').replace(/\s+/g, '-').replace(/_+/g, '-');
+    return opt.value === normalized || labelKey === normalized;
+  });
+  return match ? match.value : '';
+};
+const getComicDirectionLabel = (field, value) => {
+  const clean = normalizeComicDirectionValue(field, value);
+  const match = (COMIC_DIRECTION_OPTIONS[field] || []).find(opt => opt.value === clean);
+  return match ? match.label : '';
+};
 const sanitizeParagraphs = (arr) => {
   if (!Array.isArray(arr)) return null;
   const cleaned = arr.slice(0, MAX_DRAFT_PARAGRAPHS).map((p, i) => ({
@@ -96,6 +145,52 @@ const sanitizeIllustrations = (obj) => {
 const sanitizeVocabTerms = (arr) => Array.isArray(arr)
   ? arr.filter((v) => v && typeof v.term === 'string').map((v) => ({ term: v.term, definition: typeof v.definition === 'string' ? v.definition : '' }))
   : null;
+
+const sanitizePanelDialogue = (obj) => {
+  if (!obj || typeof obj !== 'object') return {};
+  const out = {};
+  Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((k) => {
+    const key = String(k || '').slice(0, 64);
+    const v = obj[k];
+    if (!key || !v || typeof v !== 'object') return;
+    const clean = {};
+    if (typeof v.speaker === 'string' && v.speaker.trim()) clean.speaker = v.speaker.slice(0, 80);
+    if (typeof v.speech === 'string' && v.speech.trim()) clean.speech = v.speech.slice(0, 500);
+    if (typeof v.thought === 'string' && v.thought.trim()) clean.thought = v.thought.slice(0, 500);
+    if (typeof v.sfx === 'string' && v.sfx.trim()) clean.sfx = v.sfx.slice(0, 32);
+    if (Object.keys(clean).length) out[key] = clean;
+  });
+  return out;
+};
+
+const sanitizePanelDirections = (obj) => {
+  if (!obj || typeof obj !== 'object') return {};
+  const out = {};
+  Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((k) => {
+    const key = String(k || '').slice(0, 64);
+    const v = obj[k];
+    if (!key || !v || typeof v !== 'object') return;
+    const clean = {};
+    ['shot', 'angle', 'mood'].forEach((field) => {
+      const value = normalizeComicDirectionValue(field, v[field]);
+      if (value) clean[field] = value;
+    });
+    if (Object.keys(clean).length) out[key] = clean;
+  });
+  return out;
+};
+
+const sanitizePanelStickers = (obj) => {
+  if (!obj || typeof obj !== 'object') return {};
+  const out = {};
+  Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((k) => {
+    const key = String(k || '').slice(0, 64);
+    const value = obj[k];
+    if (!key || typeof value !== 'string' || !value.trim()) return;
+    out[key] = value.slice(0, 16);
+  });
+  return out;
+};
 
 // ── Vocab term detection with word-boundary awareness ──
 // True if `term` appears as a whole word (not a substring) in `text`, case-insensitive —
@@ -356,6 +451,13 @@ const LAYOUT_MODES = {
   'comic': { label: 'Comic', emoji: '💬', desc: 'Panel grid with speech bubbles', writeBg: 'bg-slate-50', writeBorder: 'border-slate-800', accent: 'blue' },
   'journal': { label: 'Journal', emoji: '📓', desc: 'Lined notebook diary style', writeBg: 'bg-amber-50', writeBorder: 'border-amber-300', accent: 'amber' },
   'dark': { label: 'Dark', emoji: '🌙', desc: 'Dark mode cyberpunk aesthetic', writeBg: 'bg-slate-900', writeBorder: 'border-slate-600', accent: 'cyan' },
+};
+
+const COMIC_PAGE_LAYOUTS = {
+  grid: { label: 'Grid', desc: 'Balanced two-column page for most short comics.' },
+  strip: { label: 'Strip', desc: 'One panel per row for newspaper-strip pacing.' },
+  splash: { label: 'Splash Lead', desc: 'Large opening panel followed by smaller story beats.' },
+  manga: { label: 'Manga Flow', desc: 'Right-to-left panel flow for manga-style reading practice.' },
 };
 
 const VOICE_POOL = ['Kore', 'Puck', 'Charon', 'Fenrir', 'Aoede', 'Leda', 'Orus', 'Zephyr'];
@@ -631,6 +733,7 @@ const StoryForge = React.memo(({
   const [helpMeResult, setHelpMeResult] = useState(null);
   const [helpMeParagraphIdx, setHelpMeParagraphIdx] = useState(-1);
   const [layoutMode, setLayoutMode] = useState('prose');
+  const [comicPageLayout, setComicPageLayout] = useState('grid');
   const [dictatingParagraphIdx, setDictatingParagraphIdx] = useState(-1);
   const [focusMode, setFocusMode] = useState(false);
   const [focusParagraphIdx, setFocusParagraphIdx] = useState(0);
@@ -698,10 +801,31 @@ const StoryForge = React.memo(({
 
   // ── Comic panel stickers + dialogue/thought/narration per panel ──
   const [panelStickers, setPanelStickers] = useState({});
-  const [panelDialogue, setPanelDialogue] = useState({}); // keyed by paragraph id: { speaker, speech, thought, narration }
+  const [panelDialogue, setPanelDialogue] = useState({}); // keyed by paragraph id: { speaker, speech, thought, sfx }
+  const [panelDirections, setPanelDirections] = useState({}); // keyed by paragraph id: { shot, angle, mood }
   const updatePanelDialogue = (pId, field, value) => {
     setPanelDialogue(prev => ({ ...prev, [pId]: { ...(prev[pId] || {}), [field]: value } }));
   };
+  const updatePanelDirection = (pId, field, value) => {
+    setPanelDirections(prev => {
+      const next = { ...prev };
+      const cleanValue = normalizeComicDirectionValue(field, value);
+      const current = { ...(next[pId] || {}) };
+      if (cleanValue) current[field] = cleanValue;
+      else delete current[field];
+      if (Object.keys(current).length) next[pId] = current;
+      else delete next[pId];
+      return next;
+    });
+  };
+  const createDraftSnapshot = () => ({
+    storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText,
+    paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara,
+    layoutMode, comicPageLayout,
+    panelDialogue: sanitizePanelDialogue(panelDialogue),
+    panelDirections: sanitizePanelDirections(panelDirections),
+    panelStickers: sanitizePanelStickers(panelStickers),
+  });
 
   // ── Illustrate state ──
   const [illustrations, setIllustrations] = useState({});
@@ -1125,7 +1249,7 @@ const StoryForge = React.memo(({
       if ((e.ctrlKey || e.metaKey) && e.key === 's' && isOpen) {
         e.preventDefault();
         try {
-          const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara };
+          const draft = createDraftSnapshot();
           localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
           setIsDirty(false);
           if (addToast) addToast(t('toasts.draft_saved'), 'success');
@@ -1136,7 +1260,7 @@ const StoryForge = React.memo(({
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language]);
+  }, [isOpen, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, panelDialogue, panelDirections, panelStickers]);
 
   // ── Focus management: move focus into the dialog on open, trap Tab inside it, and
   //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). ──
@@ -1183,12 +1307,12 @@ const StoryForge = React.memo(({
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       try {
-        const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara };
+        const draft = createDraftSnapshot();
         localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
       } catch (e) { /* localStorage full or unavailable */ }
     }, 2000);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language]);
+  }, [storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, storyShape, valenceByPara, layoutMode, comicPageLayout, panelDialogue, panelDirections, panelStickers]);
 
   // ── Load saved draft on mount ──
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
@@ -1198,7 +1322,10 @@ const StoryForge = React.memo(({
       const saved = localStorage.getItem(SAVE_KEY);
       if (saved) {
         const data = JSON.parse(saved);
-        if (Array.isArray(data.paragraphs) && data.paragraphs.some(p => p && typeof p.text === 'string' && p.text.trim().length > 0)) {
+        if (Array.isArray(data.paragraphs) && data.paragraphs.some(p => p && (
+          (typeof p.text === 'string' && p.text.trim().length > 0) ||
+          (typeof p.scaffoldFrame === 'string' && p.scaffoldFrame.trim().length > 0)
+        ))) {
           savedDraftRef.current = data;
           setShowRestorePrompt(true);
         }
@@ -1223,6 +1350,11 @@ const StoryForge = React.memo(({
     if (d.language) setLanguage(d.language);
     if (d.storyShape) setStoryShape(d.storyShape);
     if (d.valenceByPara && typeof d.valenceByPara === 'object') setValenceByPara(d.valenceByPara);
+    if (d.layoutMode && LAYOUT_MODES[d.layoutMode]) setLayoutMode(d.layoutMode);
+    if (d.comicPageLayout && COMIC_PAGE_LAYOUTS[d.comicPageLayout]) setComicPageLayout(d.comicPageLayout);
+    setPanelDialogue(sanitizePanelDialogue(d.panelDialogue));
+    setPanelDirections(sanitizePanelDirections(d.panelDirections));
+    setPanelStickers(sanitizePanelStickers(d.panelStickers));
     setShowRestorePrompt(false);
     if (addToast) addToast(t('toasts.draft_restored_2'), 'success');
     sfAnnounce('Draft restored');
@@ -1245,6 +1377,9 @@ const StoryForge = React.memo(({
       if (initialConfig.storyPrompt) setStoryPrompt(initialConfig.storyPrompt);
       if (initialConfig.rubricText) setRubricText(initialConfig.rubricText);
       if (initialConfig.language) setLanguage(initialConfig.language);
+      if (initialConfig.layoutMode && LAYOUT_MODES[initialConfig.layoutMode]) setLayoutMode(initialConfig.layoutMode);
+      if (initialConfig.comicPageLayout && COMIC_PAGE_LAYOUTS[initialConfig.comicPageLayout]) setComicPageLayout(initialConfig.comicPageLayout);
+      if (initialConfig.panelDirections) setPanelDirections(sanitizePanelDirections(initialConfig.panelDirections));
       if (initialConfig.minParagraphs) {
         setParagraphs(Array.from({ length: initialConfig.minParagraphs }, (_, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: '', plotBeat: '' })));
       }
@@ -1258,6 +1393,8 @@ const StoryForge = React.memo(({
     const config = {
       storyTitle: storyTitle || sourceTopic || 'Story Assignment',
       genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, language,
+      layoutMode, comicPageLayout,
+      panelDirections: sanitizePanelDirections(panelDirections),
       minParagraphs: paragraphs.length,
       maxParagraphs: 8,
       scaffoldsGenerated,
@@ -1331,7 +1468,11 @@ const StoryForge = React.memo(({
       storyTitle: storyTitle || 'My Story',
       authorName: authorName || 'Student',
       genre, language, vocabTerms,
-      paragraphs: paragraphs.map(p => ({ id: p.id, text: p.text, scaffoldFrame: p.scaffoldFrame })),
+      layoutMode, comicPageLayout,
+      panelDialogue: sanitizePanelDialogue(panelDialogue),
+      panelDirections: sanitizePanelDirections(panelDirections),
+      panelStickers: sanitizePanelStickers(panelStickers),
+      paragraphs: paragraphs.map(p => ({ id: p.id, text: p.text, scaffoldFrame: p.scaffoldFrame, plotBeat: p.plotBeat || '' })),
       illustrations: Object.fromEntries(
         Object.entries(illustrations).filter(([, v]) => v?.imageUrl).map(([k, v]) => [k, { imageUrl: v.imageUrl }])
       ),
@@ -1480,6 +1621,7 @@ const StoryForge = React.memo(({
       setAudioSegments(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setIllustrations(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setPanelDialogue(prev => { const n = { ...prev }; delete n[removedId]; return n; });
+      setPanelDirections(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setPanelStickers(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setGrammarResults(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setValenceByPara(prev => { const n = { ...prev }; delete n[removedId]; return n; });
@@ -1505,13 +1647,38 @@ const StoryForge = React.memo(({
     try {
       const genreHint = GENRE_TEMPLATES[genre]?.scaffoldHint;
       const shapeHint = STORY_SHAPES[storyShape]?.scaffoldHint;
-      const prompt = `You are helping a ${gradeLevel || '5th grade'} student write a creative story about "${sourceTopic || 'a topic of their choice'}".
+      const frameCount = Math.max(minParagraphs, paragraphs.length);
+      const isComicMode = layoutMode === 'comic';
+      const prompt = isComicMode ? `You are helping a ${gradeLevel || '5th grade'} student plan a short comic about "${sourceTopic || 'a topic of their choice'}".
+Required vocabulary terms the student must use: ${vocabTerms.map(v => v.term).join(', ')}.
+${storyPrompt ? `Story theme/prompt: "${storyPrompt}"` : ''}
+${genreHint ? `Genre: Use the structure of ${genreHint}.` : ''}
+${shapeHint ? `Story shape: Trace the emotional arc as ${shapeHint}. Spread this rise and fall across the panels from beginning to end.` : ''}
+Page layout: ${COMIC_PAGE_LAYOUTS[comicPageLayout]?.label || 'Grid'} — ${COMIC_PAGE_LAYOUTS[comicPageLayout]?.desc || COMIC_PAGE_LAYOUTS.grid.desc}
+
+Generate exactly ${frameCount} comic panel plans.
+Each panel needs:
+- caption: a short narration-caption scaffold that guides the student's panel writing
+- beat: one of setup, inciting, rising, climax, falling, resolution
+- speaker: short speaker name or ""
+- speech: one brief speech bubble or ""
+- thought: one brief thought bubble or ""
+- sfx: one short sound effect or ""
+- shot: one of ${COMIC_SHOT_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')} or ""
+- angle: one of ${COMIC_ANGLE_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')} or ""
+- mood: one of ${COMIC_MOOD_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')} or ""
+
+Use 1-2 vocabulary terms naturally across each panel caption or bubble where possible.
+Panel 1 should set the scene. Middle panels should build action/conflict. The last panel should resolve the story.
+${langInstruction}
+Return ONLY JSON: { "panels": [{ "caption": "Panel caption scaffold...", "beat": "setup", "speaker": "", "speech": "", "thought": "", "sfx": "", "shot": "wide", "angle": "eye-level", "mood": "neutral" }] }`
+      : `You are helping a ${gradeLevel || '5th grade'} student write a creative story about "${sourceTopic || 'a topic of their choice'}".
 Required vocabulary terms the student must use: ${vocabTerms.map(v => v.term).join(', ')}.
 ${storyPrompt ? `Story theme/prompt: "${storyPrompt}"` : ''}
 ${genreHint ? `Genre: Write ${genreHint}.` : ''}
 ${shapeHint ? `Story shape: Trace the emotional arc as ${shapeHint}. Spread this rise and fall across the frames from beginning to end.` : ''}
 
-Generate exactly ${Math.max(minParagraphs, paragraphs.length)} paragraph scaffold frames (opening sentences that guide the student through a narrative arc: beginning, middle, end).
+Generate exactly ${frameCount} paragraph scaffold frames (opening sentences that guide the student through a narrative arc: beginning, middle, end).
 Each frame should naturally encourage using 1-2 of the vocabulary terms.
 Frame 1 should set the scene. The middle frames should develop conflict/action. The last frame should resolve the story.
 ${langInstruction}
@@ -1519,11 +1686,66 @@ Return ONLY JSON: { "frames": ["Frame 1 text...", "Frame 2 text...", ...] }`;
 
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
-      if (data.frames && Array.isArray(data.frames)) {
+      if (isComicMode && Array.isArray(data.panels)) {
+        const validBeats = new Set(PLOT_BEATS.map(b => b.value).filter(Boolean));
+        const panels = data.panels.slice(0, maxParagraphs);
+        const newParagraphs = panels.map((panel, i) => {
+          const previous = paragraphs[i] || {};
+          const caption = panel && typeof panel.caption === 'string'
+            ? panel.caption
+            : (panel && typeof panel.scaffoldFrame === 'string' ? panel.scaffoldFrame : '');
+          const beat = panel && typeof panel.beat === 'string' ? panel.beat : '';
+          return {
+            id: previous.id || `p-${Date.now()}-${i}`,
+            text: previous.text || '',
+            scaffoldFrame: caption,
+            plotBeat: validBeats.has(beat) ? beat : (previous.plotBeat || ''),
+          };
+        });
+        const bubbleUpdates = {};
+        const directionUpdates = {};
+        panels.forEach((panel, i) => {
+          if (!panel || typeof panel !== 'object') return;
+          const id = newParagraphs[i]?.id;
+          if (!id) return;
+          const clean = sanitizePanelDialogue({ [id]: {
+            speaker: typeof panel.speaker === 'string' ? panel.speaker : '',
+            speech: typeof panel.speech === 'string' ? panel.speech : '',
+            thought: typeof panel.thought === 'string' ? panel.thought : '',
+            sfx: typeof panel.sfx === 'string' ? panel.sfx : '',
+          } })[id];
+          if (clean) bubbleUpdates[id] = clean;
+          const cleanDirection = sanitizePanelDirections({ [id]: {
+            shot: typeof panel.shot === 'string' ? panel.shot : '',
+            angle: typeof panel.angle === 'string' ? panel.angle : '',
+            mood: typeof panel.mood === 'string' ? panel.mood : '',
+          } })[id];
+          if (cleanDirection) directionUpdates[id] = cleanDirection;
+        });
+        setParagraphs(newParagraphs);
+        if (Object.keys(bubbleUpdates).length > 0) {
+          setPanelDialogue(prev => {
+            const next = { ...prev };
+            Object.keys(bubbleUpdates).forEach((id) => { next[id] = { ...(next[id] || {}), ...bubbleUpdates[id] }; });
+            return next;
+          });
+        }
+        if (Object.keys(directionUpdates).length > 0) {
+          setPanelDirections(prev => {
+            const next = { ...prev };
+            Object.keys(directionUpdates).forEach((id) => { next[id] = { ...(next[id] || {}), ...directionUpdates[id] }; });
+            return next;
+          });
+        }
+        setScaffoldsGenerated(true);
+        if (addToast) addToast('Comic panel plan generated.', 'success');
+        awardXP(5, 'Generated comic panel plan');
+      } else if (data.frames && Array.isArray(data.frames)) {
         const newParagraphs = data.frames.map((frame, i) => ({
           id: paragraphs[i]?.id || `p-${Date.now()}-${i}`,
           text: paragraphs[i]?.text || '',
           scaffoldFrame: frame,
+          plotBeat: paragraphs[i]?.plotBeat || '',
         }));
         setParagraphs(newParagraphs);
         setScaffoldsGenerated(true);
@@ -1570,6 +1792,103 @@ Return ONLY JSON: { "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 
   // ═══════════════════════════════════════════════════════════
   // GRAMMAR / STYLE CHECKER + SHOW DON'T TELL
   // ═══════════════════════════════════════════════════════════
+
+  const draftComicBubbles = async (targetIdx = null) => {
+    if (!onCallGemini) return;
+    const selectedPanels = paragraphs
+      .map((p, idx) => ({ p, idx }))
+      .filter(({ p, idx }) => (targetIdx === null || idx === targetIdx) && ((p.text || p.scaffoldFrame || '').trim().length > 0));
+    if (selectedPanels.length === 0) {
+      if (addToast) addToast('Add a narration caption before drafting comic bubbles.', 'info');
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      const panelBrief = selectedPanels.map(({ p, idx }) => ({
+        panel: idx + 1,
+        narration: (p.text || p.scaffoldFrame || '').slice(0, 700),
+        current: panelDialogue[p.id] || {},
+        currentDirection: panelDirections[p.id] || {},
+      }));
+      const prompt = `You are helping a ${gradeLevel || '5th grade'} student turn story narration into comic panels.
+For each panel, draft concise comic bubble content from the narration.
+Rules:
+- Do not rewrite the narration caption.
+- Use one short speech bubble only when a character would naturally say something.
+- Use one short thought bubble only when inner feeling or realization matters.
+- Use one SFX only when there is a clear action sound; keep it to 1-2 words.
+- Speaker names should be short. Leave fields as "" when not needed.
+- Also suggest simple visual direction when the narration implies it:
+  shot: one of ${COMIC_SHOT_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')} or ""
+  angle: one of ${COMIC_ANGLE_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')} or ""
+  mood: one of ${COMIC_MOOD_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')} or ""
+- Keep language appropriate for school and for the student's grade level.
+${langInstruction}
+
+Panels:
+${JSON.stringify(panelBrief, null, 2)}
+
+Return ONLY JSON:
+{
+  "panels": [
+    { "panel": 1, "speaker": "", "speech": "", "thought": "", "sfx": "", "shot": "", "angle": "", "mood": "" }
+  ]
+}`;
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      const generated = Array.isArray(data.panels) ? data.panels : [];
+      const byPanel = new Map(generated.map(item => [Number(item.panel), item]));
+      const updates = {};
+      const directionUpdates = {};
+      selectedPanels.forEach(({ p, idx }) => {
+        const raw = byPanel.get(idx + 1);
+        if (!raw || typeof raw !== 'object') return;
+        const normalized = {
+          speaker: typeof raw.speaker === 'string' ? raw.speaker : '',
+          speech: typeof raw.speech === 'string' ? raw.speech : (typeof raw.dialogue === 'string' ? raw.dialogue : ''),
+          thought: typeof raw.thought === 'string' ? raw.thought : '',
+          sfx: typeof raw.sfx === 'string' ? raw.sfx : (typeof raw.soundEffect === 'string' ? raw.soundEffect : ''),
+        };
+        const clean = sanitizePanelDialogue({ [p.id]: normalized })[p.id];
+        if (clean) updates[p.id] = clean;
+        const cleanDirection = sanitizePanelDirections({ [p.id]: {
+          shot: typeof raw.shot === 'string' ? raw.shot : '',
+          angle: typeof raw.angle === 'string' ? raw.angle : '',
+          mood: typeof raw.mood === 'string' ? raw.mood : '',
+        } })[p.id];
+        if (cleanDirection) directionUpdates[p.id] = cleanDirection;
+      });
+      const dialogueApplied = Object.keys(updates).length;
+      const directionApplied = Object.keys(directionUpdates).length;
+      if (dialogueApplied > 0) {
+        setPanelDialogue(prev => {
+          const next = { ...prev };
+          Object.keys(updates).forEach((id) => { next[id] = { ...(next[id] || {}), ...updates[id] }; });
+          return next;
+        });
+      }
+      if (directionApplied > 0) {
+        setPanelDirections(prev => {
+          const next = { ...prev };
+          Object.keys(directionUpdates).forEach((id) => { next[id] = { ...(next[id] || {}), ...directionUpdates[id] }; });
+          return next;
+        });
+      }
+      if (dialogueApplied > 0 || directionApplied > 0) {
+        setIsDirty(true);
+        awardXP(5, 'Drafted comic bubbles');
+        if (addToast) addToast(targetIdx === null ? 'Comic bubbles and direction drafted.' : `Panel ${targetIdx + 1} comic notes drafted.`, 'success');
+        sfAnnounce('Comic notes drafted');
+      } else if (addToast) {
+        addToast('No comic bubbles were generated. Try adding more panel narration.', 'info');
+      }
+    } catch (err) {
+      console.warn('Comic bubble drafting failed:', err);
+      if (addToast) addToast('Comic bubble drafting failed. Try again.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const checkGrammarAndStyle = async () => {
     if (!onCallGemini) return;
@@ -1629,14 +1948,36 @@ Return ONLY JSON:
     return ART_STYLE_MAP[artStyle] || ART_STYLE_MAP['storybook'];
   };
 
+  const getIllustrationSourceText = (paragraph) => {
+    if (!paragraph) return '';
+    const base = (paragraph.text || paragraph.scaffoldFrame || '').trim();
+    if (layoutMode !== 'comic') return base;
+    const bubble = panelDialogue[paragraph.id] || {};
+    const direction = panelDirections[paragraph.id] || {};
+    const bubbleLines = [];
+    const directionBits = [
+      direction.shot ? `Shot: ${getComicDirectionLabel('shot', direction.shot)}` : '',
+      direction.angle ? `Angle: ${getComicDirectionLabel('angle', direction.angle)}` : '',
+      direction.mood ? `Mood: ${getComicDirectionLabel('mood', direction.mood)}` : '',
+    ].filter(Boolean);
+    if (bubble.speaker || bubble.speech) bubbleLines.push(`Speech bubble: ${bubble.speaker ? bubble.speaker + ': ' : ''}${bubble.speech || ''}`.trim());
+    if (bubble.thought) bubbleLines.push(`Thought bubble: ${bubble.thought}`);
+    if (bubble.sfx) bubbleLines.push(`Sound effect: ${bubble.sfx}`);
+    if (directionBits.length) bubbleLines.push(`Visual direction: ${directionBits.join(', ')}`);
+    return [base, ...bubbleLines].filter(Boolean).join('\n');
+  };
+
   const generateImagePrompt = async (paragraphId, text, idx) => {
     if (!onCallGemini) return;
     const style = getStyleDesc();
+    const panel = paragraphs.find(p => p.id === paragraphId);
+    const sourceText = (text || '').trim() || getIllustrationSourceText(panel);
+    if (!sourceText) return;
     const promptResult = await onCallGemini(
-      `Given this paragraph from a student's creative story:\n"${text.substring(0, 500)}"\n\nWrite a concise image generation prompt (max 80 words) that captures the key visual scene described. Focus on the setting, characters, and action. Do NOT include any text, words, or letters in the image.\nArt style: ${style}.\nReturn ONLY the image prompt text, nothing else.`
+      `Given this ${layoutMode === 'comic' ? 'comic panel plan' : 'paragraph'} from a student's creative story:\n"${sourceText.substring(0, 700)}"\n\nWrite a concise image generation prompt (max 80 words) that captures the key visual scene described. Focus on the setting, characters, and action. Do NOT include any text, words, or letters in the image.\nArt style: ${style}.\nReturn ONLY the image prompt text, nothing else.`
     );
     const imgPrompt = promptResult.trim() + ' STRICTLY NO TEXT, NO LABELS, NO WORDS IN THE IMAGE.';
-    setPromptPreview({ paragraphId, text, idx, prompt: imgPrompt });
+    setPromptPreview({ paragraphId, text: sourceText, idx, prompt: imgPrompt });
   };
 
   const confirmIllustration = async (customPrompt) => {
@@ -1677,8 +2018,11 @@ Return ONLY JSON:
     setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: true } }));
     try {
       const style = getStyleDesc();
+      const panel = paragraphs.find(p => p.id === paragraphId);
+      const sourceText = (text || '').trim() || getIllustrationSourceText(panel);
+      if (!sourceText) throw new Error('No illustration source text');
       const promptResult = await onCallGemini(
-        `Given this paragraph from a student's creative story:\n"${text.substring(0, 500)}"\n\nWrite a concise image generation prompt (max 80 words) that captures the key visual scene described. Focus on the setting, characters, and action. Do NOT include any text, words, or letters in the image.\nArt style: ${style}.\nReturn ONLY the image prompt text, nothing else.`
+        `Given this ${layoutMode === 'comic' ? 'comic panel plan' : 'paragraph'} from a student's creative story:\n"${sourceText.substring(0, 700)}"\n\nWrite a concise image generation prompt (max 80 words) that captures the key visual scene described. Focus on the setting, characters, and action. Do NOT include any text, words, or letters in the image.\nArt style: ${style}.\nReturn ONLY the image prompt text, nothing else.`
       );
       const imgPrompt = promptResult.trim() + ' STRICTLY NO TEXT, NO LABELS, NO WORDS IN THE IMAGE.';
       let imageUrl = await onCallImagen(imgPrompt, 400, 0.8);
@@ -1711,8 +2055,9 @@ Return ONLY JSON:
     const current = paragraphsRef.current;
     for (let i = 0; i < current.length; i++) {
       const p = current[i];
-      if (p.text.trim().length >= 20 && !illustrations[p.id]?.imageUrl) {
-        await illustrateParagraph(p.id, p.text, i);
+      const sourceText = getIllustrationSourceText(p);
+      if (sourceText.trim().length >= 20 && !illustrations[p.id]?.imageUrl) {
+        await illustrateParagraph(p.id, sourceText, i);
         if (i < current.length - 1) await new Promise(r => setTimeout(r, 500));
       }
     }
@@ -2501,11 +2846,12 @@ Return ONLY JSON:
 
     let chaptersHtml = '';
     const isComic = layoutMode === 'comic';
-    if (isComic) chaptersHtml += '<div class="comic-grid">';
+    const comicLayout = COMIC_PAGE_LAYOUTS[comicPageLayout] ? comicPageLayout : 'grid';
+    if (isComic) chaptersHtml += `<div class="comic-grid comic-layout-${comicLayout}">`;
     paragraphs.forEach((p, idx) => {
       const img = illustrations[p.id]?.imageUrl;
       const audio = audioSegments[p.id];
-      const safeText = escapeHtml(p.text);
+      const safeText = escapeHtml(isComic ? (p.text || p.scaffoldFrame || '') : p.text);
       if (isComic) {
         // Pull dialogue/sticker overlay data — these were rendered in-app but previously dropped on export.
         const panel = panelDialogue[p.id] || {};
@@ -2600,6 +2946,12 @@ main{display:block}
 .print-btn:hover{background:#4338ca}
 .print-btn:focus{outline:3px solid #fbbf24;outline-offset:2px}
 .comic-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px;background:#1e293b;border-radius:8px}
+.comic-layout-strip{grid-template-columns:1fr}
+.comic-layout-strip .panel-img{aspect-ratio:16/9}
+.comic-layout-splash .panel:first-child{grid-column:1/-1}
+.comic-layout-splash .panel:first-child .panel-img{aspect-ratio:16/9}
+.comic-layout-manga{direction:rtl}
+.comic-layout-manga .panel{direction:ltr}
 .panel{background:white;border:3px solid #0f172a;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;position:relative}
 .panel-img-wrap{position:relative}
 .panel-img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
@@ -2611,6 +2963,7 @@ main{display:block}
 .thought-bubble{margin:8px;padding:8px 12px;background:#f0f9ff;border:2px dashed #7c3aed;border-radius:14px;color:#5b21b6;font-style:italic;font-size:0.88em;line-height:1.4}
 .panel-caption{font-size:0.85em;color:#475569;font-style:italic}
 .speech-bubble{padding:12px;font-size:0.95em;line-height:1.5;border-top:2px solid #e2e8f0;position:relative;background:#fff}
+@media (max-width:700px){.comic-grid{grid-template-columns:1fr}.comic-layout-splash .panel:first-child{grid-column:auto}}
 @media print{.skip-link,.print-btn{display:none}.chapter,.panel{break-inside:avoid}body{background:#fff !important}.cover{background:#fffbeb !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.comic-grid{background:#1e293b !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style></head><body>
@@ -2620,7 +2973,7 @@ main{display:block}
   ${coverArt ? `<img src="${escapeHtml(coverArt)}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
   <h1 id="story-title">${title}</h1>
   <p class="meta">Written by ${author}</p>
-  <p class="meta">${escapeHtml(date)} · ${escapeHtml(GENRE_TEMPLATES[genre]?.label || 'Creative Writing')} · Art style: ${escapeHtml(artStyle)}</p>
+  <p class="meta">${escapeHtml(date)} · ${escapeHtml(GENRE_TEMPLATES[genre]?.label || 'Creative Writing')} · Art style: ${escapeHtml(artStyle)}${isComic ? ` · Layout: ${escapeHtml(COMIC_PAGE_LAYOUTS[comicLayout]?.label || 'Grid')}` : ''}</p>
 </header>
 <main id="story-content" role="main" aria-labelledby="story-title">
 ${chaptersHtml}
@@ -2644,6 +2997,54 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
   // ═══════════════════════════════════════════════════════════
   // SLIDESHOW EXPORT
   // ═══════════════════════════════════════════════════════════
+
+  const exportComicScript = () => {
+    if (layoutMode !== 'comic') return;
+    if (!window.confirm(`Export this comic script as a file?\n\nThe script is de-identified — it uses the codename, not a real name — but it contains the student's full panel captions and dialogue. Save it to a school-approved location and handle it per your district's student-records policy.\n\nContinue?`)) return;
+    const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || 'My Comic');
+    const author = escapeHtml(authorName || 'A Creative Student');
+    const comicLayout = COMIC_PAGE_LAYOUTS[comicPageLayout] ? comicPageLayout : 'grid';
+    const layoutLabel = escapeHtml(COMIC_PAGE_LAYOUTS[comicLayout]?.label || 'Grid');
+    const panelsHtml = paragraphs.map((p, idx) => {
+      const panel = panelDialogue[p.id] || {};
+      const direction = panelDirections[p.id] || {};
+      const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label || '';
+      const caption = p.text || p.scaffoldFrame || '';
+      const imagePrompt = illustrations[p.id]?.prompt || '';
+      const directionText = [
+        direction.shot ? `Shot: ${getComicDirectionLabel('shot', direction.shot)}` : '',
+        direction.angle ? `Angle: ${getComicDirectionLabel('angle', direction.angle)}` : '',
+        direction.mood ? `Mood: ${getComicDirectionLabel('mood', direction.mood)}` : '',
+      ].filter(Boolean).join(' / ');
+      return `<section class="script-panel">
+        <header><h2>Panel ${idx + 1}</h2>${beatLabel ? `<span>${escapeHtml(beatLabel)}</span>` : ''}</header>
+        <dl>
+          <dt>Caption</dt><dd>${escapeHtml(caption).replace(/\n/g, '<br/>') || '<em>Not written yet</em>'}</dd>
+          <dt>Visual Direction</dt><dd>${directionText ? escapeHtml(directionText) : '<em>None</em>'}</dd>
+          <dt>Speech</dt><dd>${panel.speech ? `${panel.speaker ? `<strong>${escapeHtml(panel.speaker)}:</strong> ` : ''}${escapeHtml(panel.speech)}` : '<em>None</em>'}</dd>
+          <dt>Thought</dt><dd>${panel.thought ? escapeHtml(panel.thought) : '<em>None</em>'}</dd>
+          <dt>SFX</dt><dd>${panel.sfx ? escapeHtml(panel.sfx) : '<em>None</em>'}</dd>
+          <dt>Image Prompt</dt><dd>${imagePrompt ? escapeHtml(imagePrompt) : '<em>No illustration prompt yet</em>'}</dd>
+        </dl>
+      </section>`;
+    }).join('');
+    const html = `<!DOCTYPE html><html lang="${langBcp47}" dir="${isRtl(langBcp47) ? 'rtl' : 'ltr'}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} — Comic Script</title>
+<style>
+*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#111827;max-width:900px;margin:0 auto;padding:32px 20px;background:#f8fafc}h1{font-size:2rem;margin:0 0 4px}.meta{color:#475569;font-size:.9rem;margin-bottom:24px}.script-panel{background:white;border:2px solid #111827;border-radius:8px;margin:16px 0;break-inside:avoid;overflow:hidden}.script-panel header{display:flex;align-items:center;justify-content:space-between;background:#111827;color:white;padding:8px 12px}.script-panel h2{font-size:1rem;margin:0}.script-panel header span{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#fde68a}dl{display:grid;grid-template-columns:120px 1fr;margin:0}dt{font-weight:800;background:#f1f5f9;border-top:1px solid #e2e8f0;padding:8px 10px}dd{margin:0;border-top:1px solid #e2e8f0;padding:8px 10px}em{color:#64748b}.print-btn{position:fixed;top:16px;right:16px;padding:8px 16px;background:#111827;color:white;border:0;border-radius:8px;font-weight:800;cursor:pointer}@media print{body{background:white}.print-btn{display:none}.script-panel{break-inside:avoid}}
+</style></head><body>
+<button class="print-btn" onclick="window.print()">Print</button>
+<h1>${title}</h1>
+<div class="meta">Comic script by ${author} · Layout: ${layoutLabel} · ${escapeHtml(new Date().toLocaleDateString())}</div>
+${panelsHtml}
+</body></html>`;
+    try {
+      const w = window.open('', '_blank');
+      if (w) { w.document.write(html); w.document.close(); }
+      else if (addToast) addToast(t('toasts.pop_up_blocked_allow_pop_3'), 'error');
+    } catch (e) {
+      if (addToast) addToast(t('toasts.export_failed_2'), 'error');
+    }
+  };
 
   const exportSlideshow = () => {
     const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || 'My Story');
@@ -2757,11 +3158,16 @@ show();
     }
     try {
       const title = storyTitle || storyPrompt || sourceTopic || 'My Story';
+      const safePanelDialogue = sanitizePanelDialogue(panelDialogue);
+      const safePanelDirections = sanitizePanelDirections(panelDirections);
+      const safePanelStickers = sanitizePanelStickers(panelStickers);
       await liveSession.push({
         type: 'storyforge',
         title,
         author: authorName || 'Student',
         genre: GENRE_TEMPLATES[genre]?.label || 'Creative Writing',
+        layoutMode,
+        comicPageLayout,
         paragraphCount: paragraphs.length,
         wordCount: totalWords,
         vocabUsed: vocabUsedCount,
@@ -2769,7 +3175,13 @@ show();
         coverArt: coverArt || null,
         preview: paragraphs[0]?.text?.substring(0, 200) || '',
         // Portfolio gallery data
-        fullStory: paragraphs.map(p => ({ text: p.text.substring(0, 500), illustration: illustrations[p.id]?.imageUrl || null })),
+        fullStory: paragraphs.map(p => ({
+          text: p.text.substring(0, 500),
+          illustration: illustrations[p.id]?.imageUrl || null,
+          panelDialogue: safePanelDialogue[p.id] || null,
+          panelDirection: safePanelDirections[p.id] || null,
+          panelSticker: safePanelStickers[p.id] || null,
+        })),
         gradingScore: gradingResult?.totalScore || null,
         readingGrade: readingLevel?.grade || null,
         draftCount,
@@ -2795,7 +3207,11 @@ show();
       _storyForgeVersion: 2,
       // ── Story content ──
       storyTitle, codename: authorName, genre, language, vocabTerms, artStyle, customArtStyle,
-      storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount,
+      storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, storyShape, valenceByPara,
+      layoutMode, comicPageLayout,
+      panelDialogue: sanitizePanelDialogue(panelDialogue),
+      panelDirections: sanitizePanelDirections(panelDirections),
+      panelStickers: sanitizePanelStickers(panelStickers),
       illustrations: Object.fromEntries(
         Object.entries(illustrations).filter(([, v]) => v?.imageUrl).map(([k, v]) => [k, { imageUrl: v.imageUrl, prompt: v.prompt }])
       ),
@@ -2863,6 +3279,11 @@ show();
           if (typeof d.customArtStyle === 'string') setCustomArtStyle(d.customArtStyle);
           if (typeof d.storyPrompt === 'string') setStoryPrompt(d.storyPrompt);
           if (typeof d.rubricText === 'string') setRubricText(d.rubricText);
+          if (d.layoutMode && LAYOUT_MODES[d.layoutMode]) setLayoutMode(d.layoutMode);
+          if (d.comicPageLayout && COMIC_PAGE_LAYOUTS[d.comicPageLayout]) setComicPageLayout(d.comicPageLayout);
+          setPanelDialogue(sanitizePanelDialogue(d.panelDialogue));
+          setPanelDirections(sanitizePanelDirections(d.panelDirections));
+          setPanelStickers(sanitizePanelStickers(d.panelStickers));
           { const cp = sanitizeParagraphs(d.paragraphs); if (cp) setParagraphs(cp); }
           if (d.scaffoldsGenerated) setScaffoldsGenerated(true);
           if (typeof d.draftCount === 'number') setDraftCount(d.draftCount);
@@ -2966,7 +3387,7 @@ show();
             <p className="text-sm text-slate-600 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
             <div className="flex gap-3 justify-center">
               <button data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.keep_working")}</button>
-              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { const draft = { storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara }; localStorage.setItem(SAVE_KEY, JSON.stringify(draft)); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">{t("ui_common.save_draft_close")}</button>
+              <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { localStorage.setItem(SAVE_KEY, JSON.stringify(createDraftSnapshot())); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">{t("ui_common.save_draft_close")}</button>
               <button data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { localStorage.removeItem(SAVE_KEY); } catch(e) {} onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">{t("ui_common.close_anyway")}</button>
             </div>
           </div>
@@ -3130,6 +3551,52 @@ show();
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Format Picker */}
+              <div className="bg-white rounded-2xl border-2 border-blue-100 p-5 shadow-sm">
+                <h4 className="text-sm font-bold text-blue-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Type size={16} /> Format
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {Object.entries(LAYOUT_MODES).map(([key, m]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setLayoutMode(key)}
+                      aria-pressed={layoutMode === key}
+                      aria-label={m.desc}
+                      title={m.desc}
+                      className={`p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${
+                        layoutMode === key ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-blue-300'
+                      }`}
+                    >
+                      {m.emoji}<br/>{m.label}
+                    </button>
+                  ))}
+                </div>
+                {layoutMode === 'comic' && (
+                  <div className="mt-4 pt-4 border-t border-blue-100">
+                    <div className="text-[11px] font-bold text-blue-600 uppercase tracking-widest mb-2">Comic Page Layout</div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setComicPageLayout(key)}
+                          aria-pressed={comicPageLayout === key}
+                          title={item.desc}
+                          className={`p-2.5 rounded-xl border-2 text-left transition-all ${
+                            comicPageLayout === key ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-blue-300'
+                          }`}
+                        >
+                          <div className="text-xs font-black">{item.label}</div>
+                          <div className="text-[10px] leading-snug opacity-75 mt-0.5">{item.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Story Shape Picker — Vonnegut-style emotional shapes (optional craft lens) */}
@@ -3379,12 +3846,24 @@ show();
                       </button>
                     ))}
                   </div>
+                  {layoutMode === 'comic' && onCallGemini && (
+                    <button
+                      onClick={() => draftComicBubbles()}
+                      disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)}
+                      className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-xs font-bold hover:bg-blue-200 transition-colors flex items-center gap-2 disabled:opacity-50"
+                      title="Draft speech, thought, and SFX bubbles from the panel captions"
+                    >
+                      <Sparkles size={14} /> Draft Bubbles
+                    </button>
+                  )}
                   <button
                     onClick={generateScaffolds}
                     disabled={isProcessing}
                     className="px-4 py-2 bg-rose-100 text-rose-700 rounded-full text-xs font-bold hover:bg-rose-200 transition-colors flex items-center gap-2 disabled:opacity-50"
                   >
-                    <Sparkles size={14} /> {scaffoldsGenerated ? 'Regenerate Scaffolds' : 'Generate Scaffolds'}
+                    <Sparkles size={14} /> {layoutMode === 'comic'
+                      ? (scaffoldsGenerated ? 'Regenerate Panel Plan' : 'Generate Panel Plan')
+                      : (scaffoldsGenerated ? 'Regenerate Scaffolds' : 'Generate Scaffolds')}
                   </button>
                   {/* Focus Mode Toggle — write one paragraph at a time */}
                   <button
@@ -3612,7 +4091,45 @@ show();
                   {layoutMode === 'comic' ? (
                     /* ── Comic Panel Writing Mode — dialogue, thought, narration fields ── */
                     <div className="p-3 space-y-2 bg-gradient-to-b from-slate-50 to-white">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-[11px] font-black text-slate-700 uppercase tracking-widest">Panel {idx + 1} Bubbles</div>
+                        {onCallGemini && (
+                          <button
+                            type="button"
+                            onClick={() => draftComicBubbles(idx)}
+                            disabled={isProcessing || !(p.text || p.scaffoldFrame || '').trim()}
+                            className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
+                            title="Draft this panel's speech, thought, and SFX bubbles"
+                          >
+                            <Sparkles size={10} /> Draft
+                          </button>
+                        )}
+                      </div>
                       {/* Narration caption — top yellow bar */}
+                      <div className="rounded-lg border border-slate-200 bg-white p-2">
+                        <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">Panel Direction</div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          {[
+                            { field: 'shot', label: 'Shot', options: COMIC_SHOT_OPTIONS },
+                            { field: 'angle', label: 'Angle', options: COMIC_ANGLE_OPTIONS },
+                            { field: 'mood', label: 'Mood', options: COMIC_MOOD_OPTIONS },
+                          ].map(({ field, label, options }) => (
+                            <label key={field} className="min-w-0">
+                              <span className="sr-only">{label}</span>
+                              <select
+                                value={(panelDirections[p.id] || {})[field] || ''}
+                                onChange={(e) => updatePanelDirection(p.id, field, e.target.value)}
+                                className="w-full px-2 py-1.5 text-[11px] rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-bold outline-none focus:border-blue-400"
+                                aria-label={`Panel ${idx + 1} ${label.toLowerCase()}`}
+                              >
+                                {options.map(opt => (
+                                  <option key={opt.value || `${field}-none`} value={opt.value}>{opt.label}</option>
+                                ))}
+                              </select>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
                       <div>
                         <label className="text-[11px] font-bold text-amber-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
                           📖 Narration Caption
@@ -3931,8 +4448,8 @@ show();
                 <div key={p.id} className="bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-5">
                   <div className="flex items-start gap-4">
                     <div className="flex-1">
-                      <div className="text-xs font-bold text-purple-600 mb-1">Paragraph {idx + 1}</div>
-                      <p className="text-sm text-slate-700 leading-relaxed">{p.text || <span className="italic text-slate-500">{t("ui_common.empty_paragraph")}</span>}</p>
+                      <div className="text-xs font-bold text-purple-600 mb-1">{layoutMode === 'comic' ? 'Panel' : 'Paragraph'} {idx + 1}</div>
+                      <p className="text-sm text-slate-700 leading-relaxed">{p.text || p.scaffoldFrame || <span className="italic text-slate-500">{t("ui_common.empty_paragraph")}</span>}</p>
                       {/* Show the prompt used */}
                       {illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && (
                         <div className="mt-2 text-[11px] text-purple-700 italic truncate" title={illustrations[p.id].prompt}>
@@ -3968,7 +4485,7 @@ show();
                               <Sparkles size={12} className="text-teal-600" />
                             </button>
                             <button
-                              onClick={() => regenerateIllustration(p.id, p.text, idx)}
+                              onClick={() => regenerateIllustration(p.id, getIllustrationSourceText(p), idx)}
                               disabled={isProcessing}
                               className="p-1.5 bg-white/90 rounded-full shadow-md hover:bg-purple-100"
                               title={t("ui_common.regenerate_illustration")}
@@ -4002,7 +4519,7 @@ show();
                           <span className="text-red-600 text-lg">{'\u26A0\uFE0F'}</span>
                           <span className="text-[11px] font-bold text-red-500">{t("ui_common.generation_failed")}</span>
                           <button
-                            onClick={() => { setIllustrations(prev => ({ ...prev, [p.id]: {} })); illustrateParagraph(p.id, p.text, idx); }}
+                            onClick={() => { setIllustrations(prev => ({ ...prev, [p.id]: {} })); illustrateParagraph(p.id, getIllustrationSourceText(p), idx); }}
                             disabled={isProcessing}
                             className="text-[11px] font-bold text-red-600 hover:text-red-800 underline disabled:opacity-40"
                           >
@@ -4012,16 +4529,16 @@ show();
                       ) : (
                         <div className="flex flex-col gap-1">
                           <button
-                            onClick={() => illustrateParagraph(p.id, p.text, idx)}
-                            disabled={p.text.trim().length < 20 || isProcessing}
+                            onClick={() => illustrateParagraph(p.id, getIllustrationSourceText(p), idx)}
+                            disabled={getIllustrationSourceText(p).trim().length < 20 || isProcessing}
                             className="w-48 h-28 bg-purple-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-purple-200 hover:border-purple-400 hover:bg-purple-100 transition-colors disabled:opacity-40 cursor-pointer"
                           >
                             <ImageIcon size={24} className="text-purple-700 mb-1" />
                             <span className="text-xs font-bold text-purple-500">Auto-Generate</span>
                           </button>
                           <button
-                            onClick={() => generateImagePrompt(p.id, p.text, idx)}
-                            disabled={p.text.trim().length < 20 || isProcessing}
+                            onClick={() => generateImagePrompt(p.id, getIllustrationSourceText(p), idx)}
+                            disabled={getIllustrationSourceText(p).trim().length < 20 || isProcessing}
                             className="w-48 py-1.5 bg-purple-100 rounded-lg text-[11px] font-bold text-purple-600 hover:bg-purple-200 transition-colors disabled:opacity-40 flex items-center justify-center gap-1"
                           >
                             <Eye size={10} /> Preview Prompt First
@@ -4930,6 +5447,23 @@ show();
                   </button>
                 ))}
               </div>
+              {layoutMode === 'comic' && (
+                <div className="flex flex-wrap justify-center gap-2 mb-4">
+                  {Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => (
+                    <button
+                      key={key}
+                      onClick={() => setComicPageLayout(key)}
+                      title={item.desc}
+                      aria-pressed={comicPageLayout === key}
+                      className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all ${
+                        comicPageLayout === key ? 'bg-slate-900 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Preview */}
               <div className="bg-gradient-to-b from-amber-50 to-white border-2 border-amber-200 rounded-2xl overflow-hidden shadow-lg">
@@ -4942,11 +5476,11 @@ show();
 
                 {layoutMode === 'comic' ? (
                   /* ── Comic Panel Grid ── */
-                  <div className="p-4 grid grid-cols-2 gap-3 bg-slate-900">
+                  <div className={`p-4 grid gap-3 bg-slate-900 ${comicPageLayout === 'strip' ? 'grid-cols-1' : 'grid-cols-2'}`} style={{ direction: comicPageLayout === 'manga' ? 'rtl' : 'ltr' }}>
                     {paragraphs.map((p, idx) => (
-                      <div key={p.id} className="bg-white rounded-lg overflow-hidden shadow-md relative" style={{ border: '3px solid #1e293b' }}>
+                      <div key={p.id} className={`bg-white rounded-lg overflow-hidden shadow-md relative ${comicPageLayout === 'splash' && idx === 0 ? 'col-span-2' : ''}`} style={{ border: '3px solid #1e293b', direction: 'ltr' }}>
                         {illustrations[p.id]?.imageUrl && (
-                          <img src={illustrations[p.id].imageUrl} alt={`Panel ${idx + 1}`} className="w-full aspect-square object-cover" />
+                          <img src={illustrations[p.id].imageUrl} alt={`Panel ${idx + 1}`} className={`w-full object-cover ${comicPageLayout === 'strip' || (comicPageLayout === 'splash' && idx === 0) ? 'aspect-video' : 'aspect-square'}`} />
                         )}
                         {/* Sticker overlay */}
                         {panelStickers[p.id] && (
@@ -4962,9 +5496,9 @@ show();
                         )}
                         <div className="p-2.5 relative space-y-1.5">
                           {/* Narration caption — yellow bar */}
-                          {p.text.trim() && (
+                          {(p.text || p.scaffoldFrame || '').trim() && (
                             <div className="bg-amber-50 border border-amber-200 rounded-md px-2 py-1 text-[11px] text-amber-800 italic leading-snug">
-                              {smartTruncate(p.text, 200)}
+                              {smartTruncate(p.text || p.scaffoldFrame, 200)}
                             </div>
                           )}
                           {/* Speech bubble */}
@@ -5039,6 +5573,14 @@ show();
                 >
                   <Download size={24} /> Export Storybook
                 </button>
+                {layoutMode === 'comic' && (
+                  <button
+                    onClick={exportComicScript}
+                    className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center gap-2"
+                  >
+                    <Download size={18} /> Comic Script
+                  </button>
+                )}
                 <button
                   onClick={exportSlideshow}
                   className="px-6 py-3 bg-indigo-600 text-white rounded-2xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"

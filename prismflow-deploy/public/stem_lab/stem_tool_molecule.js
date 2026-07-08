@@ -1435,22 +1435,24 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     })
                   )
                 ),
-                React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 lg:grid-cols-5" },
+                React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" },
                   [
                     { id: 'viewer', title: 'View', body: '3D model and formula readout.', tone: '#0f766e' },
+                    { id: 'realStructures', title: 'Real Structures', body: 'Open Mol* protein and DNA viewer.', tone: '#0891b2', action: function() { if (typeof setLabToolData === 'function') setLabToolData(function(prev) { var cur = Object.assign({}, (prev && prev._moleculeShelf) || {}); cur.returnTool = 'molecule'; var next = Object.assign({}, prev); next._moleculeShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('moleculeShelf'); if (typeof announceToSR === 'function') announceToSR('Opening Molecule Shelf real structures viewer.'); } else if (typeof addToast === 'function') addToast('Real structures viewer is not available right now.', 'info'); } },
                     { id: 'creator', title: 'Create', body: 'Combine atoms and discover compounds.', tone: '#9333ea' },
                     { id: 'build', title: 'Build', body: 'Drag atoms and sketch bonds.', tone: '#d97706' },
                     { id: 'table', title: 'Research', body: 'Use the periodic table as reference.', tone: '#2563eb' },
                     { id: 'reactions', title: 'React', body: 'Balance equations and products.', tone: '#dc2626' }
                   ].map(function(route) {
                     var active = mode === route.id;
+                    var launchesShelf = typeof route.action === 'function';
                     return React.createElement("button", { key: route.id,
-                      onClick: function() { upd('moleculeMode', route.id); },
+                      onClick: function() { if (launchesShelf) { route.action(); return; } upd('moleculeMode', route.id); },
                       className: "min-h-[104px] rounded-xl border bg-white p-3 text-left transition-all hover:shadow-md active:scale-[0.98]",
                       style: { borderColor: active ? route.tone : '#cbd5e1', boxShadow: active ? '0 0 0 2px ' + route.tone + '33' : 'none' } },
                       React.createElement("div", { className: "text-sm font-black", style: { color: route.tone } }, route.title),
                       React.createElement("div", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, route.body),
-                      React.createElement("div", { className: "mt-2 text-[11px] font-black", style: { color: route.tone } }, active ? "Open now" : "Open")
+                      React.createElement("div", { className: "mt-2 text-[11px] font-black", style: { color: route.tone } }, launchesShelf ? "Launch" : (active ? "Open now" : "Open"))
                     );
                   })
                 )

@@ -1,11 +1,11 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-04T05:16:38.919Z
+Generated: 2026-07-08T21:20:53.613Z
 
 ## Scope
 
-- Registered STEM tools: 114
-- STEM tool files: 111
+- Registered STEM tools: 121
+- STEM tool files: 118
 - Monitored student-facing visual markers: 49
 
 ## Summary
@@ -15,11 +15,11 @@ Generated: 2026-07-04T05:16:38.919Z
 | Load errors | 0 |
 | Marker passes | 49 |
 | Marker failures | 0 |
-| Monitored first-screen findings | 33 |
+| Monitored first-screen findings | 13 |
 | High-confidence monitored errors | 0 |
 | Source/public drift | 0 |
-| Any source/public/build drift | 0 |
-| Monitored file drift | 0 |
+| Any source/public/build drift | 4 |
+| Monitored file drift | 1 |
 
 ## Visual Marker Coverage
 
@@ -79,14 +79,19 @@ Generated: 2026-07-04T05:16:38.919Z
 
 | Severity | Code | Count | Tools |
 | --- | --- | ---: | --- |
-| warning | `canvas-focus` | 13 | `epidemicSim`, `climateExplorer`, `companionPlanting`, `musicSynth`, `brainAtlas`, `anatomy`, `waterCycle`, `plateTectonics`, `bikeLab` |
-| warning | `canvas-name` | 9 | `epidemicSim`, `climateExplorer`, `musicSynth`, `anatomy`, `waterCycle`, `plateTectonics` |
 | warning | `heading` | 2 | `cellularLab`, `bikeLab` |
+| warning | `canvas-focus` | 1 | `bikeLab` |
+| warning | `canvas-name` | 1 | `climateExplorer` |
 | notice | `horizontal-overflow-risk` | 9 | `opticsLab`, `renewablesLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation` |
 
 ## Sync Drift
 
-All source, public, and local build STEM tool copies match.
+| Status | File | Monitored | Hashes |
+| --- | --- | --- | --- |
+| build-drift | `stem_tool_alphafold.js` | no | source `961AACABFC3D`, public `961AACABFC3D`, build `null` |
+| build-drift | `stem_tool_brainatlas.js` | yes | source `8A97BC41F8C3`, public `8A97BC41F8C3`, build `D113D7E77AB6` |
+| build-drift | `stem_tool_geosandbox.js` | no | source `CEC58F724169`, public `CEC58F724169`, build `5A99A0628A2B` |
+| build-drift | `stem_tool_roadready.js` | no | source `666A3DD3954B`, public `666A3DD3954B`, build `91D37DAEE248` |
 
 ## Gate Policy
 

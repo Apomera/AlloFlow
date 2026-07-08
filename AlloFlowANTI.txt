@@ -4004,7 +4004,7 @@ const AlloFlowContent = () => {
     { id: 'dbq', label: 'Document-Based Question', action: 'Generate a Document-Based Question to push analysis with evidence.', success: 'DBQ ready.' },
     { id: 'math', label: 'STEM Lab', action: 'Open the STEM Lab to add a hands-on math or science tool.', success: 'STEM tool added.' },
     { id: 'adventure', label: 'Adventure Mode', action: 'Turn the lesson into an Adventure students can play through.', success: 'Adventure ready.' },
-    { id: 'quiz', label: 'Exit Ticket', action: 'Create an Exit Ticket to check what stuck.', success: 'Quiz ready. Use it to plan tomorrow.' },
+    { id: 'quiz', label: 'Assess', action: 'Create an assessment to check what stuck.', success: 'Assessment ready. Use it to plan tomorrow.' },
     { id: 'alignment', label: 'Standards & UDL Alignment', action: 'Check Standards and UDL alignment so the lesson maps to your goals.', success: 'Alignment checked.' },
     { id: 'lesson-plan', label: 'Lesson Plan', action: 'Generate a Lesson Plan that ties the pieces together.', success: 'Lesson plan ready.' },
     { id: '_final', label: 'Full Resource Pack & Standards Report', action: 'Download the full Resource Pack and Standards Report whenever you are happy with it.', success: 'All set. Nice work building this lesson.' },
@@ -4774,6 +4774,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       _setIsOpenGrooveOpenRaw(v);
     }
   }, []);
+  const [isTimelineStudioOpen, _setIsTimelineStudioOpenRaw] = useState(false);
+  const setIsTimelineStudioOpen = React.useCallback((v) => {
+    var trigger = function() {
+      if (typeof window.__alloLazyTimelineStudio === 'function') {
+        try { window.__alloLazyTimelineStudio(); } catch(_) {}
+      }
+    };
+    if (typeof v === 'function') {
+      _setIsTimelineStudioOpenRaw(function(prev) { var next = v(prev); if (next) trigger(); return next; });
+    } else {
+      if (v) trigger();
+      _setIsTimelineStudioOpenRaw(v);
+    }
+  }, []);
   const [showLearningHub, _setShowLearningHubRaw] = useState(false);
   const setShowLearningHub = React.useCallback((v) => { if (v && window.__alloLazyLearningHubModal) { try { window.__alloLazyLearningHubModal(); } catch(_) {} } _setShowLearningHubRaw(v); }, []);
   const [showSelHub, _setShowSelHubRaw] = useState(false);
@@ -5235,6 +5249,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=40c3006a0'); }; })();
     window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=40c3006a0'); }; })();
     window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=40c3006a0'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=40c3006a0'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=40c3006a0'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=40c3006a0'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=40c3006a0'); }; })();
     loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=40c3006a0');
     loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=40c3006a0');
     loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=40c3006a0');
@@ -5464,7 +5479,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jul 2026: Access Lens — learner accessibility camera kit
         // (describe / read / translate / Socratic investigate).
         'stem_lab/stem_tool_accesslens.js',
-        // Jul 2026: AlphaFold Explorer - public AlphaFold DB lookup + Mol*
+        // Jul 2026: AlphaFold Explorer — public AlphaFold DB lookup + Mol*
         // viewer + safe AlphaFold Server input prep; launcher + AI bridge.
         'stem_lab/stem_tool_alphafold.js',
         // Jul 2026: Data Lab — CODAP (Concord Consortium, MIT) companion window
@@ -14740,19 +14755,37 @@ const parseTaggedContent = (text) => {
     let _last = 0;
     const _sink = (evt) => {
       if (!evt) return;
+      if (evt.phase === 'task') {
+        const _total = Number(evt.total) || 0;
+        const _current = Number(evt.current) || 0;
+        if (evt.label) setGenerationStep(evt.label);
+        if (_total > 0) setProcessingProgress({ current: Math.max(0, Math.min(_current, _total)), total: _total });
+        return;
+      }
       if (evt.done) { setLocalStreamActivity(null); return; }
       const _now = Date.now();
       if (_now - _last < 90) return; // ~11 updates/sec, not once per token
       _last = _now;
       setLocalStreamActivity({
         chars: evt.receivedChars || 0,
+        chunks: evt.chunks || 0,
         backend: evt.backend || (_aiConfig && _aiConfig.backend) || 'local',
+        model: evt.model || '',
+        contextWindow: evt.contextWindow || null,
+        maxTokens: evt.maxTokens || null,
+        clamped: !!evt.clamped,
+        promptLikelyTooLarge: !!evt.promptLikelyTooLarge,
+        phase: evt.phase || 'stream',
       });
     };
     window.__alloLocalTextProgress = _sink;
+    window.__alloLocalTaskProgress = (evt) => _sink({ ...(evt || {}), phase: 'task' });
     return () => {
       if (window.__alloLocalTextProgress === _sink) {
         try { delete window.__alloLocalTextProgress; } catch (_) { window.__alloLocalTextProgress = null; }
+      }
+      if (window.__alloLocalTaskProgress) {
+        try { delete window.__alloLocalTaskProgress; } catch (_) { window.__alloLocalTaskProgress = null; }
       }
       setLocalStreamActivity(null);
     };
@@ -16871,12 +16904,16 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   };
   const _ceStopPlayback = _ceFn('stopPlayback');
   const stopPlayback = function() {
+    const stoppedContentId = playingContentId;
     _ceStopPlayback();
     if (playbackTimeoutRef.current) { clearTimeout(playbackTimeoutRef.current); playbackTimeoutRef.current = null; }
     setIsPlaying(false); setIsPaused(false); setPlayingContentId(null);
     setPlaybackState({ sentences: [], currentIdx: -1 });
     isPlayingRef.current = false; isSystemAudioActiveRef.current = false;
     if (window.speechSynthesis) window.speechSynthesis.cancel();
+    try {
+      window.dispatchEvent(new CustomEvent('alloflow:playback-stopped', { detail: { contentId: stoppedContentId || null } }));
+    } catch (_) {}
   };
   const togglePause = useCallback((e) => {
       if (e) e.stopPropagation();
@@ -16896,7 +16933,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
       }
   }, [isPaused]);
-  const playSequence = async (index, sentences, sessionId, mode = 'standard', voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0, speakerName = null) => {
+  const playSequence = async (index, sentences, sessionId, mode = 'standard', voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0, speakerName = null, contentId = null) => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
     if (_m && typeof _m.playSequence === "function") return _m.playSequence(index, sentences, sessionId, mode, voiceMap, activeSpeaker, preloadedAudio, retryCount, speakerName, {
         isPlaying,
@@ -17103,7 +17140,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         calculateLocalFluencyMetrics,
         applyGlobalCitations,
         chunkText,
-      });
+      }, contentId);
     throw new Error("[playSequence] PhaseKHelpers module not loaded - reload the page");
   };
   const handleSpeak = async (text, contentId, startIndex = 0) => {
@@ -17391,16 +17428,38 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       return { b64: await _blobToBase64(blob), mime: blob.type || 'audio/wav' };
     } catch (_) { return null; }
   };
+  const _persistKaraokeAudioField = (field, payload, targetResourceId) => {
+    const resourceId = targetResourceId || (generatedContent && generatedContent.id);
+    try {
+      setGeneratedContent(gc => {
+        if (!gc) return gc;
+        if (resourceId && gc.id !== resourceId) return gc;
+        return Object.assign({}, gc, { [field]: payload });
+      });
+    } catch (_) {}
+    try {
+      if (resourceId) {
+        setHistory(prev => Array.isArray(prev)
+          ? prev.map(item => item && item.id === resourceId ? Object.assign({}, item, { [field]: payload }) : item)
+          : prev);
+      }
+    } catch (_) {}
+    try {
+      window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-updated', { detail: { resourceId: resourceId || null, field } }));
+    } catch (_) {}
+  };
   // Regenerate (or first-generate) ONE sentence; store it + persist into the
   // active resource. Returns the new blob URL or null.
   window.__alloRegenerateSentenceAudio = async (sentence) => {
     const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
     if (!KS) return null;
     if (!KS.current) KS.current = KS.createStore();
+    const st = KS.current;
+    const resourceId = generatedContent && generatedContent.id;
     const out = await _synthSentenceForStore(sentence);
     if (!out || !out.b64) return null;
-    const url = KS.current.put(sentence, out.b64, out.mime);
-    try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeAudio: KS.current.serialize() }) : gc); } catch (_) {}
+    const url = st.put(sentence, out.b64, out.mime);
+    _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
     return url;
   };
   // Prepare the WHOLE text: generate audio for every not-yet-vetted sentence.
@@ -17410,18 +17469,27 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
     if (!KS) return { ok: false };
     if (!KS.current) KS.current = KS.createStore();
+    const st = KS.current;
+    const resourceId = generatedContent && generatedContent.id;
     const list = (Array.isArray(sentences) ? sentences : []).filter(Boolean);
-    const todo = KS.current.missing(list);
+    try {
+      const allowed = new Set(list.map(s => KS.keyFor ? KS.keyFor(s) : String(s || '').toLowerCase().replace(/\s+/g, ' ').trim()));
+      const payload = st.serialize();
+      Object.keys((payload && payload.sentences) || {}).forEach(k => {
+        if (!allowed.has(k)) st.remove(k);
+      });
+    } catch (_) {}
+    const todo = st.missing(list);
     let n = 0;
     for (let i = 0; i < todo.length; i++) {
       if (window.__alloPrepareReadAloudCancel) { window.__alloPrepareReadAloudCancel = false; break; }
       const out = await _synthSentenceForStore(todo[i]);
-      if (out && out.b64) KS.current.put(todo[i], out.b64, out.mime);
+      if (out && out.b64) st.put(todo[i], out.b64, out.mime);
       n++;
       try { if (typeof onProgress === 'function') onProgress(n, todo.length, todo[i]); } catch (_) {}
     }
-    try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeAudio: KS.current.serialize() }) : gc); } catch (_) {}
-    return { ok: true, generated: n, total: todo.length, bytes: KS.current.estimateBytes() };
+    _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
+    return { ok: true, generated: n, total: todo.length, bytes: st.estimateBytes() };
   };
   // Save-as-you-play (Option B): capture the clip karaoke ALREADY generated
   // on play into the store instead of discarding it, so vetted read-aloud
@@ -17433,7 +17501,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   window.__alloCaptureKaraokeAudio = async (sentence, url) => {
     const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
     if (!KS || !KS.current || !sentence || !url) return false;
-    if (KS.current.has(sentence)) return false;
+    const st = KS.current;
+    const resourceId = generatedContent && generatedContent.id;
+    if (st.has(sentence)) return false;
     try {
       const buf = await (await fetch(url)).arrayBuffer();
       const bytes = new Uint8Array(buf);
@@ -17443,14 +17513,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         try {
           const pcm = new Uint8Array(buf, 44); // strip WAV header -> PCM
           const mp3Blob = _ah.pcmToMp3(pcm, 24000);
-          KS.current.put(sentence, await _blobToBase64(mp3Blob), 'audio/mpeg');
-          try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeAudio: KS.current.serialize() }) : gc); } catch (_) {}
+          st.put(sentence, await _blobToBase64(mp3Blob), 'audio/mpeg');
+          _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
           return true;
         } catch (_) {}
       }
       const blob = new Blob([buf], { type: isWav ? 'audio/wav' : 'audio/mpeg' });
-      KS.current.put(sentence, await _blobToBase64(blob), blob.type);
-      try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeAudio: KS.current.serialize() }) : gc); } catch (_) {}
+      st.put(sentence, await _blobToBase64(blob), blob.type);
+      _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
       return true;
     } catch (_) { return false; }
   };
@@ -17465,20 +17535,24 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   window.__alloStoreStudentSentenceAudio = async (sentence, blob) => {
     const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
     if (!KS || !KS.studentCurrent || !sentence || !blob) return false;
+    const st = KS.studentCurrent;
+    const resourceId = generatedContent && generatedContent.id;
     try {
       const b64 = await _blobToBase64(blob);
-      KS.studentCurrent.put(sentence, b64, blob.type || 'audio/webm', 'human-student');
-      try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeStudentAudio: KS.studentCurrent.serialize() }) : gc); } catch (_) {}
+      st.put(sentence, b64, blob.type || 'audio/webm', 'human-student');
+      _persistKaraokeAudioField('karaokeStudentAudio', st.serialize(), resourceId);
       return true;
     } catch (_) { return false; }
   };
   window.__alloStoreRecordedSentenceAudio = async (sentence, blob, source) => {
     const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
     if (!KS || !KS.current || !sentence || !blob) return false;
+    const st = KS.current;
+    const resourceId = generatedContent && generatedContent.id;
     try {
       const b64 = await _blobToBase64(blob);
-      KS.current.put(sentence, b64, blob.type || 'audio/webm', source || 'human-teacher');
-      try { setGeneratedContent(gc => gc ? Object.assign({}, gc, { karaokeAudio: KS.current.serialize() }) : gc); } catch (_) {}
+      st.put(sentence, b64, blob.type || 'audio/webm', source || 'human-teacher');
+      _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
       return true;
     } catch (_) { return false; }
   };
@@ -17873,6 +17947,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       accessibleHtml: cur.accessibleHtml,
       beforeScore: cur.beforeScore,
       afterScore: cur.afterScore,
+      _aiVerificationIncomplete: !!cur._aiVerificationIncomplete,
+      _estimatedMinimumScore: Number.isFinite(cur._estimatedMinimumScore) ? cur._estimatedMinimumScore : null,
+      _estimatedScoreBasis: cur._estimatedScoreBasis || null,
+      _finalAuditRetryAvailable: !!cur._finalAuditRetryAvailable,
       axeAudit: cur.axeAudit,
       secondEngineAudit: cur.secondEngineAudit || null,
       verificationAudit: cur.verificationAudit,
@@ -22797,22 +22875,41 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   const { msg, index } = newMessages[i];
                   setPanelTtsPending(prev => prev.filter(idx => idx !== index));
                   await new Promise(resolve => {
-                      handleSpeak(msg.text, `persona-message-${index}`, 0);
+                      const contentId = `persona-message-${index}`;
                       // Wait for playback to actually finish (isPlayingRef is
                       // set on handleSpeak entry and cleared by stopPlayback)
-                      // instead of a fixed 150ms/char over-estimate that left
-                      // long dead air between panel turns. Hard cap keeps a
-                      // wedged playback from stalling the queue forever.
-                      const hardCapMs = Math.max(20000, msg.text.length * 200);
+                      // instead of a fixed character-count estimate that left
+                      // long dead air between panel turns. The event path is
+                      // immediate; polling and the cap only catch wedged audio.
+                      const wordCount = String(msg.text || '').trim().split(/\s+/).filter(Boolean).length;
+                      const hardCapMs = Math.min(90000, Math.max(18000, wordCount * 900 + 12000));
                       const startedAt = Date.now();
-                      const poll = setInterval(() => {
+                      let settled = false;
+                      let poll = null;
+                      let timer = null;
+                      const cleanup = () => {
+                          if (poll) clearInterval(poll);
+                          if (timer) clearTimeout(timer);
+                          window.removeEventListener('alloflow:playback-stopped', onPlaybackStopped);
+                      };
+                      const settle = () => {
+                          if (settled) return;
+                          settled = true;
+                          cleanup();
+                          resolve();
+                      };
+                      const onPlaybackStopped = (event) => {
+                          const endedId = event?.detail?.contentId;
+                          if (endedId === contentId) settle();
+                      };
+                      window.addEventListener('alloflow:playback-stopped', onPlaybackStopped);
+                      handleSpeak(msg.text, contentId, 0);
+                      if (settled) return;
+                      poll = setInterval(() => {
                           const finished = !isPlayingRef.current && (Date.now() - startedAt) > 1500;
-                          const timedOut = (Date.now() - startedAt) > hardCapMs;
-                          if (finished || timedOut || !personaAutoReadRef.current) {
-                              clearInterval(poll);
-                              resolve();
-                          }
-                      }, 400);
+                          if (finished || !personaAutoReadRef.current) settle();
+                      }, 250);
+                      timer = setTimeout(settle, hardCapMs);
                   });
               }
               setPanelTtsPending([]);
@@ -28981,9 +29078,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                              </div>
                         )}
                         {localStreamActivity && (
-                             <div className="flex items-center justify-center gap-2 w-full text-[11px] font-bold text-indigo-600 uppercase tracking-wider mt-1">
+                             <div className="flex flex-wrap items-center justify-center gap-2 w-full text-[11px] font-bold text-indigo-600 mt-1 leading-snug">
                                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" aria-hidden="true"></span>
-                                 <span>{t('status_steps.local_streaming', { backend: localStreamActivity.backend, chars: localStreamActivity.chars.toLocaleString() }) || `Receiving from ${localStreamActivity.backend}… ${localStreamActivity.chars.toLocaleString()} chars`}</span>
+                                 <span className="break-words">{t('status_steps.local_streaming', { backend: localStreamActivity.model || localStreamActivity.backend, chars: localStreamActivity.chars.toLocaleString(), context: localStreamActivity.contextWindow || '' }) || `Receiving from ${localStreamActivity.model || localStreamActivity.backend}... ${localStreamActivity.chars.toLocaleString()} chars${localStreamActivity.contextWindow ? ` (ctx ${localStreamActivity.contextWindow})` : ''}`}</span>
+                                 {localStreamActivity.contextWindow && <span className="px-1.5 py-0.5 rounded bg-white border border-indigo-100 text-[10px]">ctx {localStreamActivity.contextWindow}</span>}
+                                 {localStreamActivity.clamped && <span className="px-1.5 py-0.5 rounded bg-indigo-50 border border-indigo-100 text-[10px]">local-safe</span>}
                              </div>
                         )}
                     </div>
@@ -31226,7 +31325,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             })}
         </CDNModuleGate>
         {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
-        {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
+        {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
                 onClose: () => setShowReportWriter(false),
@@ -32061,6 +32160,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             {(OpenGrooveStudio) => React.createElement(OpenGrooveStudio, {
                 onClose: () => setIsOpenGrooveOpen(false),
                 addToast,
+                t,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="TimelineStudio" isOpen={isTimelineStudioOpen} onClose={() => setIsTimelineStudioOpen(false)} icon={'\uD83D\uDD70\uFE0F'} displayName="Timeline Studio" t={t}>
+            {(TimelineStudio) => React.createElement(TimelineStudio, {
+                onClose: () => setIsTimelineStudioOpen(false),
+                callGemini,
+                addToast,
+                gradeLevel,
+                lang: (typeof currentUiLanguage !== 'undefined' ? currentUiLanguage : 'en'),
                 t,
             })}
         </CDNModuleGate>

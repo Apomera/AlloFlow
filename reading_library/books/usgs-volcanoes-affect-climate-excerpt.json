@@ -1,0 +1,29 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-volcanoes-affect-climate-excerpt",
+  "title": "Volcanoes Can Affect Climate",
+  "description": "A public-domain USGS excerpt about volcanic gases, sulfate aerosols, cooling, and carbon dioxide comparisons.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "nonfiction-excerpt",
+  "subjects": ["Volcanoes", "Climate", "Geology", "Atmosphere"],
+  "authors": ["USGS Volcano Hazards Program"],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain",
+  "licenseUrl": "https://www.usgs.gov/programs/VHP/volcanoes-can-affect-climate",
+  "source": { "id": "usgs", "name": "U.S. Geological Survey", "url": "https://www.usgs.gov/programs/VHP/volcanoes-can-affect-climate" },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    { "n": 1, "img": null, "text": "Volcanoes can affect climate when major explosive eruptions inject volcanic gas, aerosol droplets, and ash into the stratosphere. Ash usually falls out quickly, but sulfur dioxide can form sulfate aerosols." },
+    { "n": 2, "img": null, "text": "Sulfate aerosols reflect some incoming sunlight back to space, which can cool the lower atmosphere for a limited time. The 1991 eruption of Mount Pinatubo is a key example." },
+    { "n": 3, "img": null, "text": "USGS also distinguishes volcanic carbon dioxide from human emissions. Present-day volcanoes release far less carbon dioxide than human activity, so volcanoes do not explain modern warming." }
+  ],
+  "stats": { "pages": 3, "words": 112 }
+}

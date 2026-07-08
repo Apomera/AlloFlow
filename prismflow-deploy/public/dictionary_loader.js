@@ -8,7 +8,7 @@
  * a class builds up OFFLINE as it goes.
  *
  * Exposes a fallback-safe entry point:
- *     window.AlloDictionary.lookup(word) -> Promise<{ word, phonetic, audio, meanings, synonyms, source } | null>
+ *     window.AlloDictionary.lookup(word) -> Promise<{ word, phonetic, audio, meanings, synonyms, source, sourceUrl } | null>
  * Resolves to a normalized dictionary entry, or NULL when the word isn't found /
  * offline with no cache / any failure — so callers keep their AI-only behaviour,
  * never a regression.
@@ -55,10 +55,16 @@
   // dictionaryapi.dev entry[] → the popup-friendly shape.
   function normalizeEntry(rows, word) {
     if (!Array.isArray(rows) || !rows.length) return null;
-    var phonetic = '', audio = '';
+    var phonetic = '', audio = '', sourceUrl = '';
     var meanings = [];
     var synSet = {};
     rows.forEach(function (row) {
+      if (!sourceUrl && Array.isArray(row.sourceUrls)) {
+        row.sourceUrls.some(function (u) {
+          if (typeof u === 'string' && /^https?:\/\//i.test(u)) { sourceUrl = u; return true; }
+          return false;
+        });
+      }
       if (!phonetic && row.phonetic) phonetic = row.phonetic;
       (row.phonetics || []).forEach(function (p) {
         if (!phonetic && p && p.text) phonetic = p.text;
@@ -77,7 +83,8 @@
     return {
       word: word, phonetic: phonetic, audio: audio, meanings: meanings.slice(0, 4),
       synonyms: Object.keys(synSet).slice(0, 8),
-      source: 'Wiktionary (dictionaryapi.dev)'
+      source: 'Wiktionary (via dictionaryapi.dev)',
+      sourceUrl: sourceUrl || ('https://en.wiktionary.org/wiki/' + encodeURIComponent(word))
     };
   }
 

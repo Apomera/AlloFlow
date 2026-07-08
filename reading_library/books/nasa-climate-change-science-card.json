@@ -1,0 +1,29 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-climate-change-science-card",
+  "title": "NASA Climate Change Science",
+  "description": "A source card for NASA's climate-change science page and data-rich Earth observations.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": ["Climate", "Earth science", "Satellites", "Data literacy"],
+  "authors": ["NASA Science"],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": { "id": "nasa", "name": "NASA Science", "url": "https://science.nasa.gov/climate-change/" },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    { "n": 1, "img": null, "text": "NASA studies climate change from space by collecting long-term observations of Earth. Satellites help scientists see patterns in temperature, ice, oceans, land cover, atmosphere, and life." },
+    { "n": 2, "img": null, "text": "This source card is useful for older students who need evidence, not just definitions. The full NASA page links to causes, effects, indicators, climate data tools, images, and interactives." },
+    { "n": 3, "img": null, "text": "Rights note: NASA content is generally not subject to U.S. copyright, but NASA names, logos, identifiers, and some third-party material have restrictions. Always keep NASA attribution." }
+  ],
+  "stats": { "pages": 3, "words": 115 }
+}

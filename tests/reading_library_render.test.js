@@ -25,6 +25,7 @@ const index = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'index.json'), 'utf8
 // A deterministic RTL fixture: the first Arabic book in the index.
 const rtlEntry = index.books.find((b) => b.language === 'Arabic');
 const rtlBook = JSON.parse(fs.readFileSync(path.join(LIB_DIR, rtlEntry.file), 'utf8'));
+const frontiersEntry = index.books.find((b) => b.sourceId === 'frontiers');
 
 beforeAll(() => {
   React = require(resolve(MODULES_DIR, 'react'));
@@ -72,6 +73,22 @@ function clickByText(container, tag, needle) {
   return el;
 }
 
+// The browse grid now defaults to the English language filter; tests that need
+// the whole catalog reset it to '' (All), while book-specific tests narrow by language.
+function selectLang(value) {
+  const sel = host.querySelector('select[aria-label="Language"]') || host.querySelector('select');
+  act(() => { sel.value = value; sel.dispatchEvent(new window.Event('change', { bubbles: true })); });
+}
+
+async function chooseCollection(label) {
+  clickByText(host, 'button', label);
+  await flush();
+}
+
+async function chooseStories() {
+  await chooseCollection('StoryWeaver');
+}
+
 async function mount(extraProps = {}) {
   host = document.createElement('div');
   document.body.appendChild(host);
@@ -94,18 +111,35 @@ async function mount(extraProps = {}) {
 }
 
 describe('browse view', () => {
-  it('renders the full grid, filters, and teacher language-options entry', async () => {
+  it('renders the browse grid, filters, and teacher language-options entry', async () => {
     await mount();
-    // status line counts every book
-    expect(textOf(host)).toContain(index.books.length + ' ');
-    // language filter carries every language
-    const langSelect = host.querySelector('select');
+    expect(textOf(host)).toContain('Reading Collections');
+    expect(textOf(host)).toContain('Science & nonfiction');
+    expect(textOf(host)).toContain('Frontiers for Young Minds');
+    const storyEntries = index.books.filter((b) => (b.sourceId || 'storyweaver') === 'storyweaver');
+    await chooseStories();
+    // the grid defaults to the English language filter
+    const langSelect = host.querySelector('select[aria-label="Language"]');
+    expect(langSelect.value).toBe('English');
+    // language filter carries every language (+ the "All languages" option)
     expect(langSelect.querySelectorAll('option').length).toBe(index.languages.length + 1);
+    // switch to All languages: the Stories shelf counts only StoryWeaver books
+    selectLang(''); await flush();
+    expect(textOf(host)).toContain(storyEntries.length + ' ');
     // narrated-only toggle narrows the grid
-    const narrated = index.books.filter((b) => b.hasAudio).length;
+    const narrated = storyEntries.filter((b) => b.hasAudio).length;
     clickByText(host, 'button', 'Narrated only');
     await flush();
     expect(textOf(host)).toContain(narrated + ' ');
+    clickByText(host, 'button', 'Collections');
+    await flush();
+    expect(textOf(host)).toContain('History & primary sources');
+    await chooseCollection('All sources');
+    selectLang(''); await flush();
+    expect(textOf(host)).toContain(index.books.length + ' ');
+    clickByText(host, 'button', 'Collections');
+    await flush();
+    await chooseStories();
     // teacher sees the language-options explainer
     clickByText(host, 'button', 'Language options');
     await flush();
@@ -121,6 +155,7 @@ describe('browse view', () => {
 
   it('sorts by reading level (easiest first) by default', async () => {
     await mount();
+    await chooseStories();
     // filter controls: language, level, sort
     const selects = host.querySelectorAll('select');
     expect(selects[2].value).toBe('level');
@@ -136,6 +171,7 @@ describe('browse view', () => {
 
   it('re-sorts to Title A–Z when chosen', async () => {
     await mount();
+    await chooseStories();
     const selects = host.querySelectorAll('select');
     act(() => { selects[0].value = 'English'; selects[0].dispatchEvent(new window.Event('change', { bubbles: true })); });
     act(() => { selects[2].value = 'title'; selects[2].dispatchEvent(new window.Event('change', { bubbles: true })); });
@@ -147,11 +183,24 @@ describe('browse view', () => {
     const sorted = titles.slice().sort((a, b) => a.localeCompare(b));
     expect(titles).toEqual(sorted);
   });
+
+  it('opens an older-student science source with source attribution intact', async () => {
+    await mount();
+    await chooseCollection('Science & nonfiction');
+    selectLang('English'); await flush();
+    clickByText(host, 'button', frontiersEntry.title.slice(0, 12));
+    await flush();
+    expect(textOf(host)).toContain(frontiersEntry.title);
+    expect(textOf(host)).toContain('Frontiers for Young Minds');
+    expect(textOf(host)).toContain('CC BY 4.0');
+  });
 });
 
 describe('reader view (RTL original)', () => {
   it('opens an Arabic book with rtl direction and working export menu', async () => {
     const { calls } = await mount();
+    await chooseStories();
+    selectLang('Arabic'); await flush();
     clickByText(host, 'button', rtlEntry.title.slice(0, 12));
     await flush();
     // reader shows the title and an rtl text container
@@ -170,6 +219,8 @@ describe('reader view (RTL original)', () => {
 
   it('generates in the book language via langOverride', async () => {
     const { calls } = await mount();
+    await chooseStories();
+    selectLang('Arabic'); await flush();
     clickByText(host, 'button', rtlEntry.title.slice(0, 12));
     await flush();
     clickByText(host, 'button', 'Create');
@@ -185,6 +236,8 @@ describe('reader view (RTL original)', () => {
 
   it('also fills the source box and pins the book to the resource pack on generate', async () => {
     const { calls } = await mount();
+    await chooseStories();
+    selectLang('Arabic'); await flush();
     clickByText(host, 'button', rtlEntry.title.slice(0, 12));
     await flush();
     clickByText(host, 'button', 'Create');
@@ -212,6 +265,8 @@ describe('AI translation', () => {
     const { calls } = await mount({
       callGemini: () => Promise.resolve(JSON.stringify(translated)),
     });
+    await chooseStories();
+    selectLang('Arabic'); await flush();
     clickByText(host, 'button', rtlEntry.title.slice(0, 12));
     await flush();
     clickByText(host, 'button', 'Translate');
@@ -240,6 +295,8 @@ describe('AI translation', () => {
     const { calls } = await mount({
       callGemini: () => Promise.resolve(JSON.stringify({ title: 'X', pages: ['only one page'] })),
     });
+    await chooseStories();
+    selectLang('Arabic'); await flush();
     clickByText(host, 'button', rtlEntry.title.slice(0, 12));
     await flush();
     clickByText(host, 'button', 'Translate');
