@@ -1181,7 +1181,7 @@
     };
     var set = function (next) { Object.keys(next).forEach(function (k) { profile[k] = next[k]; }); return profile; };
     if (!key) return profile;
-    if (/^(cc0|public domain|pd|us government public domain)$/.test(key)) {
+    if (/^(cc0( 1 0)?|public domain|pd|us government public domain)$/.test(key)) {
       return set({ label: /cc0/.test(key) ? 'CC0 1.0' : 'Public domain', attributionRequired: false, commercialAllowed: true, openContent: true, agplFriendly: true, review: false, status: 'ok', warning: '' });
     }
     if (/^cc by( 4 0| 3 0|)$/.test(key) || /^attribution( 4 0|)$/.test(key)) {
@@ -1214,13 +1214,14 @@
     var role = clean(r.role || r.kind || 'media asset', 80) || 'media asset';
     var modified = !!r.modified;
     var attribution = clean(r.attribution, 500);
+    var seed = (title + '-' + creator + '-' + url + '-' + profile.label).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'manual';
     if (!attribution) {
       attribution = '"' + title + '" by ' + creator + (url ? ' (' + url + ')' : '') + ' - ' + profile.label;
       if (modified) attribution += '; modified';
       if (source) attribution += '; via ' + source;
     }
     return {
-      id: clean(r.id || ('credit-' + Math.random().toString(36).slice(2, 9)), 60),
+      id: clean(r.id || ('credit-' + seed), 60),
       title: title,
       creator: creator,
       source: source,
@@ -1238,7 +1239,9 @@
   }
 
   function vsSanitizeMediaCredits(list) {
-    return (Array.isArray(list) ? list : []).map(vsNormalizeMediaCredit).filter(function (item) {
+    return (Array.isArray(list) ? list : []).filter(function (raw) {
+      return raw && (raw.title || raw.name || raw.creator || raw.author || raw.url || raw.sourceUrl || raw.href || raw.attribution);
+    }).map(vsNormalizeMediaCredit).filter(function (item) {
       return item && (item.title || item.creator || item.url || item.attribution);
     }).slice(0, 80);
   }
@@ -1261,6 +1264,42 @@
       lines.push('');
     });
     return lines.join('\n').replace(/\n+$/, '\n');
+  }
+
+  function vsMediaSearchTargets(query, preferredSource) {
+    var q = String(query || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+    var enc = encodeURIComponent(q || 'classroom lesson media');
+    var source = String(preferredSource || '').toLowerCase();
+    var targets = [
+      { id: 'openverse', name: 'Openverse', source: 'Openverse', licenseHint: 'Openly licensed search index; verify each asset page.', defaultLicense: 'CC BY 4.0', url: 'https://openverse.org/search/?q=' + enc, status: 'preferred' },
+      { id: 'commons', name: 'Wikimedia Commons', source: 'Wikimedia Commons', licenseHint: 'Prefer public domain, CC0, or CC BY files; follow the file page.', defaultLicense: 'Public domain', url: 'https://commons.wikimedia.org/w/index.php?search=' + enc + '&title=Special:MediaSearch&type=image', status: 'preferred' },
+      { id: 'freesound', name: 'Freesound', source: 'Freesound', licenseHint: 'Prefer CC0 or CC BY sounds; avoid noncommercial for broad sharing.', defaultLicense: 'CC BY 4.0', url: 'https://freesound.org/search/?q=' + enc, status: 'filter' },
+      { id: 'pixabay', name: 'Pixabay', source: 'Pixabay', licenseHint: 'Free stock license, not open-source/open-content; do not bundle as reusable stock.', defaultLicense: 'Pixabay Content License', url: 'https://pixabay.com/images/search/?q=' + enc, status: 'review' }
+    ];
+    if (source) {
+      var filtered = targets.filter(function (t) { return t.id === source || t.source.toLowerCase() === source || t.name.toLowerCase() === source; });
+      if (filtered.length) return filtered;
+    }
+    return targets;
+  }
+
+  function vsBuildPermissionAudit(state) {
+    var s = state || {};
+    var items = [];
+    var add = function (id, label, status, detail, targetId) {
+      items.push({ id: id, label: label, status: status || 'info', detail: String(detail || '').slice(0, 220), targetTab: targetId ? 'tabEdit' : null, targetId: targetId || null, action: targetId ? 'Review' : null });
+    };
+    var capCount = Math.max(0, Number(s.captionCount) || 0);
+    var capWarn = Math.max(0, Number(s.captionWarningCount) || 0);
+    var flags = Math.max(0, Number(s.privacyFlagCount) || 0);
+    var mediaCount = Math.max(0, Number(s.mediaCreditCount) || 0);
+    var mediaWarn = Math.max(0, Number(s.mediaCreditWarningCount) || 0);
+    var locWarn = Math.max(0, Number(s.localizationWarningCount) || 0);
+    add('privacy', 'Privacy', flags ? 'warn' : 'complete', flags ? (flags + ' possible private detail(s) need review before sharing.') : 'No obvious private details flagged.', flags ? 'transcriptSearch' : null);
+    add('captions', 'Captions', capCount ? (capWarn ? 'warn' : 'complete') : 'warn', capCount ? (capWarn ? (capWarn + ' caption issue(s) need review.') : capCount + ' caption line(s) available.') : 'No captions are attached yet.', capCount && capWarn ? 'cueTableBody' : (!capCount ? 'autoCapBtn' : null));
+    add('media', 'Media rights', mediaWarn ? 'warn' : (mediaCount ? 'complete' : 'info'), mediaWarn ? (mediaWarn + ' media credit(s) need license review.') : (mediaCount ? mediaCount + ' media credit(s) recorded for attribution.' : 'No third-party stock/open media credits recorded.'), mediaWarn || !mediaCount ? 'mediaCreditTitle' : null);
+    add('localization', 'Localization permissions', locWarn ? 'warn' : 'info', locWarn ? (locWarn + ' localization review item(s) remain.') : 'Localized drafts are optional; review school privacy rules before sharing translated versions.', locWarn ? 'localizeBtn' : null);
+    return items;
   }
 
   // CRC-32 (IEEE, reflected) — backs the .allopack ZIP writer/reader below.
@@ -7312,6 +7351,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function sceneTakeForExport(exported) {
     if (!exported || !exported.isScene) return currentTake();
     var cues = Array.isArray(exported.sceneCues) ? exported.sceneCues : (exported.vtt ? vsParseVtt(exported.vtt) : []);
+    var mediaCredits = [];
+    (exported.sceneItems || sceneItems || []).forEach(function (item) {
+      var take = item && item.takeId ? ((item._take) || sceneItemTake(item)) : null;
+      if (take && take.mediaCredits) mediaCredits = mediaCredits.concat(take.mediaCredits);
+    });
     return {
       id: 'scene',
       name: exported.title || 'Scene sequence',
@@ -7322,6 +7366,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       inserts: [],
       visualPrompts: [],
       localizations: [],
+      mediaCredits: vsSanitizeMediaCredits(mediaCredits),
       finishReview: {},
       zooms: [],
       audio: null,
@@ -7804,6 +7849,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       hasAudioChanges: hasAudioChanges,
       localizationCount: t && t.localizations ? t.localizations.length : 0,
       localizationWarningCount: qa ? qa.warnings.length : 0,
+      mediaCreditCount: t ? vsSanitizeMediaCredits(t.mediaCredits || []).length : 0,
+      mediaCreditWarningCount: t ? mediaCreditWarningCount(t.mediaCredits || []) : 0,
       exported: !!(t && lastExport && lastExport.takeId === t.id),
       review: review
     });
@@ -8820,6 +8867,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var visualPrompts = ((take && take.visualPrompts) || []).filter(function (p) { return p && String(p.prompt || '').trim(); });
     var localizations = (take && take.localizations) || [];
     var musicBed = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, (take && take.duration) || 0) : null;
+    var mediaCredits = vsSanitizeMediaCredits((take && take.mediaCredits) || []);
     var overlayCount = inserts.filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length;
     var resourceCueCount = inserts.filter(function (ins) { return ins && ins.source === 'resource'; }).length;
     var flags = privacyFlagsForCues(cues);
@@ -8834,6 +8882,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       teachingInsertCount: inserts.length,
       visualOverlayCount: overlayCount,
       hasMusicBed: !!musicBed,
+      hasMediaCredits: !!mediaCredits.length,
+      mediaCreditCount: mediaCredits.length,
+      mediaCreditWarningCount: mediaCreditWarningCount(mediaCredits),
       resourceCueCount: resourceCueCount,
       visualPromptCount: visualPrompts.length,
       localizationCount: localizations.length,
@@ -8851,7 +8902,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       '',
       'Video title: ' + title,
       'Generated locally: ' + meta.generatedAt,
-      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (overlayCount ? ', visual overlays' : '') + (musicBed ? ', music bed metadata' : '') + (visualPrompts.length ? ', visual prompts' : '') + (localizations.length ? ', localization drafts' : '') + ', and metadata.',
+      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (overlayCount ? ', visual overlays' : '') + (musicBed ? ', music bed metadata' : '') + (mediaCredits.length ? ', media credits' : '') + (visualPrompts.length ? ', visual prompts' : '') + (localizations.length ? ', localization drafts' : '') + ', and metadata.',
       'Video bytes are not included in this packet. Download the video file or project bundle separately.',
       '',
       flags.length ? ('Teacher review: ' + flags.length + ' possible private detail(s) were flagged. Review transcript and captions before sharing.') : 'Teacher review: no obvious private details were flagged. Please still review before sharing.'
@@ -8873,6 +8924,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     if (inserts.length) entries.push({ name: 'teaching_inserts.json', data: new TextEncoder().encode(JSON.stringify(inserts, null, 2)) });
     if (musicBed) entries.push({ name: 'music_bed.json', data: new TextEncoder().encode(JSON.stringify(Object.assign({}, musicBed, { blob: undefined }), null, 2)) });
+    if (mediaCredits.length) {
+      entries.push({ name: 'media_credits.txt', data: new TextEncoder().encode(vsBuildMediaCredits(mediaCredits, title)) });
+      entries.push({ name: 'media_credits.json', data: new TextEncoder().encode(JSON.stringify(mediaCredits, null, 2)) });
+    }
     if (visualPrompts.length) {
       entries.push({ name: 'visual_prompts.json', data: new TextEncoder().encode(JSON.stringify(visualPrompts, null, 2)) });
       entries.push({ name: 'visual_prompts.txt', data: new TextEncoder().encode(visualPrompts.map(function (p) { return vsFormatTimestamp(p.start || 0) + '  ' + (p.label || 'Visual support') + '\n' + p.prompt; }).join('\n\n') + '\n') });
@@ -8931,6 +8986,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       teachingInsertCount: inserts.length,
       visualOverlayCount: inserts.filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length,
       localizationCount: (take.localizations || []).length,
+      mediaCreditCount: vsSanitizeMediaCredits(take.mediaCredits || []).length,
+      mediaCreditWarningCount: mediaCreditWarningCount(take.mediaCredits || []),
       preset: $('exportPreset').value
     });
     if (lastExport.outputFormat) {
@@ -8998,7 +9055,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var take = sceneTakeForExport(lastExport);
       var safeMusic = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, take.duration || 0) : null;
       var sendVtt = lastExport.vtt || (take && take.captions && take.captions.length ? vsBuildVtt(take.captions) : null);
-      if (!postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, outputFormat: lastExport.outputFormat || null, outputFraming: lastExport.outputFraming || null, outputContainer: lastExport.outputContainer || null, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } })) {
+      if (!postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, outputFormat: lastExport.outputFormat || null, outputFraming: lastExport.outputFraming || null, outputContainer: lastExport.outputContainer || null, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], mediaCredits: take ? vsSanitizeMediaCredits(take.mediaCredits || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } })) {
         window.removeEventListener('message', onAck);
         setStatus($('resultStatus'), 'AlloFlow bridge is not connected - use Download, or reopen Video Studio from AlloFlow and press Send again.', 'warn');
         return;

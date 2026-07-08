@@ -209,6 +209,37 @@ const FEATURED_OSS = OSS_CREDITS
 // Total bundled libraries — used in the "show all" label so it never drifts.
 const OSS_TOTAL = OSS_CREDITS.reduce((n, section) => n + section.items.length, 0);
 
+const MEDIA_SOURCE_GUIDE = [
+  {
+    name: 'Openverse',
+    license: 'Search/index for openly licensed media',
+    status: 'Preferred',
+    guidance: 'Use for discovery, then store the individual asset title, author, URL, and license in Video Studio. Openverse itself is not the media license.',
+    url: 'https://openverse.org',
+  },
+  {
+    name: 'Wikimedia Commons',
+    license: 'Public domain / free licenses per item',
+    status: 'Preferred',
+    guidance: 'Good for AGPL-friendly workflows when the file page shows public domain, CC0, CC BY, or another free license. Attribution may still be required.',
+    url: 'https://commons.wikimedia.org',
+  },
+  {
+    name: 'Freesound',
+    license: 'CC0 / CC BY / CC BY-NC per sound',
+    status: 'Filter carefully',
+    guidance: 'Prefer CC0 or CC BY sounds. Noncommercial sounds are kept for review and should not be treated as safe for general redistribution.',
+    url: 'https://freesound.org',
+  },
+  {
+    name: 'Pixabay',
+    license: 'Pixabay Content License',
+    status: 'Free stock, not open source',
+    guidance: 'Useful for finished videos, but it is a custom stock license. Do not bundle Pixabay assets as a reusable open stock library in the AGPL source.',
+    url: 'https://pixabay.com',
+  },
+];
+
 // A featured project: name, license badge, owner, a plain-language blurb, and
 // separate Website / Source links (each rendered only if it exists).
 function FeaturedCard({ item }) {
@@ -252,6 +283,27 @@ function OpenSourceTab({ t }) {
         <p className="text-sm leading-relaxed text-slate-700">
           {t('about.oss_credits_intro') || 'AlloFlow is free and open source (AGPL-3.0), built on the generous work of the projects below. Thank you to their authors and communities. The projects highlighted first are ones you can explore directly inside AlloFlow.'}
         </p>
+      </div>
+
+      <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
+        <h5 className="font-bold text-emerald-900 text-sm mb-1">
+          {t('about.media_guardrails_title') || 'Open/free media guardrails'}
+        </h5>
+        <p className="text-xs text-slate-700 leading-relaxed mb-3">
+          {t('about.media_guardrails_intro') || 'Video Studio can track stock/open media credits in each project. We do not treat every free-stock site as open source: each asset needs its own license, source URL, and attribution record before sharing.'}
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {MEDIA_SOURCE_GUIDE.map((item) => (
+            <a key={item.name} href={item.url} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-emerald-100 bg-white p-3 hover:border-emerald-300">
+              <span className="flex items-start justify-between gap-2">
+                <strong className="text-xs text-slate-800">{item.name}</strong>
+                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">{item.status}</span>
+              </span>
+              <span className="block text-[11px] font-medium text-slate-500 mt-1">{item.license}</span>
+              <span className="block text-[11px] text-slate-600 leading-relaxed mt-1">{item.guidance}</span>
+            </a>
+          ))}
+        </div>
       </div>
 
       <div>

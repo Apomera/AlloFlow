@@ -77,6 +77,35 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('vsTranscriptSelectionRange');
     expect(html).toContain('source: \'transcript\'');
   });
+  it('keeps licensed media credit controls wired into exports', () => {
+    const html = popup();
+    const moduleText = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
+    expect(html).toContain('<h2>Licensed media credits</h2>');
+    expect(html).toContain('id="mediaCreditTitle"');
+    expect(html).toContain('id="mediaCreditCreator"');
+    expect(html).toContain('id="mediaCreditUrl"');
+    expect(html).toContain('id="mediaCreditLicense"');
+    expect(html).toContain('id="mediaCreditSource"');
+    expect(html).toContain('id="mediaCreditAddBtn"');
+    expect(html).toContain('id="mediaCreditDownloadBtn"');
+    expect(html).toContain('function addMediaCreditFromForm');
+    expect(html).toContain('function downloadMediaCredits');
+    expect(html).toContain('media_credits.json');
+    expect(html).toContain('media_credits.txt');
+    expect(moduleText).toContain('media_credits.json');
+    expect(moduleText).toContain('vsBuildMediaCredits');
+  });
+  it('documents optional media-source guardrails in About and notices', () => {
+    const source = readFileSync(resolve(process.cwd(), 'view_info_modal_source.jsx'), 'utf-8');
+    const notices = readFileSync(resolve(process.cwd(), 'THIRD_PARTY_LICENSES.md'), 'utf-8');
+    expect(source).toContain('Open/free media guardrails');
+    expect(source).toContain('MEDIA_SOURCE_GUIDE');
+    expect(source).toContain('Free stock, not open source');
+    expect(notices).toContain('Optional media sources and Video Studio policy');
+    expect(notices).toContain('not bundled dependencies unless a specific asset is included');
+    expect(notices).toContain('CC BY-NC/noncommercial sounds should not be treated as safe');
+    expect(notices).toContain('Pixabay assets as a reusable stock library');
+  });
   it('pins the popup bridge to the opener origin and nonce', () => {
     const html = popup();
     const moduleText = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
@@ -839,6 +868,59 @@ describe('caption polish, chapters, and teaching inserts', () => {
     expect(VS.vsMusicGainAt(music, 30, true)).toBeCloseTo(0.57, 3);
     expect(VS.vsMusicGainAt(music, 61, false)).toBe(0);
   });
+  it('normalizes licensed media credits conservatively for AGPL sharing', () => {
+    expect(VS.vsMediaLicenseProfile('CC0 1.0')).toMatchObject({
+      status: 'ok',
+      openContent: true,
+      agplFriendly: true,
+      attributionRequired: false,
+    });
+    expect(VS.vsMediaLicenseProfile('CC BY 4.0')).toMatchObject({
+      status: 'ok',
+      openContent: true,
+      agplFriendly: true,
+      attributionRequired: true,
+    });
+    expect(VS.vsMediaLicenseProfile('CC BY-NC 4.0')).toMatchObject({
+      status: 'warn',
+      openContent: false,
+      agplFriendly: false,
+    });
+    expect(VS.vsMediaLicenseProfile('Pixabay Content License')).toMatchObject({
+      status: 'warn',
+      openContent: false,
+      agplFriendly: false,
+    });
+    const credits = VS.vsSanitizeMediaCredits([
+      {
+        title: 'Calm bell',
+        creator: 'A. Teacher',
+        url: 'https://freesound.org/s/123/',
+        source: 'Freesound',
+        license: 'CC BY 4.0',
+        role: 'sound effect',
+        modified: true,
+      },
+      {},
+    ]);
+    expect(credits).toHaveLength(1);
+    expect(credits[0]).toMatchObject({
+      title: 'Calm bell',
+      creator: 'A. Teacher',
+      source: 'Freesound',
+      license: 'CC BY 4.0',
+      role: 'sound effect',
+      modified: true,
+      status: 'ok',
+      agplFriendly: true,
+    });
+    expect(credits[0].id).toMatch(/^credit-calm-bell-a-teacher-https-freesound-org-s-123/);
+    expect(credits[0].attribution).toContain('"Calm bell" by A. Teacher');
+    expect(credits[0].attribution).toContain('CC BY 4.0');
+    const text = VS.vsBuildMediaCredits(credits, 'Bell demo');
+    expect(text).toContain('Bell demo media credits');
+    expect(text).toContain('Role: sound effect');
+  });
   it('builds searchable resource cues from pack history', () => {
     const cues = VS.vsBuildResourceCues([
       { id: 'g1', type: 'glossary', title: 'Photosynthesis terms', data: [{ term: 'Chlorophyll', definition: 'Green pigment', image: 'data:image/png;base64,abc' }] },
@@ -991,12 +1073,15 @@ describe('caption polish, chapters, and teaching inserts', () => {
       hasAudioChanges: true,
       localizationCount: 1,
       localizationWarningCount: 0,
+      mediaCreditCount: 1,
+      mediaCreditWarningCount: 0,
       exported: false,
       review: { captions: true, privacy: true, audio: false, localization: true },
     });
     expect(items.find(i => i.id === 'captions')).toMatchObject({ status: 'complete' });
     expect(items.find(i => i.id === 'audio')).toMatchObject({ status: 'review' });
     expect(items.find(i => i.id === 'localization')).toMatchObject({ status: 'complete' });
+    expect(items.find(i => i.id === 'media')).toMatchObject({ status: 'complete', targetTab: 'tabEdit', targetId: 'mediaCreditTitle', action: 'Review' });
     expect(items.find(i => i.id === 'privacy')).toMatchObject({ targetTab: 'tabEdit', targetId: 'transcriptSearch', action: 'Review' });
     expect(items.find(i => i.id === 'export')).toMatchObject({ status: 'pending', targetTab: 'tabExport', targetId: 'exportBtn', action: 'Prepare' });
   });
@@ -1012,6 +1097,30 @@ describe('caption polish, chapters, and teaching inserts', () => {
       review: { captions: true, privacy: true, audio: true },
     });
     expect(items.find(i => i.id === 'captions')).toMatchObject({ status: 'warn' });
+  });
+  it('flags risky media-credit licenses before sharing', () => {
+    const items = VS.vsBuildFinishChecklist({
+      hasVideo: true,
+      captionCount: 6,
+      privacyFlagCount: 0,
+      hasAudioChanges: false,
+      mediaCreditCount: 2,
+      mediaCreditWarningCount: 1,
+      exported: false,
+      review: { captions: true, privacy: true, audio: true },
+    });
+    expect(items.find(i => i.id === 'media')).toMatchObject({
+      status: 'warn',
+      targetTab: 'tabEdit',
+      targetId: 'mediaCreditTitle',
+    });
+    const summary = VS.vsBuildExportReadinessSummary({
+      hasExport: true,
+      duration: 30,
+      mediaCreditCount: 2,
+      mediaCreditWarningCount: 1,
+    });
+    expect(summary.find(i => i.id === 'media')).toMatchObject({ status: 'warn' });
   });
   it('chooses the next actionable finish item by severity and workflow order', () => {
     const next = VS.vsPickNextFinishItem([
@@ -1029,6 +1138,10 @@ describe('caption polish, chapters, and teaching inserts', () => {
       { id: 'video', status: 'pending' },
       { id: 'captions', status: 'warn' },
     ])).toMatchObject({ id: 'video' });
+    expect(VS.vsPickNextFinishItem([
+      { id: 'export', status: 'pending' },
+      { id: 'media', status: 'warn' },
+    ])).toMatchObject({ id: 'media' });
     expect(VS.vsPickNextFinishItem([{ id: 'video', status: 'complete' }])).toBeNull();
   });
   it('keeps localization in review until teacher review is marked complete', () => {
@@ -1058,11 +1171,14 @@ describe('caption polish, chapters, and teaching inserts', () => {
       teachingInsertCount: 4,
       visualOverlayCount: 1,
       localizationCount: 1,
+      mediaCreditCount: 1,
+      mediaCreditWarningCount: 0,
       preset: 'student_family',
     });
     expect(items.find(i => i.id === 'video')).toMatchObject({ status: 'complete' });
     expect(items.find(i => i.id === 'captions').detail).toMatch(/Burned/);
     expect(items.find(i => i.id === 'privacy')).toMatchObject({ status: 'warn' });
+    expect(items.find(i => i.id === 'media')).toMatchObject({ status: 'complete' });
     expect(items.find(i => i.id === 'audience')).toMatchObject({ status: 'complete' });
   });
   it('builds a transcript resource that can feed the main AlloFlow source flow', () => {
@@ -1128,7 +1244,7 @@ describe('vsMakePackReference (pack-size guard)', () => {
     const ref = VS.vsMakePackReference({
       title: 'Fractions demo', duration: 93.6, size: 14680064,
       sha256: 'A'.repeat(64).toLowerCase(), fileName: 'fractions_demo.webm',
-      hasCaptions: true, hasVisualDescriptions: true, hasVisualPrompts: true, hasLocalizations: true, localizationCount: 2, hasVisualOverlays: true, hasMusicBed: true, resourceCueCount: 3, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
+      hasCaptions: true, hasVisualDescriptions: true, hasVisualPrompts: true, hasLocalizations: true, localizationCount: 2, hasVisualOverlays: true, hasMusicBed: true, hasMediaCredits: true, mediaCreditCount: 2, mediaCreditWarningCount: 1, resourceCueCount: 3, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
     });
     expect(ref.type).toBe('videoRef');
     expect(ref.durationSec).toBe(94);
@@ -1140,6 +1256,9 @@ describe('vsMakePackReference (pack-size guard)', () => {
     expect(ref.localizationCount).toBe(2);
     expect(ref.hasVisualOverlays).toBe(true);
     expect(ref.hasMusicBed).toBe(true);
+    expect(ref.hasMediaCredits).toBe(true);
+    expect(ref.mediaCreditCount).toBe(2);
+    expect(ref.mediaCreditWarningCount).toBe(1);
     expect(ref.resourceCueCount).toBe(3);
     expect(Object.keys(ref)).not.toContain('blob');
     expect(Object.keys(ref)).not.toContain('bytes');

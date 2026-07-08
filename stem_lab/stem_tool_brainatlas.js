@@ -340,7 +340,9 @@ var d = labToolData.brainAtlas || {};
 
                 { id: 'pcomm_ica_cw', name: t('stem.brainatlas.pcomm_ica', 'PComm / Internal Carotid'), x: 0.61, y: 0.40, w: 0.08, fn: 'Posterior communicating arteries connect internal carotid circulation to posterior cerebral arteries. They sit near CN III, so aneurysms here are high-yield for pupil-involving oculomotor palsy.', brodmann: 'Communicating artery and carotid circulation', blood: 'Internal carotid artery and posterior circulation connection.', conditions: 'PComm aneurysm can compress CN III before rupture. ICA disease can reduce anterior circulation flow and collateral capacity.', damage: 'Aneurysm compression causes CN III palsy; occlusion risk depends on collateral anatomy and downstream territory.' },
 
-                { id: 'basilar_vertebral_cw', name: t('stem.brainatlas.basilar_vertebral', 'Basilar / Vertebral Arteries'), x: 0.50, y: 0.70, w: 0.08, fn: 'Vertebral arteries join to form the basilar artery on the ventral pons. Branches supply brainstem, cerebellum, thalamus, and posterior cerebral cortex.', brodmann: 'Posterior circulation vessels', blood: 'Vertebral arteries, basilar artery, PICA, AICA, SCA, PCA.', conditions: 'Basilar artery occlusion can cause locked-in syndrome, coma, or death. Vertebral/PICA disease can cause lateral medullary syndrome.', damage: 'Brainstem stroke signs, crossed findings, ataxia, cranial nerve deficits, visual symptoms, or catastrophic loss of consciousness.' }
+                { id: 'basilar_vertebral_cw', name: t('stem.brainatlas.basilar_vertebral', 'Basilar / Vertebral Arteries'), x: 0.50, y: 0.70, w: 0.08, fn: 'Vertebral arteries join to form the basilar artery on the ventral pons. Branches supply brainstem, cerebellum, thalamus, and posterior cerebral cortex.', brodmann: 'Posterior circulation vessels', blood: 'Vertebral arteries, basilar artery, PICA, AICA, SCA, PCA.', conditions: 'Basilar artery occlusion can cause locked-in syndrome, coma, or death. Vertebral/PICA disease can cause lateral medullary syndrome.', damage: 'Brainstem stroke signs, crossed findings, ataxia, cranial nerve deficits, visual symptoms, or catastrophic loss of consciousness.' },
+
+                { id: 'bedside_clue_decoder_cw', name: t('stem.brainatlas.bedside_clue_decoder', 'Bedside Clue Decoder'), x: 0.50, y: 0.14, w: 0.12, fn: 'A quick localization checklist for the inferior brain map. Pupil-involving CN III palsy points toward PComm aneurysm until proven otherwise. Bitemporal visual-field loss points toward optic chiasm compression, often from the pituitary region. Hoarseness, dysphagia, and impaired gag localize to lower cranial nerves or medulla. Thunderclap headache raises concern for subarachnoid hemorrhage from a ruptured aneurysm.', brodmann: 'Clinical localization guide across cranial nerves, optic chiasm, and Circle of Willis vessels', blood: 'Highlights PComm/ICA, AComm/ACA, basilar/vertebral, and hypophyseal/chiasmal supply depending on the clue.', conditions: 'Useful for triaging CN III palsy, pituitary/chiasmal compression, lateral medullary presentations, basilar disease, and aneurysmal subarachnoid hemorrhage.', damage: 'The clue pattern narrows the dangerous anatomy: pupil plus CN III near PComm, bitemporal fields near chiasm, bulbar symptoms near medulla/lower cranial nerves, and thunderclap headache near aneurysm rupture.' }
 
               ]
 
@@ -458,7 +460,9 @@ var d = labToolData.brainAtlas || {};
 
                 { id: 'direct_path_bg', name: t('stem.brainatlas.bg_direct_pathway', 'Direct Pathway: GO'), x: 0.49, y: 0.30, w: 0.09, fn: 'Direct pathway: Cortex excites striatum D1; D1 inhibits GPi/SNr; GPi/SNr releases thalamus from inhibition; thalamus excites cortex. The practical result is movement facilitation.', brodmann: 'Circuit pathway', blood: 'Depends on cortex, striatum, pallidum, and thalamus supply.', conditions: 'Underactive direct pathway contributes to Parkinsonian bradykinesia. Excess direct facilitation can contribute to dyskinesia.', damage: 'Difficulty initiating desired movement or controlling movement amplitude.' },
 
-                { id: 'indirect_path_bg', name: t('stem.brainatlas.bg_indirect_pathway', 'Indirect Pathway: NO-GO'), x: 0.55, y: 0.82, w: 0.09, fn: 'Indirect pathway: Cortex excites striatum D2; D2 inhibits GPe; STN becomes more active; STN excites GPi/SNr; GPi/SNr inhibits thalamus. The practical result is suppression of competing movement.', brodmann: 'Circuit pathway', blood: 'Depends on cortex, striatum, GPe, STN, GPi/SNr, and thalamus supply.', conditions: 'Indirect pathway loss is central to early Huntington chorea. Excess indirect activity contributes to Parkinsonian slowness and rigidity.', damage: 'Too little NO-GO signaling permits unwanted movements; too much suppresses intended movement.' }
+                { id: 'indirect_path_bg', name: t('stem.brainatlas.bg_indirect_pathway', 'Indirect Pathway: NO-GO'), x: 0.55, y: 0.82, w: 0.09, fn: 'Indirect pathway: Cortex excites striatum D2; D2 inhibits GPe; STN becomes more active; STN excites GPi/SNr; GPi/SNr inhibits thalamus. The practical result is suppression of competing movement.', brodmann: 'Circuit pathway', blood: 'Depends on cortex, striatum, GPe, STN, GPi/SNr, and thalamus supply.', conditions: 'Indirect pathway loss is central to early Huntington chorea. Excess indirect activity contributes to Parkinsonian slowness and rigidity.', damage: 'Too little NO-GO signaling permits unwanted movements; too much suppresses intended movement.' },
+
+                { id: 'movement_disorder_decoder_bg', name: t('stem.brainatlas.bg_movement_disorder_decoder', 'Movement Disorder Decoder'), x: 0.50, y: 0.15, w: 0.12, fn: 'A clinical shortcut for the basal ganglia loop. Parkinson disease usually means too little dopamine: weaker direct GO signaling and stronger indirect NO-GO braking, so movement is hard to start. Huntington disease early on preferentially weakens indirect NO-GO output, allowing unwanted chorea. Subthalamic nucleus injury weakens the brake-driving signal to GPi/SNr and can produce contralateral hemiballismus. Too much or poorly timed facilitation can contribute to dyskinesia.', brodmann: 'Clinical loop decoder across SNc dopamine, D1/D2 striatum, STN, GPi/SNr, thalamus, and motor cortex', blood: 'Depends on the affected node: lenticulostriate, anterior choroidal, posterior communicating, posterior cerebral perforators, or midbrain perforators.', conditions: 'Parkinson disease, Huntington disease, hemiballismus from STN lesion, medication-induced dyskinesia, dystonia, and tremor syndromes can all be framed as imbalance in GO, NO-GO, dopamine, and output brake signals.', damage: 'Use movement amount and pattern to reason backward: too much brake gives slowness and rigidity, too little brake permits unwanted movement, dopamine loss shifts the loop toward under-movement, and STN loss can release large ballistic movement.' }
 
               ]
 
@@ -496,7 +500,9 @@ var d = labToolData.brainAtlas || {};
 
                 { id: 'papez_path_limbic', name: t('stem.brainatlas.limbic_papez_path', 'Papez Memory Loop'), x: 0.50, y: 0.50, w: 0.08, fn: 'Papez circuit: hippocampus -> fornix -> mammillary bodies -> mammillothalamic tract -> anterior thalamus -> cingulate cortex -> cingulum/entorhinal cortex -> hippocampus. It is a memory and context loop, not a single emotion center.', brodmann: 'Circuit pathway', blood: 'Depends on medial temporal, hypothalamic, thalamic, cingulate, and medial cortical supply.', conditions: 'Damage at multiple nodes can cause amnesia. Wernicke-Korsakoff syndrome, thalamic stroke, hippocampal injury, and fornix damage all illustrate different weak points.', damage: 'Disrupted episodic memory consolidation, context binding, navigation, or recall.' },
 
-                { id: 'emotion_output_limbic', name: t('stem.brainatlas.limbic_emotion_output', 'Amygdala Emotion Output'), x: 0.37, y: 0.83, w: 0.08, fn: 'Amygdala output to hypothalamus and brainstem helps convert emotion into body state: heart rate, sweating, freezing, startle, stress hormones, and defensive behavior.', brodmann: 'Circuit pathway', blood: 'Medial temporal, hypothalamic, and brainstem supply.', conditions: 'Panic, PTSD hyperarousal, and autonomic fear responses are easier to understand when emotion is linked to hypothalamic/brainstem output.', damage: 'Blunted fear/autonomic response if underactive; exaggerated threat response if overactive or poorly regulated.' }
+                { id: 'emotion_output_limbic', name: t('stem.brainatlas.limbic_emotion_output', 'Amygdala Emotion Output'), x: 0.37, y: 0.83, w: 0.08, fn: 'Amygdala output to hypothalamus and brainstem helps convert emotion into body state: heart rate, sweating, freezing, startle, stress hormones, and defensive behavior.', brodmann: 'Circuit pathway', blood: 'Medial temporal, hypothalamic, and brainstem supply.', conditions: 'Panic, PTSD hyperarousal, and autonomic fear responses are easier to understand when emotion is linked to hypothalamic/brainstem output.', damage: 'Blunted fear/autonomic response if underactive; exaggerated threat response if overactive or poorly regulated.' },
+
+                { id: 'memory_emotion_decoder_limbic', name: t('stem.brainatlas.limbic_memory_emotion_decoder', 'Memory-Emotion Decoder'), x: 0.50, y: 0.15, w: 0.12, fn: 'A clinical shortcut for reading limbic findings. New-learning failure points toward hippocampus, entorhinal cortex, fornix, or connected medial temporal memory systems. Confabulation with severe amnesia raises concern for mammillary body, mammillothalamic, or anterior thalamic injury. Strong fear tagging, hypervigilance, panic, or trauma-cue reactivity points toward amygdala and hypothalamic body-output systems. Poor top-down calming, impulsivity, or emotional dysregulation points toward medial prefrontal and cingulate regulation.', brodmann: 'Clinical pattern map across hippocampus, fornix, mammillary bodies, anterior thalamus, cingulate, amygdala, hypothalamus, and medial prefrontal cortex', blood: 'Depends on the injured node: PCA medial temporal branches, anterior choroidal contributions, thalamoperforators, posterior communicating branches, ACA, or MCA frontal branches.', conditions: 'Anterograde amnesia, early Alzheimer disease, Wernicke-Korsakoff syndrome, thalamic amnesia, PTSD, panic, anxiety, depression, impulsivity, and frontal-limbic dysregulation can all be framed by this decoder.', damage: 'Reason from the symptom pattern: cannot form new memories suggests medial temporal or Papez-loop damage; confabulation suggests diencephalic memory relay injury; excessive fear-body output suggests amygdala-hypothalamus drive; poor regulation suggests prefrontal-cingulate control failure.' }
 
               ]
 
@@ -570,7 +576,9 @@ var d = labToolData.brainAtlas || {};
 
                 { id: 'node_ranvier', name: t('stem.brainatlas.nodes_of_ranvier', 'Nodes of Ranvier'), x: 0.70, y: 0.45, w: 0.06, fn: '1\u20132\u03BCm gaps between myelin with ~1000 Na\u207A channels/\u03BCm\u00B2. Action potential jumps node-to-node (saltatory conduction) at up to 120 m/s.', conditions: 'Anti-ganglioside antibodies target nodal proteins in Guillain-Barr\u00E9. Paranodal disruption slows conduction.', damage: 'Loss of saltatory conduction. Dramatic velocity drop. Eventual conduction block.' },
 
-                { id: 'axon_terminal', name: t('stem.brainatlas.axon_terminal', 'Axon Terminal'), x: 0.92, y: 0.45, w: 0.06, fn: 'Synaptic boutons with vesicles of neurotransmitter. Ca\u00B2\u207A influx triggers SNARE-mediated exocytosis into synaptic cleft.', conditions: 'Botulism: cleaves SNAREs, blocks ACh release. Lambert-Eaton: anti-VGCC antibodies reduce Ca\u00B2\u207A entry.', damage: 'No NT release. Complete failure of synaptic transmission.' }
+                { id: 'axon_terminal', name: t('stem.brainatlas.axon_terminal', 'Axon Terminal'), x: 0.92, y: 0.45, w: 0.06, fn: 'Synaptic boutons with vesicles of neurotransmitter. Ca\u00B2\u207A influx triggers SNARE-mediated exocytosis into synaptic cleft.', conditions: 'Botulism: cleaves SNAREs, blocks ACh release. Lambert-Eaton: anti-VGCC antibodies reduce Ca\u00B2\u207A entry.', damage: 'No NT release. Complete failure of synaptic transmission.' },
+
+                { id: 'spike_cycle_decoder_neuron', name: t('stem.brainatlas.spike_cycle_decoder', 'Spike Cycle Decoder'), x: 0.48, y: 0.12, w: 0.12, fn: 'A compact map of the action-potential cycle: resting potential near -70 mV, threshold near -55 mV, rapid depolarization as voltage-gated Na+ channels open, repolarization as Na+ channels inactivate and K+ channels open, brief hyperpolarization, then refractory recovery. The all-or-nothing rule means a neuron either fires a full spike after threshold or does not fire.', conditions: 'Useful for understanding epilepsy and sodium-channel disorders, local anesthetics and anti-seizure medicines that alter channel firing, demyelination that slows propagation, and refractory periods that limit maximum firing rate.', damage: 'Disrupted spike cycling can prevent signal initiation, slow axonal conduction, or create unstable firing patterns such as repetitive or synchronized discharges.' }
 
               ]
 
@@ -2354,18 +2362,48 @@ var d = labToolData.brainAtlas || {};
                 cwPill('hypoglossal_cn_xii_cw', 'CN XII', 'tongue', W * 0.22, H * 0.75, nerveColor, false);
                 cwPill('facial_vestibular_cn_vii_viii_cw', 'CN VII/VIII', 'face, hearing, balance', W * 0.80, H * 0.61, nerveColor, true);
                 cwPill('lower_cranial_ix_x_xi_cw', 'CN IX-XI', 'swallow + voice', W * 0.82, H * 0.72, nerveColor, true);
-                cwPill('acomm_aca_cw', 'AComm / ACA', 'common aneurysm', W * 0.50, H * 0.165, arteryColor, true);
+                cwPill('acomm_aca_cw', 'AComm / ACA', 'common aneurysm', W * 0.50, H * 0.205, arteryColor, true);
                 cwPill('pcomm_ica_cw', 'PComm / ICA', 'CN III neighbor', W * 0.76, H * 0.43, arteryColor, true);
                 cwPill('basilar_vertebral_cw', 'Basilar / vertebral', 'brainstem supply', W * 0.50, H * 0.905, arteryColor, true);
 
+                function cwClueChip(x, y, w, title, sub, color) {
+                  ctx.save();
+                  ctx.fillStyle = 'rgba(255,255,255,0.94)';
+                  ctx.strokeStyle = color + '88';
+                  ctx.lineWidth = 1;
+                  ctx.beginPath(); ctx.roundRect(x, y, w, H * 0.045, 8); ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = color;
+                  ctx.font = 'bold ' + Math.round(5.9 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(title, x + w / 2, y + H * 0.017);
+                  ctx.fillStyle = '#475569';
+                  ctx.font = Math.round(5.5 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(sub, x + w / 2, y + H * 0.034);
+                  ctx.restore();
+                }
+
                 ctx.save();
-                ctx.fillStyle = 'rgba(15,23,42,0.86)';
-                ctx.beginPath(); ctx.roundRect(W * 0.13, H * 0.105, W * 0.74, H * 0.047, 10); ctx.fill();
+                var clueActive = cwActive('bedside_clue_decoder_cw');
+                var clueX = W * 0.10, clueY = H * 0.105, clueW = W * 0.80, clueH = H * 0.090;
+                ctx.fillStyle = clueActive ? 'rgba(220,38,38,0.16)' : 'rgba(15,23,42,0.86)';
+                ctx.strokeStyle = clueActive ? '#dc2626' : 'rgba(15,23,42,0.20)';
+                ctx.lineWidth = clueActive ? 2 : 1;
+                ctx.beginPath(); ctx.roundRect(clueX, clueY, clueW, clueH, 11); ctx.fill(); ctx.stroke();
                 ctx.fillStyle = '#e2e8f0';
-                ctx.font = 'bold ' + Math.round(8.7 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('Clinical shortcut: pupil-involving CN III palsy suggests PComm aneurysm; thunderclap headache suggests SAH.', W * 0.5, H * 0.134);
+                ctx.font = 'bold ' + Math.round(7.8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('BEDSIDE CLUE DECODER', clueX + W * 0.014, clueY + H * 0.024);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = Math.round(5.9 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('dangerous pattern -> likely anatomy', clueX + W * 0.220, clueY + H * 0.024);
                 ctx.restore();
+
+                var clueChipY = H * 0.143;
+                var clueChipW = W * 0.180;
+                cwClueChip(W * 0.120, clueChipY, clueChipW, 'Pupil + CN III', 'PComm aneurysm', arteryColor);
+                cwClueChip(W * 0.320, clueChipY, clueChipW, 'Bitemporal fields', 'chiasm / pituitary', '#f59e0b');
+                cwClueChip(W * 0.520, clueChipY, clueChipW, 'Hoarse + dysphagia', 'CN IX-X / medulla', nerveColor);
+                cwClueChip(W * 0.720, clueChipY, clueChipW, 'Thunderclap', 'SAH / aneurysm', arteryColor);
 
               } else if (currentView.isHomunculus) {
 
@@ -2972,13 +3010,13 @@ var d = labToolData.brainAtlas || {};
                 ctx.fillText('Direct pathway releases a selected movement; indirect pathway suppresses competing movement.', W * 0.5, H * 0.092);
 
                 var bgNodes = {
-                  cortex_bg: { x: W * 0.50, y: H * 0.16, w: W * 0.18, h: H * 0.075, color: '#2563eb', label: 'Motor cortex', sub: 'action plans' },
+                  cortex_bg: { x: W * 0.50, y: H * 0.235, w: W * 0.18, h: H * 0.075, color: '#2563eb', label: 'Motor cortex', sub: 'action plans' },
                   striatum_d1_bg: { x: W * 0.30, y: H * 0.38, w: W * 0.20, h: H * 0.075, color: goColor, label: 'Striatum D1', sub: 'direct GO' },
                   striatum_d2_bg: { x: W * 0.30, y: H * 0.62, w: W * 0.20, h: H * 0.075, color: stopColor, label: 'Striatum D2', sub: 'indirect NO-GO' },
                   gpe_bg: { x: W * 0.50, y: H * 0.69, w: W * 0.15, h: H * 0.070, color: '#f97316', label: 'GPe', sub: 'relay' },
                   stn_bg: { x: W * 0.66, y: H * 0.67, w: W * 0.15, h: H * 0.070, color: '#a855f7', label: 'STN', sub: 'excites brake' },
                   gpi_snr_bg: { x: W * 0.71, y: H * 0.42, w: W * 0.17, h: H * 0.075, color: '#0f766e', label: 'GPi / SNr', sub: 'output brake' },
-                  thalamus_bg: { x: W * 0.73, y: H * 0.20, w: W * 0.16, h: H * 0.070, color: '#14b8a6', label: 'Thalamus', sub: 'VA/VL relay' },
+                  thalamus_bg: { x: W * 0.73, y: H * 0.245, w: W * 0.16, h: H * 0.070, color: '#14b8a6', label: 'Thalamus', sub: 'VA/VL relay' },
                   snc_dopamine_bg: { x: W * 0.17, y: H * 0.78, w: W * 0.18, h: H * 0.075, color: dopamineColor, label: 'SNc dopamine', sub: 'D1 up, D2 down' }
                 };
 
@@ -3111,14 +3149,52 @@ var d = labToolData.brainAtlas || {};
                 pathBadge('direct_path_bg', W * 0.28, H * 0.90, goColor, 'DIRECT PATHWAY: GO', ['D1 inhibits the brake', 'thalamus can excite cortex']);
                 pathBadge('indirect_path_bg', W * 0.72, H * 0.90, stopColor, 'INDIRECT PATHWAY: NO-GO', ['D2 lets STN strengthen brake', 'competing actions are suppressed']);
 
+                function bgDisorderChip(x, y, w, title, sub, color) {
+                  ctx.save();
+                  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = 1.2;
+                  ctx.beginPath();
+                  ctx.roundRect(x, y, w, H * 0.040, 8);
+                  ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = color;
+                  ctx.font = 'bold ' + Math.round(7.2 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(title, x + w / 2, y + H * 0.015);
+                  ctx.fillStyle = '#475569';
+                  ctx.font = Math.round(5.8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(sub, x + w / 2, y + H * 0.031);
+                  ctx.restore();
+                }
+
                 ctx.save();
-                ctx.fillStyle = 'rgba(15,23,42,0.86)';
-                ctx.beginPath(); ctx.roundRect(W * 0.19, H * 0.105, W * 0.62, H * 0.045, 10); ctx.fill();
+                var disorderActive = !!(sel && sel.id === 'movement_disorder_decoder_bg');
+                var disorderX = W * 0.07;
+                var disorderY = H * 0.108;
+                var disorderW = W * 0.86;
+                var disorderH = H * 0.087;
+                ctx.fillStyle = disorderActive ? 'rgba(245,158,11,0.18)' : 'rgba(15,23,42,0.88)';
+                ctx.strokeStyle = disorderActive ? dopamineColor : 'rgba(15,23,42,0.24)';
+                ctx.lineWidth = disorderActive ? 2.4 : 1;
+                ctx.shadowColor = disorderActive ? 'rgba(245,158,11,0.24)' : 'rgba(15,23,42,0.12)';
+                ctx.shadowBlur = disorderActive ? 16 : 8;
+                ctx.beginPath(); ctx.roundRect(disorderX, disorderY, disorderW, disorderH, 12); ctx.fill(); ctx.stroke();
+                ctx.shadowBlur = 0;
                 ctx.fillStyle = '#e2e8f0';
-                ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('Parkinson: less dopamine = weaker GO + stronger NO-GO. Huntington: early NO-GO loss = chorea.', W * 0.5, H * 0.133);
+                ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('MOVEMENT DISORDER DECODER', disorderX + W * 0.018, disorderY + H * 0.024);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = Math.round(6 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('movement pattern -> loop imbalance', disorderX + W * 0.302, disorderY + H * 0.024);
                 ctx.restore();
+
+                var disorderChipY = H * 0.148;
+                var disorderChipW = W * 0.185;
+                bgDisorderChip(W * 0.095, disorderChipY, disorderChipW, 'Parkinson', 'DA loss -> too much brake', dopamineColor);
+                bgDisorderChip(W * 0.310, disorderChipY, disorderChipW, 'Huntington', 'NO-GO loss -> chorea', stopColor);
+                bgDisorderChip(W * 0.525, disorderChipY, disorderChipW, 'STN lesion', 'weak brake -> ballismus', '#a855f7');
+                bgDisorderChip(W * 0.740, disorderChipY, disorderChipW, 'Dyskinesia', 'too much GO timing', goColor);
 
               } else if (currentView.isLimbicPapez) {
 
@@ -3152,12 +3228,12 @@ var d = labToolData.brainAtlas || {};
                   mammillary_limbic: { x: W * 0.50, y: H * 0.68, w: W * 0.16, h: H * 0.064, color: '#d97706', label: 'Mammillary', sub: 'memory relay' },
                   mammillothalamic_limbic: { x: W * 0.63, y: H * 0.55, w: W * 0.17, h: H * 0.064, color: '#f97316', label: 'Mammillothal.', sub: 'tract' },
                   anterior_thalamus_limbic: { x: W * 0.74, y: H * 0.38, w: W * 0.17, h: H * 0.064, color: '#0f766e', label: 'Anterior thal.', sub: 'context relay' },
-                  cingulate_limbic: { x: W * 0.50, y: H * 0.20, w: W * 0.17, h: H * 0.064, color: '#14b8a6', label: 'Cingulate', sub: 'motivation' },
-                  cingulum_limbic: { x: W * 0.35, y: H * 0.28, w: W * 0.16, h: H * 0.062, color: '#0891b2', label: 'Cingulum', sub: 'return path' },
+                  cingulate_limbic: { x: W * 0.50, y: H * 0.245, w: W * 0.17, h: H * 0.064, color: '#14b8a6', label: 'Cingulate', sub: 'motivation' },
+                  cingulum_limbic: { x: W * 0.35, y: H * 0.315, w: W * 0.16, h: H * 0.062, color: '#0891b2', label: 'Cingulum', sub: 'return path' },
                   entorhinal_limbic: { x: W * 0.22, y: H * 0.36, w: W * 0.17, h: H * 0.064, color: '#0ea5e9', label: 'Entorhinal', sub: 'gateway' },
                   amygdala_limbic: { x: W * 0.25, y: H * 0.74, w: W * 0.16, h: H * 0.066, color: emotionColor, label: 'Amygdala', sub: 'salience' },
                   hypothalamus_limbic: { x: W * 0.50, y: H * 0.82, w: W * 0.17, h: H * 0.066, color: '#be123c', label: 'Hypothalamus', sub: 'body state' },
-                  prefrontal_limbic: { x: W * 0.79, y: H * 0.21, w: W * 0.15, h: H * 0.064, color: regulateColor, label: 'mPFC', sub: 'regulates' }
+                  prefrontal_limbic: { x: W * 0.79, y: H * 0.255, w: W * 0.15, h: H * 0.064, color: regulateColor, label: 'mPFC', sub: 'regulates' }
                 };
 
                 function limbicActive(id) { return !!(sel && sel.id === id); }
@@ -3292,14 +3368,52 @@ var d = labToolData.brainAtlas || {};
                 limbicBadge('papez_path_limbic', W * 0.29, H * 0.925, memoryColor, 'PAPEZ MEMORY LOOP', ['hippocampus -> thalamus -> cingulate', 'returns through entorhinal cortex']);
                 limbicBadge('emotion_output_limbic', W * 0.71, H * 0.925, emotionColor, 'AMYGDALA OUTPUT', ['tags memory with emotion', 'drives hypothalamic body response']);
 
+                function limbicDecoderChip(x, y, w, title, sub, color) {
+                  ctx.save();
+                  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = 1.15;
+                  ctx.beginPath();
+                  ctx.roundRect(x, y, w, H * 0.040, 8);
+                  ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = color;
+                  ctx.font = 'bold ' + Math.round(7.1 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(title, x + w / 2, y + H * 0.015);
+                  ctx.fillStyle = '#475569';
+                  ctx.font = Math.round(5.8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(sub, x + w / 2, y + H * 0.031);
+                  ctx.restore();
+                }
+
                 ctx.save();
-                ctx.fillStyle = 'rgba(15,23,42,0.86)';
-                ctx.beginPath(); ctx.roundRect(W * 0.17, H * 0.105, W * 0.66, H * 0.047, 10); ctx.fill();
+                var limbicDecoderActive = !!(sel && sel.id === 'memory_emotion_decoder_limbic');
+                var limbicDecoderX = W * 0.06;
+                var limbicDecoderY = H * 0.108;
+                var limbicDecoderW = W * 0.88;
+                var limbicDecoderH = H * 0.087;
+                ctx.fillStyle = limbicDecoderActive ? 'rgba(217,119,6,0.18)' : 'rgba(15,23,42,0.88)';
+                ctx.strokeStyle = limbicDecoderActive ? memoryColor : 'rgba(15,23,42,0.24)';
+                ctx.lineWidth = limbicDecoderActive ? 2.4 : 1;
+                ctx.shadowColor = limbicDecoderActive ? 'rgba(217,119,6,0.24)' : 'rgba(15,23,42,0.12)';
+                ctx.shadowBlur = limbicDecoderActive ? 16 : 8;
+                ctx.beginPath(); ctx.roundRect(limbicDecoderX, limbicDecoderY, limbicDecoderW, limbicDecoderH, 12); ctx.fill(); ctx.stroke();
+                ctx.shadowBlur = 0;
                 ctx.fillStyle = '#e2e8f0';
-                ctx.font = 'bold ' + Math.round(8.7 * fontScale) + 'px Inter, system-ui, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('Memory is distributed: hippocampus binds context, amygdala tags salience, hypothalamus changes body state.', W * 0.5, H * 0.134);
+                ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('MEMORY-EMOTION DECODER', limbicDecoderX + W * 0.018, limbicDecoderY + H * 0.024);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = Math.round(6 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('symptom pattern -> weak circuit', limbicDecoderX + W * 0.285, limbicDecoderY + H * 0.024);
                 ctx.restore();
+
+                var limbicChipY = H * 0.148;
+                var limbicChipW = W * 0.195;
+                limbicDecoderChip(W * 0.082, limbicChipY, limbicChipW, 'New amnesia', 'hippocampus / fornix', memoryColor);
+                limbicDecoderChip(W * 0.302, limbicChipY, limbicChipW, 'Confabulation', 'mammillary / thalamus', '#d97706');
+                limbicDecoderChip(W * 0.522, limbicChipY, limbicChipW, 'Fear tagging', 'amygdala -> body', emotionColor);
+                limbicDecoderChip(W * 0.742, limbicChipY, limbicChipW, 'Poor regulation', 'mPFC brake weak', regulateColor);
 
               } else if (currentView.isNeuron) {
 
@@ -3318,6 +3432,55 @@ var d = labToolData.brainAtlas || {};
                 var naColor = '#3b82f6';
 
                 var kColor = '#22c55e';
+
+                function spikeCycleDecoder() {
+                  var active = !!(sel && sel.id === 'spike_cycle_decoder_neuron');
+                  var boxX = W * 0.075, boxY = H * 0.075, boxW = W * 0.68, boxH = H * 0.118;
+                  ctx.save();
+                  ctx.fillStyle = active ? 'rgba(245,158,11,0.16)' : 'rgba(255,255,255,0.92)';
+                  ctx.strokeStyle = active ? '#f59e0b' : 'rgba(203,213,225,0.9)';
+                  ctx.lineWidth = active ? 2.2 : 1;
+                  ctx.shadowColor = active ? 'rgba(245,158,11,0.25)' : 'rgba(15,23,42,0.08)';
+                  ctx.shadowBlur = active ? 14 : 7;
+                  ctx.beginPath(); ctx.roundRect(boxX, boxY, boxW, boxH, 12); ctx.fill(); ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = '#92400e';
+                  ctx.font = 'bold ' + Math.round(8.3 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'left';
+                  ctx.fillText('SPIKE CYCLE DECODER', boxX + 12, boxY + H * 0.030);
+                  ctx.fillStyle = '#64748b';
+                  ctx.font = Math.round(6.6 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText('threshold -> Na+ in -> K+ out -> refractory recovery', boxX + W * 0.185, boxY + H * 0.030);
+
+                  var chips = [
+                    { label: 'Rest -70', sub: 'polarized', color: '#64748b' },
+                    { label: 'Threshold -55', sub: 'all-or-none', color: '#ef4444' },
+                    { label: 'Na+ in', sub: 'depolarize', color: naColor },
+                    { label: 'K+ out', sub: 'repolarize', color: kColor },
+                    { label: 'Refractory', sub: 'reset', color: '#f59e0b' }
+                  ];
+                  var chipW = boxW * 0.175;
+                  for (var ci = 0; ci < chips.length; ci++) {
+                    var ch = chips[ci];
+                    var cx = boxX + W * 0.020 + ci * (chipW + W * 0.012);
+                    var cy = boxY + H * 0.050;
+                    var isPhase = Math.floor(phase) === ci || (ci === 4 && phase >= 5);
+                    ctx.fillStyle = isPhase ? ch.color + '24' : '#f8fafc';
+                    ctx.strokeStyle = isPhase ? ch.color : '#e2e8f0';
+                    ctx.lineWidth = isPhase ? 1.5 : 1;
+                    ctx.beginPath(); ctx.roundRect(cx, cy, chipW, H * 0.048, 8); ctx.fill(); ctx.stroke();
+                    ctx.fillStyle = ch.color;
+                    ctx.font = 'bold ' + Math.round(6.6 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(ch.label, cx + chipW / 2, cy + H * 0.018);
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = Math.round(5.7 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.fillText(ch.sub, cx + chipW / 2, cy + H * 0.036);
+                  }
+                  ctx.restore();
+                }
+
+                spikeCycleDecoder();
 
 
 
@@ -4860,14 +5023,14 @@ var d = labToolData.brainAtlas || {};
           function brainAtlasCanvasSummary() {
             if (sel) return currentView.name + ': ' + sel.name + '. ' + brainAtlasShortText(sel.fn, 190);
             if (currentView.isNT) return t('stem.brainatlas.canvas_summary_nt', 'Neurotransmitter view showing synaptic release, receptor binding, and reuptake. Active scenario: ') + activeSim.name + '. ' + brainAtlasShortText(activeSim.desc, 150);
-            if (currentView.isNeuron) return t('stem.brainatlas.canvas_summary_neuron', 'Neuron anatomy view showing dendrites, soma, axon, myelin, nodes, and terminals so students can follow signal flow.');
+            if (currentView.isNeuron) return t('stem.brainatlas.canvas_summary_neuron', 'Neuron anatomy view showing dendrites, soma, axon hillock, myelin, nodes, terminals, and a spike-cycle decoder for threshold, sodium influx, potassium efflux, refractory recovery, and all-or-nothing firing.');
             if (currentView.isSynapse) return t('stem.brainatlas.canvas_summary_synapse', 'Synapse and development view showing how neural connections can strengthen, weaken, or be pruned through experience.');
             if (currentView.isHomunculus) return t('stem.brainatlas.canvas_summary_homunculus', 'Motor and sensory homunculus view showing primary motor cortex, primary somatosensory cortex, the central sulcus, and enlarged hand, face, and tongue representations.');
             if (currentView.isVisualPathway) return t('stem.brainatlas.canvas_summary_visual_pathway', 'Visual pathway view showing retina, optic nerve, optic chiasm, optic tract, LGN, optic radiations, V1, a field-cut decoder, and classic patterns such as bitemporal hemianopia, homonymous hemianopia, quadrantanopia, and macular sparing.');
             if (currentView.isLanguageNetwork) return t('stem.brainatlas.canvas_summary_language_network', 'Language network view showing auditory and visual word input, Wernicke comprehension, angular and supramarginal integration, arcuate fasciculus repetition, Broca speech planning, motor speech output, and classic aphasia clues.');
-            if (currentView.isBasalGanglia) return t('stem.brainatlas.canvas_summary_basal_ganglia', 'Basal ganglia loop view showing direct GO and indirect NO-GO pathways, GPi/SNr thalamic braking, STN excitation, and dopamine modulation from substantia nigra pars compacta.');
-            if (currentView.isLimbicPapez) return t('stem.brainatlas.canvas_summary_limbic_papez', 'Limbic and Papez loop view showing hippocampus, fornix, mammillary bodies, mammillothalamic tract, anterior thalamus, cingulate, cingulum, entorhinal cortex, amygdala, hypothalamus, and prefrontal regulation.');
-            if (currentView.isCranialWillis) return t('stem.brainatlas.canvas_summary_cranial_willis', 'Cranial nerves and Circle of Willis view showing inferior brain anatomy, CN I, II, III, V, VI, VII/VIII, IX/X/XI, XII, AComm/ACA, PComm/ICA, and basilar/vertebral arteries.');
+            if (currentView.isBasalGanglia) return t('stem.brainatlas.canvas_summary_basal_ganglia', 'Basal ganglia loop view showing direct GO and indirect NO-GO pathways, GPi/SNr thalamic braking, STN excitation, dopamine modulation from substantia nigra pars compacta, and a movement-disorder decoder for Parkinson disease, Huntington chorea, STN hemiballismus, and dyskinesia.');
+            if (currentView.isLimbicPapez) return t('stem.brainatlas.canvas_summary_limbic_papez', 'Limbic and Papez loop view showing hippocampus, fornix, mammillary bodies, mammillothalamic tract, anterior thalamus, cingulate, cingulum, entorhinal cortex, amygdala, hypothalamus, prefrontal regulation, and a memory-emotion decoder for new amnesia, confabulation, fear tagging, and poor top-down regulation.');
+            if (currentView.isCranialWillis) return t('stem.brainatlas.canvas_summary_cranial_willis', 'Cranial nerves and Circle of Willis view showing inferior brain anatomy, CN I, II, III, V, VI, VII/VIII, IX/X/XI, XII, AComm/ACA, PComm/ICA, basilar/vertebral arteries, and a bedside clue decoder for pupil-involving CN III palsy, bitemporal field loss, bulbar symptoms, and thunderclap headache.');
             if (currentView.isStim) return t('stem.brainatlas.canvas_summary_stim', 'Stimulation Lab view for predicting what a patient may experience when different brain areas are gently stimulated.');
             if (currentView.isSleep) return t('stem.brainatlas.canvas_summary_sleep', 'Sleep-stage view showing the cycle from light sleep through deep sleep and REM, with memory and recovery connections.');
             if (currentView.isEEG) return (t('stem.brainatlas.canvas_summary_eeg_active', 'EEG rhythm view comparing delta, theta, alpha, beta, and gamma waves across different brain states. Active state: ') || 'EEG rhythm view comparing delta, theta, alpha, beta, and gamma waves across different brain states. Active state: ') + activeEegMode.label + '.';

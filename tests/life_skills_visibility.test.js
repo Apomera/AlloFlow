@@ -67,6 +67,9 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Paycheck');
     expect(html).toContain('Insurance');
     expect(html).toContain('Records');
+    expect(html).toContain('Transportation');
+    expect(html).toContain('Job Readiness');
+    expect(html).toContain('Communication');
     expect(html).toContain('Dental Care');
     expect(html).toContain('Body Care');
     expect(html).toContain('Sleep &amp; Energy');
@@ -89,6 +92,9 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('10-minute money check');
     expect(html).toContain('Digital safety scan');
     expect(html).toContain('Paperwork quick sort');
+    expect(html).toContain('Trip plan check');
+    expect(html).toContain('Job readiness check');
+    expect(html).toContain('Communication reset');
     expect(html).toContain('Body comfort reset');
     expect(html).toContain('Food confidence check');
     expect(html).toContain('Appointment prep');
@@ -209,5 +215,44 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Form field decoder');
     expect(html).toContain('Paperwork plan builder');
     expect(html).toContain('Ask before sharing or signing');
+  });
+
+  it('renders the transportation and navigation Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'transport' } });
+
+    expect(html).toContain('data-lifeskills-transportation="true"');
+    expect(html).toContain('Transportation &amp; Navigation Lab');
+    expect(html).toContain('Trip readiness checklist');
+    expect(html).toContain('Route and delay decisions');
+    expect(html).toContain('Transportation mode cards');
+    expect(html).toContain('Map and sign decoder');
+    expect(html).toContain('Trip plan builder');
+    expect(html).toContain('backup plan');
+  });
+
+  it('renders the job readiness Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'workreadiness' } });
+
+    expect(html).toContain('data-lifeskills-job-readiness="true"');
+    expect(html).toContain('Job Readiness &amp; Workplace Basics Lab');
+    expect(html).toContain('Job readiness checklist');
+    expect(html).toContain('Workplace decisions');
+    expect(html).toContain('Workplace basics cards');
+    expect(html).toContain('Interview practice cards');
+    expect(html).toContain('Work readiness plan builder');
+    expect(html).toContain('Ask a clarifying question');
+  });
+
+  it('renders the communication and conflict Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'communication' } });
+
+    expect(html).toContain('data-lifeskills-communication="true"');
+    expect(html).toContain('Communication &amp; Conflict Basics Lab');
+    expect(html).toContain('Communication checklist');
+    expect(html).toContain('Conversation decisions');
+    expect(html).toContain('Message tone cards');
+    expect(html).toContain('Boundary and repair cards');
+    expect(html).toContain('Conversation plan builder');
+    expect(html).toContain('Get trusted support');
   });
 });

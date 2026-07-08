@@ -22,6 +22,27 @@ URL are given.
 > hosted services, not bundled software — governed by Google's API terms, not an
 > open-source license. See the About → Privacy tab for data-handling details.
 
+## Optional media sources and Video Studio policy
+
+Video Studio may link to optional media-discovery sources, but those sites are
+not bundled dependencies unless a specific asset is included in this repository.
+Each video project can store per-asset title, creator, source URL, license,
+modification status, and attribution text in `media_credits.json` /
+`media_credits.txt`.
+
+| Source | How to treat it in an AGPL-3.0 project |
+|---|---|
+| [Openverse](https://openverse.org) | Search/index for openly licensed media. Verify and record the actual asset license from the source page. |
+| [Wikimedia Commons](https://commons.wikimedia.org) | Prefer public domain, CC0, or CC BY files. Follow the file page attribution and share-alike requirements when present. |
+| [Freesound](https://freesound.org) | Prefer CC0 or CC BY sounds. CC BY-NC/noncommercial sounds should not be treated as safe for general redistribution or commercial/public sharing. |
+| [Pixabay](https://pixabay.com) | Free stock under Pixabay's custom Content License, not open source/open content. Do not bundle Pixabay assets as a reusable stock library in the AGPL source. |
+
+Future local studio-sound candidates such as [RNNoise](https://github.com/xiph/rnnoise)
+(BSD-3-Clause), [DeepFilterNet](https://github.com/Rikorose/DeepFilterNet)
+(MIT/Apache-2.0), and [whisper.cpp](https://github.com/ggml-org/whisper.cpp)
+(MIT) should be added here and in `OSS_CREDITS` only when they are actually
+bundled, with their notices and source links preserved.
+
 ---
 
 ## Dependency inventory

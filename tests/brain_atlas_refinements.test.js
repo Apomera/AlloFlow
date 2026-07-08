@@ -71,6 +71,8 @@ describe('brainAtlas refinement contracts', () => {
     const neuron = render({ view: 'neuron' });
     expect(neuron).toContain('width="820"');
     expect(neuron).toContain('height="760"');
+    expect(neuron).toMatch(/7 targets/);
+    expect(neuron).toMatch(/spike-cycle decoder/i);
 
     const synapses = render({ view: 'synapses' });
     expect(synapses).toContain('width="780"');
@@ -78,6 +80,15 @@ describe('brainAtlas refinement contracts', () => {
 
     expect(src).toContain('function pulsePoint(pt, color, label)');
     expect(src).toContain('legendChip(x0 + 8, 66');
+    expect(src).toContain('spike_cycle_decoder_neuron');
+    expect(src).toContain('SPIKE CYCLE DECODER');
+    expect(src).toContain('Threshold -55');
+    expect(src).toContain('Refractory');
+
+    const spike = render({ view: 'neuron', selectedRegion: 'spike_cycle_decoder_neuron' });
+    expect(spike).toMatch(/Spike Cycle Decoder/);
+    expect(spike).toMatch(/all-or-nothing/i);
+    expect(spike).toMatch(/refractory/i);
   });
 
   it('keeps EEG activity modes accessible outside the canvas drawing', () => {
@@ -185,14 +196,23 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toMatch(/CN III/i);
     expect(html).toMatch(/PComm/i);
     expect(html).toMatch(/Basilar/i);
-    expect(html).toMatch(/12 targets/);
+    expect(html).toMatch(/13 targets/);
     expect(src).toContain('currentView.isCranialWillis');
     expect(src).toContain('Cranial nerves and Circle of Willis');
-    expect(src).toContain('pupil-involving CN III palsy suggests PComm aneurysm');
+    expect(src).toContain('BEDSIDE CLUE DECODER');
+    expect(src).toContain('Pupil + CN III');
+    expect(src).toContain('Bitemporal fields');
+    expect(src).toContain('Thunderclap');
 
     const detail = render({ view: 'cranialNervesWillis', selectedRegion: 'oculomotor_cn_iii_cw' });
     expect(detail).toMatch(/Oculomotor/);
     expect(detail).toMatch(/down-and-out eye/i);
+
+    const decoder = render({ view: 'cranialNervesWillis', selectedRegion: 'bedside_clue_decoder_cw' });
+    expect(decoder).toMatch(/Bedside Clue Decoder/);
+    expect(decoder).toMatch(/pupil-involving CN III/i);
+    expect(decoder).toMatch(/bitemporal/i);
+    expect(decoder).toMatch(/thunderclap/i);
   });
 
   it('adds a basal ganglia direct and indirect pathway diagram', () => {
@@ -206,14 +226,22 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toMatch(/direct/i);
     expect(html).toMatch(/indirect/i);
     expect(html).toMatch(/dopamine/i);
-    expect(html).toMatch(/10 targets/);
+    expect(html).toMatch(/11 targets/);
     expect(src).toContain('currentView.isBasalGanglia');
     expect(src).toContain('DIRECT PATHWAY: GO');
     expect(src).toContain('INDIRECT PATHWAY: NO-GO');
+    expect(src).toContain('movement_disorder_decoder_bg');
+    expect(src).toContain('MOVEMENT DISORDER DECODER');
+    expect(src).toContain('STN lesion');
 
     const detail = render({ view: 'basalGangliaLoop', selectedRegion: 'snc_dopamine_bg' });
     expect(detail).toMatch(/Substantia Nigra/);
     expect(detail).toMatch(/Parkinson/i);
+
+    const decoder = render({ view: 'basalGangliaLoop', selectedRegion: 'movement_disorder_decoder_bg' });
+    expect(decoder).toMatch(/Movement Disorder Decoder/);
+    expect(decoder).toMatch(/too little dopamine/i);
+    expect(decoder).toMatch(/hemiballismus/i);
   });
 
   it('adds a limbic and Papez memory-emotion circuit diagram', () => {
@@ -228,14 +256,24 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toMatch(/Hippocampus/i);
     expect(html).toMatch(/Amygdala/i);
     expect(html).toMatch(/Hypothalamus/i);
-    expect(html).toMatch(/13 targets/);
+    expect(html).toMatch(/14 targets/);
     expect(src).toContain('currentView.isLimbicPapez');
     expect(src).toContain('PAPEZ MEMORY LOOP');
     expect(src).toContain('AMYGDALA OUTPUT');
+    expect(src).toContain('memory_emotion_decoder_limbic');
+    expect(src).toContain('MEMORY-EMOTION DECODER');
+    expect(src).toContain('Confabulation');
+    expect(src).toContain('mPFC brake weak');
 
     const detail = render({ view: 'limbicPapezLoop', selectedRegion: 'mammillary_limbic' });
     expect(detail).toMatch(/Mammillary Bodies/);
     expect(detail).toMatch(/Wernicke-Korsakoff/i);
+
+    const decoder = render({ view: 'limbicPapezLoop', selectedRegion: 'memory_emotion_decoder_limbic' });
+    expect(decoder).toMatch(/Memory-Emotion Decoder/);
+    expect(decoder).toMatch(/anterograde amnesia/i);
+    expect(decoder).toMatch(/PTSD/i);
+    expect(decoder).toMatch(/confabulation/i);
   });
 
   it('enhances cross-lateralization with corpus callosum research visuals', () => {

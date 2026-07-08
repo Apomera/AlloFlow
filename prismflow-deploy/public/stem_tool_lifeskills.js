@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════
-// stem_tool_lifeskills.js — Life Skills Lab  v5.11
-// Enhanced STEM Lab tool — 26 sub-tools
+// stem_tool_lifeskills.js — Life Skills Lab  v5.14
+// Enhanced STEM Lab tool — 29 sub-tools
 // Start Here · Paycheck · Data Literacy · Decisions · Contracts
-// Records · Insurance · Applied Science · Car Care · Home Repair
+// Records · Transportation · Job Readiness · Communication · Insurance · Applied Science · Car Care · Home Repair
 // Home Systems · Budget · Credit · Cooking · Laundry Lab
 // Dental Care · Challenge · Battle · Learn
 // ═══════════════════════════════════════════════════════
@@ -74,6 +74,9 @@ window.StemLab = window.StemLab || {
     { id: 'decision',   icon: '\uD83E\uDDE0', label: 'Decisions' },
     { id: 'contract',   icon: '\uD83D\uDCDD', label: 'Contracts' },
     { id: 'records',    icon: '\uD83D\uDCC1', label: 'Records' },
+    { id: 'transport',  icon: '\uD83D\uDE8C', label: 'Transportation' },
+    { id: 'workreadiness', icon: '\uD83D\uDCBC', label: 'Job Readiness' },
+    { id: 'communication', icon: '\uD83D\uDCAC', label: 'Communication' },
     { id: 'insurance',  icon: '\uD83C\uDFE5', label: 'Insurance' },
     { id: 'dental',     icon: '\uD83E\uDDB7', label: 'Dental Care' },
     { id: 'bodycare',   icon: '\uD83E\uDDCD', label: 'Body Care' },
@@ -97,9 +100,9 @@ window.StemLab = window.StemLab || {
   ];
 
   var LIFE_SKILL_PATHS = [
-    { id: 'money', icon: '\uD83D\uDCB0', title: 'Money basics', desc: 'Take-home pay, budgets, credit, insurance, and smart borrowing.', start: 'paycheck', accent: '#059669', steps: ['Paycheck', 'Budget', 'Credit', 'Insurance'] },
-    { id: 'choices', icon: '\uD83E\uDDE0', title: 'Better decisions', desc: 'Use evidence, spot misleading data, compare options, read fine print, organize records, and stay safer online.', start: 'data', accent: '#2563eb', steps: ['Data', 'Decisions', 'Contracts', 'Records', 'Digital Safety'] },
-    { id: 'care', icon: '\uD83E\uDDCD', title: 'Health routines', desc: 'Practice body care, appointments, sleep, medication labels, home safety, dental care, food confidence, and everyday prevention habits.', start: 'bodycare', accent: '#0f766e', steps: ['Body Care', 'Appointments', 'Sleep', 'Meds', 'Home Safety', 'Dental', 'Food Confidence', 'Cooking', 'Insurance'] },
+    { id: 'money', icon: '\uD83D\uDCB0', title: 'Money basics', desc: 'Take-home pay, job readiness, budgets, credit, insurance, and smart borrowing.', start: 'paycheck', accent: '#059669', steps: ['Paycheck', 'Job Readiness', 'Budget', 'Credit', 'Insurance'] },
+    { id: 'choices', icon: '\uD83E\uDDE0', title: 'Better decisions', desc: 'Use evidence, spot misleading data, compare options, read fine print, organize records, plan transportation, prepare for work, communicate clearly, and stay safer online.', start: 'data', accent: '#2563eb', steps: ['Data', 'Decisions', 'Contracts', 'Records', 'Transportation', 'Job Readiness', 'Communication', 'Digital Safety'] },
+    { id: 'care', icon: '\uD83E\uDDCD', title: 'Health routines', desc: 'Practice body care, appointments, communication, transportation, sleep, medication labels, home safety, dental care, food confidence, and everyday prevention habits.', start: 'bodycare', accent: '#0f766e', steps: ['Body Care', 'Appointments', 'Communication', 'Transportation', 'Sleep', 'Meds', 'Home Safety', 'Dental', 'Food Confidence', 'Cooking', 'Insurance'] },
     { id: 'home', icon: '\uD83C\uDFE0', title: 'Home confidence', desc: 'Understand repairs, home systems, car care, laundry, and applied science.', start: 'homerepair', accent: '#d97706', steps: ['Home Repair', 'Home Systems', 'Car Care', 'Laundry'] },
     { id: 'practice', icon: '\uD83C\uDFAF', title: 'Practice mode', desc: 'Build fluency with challenge questions and the Adulting Defense battle.', start: 'challenge', accent: '#7c3aed', steps: ['Challenge', 'Battle', 'Learn'] }
   ];
@@ -112,6 +115,12 @@ window.StemLab = window.StemLab || {
     { id: 'trapFinder',  icon: '\uD83D\uDCDD', name: 'Trap Finder', desc: 'Find all traps in a contract' },
     { id: 'recordsReady', icon: '\uD83D\uDCC1', name: 'Records Ready', desc: 'Build a safe records checklist' },
     { id: 'formNavigator', icon: '\uD83D\uDCCB', name: 'Form Navigator', desc: 'Practice 3 paperwork decisions' },
+    { id: 'tripReady', icon: '\uD83D\uDE8C', name: 'Trip Ready', desc: 'Build a transportation checklist' },
+    { id: 'routeNavigator', icon: '\uD83E\uDDED', name: 'Route Navigator', desc: 'Practice 3 transportation decisions' },
+    { id: 'jobReady', icon: '\uD83D\uDCBC', name: 'Job Ready', desc: 'Build a work readiness checklist' },
+    { id: 'workplaceNavigator', icon: '\uD83D\uDDE3\uFE0F', name: 'Workplace Navigator', desc: 'Practice 3 work or interview decisions' },
+    { id: 'communicationReady', icon: '\uD83D\uDCAC', name: 'Communication Ready', desc: 'Build a clear communication checklist' },
+    { id: 'conflictNavigator', icon: '\uD83E\uDD1D', name: 'Conflict Navigator', desc: 'Practice 3 communication or conflict decisions' },
     { id: 'insured',     icon: '\uD83C\uDFE5', name: 'Plan Analyst', desc: 'Compare health insurance plans' },
     { id: 'dentalReady', icon: '\uD83E\uDDB7', name: 'Dental Ready', desc: 'Build a daily oral-care plan' },
     { id: 'toothTriage', icon: '\uD83E\uDDB7', name: 'Tooth Trouble Solver', desc: 'Practice 3 dental care decisions' },
@@ -232,6 +241,9 @@ window.StemLab = window.StemLab || {
     { tier: 1, q: 'What kind of password is safer: short and reused, or long and unique?', a: 'long and unique', h: 'Reuse spreads risk across accounts.' },
     { tier: 1, q: 'Where should most leftovers go soon after a meal: counter, fridge, or warm oven?', a: 'fridge', h: 'Cold storage slows germ growth.' },
     { tier: 1, q: 'What should you keep for a return, warranty, or proof you paid?', a: 'receipt', h: 'It records what you bought and when.' },
+    { tier: 1, q: 'What extra time do you add to a trip in case walking, traffic, or transit takes longer?', a: 'buffer', h: 'It gives your plan breathing room.' },
+    { tier: 1, q: 'What short document lists your skills, experience, and contact information for a job?', a: 'resume', h: 'It helps employers understand what you can do.' },
+    { tier: 1, q: 'What should you do before replying when a message makes you upset?', a: 'pause', h: 'A short pause can prevent a bigger conflict.' },
     { tier: 1, q: 'Why should you empty pockets before washing clothes?', a: 'damage', h: 'Pens, coins, and tissues can damage clothing or the washer.' },
     { tier: 1, q: 'What is a credit score used for?', a: 'borrowing', h: 'Lenders check this before giving you a loan.' },
     { tier: 2, q: 'What is the #1 factor in your FICO credit score?', a: 'payment history', h: 'It accounts for 35% of your score.' },
@@ -244,6 +256,9 @@ window.StemLab = window.StemLab || {
     { tier: 2, q: 'What is a message trying to trick you into sharing passwords or codes often called?', a: 'phishing', h: 'It may pretend to be a trusted person or company.' },
     { tier: 2, q: 'What should you do with food from a bulging, leaking, or badly dented can?', a: 'throw it out', h: 'Damaged cans can signal unsafe food.' },
     { tier: 2, q: 'If a form question is confusing or asks for private information, what should you do?', a: 'ask', h: 'Pause and ask a trusted helper or official source.' },
+    { tier: 2, q: 'Before a bus, train, ride, walk, or drive, what should you check: route, time, fare, or all?', a: 'all', h: 'A trip plan needs more than one detail.' },
+    { tier: 2, q: 'If a work schedule is unclear, what should you do before assuming?', a: 'clarify', h: 'Ask a supervisor, manager, or trusted work contact.' },
+    { tier: 2, q: 'What kind of statement starts with your own feeling or need instead of blaming?', a: 'i statement', h: 'Example: I feel confused when...' },
     { tier: 2, q: 'A recipe makes 24 cookies. You want 36. What is the scaling factor?', a: '1.5', h: '36 / 24 = ?' },
     { tier: 2, q: 'What kind of detergent molecules help lift oil away from fabric?', a: 'surfactant', h: 'They have one water-loving end and one oil-loving end.' },
     { tier: 2, q: 'Credit utilization should be below what percentage for best scores?', a: '30', h: 'Below 10% is even better.' },
@@ -257,6 +272,9 @@ window.StemLab = window.StemLab || {
     { tier: 3, q: 'What extra login protection asks for a second code or approval after a password?', a: 'two-factor authentication', h: 'Also called 2FA or multi-factor authentication.' },
     { tier: 3, q: 'A simple budget meal often combines a base, a protein, a vegetable, and what extra part for taste?', a: 'flavor', h: 'Sauce, spices, herbs, or acid can make simple food satisfying.' },
     { tier: 3, q: 'What word on a form means you agree or give permission?', a: 'consent', h: 'Consent should be understood before signing.' },
+    { tier: 3, q: 'A bus leaves at 8:10. Walking to the stop takes 7 minutes and you want a 5-minute buffer. How many minutes before 8:10 should you leave?', a: '12', h: 'Walk time plus buffer time.' },
+    { tier: 3, q: 'What interview method describes a situation, task, action, and result?', a: 'star', h: 'It helps answer behavior questions clearly.' },
+    { tier: 3, q: 'What repair step means recognizing your part and saying what you will do differently?', a: 'apology', h: 'A useful apology includes responsibility and a next step.' },
     { tier: 3, q: 'Why can too much laundry detergent make clothes feel stiff or itchy?', a: 'residue', h: 'Extra detergent can stay in fabric when the rinse cannot remove it all.' },
     { tier: 3, q: 'Paying minimum ($25) on $5,000 at 24.99% APR \u2014 roughly how many years to pay off?', a: '30', h: 'Minimum payments are designed to maximize interest.' }
   ];
@@ -268,6 +286,12 @@ window.StemLab = window.StemLab || {
     { q: 'What is an early termination fee?', a: 'penalty for canceling a contract early', h: 'Common in phone plans and leases.' },
     { q: 'What should you keep after paying a bill or buying something important?', a: 'receipt', h: 'It can help with returns, warranties, and proof of payment.' },
     { q: 'What document usually proves your identity?', a: 'id', h: 'Examples include a school ID, state ID, passport, or license.' },
+    { q: 'What extra time in a trip plan helps with delays?', a: 'buffer', h: 'Leave a little earlier than the perfect-case plan.' },
+    { q: 'What should you make before traveling if your first route is delayed?', a: 'backup plan', h: 'A second route or trusted contact can reduce stress.' },
+    { q: 'What job document summarizes skills and experience?', a: 'resume', h: 'Often used with job applications.' },
+    { q: 'What should you do if workplace instructions are unclear?', a: 'ask', h: 'Clarifying early prevents mistakes.' },
+    { q: 'What should you do before sending an angry reply?', a: 'pause', h: 'A pause helps you choose the next words.' },
+    { q: 'What kind of statement says your own feeling or need clearly?', a: 'i statement', h: 'It avoids starting with blame.' },
     { q: 'What is the name for the amount you pay before insurance kicks in?', a: 'deductible', h: 'Your first out-of-pocket cost.' },
     { q: 'What gas law relates tire pressure and temperature?', a: 'gay-lussac', h: 'P1/T1 = P2/T2 at constant volume.' },
     { q: 'What is the rubber seal at the bottom of a toilet tank called?', a: 'flapper', h: 'Lifts when you flush.' },
@@ -331,6 +355,24 @@ window.StemLab = window.StemLab || {
       '3-5': 'Records skills include keeping IDs, school papers, medical or insurance cards, receipts, and emergency contacts in places you can find. Forms are easier when you read one field at a time and ask before sharing private information.',
       '6-8': 'Paperwork literacy means sorting documents by purpose, protecting private information, tracking deadlines, saving proof of payment, and knowing when a signature means agreement or consent. The goal is to reduce stress before appointments, returns, applications, and emergencies.',
       '9-12': 'Records literacy includes identity documents, tax and income records, insurance cards, leases, warranties, receipts, forms, consent language, deadlines, secure storage, backups, and document-retention judgment. Good systems make adult tasks easier and help prevent scams, missed deadlines, and lost proof.'
+    }},
+    { title: 'Transportation & Navigation', icon: '\uD83D\uDE8C', tryIt: 'transport', content: {
+      'K-2': 'Transportation means getting from one place to another safely. A good plan includes where you are going, who is helping, and what to do if something changes.',
+      '3-5': 'Trip planning means checking the route, travel time, pickup or stop location, fare or ticket, and a trusted helper. Leaving a little early gives you a buffer if walking, traffic, or waiting takes longer.',
+      '6-8': 'Transportation literacy includes route comparison, transfers, schedules, fare systems, accessibility needs, safe waiting places, backup plans, and asking for help from trusted or official sources when a trip changes.',
+      '9-12': 'Navigation skills combine time management, risk awareness, wayfinding, cost planning, accessibility, situational awareness, and contingency planning. Strong travelers check route, timing, fare, alerts, backup options, and communication before stress hits.'
+    }},
+    { title: 'Job Readiness & Workplace Basics', icon: '\uD83D\uDCBC', tryIt: 'workreadiness', content: {
+      'K-2': 'Work skills start with being responsible, kind, safe, and ready to ask questions. People use these skills in classrooms, teams, chores, volunteering, and jobs.',
+      '3-5': 'Job readiness means practicing dependable habits: arriving prepared, following directions, asking for help, taking turns, staying safe, and noticing what a task needs before starting.',
+      '6-8': 'Workplace basics include resumes, applications, schedules, interviews, communication, task lists, safety rules, and respectful help-seeking. A strong worker asks clarifying questions, tracks time, and knows when a situation needs adult or supervisor support.',
+      '9-12': 'Job readiness includes application materials, interview practice, availability, transportation, workplace norms, wage and schedule records, reasonable accommodations, feedback, professionalism, and escalation when something feels unsafe, discriminatory, or unclear.'
+    }},
+    { title: 'Communication & Conflict Basics', icon: '\uD83D\uDCAC', tryIt: 'communication', content: {
+      'K-2': 'Communication means sharing ideas, listening, asking for help, and using words or tools that make needs clear. It is okay to pause and ask a trusted grown-up when a problem feels too big.',
+      '3-5': 'Good communication uses clear words, listening, turn-taking, kind repair, and asking questions when something is confusing. Boundaries help people say what is okay and what is not okay.',
+      '6-8': 'Communication skills include I-statements, active listening, tone-checking messages, setting boundaries, apologizing with a next step, and knowing when conflict needs a trusted adult, mediator, counselor, or other support.',
+      '9-12': 'Communication literacy includes consent, boundaries, conflict de-escalation, digital tone, repair attempts, advocacy, documentation, emotional regulation, and support-seeking when there are threats, harassment, coercion, discrimination, or safety concerns.'
     }},
     { title: 'Budgeting & Saving', icon: '\uD83D\uDCB0', tryIt: 'budget', content: {
       'K-2': 'A budget is a plan for your money! Imagine you have 10 tokens \u2014 you need some for food, some for fun, and you should save some for later.',
@@ -988,6 +1030,153 @@ window.StemLab = window.StemLab || {
     'A person I can ask about confusing paperwork is...'
   ];
 
+  var TRANSPORT_CHECKS = [
+    { id: 'destination', icon: '\uD83D\uDCCD', title: 'Destination details', action: 'Check the full address, entrance, pickup spot, or stop name before leaving.', why: 'Small location details prevent last-minute confusion.' },
+    { id: 'route', icon: '\uD83E\uDDED', title: 'Route and stops', action: 'Know the route, stop, platform, transfer, or turn-by-turn path.', why: 'A clear route makes changes easier to notice.' },
+    { id: 'time', icon: '\u23F1\uFE0F', title: 'Time buffer', action: 'Add extra minutes for walking, waiting, traffic, elevators, weather, or delays.', why: 'A buffer lowers stress and protects appointments.' },
+    { id: 'fare', icon: '\uD83C\uDFAB', title: 'Fare or payment', action: 'Check fare card, ticket, cash, pass, gas, parking, or ride cost.', why: 'Payment surprises can stop a trip.' },
+    { id: 'access', icon: '\u267F', title: 'Access needs', action: 'Check elevators, curb cuts, seating, sensory needs, daylight, or safer waiting areas.', why: 'Accessible routes are part of a real route plan.' },
+    { id: 'backup', icon: '\uD83D\uDD01', title: 'Backup plan', action: 'Pick a second route, trusted contact, or what-to-do-if-late step.', why: 'Plans change; backups reduce panic.' }
+  ];
+
+  var TRANSPORT_ACTIONS = [
+    { id: 'plan', label: 'Check the plan first', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'reroute', label: 'Use a backup route', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'ask', label: 'Ask trusted or official help', tone: 'bg-amber-50 text-amber-900 border-amber-200' },
+    { id: 'wait', label: 'Wait in a safer place', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var TRANSPORT_SCENARIOS = [
+    { prompt: 'Your bus is delayed and you may miss an appointment.', best: 'reroute', explain: 'Check another route or call ahead. A backup plan protects the appointment and lowers stress.' },
+    { prompt: 'You are not sure which platform or stop is correct at a station.', best: 'ask', explain: 'Ask official staff, signage, or a trusted helper instead of guessing.' },
+    { prompt: 'A stranger offers a ride after you missed a stop.', best: 'ask', explain: 'Move to a safer public place and contact a trusted person or official help.' },
+    { prompt: 'Your fare card is low and the trip starts soon.', best: 'plan', explain: 'Check fare or payment before leaving so the trip does not stall.' },
+    { prompt: 'The pickup spot is dark, isolated, and uncomfortable.', best: 'wait', explain: 'Choose a more visible public spot when possible and tell a trusted person where you are.' },
+    { prompt: 'A route has one transfer and another is longer but direct.', best: 'plan', explain: 'Compare time, transfers, accessibility, weather, and comfort before choosing.' }
+  ];
+
+  var TRANSPORT_MODE_CARDS = [
+    { id: 'walkroll', icon: '\uD83D\uDEB6', title: 'Walk or roll', best: 'Short, familiar trips with safe crossings and accessible paths.', check: 'Sidewalks, curb cuts, lighting, weather, traffic, and rest spots.', backup: 'A ride, bus, safer route, or trusted contact if conditions change.' },
+    { id: 'bike', icon: '\uD83D\uDEB2', title: 'Bike or scooter', best: 'Medium trips with safe lanes, helmet, lights, and secure parking.', check: 'Traffic stress, weather, battery/locks, visibility, and local rules.', backup: 'Transit, walking, pickup, or a safe place to lock up.' },
+    { id: 'transit', icon: '\uD83D\uDE8C', title: 'Bus or train', best: 'Regular routes, school/work trips, and avoiding parking costs.', check: 'Schedule, stop direction, transfer, fare, accessibility, and alerts.', backup: 'Later trip, alternate route, rideshare, pickup, or calling ahead.' },
+    { id: 'car', icon: '\uD83D\uDE97', title: 'Car or ride', best: 'Trips with heavy items, low transit access, or tight timing.', check: 'Driver, route, fuel/charge, parking, seat belts, and pickup details.', backup: 'Alternate driver, public transit, waiting safely, or rescheduling.' },
+    { id: 'rideshare', icon: '\uD83D\uDCF1', title: 'App-based ride', best: 'When cost, pickup safety, and trusted account settings are understood.', check: 'Plate, driver name, pickup spot, fare estimate, and sharing trip status.', backup: 'Cancel unsafe pickups, wait in public, or ask trusted support.' }
+  ];
+
+  var TRANSPORT_SYMBOL_CARDS = [
+    { id: 'transfer', icon: '\uD83D\uDD04', title: 'Transfer', means: 'You switch from one route, vehicle, or line to another.', move: 'Check the next stop, direction, platform, and wait time before leaving the first vehicle.' },
+    { id: 'accessible', icon: '\u267F', title: 'Accessible route', means: 'A route includes elevators, ramps, curb cuts, or other access supports.', move: 'Check alerts because elevators, sidewalks, or entrances can change.' },
+    { id: 'fare', icon: '\uD83C\uDFAB', title: 'Fare gate or ticket', means: 'You need payment, pass, card, or ticket proof.', move: 'Prepare payment before the line and keep proof until the trip is done.' },
+    { id: 'alert', icon: '\u26A0\uFE0F', title: 'Service alert', means: 'Something about the route changed.', move: 'Read the alert, then compare delay, detour, or backup options.' },
+    { id: 'exit', icon: '\uD83D\uDEAA', title: 'Exit or pickup', means: 'This points to where you leave, meet a ride, or enter a building.', move: 'Confirm the exact exit or pickup side so helpers can find you.' }
+  ];
+
+  var TRANSPORT_PLAN_PROMPTS = [
+    'My destination and entrance are...',
+    'My route, stop, or pickup spot is...',
+    'My time buffer will be...',
+    'My fare, ticket, or payment plan is...',
+    'If the route changes, my backup plan is...'
+  ];
+
+  var WORK_CHECKS = [
+    { id: 'contact', icon: '\u260E\uFE0F', title: 'Contact basics', action: 'Know the phone, email, or message method an employer or supervisor should use.', why: 'Clear contact details prevent missed interviews, shifts, and updates.' },
+    { id: 'resume', icon: '\uD83D\uDCC4', title: 'Resume or skills list', action: 'Keep a simple list of skills, experiences, references, and activities you can share.', why: 'Applications and interviews are easier when details are already gathered.' },
+    { id: 'availability', icon: '\uD83D\uDCC5', title: 'Availability', action: 'Know which days, times, transportation limits, and school or care responsibilities affect work.', why: 'Good scheduling starts with honest availability.' },
+    { id: 'interview', icon: '\uD83E\uDD1D', title: 'Interview prep', action: 'Practice introducing yourself, giving examples, and asking one question about the role.', why: 'Practice lowers pressure and helps answers sound clearer.' },
+    { id: 'firstday', icon: '\uD83C\uDFC1', title: 'First-day plan', action: 'Plan clothes, route, arrival time, required papers, and who to ask when you arrive.', why: 'A first-day checklist turns unknowns into steps.' },
+    { id: 'support', icon: '\uD83D\uDEE1\uFE0F', title: 'Support and safety', action: 'Know who to ask about unclear tasks, unsafe conditions, harassment, pay, or accommodations.', why: 'Work should include clear instructions, respect, and safety.' }
+  ];
+
+  var WORK_ACTIONS = [
+    { id: 'prepare', label: 'Prepare before the task', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'clarify', label: 'Ask a clarifying question', tone: 'bg-amber-50 text-amber-900 border-amber-200' },
+    { id: 'communicate', label: 'Communicate early', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'support', label: 'Get support or escalate', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var WORK_SCENARIOS = [
+    { prompt: 'An interview is tomorrow and you are not sure what to bring or where to enter.', best: 'prepare', explain: 'Check the location, contact, time, outfit, route, and any documents before the day starts.' },
+    { prompt: 'A supervisor gives a task, but one step is unclear and mistakes could matter.', best: 'clarify', explain: 'Clarifying early is professional. Repeat what you understood and ask about the uncertain step.' },
+    { prompt: 'You realize you may be late for a shift because your ride or bus is delayed.', best: 'communicate', explain: 'Tell the right person as early as possible and share the realistic arrival update.' },
+    { prompt: 'Someone at work pressures you to do something unsafe or against the rules.', best: 'support', explain: 'Safety matters. Pause and ask a supervisor, trusted adult, HR, or another appropriate support.' },
+    { prompt: 'An application asks for availability and you have school, appointments, and transportation limits.', best: 'prepare', explain: 'Write honest availability so the schedule is realistic.' },
+    { prompt: 'You receive feedback on a task and are not sure what to improve next time.', best: 'clarify', explain: 'Ask for one specific next step or example. Feedback is easier to use when it is concrete.' }
+  ];
+
+  var WORKPLACE_CARDS = [
+    { id: 'schedule', icon: '\uD83D\uDCC5', title: 'Schedule basics', doThis: 'Check start/end times, breaks, location, and who to notify about changes.', watch: 'Assuming a schedule without confirming it.', phrase: 'Can you confirm my next shift and where I should report?' },
+    { id: 'tasks', icon: '\u2705', title: 'Task clarity', doThis: 'Write down the task, deadline, priority, and quality standard.', watch: 'Guessing when instructions are unclear.', phrase: 'I want to make sure I understand. Is the first step...?' },
+    { id: 'feedback', icon: '\uD83D\uDDE3\uFE0F', title: 'Feedback', doThis: 'Listen for the next action, ask for an example, and thank the person for clarifying.', watch: 'Taking every correction as failure.', phrase: 'What is one thing I should do differently next time?' },
+    { id: 'safety', icon: '\uD83D\uDEE1\uFE0F', title: 'Safety and respect', doThis: 'Follow safety rules and ask support for unsafe, discriminatory, or harassing behavior.', watch: 'Keeping serious concerns secret because work feels new.', phrase: 'I need help with a safety or respect concern.' },
+    { id: 'pay', icon: '\uD83E\uDDFE', title: 'Pay and records', doThis: 'Track hours, pay stubs, tips, reimbursements, and schedule changes.', watch: 'Not saving proof when something looks wrong.', phrase: 'Can you help me understand this pay or schedule record?' }
+  ];
+
+  var INTERVIEW_CARDS = [
+    { id: 'intro', icon: '\uD83D\uDC4B', title: 'Introduce yourself', prompt: 'Share your name, interest, and one strength.', example: 'Hi, I am interested in this role because I like helping people and I am dependable with routines.' },
+    { id: 'star', icon: '\u2B50', title: 'STAR answer', prompt: 'Situation, Task, Action, Result keeps examples clear.', example: 'At school, our group had a deadline. I organized the checklist, reminded teammates, and we finished on time.' },
+    { id: 'availability', icon: '\uD83D\uDCC5', title: 'Availability', prompt: 'Be honest about school, transportation, care duties, and limits.', example: 'I am available after 4 PM on weekdays and most Saturdays with advance notice.' },
+    { id: 'question', icon: '\u2753', title: 'Ask a question', prompt: 'Prepare one respectful question about training, expectations, or schedule.', example: 'What does training usually look like for someone new in this role?' },
+    { id: 'followup', icon: '\uD83D\uDCE8', title: 'Follow up', prompt: 'A short thank-you can confirm interest and keep communication clear.', example: 'Thank you for meeting with me. I appreciated learning more about the role.' }
+  ];
+
+  var WORK_PLAN_PROMPTS = [
+    'One skill or experience I can list is...',
+    'My honest availability is...',
+    'One interview answer I can practice is...',
+    'My first-day route and arrival buffer are...',
+    'If I am confused or unsafe at work, I can ask...'
+  ];
+
+  var COMMUNICATION_CHECKS = [
+    { id: 'pause', icon: '\u23F8\uFE0F', title: 'Pause before reacting', action: 'Take a breath, wait, or draft first when emotions are high.', why: 'A pause makes it easier to choose words instead of escalating.' },
+    { id: 'listen', icon: '\uD83D\uDC42', title: 'Listen and reflect', action: 'Repeat the main idea you heard before responding when the topic matters.', why: 'Reflection reduces misunderstandings and shows the other person was heard.' },
+    { id: 'ask', icon: '\u2753', title: 'Ask clarifying questions', action: 'Ask what, when, where, or what-do-you-mean before guessing.', why: 'Many conflicts start from assumptions.' },
+    { id: 'istatement', icon: '\uD83D\uDCAC', title: 'Use I-statements', action: 'Say your feeling, need, or request without starting with blame.', why: 'Clear ownership makes hard conversations safer to hear.' },
+    { id: 'boundary', icon: '\uD83D\uDEE1\uFE0F', title: 'Name boundaries', action: 'Say what is okay, what is not okay, and what you will do next.', why: 'Boundaries protect time, safety, privacy, and respect.' },
+    { id: 'support', icon: '\uD83E\uDD1D', title: 'Know when to get support', action: 'Ask trusted help for threats, harassment, coercion, discrimination, or unsafe conflict.', why: 'Some situations should not be handled alone.' }
+  ];
+
+  var COMMUNICATION_ACTIONS = [
+    { id: 'pause', label: 'Pause and cool down', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'clarify', label: 'Ask or reflect back', tone: 'bg-amber-50 text-amber-900 border-amber-200' },
+    { id: 'repair', label: 'Repair or apologize', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'support', label: 'Get trusted support', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var COMMUNICATION_SCENARIOS = [
+    { prompt: 'A message makes you angry and you want to reply immediately in all caps.', best: 'pause', explain: 'Pause, draft, or wait. You can still respond clearly after the first wave of emotion passes.' },
+    { prompt: 'A friend says "you never listen," but you are not sure what they mean.', best: 'clarify', explain: 'Reflect and ask for a specific example before defending yourself.' },
+    { prompt: 'You snapped at someone and later realize your words were unfair.', best: 'repair', explain: 'A useful repair names what happened, takes responsibility, and says what you will try next.' },
+    { prompt: 'Someone keeps pressuring you after you said no.', best: 'support', explain: 'Repeated pressure is a boundary and safety issue. Get trusted support instead of handling it alone.' },
+    { prompt: 'A group chat misunderstanding is spreading quickly.', best: 'pause', explain: 'Slow the conversation down, avoid piling on, and choose a calmer channel if needed.' },
+    { prompt: 'A teacher, helper, or coworker gives instructions that sound different from what you heard earlier.', best: 'clarify', explain: 'Ask a short clarifying question so everyone has the same expectation.' }
+  ];
+
+  var MESSAGE_TONE_CARDS = [
+    { id: 'direct', icon: '\uD83C\uDFAF', title: 'Direct', before: 'You did this wrong.', after: 'Can we check this step together? I think something changed.', why: 'Direct can still be respectful and specific.' },
+    { id: 'urgent', icon: '\u23F0', title: 'Urgent', before: 'Answer me now!!!', after: 'This is time-sensitive. Can you reply by 4 PM?', why: 'A clear deadline works better than pressure.' },
+    { id: 'boundary', icon: '\uD83D\uDEE1\uFE0F', title: 'Boundary', before: 'Leave me alone forever.', after: 'I need space tonight. I can talk tomorrow after school.', why: 'Boundaries are clearer when they say what happens next.' },
+    { id: 'repair', icon: '\uD83E\uDE79', title: 'Repair', before: 'Sorry if you were offended.', after: 'I am sorry I interrupted. Next time I will wait before jumping in.', why: 'A repair owns the action and names a next step.' },
+    { id: 'ask', icon: '\u2753', title: 'Ask', before: 'This makes no sense.', after: 'Can you explain the first step again?', why: 'Specific questions are easier to answer.' }
+  ];
+
+  var BOUNDARY_REPAIR_CARDS = [
+    { id: 'time', icon: '\u23F3', title: 'Time boundary', script: 'I cannot talk right now. I can check in at...', support: 'Use when you need space, rest, or focus time.' },
+    { id: 'privacy', icon: '\uD83D\uDD12', title: 'Privacy boundary', script: 'I am not comfortable sharing that information.', support: 'Use when a question asks for private details.' },
+    { id: 'no', icon: '\u270B', title: 'Saying no', script: 'No, that does not work for me.', support: 'A no does not need a long debate.' },
+    { id: 'repair', icon: '\uD83E\uDD1D', title: 'Repair attempt', script: 'I am sorry I... Next time I will...', support: 'Use when you want to take responsibility and rebuild trust.' },
+    { id: 'support', icon: '\uD83D\uDEA9', title: 'Trusted support', script: 'I need help with a situation that feels unsafe or too big.', support: 'Use for threats, pressure, harassment, discrimination, or fear.' }
+  ];
+
+  var COMMUNICATION_PLAN_PROMPTS = [
+    'A conversation I want to prepare for is...',
+    'One I-statement I can try is...',
+    'A boundary I may need to say is...',
+    'If I need to repair harm, I can say...',
+    'If the conflict feels unsafe, I can ask...'
+  ];
+
   function getGradeBand(ctx) {
     var g = parseInt(ctx.gradeLevel) || 5;
     if (g <= 2) return 'K-2';
@@ -1073,7 +1262,7 @@ window.StemLab = window.StemLab || {
   window.StemLab.registerTool('lifeSkills', {
     title: 'Life Skills Lab',
     icon: '\uD83E\uDDED',
-    description: 'Essential knowledge for adulting \u2014 taxes, data literacy, contracts, records, dental care, body care, sleep routines, medication labels, appointments, home safety, digital safety, food confidence, car care, laundry science, home systems, and critical thinking.',
+    description: 'Essential knowledge for adulting \u2014 taxes, data literacy, contracts, records, transportation, job readiness, communication, dental care, body care, sleep routines, medication labels, appointments, home safety, digital safety, food confidence, car care, laundry science, home systems, and critical thinking.',
     category: 'Life Skills',
     gradeRange: 'K-12',
     render: function(ctx) {
@@ -1737,6 +1926,114 @@ window.StemLab = window.StemLab || {
         if (correct && recordScenarioScore + 1 >= 3) checkBadge('formNavigator');
       }
 
+      // TRANSPORTATION & NAVIGATION STATE
+      var transportChecklist = d.transportChecklist || {};
+      var transportDone = TRANSPORT_CHECKS.filter(function(step) { return !!transportChecklist[step.id]; }).length;
+      var transportScenarioIdx = d.transportScenarioIdx || 0;
+      var transportScenarioChoice = d.transportScenarioChoice || '';
+      var transportScenarioFb = d.transportScenarioFb || '';
+      var transportScenarioScore = d.transportScenarioScore || 0;
+      var transportCurrentScenario = TRANSPORT_SCENARIOS[transportScenarioIdx % TRANSPORT_SCENARIOS.length];
+      var transportModeIdx = d.transportModeIdx || 0;
+      var transportModeCard = TRANSPORT_MODE_CARDS[transportModeIdx % TRANSPORT_MODE_CARDS.length];
+      var transportSymbolIdx = d.transportSymbolIdx || 0;
+      var transportSymbolCard = TRANSPORT_SYMBOL_CARDS[transportSymbolIdx % TRANSPORT_SYMBOL_CARDS.length];
+      var transportPlanIdx = d.transportPlanIdx || 0;
+      var transportPlanPrompt = TRANSPORT_PLAN_PROMPTS[transportPlanIdx % TRANSPORT_PLAN_PROMPTS.length];
+      var transportPlanNote = d.transportPlanNote || '';
+      var transportPlanMsg = d.transportPlanMsg || '';
+
+      function setTransportCheck(id, checked) {
+        var next = Object.assign({}, transportChecklist);
+        next[id] = checked;
+        upd('transportChecklist', next);
+        if (TRANSPORT_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('tripReady');
+      }
+
+      function answerTransportScenario(choice) {
+        var correct = choice === transportCurrentScenario.best;
+        var action = TRANSPORT_ACTIONS.find(function(a) { return a.id === transportCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          transportScenarioChoice: choice,
+          transportScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : transportCurrentScenario.best) + '. ') + transportCurrentScenario.explain,
+          transportScenarioScore: transportScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && transportScenarioScore + 1 >= 3) checkBadge('routeNavigator');
+      }
+
+      // JOB READINESS & WORKPLACE STATE
+      var workChecklist = d.workChecklist || {};
+      var workDone = WORK_CHECKS.filter(function(step) { return !!workChecklist[step.id]; }).length;
+      var workScenarioIdx = d.workScenarioIdx || 0;
+      var workScenarioChoice = d.workScenarioChoice || '';
+      var workScenarioFb = d.workScenarioFb || '';
+      var workScenarioScore = d.workScenarioScore || 0;
+      var workCurrentScenario = WORK_SCENARIOS[workScenarioIdx % WORK_SCENARIOS.length];
+      var workplaceCardIdx = d.workplaceCardIdx || 0;
+      var workplaceCard = WORKPLACE_CARDS[workplaceCardIdx % WORKPLACE_CARDS.length];
+      var interviewCardIdx = d.interviewCardIdx || 0;
+      var interviewCard = INTERVIEW_CARDS[interviewCardIdx % INTERVIEW_CARDS.length];
+      var workPlanIdx = d.workPlanIdx || 0;
+      var workPlanPrompt = WORK_PLAN_PROMPTS[workPlanIdx % WORK_PLAN_PROMPTS.length];
+      var workPlanNote = d.workPlanNote || '';
+      var workPlanMsg = d.workPlanMsg || '';
+
+      function setWorkCheck(id, checked) {
+        var next = Object.assign({}, workChecklist);
+        next[id] = checked;
+        upd('workChecklist', next);
+        if (WORK_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('jobReady');
+      }
+
+      function answerWorkScenario(choice) {
+        var correct = choice === workCurrentScenario.best;
+        var action = WORK_ACTIONS.find(function(a) { return a.id === workCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          workScenarioChoice: choice,
+          workScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : workCurrentScenario.best) + '. ') + workCurrentScenario.explain,
+          workScenarioScore: workScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && workScenarioScore + 1 >= 3) checkBadge('workplaceNavigator');
+      }
+
+      // COMMUNICATION & CONFLICT STATE
+      var communicationChecklist = d.communicationChecklist || {};
+      var communicationDone = COMMUNICATION_CHECKS.filter(function(step) { return !!communicationChecklist[step.id]; }).length;
+      var communicationScenarioIdx = d.communicationScenarioIdx || 0;
+      var communicationScenarioChoice = d.communicationScenarioChoice || '';
+      var communicationScenarioFb = d.communicationScenarioFb || '';
+      var communicationScenarioScore = d.communicationScenarioScore || 0;
+      var communicationCurrentScenario = COMMUNICATION_SCENARIOS[communicationScenarioIdx % COMMUNICATION_SCENARIOS.length];
+      var messageToneIdx = d.messageToneIdx || 0;
+      var messageToneCard = MESSAGE_TONE_CARDS[messageToneIdx % MESSAGE_TONE_CARDS.length];
+      var boundaryRepairIdx = d.boundaryRepairIdx || 0;
+      var boundaryRepairCard = BOUNDARY_REPAIR_CARDS[boundaryRepairIdx % BOUNDARY_REPAIR_CARDS.length];
+      var communicationPlanIdx = d.communicationPlanIdx || 0;
+      var communicationPlanPrompt = COMMUNICATION_PLAN_PROMPTS[communicationPlanIdx % COMMUNICATION_PLAN_PROMPTS.length];
+      var communicationPlanNote = d.communicationPlanNote || '';
+      var communicationPlanMsg = d.communicationPlanMsg || '';
+
+      function setCommunicationCheck(id, checked) {
+        var next = Object.assign({}, communicationChecklist);
+        next[id] = checked;
+        upd('communicationChecklist', next);
+        if (COMMUNICATION_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('communicationReady');
+      }
+
+      function answerCommunicationScenario(choice) {
+        var correct = choice === communicationCurrentScenario.best;
+        var action = COMMUNICATION_ACTIONS.find(function(a) { return a.id === communicationCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          communicationScenarioChoice: choice,
+          communicationScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : communicationCurrentScenario.best) + '. ') + communicationCurrentScenario.explain,
+          communicationScenarioScore: communicationScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && communicationScenarioScore + 1 >= 3) checkBadge('conflictNavigator');
+      }
+
       // FOOD CONFIDENCE STATE
       var foodConfidenceChecklist = d.foodConfidenceChecklist || {};
       var foodConfidenceDone = FOOD_CONFIDENCE_CHECKS.filter(function(step) { return !!foodConfidenceChecklist[step.id]; }).length;
@@ -1836,7 +2133,7 @@ window.StemLab = window.StemLab || {
         updMulti({ battleActive: true, battleRound: 0, battlePlayerHP: 100, battleEnemyHP: 100, battleAnswer: '', battleFeedback: '', battleOver: false, battleWon: false, battleUseAI: !!useAI, battleOrder: order, battleAIQ: null, battleAILoading: false });
         if (useAI && callGemini) {
           upd('battleAILoading', true);
-          callGemini('Generate one life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+          callGemini('Generate one life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, communication and conflict, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
             try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ battleAIQ: { q: p.q, a: p.a, h: p.h || 'Think practically!' }, battleAILoading: false }); } catch(e) { upd('battleAILoading', false); }
           }).catch(function() { upd('battleAILoading', false); });
         }
@@ -1935,6 +2232,9 @@ window.StemLab = window.StemLab || {
             decision:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDE0', title: __alloT('stem.lifeskills.decision_frameworks', 'Decision frameworks'),     hint: __alloT('stem.lifeskills.pros_cons_opportunity_cost_reversibili', 'Pros/cons + opportunity cost + reversibility. Annie Duke\'s decision-quality model: "good decision" \u2260 "good outcome." Decide on process, not outcome.') },
             contract:   { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCDD', title: __alloT('stem.lifeskills.contracts_agreements', 'Contracts + agreements'),  hint: __alloT('stem.lifeskills.read_the_whole_thing_before_signing_wa', 'Read the whole thing before signing. Watch for arbitration clauses, auto-renewal, early-termination fees, and limit-of-liability caps. "Click to agree" is a contract.') },
             records:    { accent: '#334155', soft: 'rgba(51,65,85,0.10)', icon: '\uD83D\uDCC1', title: __alloT('stem.lifeskills.records_paperwork', 'Records + paperwork'), hint: __alloT('stem.lifeskills.records_paperwork_hint', 'IDs, forms, receipts, health cards, deadlines, proof of payment, safe storage, and knowing when to ask before sharing or signing.') },
+            transport:  { accent: '#0369a1', soft: 'rgba(3,105,161,0.10)', icon: '\uD83D\uDE8C', title: __alloT('stem.lifeskills.transportation_navigation', 'Transportation + navigation'), hint: __alloT('stem.lifeskills.transportation_navigation_hint', 'Route choices, stops, transfers, time buffers, fare/payment, accessibility, safer waiting, backup plans, and asking official or trusted help when a trip changes.') },
+            workreadiness: { accent: '#4338ca', soft: 'rgba(67,56,202,0.10)', icon: '\uD83D\uDCBC', title: __alloT('stem.lifeskills.job_readiness', 'Job readiness + workplace basics'), hint: __alloT('stem.lifeskills.job_readiness_hint', 'Applications, resumes, availability, interviews, first-day plans, workplace communication, feedback, pay records, safety, respect, and asking clear questions.') },
+            communication: { accent: '#7c2d12', soft: 'rgba(124,45,18,0.10)', icon: '\uD83D\uDCAC', title: __alloT('stem.lifeskills.communication_conflict', 'Communication + conflict'), hint: __alloT('stem.lifeskills.communication_conflict_hint', 'Pausing, listening, clarifying, I-statements, boundaries, message tone, repair attempts, apologies, and getting trusted support when conflict is unsafe or too big.') },
             insurance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFE5', title: __alloT('stem.lifeskills.insurance_basics', 'Insurance basics'),        hint: __alloT('stem.lifeskills.premium_deductible_out_of_pocket_max_n', 'Premium / deductible / out-of-pocket max / network. Insurance protects against catastrophic loss \u2014 not against everyday cost. High-deductible plans + HSA can beat low-deductible for healthy people.') },
             dental:     { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)',  icon: '\uD83E\uDDB7', title: __alloT('stem.lifeskills.dental_care', 'Dental care'),              hint: __alloT('stem.lifeskills.daily_oral_health_habits', 'Daily prevention, brushing and between-teeth cleaning, snack choices, dental plan math, and knowing when symptoms need a dentist. Educational practice only - not a diagnosis.') },
             bodycare:   { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)',  icon: '\uD83E\uDDCD', title: __alloT('stem.lifeskills.body_care_ergonomics', 'Body care + ergonomics'), hint: __alloT('stem.lifeskills.body_care_fit_task', 'Comfort checks, workspace fit, movement resets, accessibility options, and knowing when to ask for support. The goal is flexible comfort, not one perfect posture.') },
@@ -2010,6 +2310,9 @@ window.StemLab = window.StemLab || {
               { title: '10-minute money check', icon: '\uD83E\uDDFE', body: 'Estimate take-home pay, then jump to budget if there is time.', tab: 'paycheck' },
               { title: 'Digital safety scan', icon: '\uD83D\uDD10', body: 'Spot scams, strengthen passwords, review privacy, and report harm.', tab: 'digitalsafety' },
               { title: 'Paperwork quick sort', icon: '\uD83D\uDCC1', body: 'Find IDs, forms, receipts, deadlines, and private records before they are needed.', tab: 'records' },
+              { title: 'Trip plan check', icon: '\uD83D\uDE8C', body: 'Check route, stop, time buffer, fare, access needs, and backup plan.', tab: 'transport' },
+              { title: 'Job readiness check', icon: '\uD83D\uDCBC', body: 'Practice applications, interviews, schedules, first-day plans, and workplace questions.', tab: 'workreadiness' },
+              { title: 'Communication reset', icon: '\uD83D\uDCAC', body: 'Practice pausing, clarifying, boundaries, repair, and trusted support.', tab: 'communication' },
               { title: 'Body comfort reset', icon: '\uD83E\uDDCD', body: 'Check posture, setup, movement breaks, and access needs.', tab: 'bodycare' },
               { title: 'Food confidence check', icon: '\uD83E\uDD57', body: 'Plan leftovers, storage, labels, pantry meals, and safer choices.', tab: 'foodconfidence' },
               { title: 'Appointment prep', icon: '\uD83D\uDCC5', body: 'Prepare notes, questions, support needs, and follow-up steps.', tab: 'appointments' },
@@ -2416,6 +2719,396 @@ window.StemLab = window.StemLab || {
               announceToSR('Paperwork plan saved');
             }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save paperwork plan'),
             recordPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.recordPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, recordPlanMsg)
+          )
+        ),
+
+        tab === 'transport' && h('div', { className: 'space-y-4', 'data-lifeskills-transportation': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.transportation_lab', '\uD83D\uDE8C Transportation & Navigation Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice getting from one place to another with a trusted plan and a backup.',
+                  'Plan trips by checking destination, route, time, fare, safety, and what to do if plans change.',
+                  'Compare routes, transfers, access needs, payment, alerts, safer waiting places, and backup options.',
+                  'Model transportation literacy as time management, wayfinding, accessibility, cost planning, situational awareness, and contingency planning.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-sky-50 border border-sky-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-sky-800' }, 'Trip readiness'),
+                h('p', { className: 'text-2xl font-black text-sky-900 leading-none' }, Math.round(transportDone / TRANSPORT_CHECKS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-700 bg-sky-50 border border-sky-200 rounded-xl p-2 leading-relaxed' }, 'Practice only. For real travel, follow local rules and trusted guidance. If a place, ride, message, or pickup feels unsafe, move to a public safer place when possible and contact a trusted person or official help.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Trip readiness checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, transportDone + '/' + TRANSPORT_CHECKS.length + ' trip habits checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-sky-50 text-sky-800 text-[11px] font-bold border border-sky-200' }, 'Plan before leaving')
+              ),
+              TRANSPORT_CHECKS.map(function(step) {
+                var checked = !!transportChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-sky-300') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setTransportCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-700 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-sky-800 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Route and delay decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200' }, 'Score ' + transportScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, transportCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                TRANSPORT_ACTIONS.map(function(action) {
+                  var chosen = transportScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerTransportScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all focus:outline-none focus:ring-2 focus:ring-sky-700 ' + (chosen ? action.tone + ' ring-2 ring-offset-1 ring-sky-700' : 'bg-white border-slate-300 text-slate-700 hover:border-sky-300') }, action.label);
+                })
+              ),
+              transportScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (transportScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, transportScenarioFb),
+              h('button', { onClick: function() { updMulti({ transportScenarioIdx: transportScenarioIdx + 1, transportScenarioChoice: '', transportScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-sky-700 text-white hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-sky-700' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Transportation mode cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, transportModeCard.icon + ' ' + transportModeCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Best, check, backup')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                TRANSPORT_MODE_CARDS.map(function(card, i) {
+                  var active = i === transportModeIdx % TRANSPORT_MODE_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('transportModeIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-sky-700 ' + (active ? 'bg-sky-700 text-white border-sky-700' : 'bg-white border-slate-300 text-slate-700 hover:border-sky-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Best for'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, transportModeCard.best),
+                h('p', { className: 'text-xs font-black text-blue-800 pt-2 border-t border-slate-100' }, 'Check'),
+                h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, transportModeCard.check),
+                h('p', { className: 'text-xs font-black text-emerald-800 pt-2 border-t border-slate-100' }, 'Backup'),
+                h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, transportModeCard.backup)
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Map and sign decoder'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, transportSymbolCard.icon + ' ' + transportSymbolCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-amber-50 text-amber-900 text-[11px] font-bold border border-amber-200' }, 'Decode before moving')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                TRANSPORT_SYMBOL_CARDS.map(function(card, i) {
+                  var active = i === transportSymbolIdx % TRANSPORT_SYMBOL_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('transportSymbolIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-sky-700 ' + (active ? 'bg-sky-700 text-white border-sky-700' : 'bg-white border-slate-300 text-slate-700 hover:border-sky-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Means'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, transportSymbolCard.means),
+                h('p', { className: 'text-xs font-black text-sky-800 pt-2 border-t border-slate-100' }, 'Move'),
+                h('p', { className: 'text-[11px] text-sky-800 leading-relaxed' }, transportSymbolCard.move)
+              )
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Trip plan builder'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, transportPlanPrompt)
+              ),
+              h('span', { className: 'px-2 py-1 rounded-full bg-sky-50 text-sky-800 text-[11px] font-bold border border-sky-200' }, 'Route plus backup plan')
+            ),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              TRANSPORT_PLAN_PROMPTS.map(function(prompt, i) {
+                var active = i === transportPlanIdx % TRANSPORT_PLAN_PROMPTS.length;
+                return h('button', { key: prompt, onClick: function() { updMulti({ transportPlanIdx: i, transportPlanNote: prompt, transportPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-sky-700 text-white border-sky-700' : 'bg-white text-sky-800 border-sky-200 hover:border-sky-400') }, 'Plan ' + (i + 1));
+              })
+            ),
+            h('textarea', { value: transportPlanNote, onChange: function(e) { upd('transportPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one route, buffer, fare, or backup step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Trip plan note' }),
+            h('button', { onClick: function() {
+              if (!transportPlanNote.trim()) { upd('transportPlanMsg', 'Write one trip plan step first.'); return; }
+              updMulti({ transportPlanMsg: 'Plan saved: ' + transportPlanNote.trim(), transportPlanSaved: Date.now() });
+              checkBadge('tripReady');
+              announceToSR('Trip plan saved');
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save trip plan'),
+            transportPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.transportPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, transportPlanMsg)
+          )
+        ),
+
+        tab === 'workreadiness' && h('div', { className: 'space-y-4', 'data-lifeskills-job-readiness': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.job_readiness_lab', '\uD83D\uDCBC Job Readiness & Workplace Basics Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice work habits: being ready, asking questions, staying safe, and helping with a task.',
+                  'Build job-readiness habits for applications, interviews, schedules, tasks, and respectful communication.',
+                  'Practice resumes, availability, interview answers, first-day planning, feedback, safety, and workplace questions.',
+                  'Model job readiness as application prep, schedule literacy, professional communication, feedback use, pay-record awareness, accommodations, and escalation when work is unsafe or unclear.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-indigo-50 border border-indigo-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-indigo-800' }, 'Work readiness'),
+                h('p', { className: 'text-2xl font-black text-indigo-900 leading-none' }, Math.round(workDone / WORK_CHECKS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-700 bg-indigo-50 border border-indigo-200 rounded-xl p-2 leading-relaxed' }, 'Practice only. Real jobs have local rules and different policies. If work feels unsafe, discriminatory, harassing, unpaid, confusing, or beyond your training, ask a trusted adult, supervisor, counselor, HR, or other appropriate support.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Job readiness checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, workDone + '/' + WORK_CHECKS.length + ' work habits checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-indigo-50 text-indigo-800 text-[11px] font-bold border border-indigo-200' }, 'Prepare and ask clearly')
+              ),
+              WORK_CHECKS.map(function(step) {
+                var checked = !!workChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-indigo-300') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setWorkCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-700 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-indigo-800 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Workplace decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200' }, 'Score ' + workScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, workCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                WORK_ACTIONS.map(function(action) {
+                  var chosen = workScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerWorkScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all focus:outline-none focus:ring-2 focus:ring-indigo-700 ' + (chosen ? action.tone + ' ring-2 ring-offset-1 ring-indigo-700' : 'bg-white border-slate-300 text-slate-700 hover:border-indigo-300') }, action.label);
+                })
+              ),
+              workScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (workScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, workScenarioFb),
+              h('button', { onClick: function() { updMulti({ workScenarioIdx: workScenarioIdx + 1, workScenarioChoice: '', workScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-indigo-700 text-white hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-700' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Workplace basics cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, workplaceCard.icon + ' ' + workplaceCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Do, watch, say')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                WORKPLACE_CARDS.map(function(card, i) {
+                  var active = i === workplaceCardIdx % WORKPLACE_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('workplaceCardIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-indigo-700 ' + (active ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white border-slate-300 text-slate-700 hover:border-indigo-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Do this'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, workplaceCard.doThis),
+                h('p', { className: 'text-xs font-black text-red-800 pt-2 border-t border-slate-100' }, 'Watch for'),
+                h('p', { className: 'text-[11px] text-red-800 font-medium leading-relaxed' }, workplaceCard.watch),
+                h('p', { className: 'text-xs font-black text-indigo-800 pt-2 border-t border-slate-100' }, 'Try saying'),
+                h('p', { className: 'text-[11px] text-indigo-800 leading-relaxed' }, workplaceCard.phrase)
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Interview practice cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, interviewCard.icon + ' ' + interviewCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-amber-50 text-amber-900 text-[11px] font-bold border border-amber-200' }, 'Practice out loud')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                INTERVIEW_CARDS.map(function(card, i) {
+                  var active = i === interviewCardIdx % INTERVIEW_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('interviewCardIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-indigo-700 ' + (active ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white border-slate-300 text-slate-700 hover:border-indigo-300') }, card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Prompt'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, interviewCard.prompt),
+                h('p', { className: 'text-xs font-black text-emerald-800 pt-2 border-t border-slate-100' }, 'Example'),
+                h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, interviewCard.example)
+              )
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Work readiness plan builder'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, workPlanPrompt)
+              ),
+              h('span', { className: 'px-2 py-1 rounded-full bg-indigo-50 text-indigo-800 text-[11px] font-bold border border-indigo-200' }, 'One practical next step')
+            ),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              WORK_PLAN_PROMPTS.map(function(prompt, i) {
+                var active = i === workPlanIdx % WORK_PLAN_PROMPTS.length;
+                return h('button', { key: prompt, onClick: function() { updMulti({ workPlanIdx: i, workPlanNote: prompt, workPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-indigo-800 border-indigo-200 hover:border-indigo-400') }, 'Plan ' + (i + 1));
+              })
+            ),
+            h('textarea', { value: workPlanNote, onChange: function(e) { upd('workPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one job, interview, schedule, or workplace question step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Work readiness plan note' }),
+            h('button', { onClick: function() {
+              if (!workPlanNote.trim()) { upd('workPlanMsg', 'Write one work readiness step first.'); return; }
+              updMulti({ workPlanMsg: 'Plan saved: ' + workPlanNote.trim(), workPlanSaved: Date.now() });
+              checkBadge('jobReady');
+              announceToSR('Work readiness plan saved');
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save work plan'),
+            workPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.workPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, workPlanMsg)
+          )
+        ),
+
+        tab === 'communication' && h('div', { className: 'space-y-4', 'data-lifeskills-communication': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.communication_lab', '\uD83D\uDCAC Communication & Conflict Basics Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice pausing, listening, asking for help, and using clear words.',
+                  'Build communication habits for listening, asking questions, saying no, and fixing misunderstandings.',
+                  'Practice I-statements, boundaries, tone-checking, repair attempts, and knowing when to get trusted support.',
+                  'Model communication literacy as emotional regulation, consent, boundaries, conflict de-escalation, digital tone, repair, advocacy, and support-seeking.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-orange-50 border border-orange-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-orange-800' }, 'Communication readiness'),
+                h('p', { className: 'text-2xl font-black text-orange-900 leading-none' }, Math.round(communicationDone / COMMUNICATION_CHECKS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-700 bg-orange-50 border border-orange-200 rounded-xl p-2 leading-relaxed' }, 'Practice only. If conflict includes threats, harassment, pressure, discrimination, stalking, coercion, or fear for safety, pause and get trusted support. You do not have to handle unsafe conflict alone.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Communication checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, communicationDone + '/' + COMMUNICATION_CHECKS.length + ' habits checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-orange-50 text-orange-800 text-[11px] font-bold border border-orange-200' }, 'Pause, listen, ask')
+              ),
+              COMMUNICATION_CHECKS.map(function(step) {
+                var checked = !!communicationChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-orange-300') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setCommunicationCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-700 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-orange-800 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Conversation decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200' }, 'Score ' + communicationScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, communicationCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                COMMUNICATION_ACTIONS.map(function(action) {
+                  var chosen = communicationScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerCommunicationScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all focus:outline-none focus:ring-2 focus:ring-orange-700 ' + (chosen ? action.tone + ' ring-2 ring-offset-1 ring-orange-700' : 'bg-white border-slate-300 text-slate-700 hover:border-orange-300') }, action.label);
+                })
+              ),
+              communicationScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (communicationScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, communicationScenarioFb),
+              h('button', { onClick: function() { updMulti({ communicationScenarioIdx: communicationScenarioIdx + 1, communicationScenarioChoice: '', communicationScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-orange-700 text-white hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-700' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Message tone cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, messageToneCard.icon + ' ' + messageToneCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Before and after')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                MESSAGE_TONE_CARDS.map(function(card, i) {
+                  var active = i === messageToneIdx % MESSAGE_TONE_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('messageToneIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-orange-700 ' + (active ? 'bg-orange-700 text-white border-orange-700' : 'bg-white border-slate-300 text-slate-700 hover:border-orange-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-red-800' }, 'Before'),
+                h('p', { className: 'text-[11px] text-red-800 font-medium leading-relaxed' }, messageToneCard.before),
+                h('p', { className: 'text-xs font-black text-emerald-800 pt-2 border-t border-slate-100' }, 'Try instead'),
+                h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, messageToneCard.after),
+                h('p', { className: 'text-xs font-black text-slate-800 pt-2 border-t border-slate-100' }, 'Why'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, messageToneCard.why)
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Boundary and repair cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, boundaryRepairCard.icon + ' ' + boundaryRepairCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-amber-50 text-amber-900 text-[11px] font-bold border border-amber-200' }, 'Script practice')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                BOUNDARY_REPAIR_CARDS.map(function(card, i) {
+                  var active = i === boundaryRepairIdx % BOUNDARY_REPAIR_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('boundaryRepairIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-orange-700 ' + (active ? 'bg-orange-700 text-white border-orange-700' : 'bg-white border-slate-300 text-slate-700 hover:border-orange-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Script'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, boundaryRepairCard.script),
+                h('p', { className: 'text-xs font-black text-orange-800 pt-2 border-t border-slate-100' }, 'Use when'),
+                h('p', { className: 'text-[11px] text-orange-800 leading-relaxed' }, boundaryRepairCard.support)
+              )
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Conversation plan builder'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, communicationPlanPrompt)
+              ),
+              h('span', { className: 'px-2 py-1 rounded-full bg-orange-50 text-orange-800 text-[11px] font-bold border border-orange-200' }, 'Ask, listen, repair')
+            ),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              COMMUNICATION_PLAN_PROMPTS.map(function(prompt, i) {
+                var active = i === communicationPlanIdx % COMMUNICATION_PLAN_PROMPTS.length;
+                return h('button', { key: prompt, onClick: function() { updMulti({ communicationPlanIdx: i, communicationPlanNote: prompt, communicationPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-orange-700 text-white border-orange-700' : 'bg-white text-orange-800 border-orange-200 hover:border-orange-400') }, 'Plan ' + (i + 1));
+              })
+            ),
+            h('textarea', { value: communicationPlanNote, onChange: function(e) { upd('communicationPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one conversation, boundary, repair, or support step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Conversation plan note' }),
+            h('button', { onClick: function() {
+              if (!communicationPlanNote.trim()) { upd('communicationPlanMsg', 'Write one communication step first.'); return; }
+              updMulti({ communicationPlanMsg: 'Plan saved: ' + communicationPlanNote.trim(), communicationPlanSaved: Date.now() });
+              checkBadge('communicationReady');
+              announceToSR('Communication plan saved');
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save communication plan'),
+            communicationPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.communicationPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, communicationPlanMsg)
           )
         ),
 
@@ -4248,7 +4941,7 @@ window.StemLab = window.StemLab || {
               callGemini && h('button', { onClick: function() {
                 upd('chalAILoading', true);
                 var tierLabel = chalTier === 1 ? 'easy' : chalTier === 2 ? 'medium' : 'hard';
-                callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+                callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, communication and conflict, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
                   try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ chalAILoading: false, chalFeedback: '', chalAnswer: '', chalAIQ: p }); } catch(e) { updMulti({ chalAILoading: false }); }
                 }).catch(function() { upd('chalAILoading', false); });
               }, disabled: d.chalAILoading, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl disabled:opacity-50' }, d.chalAILoading ? '\uD83E\uDDE0...' : '\u2728 AI Next')
@@ -4347,5 +5040,5 @@ window.StemLab = window.StemLab || {
     }
   });
 
-  console.log('[StemLab] stem_tool_lifeskills.js v5.11 loaded');
+  console.log('[StemLab] stem_tool_lifeskills.js v5.14 loaded');
 })();

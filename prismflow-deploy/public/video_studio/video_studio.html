@@ -494,6 +494,52 @@
           <div id="musicBedBox"></div>
         </div>
         <div class="card" style="margin-top:12px">
+          <h2>Licensed media credits</h2>
+          <div class="row" style="margin-bottom:8px">
+            <a href="https://openverse.org" target="_blank" rel="noopener noreferrer">Openverse</a>
+            <a href="https://commons.wikimedia.org" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>
+            <a href="https://freesound.org" target="_blank" rel="noopener noreferrer">Freesound</a>
+            <a href="https://pixabay.com" target="_blank" rel="noopener noreferrer">Pixabay</a>
+          </div>
+          <div class="row" style="margin-bottom:8px">
+            <input type="text" id="mediaCreditTitle" placeholder="Media title" style="min-width:150px;flex:1">
+            <input type="text" id="mediaCreditCreator" placeholder="Creator / author" style="min-width:150px;flex:1">
+            <input type="url" id="mediaCreditUrl" placeholder="Source URL" style="min-width:180px;flex:1">
+          </div>
+          <div class="row" style="margin-bottom:8px">
+            <select id="mediaCreditSource" aria-label="Media source">
+              <option value="Openverse">Openverse</option>
+              <option value="Wikimedia Commons">Wikimedia Commons</option>
+              <option value="Freesound">Freesound</option>
+              <option value="Pixabay">Pixabay</option>
+              <option value="NASA">NASA</option>
+              <option value="Smithsonian Open Access">Smithsonian Open Access</option>
+              <option value="Manual credit">Manual credit</option>
+            </select>
+            <select id="mediaCreditLicense" aria-label="Media license">
+              <option value="CC0 1.0">CC0 1.0</option>
+              <option value="Public domain">Public domain</option>
+              <option value="CC BY 4.0">CC BY 4.0</option>
+              <option value="CC BY-SA 4.0">CC BY-SA 4.0</option>
+              <option value="Pixabay Content License">Pixabay Content License</option>
+              <option value="CC BY-NC 4.0">CC BY-NC 4.0</option>
+              <option value="Unknown license">Unknown/custom</option>
+            </select>
+            <select id="mediaCreditRole" aria-label="Media role">
+              <option value="background music">Background music</option>
+              <option value="sound effect">Sound effect</option>
+              <option value="image overlay">Image overlay</option>
+              <option value="stock clip">Stock clip</option>
+              <option value="reference visual">Reference visual</option>
+            </select>
+            <label><input type="checkbox" id="mediaCreditModified"> Modified</label>
+            <button class="quiet" id="mediaCreditAddBtn">Add credit</button>
+            <button class="quiet" id="mediaCreditDownloadBtn">Download credits</button>
+          </div>
+          <div class="status" id="mediaCreditStatus">Use CC0, public domain, or CC BY where possible. Custom or noncommercial licenses are kept for review and are not treated as open-source assets.</div>
+          <div id="mediaCreditList" style="margin-top:8px"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
           <h2>Narration &amp; sound clips</h2>
           <div class="row" style="margin-bottom:8px">
             <button class="quiet" id="narrateBtn">🎙 Record narration over the video</button>
@@ -1110,10 +1156,114 @@
       localizationCount: Math.max(0, Math.min(99, Math.round(Number(m.localizationCount) || 0))),
       hasVisualOverlays: !!m.hasVisualOverlays,
       hasMusicBed: !!m.hasMusicBed,
+      hasMediaCredits: !!m.hasMediaCredits,
+      mediaCreditCount: Math.max(0, Math.min(999, Math.round(Number(m.mediaCreditCount) || 0))),
+      mediaCreditWarningCount: Math.max(0, Math.min(999, Math.round(Number(m.mediaCreditWarningCount) || 0))),
       resourceCueCount: Math.max(0, Math.min(999, Math.round(Number(m.resourceCueCount) || 0))),
       thumb: thumb,
       createdAt: m.createdAt || null
     };
+  }
+
+  function vsMediaLicenseProfile(license) {
+    var raw = String(license || '').trim();
+    var key = raw.toLowerCase().replace(/creative commons/g, 'cc').replace(/[^a-z0-9]+/g, ' ').trim();
+    var profile = {
+      key: key || 'unknown',
+      label: raw || 'Unknown license',
+      attributionRequired: true,
+      commercialAllowed: false,
+      openContent: false,
+      agplFriendly: false,
+      review: true,
+      status: 'warn',
+      warning: 'License needs review before public sharing or bundling.'
+    };
+    var set = function (next) { Object.keys(next).forEach(function (k) { profile[k] = next[k]; }); return profile; };
+    if (!key) return profile;
+    if (/^(cc0( 1 0)?|public domain|pd|us government public domain)$/.test(key)) {
+      return set({ label: /cc0/.test(key) ? 'CC0 1.0' : 'Public domain', attributionRequired: false, commercialAllowed: true, openContent: true, agplFriendly: true, review: false, status: 'ok', warning: '' });
+    }
+    if (/^cc by( 4 0| 3 0|)$/.test(key) || /^attribution( 4 0|)$/.test(key)) {
+      return set({ label: /3 0/.test(key) ? 'CC BY 3.0' : 'CC BY 4.0', attributionRequired: true, commercialAllowed: true, openContent: true, agplFriendly: true, review: false, status: 'ok', warning: 'Attribution required.' });
+    }
+    if (/^cc by sa( 4 0|)$/.test(key)) {
+      return set({ label: 'CC BY-SA 4.0', attributionRequired: true, commercialAllowed: true, openContent: true, agplFriendly: false, review: true, status: 'warn', warning: 'Share-alike license: keep attribution and review reuse terms for adaptations.' });
+    }
+    if (/^cc by nc/.test(key) || /noncommercial/.test(key)) {
+      return set({ label: raw || 'CC BY-NC', attributionRequired: true, commercialAllowed: false, openContent: false, agplFriendly: false, review: true, status: 'warn', warning: 'Noncommercial media is not safe for general AGPL project redistribution or public/commercial sharing.' });
+    }
+    if (/pixabay/.test(key)) {
+      return set({ label: 'Pixabay Content License', attributionRequired: false, commercialAllowed: true, openContent: false, agplFriendly: false, review: true, status: 'warn', warning: 'Free stock license, not open-source/open-content. Do not bundle as a reusable stock library; keep the source URL.' });
+    }
+    return profile;
+  }
+
+  function vsNormalizeMediaCredit(raw) {
+    var r = raw || {};
+    var clean = function (v, limit) { return String(v == null ? '' : v).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit || 160); };
+    var safeUrl = function (v) {
+      var s = clean(v, 600);
+      return /^https?:\/\//i.test(s) ? s : '';
+    };
+    var profile = vsMediaLicenseProfile(r.license || r.licenseName);
+    var source = clean(r.source || r.provider || 'Manual credit', 80);
+    var title = clean(r.title || r.name || 'Untitled media', 180) || 'Untitled media';
+    var creator = clean(r.creator || r.author || r.owner || 'Unknown creator', 180) || 'Unknown creator';
+    var url = safeUrl(r.url || r.sourceUrl || r.href);
+    var role = clean(r.role || r.kind || 'media asset', 80) || 'media asset';
+    var modified = !!r.modified;
+    var attribution = clean(r.attribution, 500);
+    var seed = (title + '-' + creator + '-' + url + '-' + profile.label).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'manual';
+    if (!attribution) {
+      attribution = '"' + title + '" by ' + creator + (url ? ' (' + url + ')' : '') + ' - ' + profile.label;
+      if (modified) attribution += '; modified';
+      if (source) attribution += '; via ' + source;
+    }
+    return {
+      id: clean(r.id || ('credit-' + seed), 60),
+      title: title,
+      creator: creator,
+      source: source,
+      url: url,
+      license: profile.label,
+      role: role,
+      modified: modified,
+      attribution: attribution,
+      status: profile.status,
+      warning: profile.warning,
+      openContent: !!profile.openContent,
+      agplFriendly: !!profile.agplFriendly,
+      addedAt: clean(r.addedAt || new Date().toISOString(), 40)
+    };
+  }
+
+  function vsSanitizeMediaCredits(list) {
+    return (Array.isArray(list) ? list : []).filter(function (raw) {
+      return raw && (raw.title || raw.name || raw.creator || raw.author || raw.url || raw.sourceUrl || raw.href || raw.attribution);
+    }).map(vsNormalizeMediaCredit).filter(function (item) {
+      return item && (item.title || item.creator || item.url || item.attribution);
+    }).slice(0, 80);
+  }
+
+  function vsBuildMediaCredits(entries, title) {
+    var list = vsSanitizeMediaCredits(entries);
+    var lines = [
+      String(title || 'Video project') + ' media credits',
+      'Generated by AlloFlow Video Studio',
+      ''
+    ];
+    if (!list.length) {
+      lines.push('No third-party stock/open media credits were recorded.');
+      return lines.join('\n') + '\n';
+    }
+    list.forEach(function (item, idx) {
+      lines.push((idx + 1) + '. ' + item.attribution);
+      lines.push('   Role: ' + item.role);
+      if (item.warning) lines.push('   Review: ' + item.warning);
+      lines.push('');
+    });
+    return lines.join('\n').replace(/\n+$/, '\n');
   }
 
   // CRC-32 (IEEE, reflected) — backs the .allopack ZIP writer/reader below.
@@ -2314,6 +2464,7 @@
       privacy: { tab: 'tabEdit', focus: 'transcriptSearch', action: 'Review' },
       audio: { tab: 'tabEdit', focus: 'editVideo', action: 'Preview' },
       localization: { tab: 'tabEdit', focus: 'localizeBtn', action: 'Review' },
+      media: { tab: 'tabEdit', focus: 'mediaCreditTitle', action: 'Review' },
       export: { tab: 'tabExport', focus: 'exportBtn', action: 'Prepare' }
     };
     var add = function (id, label, status, detail) {
@@ -2337,6 +2488,9 @@
     } else {
       add('localization', 'Localization', 'info', 'No localized draft attached.');
     }
+    var mediaCount = Math.max(0, Number(s.mediaCreditCount) || 0);
+    var mediaWarn = Math.max(0, Number(s.mediaCreditWarningCount) || 0);
+    add('media', 'Media credits', mediaWarn ? 'warn' : (mediaCount ? 'complete' : 'info'), mediaWarn ? (mediaWarn + ' media credit(s) need license review.') : (mediaCount ? (mediaCount + ' stock/open media credit(s) recorded.') : 'No third-party stock/open media credits recorded.'));
     add('export', 'Export ready', s.exported ? 'complete' : 'pending', s.exported ? 'A finished video export is ready.' : 'Prepare export after the checks above.');
     return items;
   }
@@ -2359,6 +2513,9 @@
     add('supports', 'Learning supports', supports ? 'complete' : 'info', supports ? (supports + ' support item(s): descriptions, chapters, inserts, or overlays.') : 'No extra learning supports attached.');
     var loc = Math.max(0, Number(s.localizationCount) || 0);
     add('localization', 'Localization', loc ? 'complete' : 'info', loc ? (loc + ' localized draft(s) included in the project/accessibility packet.') : 'No localized version attached.');
+    var mediaCount = Math.max(0, Number(s.mediaCreditCount) || 0);
+    var mediaWarn = Math.max(0, Number(s.mediaCreditWarningCount) || 0);
+    add('media', 'Media credits', mediaWarn ? 'warn' : (mediaCount ? 'complete' : 'info'), mediaWarn ? (mediaWarn + ' media credit(s) should be reviewed before sharing.') : (mediaCount ? (mediaCount + ' media credit(s) included in the packets and project bundle.') : 'No third-party stock/open media credits recorded.'));
     if (s.preset === 'student_family') add('audience', 'Audience preset', 'complete', 'Student/family version: burned captions and title card are intended for simple playback.');
     return items;
   }
@@ -2366,7 +2523,7 @@
   function vsPickNextFinishItem(items) {
     var list = Array.isArray(items) ? items : [];
     var rank = { warn: 1, review: 2, pending: 3 };
-    var order = { video: 1, captions: 2, privacy: 3, audio: 4, localization: 5, export: 6 };
+    var order = { video: 1, captions: 2, privacy: 3, audio: 4, localization: 5, media: 6, export: 7 };
     var itemRank = function (item) {
       if (item && item.id === 'video' && item.status === 'pending') return 0;
       return rank[item && item.status] || 99;
@@ -3583,7 +3740,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: 'Take ' + (takes.length + 1) + ' · ' + fmtClock(dur),
         blob: blob, url: URL.createObjectURL(blob), type: blob.type || rawType,
-        duration: dur, captions: cuesLive.slice(), visualDescriptions: [], chapters: [], inserts: [], visualPrompts: [], localizations: [], finishReview: {}, zooms: [], musicBed: null, createdAt: new Date().toISOString()
+        duration: dur, captions: cuesLive.slice(), visualDescriptions: [], chapters: [], inserts: [], visualPrompts: [], localizations: [], mediaCredits: [], finishReview: {}, zooms: [], musicBed: null, createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
@@ -3622,7 +3779,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
 
-  function addImportedTake(blob, displayName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan) {
+  function addImportedTake(blob, displayName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits) {
     setStatus($('importStatus'), 'Reading ' + displayName + '…');
     var url = URL.createObjectURL(blob);
     probeDuration(url).then(function (probe) {
@@ -3635,7 +3792,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: '📁 ' + String(displayName || 'Imported video').slice(0, 60) + ' · ' + fmtClock(probe.duration),
         blob: blob, url: url, type: type || blob.type || 'video/webm',
-        duration: probe.duration, captions: captions || [], visualDescriptions: visualDescriptions || [], chapters: chapters || [], inserts: inserts || [], visualPrompts: visualPrompts || [], localizations: (localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, probe.duration || 0); }), scenePlan: scenePlan || null, finishReview: {}, zooms: [], musicBed: musicBed ? vsSanitizeMusicBed(musicBed, probe.duration || 0) : null, imported: true, createdAt: new Date().toISOString()
+        duration: probe.duration, captions: captions || [], visualDescriptions: visualDescriptions || [], chapters: chapters || [], inserts: inserts || [], visualPrompts: visualPrompts || [], localizations: (localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, probe.duration || 0); }), scenePlan: scenePlan || null, mediaCredits: vsSanitizeMediaCredits(mediaCredits || []), finishReview: {}, zooms: [], musicBed: musicBed ? vsSanitizeMusicBed(musicBed, probe.duration || 0) : null, imported: true, createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
@@ -3661,7 +3818,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function importBundleFile(file) {
     file.arrayBuffer().then(function (buf) {
       var entries = vsReadZip(new Uint8Array(buf));
-      var meta = null, video = null, videoName = '', vttText = null, visualText = null, chapterText = null, insertText = null, promptText = null, localText = null, scenePlanText = null, musicText = null, musicData = null, musicName = '';
+      var meta = null, video = null, videoName = '', vttText = null, visualText = null, chapterText = null, insertText = null, promptText = null, localText = null, scenePlanText = null, mediaCreditText = null, musicText = null, musicData = null, musicName = '';
       entries.forEach(function (e) {
         if (/(^|\/)meta\.json$/i.test(e.name)) { try { meta = JSON.parse(new TextDecoder().decode(e.data)); } catch (_) {} }
         else if (/\.(vtt|srt)$/i.test(e.name)) { vttText = new TextDecoder().decode(e.data); }
@@ -3671,6 +3828,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         else if (/(^|\/)visual_prompts\.json$/i.test(e.name)) { promptText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)localizations\.json$/i.test(e.name)) { localText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)scene_plan\.json$/i.test(e.name)) { scenePlanText = new TextDecoder().decode(e.data); }
+        else if (/(^|\/)media_credits\.json$/i.test(e.name)) { mediaCreditText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)music_bed\.json$/i.test(e.name)) { musicText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)music_bed\./i.test(e.name) && /\.(mp3|wav|ogg|m4a|webm)$/i.test(e.name)) { musicData = e.data; musicName = e.name; }
         else if (/\.(mp4|webm|mov|m4v|mkv)$/i.test(e.name)) { video = e.data; videoName = e.name; }
@@ -3690,6 +3848,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (localText) { try { localizations = (JSON.parse(localText) || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, (meta && meta.duration) || 0); }); } catch (_) {} }
       var scenePlan = null;
       if (scenePlanText) { try { scenePlan = JSON.parse(scenePlanText); } catch (_) { scenePlan = null; } }
+      var mediaCredits = [];
+      if (mediaCreditText) { try { mediaCredits = vsSanitizeMediaCredits(JSON.parse(mediaCreditText)); } catch (_) {} }
       var musicBed = null;
       if (musicText && musicData) {
         try {
@@ -3701,7 +3861,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           musicBed = rawMusic;
         } catch (_) {}
       }
-      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan);
+      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits);
     });
   }
   $('importBtn').addEventListener('click', function () { $('importInput').click(); });
@@ -3724,10 +3884,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     document.body.appendChild(a); a.click();
     setTimeout(function () { try { URL.revokeObjectURL(a.href); } catch (_) {} a.remove(); }, 3000);
   }
-  function projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan) {
+  function projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits) {
     var base = safeName(title || 'teacher_video');
     var ext = extFor(blob && blob.type);
     var safeMusic = musicBed ? vsSanitizeMusicBed(musicBed, duration || 0) : null;
+    var safeCredits = vsSanitizeMediaCredits(mediaCredits || []);
     var overlayCount = (inserts || []).filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length;
     var resourceCueCount = (inserts || []).filter(function (ins) { return ins && ins.source === 'resource'; }).length;
     var ref = vsMakePackReference({
@@ -3742,6 +3903,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       hasVisualPrompts: !!(visualPrompts && visualPrompts.length),
       hasVisualOverlays: overlayCount > 0,
       hasMusicBed: !!(safeMusic && safeMusic.blob),
+      hasMediaCredits: !!safeCredits.length,
+      mediaCreditCount: safeCredits.length,
+      mediaCreditWarningCount: mediaCreditWarningCount(safeCredits),
       hasLocalizations: !!(localizations && localizations.length),
       localizationCount: (localizations || []).length,
       resourceCueCount: resourceCueCount,
@@ -3759,6 +3923,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (visualPrompts && visualPrompts.length) entries.push({ name: 'visual_prompts.json', data: new TextEncoder().encode(JSON.stringify(visualPrompts, null, 2)) });
     if (localizations && localizations.length) entries.push({ name: 'localizations.json', data: new TextEncoder().encode(JSON.stringify(localizations, null, 2)) });
     if (scenePlan) entries.push({ name: 'scene_plan.json', data: new TextEncoder().encode(JSON.stringify(scenePlan, null, 2)) });
+    if (safeCredits.length) {
+      entries.push({ name: 'media_credits.json', data: new TextEncoder().encode(JSON.stringify(safeCredits, null, 2)) });
+      entries.push({ name: 'media_credits.txt', data: new TextEncoder().encode(vsBuildMediaCredits(safeCredits, title || 'Teacher video')) });
+    }
     if (safeMusic && safeMusic.blob) {
       var musicExt = /\.mp3$/i.test(safeMusic.fileName) ? '.mp3' : /\.wav$/i.test(safeMusic.fileName) ? '.wav' : /\.ogg$/i.test(safeMusic.fileName) ? '.ogg' : /\.m4a$/i.test(safeMusic.fileName) ? '.m4a' : '.webm';
       entries.push({ name: 'music_bed.json', data: new TextEncoder().encode(JSON.stringify(Object.assign({}, safeMusic, { blob: undefined }), null, 2)) });
@@ -3766,9 +3934,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     return { base: base, entries: entries };
   }
-  function downloadProjectFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan) {
+  function downloadProjectFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits) {
     if (!blob) return Promise.resolve(false);
-    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan);
+    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits);
     return Promise.all(built.entries.map(function (entry, idx) {
       if (idx === 1) return blob.arrayBuffer().then(function (buf) { entry.data = new Uint8Array(buf); });
       if (entry._blob) return entry._blob.arrayBuffer().then(function (buf) { entry.data = new Uint8Array(buf); delete entry._blob; });
@@ -3782,12 +3950,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!t) { setStatus($('projectStatus'), 'Select a take before saving a project bundle.', 'warn'); return; }
     var title = ($('titleInput') && $('titleInput').value.trim()) || t.name || 'Teacher video';
     var vtt = t.captions && t.captions.length ? vsBuildVtt(t.captions) : null;
-    downloadProjectFromBlob(t.blob, title, t.duration, vtt, null, t.visualDescriptions || [], t.chapters || [], t.inserts || [], t.visualPrompts || [], t.musicBed || null, t.localizations || []).then(function () {
+    downloadProjectFromBlob(t.blob, title, t.duration, vtt, null, t.visualDescriptions || [], t.chapters || [], t.inserts || [], t.visualPrompts || [], t.musicBed || null, t.localizations || [], null, t.mediaCredits || []).then(function () {
       setStatus($('projectStatus'), 'Project bundle saved. Drop that .allopack here later to reopen the video and captions.', 'ok');
     });
   }
   function inflateDraft(r) {
-    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), scenePlan: r.scenePlan || null, finishReview: r.finishReview || {}, zooms: r.zooms || [], audio: r.audio || null, musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
+    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), scenePlan: r.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(r.mediaCredits || []), finishReview: r.finishReview || {}, zooms: r.zooms || [], audio: r.audio || null, musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
   }
   function openDraftRow(r) {
     var existing = takes.find(function (t) { return t.id === r.id; });
@@ -3827,7 +3995,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             actions.className = 'row';
             actions.style.justifyContent = 'flex-end';
             var open = document.createElement('button'); open.className = 'quiet'; open.textContent = 'Open'; open.addEventListener('click', function () { openDraftRow(r); });
-            var save = document.createElement('button'); save.className = 'quiet'; save.textContent = 'Save .allopack'; save.addEventListener('click', function () { downloadProjectFromBlob(r.blob, r.name, r.duration, (r.captions || []).length ? vsBuildVtt(r.captions) : null, null, r.visualDescriptions || [], r.chapters || [], r.inserts || [], r.visualPrompts || [], r.musicBed || null, r.localizations || []); });
+            var save = document.createElement('button'); save.className = 'quiet'; save.textContent = 'Save .allopack'; save.addEventListener('click', function () { downloadProjectFromBlob(r.blob, r.name, r.duration, (r.captions || []).length ? vsBuildVtt(r.captions) : null, null, r.visualDescriptions || [], r.chapters || [], r.inserts || [], r.visualPrompts || [], r.musicBed || null, r.localizations || [], null, r.mediaCredits || []); });
             var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Delete'; del.addEventListener('click', function () { deleteDraft(r.id); refreshProjectShelfSoon(); });
             actions.appendChild(open); actions.appendChild(save); actions.appendChild(del);
             row.appendChild(info); row.appendChild(actions); shelf.appendChild(row);
@@ -4940,6 +5108,106 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     t.musicBed = vsSanitizeMusicBed({ id: 'music' + Date.now().toString(36), name: f.name, fileName: f.name, mimeType: f.type || 'audio/webm', blob: f, start: 0, end: t.duration || 0, volume: 0.28, loop: true, fadeIn: 1.5, fadeOut: 2, duck: true }, t.duration || 0);
     saveDraft(t); resetPreviewAudio(); renderMusicBed();
     setStatus($('musicStatus'), 'Background music added. Adjust volume, fades, looping, and ducking before export.', 'ok');
+  });
+  function ensureMediaCredits(t) {
+    if (!t) return [];
+    t.mediaCredits = vsSanitizeMediaCredits(t.mediaCredits || []);
+    return t.mediaCredits;
+  }
+  function mediaCreditWarningCount(list) {
+    return vsSanitizeMediaCredits(list).filter(function (item) { return item.status !== 'ok'; }).length;
+  }
+  function renderMediaCredits() {
+    var t = currentTake();
+    var list = t ? ensureMediaCredits(t) : [];
+    var host = $('mediaCreditList'); if (!host) return;
+    host.innerHTML = '';
+    if (!t) {
+      setStatus($('mediaCreditStatus'), 'Record or import a video before adding media credits.');
+      return;
+    }
+    if (!list.length) {
+      setStatus($('mediaCreditStatus'), 'No stock/open media credits recorded yet.');
+      host.innerHTML = '<p class="status">Add a credit when you use stock clips, music, sound effects, or open images.</p>';
+      return;
+    }
+    var warn = mediaCreditWarningCount(list);
+    setStatus($('mediaCreditStatus'), warn ? (warn + ' credit(s) need license review before broad sharing.') : (list.length + ' media credit(s) ready for attribution.'), warn ? 'warn' : 'ok');
+    list.forEach(function (item, idx) {
+      var row = document.createElement('div');
+      row.className = 'status' + (item.status === 'ok' ? ' ok' : ' warn');
+      row.style.cssText = 'border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin-bottom:6px';
+      var title = document.createElement('div');
+      title.style.cssText = 'font-weight:700;color:var(--text)';
+      title.textContent = item.title + ' - ' + item.license;
+      row.appendChild(title);
+      var body = document.createElement('div');
+      body.textContent = item.attribution;
+      row.appendChild(body);
+      if (item.warning) {
+        var warning = document.createElement('div');
+        warning.textContent = 'Review: ' + item.warning;
+        row.appendChild(warning);
+      }
+      var actions = document.createElement('div');
+      actions.className = 'row';
+      actions.style.margin = '6px 0 0';
+      if (item.url) {
+        var link = document.createElement('a');
+        link.href = item.url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'Source';
+        actions.appendChild(link);
+      }
+      var del = document.createElement('button');
+      del.className = 'danger';
+      del.textContent = 'Remove';
+      del.addEventListener('click', function () {
+        list.splice(idx, 1);
+        t.mediaCredits = list;
+        saveDraft(t);
+        renderMediaCredits();
+        renderFinishChecklist();
+      });
+      actions.appendChild(del);
+      row.appendChild(actions);
+      host.appendChild(row);
+    });
+  }
+  function addMediaCreditFromForm() {
+    var t = currentTake();
+    if (!t) { setStatus($('mediaCreditStatus'), 'Record or import a video before adding media credits.', 'warn'); return; }
+    var credit = vsNormalizeMediaCredit({
+      title: $('mediaCreditTitle').value,
+      creator: $('mediaCreditCreator').value,
+      url: $('mediaCreditUrl').value,
+      source: $('mediaCreditSource').value,
+      license: $('mediaCreditLicense').value,
+      role: $('mediaCreditRole').value,
+      modified: $('mediaCreditModified').checked,
+      addedAt: new Date().toISOString()
+    });
+    if (!credit.title || credit.title === 'Untitled media') { setStatus($('mediaCreditStatus'), 'Add the media title before saving the credit.', 'warn'); return; }
+    t.mediaCredits = ensureMediaCredits(t).concat([credit]).slice(-80);
+    saveDraft(t);
+    $('mediaCreditTitle').value = '';
+    $('mediaCreditCreator').value = '';
+    $('mediaCreditUrl').value = '';
+    $('mediaCreditModified').checked = false;
+    renderMediaCredits();
+    renderFinishChecklist();
+  }
+  function downloadMediaCredits() {
+    var t = currentTake();
+    var title = ($('titleInput') && $('titleInput').value.trim()) || (t && t.name) || 'Teacher video';
+    downloadBlobFile(new Blob([vsBuildMediaCredits(t ? ensureMediaCredits(t) : [], title)], { type: 'text/plain;charset=utf-8' }), safeName(title) + '_media_credits.txt');
+  }
+  $('mediaCreditAddBtn').addEventListener('click', addMediaCreditFromForm);
+  $('mediaCreditDownloadBtn').addEventListener('click', downloadMediaCredits);
+  $('mediaCreditLicense').addEventListener('change', function () {
+    var profile = vsMediaLicenseProfile($('mediaCreditLicense').value);
+    setStatus($('mediaCreditStatus'), profile.warning || 'License looks ready for attribution.', profile.status === 'ok' ? 'ok' : 'warn');
   });
   // Preview approximates the audio edits (element volume caps at 100%; the
   // export GainNode is exact and can boost past it).
@@ -6302,6 +6570,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     renderZooms();
     renderAudio();
     renderMusicBed();
+    renderMediaCredits();
     renderNarration();
     renderClips();
     renderTeachingInserts();
@@ -7046,6 +7315,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function sceneTakeForExport(exported) {
     if (!exported || !exported.isScene) return currentTake();
     var cues = Array.isArray(exported.sceneCues) ? exported.sceneCues : (exported.vtt ? vsParseVtt(exported.vtt) : []);
+    var mediaCredits = [];
+    (exported.sceneItems || sceneItems || []).forEach(function (item) {
+      var take = item && item.takeId ? ((item._take) || sceneItemTake(item)) : null;
+      if (take && take.mediaCredits) mediaCredits = mediaCredits.concat(take.mediaCredits);
+    });
     return {
       id: 'scene',
       name: exported.title || 'Scene sequence',
@@ -7056,6 +7330,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       inserts: [],
       visualPrompts: [],
       localizations: [],
+      mediaCredits: vsSanitizeMediaCredits(mediaCredits),
       finishReview: {},
       zooms: [],
       audio: null,
@@ -7538,6 +7813,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       hasAudioChanges: hasAudioChanges,
       localizationCount: t && t.localizations ? t.localizations.length : 0,
       localizationWarningCount: qa ? qa.warnings.length : 0,
+      mediaCreditCount: t ? vsSanitizeMediaCredits(t.mediaCredits || []).length : 0,
+      mediaCreditWarningCount: t ? mediaCreditWarningCount(t.mediaCredits || []) : 0,
       exported: !!(t && lastExport && lastExport.takeId === t.id),
       review: review
     });
@@ -8554,6 +8831,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var visualPrompts = ((take && take.visualPrompts) || []).filter(function (p) { return p && String(p.prompt || '').trim(); });
     var localizations = (take && take.localizations) || [];
     var musicBed = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, (take && take.duration) || 0) : null;
+    var mediaCredits = vsSanitizeMediaCredits((take && take.mediaCredits) || []);
     var overlayCount = inserts.filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length;
     var resourceCueCount = inserts.filter(function (ins) { return ins && ins.source === 'resource'; }).length;
     var flags = privacyFlagsForCues(cues);
@@ -8568,6 +8846,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       teachingInsertCount: inserts.length,
       visualOverlayCount: overlayCount,
       hasMusicBed: !!musicBed,
+      hasMediaCredits: !!mediaCredits.length,
+      mediaCreditCount: mediaCredits.length,
+      mediaCreditWarningCount: mediaCreditWarningCount(mediaCredits),
       resourceCueCount: resourceCueCount,
       visualPromptCount: visualPrompts.length,
       localizationCount: localizations.length,
@@ -8585,7 +8866,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       '',
       'Video title: ' + title,
       'Generated locally: ' + meta.generatedAt,
-      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (overlayCount ? ', visual overlays' : '') + (musicBed ? ', music bed metadata' : '') + (visualPrompts.length ? ', visual prompts' : '') + (localizations.length ? ', localization drafts' : '') + ', and metadata.',
+      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (overlayCount ? ', visual overlays' : '') + (musicBed ? ', music bed metadata' : '') + (mediaCredits.length ? ', media credits' : '') + (visualPrompts.length ? ', visual prompts' : '') + (localizations.length ? ', localization drafts' : '') + ', and metadata.',
       'Video bytes are not included in this packet. Download the video file or project bundle separately.',
       '',
       flags.length ? ('Teacher review: ' + flags.length + ' possible private detail(s) were flagged. Review transcript and captions before sharing.') : 'Teacher review: no obvious private details were flagged. Please still review before sharing.'
@@ -8607,6 +8888,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     if (inserts.length) entries.push({ name: 'teaching_inserts.json', data: new TextEncoder().encode(JSON.stringify(inserts, null, 2)) });
     if (musicBed) entries.push({ name: 'music_bed.json', data: new TextEncoder().encode(JSON.stringify(Object.assign({}, musicBed, { blob: undefined }), null, 2)) });
+    if (mediaCredits.length) {
+      entries.push({ name: 'media_credits.txt', data: new TextEncoder().encode(vsBuildMediaCredits(mediaCredits, title)) });
+      entries.push({ name: 'media_credits.json', data: new TextEncoder().encode(JSON.stringify(mediaCredits, null, 2)) });
+    }
     if (visualPrompts.length) {
       entries.push({ name: 'visual_prompts.json', data: new TextEncoder().encode(JSON.stringify(visualPrompts, null, 2)) });
       entries.push({ name: 'visual_prompts.txt', data: new TextEncoder().encode(visualPrompts.map(function (p) { return vsFormatTimestamp(p.start || 0) + '  ' + (p.label || 'Visual support') + '\n' + p.prompt; }).join('\n\n') + '\n') });
@@ -8665,6 +8950,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       teachingInsertCount: inserts.length,
       visualOverlayCount: inserts.filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length,
       localizationCount: (take.localizations || []).length,
+      mediaCreditCount: vsSanitizeMediaCredits(take.mediaCredits || []).length,
+      mediaCreditWarningCount: mediaCreditWarningCount(take.mediaCredits || []),
       preset: $('exportPreset').value
     });
     if (lastExport.outputFormat) {
@@ -8706,7 +8993,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!lastExport) { setStatus($('resultStatus'), 'Export the video first, then save a project bundle.', 'warn'); return; }
     var take = sceneTakeForExport(lastExport);
     var bundleVtt = lastExport.vtt || (take && take.captions && take.captions.length ? vsBuildVtt(take.captions) : null);
-    downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, bundleVtt, lastExport.thumb || null, take ? (take.visualDescriptions || []) : [], take ? (take.chapters || []) : [], take ? (take.inserts || []) : [], take ? (take.visualPrompts || []) : [], take ? (take.musicBed || null) : null, take ? (take.localizations || []) : [], lastExport.isScene ? (lastExport.scenePlan || scenePlanSnapshot()) : null).then(function () {
+    downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, bundleVtt, lastExport.thumb || null, take ? (take.visualDescriptions || []) : [], take ? (take.chapters || []) : [], take ? (take.inserts || []) : [], take ? (take.visualPrompts || []) : [], take ? (take.musicBed || null) : null, take ? (take.localizations || []) : [], lastExport.isScene ? (lastExport.scenePlan || scenePlanSnapshot()) : null, take ? (take.mediaCredits || []) : []).then(function () {
       setStatus($('resultStatus'), lastExport.isScene ? 'Project bundle downloaded. It will reopen the assembled scene as one editable take.' : 'Project bundle downloaded. Drop the .allopack into Video Studio later to reopen it.', 'ok');
     });
   });
@@ -8732,7 +9019,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var take = sceneTakeForExport(lastExport);
       var safeMusic = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, take.duration || 0) : null;
       var sendVtt = lastExport.vtt || (take && take.captions && take.captions.length ? vsBuildVtt(take.captions) : null);
-      if (!postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, outputFormat: lastExport.outputFormat || null, outputFraming: lastExport.outputFraming || null, outputContainer: lastExport.outputContainer || null, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } })) {
+      if (!postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, outputFormat: lastExport.outputFormat || null, outputFraming: lastExport.outputFraming || null, outputContainer: lastExport.outputContainer || null, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], mediaCredits: take ? vsSanitizeMediaCredits(take.mediaCredits || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } })) {
         window.removeEventListener('message', onAck);
         setStatus($('resultStatus'), 'AlloFlow bridge is not connected - use Download, or reopen Video Studio from AlloFlow and press Send again.', 'warn');
         return;
@@ -8848,7 +9135,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     withDb(function (db) {
       try {
         var tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, finishReview: take.finishReview || {}, zooms: take.zooms || [], audio: take.audio || null, musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
+        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(take.mediaCredits || []), finishReview: take.finishReview || {}, zooms: take.zooms || [], audio: take.audio || null, musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
         tx.oncomplete = refreshProjectShelfSoon;
       } catch (_) {}
     });

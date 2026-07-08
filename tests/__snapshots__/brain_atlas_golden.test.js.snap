@@ -35,22 +35,22 @@ exports[`brainAtlas render goldens > quiz mode renders a question + options 1`] 
 
 exports[`brainAtlas render goldens > view: basalGangliaLoop renders + pins a digest 1`] = `
 {
-  "buttons": 35,
+  "buttons": 36,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 81,
-  "sha": "0331d233d75b06a5",
+  "lengthBucket": 84,
+  "sha": "26e5d04bec9b0e87",
   "svgs": 0,
 }
 `;
 
 exports[`brainAtlas render goldens > view: cranialNervesWillis renders + pins a digest 1`] = `
 {
-  "buttons": 40,
+  "buttons": 41,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 89,
-  "sha": "70d60ae199edf52b",
+  "lengthBucket": 92,
+  "sha": "c096841898e69a19",
   "svgs": 0,
 }
 `;
@@ -123,11 +123,11 @@ exports[`brainAtlas render goldens > view: lateral renders + pins a digest 1`] =
 
 exports[`brainAtlas render goldens > view: limbicPapezLoop renders + pins a digest 1`] = `
 {
-  "buttons": 38,
+  "buttons": 39,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 88,
-  "sha": "20bdead8e56fabae",
+  "lengthBucket": 91,
+  "sha": "cdb2c6498f3bba89",
   "svgs": 0,
 }
 `;
@@ -145,11 +145,11 @@ exports[`brainAtlas render goldens > view: medial renders + pins a digest 1`] = 
 
 exports[`brainAtlas render goldens > view: neuron renders + pins a digest 1`] = `
 {
-  "buttons": 31,
+  "buttons": 32,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 81,
-  "sha": "503243d4d037502d",
+  "lengthBucket": 84,
+  "sha": "e0dc806529148214",
   "svgs": 0,
 }
 `;

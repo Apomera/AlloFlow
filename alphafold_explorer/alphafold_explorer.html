@@ -561,6 +561,25 @@
       </div>
     </section>
 
+    <section aria-labelledby="gradeTutorialTitle">
+      <h2 id="gradeTutorialTitle">Grade-level tutorial</h2>
+      <label for="gradeTutorialSelect">Grade band</label>
+      <select id="gradeTutorialSelect">
+        <option value="elementary">Grades 3-4 model literacy</option>
+        <option value="upper">Grades 5-6 foundations</option>
+        <option value="middle" selected>Grades 7-8 life science</option>
+        <option value="high">High school biology</option>
+        <option value="ap">AP / advanced bioinformatics</option>
+        <option value="teacher">Teacher planning</option>
+      </select>
+      <div id="gradeTutorialOutput" class="summaryBox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="applyGradeTutorialBtn" type="button">Apply settings</button>
+        <button class="secondary" id="copyGradeTutorialBtn" type="button">Copy grade tutorial</button>
+        <span class="status" id="gradeTutorialStatus" role="status"></span>
+      </div>
+    </section>
+
     <section aria-labelledby="routeTitle">
       <h2 id="routeTitle">Choose your route</h2>
       <label for="routeSelect">Learning path</label>
@@ -962,6 +981,116 @@
       ]
     }
   };
+  var GRADE_TUTORIALS = {
+    elementary: {
+      label: 'Grades 3-4 model literacy',
+      context: 'middle',
+      route: 'text',
+      intro: 'AlphaFold is an AI tool scientists use to make a possible 3D model of a protein. At this level, students treat the picture as a model to observe, not as something to prove a hidden answer.',
+      objective: 'Students notice that scientists use models to describe tiny things they cannot see directly and that models can be helpful while still having limits.',
+      use: 'Use a teacher-chosen public example, keep the viewer mostly teacher-led, and ask students to describe visible shapes before making any explanation.',
+      workflow: [
+        'Look at the public model together and name one visible shape feature.',
+        'Use the accessible summary to connect the picture to words such as model, shape, and evidence.',
+        'Complete one sentence frame that separates what students see from what they wonder.'
+      ],
+      vocabulary: 'protein, model, shape, observe, evidence, wonder',
+      frame: 'I observe ___. The model helps me think about ___. I still wonder ___.',
+      access: 'Prioritize the text summary, read vocabulary aloud, avoid color-only questions, and let students answer by pointing, speaking, typing, or drawing.',
+      misconception: 'A model is a helpful scientific representation, not the actual tiny object and not automatic proof.',
+      exit: 'Draw or write one feature you observed and one question the model cannot answer yet.'
+    },
+    upper: {
+      label: 'Grades 5-6 foundations',
+      context: 'middle',
+      route: 'public',
+      intro: 'AlphaFold predicts a possible protein shape from the order of amino acids. Students should understand that the model can guide questions, but the class still needs evidence and careful words.',
+      objective: 'Students explain that proteins have shapes and that scientists use models to ask careful questions.',
+      use: 'Start with a public AlphaFold DB record, inspect the shape in the viewer, then use the written tutorial and claim frame before discussing function.',
+      workflow: [
+        'Open a public example together.',
+        'Name one visible shape feature such as a bend, pocket, tail, or compact part.',
+        'Use a cautious sentence frame instead of saying the model proves a job.'
+      ],
+      vocabulary: 'protein, model, shape, evidence, careful claim',
+      frame: 'The model suggests ___ because I notice ___. I still wonder ___.',
+      access: 'Offer the vocabulary list first, pair the 3D view with the accessible summary, and accept short claim-evidence-limit responses.',
+      misconception: 'A colorful 3D picture is not automatically proof.',
+      exit: 'One thing I can observe is ___. One thing I cannot know yet is ___.'
+    },
+    middle: {
+      label: 'Grades 7-8 life science',
+      context: 'middle',
+      route: 'public',
+      intro: 'AlphaFold is an AI prediction system that estimates a protein 3D structure from an amino acid sequence. A prediction can support a structure-function discussion, but students must separate observation from inference.',
+      objective: 'Students connect protein shape to possible function while separating observation from inference.',
+      use: 'Have students load a public record, read the source and confidence note, inspect one feature, and write a claim that names both evidence and a limit.',
+      workflow: [
+        'Load a public AlphaFold DB example.',
+        'Compare a confident-looking core with a flexible or uncertain-looking region.',
+        'Write one claim, one evidence line, and one limit.'
+      ],
+      vocabulary: 'protein, structure, function, confidence, evidence, inference',
+      frame: 'The structure is consistent with ___ because ___. I need more evidence from ___.',
+      access: 'Use the checklist as a stop point, keep a shared word bank visible, and let students copy the activity card into a notebook or LMS.',
+      misconception: 'AlphaFold predicts structure; students should not turn that into a final claim about function without evidence.',
+      exit: 'Which part of the model would you trust most, and what evidence supports that choice?'
+    },
+    high: {
+      label: 'High school biology',
+      context: 'high',
+      route: 'public',
+      intro: 'AlphaFold predicts likely protein structures and reports confidence information that helps users judge which regions are more or less reliable. The scientific task is to use the prediction as evidence, not as a shortcut around reasoning.',
+      objective: 'Students use confidence and visible structure features to support a cautious structure-function claim.',
+      use: 'Choose a protein tied to a unit topic, inspect domains or flexible regions, cite confidence evidence, then revise the claim with the rubric.',
+      workflow: [
+        'Choose a public protein connected to a known biological role.',
+        'Inspect domains, pockets, surfaces, loops, tails, and confidence.',
+        'Revise the claim until the evidence and limit are explicit.'
+      ],
+      vocabulary: 'amino acid sequence, protein folding, domain, pLDDT/confidence, structure-function relationship',
+      frame: 'The predicted structure suggests ___; my evidence is ___; a limitation is ___.',
+      access: 'Provide both visual and text-first paths, use sentence starters for claim revision, and prompt students to explain color or confidence cues in words.',
+      misconception: 'High confidence in a region does not automatically identify the protein function or prove a mechanism.',
+      exit: 'Write one claim that uses confidence evidence and one next test or reference check.'
+    },
+    ap: {
+      label: 'AP / advanced bioinformatics',
+      context: 'ap',
+      route: 'public',
+      intro: 'AlphaFold predictions are computational models that can be evaluated using confidence, alignment to known biology, and outside validation. Advanced students should treat model quality, database annotation, and experiment as different evidence streams.',
+      objective: 'Students evaluate model quality, uncertainty, and validation needs before making a structural interpretation.',
+      use: 'Pair a public AlphaFold record with a literature or database check, inspect pLDDT and PAE when available, and require students to identify what the model can and cannot justify.',
+      workflow: [
+        'Select a public record and inspect confidence, PAE when available, domains, and interfaces.',
+        'Decide which parts of the model can support a claim and which parts remain uncertain.',
+        'Name a database comparison, experiment, or literature reference that could validate the claim.'
+      ],
+      vocabulary: 'pLDDT, PAE, domain, interface, validation, homology, model limitation',
+      frame: 'This prediction supports ___ in region ___, but ___ remains uncertain because ___.',
+      access: 'Keep abbreviations expanded in prompts, require plain-language summaries after technical analysis, and offer a text-first rubric for students using assistive technology.',
+      misconception: 'Model confidence, database annotation, and experimental validation are different kinds of evidence.',
+      exit: 'Identify one claim the model supports and one claim it cannot support without additional evidence.'
+    },
+    teacher: {
+      label: 'Teacher planning',
+      context: 'teacher',
+      route: 'teacher',
+      intro: 'AlphaFold can make protein structure work more visible in class, but the strongest lesson is not just the 3D image. It is the evidence routine: source, confidence, observation, cautious claim, limitation, and revision.',
+      objective: 'Teachers launch an AlphaFold activity with clear privacy boundaries, evidence routines, and revision criteria.',
+      use: 'Pick the grade band first, apply the recommended route and support lens, model one public example, then decide what students will copy, submit, or discuss.',
+      workflow: [
+        'Choose a public example and decide the grade-level sentence frame.',
+        'Model one overconfident claim and revise it with the rubric.',
+        'Have students export an accessible summary, lab note, or rubric feedback.'
+      ],
+      vocabulary: 'prediction, evidence, confidence, limitation, accessibility, privacy guardrail',
+      frame: 'Today students will use AlphaFold to ask what a structure suggests, what evidence supports it, and what remains uncertain.',
+      access: 'Offer the public-record route, text-first route, and copied summaries as equivalent participation paths, and avoid grading students on 3D navigation speed.',
+      misconception: 'Students may treat AI output as authority; the activity should make uncertainty and evidence visible.',
+      exit: 'Collect one revised claim plus one student-named limit or next test.'
+    }
+  };
 
   var viewer = null;
   var viewerPromise = null;
@@ -1006,6 +1135,11 @@
   var aiState = document.getElementById('aiState');
   var copyTutorialBtn = document.getElementById('copyTutorialBtn');
   var tutorialStatus = document.getElementById('tutorialStatus');
+  var gradeTutorialSelect = document.getElementById('gradeTutorialSelect');
+  var gradeTutorialOutput = document.getElementById('gradeTutorialOutput');
+  var applyGradeTutorialBtn = document.getElementById('applyGradeTutorialBtn');
+  var copyGradeTutorialBtn = document.getElementById('copyGradeTutorialBtn');
+  var gradeTutorialStatus = document.getElementById('gradeTutorialStatus');
   var routeSelect = document.getElementById('routeSelect');
   var routeOutput = document.getElementById('routeOutput');
   var readyPredictionInput = document.getElementById('readyPredictionInput');
@@ -1063,6 +1197,7 @@
       'What AlphaFold is: an AI system that predicts a protein 3D structure from its amino acid sequence.',
       'What AlphaFold DB is: a public database of predicted protein structures developed by Google DeepMind and EMBL-EBI.',
       'What this explorer does: loads public structures, opens local result files, prepares classroom-safe JSON, and helps students write cautious claim-evidence-limit notes.',
+      'Grade band: ' + currentGradeTutorial().label,
       'Selected route: ' + currentRoute().label,
       'Student workflow: load a public record, inspect shape and confidence, write one cautious claim, cite evidence, and name a limit or next test.',
       'Careful wording: predictions are useful models, not final proof, diagnosis, treatment guidance, ancestry interpretation, or personal genetic analysis.',
@@ -1090,6 +1225,70 @@
 
   function currentContextKey() {
     return contextSelect ? contextSelect.value : 'middle';
+  }
+
+  function currentGradeTutorialKey() {
+    return gradeTutorialSelect ? gradeTutorialSelect.value : 'middle';
+  }
+
+  function currentGradeTutorial() {
+    return GRADE_TUTORIALS[currentGradeTutorialKey()] || GRADE_TUTORIALS.middle;
+  }
+
+  function gradeTutorialText() {
+    var t = currentGradeTutorial();
+    var lines = [
+      'AlphaFold grade-level tutorial',
+      'Grade band: ' + t.label,
+      'Student-friendly explanation: ' + t.intro,
+      'Objective: ' + t.objective,
+      'Recommended route: ' + (ROUTES[t.route] ? ROUTES[t.route].label : currentRoute().label),
+      'Recommended support lens: ' + (CONTEXT_LAYERS[t.context] ? CONTEXT_LAYERS[t.context].label : currentContext().label),
+      'How to use AlphaFold here: ' + t.use,
+      'Workflow:',
+    ];
+    t.workflow.forEach(function (step, idx) {
+      lines.push(String(idx + 1) + '. ' + step);
+    });
+    return lines.concat([
+      'Vocabulary: ' + t.vocabulary,
+      'Sentence frame: ' + t.frame,
+      'Accessibility supports: ' + t.access,
+      'Misconception check: ' + t.misconception,
+      'Exit ticket: ' + t.exit,
+      'Privacy: Use public, synthetic, or teacher-approved classroom samples only.'
+    ]).join('\n');
+  }
+
+  function renderGradeTutorial() {
+    gradeTutorialOutput.textContent = gradeTutorialText();
+    setStatus(gradeTutorialStatus, '', '');
+    renderActivityCard();
+    renderAccessibleSummary();
+  }
+
+  function copyGradeTutorial() {
+    var text = gradeTutorialText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(gradeTutorialStatus, 'Grade tutorial copied.', 'ok');
+      }).catch(function () {
+        setStatus(gradeTutorialStatus, 'Copy failed. Select the tutorial text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(gradeTutorialStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function applyGradeTutorial() {
+    var t = currentGradeTutorial();
+    if (routeSelect && ROUTES[t.route]) routeSelect.value = t.route;
+    if (contextSelect && CONTEXT_LAYERS[t.context]) contextSelect.value = t.context;
+    renderRoute();
+    renderContextLayer();
+    renderGradeTutorial();
+    renderGuide();
+    setStatus(gradeTutorialStatus, 'Recommended route, support lens, and tutorial frame applied.', 'ok');
   }
 
   function currentRoute() {
@@ -1157,9 +1356,12 @@
 
   function activityCardText() {
     var ctx = currentContext();
+    var tutorial = currentGradeTutorial();
     var moves = ACTIVITY_CARDS[currentContextKey()] || ACTIVITY_CARDS.middle;
     return [
       'AlphaFold classroom activity card',
+      'Grade band: ' + tutorial.label,
+      'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + ctx.label,
       'Route: ' + currentRoute().label,
       'Purpose: ' + ctx.focus,
@@ -1167,6 +1369,8 @@
       moves[1],
       moves[2],
       moves[3],
+      'Grade-level frame: ' + tutorial.frame,
+      'Accessibility support: ' + tutorial.access,
       'Claim routine: Students should write one cautious claim, one evidence line, and one limit or next test.',
       'Privacy: Use public, synthetic, or teacher-approved classroom samples only.'
     ].join('\n');
@@ -1205,6 +1409,7 @@
 
   function accessibleSummaryText() {
     var ctx = currentContext();
+    var tutorial = currentGradeTutorial();
     var record = current || {};
     var bits = [];
     if (record.accession) bits.push(record.accession);
@@ -1212,6 +1417,8 @@
     if (record.length) bits.push(lengthLabel(record.length));
     var lines = [
       'Accessible AlphaFold summary',
+      'Grade band: ' + tutorial.label,
+      'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + ctx.label,
       'Status: ' + (current ? 'Structure loaded for inspection.' : 'No structure loaded yet.'),
       'Record: ' + (record.name || 'Not recorded'),
@@ -1228,6 +1435,7 @@
       'Claim review: ' + claimReviewSummary(),
       'Rubric feedback: ' + rubricRating(),
       'Context guidance: ' + ctx.next,
+      'Grade-level support: ' + tutorial.access,
       'Privacy: This summary excludes raw sequence text.'
     ];
     return lines.join('\n');
@@ -1432,6 +1640,7 @@
   }
 
   function renderGuide() {
+    var tutorial = currentGradeTutorial();
     guideSteps.innerHTML = '';
     GUIDE_STEPS.forEach(function (step, idx) {
       var done = guideDone(step.key);
@@ -1443,7 +1652,12 @@
       wrap.appendChild(body);
       guideSteps.appendChild(wrap);
     });
-    guidePrompt.textContent = GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length] + '\n\nContext lens: ' + currentContext().guide;
+    guidePrompt.textContent = [
+      'Grade band: ' + tutorial.label,
+      'Tutorial frame: ' + tutorial.frame,
+      GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length],
+      'Context lens: ' + currentContext().guide
+    ].join('\n\n');
     renderClaimReview();
     renderRubric();
     renderAccessibleSummary();
@@ -1526,6 +1740,8 @@
     var ctx = currentContext();
     return {
       currentPrompt: guidePrompt.textContent || '',
+      gradeBand: currentGradeTutorial().label,
+      gradeTutorial: gradeTutorialText(),
       learningContext: ctx.label,
       accessibilityFocus: ctx.focus,
       contextGuidance: ctx.guide,
@@ -2015,6 +2231,7 @@
 
   function labNoteText() {
     var record = current || {};
+    var tutorial = currentGradeTutorial();
     var citation = record.citation || citationFor(record);
     var observation = noteInput.value.trim();
     var accessionBits = [];
@@ -2022,6 +2239,8 @@
     if (record.length) accessionBits.push(record.length);
     var lines = [
       'AlphaFold Explorer lab note',
+      'Grade band: ' + tutorial.label,
+      'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + currentContext().label,
       'Name: ' + (record.name || 'Not recorded'),
       'Source: ' + (record.source || 'Not recorded'),
@@ -2036,6 +2255,7 @@
       'Limit or next test: ' + (cautionInput.value.trim() || 'Not recorded'),
       'Claim review: ' + claimReviewSummary(),
       'Rubric feedback: ' + rubricRating(),
+      'Grade-level support: ' + tutorial.access,
       'Misconception check: ' + misconceptionPrompt().replace(/^Misconception check:\s*/, ''),
       'Claim check: Cite the record, inspect confidence or PAE when available, and compare with experimental/reference evidence before treating a prediction as settled.'
     ];
@@ -2158,6 +2378,9 @@
   ionCountInput.addEventListener('input', updateSequenceStatus);
   safetyConfirmInput.addEventListener('change', updateSequenceStatus);
   copyTutorialBtn.addEventListener('click', copyTutorial);
+  gradeTutorialSelect.addEventListener('change', function () { renderGradeTutorial(); renderGuide(); });
+  applyGradeTutorialBtn.addEventListener('click', applyGradeTutorial);
+  copyGradeTutorialBtn.addEventListener('click', copyGradeTutorial);
   routeSelect.addEventListener('change', function () { renderRoute(); renderGuide(); });
   readyPredictionInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
   readyEvidenceInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
@@ -2184,6 +2407,7 @@
   var params = new URLSearchParams(window.location.search);
   var requested = normalizeAccession(params.get('accession') || params.get('uniprot') || '');
   if (requested) lookup(requested);
+  renderGradeTutorial();
   renderRoute();
   renderContextLayer();
   var hello = function () { toOpener({ type: 'allocaf-hello' }); };
