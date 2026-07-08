@@ -535,9 +535,11 @@
       <label for="cautionInput">Limit or next test</label>
       <textarea id="cautionInput" class="mini" placeholder="Example: I would compare with an experiment or reference before claiming function."></textarea>
       <div class="row">
+        <button class="primary" id="guideAiBtn" type="button">Ask AI guide</button>
         <button class="secondary" id="guidePromptBtn" type="button">Next prompt</button>
         <button class="secondary" id="guideResetBtn" type="button">Reset guide</button>
       </div>
+      <div id="guideAiOutput" class="coachbox" hidden></div>
     </section>
 
     <section aria-labelledby="coachTitle">
@@ -657,6 +659,8 @@
   var claimInput = document.getElementById('claimInput');
   var evidenceInput = document.getElementById('evidenceInput');
   var cautionInput = document.getElementById('cautionInput');
+  var guideAiBtn = document.getElementById('guideAiBtn');
+  var guideAiOutput = document.getElementById('guideAiOutput');
   var guidePromptBtn = document.getElementById('guidePromptBtn');
   var guideResetBtn = document.getElementById('guideResetBtn');
   var noteInput = document.getElementById('noteInput');
@@ -765,14 +769,15 @@
     return REFLECT_BANK[reflectIndex];
   }
 
-  function askAi(meta, note) {
+  function askAi(meta, note, type, extra) {
     var id = 'af' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
     return new Promise(function (resolve) {
       pending[id] = {
         resolve: resolve,
         timer: setTimeout(function () { delete pending[id]; resolve(null); }, 25000)
       };
-      var sent = toOpener({ type: 'allocaf-ai-request', id: id, meta: meta || {}, note: note || '' });
+      var payload = Object.assign({ type: type || 'allocaf-ai-request', id: id, meta: meta || {}, note: note || '' }, extra || {});
+      var sent = toOpener(payload);
       if (!sent) {
         var entry = pending[id];
         delete pending[id];
@@ -780,6 +785,18 @@
         resolve(null);
       }
     });
+  }
+
+  function guideContext() {
+    return {
+      currentPrompt: guidePrompt.textContent || '',
+      observation: noteInput.value.trim(),
+      claim: claimInput.value.trim(),
+      evidence: evidenceInput.value.trim(),
+      caution: cautionInput.value.trim(),
+      sourceConfirmed: !!safetyConfirmInput.checked,
+      completed: GUIDE_STEPS.filter(function (step) { return guideDone(step.key); }).map(function (step) { return step.label; }).join(', ')
+    };
   }
 
   function normalizeAccession(raw) {
@@ -1289,6 +1306,41 @@
     }
   }
 
+  function guideFallback() {
+    var ctx = guideContext();
+    if (!current) return 'First load a public AlphaFold DB structure, import a result file, or prepare confirmed classroom input. Then inspect confidence before making a claim.';
+    if (!ctx.claim) return 'Write one cautious claim using words like "suggests" or "is consistent with" instead of treating the prediction as settled.';
+    if (!ctx.evidence) return 'Add evidence from the structure: confidence, PAE when available, a folded core, a flexible region, a pocket, a surface, or a domain pattern.';
+    if (!ctx.caution) return 'Name a limit or next test. A strong answer says what experiment, reference, or database comparison would make the claim stronger.';
+    return GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length];
+  }
+
+  function aiGuide() {
+    var meta = current || {
+      source: 'No structure loaded',
+      name: 'No structure loaded',
+      confidence: 'No confidence data yet'
+    };
+    if (!(openerOk && aiAvailable)) {
+      guideAiOutput.textContent = guideFallback();
+      guideAiOutput.hidden = false;
+      return;
+    }
+    if (busy) return;
+    busy = true;
+    guideAiBtn.disabled = true;
+    guideAiBtn.textContent = 'Guiding...';
+    askAi(meta, noteInput.value.trim(), 'allocaf-ai-guide-request', { guide: guideContext() }).then(function (res) {
+      var text = res && !res.error && res.text ? String(res.text).trim() : '';
+      guideAiOutput.textContent = text || ('AI guide was unavailable. ' + guideFallback());
+      guideAiOutput.hidden = false;
+    }).finally(function () {
+      busy = false;
+      guideAiBtn.disabled = false;
+      guideAiBtn.textContent = 'Ask AI guide';
+    });
+  }
+
   function coach() {
     var note = noteInput.value.trim();
     var meta = current || {
@@ -1346,6 +1398,7 @@
   claimInput.addEventListener('input', renderGuide);
   evidenceInput.addEventListener('input', renderGuide);
   cautionInput.addEventListener('input', renderGuide);
+  guideAiBtn.addEventListener('click', aiGuide);
   guidePromptBtn.addEventListener('click', nextGuidePrompt);
   guideResetBtn.addEventListener('click', resetGuide);
   prepareBtn.addEventListener('click', prepareJson);
