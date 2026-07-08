@@ -472,6 +472,23 @@
       Use public, synthetic, or teacher-approved classroom sample sequences only. Do not enter sequences from yourself, classmates, family members, patients, private genetic tests, ancestry services, or medical reports.
     </section>
 
+    <section aria-labelledby="tutorialTitle">
+      <h2 id="tutorialTitle">Start here</h2>
+      <div class="summaryBox">
+        AlphaFold is an AI system that predicts a protein's 3D shape from its amino acid sequence. AlphaFold DB provides public predicted structures; this explorer helps students inspect those predictions, prepare safe classroom inputs, and write cautious claims from evidence.
+      </div>
+      <ul class="checklist">
+        <li>Load a public example or public UniProt/AlphaFold accession.</li>
+        <li>Inspect shape, domains, pockets, surfaces, flexible regions, confidence, and PAE when available.</li>
+        <li>Use "suggests" or "is consistent with" because a prediction is a model, not final proof.</li>
+        <li>Prepare JSON locally only for public, synthetic, or teacher-approved classroom samples.</li>
+      </ul>
+      <div class="activityActions">
+        <button class="secondary" id="copyTutorialBtn" type="button">Copy quick-start</button>
+        <span class="status" id="tutorialStatus" role="status"></span>
+      </div>
+    </section>
+
     <section aria-labelledby="contextTitle">
       <h2 id="contextTitle">Learning context</h2>
       <label for="contextSelect">Context lens</label>
@@ -839,6 +856,8 @@
   var copyAccessibleSummaryBtn = document.getElementById('copyAccessibleSummaryBtn');
   var citationStatus = document.getElementById('citationStatus');
   var aiState = document.getElementById('aiState');
+  var copyTutorialBtn = document.getElementById('copyTutorialBtn');
+  var tutorialStatus = document.getElementById('tutorialStatus');
   var contextSelect = document.getElementById('contextSelect');
   var contextOutput = document.getElementById('contextOutput');
   var activityCard = document.getElementById('activityCard');
@@ -878,6 +897,31 @@
 
   function hasText(node, min) {
     return String((node && node.value) || '').trim().length >= (min || 8);
+  }
+
+  function tutorialText() {
+    return [
+      'AlphaFold Explorer quick-start',
+      'What AlphaFold is: an AI system that predicts a protein 3D structure from its amino acid sequence.',
+      'What AlphaFold DB is: a public database of predicted protein structures developed by Google DeepMind and EMBL-EBI.',
+      'What this explorer does: loads public structures, opens local result files, prepares classroom-safe JSON, and helps students write cautious claim-evidence-limit notes.',
+      'Student workflow: load a public record, inspect shape and confidence, write one cautious claim, cite evidence, and name a limit or next test.',
+      'Careful wording: predictions are useful models, not final proof, diagnosis, treatment guidance, ancestry interpretation, or personal genetic analysis.',
+      'Privacy: use public, synthetic, or teacher-approved classroom samples only.'
+    ].join('\n');
+  }
+
+  function copyTutorial() {
+    var text = tutorialText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(tutorialStatus, 'Quick-start copied.', 'ok');
+      }).catch(function () {
+        setStatus(tutorialStatus, 'Copy failed. Select the tutorial text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(tutorialStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
   }
 
   function currentContext() {
@@ -1788,6 +1832,7 @@
   ionSelect.addEventListener('change', updateSequenceStatus);
   ionCountInput.addEventListener('input', updateSequenceStatus);
   safetyConfirmInput.addEventListener('change', updateSequenceStatus);
+  copyTutorialBtn.addEventListener('click', copyTutorial);
   contextSelect.addEventListener('change', renderContextLayer);
   noteInput.addEventListener('input', renderGuide);
   claimInput.addEventListener('input', renderGuide);
