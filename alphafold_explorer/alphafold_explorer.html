@@ -306,6 +306,49 @@
     line-height: 1.45;
     white-space: pre-wrap;
   }
+  .guideSteps {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .guideStep {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    padding: 7px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.42);
+  }
+  .guideStep.done {
+    border-color: rgba(74, 222, 128, 0.45);
+    background: rgba(74, 222, 128, 0.08);
+  }
+  .guideDot {
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    color: #08111f;
+    background: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+  }
+  .guideStep.done .guideDot { background: var(--green); }
+  .guideStep b {
+    display: block;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .guideStep span {
+    display: block;
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 1.35;
+  }
   .badge {
     display: inline-flex;
     align-items: center;
@@ -481,6 +524,22 @@
       </ul>
     </section>
 
+    <section aria-labelledby="guideTitle">
+      <h2 id="guideTitle">Guided investigation</h2>
+      <div class="guideSteps" id="guideSteps"></div>
+      <div id="guidePrompt" class="coachbox"></div>
+      <label for="claimInput">Cautious claim</label>
+      <textarea id="claimInput" class="mini" placeholder="Example: The model suggests a compact fold with one flexible region."></textarea>
+      <label for="evidenceInput">Structure evidence</label>
+      <textarea id="evidenceInput" class="mini" placeholder="Example: Most of the folded core is high confidence; the tail is lower confidence."></textarea>
+      <label for="cautionInput">Limit or next test</label>
+      <textarea id="cautionInput" class="mini" placeholder="Example: I would compare with an experiment or reference before claiming function."></textarea>
+      <div class="row">
+        <button class="secondary" id="guidePromptBtn" type="button">Next prompt</button>
+        <button class="secondary" id="guideResetBtn" type="button">Reset guide</button>
+      </div>
+    </section>
+
     <section aria-labelledby="coachTitle">
       <h2 id="coachTitle">Inspection coach</h2>
       <p class="help" id="aiState">Connecting to AlloFlow...</p>
@@ -495,7 +554,7 @@
     <div class="viewer">
       <div id="molstar"></div>
       <div class="placeholder" id="placeholder">
-        Load a public AlphaFold DB structure, import a result file, or prepare safe AlphaFold Server input from the left panel.
+        Load a public AlphaFold DB structure, import a result file, or prepare safe AlphaFold input from the left panel.
       </div>
       <div class="loadmsg" id="loadmsg" role="status"></div>
     </div>
@@ -538,6 +597,20 @@
     'If you changed the viewer style or color scheme, what new feature became easier to notice?',
     'What evidence would you want from a lab experiment before treating this prediction as settled?'
   ];
+  var GUIDE_STEPS = [
+    { key: 'source', label: 'Source', text: 'Use a public record, local result file, or confirmed classroom input.' },
+    { key: 'inspect', label: 'Inspect', text: 'Look at the fold, domains, surfaces, and flexible-looking regions.' },
+    { key: 'confidence', label: 'Confidence', text: 'Name what confidence or uncertainty means for your claim.' },
+    { key: 'claim', label: 'Claim', text: 'Write one cautious structure claim.' },
+    { key: 'limits', label: 'Limits', text: 'State what evidence would make the claim stronger.' }
+  ];
+  var GUIDE_PROMPTS = [
+    'Start with source: is this public, synthetic, or teacher-approved? What should stay out of the model input?',
+    'Inspect the shape: where is the confident core, and where are the loose or uncertain-looking regions?',
+    'Look for function clues: do you see a pocket, channel, repeated domain, binding surface, or long flexible tail?',
+    'Write a cautious claim: what does the structure suggest, and what wording keeps it from sounding more certain than it is?',
+    'Name the limit: what experiment, database record, or reference would you compare against before treating the prediction as settled?'
+  ];
 
   var viewer = null;
   var viewerPromise = null;
@@ -548,6 +621,7 @@
   var busy = false;
   var pending = {};
   var reflectIndex = 0;
+  var guideIndex = 0;
 
   var examplesEl = document.getElementById('examples');
   var accessionInput = document.getElementById('accessionInput');
@@ -578,6 +652,13 @@
   var copyLabNoteBtn = document.getElementById('copyLabNoteBtn');
   var citationStatus = document.getElementById('citationStatus');
   var aiState = document.getElementById('aiState');
+  var guideSteps = document.getElementById('guideSteps');
+  var guidePrompt = document.getElementById('guidePrompt');
+  var claimInput = document.getElementById('claimInput');
+  var evidenceInput = document.getElementById('evidenceInput');
+  var cautionInput = document.getElementById('cautionInput');
+  var guidePromptBtn = document.getElementById('guidePromptBtn');
+  var guideResetBtn = document.getElementById('guideResetBtn');
   var noteInput = document.getElementById('noteInput');
   var coachBtn = document.getElementById('coachBtn');
   var coachOutput = document.getElementById('coachOutput');
@@ -596,6 +677,50 @@
   function setStatus(node, text, cls) {
     node.textContent = text || '';
     node.className = 'status' + (cls ? ' ' + cls : '');
+  }
+
+  function hasText(node, min) {
+    return String((node && node.value) || '').trim().length >= (min || 8);
+  }
+
+  function guideDone(key) {
+    if (key === 'source') return !!current || !!safetyConfirmInput.checked;
+    if (key === 'inspect') return !!current && (hasText(noteInput, 10) || hasText(evidenceInput, 10));
+    if (key === 'confidence') {
+      var text = [noteInput.value, evidenceInput.value, cautionInput.value, (current && current.confidence) || ''].join(' ').toLowerCase();
+      return !!current && /(confidence|plddt|pae|uncertain|uncertainty|low|high|flexible)/.test(text);
+    }
+    if (key === 'claim') return hasText(claimInput, 12);
+    if (key === 'limits') return hasText(cautionInput, 12);
+    return false;
+  }
+
+  function renderGuide() {
+    guideSteps.innerHTML = '';
+    GUIDE_STEPS.forEach(function (step, idx) {
+      var done = guideDone(step.key);
+      var wrap = el('div', { class: 'guideStep' + (done ? ' done' : '') });
+      wrap.appendChild(el('div', { class: 'guideDot', 'aria-hidden': 'true' }, done ? '✓' : String(idx + 1)));
+      var body = el('div');
+      body.appendChild(el('b', null, step.label));
+      body.appendChild(el('span', null, step.text));
+      wrap.appendChild(body);
+      guideSteps.appendChild(wrap);
+    });
+    guidePrompt.textContent = GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length];
+  }
+
+  function nextGuidePrompt() {
+    guideIndex = (guideIndex + 1) % GUIDE_PROMPTS.length;
+    renderGuide();
+  }
+
+  function resetGuide() {
+    claimInput.value = '';
+    evidenceInput.value = '';
+    cautionInput.value = '';
+    guideIndex = 0;
+    renderGuide();
   }
 
   function toOpener(payload) {
@@ -844,6 +969,7 @@
     copyCitationBtn.setAttribute('data-citation', citation);
     copyLabNoteBtn.disabled = !record;
     setStatus(citationStatus, '', '');
+    renderGuide();
   }
 
   function addFact(label, value) {
@@ -1034,6 +1160,7 @@
     } else {
       setStatus(sequenceStatus, v.components.join(', ') + '. Ready to prepare ' + (v.format === 'server' ? 'AlphaFold Server' : 'AlphaFold 3 local-code') + ' JSON.', 'ok');
     }
+    renderGuide();
     return v;
   }
 
@@ -1140,6 +1267,9 @@
       'Organism: ' + (record.organism || 'Not provided'),
       'Confidence/evidence: ' + (record.confidence || 'Inspect confidence and supporting evidence before making a claim.'),
       'Student observation: ' + (observation || 'Not recorded'),
+      'Cautious claim: ' + (claimInput.value.trim() || 'Not recorded'),
+      'Structure evidence: ' + (evidenceInput.value.trim() || 'Not recorded'),
+      'Limit or next test: ' + (cautionInput.value.trim() || 'Not recorded'),
       'Claim check: Cite the record, inspect confidence or PAE when available, and compare with experimental/reference evidence before treating a prediction as settled.'
     ];
     if (citation) lines.push('Citation: ' + citation);
@@ -1212,6 +1342,12 @@
   ionSelect.addEventListener('change', updateSequenceStatus);
   ionCountInput.addEventListener('input', updateSequenceStatus);
   safetyConfirmInput.addEventListener('change', updateSequenceStatus);
+  noteInput.addEventListener('input', renderGuide);
+  claimInput.addEventListener('input', renderGuide);
+  evidenceInput.addEventListener('input', renderGuide);
+  cautionInput.addEventListener('input', renderGuide);
+  guidePromptBtn.addEventListener('click', nextGuidePrompt);
+  guideResetBtn.addEventListener('click', resetGuide);
   prepareBtn.addEventListener('click', prepareJson);
   serverBtn.addEventListener('click', function () { window.open(SERVER_URL, 'alphafold-server'); });
   copyJsonBtn.addEventListener('click', copyJson);
@@ -1223,6 +1359,7 @@
   var params = new URLSearchParams(window.location.search);
   var requested = normalizeAccession(params.get('accession') || params.get('uniprot') || '');
   if (requested) lookup(requested);
+  renderGuide();
   var hello = function () { toOpener({ type: 'allocaf-hello' }); };
   hello();
   setTimeout(hello, 900);
