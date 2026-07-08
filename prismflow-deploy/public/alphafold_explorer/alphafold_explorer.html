@@ -306,6 +306,35 @@
     line-height: 1.45;
     white-space: pre-wrap;
   }
+  .summaryBox {
+    border: 1px solid rgba(20, 184, 166, 0.35);
+    background: rgba(20, 184, 166, 0.09);
+    border-radius: 8px;
+    padding: 9px;
+    color: #ccfbf1;
+    font-size: 12.5px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+  }
+  .glossary {
+    display: grid;
+    gap: 8px;
+  }
+  .glossaryItem {
+    border-left: 3px solid rgba(56, 189, 248, 0.55);
+    padding-left: 9px;
+  }
+  .glossaryItem b {
+    display: block;
+    color: var(--text);
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+  .glossaryItem span {
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 1.4;
+  }
   .guideSteps {
     display: grid;
     gap: 6px;
@@ -399,6 +428,20 @@
   <aside aria-label="AlphaFold Explorer controls">
     <section class="note" aria-label="Privacy guardrail">
       Use public, synthetic, or teacher-approved classroom sample sequences only. Do not enter sequences from yourself, classmates, family members, patients, private genetic tests, ancestry services, or medical reports.
+    </section>
+
+    <section aria-labelledby="contextTitle">
+      <h2 id="contextTitle">Learning context</h2>
+      <label for="contextSelect">Context lens</label>
+      <select id="contextSelect">
+        <option value="middle">Middle school / plain language</option>
+        <option value="high">High school biology</option>
+        <option value="ap">AP / bioinformatics</option>
+        <option value="ell">ELL / vocabulary support</option>
+        <option value="screen">Screen reader / low vision</option>
+        <option value="teacher">Teacher facilitation</option>
+      </select>
+      <div id="contextOutput" class="summaryBox" aria-live="polite"></div>
     </section>
 
     <section aria-labelledby="examplesTitle">
@@ -524,6 +567,11 @@
       </ul>
     </section>
 
+    <section aria-labelledby="vocabTitle">
+      <h2 id="vocabTitle">Vocabulary supports</h2>
+      <div class="glossary" id="glossaryList"></div>
+    </section>
+
     <section aria-labelledby="guideTitle">
       <h2 id="guideTitle">Guided investigation</h2>
       <div class="guideSteps" id="guideSteps"></div>
@@ -565,9 +613,11 @@
       <div class="facts" id="facts">
         <div class="fact"><b>Status</b><span>Choose a public example or enter an accession.</span></div>
       </div>
+      <div id="accessibleSummary" class="summaryBox" aria-live="polite"></div>
       <div class="detailActions">
         <button class="secondary" id="copyCitationBtn" type="button" disabled>Copy citation</button>
         <button class="secondary" id="copyLabNoteBtn" type="button" disabled>Copy lab note</button>
+        <button class="secondary" id="copyAccessibleSummaryBtn" type="button">Copy accessible summary</button>
         <span class="status" id="citationStatus" role="status"></span>
       </div>
     </div>
@@ -613,6 +663,54 @@
     'Write a cautious claim: what does the structure suggest, and what wording keeps it from sounding more certain than it is?',
     'Name the limit: what experiment, database record, or reference would you compare against before treating the prediction as settled?'
   ];
+  var CONTEXT_LAYERS = {
+    middle: {
+      label: 'Middle school / plain language',
+      focus: 'Use everyday words, one visible shape clue, confidence as a trust signal, and one careful next question.',
+      guide: 'Use a plain-language sentence frame: "The model suggests..., but I still need...".',
+      next: 'Describe one shape you can see and one reason scientists should be careful.'
+    },
+    high: {
+      label: 'High school biology',
+      focus: 'Connect protein shape to possible function, then separate observation from inference.',
+      guide: 'Name the structure feature, the confidence clue, and the biological idea it might support.',
+      next: 'Connect a domain, pocket, surface, or flexible region to a possible protein job.'
+    },
+    ap: {
+      label: 'AP / bioinformatics',
+      focus: 'Use pLDDT, PAE when available, domain layout, interfaces, and validation evidence.',
+      guide: 'Push the claim toward model quality, limitations, and a reference or experiment that could test it.',
+      next: 'Compare confidence across regions and name what evidence would validate the structural claim.'
+    },
+    ell: {
+      label: 'ELL / vocabulary support',
+      focus: 'Use short sentences, repeat key terms, and provide sentence frames without idioms.',
+      guide: 'Offer a sentence frame and define one technical word before asking for more evidence.',
+      next: 'Use the frame: "I notice ___. This may mean ___. I am not sure because ___."'
+    },
+    screen: {
+      label: 'Screen reader / low vision',
+      focus: 'Prioritize linear text summaries, source, confidence, and viewer-independent observations.',
+      guide: 'Summarize the record in text first, then ask for one confidence-based evidence statement.',
+      next: 'Use the accessible summary, then write a claim that does not depend only on color or 3D position.'
+    },
+    teacher: {
+      label: 'Teacher facilitation',
+      focus: 'Support discussion, misconception checks, privacy guardrails, and claim-evidence-limit routines.',
+      guide: 'Ask a facilitation question that surfaces overclaiming, missing evidence, or privacy boundaries.',
+      next: 'Have students compare two claims and decide which one is better supported by confidence evidence.'
+    }
+  };
+  var GLOSSARY_TERMS = [
+    { term: 'Accession', def: 'A public database ID for finding the same protein record again.', contexts: 'middle high ell screen teacher ap' },
+    { term: 'Model', def: 'A scientific prediction or representation. It can be useful without being final proof.', contexts: 'middle high ell screen teacher ap' },
+    { term: 'Confidence / pLDDT', def: 'A score that helps identify regions the model trusts more or less.', contexts: 'middle high ell screen teacher ap' },
+    { term: 'Domain', def: 'A folded part of a protein that can act like a module.', contexts: 'middle high ell screen teacher ap' },
+    { term: 'Pocket or surface', def: 'A shape that may help a protein bind another molecule or do a job.', contexts: 'middle high ell teacher' },
+    { term: 'PAE', def: 'Predicted aligned error. It helps judge uncertainty between domains or chains.', contexts: 'ap teacher high screen' },
+    { term: 'Interface', def: 'A region where protein chains or molecules touch and may interact.', contexts: 'ap teacher high' },
+    { term: 'Sentence frame', def: 'A starter structure for writing: "The model suggests..., because..., but...".', contexts: 'ell middle teacher screen' }
+  ];
 
   var viewer = null;
   var viewerPromise = null;
@@ -652,8 +750,13 @@
   var downloadJsonBtn = document.getElementById('downloadJsonBtn');
   var copyCitationBtn = document.getElementById('copyCitationBtn');
   var copyLabNoteBtn = document.getElementById('copyLabNoteBtn');
+  var copyAccessibleSummaryBtn = document.getElementById('copyAccessibleSummaryBtn');
   var citationStatus = document.getElementById('citationStatus');
   var aiState = document.getElementById('aiState');
+  var contextSelect = document.getElementById('contextSelect');
+  var contextOutput = document.getElementById('contextOutput');
+  var glossaryList = document.getElementById('glossaryList');
+  var accessibleSummary = document.getElementById('accessibleSummary');
   var guideSteps = document.getElementById('guideSteps');
   var guidePrompt = document.getElementById('guidePrompt');
   var claimInput = document.getElementById('claimInput');
@@ -687,6 +790,72 @@
     return String((node && node.value) || '').trim().length >= (min || 8);
   }
 
+  function currentContext() {
+    var key = contextSelect ? contextSelect.value : 'middle';
+    return CONTEXT_LAYERS[key] || CONTEXT_LAYERS.middle;
+  }
+
+  function lengthLabel(value) {
+    var text = String(value || '').trim();
+    if (!text) return '';
+    return /^\d+$/.test(text) ? text + ' amino acids' : text;
+  }
+
+  function renderContextLayer() {
+    var ctx = currentContext();
+    contextOutput.textContent = [
+      'Focus: ' + ctx.focus,
+      'Classroom move: ' + ctx.next,
+      'AI guidance: ' + ctx.guide
+    ].join('\n');
+    renderGlossary();
+    renderAccessibleSummary();
+    renderGuide();
+  }
+
+  function renderGlossary() {
+    var key = contextSelect ? contextSelect.value : 'middle';
+    glossaryList.innerHTML = '';
+    GLOSSARY_TERMS.filter(function (item) {
+      return (' ' + item.contexts + ' ').indexOf(' ' + key + ' ') >= 0;
+    }).forEach(function (item) {
+      var wrap = el('div', { class: 'glossaryItem' });
+      wrap.appendChild(el('b', null, item.term));
+      wrap.appendChild(el('span', null, item.def));
+      glossaryList.appendChild(wrap);
+    });
+  }
+
+  function accessibleSummaryText() {
+    var ctx = currentContext();
+    var record = current || {};
+    var bits = [];
+    if (record.accession) bits.push(record.accession);
+    if (record.entryId && record.entryId !== record.accession) bits.push(record.entryId);
+    if (record.length) bits.push(lengthLabel(record.length));
+    var lines = [
+      'Accessible AlphaFold summary',
+      'Learning context: ' + ctx.label,
+      'Status: ' + (current ? 'Structure loaded for inspection.' : 'No structure loaded yet.'),
+      'Record: ' + (record.name || 'Not recorded'),
+      'Source: ' + (record.source || 'Not recorded'),
+      'Accession/components: ' + (bits.join(' | ') || 'Not recorded'),
+      'Organism: ' + (record.organism || 'Not provided'),
+      'Confidence note: ' + (record.confidence || 'Inspect confidence and supporting evidence before making a claim.'),
+      'Student observation: ' + (noteInput.value.trim() || 'Not recorded'),
+      'Cautious claim: ' + (claimInput.value.trim() || 'Not recorded'),
+      'Evidence to cite: ' + (evidenceInput.value.trim() || 'Not recorded'),
+      'Limit or next test: ' + (cautionInput.value.trim() || 'Not recorded'),
+      'Context guidance: ' + ctx.next,
+      'Privacy: This summary excludes raw sequence text.'
+    ];
+    return lines.join('\n');
+  }
+
+  function renderAccessibleSummary() {
+    accessibleSummary.textContent = accessibleSummaryText();
+  }
+
   function guideDone(key) {
     if (key === 'source') return !!current || !!safetyConfirmInput.checked;
     if (key === 'inspect') return !!current && (hasText(noteInput, 10) || hasText(evidenceInput, 10));
@@ -711,7 +880,8 @@
       wrap.appendChild(body);
       guideSteps.appendChild(wrap);
     });
-    guidePrompt.textContent = GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length];
+    guidePrompt.textContent = GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length] + '\n\nContext lens: ' + currentContext().guide;
+    renderAccessibleSummary();
   }
 
   function nextGuidePrompt() {
@@ -788,8 +958,12 @@
   }
 
   function guideContext() {
+    var ctx = currentContext();
     return {
       currentPrompt: guidePrompt.textContent || '',
+      learningContext: ctx.label,
+      accessibilityFocus: ctx.focus,
+      contextGuidance: ctx.guide,
       observation: noteInput.value.trim(),
       claim: claimInput.value.trim(),
       evidence: evidenceInput.value.trim(),
@@ -974,7 +1148,7 @@
     addFact('Accession', record.accession || record.entryId || 'Local file');
     addFact('Organism', record.organism || 'Not provided');
     addFact('Gene', record.gene || 'Not provided');
-    addFact('Length', record.length ? String(record.length) + ' amino acids' : 'Not provided');
+    addFact('Length', lengthLabel(record.length) || 'Not provided');
     addFact('Confidence', record.confidence || 'Not provided');
     if (record.dbUrl) addLinkFact('AlphaFold DB', record.dbUrl);
     if (record.uniprotUrl) addLinkFact('UniProt', record.uniprotUrl);
@@ -1278,6 +1452,7 @@
     if (record.length) accessionBits.push(record.length);
     var lines = [
       'AlphaFold Explorer lab note',
+      'Learning context: ' + currentContext().label,
       'Name: ' + (record.name || 'Not recorded'),
       'Source: ' + (record.source || 'Not recorded'),
       'Accession/components: ' + (accessionBits.join(' | ') || 'Not recorded'),
@@ -1306,13 +1481,26 @@
     }
   }
 
+  function copyAccessibleSummary() {
+    var text = accessibleSummaryText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(citationStatus, 'Accessible summary copied. It does not include sequence text.', 'ok');
+      }).catch(function () {
+        setStatus(citationStatus, 'Copy failed. Select the accessible summary text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(citationStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
   function guideFallback() {
     var ctx = guideContext();
     if (!current) return 'First load a public AlphaFold DB structure, import a result file, or prepare confirmed classroom input. Then inspect confidence before making a claim.';
     if (!ctx.claim) return 'Write one cautious claim using words like "suggests" or "is consistent with" instead of treating the prediction as settled.';
     if (!ctx.evidence) return 'Add evidence from the structure: confidence, PAE when available, a folded core, a flexible region, a pocket, a surface, or a domain pattern.';
     if (!ctx.caution) return 'Name a limit or next test. A strong answer says what experiment, reference, or database comparison would make the claim stronger.';
-    return GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length];
+    return currentContext().next + ' ' + GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length];
   }
 
   function aiGuide() {
@@ -1357,7 +1545,7 @@
     busy = true;
     coachBtn.disabled = true;
     coachBtn.textContent = 'Thinking...';
-    askAi(meta, note).then(function (res) {
+    askAi(meta, note, 'allocaf-ai-request', { guide: guideContext() }).then(function (res) {
       var text = res && !res.error && res.text ? String(res.text).trim() : '';
       coachOutput.textContent = text || ('AI coach was unavailable. ' + nextReflect());
       coachOutput.hidden = false;
@@ -1394,6 +1582,7 @@
   ionSelect.addEventListener('change', updateSequenceStatus);
   ionCountInput.addEventListener('input', updateSequenceStatus);
   safetyConfirmInput.addEventListener('change', updateSequenceStatus);
+  contextSelect.addEventListener('change', renderContextLayer);
   noteInput.addEventListener('input', renderGuide);
   claimInput.addEventListener('input', renderGuide);
   evidenceInput.addEventListener('input', renderGuide);
@@ -1407,12 +1596,13 @@
   downloadJsonBtn.addEventListener('click', downloadJson);
   copyCitationBtn.addEventListener('click', copyCitation);
   copyLabNoteBtn.addEventListener('click', copyLabNote);
+  copyAccessibleSummaryBtn.addEventListener('click', copyAccessibleSummary);
   coachBtn.addEventListener('click', coach);
 
   var params = new URLSearchParams(window.location.search);
   var requested = normalizeAccession(params.get('accession') || params.get('uniprot') || '');
   if (requested) lookup(requested);
-  renderGuide();
+  renderContextLayer();
   var hello = function () { toOpener({ type: 'allocaf-hello' }); };
   hello();
   setTimeout(hello, 900);

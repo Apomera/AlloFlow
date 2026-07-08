@@ -37,6 +37,7 @@
 
   function buildCoachPrompt(payload) {
     var meta = payload && payload.meta ? payload.meta : {};
+    var guide = payload && payload.guide ? payload.guide : {};
     var lines = [
       'You are a warm, Socratic STRUCTURAL-BIOLOGY COACH for a K-12 student using an AlphaFold explorer.',
       'The tool is for public, synthetic, or classroom sample proteins only. Do not discuss diagnosis, treatment, ancestry, personal genetic risk, or patient-specific interpretation.',
@@ -52,7 +53,45 @@
       'Organism: ' + safeClip(meta.organism || 'unknown', 120),
       'Length: ' + safeClip(meta.length || 'unknown', 40),
       'Confidence summary: ' + safeClip(meta.confidence || 'not shown', 180),
+      'Learning context: ' + safeClip(guide.learningContext || 'not specified', 120),
+      'Accessibility/pedagogy focus: ' + safeClip(guide.accessibilityFocus || 'not specified', 260),
       'Student observation: ' + safeClip(payload && payload.note, 700),
+      'Reply with plain text only.'
+    ];
+    return lines.join('\n');
+  }
+
+  function buildGuidePrompt(payload) {
+    var meta = payload && payload.meta ? payload.meta : {};
+    var guide = payload && payload.guide ? payload.guide : {};
+    var lines = [
+      'You are an AI GUIDANCE LAYER for a K-12 AlphaFold investigation.',
+      'Coach the student on scientific reasoning, not on personal genetics, diagnosis, treatment, ancestry, or patient-specific interpretation.',
+      'The tool sends structure metadata and student-written notes only. Do not ask for or repeat raw sequences or personal/family medical or genetic information.',
+      'RULES:',
+      '- Give 3 short bullets.',
+      '- Bullet 1: name what is strong or promising in their reasoning.',
+      '- Bullet 2: name the most important missing evidence or uncertainty.',
+      '- Bullet 3: give one concrete next action in the viewer or lab note.',
+      '- Use cautious language for AlphaFold predictions; predictions are hypotheses until supported by evidence.',
+      '- Do not write a final answer for the student.',
+      'CURRENT STRUCTURE CONTEXT:',
+      'Name: ' + safeClip(meta.name || meta.description || 'unknown', 160),
+      'Source/accession: ' + safeClip(meta.source || meta.accession || 'unknown', 120),
+      'Organism: ' + safeClip(meta.organism || 'unknown', 120),
+      'Components/length: ' + safeClip(meta.length || 'unknown', 120),
+      'Confidence summary: ' + safeClip(meta.confidence || 'not shown', 180),
+      'GUIDE STATE:',
+      'Current prompt: ' + safeClip(guide.currentPrompt || '', 240),
+      'Learning context: ' + safeClip(guide.learningContext || 'not specified', 120),
+      'Accessibility/pedagogy focus: ' + safeClip(guide.accessibilityFocus || 'not specified', 260),
+      'Context-specific guidance: ' + safeClip(guide.contextGuidance || 'not specified', 260),
+      'Completed steps: ' + safeClip(guide.completed || 'none', 160),
+      'Source confirmed: ' + (guide.sourceConfirmed ? 'yes' : 'no'),
+      'Observation: ' + safeClip(guide.observation || '', 700),
+      'Cautious claim: ' + safeClip(guide.claim || '', 700),
+      'Structure evidence: ' + safeClip(guide.evidence || '', 700),
+      'Limit or next test: ' + safeClip(guide.caution || '', 700),
       'Reply with plain text only.'
     ];
     return lines.join('\n');
@@ -61,7 +100,7 @@
   window.StemLab.registerTool('alphaFoldExplorer', {
     icon: '\u03b1',
     label: 'AlphaFold Explorer',
-    desc: 'Look up public AlphaFold DB protein structures by UniProt/accession, view them in Mol*, import downloaded AlphaFold result files, and prepare AlphaFold Server or AlphaFold 3 local-code JSON for safe classroom protein/DNA/RNA/ligand models without automatic submission.',
+    desc: 'Look up public AlphaFold DB protein structures by UniProt/accession, view them in Mol*, import downloaded AlphaFold result files, prepare AlphaFold Server or AlphaFold 3 local-code JSON, and guide students through accessible, context-aware claim-evidence-limit reasoning without automatic submission.',
     color: 'teal',
     category: 'science',
     questHooks: [
@@ -72,7 +111,9 @@
       { id: 'af_prepare', label: 'Prepare safe AlphaFold Server input', icon: '{}',
         check: function (d) { return !!(d && (d.sequencePreparedCount || 0) >= 1); } },
       { id: 'af_coach', label: 'Ask one structure-inspection question', icon: '?',
-        check: function (d) { return !!(d && (d.coachCount || 0) >= 1); } }
+        check: function (d) { return !!(d && (d.coachCount || 0) >= 1); } },
+      { id: 'af_ai_guide', label: 'Use AI guidance on a cautious claim', icon: 'AI',
+        check: function (d) { return !!(d && (d.guideCount || 0) >= 1); } }
     ],
     render: function (ctx) {
       var React = ctx.React;
@@ -107,15 +148,17 @@
           if (data.type === 'allocaf-db-hit') { bumpSlice('lookupCount'); return; }
           if (data.type === 'allocaf-file-imported') { bumpSlice('fileImportCount'); return; }
           if (data.type === 'allocaf-sequence-prepared') { bumpSlice('sequencePreparedCount'); return; }
-          if (data.type !== 'allocaf-ai-request' || !data.id) return;
+          var isCoachRequest = data.type === 'allocaf-ai-request';
+          var isGuideRequest = data.type === 'allocaf-ai-guide-request';
+          if ((!isCoachRequest && !isGuideRequest) || !data.id) return;
           var replyTo = ev.source || _win.current;
           var respond = function (payload) {
             try { if (replyTo) replyTo.postMessage(Object.assign({ type: 'allocaf-ai-response', id: data.id }, payload), '*'); } catch (_) {}
           };
           if (!aiOn) { respond({ error: 'ai-disabled' }); return; }
-          bumpSlice('coachCount');
+          bumpSlice(isGuideRequest ? 'guideCount' : 'coachCount');
           Promise.resolve().then(function () {
-            return ctx.callGemini(buildCoachPrompt(data), false, false, 0.7);
+            return ctx.callGemini(isGuideRequest ? buildGuidePrompt(data) : buildCoachPrompt(data), false, false, 0.7);
           }).then(function (resp) {
             var text = (typeof resp === 'string') ? resp : ((resp && (resp.text || resp.output || resp.response)) || '');
             respond({ text: String(text || '').slice(0, 1200) });
@@ -148,11 +191,11 @@
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-sky-400' },
           t('stem.alphaFold.title', 'AlphaFold Explorer - public protein structures')),
         h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
-          t('stem.alphaFold.blurb', 'Look up public AlphaFold DB predictions by UniProt/accession, inspect structures in Mol*, import downloaded result files, and prepare AlphaFold Server or AlphaFold 3 local-code JSON. The tool does not automatically submit sequences anywhere; students use public, synthetic, or teacher-approved classroom samples only.')),
+          t('stem.alphaFold.blurb', 'Look up public AlphaFold DB predictions by UniProt/accession, inspect structures in Mol*, import downloaded result files, prepare AlphaFold Server or AlphaFold 3 local-code JSON, and use a guided claim-evidence-limit scaffold with accessibility and classroom-context lenses. The tool does not automatically submit sequences anywhere; students use public, synthetic, or teacher-approved classroom samples only.')),
         h('div', { className: 'bg-slate-800/60 rounded-xl p-3 border border-slate-700 text-xs text-slate-300 space-y-1.5' },
           h('div', null, t('stem.alphaFold.guardrail1', 'Guardrail: do not enter sequences from yourself, classmates, family members, patients, private genetic tests, or medical reports.')),
           h('div', null, aiOn
-            ? t('stem.alphaFold.ai_on', 'AI coach is on. It receives structure metadata and observations, not full protein sequences.')
+            ? t('stem.alphaFold.ai_on', 'AI coach and guide are on. They receive structure metadata, learner context, and student observations/claims, not full protein sequences.')
             : t('stem.alphaFold.ai_off', 'AI hints are off. The explorer still works with built-in inspection prompts.'))),
         h('button', {
           onClick: openExplorer,
@@ -162,7 +205,7 @@
         popupState === 'blocked' && h('p', { className: 'text-xs text-amber-300' },
           t('stem.alphaFold.blocked_note', 'Pop-up blocked - allow pop-ups for this page and try again.')),
         popupState === 'open' && h('p', { className: 'text-xs text-emerald-300' },
-          t('stem.alphaFold.open_note', 'AlphaFold Explorer is open. Keep this AlloFlow window open too - it powers the optional AI coach.')),
+          t('stem.alphaFold.open_note', 'AlphaFold Explorer is open. Keep this AlloFlow window open too - it powers the optional AI coach and guide.')),
         h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
           t('stem.alphaFold.credit', 'Data/viewing: AlphaFold Protein Structure Database by Google DeepMind and EMBL-EBI; Mol* viewer under MIT license. AlphaFold Server opens separately for non-commercial research workflows. Internet is required for database lookup and web viewing.'))
       );
