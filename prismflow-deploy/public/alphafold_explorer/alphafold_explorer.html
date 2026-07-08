@@ -456,6 +456,10 @@
         <p class="help">Server JSON uses the AlphaFold Server dialect. Local-code JSON uses the open AlphaFold 3 codebase dialect.</p>
       </details>
       <p class="status" id="sequenceStatus" role="status">No sequence entered.</p>
+      <label class="checkrow" for="safetyConfirmInput">
+        <input id="safetyConfirmInput" type="checkbox">
+        I confirm these inputs are public, synthetic, or teacher-approved classroom samples, not personal, family, patient, private genetic-test, ancestry, or medical-report data.
+      </label>
       <div class="row">
         <button class="primary" id="prepareBtn" type="button">Prepare JSON</button>
         <button class="secondary" id="serverBtn" type="button">Open Server</button>
@@ -502,6 +506,7 @@
       </div>
       <div class="detailActions">
         <button class="secondary" id="copyCitationBtn" type="button" disabled>Copy citation</button>
+        <button class="secondary" id="copyLabNoteBtn" type="button" disabled>Copy lab note</button>
         <span class="status" id="citationStatus" role="status"></span>
       </div>
     </div>
@@ -562,6 +567,7 @@
   var ligandCountInput = document.getElementById('ligandCountInput');
   var ionSelect = document.getElementById('ionSelect');
   var ionCountInput = document.getElementById('ionCountInput');
+  var safetyConfirmInput = document.getElementById('safetyConfirmInput');
   var sequenceStatus = document.getElementById('sequenceStatus');
   var prepareBtn = document.getElementById('prepareBtn');
   var serverBtn = document.getElementById('serverBtn');
@@ -569,6 +575,7 @@
   var copyJsonBtn = document.getElementById('copyJsonBtn');
   var downloadJsonBtn = document.getElementById('downloadJsonBtn');
   var copyCitationBtn = document.getElementById('copyCitationBtn');
+  var copyLabNoteBtn = document.getElementById('copyLabNoteBtn');
   var citationStatus = document.getElementById('citationStatus');
   var aiState = document.getElementById('aiState');
   var noteInput = document.getElementById('noteInput');
@@ -835,6 +842,7 @@
     var citation = record.citation || citationFor(record);
     copyCitationBtn.disabled = !citation;
     copyCitationBtn.setAttribute('data-citation', citation);
+    copyLabNoteBtn.disabled = !record;
     setStatus(citationStatus, '', '');
   }
 
@@ -940,6 +948,7 @@
     var ion = ionSelect.value;
     var ionCount = readCount(ionCountInput, 1, 12);
     var seed = readCount(seedInput, 1, 4294967295);
+    var confirmed = !!safetyConfirmInput.checked;
     if (protein.present) components.push(proteinCount + ' protein chain' + (proteinCount === 1 ? '' : 's'));
     if (dna.present) components.push(dnaRevCompInput.checked ? 'double-stranded DNA' : 'single-stranded DNA');
     if (rna.present) components.push('RNA');
@@ -947,6 +956,7 @@
     if (ion) components.push(ionCount + ' ion' + (ionCount === 1 ? '' : 's'));
     if (!protein.present && !dna.present && !rna.present) warnings.push('Add at least one protein, DNA, or RNA chain before preparing JSON.');
     if ((ligand || ion) && !protein.present && !dna.present && !rna.present) warnings.push('Ligands and ions need a biomolecule partner for a meaningful classroom model.');
+    if (components.length && !confirmed) warnings.push('Confirm the input source before preparing JSON.');
     return {
       protein: protein,
       dna: dna,
@@ -960,7 +970,8 @@
       format: formatSelect.value === 'local' ? 'local' : 'server',
       name: safeJobName(),
       components: components,
-      valid: protein.valid && dna.valid && rna.valid && (protein.present || dna.present || rna.present),
+      confirmed: confirmed,
+      valid: confirmed && protein.valid && dna.valid && rna.valid && (protein.present || dna.present || rna.present),
       warnings: warnings
     };
   }
@@ -1114,6 +1125,40 @@
     }
   }
 
+  function labNoteText() {
+    var record = current || {};
+    var citation = record.citation || citationFor(record);
+    var observation = noteInput.value.trim();
+    var accessionBits = [];
+    if (record.accession) accessionBits.push(record.accession);
+    if (record.length) accessionBits.push(record.length);
+    var lines = [
+      'AlphaFold Explorer lab note',
+      'Name: ' + (record.name || 'Not recorded'),
+      'Source: ' + (record.source || 'Not recorded'),
+      'Accession/components: ' + (accessionBits.join(' | ') || 'Not recorded'),
+      'Organism: ' + (record.organism || 'Not provided'),
+      'Confidence/evidence: ' + (record.confidence || 'Inspect confidence and supporting evidence before making a claim.'),
+      'Student observation: ' + (observation || 'Not recorded'),
+      'Claim check: Cite the record, inspect confidence or PAE when available, and compare with experimental/reference evidence before treating a prediction as settled.'
+    ];
+    if (citation) lines.push('Citation: ' + citation);
+    return lines.join('\n');
+  }
+
+  function copyLabNote() {
+    var text = labNoteText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(citationStatus, 'Lab note copied. It does not include sequence text.', 'ok');
+      }).catch(function () {
+        setStatus(citationStatus, 'Copy failed. Try copying citation instead.', 'warn');
+      });
+    } else {
+      setStatus(citationStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
   function coach() {
     var note = noteInput.value.trim();
     var meta = current || {
@@ -1166,11 +1211,13 @@
   ligandCountInput.addEventListener('input', updateSequenceStatus);
   ionSelect.addEventListener('change', updateSequenceStatus);
   ionCountInput.addEventListener('input', updateSequenceStatus);
+  safetyConfirmInput.addEventListener('change', updateSequenceStatus);
   prepareBtn.addEventListener('click', prepareJson);
   serverBtn.addEventListener('click', function () { window.open(SERVER_URL, 'alphafold-server'); });
   copyJsonBtn.addEventListener('click', copyJson);
   downloadJsonBtn.addEventListener('click', downloadJson);
   copyCitationBtn.addEventListener('click', copyCitation);
+  copyLabNoteBtn.addEventListener('click', copyLabNote);
   coachBtn.addEventListener('click', coach);
 
   var params = new URLSearchParams(window.location.search);
