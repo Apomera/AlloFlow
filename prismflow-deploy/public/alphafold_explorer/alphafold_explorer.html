@@ -377,6 +377,40 @@
     border-color: rgba(248, 113, 113, 0.48);
     background: rgba(248, 113, 113, 0.09);
   }
+  .routeSteps {
+    display: grid;
+    gap: 7px;
+    margin-top: 8px;
+  }
+  .routeStep {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    padding: 7px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.42);
+    color: var(--soft);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .routeStep b {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: rgba(56, 189, 248, 0.18);
+    color: #bae6fd;
+    border: 1px solid rgba(56, 189, 248, 0.32);
+    font-size: 11px;
+  }
+  .readinessBox {
+    display: grid;
+    gap: 6px;
+    margin-top: 8px;
+  }
   .guideSteps {
     display: grid;
     gap: 6px;
@@ -487,6 +521,34 @@
         <button class="secondary" id="copyTutorialBtn" type="button">Copy quick-start</button>
         <span class="status" id="tutorialStatus" role="status"></span>
       </div>
+    </section>
+
+    <section aria-labelledby="routeTitle">
+      <h2 id="routeTitle">Choose your route</h2>
+      <label for="routeSelect">Learning path</label>
+      <select id="routeSelect">
+        <option value="public">Explore a public structure</option>
+        <option value="prepare">Prepare safe classroom input</option>
+        <option value="import">Inspect downloaded result file</option>
+        <option value="text">Text-first accessibility route</option>
+        <option value="teacher">Teacher demo route</option>
+      </select>
+      <div id="routeOutput" class="routeSteps" aria-live="polite"></div>
+      <div class="readinessBox" id="readinessBox">
+        <label class="checkrow" for="readyPredictionInput">
+          <input id="readyPredictionInput" type="checkbox">
+          I know AlphaFold outputs are predictions/models, not final proof.
+        </label>
+        <label class="checkrow" for="readyEvidenceInput">
+          <input id="readyEvidenceInput" type="checkbox">
+          I will use confidence, PAE when available, or another evidence clue before making a claim.
+        </label>
+        <label class="checkrow" for="readyPrivacyInput">
+          <input id="readyPrivacyInput" type="checkbox">
+          I will use public, synthetic, or teacher-approved classroom samples only.
+        </label>
+      </div>
+      <p class="status" id="readinessStatus" role="status"></p>
     </section>
 
     <section aria-labelledby="contextTitle">
@@ -814,6 +876,48 @@
       'Accessibility check: Let students choose visual, text, oral, or paired evidence routines.'
     ]
   };
+  var ROUTES = {
+    public: {
+      label: 'Explore a public structure',
+      steps: [
+        'Choose a curated public example or enter a UniProt/AlphaFold accession.',
+        'Inspect the 3D fold, domains, surfaces, pockets, flexible regions, and confidence.',
+        'Write one cautious claim with evidence and a limit.'
+      ]
+    },
+    prepare: {
+      label: 'Prepare safe classroom input',
+      steps: [
+        'Confirm the sequence is public, synthetic, or teacher-approved classroom material.',
+        'Prepare JSON locally for AlphaFold Server or local AlphaFold 3 code.',
+        'Run or submit externally, then import the result file before making structure claims.'
+      ]
+    },
+    import: {
+      label: 'Inspect downloaded result file',
+      steps: [
+        'Open a downloaded CIF, BCIF, or PDB result file in this browser window.',
+        'Record what confidence files or references came with the result.',
+        'Use the claim review to separate observed structure from interpretation.'
+      ]
+    },
+    text: {
+      label: 'Text-first accessibility route',
+      steps: [
+        'Start with the accessible summary and vocabulary supports.',
+        'Use source, confidence, and written observations before relying on 3D position or color.',
+        'Copy the accessible summary or lab note for screen-reader-friendly review.'
+      ]
+    },
+    teacher: {
+      label: 'Teacher demo route',
+      steps: [
+        'Model one public example and think aloud about confidence and uncertainty.',
+        'Ask students to revise an overconfident claim into a cautious claim.',
+        'Use the activity card and readiness checklist before independent exploration.'
+      ]
+    }
+  };
 
   var viewer = null;
   var viewerPromise = null;
@@ -858,6 +962,12 @@
   var aiState = document.getElementById('aiState');
   var copyTutorialBtn = document.getElementById('copyTutorialBtn');
   var tutorialStatus = document.getElementById('tutorialStatus');
+  var routeSelect = document.getElementById('routeSelect');
+  var routeOutput = document.getElementById('routeOutput');
+  var readyPredictionInput = document.getElementById('readyPredictionInput');
+  var readyEvidenceInput = document.getElementById('readyEvidenceInput');
+  var readyPrivacyInput = document.getElementById('readyPrivacyInput');
+  var readinessStatus = document.getElementById('readinessStatus');
   var contextSelect = document.getElementById('contextSelect');
   var contextOutput = document.getElementById('contextOutput');
   var activityCard = document.getElementById('activityCard');
@@ -905,6 +1015,7 @@
       'What AlphaFold is: an AI system that predicts a protein 3D structure from its amino acid sequence.',
       'What AlphaFold DB is: a public database of predicted protein structures developed by Google DeepMind and EMBL-EBI.',
       'What this explorer does: loads public structures, opens local result files, prepares classroom-safe JSON, and helps students write cautious claim-evidence-limit notes.',
+      'Selected route: ' + currentRoute().label,
       'Student workflow: load a public record, inspect shape and confidence, write one cautious claim, cite evidence, and name a limit or next test.',
       'Careful wording: predictions are useful models, not final proof, diagnosis, treatment guidance, ancestry interpretation, or personal genetic analysis.',
       'Privacy: use public, synthetic, or teacher-approved classroom samples only.'
@@ -933,6 +1044,50 @@
     return contextSelect ? contextSelect.value : 'middle';
   }
 
+  function currentRoute() {
+    var key = routeSelect ? routeSelect.value : 'public';
+    return ROUTES[key] || ROUTES.public;
+  }
+
+  function readinessState() {
+    var checks = [
+      { key: 'prediction', done: !!(readyPredictionInput && readyPredictionInput.checked), label: 'prediction/model' },
+      { key: 'evidence', done: !!(readyEvidenceInput && readyEvidenceInput.checked), label: 'evidence before claim' },
+      { key: 'privacy', done: !!(readyPrivacyInput && readyPrivacyInput.checked), label: 'approved sample only' }
+    ];
+    var done = checks.filter(function (item) { return item.done; });
+    return {
+      count: done.length,
+      total: checks.length,
+      complete: done.length === checks.length,
+      missing: checks.filter(function (item) { return !item.done; }).map(function (item) { return item.label; }).join(', ')
+    };
+  }
+
+  function readinessText() {
+    var state = readinessState();
+    if (state.complete) return 'Ready: route, evidence habit, and privacy guardrail are set.';
+    return 'Readiness: ' + state.count + '/' + state.total + ' checked. Still confirm: ' + state.missing + '.';
+  }
+
+  function renderRoute() {
+    var route = currentRoute();
+    routeOutput.innerHTML = '';
+    route.steps.forEach(function (step, idx) {
+      var wrap = el('div', { class: 'routeStep' });
+      wrap.appendChild(el('b', null, String(idx + 1)));
+      wrap.appendChild(el('span', null, step));
+      routeOutput.appendChild(wrap);
+    });
+    renderReadiness();
+    renderAccessibleSummary();
+  }
+
+  function renderReadiness() {
+    var state = readinessState();
+    setStatus(readinessStatus, readinessText(), state.complete ? 'ok' : 'warn');
+  }
+
   function lengthLabel(value) {
     var text = String(value || '').trim();
     if (!text) return '';
@@ -958,6 +1113,7 @@
     return [
       'AlphaFold classroom activity card',
       'Learning context: ' + ctx.label,
+      'Route: ' + currentRoute().label,
       'Purpose: ' + ctx.focus,
       moves[0],
       moves[1],
@@ -1015,6 +1171,8 @@
       'Accession/components: ' + (bits.join(' | ') || 'Not recorded'),
       'Organism: ' + (record.organism || 'Not provided'),
       'Confidence note: ' + (record.confidence || 'Inspect confidence and supporting evidence before making a claim.'),
+      'Learning route: ' + currentRoute().label,
+      'Readiness: ' + readinessText(),
       'Student observation: ' + (noteInput.value.trim() || 'Not recorded'),
       'Cautious claim: ' + (claimInput.value.trim() || 'Not recorded'),
       'Evidence to cite: ' + (evidenceInput.value.trim() || 'Not recorded'),
@@ -1211,6 +1369,8 @@
       learningContext: ctx.label,
       accessibilityFocus: ctx.focus,
       contextGuidance: ctx.guide,
+      route: currentRoute().label,
+      readiness: readinessText(),
       activityCard: activityCardText(),
       claimReview: claimReviewSummary(),
       observation: noteInput.value.trim(),
@@ -1707,6 +1867,8 @@
       'Accession/components: ' + (accessionBits.join(' | ') || 'Not recorded'),
       'Organism: ' + (record.organism || 'Not provided'),
       'Confidence/evidence: ' + (record.confidence || 'Inspect confidence and supporting evidence before making a claim.'),
+      'Learning route: ' + currentRoute().label,
+      'Readiness: ' + readinessText(),
       'Student observation: ' + (observation || 'Not recorded'),
       'Cautious claim: ' + (claimInput.value.trim() || 'Not recorded'),
       'Structure evidence: ' + (evidenceInput.value.trim() || 'Not recorded'),
@@ -1833,6 +1995,10 @@
   ionCountInput.addEventListener('input', updateSequenceStatus);
   safetyConfirmInput.addEventListener('change', updateSequenceStatus);
   copyTutorialBtn.addEventListener('click', copyTutorial);
+  routeSelect.addEventListener('change', function () { renderRoute(); renderGuide(); });
+  readyPredictionInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
+  readyEvidenceInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
+  readyPrivacyInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
   contextSelect.addEventListener('change', renderContextLayer);
   noteInput.addEventListener('input', renderGuide);
   claimInput.addEventListener('input', renderGuide);
@@ -1854,6 +2020,7 @@
   var params = new URLSearchParams(window.location.search);
   var requested = normalizeAccession(params.get('accession') || params.get('uniprot') || '');
   if (requested) lookup(requested);
+  renderRoute();
   renderContextLayer();
   var hello = function () { toOpener({ type: 'allocaf-hello' }); };
   hello();
