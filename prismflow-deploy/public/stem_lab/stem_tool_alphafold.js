@@ -58,6 +58,7 @@
       'Learning route: ' + safeClip(guide.route || 'not specified', 120),
       'Readiness: ' + safeClip(guide.readiness || 'not provided', 220),
       'Local claim review: ' + safeClip(guide.claimReview || 'not provided', 320),
+      'Rubric feedback: ' + safeClip(guide.rubric || 'not provided', 420),
       'Student observation: ' + safeClip(payload && payload.note, 700),
       'Reply with plain text only.'
     ];
@@ -93,6 +94,7 @@
       'Readiness: ' + safeClip(guide.readiness || 'not provided', 220),
       'Activity card: ' + safeClip(guide.activityCard || 'not provided', 360),
       'Local claim review: ' + safeClip(guide.claimReview || 'not provided', 480),
+      'Rubric feedback: ' + safeClip(guide.rubric || 'not provided', 620),
       'Completed steps: ' + safeClip(guide.completed || 'none', 160),
       'Source confirmed: ' + (guide.sourceConfirmed ? 'yes' : 'no'),
       'Observation: ' + safeClip(guide.observation || '', 700),
@@ -107,7 +109,7 @@
   window.StemLab.registerTool('alphaFoldExplorer', {
     icon: '\u03b1',
     label: 'AlphaFold Explorer',
-    desc: 'Look up public AlphaFold DB protein structures by UniProt/accession, view them in Mol*, import downloaded AlphaFold result files, prepare AlphaFold Server or AlphaFold 3 local-code JSON, and guide students through accessible, context-aware claim-evidence-limit reasoning with local claim review and no automatic submission.',
+    desc: 'Look up public AlphaFold DB protein structures by UniProt/accession, view them in Mol*, import downloaded AlphaFold result files, prepare AlphaFold Server or AlphaFold 3 local-code JSON, and guide students through accessible, context-aware claim-evidence-limit reasoning with local claim review, rubric feedback, and no automatic submission.',
     color: 'teal',
     category: 'science',
     questHooks: [
@@ -198,7 +200,7 @@
         h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-sky-400' },
           t('stem.alphaFold.title', 'AlphaFold Explorer - public protein structures')),
         h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
-          t('stem.alphaFold.blurb', 'Look up public AlphaFold DB predictions by UniProt/accession, inspect structures in Mol*, import downloaded result files, prepare AlphaFold Server or AlphaFold 3 local-code JSON, and use a guided claim-evidence-limit scaffold with route guidance, accessibility lenses, activity cards, and local claim review. The tool does not automatically submit sequences anywhere; students use public, synthetic, or teacher-approved classroom samples only.')),
+          t('stem.alphaFold.blurb', 'Look up public AlphaFold DB predictions by UniProt/accession, inspect structures in Mol*, import downloaded result files, prepare AlphaFold Server or AlphaFold 3 local-code JSON, and use a guided claim-evidence-limit scaffold with route guidance, accessibility lenses, activity cards, local claim review, and rubric feedback. The tool does not automatically submit sequences anywhere; students use public, synthetic, or teacher-approved classroom samples only.')),
         h('div', { className: 'bg-slate-900/50 rounded-xl p-3 border border-teal-800/60 text-xs text-slate-200 leading-relaxed space-y-2' },
           h('div', { className: 'font-bold text-teal-200' },
             t('stem.alphaFold.tutorial_title', 'Quick tutorial')),

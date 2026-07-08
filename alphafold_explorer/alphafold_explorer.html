@@ -411,6 +411,44 @@
     gap: 6px;
     margin-top: 8px;
   }
+  .rubricGrid {
+    display: grid;
+    gap: 7px;
+    margin-top: 10px;
+  }
+  .rubricItem {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px;
+    background: rgba(15, 23, 42, 0.42);
+    color: var(--soft);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .rubricItem.ready {
+    border-color: rgba(74, 222, 128, 0.42);
+    background: rgba(74, 222, 128, 0.08);
+  }
+  .rubricItem.revise {
+    border-color: rgba(251, 191, 36, 0.48);
+    background: rgba(251, 191, 36, 0.09);
+  }
+  .rubricItem.guard {
+    border-color: rgba(248, 113, 113, 0.48);
+    background: rgba(248, 113, 113, 0.09);
+  }
+  .rubricItem b {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .rubricItem em {
+    color: #bae6fd;
+    font-style: normal;
+    white-space: nowrap;
+  }
   .guideSteps {
     display: grid;
     gap: 6px;
@@ -709,6 +747,12 @@
       <label for="cautionInput">Limit or next test</label>
       <textarea id="cautionInput" class="mini" placeholder="Example: I would compare with an experiment or reference before claiming function."></textarea>
       <div id="claimReview" class="reviewBox" aria-live="polite"></div>
+      <div id="rubricOutput" class="rubricGrid" aria-live="polite"></div>
+      <div id="misconceptionOutput" class="coachbox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyRubricBtn" type="button">Copy rubric feedback</button>
+        <span class="status" id="rubricStatus" role="status"></span>
+      </div>
       <div class="row">
         <button class="primary" id="guideAiBtn" type="button">Ask AI guide</button>
         <button class="secondary" id="guidePromptBtn" type="button">Next prompt</button>
@@ -981,6 +1025,10 @@
   var evidenceInput = document.getElementById('evidenceInput');
   var cautionInput = document.getElementById('cautionInput');
   var claimReview = document.getElementById('claimReview');
+  var rubricOutput = document.getElementById('rubricOutput');
+  var misconceptionOutput = document.getElementById('misconceptionOutput');
+  var copyRubricBtn = document.getElementById('copyRubricBtn');
+  var rubricStatus = document.getElementById('rubricStatus');
   var guideAiBtn = document.getElementById('guideAiBtn');
   var guideAiOutput = document.getElementById('guideAiOutput');
   var guidePromptBtn = document.getElementById('guidePromptBtn');
@@ -1178,6 +1226,7 @@
       'Evidence to cite: ' + (evidenceInput.value.trim() || 'Not recorded'),
       'Limit or next test: ' + (cautionInput.value.trim() || 'Not recorded'),
       'Claim review: ' + claimReviewSummary(),
+      'Rubric feedback: ' + rubricRating(),
       'Context guidance: ' + ctx.next,
       'Privacy: This summary excludes raw sequence text.'
     ];
@@ -1260,6 +1309,116 @@
     });
   }
 
+  function rubricItems() {
+    var review = claimReviewItems();
+    var hasGuard = review.items.some(function (item) { return item.level === 'guard'; });
+    var claimWarn = review.items.some(function (item) { return item.label === 'Claim needed' || item.label === 'Overclaim check'; });
+    var evidenceWarn = review.items.some(function (item) { return item.label === 'Evidence needed' || item.label === 'Evidence specificity'; });
+    var limitWarn = review.items.some(function (item) { return item.label === 'Limit needed' || item.label === 'Limit specificity'; });
+    var sourceReady = !!current || !!(readyPrivacyInput && readyPrivacyInput.checked) || !!(safetyConfirmInput && safetyConfirmInput.checked);
+    var readiness = readinessState();
+    return [
+      {
+        label: 'Source and privacy',
+        level: hasGuard ? 'guard' : (sourceReady ? 'ready' : 'revise'),
+        score: hasGuard ? 'Guardrail' : (sourceReady ? 'Ready' : 'Revise'),
+        text: hasGuard ? 'Remove personal genetics or medical wording before continuing.' : (sourceReady ? 'The source/privacy expectation is visible.' : 'Name the public source or confirm the approved classroom sample.')
+      },
+      {
+        label: 'Claim language',
+        level: claimWarn ? 'revise' : 'ready',
+        score: claimWarn ? 'Revise' : 'Ready',
+        text: claimWarn ? 'Use cautious wording such as "suggests" or "is consistent with."' : 'The claim language is cautious enough for discussion.'
+      },
+      {
+        label: 'Structure evidence',
+        level: evidenceWarn ? 'revise' : 'ready',
+        score: evidenceWarn ? 'Revise' : 'Ready',
+        text: evidenceWarn ? 'Tie the claim to confidence, PAE, a domain, pocket, surface, interface, or flexible region.' : 'The evidence names a structure or confidence clue.'
+      },
+      {
+        label: 'Limit or next test',
+        level: limitWarn ? 'revise' : 'ready',
+        score: limitWarn ? 'Revise' : 'Ready',
+        text: limitWarn ? 'Add a reference, comparison, experiment, or confidence check that would test the claim.' : 'The note includes a useful limit or next test.'
+      },
+      {
+        label: 'Learning access',
+        level: readiness.complete ? 'ready' : 'revise',
+        score: readiness.complete ? 'Ready' : 'Revise',
+        text: readiness.complete ? 'The route and readiness checks support independent work.' : 'Complete the readiness checklist so the workflow, evidence habit, and privacy guardrail are explicit.'
+      }
+    ];
+  }
+
+  function rubricRating() {
+    var items = rubricItems();
+    if (items.some(function (item) { return item.level === 'guard'; })) return 'Guardrail needed';
+    var ready = items.filter(function (item) { return item.level === 'ready'; }).length;
+    return ready + '/' + items.length + ' ready';
+  }
+
+  function misconceptionPrompt() {
+    var review = claimReviewItems();
+    var labels = review.items.map(function (item) { return item.label; }).join(' | ');
+    if (review.items.some(function (item) { return item.level === 'guard'; })) {
+      return 'Misconception check: AlphaFold is not a personal genetics, diagnosis, treatment, ancestry, or disease-risk tool.';
+    }
+    if (/Overclaim check/.test(labels)) {
+      return 'Misconception check: A predicted structure can support a hypothesis, but it does not prove function by itself.';
+    }
+    if (/Evidence needed|Evidence specificity/.test(labels)) {
+      return 'Misconception check: A nice-looking 3D shape is not enough evidence until the claim points to confidence or a visible structure feature.';
+    }
+    if (/Limit needed|Limit specificity/.test(labels)) {
+      return 'Misconception check: Model confidence is not the same as experimental validation; strong claims still need comparison or testing.';
+    }
+    if (!readinessState().complete) {
+      return 'Misconception check: Starting quickly is tempting, but the route, evidence habit, and privacy guardrail should be set before independent work.';
+    }
+    return 'Extension check: Compare two cautious claims and decide which one uses stronger evidence from confidence, structure, or reference data.';
+  }
+
+  function rubricFeedbackText() {
+    return [
+      'AlphaFold revision rubric',
+      'Overall: ' + rubricRating()
+    ].concat(rubricItems().map(function (item) {
+      return item.label + ' [' + item.score + ']: ' + item.text;
+    }), [
+      misconceptionPrompt()
+    ]).join('\n');
+  }
+
+  function renderRubric() {
+    rubricOutput.innerHTML = '';
+    rubricOutput.appendChild(el('div', { class: 'badge' }, 'Rubric: ' + rubricRating()));
+    rubricItems().forEach(function (item) {
+      var wrap = el('div', { class: 'rubricItem ' + item.level });
+      var title = el('b');
+      title.appendChild(document.createTextNode(item.label));
+      title.appendChild(el('em', null, item.score));
+      wrap.appendChild(title);
+      wrap.appendChild(el('span', null, item.text));
+      rubricOutput.appendChild(wrap);
+    });
+    misconceptionOutput.textContent = misconceptionPrompt();
+    setStatus(rubricStatus, '', '');
+  }
+
+  function copyRubric() {
+    var text = rubricFeedbackText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(rubricStatus, 'Rubric feedback copied.', 'ok');
+      }).catch(function () {
+        setStatus(rubricStatus, 'Copy failed. Select the rubric text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(rubricStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
   function guideDone(key) {
     if (key === 'source') return !!current || !!safetyConfirmInput.checked;
     if (key === 'inspect') return !!current && (hasText(noteInput, 10) || hasText(evidenceInput, 10));
@@ -1286,6 +1445,7 @@
     });
     guidePrompt.textContent = GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length] + '\n\nContext lens: ' + currentContext().guide;
     renderClaimReview();
+    renderRubric();
     renderAccessibleSummary();
   }
 
@@ -1373,6 +1533,7 @@
       readiness: readinessText(),
       activityCard: activityCardText(),
       claimReview: claimReviewSummary(),
+      rubric: rubricFeedbackText(),
       observation: noteInput.value.trim(),
       claim: claimInput.value.trim(),
       evidence: evidenceInput.value.trim(),
@@ -1874,6 +2035,8 @@
       'Structure evidence: ' + (evidenceInput.value.trim() || 'Not recorded'),
       'Limit or next test: ' + (cautionInput.value.trim() || 'Not recorded'),
       'Claim review: ' + claimReviewSummary(),
+      'Rubric feedback: ' + rubricRating(),
+      'Misconception check: ' + misconceptionPrompt().replace(/^Misconception check:\s*/, ''),
       'Claim check: Cite the record, inspect confidence or PAE when available, and compare with experimental/reference evidence before treating a prediction as settled.'
     ];
     if (citation) lines.push('Citation: ' + citation);
@@ -2015,6 +2178,7 @@
   copyLabNoteBtn.addEventListener('click', copyLabNote);
   copyAccessibleSummaryBtn.addEventListener('click', copyAccessibleSummary);
   copyActivityCardBtn.addEventListener('click', copyActivityCard);
+  copyRubricBtn.addEventListener('click', copyRubric);
   coachBtn.addEventListener('click', coach);
 
   var params = new URLSearchParams(window.location.search);
