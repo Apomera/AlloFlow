@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-40143-france-and-england-in-north-america-part-iii-la-salle-discovery-",
+  "title": "France and England in North America, Part III: La Salle, Discovery of The Great West",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Explorers -- America -- Biography",
+    "Explorers -- France -- Biography",
+    "La Salle, Robert Cavelier, sieur de, 1643-1687",
+    "Mississippi River -- Discovery and exploration",
+    "Mississippi River Valley -- Discovery and exploration",
+    "New France -- Discovery and exploration"
+  ],
+  "authors": [
+    "Parkman, Francis"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/40143"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"France and England in North America, Part III: La Salle, Discovery of The Great West\" by Parkman, Francis. Metadata tags include: Explorers -- America -- Biography; Explorers -- France -- Biography; La Salle, Robert Cavelier, sieur de, 1643-1687; Mississippi River -- Discovery and exploration."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 94
+  }
+}

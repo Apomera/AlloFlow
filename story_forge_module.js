@@ -134,10 +134,23 @@ const COMIC_MOOD_OPTIONS = [
   { value: "dramatic", label: "Dramatic" },
   { value: "quiet", label: "Quiet" }
 ];
+const COMIC_TRANSITION_OPTIONS = [
+  { value: "", label: "Move" },
+  { value: "establish", label: "Establish" },
+  { value: "action", label: "Action" },
+  { value: "reaction", label: "Reaction" },
+  { value: "reveal", label: "Reveal" },
+  { value: "turn", label: "Turn" },
+  { value: "quiet", label: "Quiet Beat" },
+  { value: "resolve", label: "Resolve" }
+];
+const COMIC_BUBBLE_WORD_WARNING = 20;
+const COMIC_BUBBLE_WORD_LIMIT = 28;
 const COMIC_DIRECTION_OPTIONS = {
   shot: COMIC_SHOT_OPTIONS,
   angle: COMIC_ANGLE_OPTIONS,
-  mood: COMIC_MOOD_OPTIONS
+  mood: COMIC_MOOD_OPTIONS,
+  transition: COMIC_TRANSITION_OPTIONS
 };
 const normalizeComicDirectionValue = (field, value) => {
   const options = COMIC_DIRECTION_OPTIONS[field] || [];
@@ -155,6 +168,17 @@ const getComicDirectionLabel = (field, value) => {
   const clean = normalizeComicDirectionValue(field, value);
   const match = (COMIC_DIRECTION_OPTIONS[field] || []).find((opt) => opt.value === clean);
   return match ? match.label : "";
+};
+const countWords = (text) => String(text || "").trim().split(/\s+/).filter(Boolean).length;
+const getComicLetteringStats = (dialogue = {}) => {
+  const speechWords = countWords(dialogue.speech);
+  const thoughtWords = countWords(dialogue.thought);
+  const sfxWords = countWords(dialogue.sfx);
+  const words = speechWords + thoughtWords + sfxWords;
+  const level = words > COMIC_BUBBLE_WORD_LIMIT ? "crowded" : words > COMIC_BUBBLE_WORD_WARNING ? "watch" : "clear";
+  const label = level === "crowded" ? "Crowded" : level === "watch" ? "Watch" : "Clear";
+  const detail = level === "crowded" ? "Trim or split this panel so the lettering stays readable." : level === "watch" ? "Readable, but close to the panel lettering limit." : "Good breathing room for bubbles and art.";
+  return { words, speechWords, thoughtWords, sfxWords, level, label, detail, limit: COMIC_BUBBLE_WORD_LIMIT };
 };
 const sanitizeParagraphs = (arr) => {
   if (!Array.isArray(arr)) return null;
@@ -203,13 +227,22 @@ const sanitizePanelDirections = (obj) => {
     const v = obj[k];
     if (!key || !v || typeof v !== "object") return;
     const clean = {};
-    ["shot", "angle", "mood"].forEach((field) => {
+    ["shot", "angle", "mood", "transition"].forEach((field) => {
       const value = normalizeComicDirectionValue(field, v[field]);
       if (value) clean[field] = value;
     });
     if (Object.keys(clean).length) out[key] = clean;
   });
   return out;
+};
+const sanitizeComicContinuity = (obj) => {
+  if (!obj || typeof obj !== "object") return { cast: "", setting: "", palette: "", styleNotes: "" };
+  return {
+    cast: typeof obj.cast === "string" ? obj.cast.slice(0, 900) : "",
+    setting: typeof obj.setting === "string" ? obj.setting.slice(0, 600) : "",
+    palette: typeof obj.palette === "string" ? obj.palette.slice(0, 300) : "",
+    styleNotes: typeof obj.styleNotes === "string" ? obj.styleNotes.slice(0, 600) : ""
+  };
 };
 const sanitizePanelStickers = (obj) => {
   if (!obj || typeof obj !== "object") return {};
@@ -766,6 +799,7 @@ const StoryForge = React.memo(({
   const [panelStickers, setPanelStickers] = useState({});
   const [panelDialogue, setPanelDialogue] = useState({});
   const [panelDirections, setPanelDirections] = useState({});
+  const [comicContinuity, setComicContinuity] = useState({ cast: "", setting: "", palette: "", styleNotes: "" });
   const updatePanelDialogue = (pId, field, value) => {
     setPanelDialogue((prev) => ({ ...prev, [pId]: { ...prev[pId] || {}, [field]: value } }));
   };
@@ -780,6 +814,9 @@ const StoryForge = React.memo(({
       else delete next[pId];
       return next;
     });
+  };
+  const updateComicContinuity = (field, value) => {
+    setComicContinuity((prev) => sanitizeComicContinuity({ ...prev, [field]: value }));
   };
   const createDraftSnapshot = () => ({
     storyTitle,
@@ -798,6 +835,7 @@ const StoryForge = React.memo(({
     valenceByPara,
     layoutMode,
     comicPageLayout,
+    comicContinuity: sanitizeComicContinuity(comicContinuity),
     panelDialogue: sanitizePanelDialogue(panelDialogue),
     panelDirections: sanitizePanelDirections(panelDirections),
     panelStickers: sanitizePanelStickers(panelStickers)
@@ -1021,6 +1059,8 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   const [revisionPlanLoading, setRevisionPlanLoading] = useState(false);
   const [dialogueReport, setDialogueReport] = useState(null);
   const [dialogueLoading, setDialogueLoading] = useState(false);
+  const [comicFlowReport, setComicFlowReport] = useState(null);
+  const [comicFlowLoading, setComicFlowLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
   useEffect(() => {
     if (glossaryTerms && glossaryTerms.length > 0 && vocabTerms.length === 0) {
@@ -1158,7 +1198,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isOpen, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, panelDialogue, panelDirections, panelStickers]);
+  }, [isOpen, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicContinuity, panelDialogue, panelDirections, panelStickers]);
   useEffect(() => {
     if (!isOpen) return void 0;
     const root = modalRootRef.current;
@@ -1219,7 +1259,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, storyShape, valenceByPara, layoutMode, comicPageLayout, panelDialogue, panelDirections, panelStickers]);
+  }, [storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicContinuity, panelDialogue, panelDirections, panelStickers]);
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
   const savedDraftRef = useRef(null);
   useEffect(() => {
@@ -1257,6 +1297,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     if (d.valenceByPara && typeof d.valenceByPara === "object") setValenceByPara(d.valenceByPara);
     if (d.layoutMode && LAYOUT_MODES[d.layoutMode]) setLayoutMode(d.layoutMode);
     if (d.comicPageLayout && COMIC_PAGE_LAYOUTS[d.comicPageLayout]) setComicPageLayout(d.comicPageLayout);
+    setComicContinuity(sanitizeComicContinuity(d.comicContinuity));
     setPanelDialogue(sanitizePanelDialogue(d.panelDialogue));
     setPanelDirections(sanitizePanelDirections(d.panelDirections));
     setPanelStickers(sanitizePanelStickers(d.panelStickers));
@@ -1281,6 +1322,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       if (initialConfig.language) setLanguage(initialConfig.language);
       if (initialConfig.layoutMode && LAYOUT_MODES[initialConfig.layoutMode]) setLayoutMode(initialConfig.layoutMode);
       if (initialConfig.comicPageLayout && COMIC_PAGE_LAYOUTS[initialConfig.comicPageLayout]) setComicPageLayout(initialConfig.comicPageLayout);
+      if (initialConfig.comicContinuity) setComicContinuity(sanitizeComicContinuity(initialConfig.comicContinuity));
       if (initialConfig.panelDirections) setPanelDirections(sanitizePanelDirections(initialConfig.panelDirections));
       if (initialConfig.minParagraphs) {
         setParagraphs(Array.from({ length: initialConfig.minParagraphs }, (_, i) => ({ id: `p-${i}`, text: "", scaffoldFrame: "", plotBeat: "" })));
@@ -1301,6 +1343,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       language,
       layoutMode,
       comicPageLayout,
+      comicContinuity: sanitizeComicContinuity(comicContinuity),
       panelDirections: sanitizePanelDirections(panelDirections),
       minParagraphs: paragraphs.length,
       maxParagraphs: 8,
@@ -1379,6 +1422,8 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       vocabTerms,
       layoutMode,
       comicPageLayout,
+      comicContinuity: sanitizeComicContinuity(comicContinuity),
+      comicFlowReport: layoutMode === "comic" ? comicFlowReport : null,
       panelDialogue: sanitizePanelDialogue(panelDialogue),
       panelDirections: sanitizePanelDirections(panelDirections),
       panelStickers: sanitizePanelStickers(panelStickers),
@@ -1591,11 +1636,12 @@ Each panel needs:
 - shot: one of ${COMIC_SHOT_OPTIONS.filter((o) => o.value).map((o) => o.value).join(", ")} or ""
 - angle: one of ${COMIC_ANGLE_OPTIONS.filter((o) => o.value).map((o) => o.value).join(", ")} or ""
 - mood: one of ${COMIC_MOOD_OPTIONS.filter((o) => o.value).map((o) => o.value).join(", ")} or ""
+- transition: one of ${COMIC_TRANSITION_OPTIONS.filter((o) => o.value).map((o) => o.value).join(", ")} or ""
 
 Use 1-2 vocabulary terms naturally across each panel caption or bubble where possible.
 Panel 1 should set the scene. Middle panels should build action/conflict. The last panel should resolve the story.
 ${langInstruction}
-Return ONLY JSON: { "panels": [{ "caption": "Panel caption scaffold...", "beat": "setup", "speaker": "", "speech": "", "thought": "", "sfx": "", "shot": "wide", "angle": "eye-level", "mood": "neutral" }] }` : `You are helping a ${gradeLevel || "5th grade"} student write a creative story about "${sourceTopic || "a topic of their choice"}".
+Return ONLY JSON: { "panels": [{ "caption": "Panel caption scaffold...", "beat": "setup", "speaker": "", "speech": "", "thought": "", "sfx": "", "shot": "wide", "angle": "eye-level", "mood": "neutral", "transition": "establish" }] }` : `You are helping a ${gradeLevel || "5th grade"} student write a creative story about "${sourceTopic || "a topic of their choice"}".
 Required vocabulary terms the student must use: ${vocabTerms.map((v) => v.term).join(", ")}.
 ${storyPrompt ? `Story theme/prompt: "${storyPrompt}"` : ""}
 ${genreHint ? `Genre: Write ${genreHint}.` : ""}
@@ -1638,7 +1684,8 @@ Return ONLY JSON: { "frames": ["Frame 1 text...", "Frame 2 text...", ...] }`;
           const cleanDirection = sanitizePanelDirections({ [id]: {
             shot: typeof panel.shot === "string" ? panel.shot : "",
             angle: typeof panel.angle === "string" ? panel.angle : "",
-            mood: typeof panel.mood === "string" ? panel.mood : ""
+            mood: typeof panel.mood === "string" ? panel.mood : "",
+            transition: typeof panel.transition === "string" ? panel.transition : ""
           } })[id];
           if (cleanDirection) directionUpdates[id] = cleanDirection;
         });
@@ -1733,11 +1780,13 @@ Rules:
 - Use one short speech bubble only when a character would naturally say something.
 - Use one short thought bubble only when inner feeling or realization matters.
 - Use one SFX only when there is a clear action sound; keep it to 1-2 words.
+- Keep total speech + thought + SFX under ${COMIC_BUBBLE_WORD_LIMIT} words when possible.
 - Speaker names should be short. Leave fields as "" when not needed.
 - Also suggest simple visual direction when the narration implies it:
   shot: one of ${COMIC_SHOT_OPTIONS.filter((o) => o.value).map((o) => o.value).join(", ")} or ""
   angle: one of ${COMIC_ANGLE_OPTIONS.filter((o) => o.value).map((o) => o.value).join(", ")} or ""
   mood: one of ${COMIC_MOOD_OPTIONS.filter((o) => o.value).map((o) => o.value).join(", ")} or ""
+  transition: one of ${COMIC_TRANSITION_OPTIONS.filter((o) => o.value).map((o) => o.value).join(", ")} or ""
 - Keep language appropriate for school and for the student's grade level.
 ${langInstruction}
 
@@ -1747,7 +1796,7 @@ ${JSON.stringify(panelBrief, null, 2)}
 Return ONLY JSON:
 {
   "panels": [
-    { "panel": 1, "speaker": "", "speech": "", "thought": "", "sfx": "", "shot": "", "angle": "", "mood": "" }
+    { "panel": 1, "speaker": "", "speech": "", "thought": "", "sfx": "", "shot": "", "angle": "", "mood": "", "transition": "" }
   ]
 }`;
       const result = await onCallGemini(prompt, true);
@@ -1770,7 +1819,8 @@ Return ONLY JSON:
         const cleanDirection = sanitizePanelDirections({ [p.id]: {
           shot: typeof raw.shot === "string" ? raw.shot : "",
           angle: typeof raw.angle === "string" ? raw.angle : "",
-          mood: typeof raw.mood === "string" ? raw.mood : ""
+          mood: typeof raw.mood === "string" ? raw.mood : "",
+          transition: typeof raw.transition === "string" ? raw.transition : ""
         } })[p.id];
         if (cleanDirection) directionUpdates[p.id] = cleanDirection;
       });
@@ -1860,6 +1910,74 @@ Return ONLY JSON:
     if (artStyle === "custom" && customArtStyle) return customArtStyle;
     return ART_STYLE_MAP[artStyle] || ART_STYLE_MAP["storybook"];
   };
+  const getComicContinuityPrompt = () => {
+    if (layoutMode !== "comic") return "";
+    const notes = sanitizeComicContinuity(comicContinuity);
+    const lines = [];
+    if (notes.cast.trim()) lines.push(`Cast continuity: ${notes.cast.trim()}`);
+    if (notes.setting.trim()) lines.push(`Setting continuity: ${notes.setting.trim()}`);
+    if (notes.palette.trim()) lines.push(`Color palette: ${notes.palette.trim()}`);
+    if (notes.styleNotes.trim()) lines.push(`Style rules: ${notes.styleNotes.trim()}`);
+    return lines.join("\n");
+  };
+  const draftComicContinuity = async () => {
+    if (!onCallGemini) return;
+    const panelBrief = paragraphs.map((p, idx) => ({
+      panel: idx + 1,
+      caption: (p.text || p.scaffoldFrame || "").slice(0, 500),
+      dialogue: panelDialogue[p.id] || {},
+      direction: panelDirections[p.id] || {}
+    })).filter((item) => item.caption.trim().length > 0);
+    if (panelBrief.length === 0) {
+      if (addToast) addToast("Add panel captions before drafting continuity notes.", "info");
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      const currentNotes = sanitizeComicContinuity(comicContinuity);
+      const result = await onCallGemini(
+        `You are helping a student make a comic book production continuity sheet.
+Use the panel plans to create concise visual notes that keep AI-generated panels consistent.
+
+Panels:
+${JSON.stringify(panelBrief, null, 2)}
+
+Current continuity notes:
+${JSON.stringify(currentNotes, null, 2)}
+
+Rules:
+- Keep notes specific and visual.
+- Describe recurring characters by stable visual traits, outfit, proportions, and role.
+- Describe recurring setting details and props.
+- Give a compact color palette.
+- Add style rules that help keep the comic visually consistent.
+- Do not invent unsafe or inappropriate content.
+${langInstruction}
+
+Return ONLY JSON:
+{ "cast": "character model notes", "setting": "setting and prop continuity", "palette": "color palette", "styleNotes": "linework, lighting, panel consistency rules" }`,
+        true
+      );
+      const data = JSON.parse(cleanJson(result));
+      const compact = (value) => Array.isArray(value) ? value.map((item) => typeof item === "string" ? item : JSON.stringify(item)).join("; ") : typeof value === "string" ? value : "";
+      const clean = sanitizeComicContinuity({
+        cast: compact(data.cast || data.characters || data.characterNotes),
+        setting: compact(data.setting || data.world || data.props),
+        palette: compact(data.palette || data.colors),
+        styleNotes: compact(data.styleNotes || data.style || data.rules)
+      });
+      setComicContinuity(clean);
+      setIsDirty(true);
+      awardXP(5, "Drafted comic continuity sheet");
+      if (addToast) addToast("Comic continuity notes drafted.", "success");
+      sfAnnounce("Comic continuity notes drafted");
+    } catch (err) {
+      console.warn("Comic continuity drafting failed:", err);
+      if (addToast) addToast("Comic continuity drafting failed. Try again.", "error");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
   const getIllustrationSourceText = (paragraph) => {
     if (!paragraph) return "";
     const base = (paragraph.text || paragraph.scaffoldFrame || "").trim();
@@ -1870,13 +1988,14 @@ Return ONLY JSON:
     const directionBits = [
       direction.shot ? `Shot: ${getComicDirectionLabel("shot", direction.shot)}` : "",
       direction.angle ? `Angle: ${getComicDirectionLabel("angle", direction.angle)}` : "",
-      direction.mood ? `Mood: ${getComicDirectionLabel("mood", direction.mood)}` : ""
+      direction.mood ? `Mood: ${getComicDirectionLabel("mood", direction.mood)}` : "",
+      direction.transition ? `Transition: ${getComicDirectionLabel("transition", direction.transition)}` : ""
     ].filter(Boolean);
     if (bubble.speaker || bubble.speech) bubbleLines.push(`Speech bubble: ${bubble.speaker ? bubble.speaker + ": " : ""}${bubble.speech || ""}`.trim());
     if (bubble.thought) bubbleLines.push(`Thought bubble: ${bubble.thought}`);
     if (bubble.sfx) bubbleLines.push(`Sound effect: ${bubble.sfx}`);
     if (directionBits.length) bubbleLines.push(`Visual direction: ${directionBits.join(", ")}`);
-    return [base, ...bubbleLines].filter(Boolean).join("\n");
+    return [base, ...bubbleLines, getComicContinuityPrompt()].filter(Boolean).join("\n");
   };
   const generateImagePrompt = async (paragraphId, text, idx) => {
     if (!onCallGemini) return;
@@ -1884,9 +2003,10 @@ Return ONLY JSON:
     const panel = paragraphs.find((p) => p.id === paragraphId);
     const sourceText = (text || "").trim() || getIllustrationSourceText(panel);
     if (!sourceText) return;
+    const sourceLimit = layoutMode === "comic" ? 1100 : 700;
     const promptResult = await onCallGemini(
       `Given this ${layoutMode === "comic" ? "comic panel plan" : "paragraph"} from a student's creative story:
-"${sourceText.substring(0, 700)}"
+"${sourceText.substring(0, sourceLimit)}"
 
 Write a concise image generation prompt (max 80 words) that captures the key visual scene described. Focus on the setting, characters, and action. Do NOT include any text, words, or letters in the image.
 Art style: ${style}.
@@ -1936,9 +2056,10 @@ Return ONLY the image prompt text, nothing else.`
       const panel = paragraphs.find((p) => p.id === paragraphId);
       const sourceText = (text || "").trim() || getIllustrationSourceText(panel);
       if (!sourceText) throw new Error("No illustration source text");
+      const sourceLimit = layoutMode === "comic" ? 1100 : 700;
       const promptResult = await onCallGemini(
         `Given this ${layoutMode === "comic" ? "comic panel plan" : "paragraph"} from a student's creative story:
-"${sourceText.substring(0, 700)}"
+"${sourceText.substring(0, sourceLimit)}"
 
 Write a concise image generation prompt (max 80 words) that captures the key visual scene described. Focus on the setting, characters, and action. Do NOT include any text, words, or letters in the image.
 Art style: ${style}.
@@ -2273,6 +2394,7 @@ Return ONLY JSON:
     setArcReport(null);
     setRevisionPlan(null);
     setDialogueReport(null);
+    setComicFlowReport(null);
     changePhase("write");
   };
   const findMentorStory = async () => {
@@ -2589,6 +2711,175 @@ Return ONLY JSON:
     }
     setDialogueLoading(false);
   };
+  const buildComicFlowSnapshot = () => {
+    const continuity = sanitizeComicContinuity(comicContinuity);
+    const continuityFields = ["cast", "setting", "palette", "styleNotes"].filter((k) => continuity[k] && continuity[k].trim()).length;
+    const panelRows = paragraphs.map((p, idx) => {
+      const bubble = panelDialogue[p.id] || {};
+      const direction = panelDirections[p.id] || {};
+      const caption = (p.text || p.scaffoldFrame || "").trim();
+      const lettering = getComicLetteringStats(bubble);
+      return {
+        panel: idx + 1,
+        caption: caption.slice(0, 360),
+        hasCaption: caption.length > 0,
+        hasImage: Boolean(illustrations[p.id]?.imageUrl),
+        hasBubble: Boolean(bubble.speech || bubble.thought || bubble.sfx),
+        bubbleWords: lettering.words,
+        letteringLevel: lettering.level,
+        shot: direction.shot || "",
+        angle: direction.angle || "",
+        mood: direction.mood || "",
+        transition: direction.transition || "",
+        hasDirection: Boolean(direction.shot && direction.angle && direction.mood),
+        hasTransition: Boolean(direction.transition),
+        beat: p.plotBeat || ""
+      };
+    });
+    const total = Math.max(1, panelRows.length);
+    const count = (predicate) => panelRows.filter(predicate).length;
+    const shotSet = new Set(panelRows.map((p) => p.shot).filter(Boolean));
+    const transitionSet = new Set(panelRows.map((p) => p.transition).filter(Boolean));
+    const heavyBubblePanels = panelRows.filter((p) => p.bubbleWords > COMIC_BUBBLE_WORD_LIMIT).map((p) => p.panel);
+    const missingCaptionPanels = panelRows.filter((p) => !p.hasCaption).map((p) => p.panel);
+    const missingDirectionPanels = panelRows.filter((p) => !p.hasDirection).map((p) => p.panel);
+    const missingTransitionPanels = panelRows.filter((p) => !p.hasTransition).map((p) => p.panel);
+    const missingImagePanels = panelRows.filter((p) => !p.hasImage).map((p) => p.panel);
+    const checks = [
+      {
+        key: "captions",
+        label: "Panel captions",
+        value: `${count((p) => p.hasCaption)}/${total}`,
+        status: missingCaptionPanels.length === 0 ? "strong" : "needs-work",
+        detail: missingCaptionPanels.length ? `Panels ${missingCaptionPanels.join(", ")} need a caption or scaffold.` : "Every panel has a readable story beat."
+      },
+      {
+        key: "direction",
+        label: "Visual direction",
+        value: `${count((p) => p.hasDirection)}/${total}`,
+        status: missingDirectionPanels.length === 0 ? "strong" : missingDirectionPanels.length <= 2 ? "watch" : "needs-work",
+        detail: missingDirectionPanels.length ? `Add shot, angle, and mood to panels ${missingDirectionPanels.slice(0, 6).join(", ")}.` : "Every panel has shot, angle, and mood."
+      },
+      {
+        key: "shots",
+        label: "Shot variety",
+        value: `${shotSet.size} type${shotSet.size === 1 ? "" : "s"}`,
+        status: shotSet.size >= Math.min(3, total) ? "strong" : shotSet.size >= 2 ? "watch" : "needs-work",
+        detail: shotSet.size >= Math.min(3, total) ? "The page has useful camera variety." : "Try mixing wide, medium, close-up, reaction, or detail shots."
+      },
+      {
+        key: "transitions",
+        label: "Pacing moves",
+        value: `${count((p) => p.hasTransition)}/${total}`,
+        status: missingTransitionPanels.length === 0 && transitionSet.size >= Math.min(3, total) ? "strong" : missingTransitionPanels.length <= 2 ? "watch" : "needs-work",
+        detail: missingTransitionPanels.length ? `Choose pacing moves for panels ${missingTransitionPanels.slice(0, 6).join(", ")}.` : `The page uses ${transitionSet.size} transition type${transitionSet.size === 1 ? "" : "s"}.`
+      },
+      {
+        key: "lettering",
+        label: "Lettering load",
+        value: heavyBubblePanels.length ? `${heavyBubblePanels.length} heavy` : "clear",
+        status: heavyBubblePanels.length === 0 ? "strong" : heavyBubblePanels.length <= 2 ? "watch" : "needs-work",
+        detail: heavyBubblePanels.length ? `Panels ${heavyBubblePanels.join(", ")} may have too many bubble words for clean lettering.` : "Bubble text is likely readable at panel size."
+      },
+      {
+        key: "visuals",
+        label: "Illustration coverage",
+        value: `${count((p) => p.hasImage)}/${total}`,
+        status: missingImagePanels.length === 0 ? "strong" : missingImagePanels.length <= 2 ? "watch" : "needs-work",
+        detail: missingImagePanels.length ? `Panels ${missingImagePanels.slice(0, 6).join(", ")} still need art.` : "Every panel has generated art."
+      },
+      {
+        key: "continuity",
+        label: "Continuity sheet",
+        value: `${continuityFields}/4`,
+        status: continuityFields >= 3 ? "strong" : continuityFields >= 2 ? "watch" : "needs-work",
+        detail: continuityFields >= 3 ? "Continuity notes are ready for consistent panel art." : "Add cast, setting, palette, and style notes before final art."
+      }
+    ];
+    const issuePenalty = missingCaptionPanels.length * 12 + missingDirectionPanels.length * 6 + missingTransitionPanels.length * 4 + missingImagePanels.length * 4 + heavyBubblePanels.length * 5 + (shotSet.size <= 1 && total > 2 ? 10 : 0) + (transitionSet.size <= 1 && total > 3 ? 6 : 0) + (continuityFields < 2 ? 8 : 0);
+    const score = Math.max(0, Math.min(100, 100 - issuePenalty));
+    const localSuggestions = [];
+    if (missingCaptionPanels.length) localSuggestions.push({ panel: missingCaptionPanels[0], issue: "Missing caption", suggestion: "Add one short narration caption that tells the reader what changes in this panel.", priority: "high" });
+    if (missingDirectionPanels.length) localSuggestions.push({ panel: missingDirectionPanels[0], issue: "Missing direction", suggestion: "Choose a shot, angle, and mood so the art prompt has a clear camera plan.", priority: "high" });
+    if (missingTransitionPanels.length) localSuggestions.push({ panel: missingTransitionPanels[0], issue: "Missing pacing move", suggestion: "Pick whether this panel establishes, advances action, shows a reaction, reveals information, turns the scene, or resolves the beat.", priority: "medium" });
+    if (shotSet.size <= 1 && total > 2) localSuggestions.push({ panel: null, issue: "Repeated camera distance", suggestion: "Use a wide shot to establish place, a close-up for emotion, and a detail shot for an important object or clue.", priority: "medium" });
+    if (transitionSet.size <= 1 && total > 3) localSuggestions.push({ panel: null, issue: "Flat pacing pattern", suggestion: "Vary panel moves: establish the scene, push action forward, pause for reaction, then reveal or resolve something.", priority: "medium" });
+    if (heavyBubblePanels.length) localSuggestions.push({ panel: heavyBubblePanels[0], issue: "Bubble crowding", suggestion: "Split the dialogue across panels or trim the bubble to one strong line.", priority: "medium" });
+    if (missingImagePanels.length) localSuggestions.push({ panel: missingImagePanels[0], issue: "Missing art", suggestion: "Generate or preview the image prompt once the caption and direction feel final.", priority: "medium" });
+    return {
+      score,
+      summary: score >= 85 ? "Comic flow is production-ready with only minor polish." : score >= 65 ? "Comic flow is close, with a few production notes to tighten." : "Comic flow needs another pass before final export.",
+      metrics: {
+        panels: panelRows.length,
+        captions: count((p) => p.hasCaption),
+        images: count((p) => p.hasImage),
+        directions: count((p) => p.hasDirection),
+        shotTypes: shotSet.size,
+        transitionTypes: transitionSet.size,
+        bubblePanels: count((p) => p.hasBubble),
+        continuityFields
+      },
+      checks,
+      panelRows,
+      suggestions: localSuggestions,
+      strengths: checks.filter((c) => c.status === "strong").map((c) => c.label)
+    };
+  };
+  const analyzeComicFlow = async () => {
+    if (layoutMode !== "comic") return;
+    setComicFlowLoading(true);
+    const snapshot = buildComicFlowSnapshot();
+    if (!onCallGemini) {
+      setComicFlowReport(snapshot);
+      setComicFlowLoading(false);
+      return;
+    }
+    try {
+      const result = await onCallGemini(
+        `You are a professional comic editor reviewing a student's short comic production board.
+Use the local production checks, but add concise craft judgment about pacing, page clarity, visual rhythm, and lettering.
+
+Production snapshot:
+${JSON.stringify(snapshot, null, 2)}
+
+Return ONLY JSON:
+{
+  "summary": "<one encouraging but specific overview>",
+  "score": 0,
+  "strengths": ["<specific strength>", "<specific strength>"],
+  "globalSuggestions": ["<whole-comic revision suggestion>", "<whole-comic revision suggestion>"],
+  "panelNotes": [
+    { "panel": 1, "issue": "<short issue>", "suggestion": "<specific fix>", "priority": "high|medium|low" }
+  ]
+}`,
+        true
+      );
+      const data = JSON.parse(cleanJson(result));
+      const cleanScore = Number.isFinite(Number(data.score)) ? Math.max(0, Math.min(100, Number(data.score))) : snapshot.score;
+      setComicFlowReport({
+        ...snapshot,
+        score: cleanScore,
+        summary: typeof data.summary === "string" && data.summary.trim() ? data.summary.slice(0, 500) : snapshot.summary,
+        strengths: Array.isArray(data.strengths) ? data.strengths.slice(0, 4).map((s) => String(s).slice(0, 180)) : snapshot.strengths,
+        globalSuggestions: Array.isArray(data.globalSuggestions) ? data.globalSuggestions.slice(0, 4).map((s) => String(s).slice(0, 240)) : [],
+        panelNotes: Array.isArray(data.panelNotes) ? data.panelNotes.slice(0, 6).map((n) => ({
+          panel: Number(n.panel) || null,
+          issue: String(n.issue || "").slice(0, 140),
+          suggestion: String(n.suggestion || "").slice(0, 260),
+          priority: ["high", "medium", "low"].includes(n.priority) ? n.priority : "medium"
+        })).filter((n) => n.issue || n.suggestion) : []
+      });
+      awardXP(5, "Audited comic flow");
+      if (addToast) addToast("Comic flow audit ready.", "success");
+      sfAnnounce("Comic flow audit ready");
+    } catch (err) {
+      console.warn("Comic flow audit failed:", err);
+      setComicFlowReport(snapshot);
+      if (addToast) addToast("AI comic audit failed, so local production checks were shown.", "info");
+    } finally {
+      setComicFlowLoading(false);
+    }
+  };
   const synthesizeRevisionPlan = async () => {
     if (!onCallGemini) return;
     setRevisionPlanLoading(true);
@@ -2623,6 +2914,13 @@ ${top}`);
         const top = dialogueReport.issues.slice(0, 3).map((i) => `  - ${i.type}: "${i.line}" \u2192 ${i.suggestion}`).join("\n");
         helperContext.push(`DIALOGUE TUNE-UP:
   overused tag: ${dialogueReport.overusedTag || "none"}
+${top}`);
+      }
+      if (comicFlowReport && layoutMode === "comic") {
+        const top = (comicFlowReport.panelNotes || comicFlowReport.suggestions || []).slice(0, 3).map((n) => `  - ${n.panel ? `Panel ${n.panel}: ` : ""}${n.issue || "Comic flow"} -> ${n.suggestion || ""}`).join("\n");
+        helperContext.push(`COMIC FLOW AUDIT:
+  score: ${comicFlowReport.score || "n/a"}/100
+  summary: ${comicFlowReport.summary || ""}
 ${top}`);
       }
       if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) {
@@ -2677,6 +2975,7 @@ Return ONLY JSON:
     if (arcReport && Array.isArray(arcReport.characters)) n++;
     if (mentorMatch && !mentorMatch.error) n++;
     if (dialogueReport && Array.isArray(dialogueReport.issues)) n++;
+    if (comicFlowReport && layoutMode === "comic") n++;
     if (selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0) n++;
     return n >= 2;
   };
@@ -2876,16 +3175,26 @@ Continue?`)) return;
     const author = escapeHtml(authorName || "A Creative Student");
     const comicLayout = COMIC_PAGE_LAYOUTS[comicPageLayout] ? comicPageLayout : "grid";
     const layoutLabel = escapeHtml(COMIC_PAGE_LAYOUTS[comicLayout]?.label || "Grid");
+    const continuity = sanitizeComicContinuity(comicContinuity);
+    const continuityRows = [
+      ["Cast", continuity.cast],
+      ["Setting", continuity.setting],
+      ["Palette", continuity.palette],
+      ["Style Rules", continuity.styleNotes]
+    ].filter(([, value]) => value && value.trim());
+    const continuityHtml = continuityRows.length ? `<section class="continuity-sheet"><h2>Continuity Sheet</h2><dl>${continuityRows.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value).replace(/\n/g, "<br/>")}</dd>`).join("")}</dl></section>` : "";
     const panelsHtml = paragraphs.map((p, idx) => {
       const panel = panelDialogue[p.id] || {};
       const direction = panelDirections[p.id] || {};
       const beatLabel = (PLOT_BEATS.find((b) => b.value === p.plotBeat) || {}).label || "";
       const caption = p.text || p.scaffoldFrame || "";
       const imagePrompt = illustrations[p.id]?.prompt || "";
+      const lettering = getComicLetteringStats(panel);
       const directionText = [
         direction.shot ? `Shot: ${getComicDirectionLabel("shot", direction.shot)}` : "",
         direction.angle ? `Angle: ${getComicDirectionLabel("angle", direction.angle)}` : "",
-        direction.mood ? `Mood: ${getComicDirectionLabel("mood", direction.mood)}` : ""
+        direction.mood ? `Mood: ${getComicDirectionLabel("mood", direction.mood)}` : "",
+        direction.transition ? `Move: ${getComicDirectionLabel("transition", direction.transition)}` : ""
       ].filter(Boolean).join(" / ");
       return `<section class="script-panel">
         <header><h2>Panel ${idx + 1}</h2>${beatLabel ? `<span>${escapeHtml(beatLabel)}</span>` : ""}</header>
@@ -2895,17 +3204,19 @@ Continue?`)) return;
           <dt>Speech</dt><dd>${panel.speech ? `${panel.speaker ? `<strong>${escapeHtml(panel.speaker)}:</strong> ` : ""}${escapeHtml(panel.speech)}` : "<em>None</em>"}</dd>
           <dt>Thought</dt><dd>${panel.thought ? escapeHtml(panel.thought) : "<em>None</em>"}</dd>
           <dt>SFX</dt><dd>${panel.sfx ? escapeHtml(panel.sfx) : "<em>None</em>"}</dd>
+          <dt>Lettering</dt><dd>${lettering.words}/${lettering.limit} words (${escapeHtml(lettering.label)})</dd>
           <dt>Image Prompt</dt><dd>${imagePrompt ? escapeHtml(imagePrompt) : "<em>No illustration prompt yet</em>"}</dd>
         </dl>
       </section>`;
     }).join("");
     const html = `<!DOCTYPE html><html lang="${langBcp47}" dir="${isRtl(langBcp47) ? "rtl" : "ltr"}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} \u2014 Comic Script</title>
 <style>
-*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#111827;max-width:900px;margin:0 auto;padding:32px 20px;background:#f8fafc}h1{font-size:2rem;margin:0 0 4px}.meta{color:#475569;font-size:.9rem;margin-bottom:24px}.script-panel{background:white;border:2px solid #111827;border-radius:8px;margin:16px 0;break-inside:avoid;overflow:hidden}.script-panel header{display:flex;align-items:center;justify-content:space-between;background:#111827;color:white;padding:8px 12px}.script-panel h2{font-size:1rem;margin:0}.script-panel header span{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#fde68a}dl{display:grid;grid-template-columns:120px 1fr;margin:0}dt{font-weight:800;background:#f1f5f9;border-top:1px solid #e2e8f0;padding:8px 10px}dd{margin:0;border-top:1px solid #e2e8f0;padding:8px 10px}em{color:#64748b}.print-btn{position:fixed;top:16px;right:16px;padding:8px 16px;background:#111827;color:white;border:0;border-radius:8px;font-weight:800;cursor:pointer}@media print{body{background:white}.print-btn{display:none}.script-panel{break-inside:avoid}}
+*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;line-height:1.5;color:#111827;max-width:900px;margin:0 auto;padding:32px 20px;background:#f8fafc}h1{font-size:2rem;margin:0 0 4px}.meta{color:#475569;font-size:.9rem;margin-bottom:24px}.continuity-sheet{background:#f5f3ff;border:2px solid #c4b5fd;border-radius:8px;margin:16px 0 20px;overflow:hidden}.continuity-sheet h2{font-size:1rem;margin:0;padding:8px 12px;background:#4c1d95;color:white}.script-panel{background:white;border:2px solid #111827;border-radius:8px;margin:16px 0;break-inside:avoid;overflow:hidden}.script-panel header{display:flex;align-items:center;justify-content:space-between;background:#111827;color:white;padding:8px 12px}.script-panel h2{font-size:1rem;margin:0}.script-panel header span{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#fde68a}dl{display:grid;grid-template-columns:120px 1fr;margin:0}dt{font-weight:800;background:#f1f5f9;border-top:1px solid #e2e8f0;padding:8px 10px}dd{margin:0;border-top:1px solid #e2e8f0;padding:8px 10px}em{color:#64748b}.print-btn{position:fixed;top:16px;right:16px;padding:8px 16px;background:#111827;color:white;border:0;border-radius:8px;font-weight:800;cursor:pointer}@media print{body{background:white}.print-btn{display:none}.script-panel,.continuity-sheet{break-inside:avoid}}
 </style></head><body>
 <button class="print-btn" onclick="window.print()">Print</button>
 <h1>${title}</h1>
 <div class="meta">Comic script by ${author} \xB7 Layout: ${layoutLabel} \xB7 ${escapeHtml((/* @__PURE__ */ new Date()).toLocaleDateString())}</div>
+${continuityHtml}
 ${panelsHtml}
 </body></html>`;
     try {
@@ -3025,6 +3336,8 @@ show();
         genre: GENRE_TEMPLATES[genre]?.label || "Creative Writing",
         layoutMode,
         comicPageLayout,
+        comicContinuity: sanitizeComicContinuity(comicContinuity),
+        comicFlowScore: layoutMode === "comic" ? comicFlowReport?.score || null : null,
         paragraphCount: paragraphs.length,
         wordCount: totalWords,
         vocabUsed: vocabUsedCount,
@@ -3075,6 +3388,8 @@ Continue?`)) return;
       valenceByPara,
       layoutMode,
       comicPageLayout,
+      comicContinuity: sanitizeComicContinuity(comicContinuity),
+      comicFlowReport: layoutMode === "comic" ? comicFlowReport : null,
       panelDialogue: sanitizePanelDialogue(panelDialogue),
       panelDirections: sanitizePanelDirections(panelDirections),
       panelStickers: sanitizePanelStickers(panelStickers),
@@ -3151,6 +3466,8 @@ Continue?`)) return;
           if (typeof d.rubricText === "string") setRubricText(d.rubricText);
           if (d.layoutMode && LAYOUT_MODES[d.layoutMode]) setLayoutMode(d.layoutMode);
           if (d.comicPageLayout && COMIC_PAGE_LAYOUTS[d.comicPageLayout]) setComicPageLayout(d.comicPageLayout);
+          setComicContinuity(sanitizeComicContinuity(d.comicContinuity));
+          if (d.comicFlowReport && typeof d.comicFlowReport === "object") setComicFlowReport(d.comicFlowReport);
           setPanelDialogue(sanitizePanelDialogue(d.panelDialogue));
           setPanelDirections(sanitizePanelDirections(d.panelDirections));
           setPanelStickers(sanitizePanelStickers(d.panelStickers));
@@ -3539,7 +3856,49 @@ Continue?`)) return;
       used ? /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11, className: "inline mr-1" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "inline-block w-2 h-2 rounded-full bg-rose-300 mr-1.5" }),
       v.term
     ), /* @__PURE__ */ React.createElement("div", { id: `sf-vocab-tip-${i}`, role: "tooltip", className: "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-slate-800 text-white rounded-xl p-3 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-50 pointer-events-none" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-300 mb-1" }, v.term), v.definition && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-200 leading-relaxed mb-1" }, v.definition), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-300 italic" }, "Click to copy \xB7 Paste into your paragraph"), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-slate-800" })));
-  }))), focusMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3" }, /* @__PURE__ */ React.createElement(
+  }))), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { className: "bg-white border-2 border-blue-100 rounded-2xl p-4 shadow-sm" }, (() => {
+    const panelSummaries = paragraphs.map((p, idx) => {
+      const direction = panelDirections[p.id] || {};
+      const dialogue = panelDialogue[p.id] || {};
+      const lettering = getComicLetteringStats(dialogue);
+      const hasCaption = Boolean((p.text || p.scaffoldFrame || "").trim());
+      const hasDirection = Boolean(direction.shot && direction.angle && direction.mood && direction.transition);
+      const hasBubble = Boolean(dialogue.speech || dialogue.thought || dialogue.sfx);
+      const hasImage = Boolean(illustrations[p.id]?.imageUrl);
+      const ready = hasCaption && hasDirection && lettering.level !== "crowded";
+      return { p, idx, direction, lettering, hasCaption, hasDirection, hasBubble, hasImage, ready };
+    });
+    const readyCount = panelSummaries.filter((s) => s.ready).length;
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-blue-700 uppercase tracking-widest" }, "Storyboard Board"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-0.5" }, "Panel pacing, camera, bubbles, and readiness at a glance")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-3 py-1" }, readyCount, "/", paragraphs.length, " production-ready")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2" }, panelSummaries.map(({ p, idx, direction, lettering, hasCaption, hasDirection, hasBubble, hasImage, ready }) => {
+      const status = !hasCaption ? "Needs caption" : lettering.level === "crowded" ? "Crowded" : !hasDirection ? "Needs direction" : ready ? "Ready" : "Draft";
+      const statusClass = ready ? "bg-green-100 text-green-700 border-green-200" : lettering.level === "crowded" ? "bg-red-100 text-red-700 border-red-200" : hasCaption ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-slate-100 text-slate-500 border-slate-200";
+      const jumpToPanel = () => {
+        setFocusParagraphIdx(idx);
+        setTimeout(() => {
+          const el = document.getElementById("sf-para-" + p.id);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 0);
+      };
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: p.id,
+          type: "button",
+          onClick: jumpToPanel,
+          className: `text-left rounded-xl border-2 p-3 transition-colors hover:border-blue-300 hover:bg-blue-50/50 ${focusMode && focusParagraphIdx === idx ? "border-blue-500 bg-blue-50" : "border-slate-200 bg-slate-50/50"}`,
+          "aria-label": `Jump to comic panel ${idx + 1}`
+        },
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black text-slate-800" }, "Panel ", idx + 1), /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-black rounded-full border px-2 py-0.5 ${statusClass}` }, status)),
+        /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1 text-[10px] font-bold text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "truncate" }, "Move: ", getComicDirectionLabel("transition", direction.transition) || "Unset"), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, "Shot: ", getComicDirectionLabel("shot", direction.shot) || "Unset"), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, "Mood: ", getComicDirectionLabel("mood", direction.mood) || "Unset"), /* @__PURE__ */ React.createElement("span", { className: lettering.level === "crowded" ? "text-red-600" : lettering.level === "watch" ? "text-amber-600" : "text-green-600" }, "Words: ", lettering.words, "/", lettering.limit)),
+        /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mt-2" }, [
+          ["Caption", hasCaption],
+          ["Direction", hasDirection],
+          ["Bubble", hasBubble],
+          ["Art", hasImage]
+        ].map(([label, ok]) => /* @__PURE__ */ React.createElement("span", { key: label, className: `text-[9px] font-black rounded-full px-1.5 py-0.5 ${ok ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400"}` }, label)))
+      );
+    })));
+  })()), focusMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setFocusParagraphIdx(Math.max(0, focusParagraphIdx - 1)),
@@ -3621,10 +3980,11 @@ Continue?`)) return;
       },
       /* @__PURE__ */ React.createElement(Sparkles, { size: 10 }),
       " Draft"
-    )), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1" }, "Panel Direction"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-2" }, [
+    )), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1" }, "Panel Direction"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2" }, [
       { field: "shot", label: "Shot", options: COMIC_SHOT_OPTIONS },
       { field: "angle", label: "Angle", options: COMIC_ANGLE_OPTIONS },
-      { field: "mood", label: "Mood", options: COMIC_MOOD_OPTIONS }
+      { field: "mood", label: "Mood", options: COMIC_MOOD_OPTIONS },
+      { field: "transition", label: "Move", options: COMIC_TRANSITION_OPTIONS }
     ].map(({ field, label, options }) => /* @__PURE__ */ React.createElement("label", { key: field, className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, label), /* @__PURE__ */ React.createElement(
       "select",
       {
@@ -3684,7 +4044,13 @@ Continue?`)) return;
         placeholder: t("placeholders.sound_effect_example"),
         "aria-label": `Panel ${idx + 1} sound effect`
       }
-    )))
+    )), (() => {
+      const lettering = getComicLetteringStats(panelDialogue[p.id] || {});
+      const pct = Math.min(100, Math.round(lettering.words / lettering.limit * 100));
+      const color = lettering.level === "crowded" ? "bg-red-500" : lettering.level === "watch" ? "bg-amber-400" : "bg-green-500";
+      const textColor = lettering.level === "crowded" ? "text-red-700" : lettering.level === "watch" ? "text-amber-700" : "text-green-700";
+      return /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-200 bg-white p-2", "aria-label": `Panel ${idx + 1} lettering budget` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-slate-600 uppercase tracking-widest" }, "Lettering Budget"), /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-black ${textColor}` }, lettering.words, "/", lettering.limit, " words \xB7 ", lettering.label)), /* @__PURE__ */ React.createElement("div", { className: "h-2 rounded-full bg-slate-100 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full rounded-full ${color}`, style: { width: `${pct}%` } })), lettering.words > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] text-slate-500 leading-snug" }, lettering.detail));
+    })())
   ) : (
     /* ── Prose / Journal / Dark Writing Mode — styled textarea ── */
     /* @__PURE__ */ React.createElement(
@@ -3796,7 +4162,30 @@ Continue?`)) return;
     /* @__PURE__ */ React.createElement(ImageIcon, { size: 14 }),
     " ",
     isProcessing ? "Generating..." : "Illustrate All"
-  ))), (coverArt || coverArtLoading) && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2" }, t("ui_common.book_cover")), coverArtLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 32, className: "text-purple-700 animate-spin" })) : coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: t("alts.book_cover"), className: "max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" })), promptPreview && /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border-2 border-purple-300 rounded-2xl p-5 shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-purple-600 uppercase tracking-widest mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " Preview Image Prompt \u2014 Paragraph ", promptPreview.idx + 1), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, "Edit the prompt below before generating, or click Generate to proceed."), /* @__PURE__ */ React.createElement(
+  ))), (coverArt || coverArtLoading) && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2" }, t("ui_common.book_cover")), coverArtLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 32, className: "text-purple-700 animate-spin" })) : coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: t("alts.book_cover"), className: "max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" })), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-widest" }, "Comic Continuity"), onCallGemini && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: draftComicContinuity,
+      disabled: isProcessing || !paragraphs.some((p) => (p.text || p.scaffoldFrame || "").trim().length > 0),
+      className: "px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-[11px] font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-1"
+    },
+    /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }),
+    " Draft Notes"
+  )), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" }, [
+    { field: "cast", label: "Cast", placeholder: "Mina: round glasses, red jacket, curious expression" },
+    { field: "setting", label: "Setting", placeholder: "Library lab with teal lamps and brass shelves" },
+    { field: "palette", label: "Palette", placeholder: "Teal, amber, ink black, warm paper white" },
+    { field: "styleNotes", label: "Style Rules", placeholder: "Clean ink lines, consistent outfits, soft rim light" }
+  ].map(({ field, label, placeholder }) => /* @__PURE__ */ React.createElement("label", { key: field, className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1" }, label), /* @__PURE__ */ React.createElement(
+    "textarea",
+    {
+      value: comicContinuity[field] || "",
+      onChange: (e) => updateComicContinuity(field, e.target.value),
+      placeholder,
+      className: "w-full h-20 p-2 text-xs rounded-lg border border-purple-100 bg-purple-50/40 text-slate-700 outline-none focus:border-purple-400 resize-none",
+      "aria-label": `Comic continuity ${label.toLowerCase()}`
+    }
+  ))))), promptPreview && /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border-2 border-purple-300 rounded-2xl p-5 shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-purple-600 uppercase tracking-widest mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " Preview Image Prompt \u2014 ", layoutMode === "comic" ? "Panel" : "Paragraph", " ", promptPreview.idx + 1), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, "Edit the prompt below before generating, or click Generate to proceed."), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: promptPreview.prompt,
@@ -3965,7 +4354,7 @@ Continue?`)) return;
       },
       w.word
     ))), fluencyResult.confidence?.note && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-slate-600 italic" }, fluencyResult.confidence.note), fluencyResult.confidence?.accentDetected && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] text-teal-600 font-medium" }, "\u{1F30D} Accent patterns detected \u2014 scores adjusted conservatively to respect linguistic diversity."), fluencyResult.feedback && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-teal-800 bg-white rounded-lg p-2 border border-teal-200" }, fluencyResult.feedback), /* @__PURE__ */ React.createElement("button", { onClick: () => setFluencyResult(null), className: "mt-2 text-[11px] text-slate-500 hover:text-slate-600 font-bold" }, t("ui_common.dismiss"))));
-  })), phase === "review" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, t("headings.review_feedback")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Draft #", draftCount, " \u2014 Get AI feedback on your story")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: checkSenses, disabled: sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: t("tooltips.check_sensory") }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: findMentorStory, disabled: mentorLoading || isProcessing, className: "px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200", title: t("tooltips.find_mentor_story") }, "\u{1F393} ", mentorLoading ? "Searching..." : mentorMatch && !mentorMatch.error ? "Find another" : "Mentor Match"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: analyzeShowTell, disabled: showTellLoading || isProcessing, className: "px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200", title: t("tooltips.find_telling_sentences") }, "\u{1F3AD} ", showTellLoading ? "Analyzing..." : "Show vs Tell"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: analyzeCharacterArcs, disabled: arcLoading || isProcessing, className: "px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200", title: t("tooltips.audit_character_arc") }, "\u{1F3AC} ", arcLoading ? "Analyzing..." : "Character Arcs"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: analyzeDialogue, disabled: dialogueLoading || isProcessing, className: "px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200", title: t("tooltips.tune_dialogue") }, "\u{1F4AC} ", dialogueLoading ? "Analyzing..." : "Dialogue Tune-Up"), !gradingResult && helpersAvailableForPlan() && /* @__PURE__ */ React.createElement("button", { onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading || isProcessing, className: "px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200", title: t("tooltips.synthesize_revision_plan") }, "\u{1F5FA}\uFE0F ", revisionPlanLoading ? "Synthesizing..." : "Revision Plan"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: gradeStory, disabled: isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", isProcessing ? "Grading..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: reviseStory, className: "px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Story"))), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, "Rate your own story on each criterion (1-5) before the AI grades it. This builds reflection skills.")), /* @__PURE__ */ React.createElement(
+  })), phase === "review" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, t("headings.review_feedback")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Draft #", draftCount, " \u2014 Get AI feedback on your story")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 flex-wrap" }, !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: checkSenses, disabled: sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: t("tooltips.check_sensory") }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: findMentorStory, disabled: mentorLoading || isProcessing, className: "px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200", title: t("tooltips.find_mentor_story") }, "\u{1F393} ", mentorLoading ? "Searching..." : mentorMatch && !mentorMatch.error ? "Find another" : "Mentor Match"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: analyzeShowTell, disabled: showTellLoading || isProcessing, className: "px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200", title: t("tooltips.find_telling_sentences") }, "\u{1F3AD} ", showTellLoading ? "Analyzing..." : "Show vs Tell"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: analyzeCharacterArcs, disabled: arcLoading || isProcessing, className: "px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200", title: t("tooltips.audit_character_arc") }, "\u{1F3AC} ", arcLoading ? "Analyzing..." : "Character Arcs"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: analyzeDialogue, disabled: dialogueLoading || isProcessing, className: "px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200", title: t("tooltips.tune_dialogue") }, "\u{1F4AC} ", dialogueLoading ? "Analyzing..." : "Dialogue Tune-Up"), !gradingResult && layoutMode === "comic" && /* @__PURE__ */ React.createElement("button", { onClick: analyzeComicFlow, disabled: comicFlowLoading || isProcessing, className: "px-4 py-2.5 bg-blue-100 text-blue-700 rounded-full text-sm font-bold hover:bg-blue-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-blue-200", title: "Audit comic pacing, shot variety, lettering load, and production readiness" }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " ", comicFlowLoading ? "Auditing..." : "Comic Flow"), !gradingResult && helpersAvailableForPlan() && /* @__PURE__ */ React.createElement("button", { onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading || isProcessing, className: "px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200", title: t("tooltips.synthesize_revision_plan") }, "\u{1F5FA}\uFE0F ", revisionPlanLoading ? "Synthesizing..." : "Revision Plan"), !gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: gradeStory, disabled: isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", isProcessing ? "Grading..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { onClick: reviseStory, className: "px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Story"))), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, "Rate your own story on each criterion (1-5) before the AI grades it. This builds reflection skills.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -4037,7 +4426,15 @@ Continue?`)) return;
       const isOverused = dialogueReport.overusedTag === tag;
       return /* @__PURE__ */ React.createElement("div", { key: tag, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700 w-20 shrink-0 truncate" }, tag), /* @__PURE__ */ React.createElement("div", { className: "flex-1 h-3.5 bg-slate-100 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full rounded-full ${isOverused ? "bg-amber-400" : "bg-orange-300"}`, style: { width: `${pct}%` } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 font-bold w-8 text-right" }, n), isOverused && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full" }, "overused"));
     });
-  })())), (dialogueReport.issues || []).length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, dialogueReport.issues.map((iss, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-orange-50/40 border border-orange-100 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-widest" }, iss.type === "tag-swap" ? "Tag swap" : iss.type === "missing-tag" ? "Add tag" : iss.type)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 italic leading-relaxed mb-1.5" }, '"', iss.line, '"'), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-emerald-700 uppercase tracking-widest" }, "Try"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-emerald-900 leading-relaxed" }, iss.suggestion), iss.why && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1 italic" }, iss.why)))) : !dialogueReport.tagCounts || Object.keys(dialogueReport.tagCounts).length === 0 ? null : /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 leading-relaxed" }, "\u2728 Dialogue mechanics look strong \u2014 no specific suggestions.")), revisionPlan && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300 rounded-2xl p-5 shadow-md" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-purple-800 flex items-center gap-2" }, "\u{1F5FA}\uFE0F Your Revision Plan"), /* @__PURE__ */ React.createElement("button", { onClick: () => setRevisionPlan(null), className: "text-[11px] text-slate-500 hover:text-slate-700 font-bold", "aria-label": t("a11y.dismiss_revision_plan") }, t("ui_common.dismiss"))), revisionPlan.encouragement && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-green-200 rounded-xl p-3 mb-4 text-xs text-green-900 leading-relaxed" }, "\u2728 ", revisionPlan.encouragement), /* @__PURE__ */ React.createElement("ol", { className: "space-y-3", "aria-label": t("a11y.prioritized_revision_tasks") }, (revisionPlan.tasks || []).map((t2, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "bg-white border-2 border-purple-200 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-600 text-white rounded-full w-7 h-7 shrink-0 flex items-center justify-center font-black text-sm", "aria-hidden": "true" }, i + 1), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("h5", { className: "text-sm font-black text-purple-900" }, t2.title), t2.source && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-widest shrink-0" }, t2.source)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed mb-1" }, t2.detail), t2.why && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, t2.why))))))), characterIssues.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border-2 border-orange-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-orange-700 uppercase tracking-wider mb-2" }, t("headings.character_name_check")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, characterIssues.map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-xs text-orange-800" }, "Did you mean ", /* @__PURE__ */ React.createElement("strong", null, '"', issue.expected, '"'), " instead of ", /* @__PURE__ */ React.createElement("span", { className: "line-through text-orange-500" }, '"', issue.found, '"'), "?"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-orange-500 mt-2" }, "Tip: Check your character names are spelled consistently throughout the story")), revisionSnapshot && draftCount >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2" }, "Revision Progress (vs. Draft #", draftCount - 1, ")"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3" }, (() => {
+  })())), (dialogueReport.issues || []).length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, dialogueReport.issues.map((iss, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-orange-50/40 border border-orange-100 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full uppercase tracking-widest" }, iss.type === "tag-swap" ? "Tag swap" : iss.type === "missing-tag" ? "Add tag" : iss.type)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 italic leading-relaxed mb-1.5" }, '"', iss.line, '"'), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-emerald-700 uppercase tracking-widest" }, "Try"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-emerald-900 leading-relaxed" }, iss.suggestion), iss.why && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1 italic" }, iss.why)))) : !dialogueReport.tagCounts || Object.keys(dialogueReport.tagCounts).length === 0 ? null : /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-900 leading-relaxed" }, "\u2728 Dialogue mechanics look strong \u2014 no specific suggestions.")), comicFlowReport && layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { className: "bg-white border-2 border-blue-200 rounded-2xl p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " Comic Flow Audit"), /* @__PURE__ */ React.createElement("button", { onClick: () => setComicFlowReport(null), className: "text-[11px] text-slate-500 hover:text-slate-700 font-bold", "aria-label": "Dismiss comic flow audit" }, t("ui_common.dismiss"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-4 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "shrink-0 w-24 h-24 rounded-2xl bg-blue-600 text-white flex flex-col items-center justify-center shadow-md" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl font-black" }, Math.round(Number(comicFlowReport.score) || 0)), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-widest" }, "Flow")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-blue-900 leading-relaxed font-medium" }, comicFlowReport.summary), comicFlowReport.strengths && comicFlowReport.strengths.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" }, comicFlowReport.strengths.map((s, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "text-[10px] font-bold text-green-700 bg-green-100 border border-green-200 rounded-full px-2 py-0.5" }, s))))), comicFlowReport.metrics && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mb-4" }, [
+    ["Panels", comicFlowReport.metrics.panels],
+    ["Captions", `${comicFlowReport.metrics.captions}/${comicFlowReport.metrics.panels}`],
+    ["Art", `${comicFlowReport.metrics.images}/${comicFlowReport.metrics.panels}`],
+    ["Direction", `${comicFlowReport.metrics.directions}/${comicFlowReport.metrics.panels}`],
+    ["Shots", comicFlowReport.metrics.shotTypes],
+    ["Moves", comicFlowReport.metrics.transitionTypes],
+    ["Bubbles", comicFlowReport.metrics.bubblePanels]
+  ].map(([label, value]) => /* @__PURE__ */ React.createElement("div", { key: label, className: "bg-blue-50 border border-blue-100 rounded-xl p-2 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-blue-900" }, value), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-blue-600 uppercase tracking-widest" }, label)))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2 mb-4" }, (comicFlowReport.checks || []).map((check) => /* @__PURE__ */ React.createElement("div", { key: check.key || check.label, className: "rounded-xl border border-blue-100 bg-blue-50/40 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-800" }, check.label), /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold rounded-full px-2 py-0.5 uppercase tracking-widest ${check.status === "strong" ? "bg-green-100 text-green-700" : check.status === "watch" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}` }, check.value)), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, check.detail)))), comicFlowReport.globalSuggestions && comicFlowReport.globalSuggestions.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border border-indigo-100 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-700 uppercase tracking-widest mb-2" }, "Whole-comic notes"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, comicFlowReport.globalSuggestions.map((s, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-xs text-indigo-900 leading-relaxed" }, "- ", s)))), ((comicFlowReport.panelNotes || []).length > 0 || (comicFlowReport.suggestions || []).length > 0) && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-700 uppercase tracking-widest" }, "Panel fixes"), (comicFlowReport.panelNotes && comicFlowReport.panelNotes.length > 0 ? comicFlowReport.panelNotes : comicFlowReport.suggestions || []).map((note, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white border border-blue-100 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-1" }, note.panel && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-blue-700 bg-blue-100 rounded-full px-2 py-0.5" }, "Panel ", note.panel), /* @__PURE__ */ React.createElement("span", { className: `text-[10px] font-bold uppercase tracking-widest ${note.priority === "high" ? "text-red-600" : note.priority === "low" ? "text-slate-500" : "text-amber-600"}` }, note.priority || "medium")), note.issue && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-800 mb-1" }, note.issue), note.suggestion && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, note.suggestion))))), revisionPlan && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-300 rounded-2xl p-5 shadow-md" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-purple-800 flex items-center gap-2" }, "\u{1F5FA}\uFE0F Your Revision Plan"), /* @__PURE__ */ React.createElement("button", { onClick: () => setRevisionPlan(null), className: "text-[11px] text-slate-500 hover:text-slate-700 font-bold", "aria-label": t("a11y.dismiss_revision_plan") }, t("ui_common.dismiss"))), revisionPlan.encouragement && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-green-200 rounded-xl p-3 mb-4 text-xs text-green-900 leading-relaxed" }, "\u2728 ", revisionPlan.encouragement), /* @__PURE__ */ React.createElement("ol", { className: "space-y-3", "aria-label": t("a11y.prioritized_revision_tasks") }, (revisionPlan.tasks || []).map((t2, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "bg-white border-2 border-purple-200 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-600 text-white rounded-full w-7 h-7 shrink-0 flex items-center justify-center font-black text-sm", "aria-hidden": "true" }, i + 1), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("h5", { className: "text-sm font-black text-purple-900" }, t2.title), t2.source && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full uppercase tracking-widest shrink-0" }, t2.source)), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-800 leading-relaxed mb-1" }, t2.detail), t2.why && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, t2.why))))))), characterIssues.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border-2 border-orange-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-orange-700 uppercase tracking-wider mb-2" }, t("headings.character_name_check")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, characterIssues.map((issue, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "text-xs text-orange-800" }, "Did you mean ", /* @__PURE__ */ React.createElement("strong", null, '"', issue.expected, '"'), " instead of ", /* @__PURE__ */ React.createElement("span", { className: "line-through text-orange-500" }, '"', issue.found, '"'), "?"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-orange-500 mt-2" }, "Tip: Check your character names are spelled consistently throughout the story")), revisionSnapshot && draftCount >= 2 && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-indigo-500 uppercase tracking-widest mb-2" }, "Revision Progress (vs. Draft #", draftCount - 1, ")"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3" }, (() => {
     const wordDelta = totalWords - (revisionSnapshot.words || 0);
     const vocabDelta = vocabUsedCount - (revisionSnapshot.vocabUsed || 0);
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${wordDelta > 0 ? "text-green-600" : wordDelta < 0 ? "text-red-500" : "text-slate-500"}` }, wordDelta > 0 ? "+" : "", wordDelta, " words"), /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${vocabDelta > 0 ? "text-green-600" : vocabDelta < 0 ? "text-red-500" : "text-slate-500"}` }, vocabDelta > 0 ? "+" : "", vocabDelta, " vocab terms"), readingLevel && revisionSnapshot.grade && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, "Grade level: ", revisionSnapshot.grade, " \u2192 ", readingLevel.grade));

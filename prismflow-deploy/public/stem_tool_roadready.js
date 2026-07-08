@@ -157,15 +157,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     permitHoldPeriod: '6 months (no violations)',
     supervisedHours: 70,
     nightHours: 10,
-    passengers: 'No passengers under 20 for first 9 months of intermediate license (except family)',
-    curfew: 'Midnight to 5 AM for intermediate drivers (first 9 months)',
-    phoneBan: 'ALL handheld use banned statewide (2019). First offense: $85.',
+    passengers: 'No passengers except immediate family during the 270-day intermediate restriction period unless accompanied by a qualifying licensed operator',
+    curfew: 'Midnight to 5 AM during the 270-day intermediate restriction period',
+    phoneBan: 'ALL handheld use banned statewide (2019). First offense: $50.',
     textingBan: 'Total ban, primary enforcement. $250 first offense.',
     moveOver: 'Must move over or slow down for stopped emergency, utility, and roadside assistance vehicles with lights flashing.',
     headlights: 'Required when wipers are on (2005 law). Sunset to sunrise. During low visibility.',
     studSnowTires: 'Legal Oct 1 – May 1. Studded tires help on ice but wear pavement in summer.',
     winterRules: [
-      'Clear ALL snow/ice from your vehicle before driving — including roof. $137 fine if snow falls and causes a crash.',
+      'Take reasonable measures to prevent snow/ice from falling off your vehicle. Safest practice: clear roof, windows, lights, and hood before driving.',
       'Black ice forms on bridges and shaded spots first (no ground heat underneath).',
       'Brake BEFORE turns on snow — never during. Steer with the skid if you slide.',
       'Keep gas tank at least half full in winter (prevents fuel line freeze + emergency reserve).',
@@ -280,7 +280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         'Lights + siren approaching from any direction: pull to the RIGHT curb and stop. Stay stopped until it passes (and any others behind it).',
         'On a divided highway with a physical median: opposing traffic does NOT need to stop — only same-direction traffic yields.',
         'Do NOT follow an emergency vehicle closer than 500 ft (or "one city block").',
-        '"Move Over" laws (all 50 states): when passing a stopped emergency, tow, utility, or roadside assistance vehicle with flashers, move one lane away OR slow down significantly. Maine adds $300 fine.',
+        '"Move Over" laws (all 50 states): when passing a stopped emergency, tow, utility, or roadside assistance vehicle with flashers, move one lane away OR slow to a careful, prudent speed.',
         'Funeral procession: yield to the entire procession, even through a green light. Never break up the line.',
         'Disabled vehicle on the shoulder: move over one lane if possible; otherwise slow down substantially.'
       ]
@@ -411,7 +411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'A solid yellow line on your side of the centerline means:', a: ['You may pass if safe', 'No passing', 'Lane ends', 'Bike lane'], correct: 1, exp: 'Solid yellow = NO passing from your side. Broken yellow = passing allowed when safe.', category: 'general' },
     { q: 'What does a flashing red traffic light mean?', a: ['Slow down', 'Stop, then proceed when safe (same as a stop sign)', 'Caution — proceed without stopping', 'Signal is broken, keep going'], correct: 1, exp: 'A flashing red light has the same meaning as a stop sign: come to a complete stop, then proceed when safe.', category: 'general' },
     { q: 'What does a flashing yellow traffic light mean?', a: ['Stop and wait', 'Slow down and proceed with caution', 'Same as a stop sign', 'Prepare to stop for a red light'], correct: 1, exp: 'Flashing yellow means slow down and proceed with caution — you have the right-of-way but watch for cross traffic.', category: 'general' },
-    { q: 'The speed limit in a Maine school zone when children are present is typically:', a: ['15 mph', '25 mph unless otherwise posted', '35 mph', '45 mph'], correct: 1, exp: 'Default school zone limit in Maine is 15 mph when children are present and signs are flashing; otherwise posted speeds apply (usually 25 mph).', category: 'pedestrian' },
+    { q: 'The speed limit in a Maine school zone when children are present is typically:', a: ['15 mph', '25 mph unless otherwise posted', '35 mph', '45 mph'], correct: 0, exp: 'Maine school-zone speed is 15 mph during active school-zone times: recess, school opening/closing windows, flashing school-zone signs, or locally designated times. Otherwise posted speeds apply.', category: 'pedestrian' },
     { q: 'When approaching a school bus with flashing red lights and extended stop arm on a two-lane road, you must:', a: ['Slow down and pass carefully', 'Stop only if on the same side as the bus', 'Stop — traffic from both directions must stop', 'Honk to warn the driver'], correct: 2, exp: 'On undivided roads, ALL traffic must stop for a school bus with flashing red lights, regardless of direction.', category: 'pedestrian' },
     { q: 'In Maine, the legal BAC limit for drivers 21 and older is:', a: ['0.05%', '0.08%', '0.10%', '0.02%'], correct: 1, exp: 'Maine follows the federal standard: 0.08% BAC for adults 21+. Under 21 is 0.02% (zero tolerance). CDL is 0.04%.', category: 'dui' },
     { q: 'Maine law requires headlights to be on:', a: ['Only at night', 'When windshield wipers are in use', 'Only in fog', 'Only on highways'], correct: 1, exp: 'Maine requires headlights whenever wipers are in use (2005 law) — plus sunset to sunrise and in low visibility.', category: 'general' },
@@ -431,7 +431,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'When is the risk of moose and deer strikes highest in Maine?', a: ['Midday', 'Dawn and dusk, especially May-December', 'Only at night', 'Only in winter'], correct: 1, exp: 'Dawn and dusk are peak risk because animals are most active and visibility is worst. Deer peak Oct-Dec (rut); moose active May-Oct.', category: 'winter' },
     { q: 'Black ice is most likely to form on:', a: ['Sunny, open roads', 'Bridges and shaded areas', 'Inside tunnels', 'Gravel roads'], correct: 1, exp: 'Bridges freeze first — no ground heat underneath. Shaded spots lose warmth fast. Black ice is nearly invisible.', category: 'winter' },
     { q: 'In Maine, studded snow tires are legal:', a: ['All year', 'October 1 to May 1', 'Only in January and February', 'Never'], correct: 1, exp: 'Maine allows studded tires Oct 1 – May 1. They help on ice but damage pavement in warm months.', category: 'winter' },
-    { q: 'Before driving in winter, Maine law requires you to:', a: ['Warm the engine for 10 minutes', 'Clear ALL snow and ice from the vehicle, including the roof', 'Install chains', 'Use only winter windshield fluid'], correct: 1, exp: 'Falling snow/ice from your roof can cause crashes. Maine fines drivers whose snow flies off and damages other vehicles.', category: 'winter' },
+    { q: 'Before driving in winter, Maine law requires you to:', a: ['Warm the engine for 10 minutes', 'Take reasonable measures to prevent snow and ice from falling off your vehicle', 'Install chains', 'Use only winter windshield fluid'], correct: 1, exp: 'Maine requires drivers to take reasonable measures to prevent snow or ice from falling off the vehicle. Safest practice: clear the roof, windows, lights, and hood before driving.', category: 'winter' },
 
     // ── Signs ──
     { q: 'An eight-sided (octagonal) red sign always means:', a: ['Yield', 'Stop', 'Do not enter', 'One way'], correct: 1, exp: 'Octagon = STOP. The shape is recognizable even in fog or when lettering is obscured. It is the only octagonal sign.', category: 'signs' },
@@ -455,7 +455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // ── Maine teen licensing ──
     { q: 'A Maine learner\'s permit requires you to be at least:', a: ['14', '15', '16', '18'], correct: 1, exp: 'Maine allows learner permits starting at age 15 with driver\'s ed enrollment.', category: 'gdl' },
     { q: 'Maine teen drivers (under 18) must log how many supervised hours before getting an intermediate license?', a: ['10', '35', '70', '100'], correct: 2, exp: 'Maine requires 70 hours of supervised driving, including 10 at night, before you can take the road test.', category: 'gdl' },
-    { q: 'A Maine intermediate driver (first 9 months) may NOT:', a: ['Drive at any time of day', 'Carry passengers under 20 (except immediate family)', 'Drive on interstates', 'Drive alone'], correct: 1, exp: 'For the first 9 months of intermediate license: no passengers under 20 except family, and no driving midnight-5 AM except for work/school/emergency.', category: 'gdl' },
+    { q: 'A Maine intermediate driver during the 270-day restriction period may NOT:', a: ['Drive at any time of day', 'Carry passengers other than immediate family unless accompanied by a qualifying licensed operator', 'Drive on interstates', 'Drive alone'], correct: 1, exp: 'During Maine\'s 270-day intermediate restriction period: no driving midnight-5 AM, no handheld/mobile device use while driving, and no passengers other than immediate family unless a qualifying licensed operator is present.', category: 'gdl' },
 
     // ── General safety and mechanical ──
     { q: 'The 3-second rule is used to determine:', a: ['Maximum legal speed', 'Minimum safe following distance', 'Reaction time after braking', 'Turn signal duration'], correct: 1, exp: '3-second rule: pick a fixed landmark. When the car ahead passes it, count "1-Mississippi, 2-Mississippi, 3-Mississippi." You should reach it no sooner. Increase to 4+ in rain/snow.', category: 'general' },
@@ -476,7 +476,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'Before driving, the FIRST thing you should adjust is:', a: ['The radio', 'Your seat and mirrors', 'The AC temperature', 'The GPS destination'], correct: 1, exp: 'Seat position (so you can reach all pedals fully) and mirrors (rearview + both sides) should be adjusted BEFORE you start driving. Never adjust mirrors while the car is moving.', category: 'general' },
     { q: 'The penny test for tire tread measures:', a: ['Tire pressure', 'Tire age', 'Whether tread depth is safe (2/32" minimum)', 'Tire brand quality'], correct: 2, exp: 'Insert a penny head-first into the tread groove. If you can see ALL of Lincoln\'s head, tread is below 2/32" and the tire is unsafe — replace it. Maine requires 2/32" minimum tread depth.', category: 'maintenance' },
     { q: 'Your check engine light is FLASHING (not steady). This means:', a: ['Normal operation', 'Minor issue, schedule service when convenient', 'Active engine misfire — pull over immediately', 'The gas cap is loose'], correct: 2, exp: 'A FLASHING check engine light means active misfire. Unburned fuel is being sent to the catalytic converter, which can overheat and catch fire. Pull over and turn off the engine.', category: 'maintenance' },
-    { q: 'You are at a red light when an ambulance with sirens approaches from behind. You should:', a: ['Wait for the light to turn green', 'Pull forward into the intersection, then move right', 'Stay put — never enter an intersection on red', 'Reverse to make room'], correct: 1, exp: 'You may carefully proceed into the intersection to clear a path if safe. Emergency vehicles need a clear lane. Check cross traffic first, then move forward and right.', category: 'emergency' },
+    { q: 'You are stopped at a red light when an ambulance with sirens approaches from behind. You should:', a: ['Drive into the intersection against the red light', 'Move right only if you can do so safely while staying clear of the intersection; otherwise wait', 'Reverse to make room', 'Ignore it until the light changes'], correct: 1, exp: 'Yield by moving as near as practicable to the right curb and stopping clear of intersections until the emergency vehicle passes. Do not enter cross traffic against a red light to make room.', category: 'emergency' },
     { q: 'After pulling over for an emergency vehicle, how long should you wait before re-entering traffic?', a: ['Immediately after it passes', 'Wait for any additional emergency vehicles, then merge carefully', '60 seconds exactly', 'Until all traffic resumes normal speed'], correct: 1, exp: 'Emergency vehicles often travel in groups (ambulance + fire truck, multiple police). Wait until you are sure no more are coming, then signal left and merge carefully.', category: 'emergency' },
     { q: 'An emergency vehicle is approaching on a divided highway from the OPPOSITE direction. You must:', a: ['Stop completely', 'Slow down and proceed with caution', 'Move to the right shoulder', 'Speed up to clear the area'], correct: 1, exp: 'On a divided highway (with a median), only traffic on the SAME side as the emergency vehicle must pull over. Opposite side should slow down and proceed with caution.', category: 'emergency' },
     { q: 'When driving, you should look:', a: ['Only at the car directly in front', '12-15 seconds ahead down the road', 'Only at the speedometer', 'Only in the mirrors'], correct: 1, exp: 'Scan 12-15 seconds ahead (about 1/4 mile at highway speed). This is called "high visual horizon" — it gives you maximum time to react to hazards, stops, and lane changes.', category: 'general' },
@@ -501,7 +501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'A "no zone" refers to:', a: ['A speed-limit-free area', 'The blind spots around large trucks', 'A no-passing zone', 'A school zone at night'], correct: 1, exp: 'Large trucks have huge blind spots called "no zones" — directly behind, directly in front, and along both sides. If you can\'t see the driver\'s mirrors, they can\'t see you.', category: 'general' },
     { q: 'You can be charged with OUI (Operating Under Influence) in Maine for driving while impaired by:', a: ['Alcohol only', 'Alcohol and illegal drugs only', 'Alcohol, illegal drugs, AND prescription/over-the-counter medications that impair', 'Only if BAC is over 0.08'], correct: 2, exp: 'Maine OUI law covers ANY substance that impairs you — including legal prescription medications and OTC drugs (like some allergy meds). Read your medication labels.', category: 'dui' },
     { q: 'Cell phone use while driving in Maine is:', a: ['Always legal', 'Banned for handheld; hands-free is OK for adults', 'Banned only for teens', 'Banned only at school zones'], correct: 1, exp: 'Maine bans ALL handheld phone use. Hands-free is legal for adults but banned for drivers under 18 with intermediate licenses. Texting is fully banned for everyone.', category: 'dui' },
-    { q: 'When approaching a stopped emergency vehicle, tow truck, or roadside worker with lights flashing, Maine law says you must:', a: ['Continue at posted speed', 'Honk and pass quickly', 'Move over one lane if safe, or slow down significantly', 'Stop completely'], correct: 2, exp: 'Maine\'s "Move Over" law requires drivers to change lanes if safe, or slow down. Roadside workers die every year from drivers passing too close.', category: 'emergency' },
+    { q: 'When approaching a stopped emergency vehicle, tow truck, or roadside worker with lights flashing, Maine law says you must:', a: ['Continue at posted speed', 'Honk and pass quickly', 'Move to a non-adjacent lane if safe, or slow to a careful and prudent speed', 'Stop completely'], correct: 2, exp: 'Maine\'s stationary-vehicle passing law requires drivers to move to a non-adjacent lane if possible, or slow to a careful and prudent speed. Roadside workers die every year from drivers passing too close.', category: 'emergency' },
     // ── Accident aftermath + advanced ──
     { q: 'You are involved in a minor fender bender with no injuries. Your first step should be:', a: ['Leave the scene', 'Move vehicles to a safe location out of traffic', 'Call 911 immediately', 'Exchange insurance only'], correct: 1, exp: 'Move vehicles to safety first (if drivable). Then exchange info, take photos, call police if required by state law. In Maine, file a report if damage > $1,000.', category: 'emergency' },
     { q: 'After a crash, what information should you exchange with the other driver?', a: ['Just phone numbers', 'Name, insurance company, policy number, driver\'s license, license plate, phone', 'Nothing — let insurance handle it', 'Only if police are present'], correct: 1, exp: 'Always exchange: name, phone, insurance company + policy number, driver\'s license number, license plate, vehicle make/model. Take photos of everything.', category: 'emergency' },
@@ -513,7 +513,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'The two-second rule should be increased to four or more seconds when:', a: ['Driving a small car', 'Road conditions are wet, icy, or visibility is poor', 'Driving during the day', 'Driving below the speed limit'], correct: 1, exp: 'Wet roads: 4+ seconds. Snow: 6+ seconds. Fog: 6+ seconds. Following a motorcycle or large truck: 4+ seconds. At night: 4+ seconds. When in doubt, add more distance.', category: 'winter' },
     { q: 'You are driving and smell gasoline inside the car. You should:', a: ['Ignore it — cars always smell like gas', 'Open windows, do NOT smoke, pull over when safe, and check for leaks', 'Speed up to blow the fumes out', 'Turn on the AC to recirculate air'], correct: 1, exp: 'A gasoline smell indicates a potential fuel leak — fire hazard. Ventilate immediately (open windows, NOT recirculate), pull over safely, and check under the hood and underneath.', category: 'emergency' },
     { q: 'What does it mean when your steering wheel vibrates at highway speed?', a: ['Normal road vibration', 'Likely wheel balance issue, alignment problem, or tire damage — have it inspected', 'The engine is overheating', 'You need new brakes'], correct: 1, exp: 'Steering vibration typically means: unbalanced wheels (most common, cheap fix), worn tie rod ends, or tire damage. If vibration is only when braking, it\'s warped rotors.', category: 'maintenance' },
-    { q: 'In Maine, what is the penalty for a first-offense OUI (Operating Under Influence)?', a: ['$100 fine', 'Warning only', 'Minimum 150-day license suspension, $500+ fine, possible jail time', 'Loss of car registration only'], correct: 2, exp: 'Maine first-offense OUI: minimum 96 hours jail (or 48 hrs community service), $500+ fine, 150-day license suspension. Second offense: mandatory 7 days jail. Maine uses "OUI" rather than the "DUI" / "DWI" terms used in other states.', category: 'dui' },
+    { q: 'In Maine, what is the penalty for a first-offense OUI (Operating Under Influence)?', a: ['$100 fine', 'Warning only', 'Minimum 150-day license suspension, $500+ fine, possible jail time', 'Loss of car registration only'], correct: 2, exp: 'Maine first-offense OUI: at least a $500 fine and 150-day license suspension. Jail becomes mandatory in aggravating cases such as 0.15+ BAC, 30+ mph over the limit, eluding, a passenger under 21, or refusing a test. Maine uses "OUI" rather than the "DUI" / "DWI" terms used in other states.', category: 'dui' },
     { q: 'You are approaching a green light that has been green for a long time (stale green). You should:', a: ['Speed up to make it through', 'Cover the brake and be ready for it to change', 'Honk to warn cross traffic', 'Stop and wait for the next green'], correct: 1, exp: 'A "stale green" is likely to turn yellow soon. Cover your brake pedal (hover your foot over it) so you can react instantly. This reduces reaction time by ~0.5 seconds.', category: 'general' },
     { q: 'The "Dutch reach" is a technique for:', a: ['Parallel parking', 'Opening your car door safely by reaching with the far hand to check for cyclists', 'Merging onto a highway', 'Adjusting mirrors'], correct: 1, exp: 'Open your door with the hand farthest from the door (right hand for driver side). This naturally turns your body to look over your shoulder, checking for cyclists. Prevents "dooring" — a leading cause of cyclist injury.', category: 'general' },
     { q: 'Your car starts to hydroplane. The correct response is:', a: ['Brake hard', 'Turn the steering wheel sharply', 'Ease off the gas, do not brake or steer sharply, and let the tires regain contact', 'Accelerate to push through'], correct: 2, exp: 'Hydroplaning = tires riding on a film of water, not the road. Braking or sharp steering = loss of control. Ease off gas smoothly and wait for tires to contact pavement again.', category: 'emergency' },
@@ -537,7 +537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'Right-of-way at a T-intersection (no signs or signals):', a: ['The car on the through road always goes first', 'The car on the stem road goes first', 'The larger vehicle goes first', 'Whoever arrives first'], correct: 0, exp: 'At a T-intersection without signs, the through road (top of the T) has the right-of-way. The car on the terminating road (stem) must yield. This is because they are essentially entering a new road.', category: 'general' },
     { q: 'The purpose of rumble strips on the highway shoulder is to:', a: ['Mark the edge for snow plows', 'Alert drowsy or distracted drivers that they are leaving the travel lane', 'Slow down traffic', 'Guide cyclists'], correct: 1, exp: 'Rumble strips create noise and vibration when you drive over them. They are specifically designed to wake up drowsy drivers or alert distracted ones before they leave the road. They reduce run-off-road crashes by 15-70%.', category: 'general' },
     { q: 'When driving near a large truck, where is the SAFEST position?', a: ['Directly behind the truck (drafting)', 'Far enough behind or ahead that you can see the truck driver\'s mirrors', 'Beside the truck in the left lane', 'As close as possible to save fuel'], correct: 1, exp: 'Rule: if you cannot see the truck driver\'s mirrors, they cannot see you. Stay out of all 4 no-zones. Pass quickly — do not cruise alongside. Never cut in front of a truck (they need 40% more stopping distance than a car).', category: 'general' },
-    { q: 'In Maine, the minimum age to obtain a full unrestricted license is:', a: ['16', '16 and 9 months', '17', '18'], correct: 1, exp: 'Maine graduated licensing: permit at 15, intermediate at 16 (after 70 hrs supervised driving), full unrestricted at 16 years and 9 months (after 9 months with no violations). The 9-month intermediate period has passenger and curfew restrictions.', category: 'gdl' },
+    { q: 'In Maine, the minimum age to obtain a full unrestricted license is:', a: ['16', '16 and 9 months', '17', '18'], correct: 1, exp: 'Maine graduated licensing: permit at 15, intermediate at 16 (after 70 hrs supervised driving), and full unrestricted at about 16 years and 9 months if the 270-day intermediate restrictions are not extended.', category: 'gdl' },
 
     // ── Expanded category coverage (DUI / Winter / Pedestrian / Emergency / Maintenance / GDL / Signs) ──
     // ── DUI / impaired ──
@@ -608,10 +608,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'When replacing a burned-out headlight bulb, you should:', a: ['Replace just the burned-out one', 'Replace BOTH bulbs at the same time — the second is likely close to failure, and matching brightness is safer', 'Never replace bulbs yourself', 'Wait until both fail'], correct: 1, exp: 'Headlight bulbs from the same batch typically fail close together. Mismatched-brightness lights look uneven and confuse oncoming drivers. Many shops bundle the second bulb at low cost — ask.', category: 'maintenance' },
 
     // ── Maine GDL specifics ──
-    { q: 'Maine intermediate license curfew is in effect:', a: ['10 PM - 5 AM', 'Midnight - 5 AM (with exceptions for work, school, medical, or accompanied driving)', 'No curfew', '8 PM - 6 AM'], correct: 1, exp: 'Maine intermediate license: no driving between midnight and 5 AM during the first 9 months, except to/from work, school, religious activity, medical, or accompanied by a licensed adult 20+.', category: 'gdl' },
-    { q: 'During the first 9 months of a Maine intermediate license, the driver may:', a: ['Carry any number of passengers', 'NOT carry passengers under age 20 except immediate family members', 'Carry only adult passengers', 'Not drive at all'], correct: 1, exp: 'Maine intermediate: no passengers under 20 except siblings, kids, parents, etc. for the first 9 months. After 9 months with a clean record, restrictions lift to a full license.', category: 'gdl' },
+    { q: 'Maine intermediate license curfew is in effect:', a: ['10 PM - 5 AM', 'Midnight - 5 AM during the 270-day intermediate restriction period', 'No curfew', '8 PM - 6 AM'], correct: 1, exp: 'Maine intermediate license: no driving between midnight and 5 AM during the 270-day restriction period. Violating a restriction can extend the restrictions another 270 days, trigger a $250-$500 fine, and suspend the license.', category: 'gdl' },
+    { q: 'During Maine\'s 270-day intermediate restriction period, the driver may:', a: ['Carry any number of passengers', 'Carry immediate family, or other passengers only with a qualifying licensed operator present', 'Carry only adult passengers', 'Not drive at all'], correct: 1, exp: 'Maine intermediate: passengers other than immediate family require a licensed operator who is at least 20, has held a license at least 2 years, and sits beside the driver. Restrictions can extend if violated.', category: 'gdl' },
     { q: 'A Maine driver\'s ed program for teens requires approximately:', a: ['No requirement', '30 hours of classroom + 10 hours behind-the-wheel instruction with a licensed instructor', '5 hours total', '100 hours total'], correct: 1, exp: 'Maine driver\'s ed: 30 hours classroom and 10 hours behind-the-wheel (split over multiple sessions) with a state-licensed instructor. Required to get a permit before age 18.', category: 'gdl' },
-    { q: 'A Maine teen driver gets a moving violation during the intermediate period. The probationary period:', a: ['Is unaffected', 'Restarts the 9-month intermediate clock and can extend the curfew/passenger restrictions', 'Means a permanent suspension', 'Just adds a fine'], correct: 1, exp: 'A violation during intermediate license restarts the 9-month clock. Multiple violations can lead to suspension. The system is designed so teens demonstrate clean driving habits before earning a full license.', category: 'gdl' },
+    { q: 'A Maine intermediate driver violates the passenger, curfew, or mobile-device restriction. The restriction period:', a: ['Is unaffected', 'Is extended by another 270 days and can include fines/suspension', 'Means a permanent suspension', 'Just adds a warning'], correct: 1, exp: 'A violation of the intermediate-license restrictions extends the restriction period another 270 days. Maine also sets a $250-$500 fine and license suspensions for violations.', category: 'gdl' },
     { q: 'Who can supervise a Maine learner\'s permit holder during practice driving?', a: ['Anyone with a license', 'A licensed driver age 20+ with at least 2 years of licensed driving experience', 'Only a parent', 'Only a paid instructor'], correct: 1, exp: 'Maine permit supervisor: licensed driver age 20+ with 2+ years of licensed experience. Common supervisors are parents, but other family or qualified adults work. They sit in the front passenger seat.', category: 'gdl' },
 
     // ── Signs (extra coverage) ──
@@ -869,7 +869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     winter: {
       title: 'Maine Winter Driving: Ice, Snow, and Moose',
       icon: '❄️',
-      content: "Maine winters test every skill you have. Four rules: (1) Look far ahead. Bad things happen slowly if you see them coming. Tight focus = surprise = crashes. (2) Gentle inputs. Smooth acceleration, smooth braking, smooth steering. Jerky = slip. (3) Increase following distance to 6-10 seconds on snow. Regular 3 seconds is nowhere near enough when friction drops to 0.2. (4) When in doubt, slow down more. Maine-specific: moose warnings are real — May through October at dawn/dusk, scan treelines. Black ice on bridges FIRST. Clear ALL snow from your car before driving (including the roof — state law). Keep your gas tank above half (prevents fuel line freeze, and a half tank means real emergency reserves if you get stuck).",
+      content: "Maine winters test every skill you have. Four rules: (1) Look far ahead. Bad things happen slowly if you see them coming. Tight focus = surprise = crashes. (2) Gentle inputs. Smooth acceleration, smooth braking, smooth steering. Jerky = slip. (3) Increase following distance to 6-10 seconds on snow. Regular 3 seconds is nowhere near enough when friction drops to 0.2. (4) When in doubt, slow down more. Maine-specific: moose warnings are real — May through October at dawn/dusk, scan treelines. Black ice on bridges FIRST. Take reasonable measures so snow and ice cannot fall from your car; safest practice is clearing the roof, windows, lights, and hood before driving. Keep your gas tank above half (prevents fuel line freeze, and a half tank means real emergency reserves if you get stuck).",
       formula: 'winter_safe_speed ≈ posted_speed × (μ_winter / μ_dry)',
       variables: 'μ_snow ≈ 0.2-0.3, μ_ice ≈ 0.1, μ_dry ≈ 0.7. So on snow, ~30% of posted is sometimes the right answer.',
       practice: 'Snow Scenario simulates Maine winter physics accurately. Feel how much longer everything takes.'
@@ -1236,7 +1236,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // (school zone speed limit, pedestrians from library, etc.)
   // ─────────────────────────────────────────────────────────
   var LANDMARK_TYPES = [
-    { id: 'school',    name: 'Elementary School',   icon: '🏫', color: 0xc13a3a, roofColor: 0x8b1a1a, size: 6, height: 4,  sign: 'SCHOOL',       signColor: 0xfcd34d, contextRule: 'school_zone_20mph', eventChance: 0.15, biomes: ['residential','suburban'] },
+    { id: 'school',    name: 'Elementary School',   icon: '🏫', color: 0xc13a3a, roofColor: 0x8b1a1a, size: 6, height: 4,  sign: 'SCHOOL',       signColor: 0xfcd34d, contextRule: 'school_zone_15mph', eventChance: 0.15, biomes: ['residential','suburban'] },
     { id: 'library',   name: 'Public Library',      icon: '📚', color: 0x6b4a2a, roofColor: 0x3d2817, size: 5, height: 3.5,sign: 'LIBRARY',      signColor: 0xfef3c7, contextRule: null,                eventChance: 0.05, biomes: ['residential','suburban','commercial'] },
     { id: 'hospital',  name: 'Hospital',            icon: '🏥', color: 0xe5e7eb, roofColor: 0x1e40af, size: 7, height: 5,  sign: 'HOSPITAL',     signColor: 0xef4444, contextRule: 'slow_ambulance',    eventChance: 0.10, biomes: ['commercial','suburban'] },
     { id: 'police',    name: 'Police Station',      icon: '🚔', color: 0x1e3a8a, roofColor: 0x0f172a, size: 5, height: 3,  sign: 'POLICE',       signColor: 0x60a5fa, contextRule: 'check_speed',       eventChance: 0.20, biomes: ['commercial','suburban','residential'] },
@@ -1501,6 +1501,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         for (var dy = -3; dy <= 3; dy++) {
           if (cy + dy >= 0 && cy + dy < MAP_SIZE && x >= 0 && x < MAP_SIZE) map[cy + dy][x] = 0;
         }
+        if (cy >= 0 && cy < MAP_SIZE && x >= 0 && x < MAP_SIZE) map[cy][x] = 3;
       }
     }
     function addSidewalks(cx) {
@@ -1649,6 +1650,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // SECTION 9: TRAFFIC AI — Other vehicles on the road
   // ─────────────────────────────────────────────────────────
 
+  var RR_MIN_AI_CENTER_GAP = 3.1;
+  var RR_MIN_TRAFFIC_SPAWN_GAP = 7.0;
+
+  function hasTrafficGap(list, x, y, ignoreIndex, minGap, mode) {
+    var minSq = minGap * minGap;
+    for (var gi = 0; gi < list.length; gi++) {
+      if (ignoreIndex != null && gi === ignoreIndex) continue;
+      var other = list[gi];
+      if (!other || typeof other.x !== 'number' || typeof other.y !== 'number') continue;
+      if (mode === 'main' && other.crossStreet) continue;
+      if (mode === 'cross' && !other.crossStreet) continue;
+      var dx = other.x - x;
+      var dy = other.y - y;
+      if (dx * dx + dy * dy < minSq) return false;
+    }
+    return true;
+  }
+
   function spawnTraffic(scenario) {
     var traffic = [];
     var count = scenario.traffic === 'light' ? 3 : scenario.traffic === 'medium' ? 7 : 12;
@@ -1704,8 +1723,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // appeared to float in the middle of the lawn or sit on the wrong half of
       // the road — that's the "cars in the middle of the road" bug.
       var spawnY = Math.random() * MAP_SIZE;
+      var spawnX = roadCenterAt(spawnY) + laneOffset;
+      for (var spawnTry = 0; spawnTry < 30; spawnTry++) {
+        if (hasTrafficGap(traffic, spawnX, spawnY, null, RR_MIN_TRAFFIC_SPAWN_GAP, 'main')) break;
+        spawnY = Math.random() * MAP_SIZE;
+        spawnX = roadCenterAt(spawnY) + laneOffset;
+      }
       traffic.push({
-        x: roadCenterAt(spawnY) + laneOffset,
+        id: scenario.id + '_main_' + i,
+        x: spawnX,
         laneOffset: laneOffset,
         y: spawnY,
         heading: direction === 1 ? Math.PI / 2 : -Math.PI / 2,
@@ -1727,6 +1753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // dir=-1 (heading=π, moving -X): driver's right is -Y → y = crossY - 1.5.
         // (Previously flipped — cars were driving on the left side of the cross street.)
         traffic.push({
+          id: scenario.id + '_cross_' + ci + '_' + (dir === 1 ? 'east' : 'west'),
           x: dir === 1 ? 5 : MAP_SIZE - 5,
           y: crossY + (dir === 1 ? 1.5 : -1.5),
           heading: dir === 1 ? 0 : Math.PI,
@@ -1898,7 +1925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'first_landmark', icon: '📍', name: 'First Destination', desc: 'Arrive at your first landmark in Free Explore.' },
     { id: 'five_landmarks', icon: '🗺️', name: 'Local Navigator', desc: 'Visit 5 different landmark destinations.' },
     { id: 'ten_landmarks', icon: '🏁', name: 'Town Tourist', desc: 'Visit 10 landmark destinations in Free Explore.' },
-    { id: 'school_hero', icon: '🏫', name: 'School Zone Hero', desc: 'Pass a school landmark at 20 mph or less.' },
+    { id: 'school_hero', icon: '🏫', name: 'School Zone Hero', desc: 'Pass a school landmark at 15 mph or less.' },
     { id: 'emergency_response', icon: '🚒', name: 'Emergency Responder', desc: 'Yield correctly to a fire truck or ambulance spawned from a landmark.' },
     { id: 'maine_explorer', icon: '🗽', name: 'Maine Explorer', desc: 'Visit a lighthouse in Free Explore.' },
     { id: 'civic_scholar', icon: '🎓', name: 'Civic Scholar', desc: 'Visit a school, library, and post office.' },
@@ -6210,7 +6237,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // School Zone Hero badge: track speed when passing a school
                 if (distToLm < 4 && scanChunk.landmark.type.id === 'school') {
                   var schoolSpeedMph = Math.abs(car.speed) * MS_TO_MPH;
-                  if (schoolSpeedMph <= 20) {
+                  if (schoolSpeedMph <= 15) {
                     var schoolBadges = Object.assign({}, (d.badges || {}));
                     if (!schoolBadges.school_hero) {
                       schoolBadges.school_hero = true;
@@ -6224,7 +6251,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   var lmType = scanChunk.landmark.type;
                   var lmMsg = lmType.icon + ' ' + lmType.name + ' ahead';
                   // Add context-specific guidance
-                  if (lmType.contextRule === 'school_zone_20mph') lmMsg += ' — SLOW DOWN to 20 mph (school zone)';
+                  if (lmType.contextRule === 'school_zone_15mph') lmMsg += ' — SLOW DOWN to 15 mph (active school zone)';
                   else if (lmType.contextRule === 'check_speed') lmMsg += ' — check your speed';
                   else if (lmType.contextRule === 'pedestrians') lmMsg += ' — watch for pedestrians';
                   else if (lmType.contextRule === 'slow_vehicle') lmMsg += ' — farm equipment may be slow';
@@ -7507,16 +7534,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             } else if (infiniteWorldRef.current && !t._turning) {
               // Infinite world: respawn traffic that gets too far from player
               if (Math.abs(t.y - playerY) > MAP_SIZE * 0.6) {
-                var newDir = Math.random() < 0.5 ? 1 : -1;
-                t.y = playerY + newDir * (10 + Math.random() * MAP_SIZE * 0.4);
                 // Position in the correct lane ON the spline perpendicular at the new Y.
                 // Use heading-sign to infer direction (sign-stable even with spline bend).
                 t.laneOffset = t.heading > 0 ? -1.5 : 1.5;
                 var respawnSpline = infiniteWorldRef.current.spline;
-                var respawnCenter = respawnSpline ? respawnSpline.centerAt(t.y) : Math.floor(MAP_SIZE / 2);
+                var respawnDir = Math.random() < 0.5 ? 1 : -1;
+                var respawnY = playerY + respawnDir * (10 + Math.random() * MAP_SIZE * 0.4);
+                var respawnCenter = respawnSpline ? respawnSpline.centerAt(respawnY) : Math.floor(MAP_SIZE / 2);
+                var respawnX = respawnCenter + t.laneOffset;
+                for (var respawnTry = 0; respawnTry < 30; respawnTry++) {
+                  if (hasTrafficGap(traffic, respawnX, respawnY, idx, RR_MIN_TRAFFIC_SPAWN_GAP, 'main')) break;
+                  respawnDir = Math.random() < 0.5 ? 1 : -1;
+                  respawnY = playerY + respawnDir * (10 + Math.random() * MAP_SIZE * 0.4);
+                  respawnCenter = respawnSpline ? respawnSpline.centerAt(respawnY) : Math.floor(MAP_SIZE / 2);
+                  respawnX = respawnCenter + t.laneOffset;
+                }
+                t.y = respawnY;
+                t.id = 'respawn_' + idx + '_' + Math.floor(timeRef.current * 1000);
                 var respawnHeadingSp = respawnSpline ? respawnSpline.headingAt(t.y) : 0;
                 // Raw X offset (matches lane paint geometry).
-                t.x = respawnCenter + t.laneOffset;
+                t.x = respawnX;
                 // Reset heading to match the new direction + local spline bend
                 var respIsSouth = t.heading > 0;
                 t.heading = respIsSouth ? (Math.PI / 2 - respawnHeadingSp) : (-Math.PI / 2 - respawnHeadingSp);
@@ -7624,6 +7661,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var signX = dx >= 0 ? 1 : -1;
                 ca.x -= signX * penX * 0.5;
                 cb.x += signX * penX * 0.5;
+              }
+            }
+          }
+          var minGapSq = RR_MIN_AI_CENTER_GAP * RR_MIN_AI_CENTER_GAP;
+          for (var gi2 = 0; gi2 < traffic.length; gi2++) {
+            var ga = traffic[gi2];
+            if (!ga || ga._turning) continue;
+            for (var gj2 = gi2 + 1; gj2 < traffic.length; gj2++) {
+              var gb = traffic[gj2];
+              if (!gb || gb._turning) continue;
+              if (ga.crossStreet !== gb.crossStreet) continue;
+              var gapDx = gb.x - ga.x;
+              var gapDy = gb.y - ga.y;
+              var gapSq = gapDx * gapDx + gapDy * gapDy;
+              if (gapSq >= minGapSq) continue;
+              if (!ga.crossStreet) {
+                var sameMainDir = Math.sign(Math.sin(ga.heading)) === Math.sign(Math.sin(gb.heading));
+                if (sameMainDir) {
+                  var neededY = Math.sqrt(Math.max(0, minGapSq - gapDx * gapDx)) + 0.05;
+                  var haveY = Math.abs(gapDy);
+                  var pushY = neededY - haveY;
+                  if (pushY > 0) {
+                    var gapSignY = gapDy >= 0 ? 1 : -1;
+                    ga.y -= gapSignY * pushY * 0.5;
+                    gb.y += gapSignY * pushY * 0.5;
+                    var gapDirY = Math.sin(ga.heading) > 0 ? 1 : -1;
+                    var gaAhead = (ga.y - gb.y) * gapDirY > 0;
+                    if (gaAhead) gb.speed = Math.min(gb.speed, ga.speed * 0.9);
+                    else ga.speed = Math.min(ga.speed, gb.speed * 0.9);
+                  }
+                } else {
+                  var neededSideX = Math.sqrt(Math.max(0, minGapSq - gapDy * gapDy)) + 0.05;
+                  var haveSideX = Math.abs(gapDx);
+                  var pushSideX = neededSideX - haveSideX;
+                  if (pushSideX > 0) {
+                    var sideSignX = gapDx >= 0 ? 1 : -1;
+                    ga.x -= sideSignX * pushSideX * 0.5;
+                    gb.x += sideSignX * pushSideX * 0.5;
+                  }
+                }
+              } else {
+                var sameCrossDir = Math.sign(Math.cos(ga.heading)) === Math.sign(Math.cos(gb.heading));
+                if (sameCrossDir) {
+                  var neededX = Math.sqrt(Math.max(0, minGapSq - gapDy * gapDy)) + 0.05;
+                  var haveX = Math.abs(gapDx);
+                  var pushX = neededX - haveX;
+                  if (pushX > 0) {
+                    var gapSignX = gapDx >= 0 ? 1 : -1;
+                    ga.x -= gapSignX * pushX * 0.5;
+                    gb.x += gapSignX * pushX * 0.5;
+                    var gapDirX = Math.cos(ga.heading) >= 0 ? 1 : -1;
+                    var gaAheadX = (ga.x - gb.x) * gapDirX > 0;
+                    if (gaAheadX) gb.speed = Math.min(gb.speed, ga.speed * 0.9);
+                    else ga.speed = Math.min(ga.speed, gb.speed * 0.9);
+                  }
+                } else {
+                  var neededSideY = Math.sqrt(Math.max(0, minGapSq - gapDx * gapDx)) + 0.05;
+                  var haveSideY = Math.abs(gapDy);
+                  var pushSideY = neededSideY - haveSideY;
+                  if (pushSideY > 0) {
+                    var sideSignY = gapDy >= 0 ? 1 : -1;
+                    ga.y -= sideSignY * pushSideY * 0.5;
+                    gb.y += sideSignY * pushSideY * 0.5;
+                  }
+                }
               }
             }
           }
@@ -7763,7 +7865,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (!statsRef.current.childStrike) statsRef.current.childStrike = 0;
                 statsRef.current.childStrike++;
                 addToast('🚨 YOU HIT A CHILD. This is what the stop-arm prevents. -80');
-                eventToastRef.current = { msg: '🚨 The federal stop-arm law exists because of moments exactly like this. Always stop for a school bus with red flashers.', until: timeRef.current + 8 };
+                eventToastRef.current = { msg: '🚨 Maine school-bus stop-arm law exists because of moments exactly like this. Always stop for a school bus with red flashers on an undivided road.', until: timeRef.current + 8 };
                 speak('You struck a child. Always stop for a school bus with red flashers.');
                 car.speed *= 0.05;
               } else if (w.mass === 'massive') {
@@ -8094,15 +8196,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (!statsRef.current.busStopCompliance) statsRef.current.busStopCompliance = 0;
               statsRef.current.busStopCompliance++;
               addToast('✓ Stopped for school bus with red flashers. +6');
-              eventToastRef.current = { msg: '✓ Federal + Maine law: stop for ANY school bus with stop-arm extended on an undivided road.', until: timeRef.current + 4 };
+              eventToastRef.current = { msg: '✓ Maine law: stop for a school bus with red flashers on an undivided road.', until: timeRef.current + 4 };
             }
             // Failure: player passed within 4 cells at > 5 mph
             else if (bus._busCompArmed && !bus._busCompLogged && dist < 4 && Math.abs(car.speed) > 2.3) {
               bus._busCompLogged = timeRef.current;
               statsRef.current.safetyScore -= 25;
               addToast('🚨 ILLEGAL PASS of school bus with red flashers! -25');
-              eventToastRef.current = { msg: '🚨 Passing a stopped school bus with red flashers is a FEDERAL violation. $250+ fine in Maine.', until: timeRef.current + 6 };
-              speak('You passed a stopped school bus. That is a federal violation.');
+              eventToastRef.current = { msg: '🚨 Passing a stopped school bus with red flashers violates Maine law. $250+ fine in Maine.', until: timeRef.current + 6 };
+              speak('You passed a stopped school bus. That violates Maine law.');
             }
           }
         };
@@ -17386,6 +17488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var crossPalette = ['#ef4444', '#3b82f6', '#22c55e', '#a855f7', '#f59e0b', '#94a3b8', '#0ea5e9', '#14b8a6'];
                 [1, -1].forEach(function(crossDir) {
                   trafficRef.current.push({
+                    id: 'chunk_' + sci + '_cross_' + (crossDir === 1 ? 'east' : 'west'),
                     x: crossDir === 1 ? 5 : MAP_SIZE - 5,
                     // US right-side driving: lane offset is right of direction of travel.
                     // dir=+1 (heading=0, moving +X) → driver's right is +Y → y = sigWorldY + 1.5.
@@ -21906,7 +22009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 drivingStats.skidSeconds > 1 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #ef4444' } }, '🛞 You skidded for ' + drivingStats.skidSeconds + 's. Remember: brake BEFORE turns, not during. The friction circle has a fixed budget — use it for braking OR steering, not both.') : null,
                 drivingStats.cyclistClose > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, '🚴 ' + drivingStats.cyclistClose + ' close pass(es) to cyclists. Maine requires 3 feet minimum. Cross the centerline to pass if the oncoming lane is clear.') : null,
                 drivingStats.unsignaledLaneChanges > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '⚠️ ' + drivingStats.unsignaledLaneChanges + ' unsignaled lane change(s). Use E=left, V=right to signal before changing lanes. Signal at least 100 ft before the change.') : null,
-                drivingStats.busStopCompliance > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚌 ' + drivingStats.busStopCompliance + ' correct stop(s) for school bus with red flashers. Federal law — you nailed it.') : null,
+                drivingStats.busStopCompliance > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚌 ' + drivingStats.busStopCompliance + ' correct stop(s) for school bus with red flashers. Maine law — you nailed it.') : null,
                 drivingStats.pedYields > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚶 ' + drivingStats.pedYields + ' pedestrian yield(s) at crosswalks. This is the single most important habit for urban driving.') : null,
                 drivingStats.emergencyYields > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚑 ' + drivingStats.emergencyYields + ' emergency vehicle yield(s) — pulled right and stopped. Good instinct.') : null,
                 parseFloat(drivingStats.avgMPG) > currentVehicle.cityMPG ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🌿 Beat the EPA sticker average. Hypermiling working!') : null
@@ -23251,8 +23354,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ══════════════════════════════════════════════════════════
       if (view === 'emergencyVehicle') {
         var EMG_FACTS = [
-          { icon: '📜', title: 'Maine law', body: 'Title 29-A §2054: when an emergency vehicle with lights and siren approaches, pull as far right as possible and stop until it passes. Failing to yield is a civil violation with a fine.' },
-          { icon: '🛣️', title: 'Move Over law', body: 'Maine §2054-A: when passing a stopped emergency vehicle (police, fire, ambulance, tow, utility) with warning lights on the shoulder, move over one lane when safe. If you can\'t, slow to 20 mph below the posted speed.' },
+          { icon: '📜', title: 'Maine law', body: 'Title 29-A §2054: when an emergency vehicle with lights and siren approaches, pull as far right as practicable, clear of intersections, and stop until it passes. Failing to yield is a Class E crime with a minimum fine.' },
+          { icon: '🛣️', title: 'Move Over law', body: 'Maine §2070(8): when passing a stationary disabled or flashing-light vehicle, move to a non-adjacent lane if possible. If not, pass at a careful and prudent speed reasonable for safety.' },
           { icon: '🚧', title: 'Why it matters', body: 'Every year roadside workers and responders die on Maine shoulders because drivers don\'t move over. The law exists because "rubbernecking at 65 mph" kills people.' },
           { icon: '🛑', title: 'Don\'t stop mid-intersection', body: 'If you\'re inside an intersection when you hear a siren, CLEAR the intersection first, then pull right. Stopping in the intersection blocks the emergency vehicle\'s path.' }
         ];
@@ -23277,13 +23380,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             title: 'Siren at an intersection',
             q: 'You\'re stopped at a red light in the left lane. A fire truck with siren and lights comes up behind you. What do you do?',
             choices: [
-              'Run the red light to get out of the way',
-              'Stay stopped and signal right; wait for the light',
-              'Proceed through the red ONLY when the intersection is clear and safe',
+              'Drive into cross traffic against the red light',
+              'Signal and move right only if you can stay clear of the intersection; otherwise wait',
+              'Proceed through the red once the intersection looks clear',
               'Reverse to give the truck your spot'
             ],
-            correct: 2,
-            exp: 'You may proceed through a red light to clear the way, but ONLY when the intersection is fully clear and safe to cross. Never reverse (collision with the emergency vehicle or cars behind). Staying stopped blocks the truck; running blindly causes a T-bone. Move deliberately, then pull right.'
+            correct: 1,
+            exp: 'If you are already in an intersection, clear it first. If you are stopped before the line, do not enter cross traffic against the red light. Move right only when you can remain clear of the intersection; otherwise wait for a safe opening, then pull right and stop.'
           },
           {
             id: 'oncoming_divided',
@@ -23325,7 +23428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'Stop on the shoulder behind them to offer help'
             ],
             correct: 1,
-            exp: 'Move over if you safely can. If the left lane isn\'t safe, the Move Over law says slow to 20 mph below the posted limit (65 − 20 = 45 mph). Never force a lane change into an occupied lane — that causes the crash the law is trying to prevent. Never stop to "help" unless you\'re trained and invited; you\'re another obstacle.'
+            exp: 'Move over if you safely can. If the left lane is not safe, slow to a careful and prudent speed that is reasonable for passing safely. Never force a lane change into an occupied lane — that causes the crash the law is trying to prevent. Never stop to "help" unless you\'re trained and invited; you\'re another obstacle.'
           },
           {
             id: 'multi_vehicle',
@@ -23986,12 +24089,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             q: 'I-295, 65 mph. No lane closure, but a Maine DOT worker in a reflective vest is on the right shoulder next to a parked truck with flashing amber lights. What do you do?',
             choices: [
               'Maintain 65 mph — they\'re on the shoulder, not in your lane',
-              'If the left lane is safe, move over. If not, slow to about 45 mph (20 mph below posted)',
+              'If the left lane is safe, move over. If not, slow to a careful, prudent speed and pass with extra space',
               'Stop completely to offer help',
               'Flash high beams as courtesy and maintain speed'
             ],
             correct: 1,
-            exp: 'Same Move Over law as for emergency vehicles (Maine §2054-A). Utility, DOT, and tow workers are covered. Move over one lane when safe, or slow 20 mph below the posted limit if you can\'t. This law exists because roadside worker deaths are one of the leading causes of work-zone fatalities.'
+            exp: 'Maine Title 29-A §2070(8) says to pass a stationary disabled or flashing-light vehicle in a non-adjacent lane if possible. If that is impossible or unsafe, pass at a careful and prudent speed reasonable for safety. This law exists because roadside worker deaths are one of the leading causes of work-zone fatalities.'
           },
           {
             id: 'barrel_gap',
@@ -24104,10 +24207,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ══════════════════════════════════════════════════════════
       if (view === 'teenGDL') {
         var GDL_FACTS = [
-          { icon: '📘', title: 'Three phases',       body: 'Maine GDL: Learner\'s Permit at 15 (w/ driver\'s ed enrollment). Intermediate (provisional) License at 16 after holding permit 6+ months. Full License at 17 with a clean 180-day record, or automatically at 18.' },
-          { icon: '⏱️', title: '70 supervised hours', body: 'Before the road test, Maine requires 70 hours of supervised driving (10 of those at night) if you\'re in driver\'s ed. 75 hours if you\'re not. These hours get verified on the logbook your parent signs.' },
-          { icon: '📵', title: 'Phones — zero tolerance', body: 'Under 18: all mobile-device use is banned while driving, including hands-free and GPS. First offense $50–$500, license suspension for repeats. The rule covers texting, calling, maps, music skipping — any touch.' },
-          { icon: '🔄', title: 'The clock resets',    body: 'A moving-violation conviction during intermediate phase restarts your 270-day clock from the violation date. Translation: one speeding ticket and you\'re back to square one for the passenger and curfew restrictions.' }
+          { icon: '📘', title: 'Three phases',       body: 'Maine GDL: Learner\'s Permit at 15 with driver\'s ed for applicants under 18. Intermediate License at 16 after holding the permit 6+ months and logging 70 supervised hours. Passenger, curfew, and device restrictions last 270 days and can extend if violated.' },
+          { icon: '⏱️', title: '70 supervised hours', body: 'Before a license for an applicant under 21, Maine requires 70 hours of supervised driving, including 10 at night. These hours get certified on the driving log before the road test.' },
+          { icon: '📵', title: 'Phones — zero tolerance', body: 'Under 18: all mobile-device interaction is banned while driving, including hands-free and GPS input. During the intermediate period, violations can bring a $250-$500 fine, a 60-day first-offense suspension, and another 270 days of restrictions.' },
+          { icon: '🔄', title: 'Restriction extensions',    body: 'An intermediate-license restriction violation extends your passenger, curfew, and device restrictions by another 270 days. It can also mean a $250-$500 fine and license suspension.' }
         ];
         var GDL_SCENARIOS = [
           {
@@ -24117,26 +24220,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             q: 'You got your Maine intermediate license 3 months ago. You\'re 16. Two friends from school ask for a ride to a party. No adults in the car. Legal?',
             choices: [
               'Yes — you\'re licensed, you can carry who you want',
-              'No — during the 270-day intermediate phase, no non-family passengers under 20 unless a licensed driver 20+ is in the front seat',
+              'No — during the 270-day intermediate phase, no passengers other than immediate family unless a qualifying licensed operator is beside you',
               'Yes, as long as everyone buckles up',
               'Yes, but only within 5 miles of home'
             ],
             correct: 1,
-            exp: 'Maine\'s provisional license restricts you from carrying non-family passengers for the FIRST 270 days of intermediate licensing — unless a licensed driver age 20+ is in the front seat. The rule exists because teen-with-teen-passengers crashes are statistically the highest-risk driving situation in America. Siblings / parents / grandparents are always exempt.'
+            exp: 'Maine\'s intermediate license restricts you from carrying passengers other than immediate family for the 270-day restriction period unless a qualifying licensed operator is beside you. The rule exists because teen-with-teen-passenger crashes are a high-risk driving situation. Immediate family remains allowed.'
           },
           {
             id: 'curfew',
             icon: '🌙',
             title: 'The 2 AM diner run',
-            q: 'You\'re 16 with an intermediate license. Friends want to hit a 24-hour diner at 2 AM. You\'re not coming from work or school. Legal for you to drive?',
+            q: 'You\'re 16 with an intermediate license. Friends want to hit a 24-hour diner at 2 AM. Legal for you to drive?',
             choices: [
               'Yes — intermediate drivers can drive anytime',
-              'No — midnight to 5 AM is off-limits for intermediate drivers unless you\'re going to/from work, school, or have a licensed 20+ driver in the front seat',
+              'No — midnight to 5 AM is off-limits during the intermediate restriction period',
               'Only on weekends',
               'Only with parental text-permission'
             ],
             correct: 1,
-            exp: 'Maine intermediate license curfew: no driving 12:00 AM to 5:00 AM. Exceptions: coming from or going to work, school, or a licensed emergency-responder activity — AND a licensed 20+ driver in the passenger seat works as a blanket exemption. A social trip is not an exception. A ticket here also RESETS your 270-day intermediate clock.'
+            exp: 'Maine intermediate license curfew: no driving 12:00 AM to 5:00 AM during the 270-day restriction period. A social trip is not allowed, and a restriction violation can extend the 270-day period, carry a $250-$500 fine, and trigger a license suspension.'
           },
           {
             id: 'hands_free',
@@ -24150,7 +24253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'Only for family calls'
             ],
             correct: 1,
-            exp: 'Under 18 in Maine: no phone use at all while driving. Not texting, not calling, not hands-free, not GPS input. The law is stricter than for adult drivers because teen-driver-distraction crashes are the #1 cause of teen-driver deaths. Pull over to take any call. A violation during intermediate phase restarts your 270-day clock.'
+            exp: 'Under 18 in Maine: no phone interaction while driving. Not texting, not calling, not hands-free, not GPS input. Pull over and stop somewhere safe before using a phone. During the intermediate period, a violation can extend the restriction period another 270 days and trigger fines and license suspension.'
           },
           {
             id: 'supervised_hours',
@@ -24164,21 +24267,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               '100 hours'
             ],
             correct: 2,
-            exp: '70 hours supervised driving, 10 at night, logged and signed by a parent or guardian, if you completed driver\'s education. Without driver\'s ed it\'s 75 hours. Night hours are specifically required because most teen fatal crashes happen after dark. The log is verified at the BMV when you test.'
+            exp: 'Maine requires 70 hours of supervised driving, including 10 at night, for under-21 applicants before a license. Night hours are specifically required because driving after dark is higher-risk for new drivers. The log is certified before you test.'
           },
           {
             id: 'clock_reset',
             icon: '🔄',
-            title: 'Ticket consequence',
-            q: 'You have an intermediate license. 60 days in, you get a speeding ticket (guilty). What happens to your intermediate-phase restrictions?',
+            title: 'Restriction consequence',
+            q: 'You have an intermediate license. 60 days in, you violate the midnight-to-5 AM curfew. What happens to your intermediate-phase restrictions?',
             choices: [
-              'Nothing — a ticket is just a ticket',
-              'The 270-day intermediate clock RESETS from the violation date, extending all passenger/curfew restrictions',
+              'Nothing — restrictions keep counting down',
+              'The 270-day restriction period is extended by another 270 days',
               'You lose your license permanently',
               'You have to retake the road test'
             ],
             correct: 1,
-            exp: 'Any moving-violation conviction during intermediate phase restarts your 270-day clock from the violation date. So a ticket 60 days in resets you back to day zero — meaning another 270 days of no-non-family-passenger and no-midnight-drive rules. Multiple violations can also trigger license suspension. Drive carefully during this phase.'
+            exp: 'A violation of Maine intermediate-license restrictions extends the restriction period by another 270 days. The statute also sets a $250-$500 fine and license suspensions: 60 days for a first offense, 180 days for a second, and one year for a third or later offense.'
           },
           {
             id: 'sibling',
@@ -24540,7 +24643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             scenario: 'Your engine dies while crossing train tracks. You see a train approaching.',
             steps: [
               'GET OUT. Everyone out of the vehicle, immediately.',
-              'Run AWAY from the tracks at a 45° angle AWAY from the oncoming train (toward it, not with it).',
+              'Move away from the tracks at a 45-degree angle TOWARD the oncoming train, not with it.',
               'If you see the emergency phone at the crossing (blue sign), call the number.',
               'Call 911. Give the crossing ID number from the blue sign.',
               'DO NOT try to push or restart the car until a train has passed.'
@@ -25011,7 +25114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             q: 'A school bus ahead stops with red lights flashing and stop-arm extended. You are on a 2-lane road in the opposite direction.',
             choices: ['Proceed at reduced speed — you\'re going the other way', 'STOP — both directions must stop', 'Pass carefully on the left'],
             correct: 1,
-            exp: 'On a 2-lane (undivided) road, ALL traffic in BOTH directions must stop for a school bus with red flashers. This is non-negotiable federal law.'
+            exp: 'On a 2-lane (undivided) road, ALL traffic in BOTH directions must stop for a school bus with red flashers. Maine law requires stopping until the bus moves again or the bus operator signals you to proceed.'
           },
           {
             id: 'uncontrolled_same', title: 'Uncontrolled Intersection, Same Time',
@@ -25067,7 +25170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             q: 'A car is pulled onto the right shoulder with its hazard lights flashing. You\'re in the right lane on a 2-lane highway.',
             choices: ['Maintain speed — you have the right-of-way', 'Move one lane left if possible; otherwise slow substantially', 'Stop to help in your lane'],
             correct: 1,
-            exp: '"Move Over" laws exist in all 50 states. If a lane change is safe, move left. Otherwise slow down significantly. Maine adds a $300 fine for violating this around emergency/utility vehicles.'
+            exp: '"Move Over" laws exist in all 50 states. If a lane change is safe, move left. Otherwise slow to a careful, prudent speed and leave extra space around emergency, utility, tow, or disabled vehicles.'
           },
           {
             id: 'construction_flagger', title: 'Construction Zone Flagger',
@@ -25081,7 +25184,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             q: 'A school bus stops with red lights flashing on the OPPOSITE side of a divided highway (physical median between directions). You\'re on the other side.',
             choices: ['STOP — always stop for a school bus with red lights', 'Continue — only same-direction traffic must stop on divided roads', 'Slow down but don\'t stop'],
             correct: 1,
-            exp: 'On a DIVIDED highway (physical median), only same-direction traffic stops. On undivided (no median, even 4 lanes), BOTH directions stop. This is federal law — learn the difference.'
+            exp: 'On a DIVIDED highway with a curb or other physical barrier, opposite-direction traffic does not have to stop. On undivided roads (no physical barrier, even 4 lanes), BOTH directions stop under Maine law.'
           },
           {
             id: 'white_cane_ped', title: 'Pedestrian with White Cane',
@@ -25177,13 +25280,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var ms = to - from;
           return ms / (1000 * 60 * 60 * 24 * 365.25);
         };
+        var daysBetween = function(from, to) {
+          if (!from || !to) return null;
+          return (to - from) / (1000 * 60 * 60 * 24);
+        };
         var now = new Date();
         var birth = parseDate(gdlBirth);
         var permit = parseDate(gdlPermit);
         var intermediate = parseDate(gdlIntermediate);
         var age = birth ? ageInYears(birth, now) : null;
         var permitHeld = permit ? ageInYears(permit, now) : null;
-        var intermediateHeld = intermediate ? ageInYears(intermediate, now) : null;
+        var intermediateHeldDays = intermediate ? daysBetween(intermediate, now) : null;
+        var intermediateRestrictionActive = intermediateHeldDays !== null && intermediateHeldDays < 270;
         // Determine stage + restrictions
         var stage = 'unstarted';
         var stageInfo = null;
@@ -25193,8 +25301,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         else if (permit && permitHeld < 0.5) stage = 'permit_hold';
         else if (permit && permitHeld >= 0.5 && age < 16) stage = 'permit_waiting';
         else if (permit && !intermediate && age >= 16) stage = 'eligible_intermediate';
-        else if (intermediate && intermediateHeld < 0.75) stage = 'intermediate_restricted';
-        else if (intermediate && intermediateHeld >= 0.75) stage = 'full_license';
+        else if (intermediate && intermediateRestrictionActive) stage = 'intermediate_restricted';
+        else if (intermediate && !intermediateRestrictionActive) stage = 'full_license';
         var stages = {
           unstarted: { title: 'Start tracking', icon: '📅', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', desc: 'Enter your birth date below to see your Maine GDL stage and what\'s next.' },
           tooyoung: { title: 'Pre-permit', icon: '🌱', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', desc: 'You must be 15 to apply for a Maine learner\'s permit. Keep studying!' },
@@ -25202,14 +25310,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           permit_hold: { title: 'Learner\'s Permit (holding period)', icon: '🪪', color: '#fbbf24', desc: 'You must hold the permit 6 months with NO violations. Keep logging practice hours!' },
           permit_waiting: { title: 'Permit held 6+ months — waiting to be 16', icon: '⏳', color: '#fbbf24', desc: 'You\'ve cleared the 6-month hold. Once you\'re 16 AND have 70 supervised hours (including 10 night), apply for intermediate license.' },
           eligible_intermediate: { title: 'Eligible for intermediate license', icon: '🔑', color: '#10b981', desc: 'You\'re 16 with permit + 6 months. Apply for intermediate license at the BMV. Road test required.' },
-          intermediate_restricted: { title: 'Intermediate License', icon: '🚗', color: '#0ea5e9', desc: 'You have a restricted license. See restrictions below. After 9 months violation-free, full license.' },
+          intermediate_restricted: { title: 'Intermediate License', icon: '🚗', color: '#0ea5e9', desc: 'You have a restricted license. See restrictions below. After the 270-day restriction period, restrictions can lift if they are not extended by a violation.' },
           full_license: { title: 'Full License!', icon: '🎉', color: '#4ade80', desc: 'Congratulations. You have a full Maine driver\'s license. Drive responsibly — Maine roads count on you.' }
         };
         stageInfo = stages[stage];
         // Restrictions for intermediate stage
         var restrictions = [
-          { icon: '🕛', label: 'Curfew: Midnight - 5 AM (no driving) for first 9 months', active: stage === 'intermediate_restricted' && intermediateHeld < 0.75 },
-          { icon: '👥', label: 'No passengers under 20 (except family) for first 9 months', active: stage === 'intermediate_restricted' && intermediateHeld < 0.75 },
+          { icon: '🕛', label: 'Curfew: Midnight - 5 AM during the 270-day restriction period', active: stage === 'intermediate_restricted' && intermediateRestrictionActive },
+          { icon: '👥', label: 'No passengers other than immediate family unless a qualifying licensed operator is beside you', active: stage === 'intermediate_restricted' && intermediateRestrictionActive },
           { icon: '📵', label: 'Zero handheld phone use (all ages in Maine)', active: stage === 'intermediate_restricted' || stage === 'full_license' },
           { icon: '🍺', label: 'Zero tolerance — any BAC = license suspension (under 21)', active: age !== null && age < 21 }
         ];
@@ -25673,7 +25781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             [
               { icon: '🚴', title: 'Cyclists are vehicles', body: 'They can use the full lane, not just the shoulder. Especially when road surface or lane width makes shoulder-riding unsafe. Do NOT honk at cyclists taking the lane — they\'re legal.' },
               { icon: '🏍️', title: 'Motorcyclists swerve for reasons', body: 'What looks like reckless lane weaving is usually: avoiding potholes, gravel, oil spots, grates, debris. A pothole that barely registers in your sedan can throw a motorcycle rider.' },
-              { icon: '🚪', title: 'Dooring kills cyclists', body: 'Before opening your door in traffic, USE YOUR LEFT HAND to grab the handle — the Dutch Reach. Your body naturally turns to check behind. Dooring injuries are 50% of urban cyclist crashes.' },
+              { icon: '🚪', title: 'Dooring kills cyclists', body: 'Before opening your door in traffic, use your FAR hand — your right hand from the driver seat in the U.S. — so your body naturally turns to check behind. Dooring injuries are 50% of urban cyclist crashes.' },
               { icon: '👀', title: 'Shared blind spots', body: 'Motorcycles fit ENTIRELY in your A-pillar blind spot (the pillar between windshield and door). Bikes + cyclists do the same. Always lean to see past pillars at intersections.' },
               { icon: '🛑', title: 'Turning across', body: 'The #1 driver-vs-cyclist crash is the RIGHT HOOK: driver turns right across a cyclist going straight in a bike lane. Before any right turn, shoulder-check for cyclists. Before left turns, scan for oncoming motorcycles.' },
               { icon: '🌧️', title: 'Wet roads', body: 'Painted lines are slick in rain. Motorcyclists and cyclists will AVOID them — giving them extra space in rain is crucial. Don\'t tailgate — they\'re reading the road surface.' },
@@ -26014,15 +26122,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { id: 'curfew', friend: 'Morgan', text: '"It\'s only 12:30 AM, let\'s go get pizza. You\'re 17 — nobody checks GDL curfew anyway."',
             context: 'You have a Maine intermediate (restricted) license. Curfew is midnight-5am.',
             choices: [
-              { text: 'Go — it\'s unlikely you\'ll get caught', safe: false, reply: 'One traffic stop during curfew = $137 fine + 30-day license suspension in Maine. Not worth pizza. Also: a midnight crash with passengers you\'re not allowed to carry = much bigger consequences.' },
+              { text: 'Go — it\'s unlikely you\'ll get caught', safe: false, reply: 'One traffic stop during curfew can mean a $250-$500 fine, a 60-day first-offense license suspension, and another 270 days of intermediate-license restrictions in Maine. Not worth pizza. Also: a midnight crash with passengers you\'re not allowed to carry = much bigger consequences.' },
               { text: 'Offer to go together in the morning', safe: true, reply: 'Smart. The restriction exists because midnight-to-dawn is the deadliest time for teen drivers. The rule is protecting your life, not inconveniencing you.' }
             ] },
           { id: 'passengers', friend: 'Taylor', text: '"Come on, just fit 5 of us — no one\'s gonna pull you over for that."',
-            context: 'You have a Maine intermediate license (no passengers under 20 except family for first 9 months). Four friends want a ride.',
+            context: 'You have a Maine intermediate license: during the 270-day restriction period, passengers other than immediate family require a qualifying licensed operator beside you. Four friends want a ride.',
             choices: [
-              { text: 'Squeeze everyone in', safe: false, reply: 'Multiple passengers = top teen crash risk factor. Maine law exists because every additional teen passenger DOUBLES the crash rate. Plus: seatbelts required for every rider, period.' },
-              { text: 'Make two trips', safe: true, reply: 'Extra 15 minutes of driving beats a crash, ticket, or suspension. Making the right call here is leadership — your friends will respect you for it.' },
-              { text: 'Help them call rideshares', safe: true, reply: 'Great creative solution. You take some, Uber takes others. Everyone home safe.' }
+              { text: 'Squeeze everyone in', safe: false, reply: 'Multiple passengers are a major teen-driver risk factor, and Maine intermediate-license restrictions do not allow friend passengers unless a qualifying licensed operator is beside you. Seatbelts are required for every rider, period.' },
+              { text: 'Make two trips', safe: false, reply: 'Two trips still means carrying friend passengers in violation of the intermediate-license restriction. Help them find another ride with an adult or a qualified licensed operator instead.' },
+              { text: 'Help them call rideshares', safe: true, reply: 'Great creative solution. A rideshare, parent, or other qualified driver handles the trip. Everyone gets home safe without putting your license at risk.' }
             ] }
         ];
         var ppIdx = d.ppIdx || 0;
@@ -26308,13 +26416,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('ul', { style: { margin: '0 0 12px 0', paddingLeft: '18px' } },
                   h('li', null, h('b', null, 'Permit:'), ' age 15, hold 6 months no violations'),
                   h('li', null, h('b', null, 'Intermediate:'), ' age 16, 70 hr supervised (10 night)'),
-                  h('li', null, h('b', null, 'Curfew (intermediate):'), ' 12 AM – 5 AM, first 9 months'),
-                  h('li', null, h('b', null, 'Passengers:'), ' none under 20 (except family), first 9 mo'),
-                  h('li', null, h('b', null, 'Phone:'), ' ALL handheld use banned. Texting $250.'),
+                  h('li', null, h('b', null, 'Curfew (intermediate):'), ' 12 AM - 5 AM during the 270-day restriction period'),
+                  h('li', null, h('b', null, 'Passengers:'), ' immediate family only unless a qualifying licensed operator is beside you'),
+                  h('li', null, h('b', null, 'Phone:'), ' handheld first offense $50; texting starts at $250.'),
                   h('li', null, h('b', null, 'BAC:'), ' zero tolerance under 21; 0.08 adult'),
                   h('li', null, h('b', null, 'Headlights:'), ' required when wipers on'),
                   h('li', null, h('b', null, 'Move over:'), ' for stopped emergency/utility vehicles'),
-                  h('li', null, h('b', null, 'Snow law:'), ' clear ALL snow before driving ($137 fine)'),
+                  h('li', null, h('b', null, 'Snow law:'), ' take reasonable measures so snow/ice cannot fall off your vehicle'),
                   h('li', null, h('b', null, 'Studded tires:'), ' Oct 1 – May 1 only')
                 ),
                 h('h3', { style: { fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0', borderBottom: '1px solid #000' } }, 'EMERGENCY RESPONSES'),
@@ -26899,7 +27007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { type: 'Uncontrolled (no sign or light)', icon: '⚠️', rules: ['Yield to the vehicle already in the intersection.', 'If arriving at the same time, yield to the RIGHT.', 'Slow down and look left-right-left before entering.'], tip: 'Common on rural roads. Treat them like a hidden yield sign — slow, look, proceed only when safe.' },
           { type: 'Roundabout', icon: '🔄', rules: ['Yield to traffic already circulating.', 'Enter when there is a safe gap.', 'Travel counterclockwise.', 'Signal right before your exit.', 'Do NOT stop inside the circle.'], tip: 'Roundabouts reduce fatal crashes by 90% vs. signals. Once you get used to them, they are faster and safer.' },
           { type: 'T-Intersection', icon: '⊤', rules: ['Traffic on the through road has the right-of-way.', 'The vehicle on the terminating road must yield/stop.', 'If both have stop signs, right-of-way goes to the right.'], tip: 'The "top of the T" is the through road. The "stem" yields.' },
-          { type: 'Left Turn', icon: '↰', rules: ['Left turners yield to oncoming straight traffic unless you have a green arrow.', 'Wait behind the stop line until a safe gap.', 'Do NOT enter the intersection to wait unless you are certain you can clear it.', 'Maine: left turn on red from a one-way to a one-way is legal (after full stop).'], tip: 'Left turns are the #1 most dangerous common maneuver. 53% of intersection crashes involve left turns.' },
+          { type: 'Left Turn', icon: '↰', rules: ['Left turners yield to oncoming straight traffic unless you have a green arrow.', 'Wait behind the stop line until a safe gap.', 'Do NOT enter the intersection to wait unless you are certain you can clear it.', 'At a steady red light, do not make a left turn unless a traffic signal specifically allows that movement.'], tip: 'Left turns are the #1 most dangerous common maneuver. 53% of intersection crashes involve left turns.' },
           { type: 'Pedestrian Crosswalk', icon: '🚶', rules: ['Yield to pedestrians in ALL crosswalks — marked AND unmarked.', 'Unmarked crosswalk = the imaginary extension of the sidewalk at any intersection.', 'Do NOT pass a vehicle stopped for a pedestrian.', 'If a ped is in your half of the road, you must stop.'], tip: 'Maine is strict on this. $164 fine for failing to yield to a pedestrian in a crosswalk.' }
         ];
         return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
@@ -27154,7 +27262,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '6px' } }, '⚠️ Special situations'),
             h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
-              h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, 'At an intersection:'), ' Do NOT stop in the intersection. Pull through first, then move right.'),
+              h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, 'At an intersection:'), ' If already inside the intersection, clear it first, then move right. If stopped before the line, stay clear of cross traffic.'),
               h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, 'Divided highway:'), ' If the emergency vehicle is on the OTHER side of the median, you do not need to stop (but slow down).'),
               h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, 'Cannot move right:'), ' If right shoulder is blocked, stop where you are. The emergency vehicle will go around you.'),
               h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, 'Multiple vehicles:'), ' Stay stopped until ALL emergency vehicles have passed. They often travel in convoys.'),

@@ -1,5 +1,4 @@
-(function(){"use strict";
-if(window.AlloModules&&window.AlloModules.GeminiAPI){console.log("[CDN] GeminiAPI already loaded, skipping"); return;}
+(function(){
 // gemini_api_source.jsx — Gemini HTTP wrappers for AlloFlow
 // Extracted from AlloFlowANTI.txt on 2026-04-24.
 // Pure HTTP orchestration — no React state, no module-level mutable state.
@@ -332,6 +331,78 @@ const createGeminiAPI = (deps) => {
       throw err;
     };
 
+    const _readLocalFallbackConfig = () => {
+      if (_isCanvasEnv || typeof window === 'undefined' || typeof localStorage === 'undefined') return null;
+      try {
+        const cfg = JSON.parse(localStorage.getItem('alloflow_ai_config') || 'null');
+        const fallback = cfg && cfg.localFallback;
+        if (!fallback || !fallback.enabled || fallback.backend !== 'alloflow-local') return null;
+        return fallback;
+      } catch (_) {
+        return null;
+      }
+    };
+
+    const _inferLocalFallbackTask = (prompt, jsonMode) => {
+      if (!jsonMode) return 'simple-text';
+      const text = String(prompt || '').toLowerCase();
+      if (/remediation|accessib|pdf audit|alt[-\s]?text|contrast|ocr|tagged pdf|artifact audit|auto[-\s]?fix|fix plan/.test(text)) {
+        return 'remediation-json';
+      }
+      return 'strict-json';
+    };
+
+    const _localFallbackTaskAllowed = (fallback, task) => {
+      const support = fallback && fallback.localModelProfile && fallback.localModelProfile.taskSupport;
+      if (!support) return false;
+      if (task === 'remediation-json') return support.remediationJson === 'pass';
+      if (task === 'strict-json') return support.strictJson === 'pass';
+      return support.simpleText === 'pass';
+    };
+
+    const _tryLocalFallbackAfterQuota = async (prompt, { jsonMode, useSearch, temperature, signal, useCodeExecution }) => {
+      if (useSearch || useCodeExecution || (signal && signal.aborted)) return { used: false };
+      const fallback = _readLocalFallbackConfig();
+      if (!fallback) return { used: false };
+      const task = _inferLocalFallbackTask(prompt, jsonMode);
+      if (!_localFallbackTaskAllowed(fallback, task)) {
+        try { console.warn('[callGemini] Local fallback skipped: model check has not passed task ' + task + '.'); } catch (_) {}
+        return { used: false };
+      }
+      const Provider = typeof window !== 'undefined' ? window.AIProvider : null;
+      if (!Provider) return { used: false };
+      try {
+        const ai = new Provider({
+          backend: 'alloflow-local',
+          apiKey: '',
+          baseUrl: fallback.baseUrl || 'http://127.0.0.1:32173',
+          models: fallback.models || { default: fallback.localModelProfile && fallback.localModelProfile.modelId || 'local-model' },
+          localModelProfile: fallback.localModelProfile,
+          fetchWithRetry: fetchWithExponentialBackoff,
+          optimizeImage,
+          debugLog,
+          warnLog,
+        });
+        const value = await ai.generateText(prompt, {
+          json: Boolean(jsonMode),
+          search: false,
+          temperature: temperature == null ? null : Number(temperature),
+        });
+        try {
+          window.__alloLocalFallbackLastUsed = {
+            at: Date.now ? Date.now() : 0,
+            task,
+            model: fallback.localModelProfile && fallback.localModelProfile.modelId || '',
+          };
+          window.dispatchEvent(new CustomEvent('alloflow:local-fallback-used', { detail: window.__alloLocalFallbackLastUsed }));
+        } catch (_) {}
+        return { used: true, value };
+      } catch (localErr) {
+        try { console.warn('[callGemini] Local fallback failed:', localErr && localErr.message ? localErr.message : localErr); } catch (_) {}
+        return { used: false };
+      }
+    };
+
     const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false) => {
       if (!apiKey && !_isCanvasEnv) {
         console.warn('[callGemini] No API key available — skipping request.');
@@ -525,6 +596,10 @@ const createGeminiAPI = (deps) => {
         // is "Daily Usage Limit Reached" (which masked the gemini-3-flash-preview
         // deploy fabrication for weeks).
         if (cls.kind === 'quota' || cls.kind === 'auth' || cls.kind === 'config') {
+          if (cls.kind === 'quota') {
+            const localFallback = await _tryLocalFallbackAfterQuota(prompt, { jsonMode, useSearch, temperature, signal, useCodeExecution });
+            if (localFallback.used) return localFallback.value;
+          }
           _throwClassified(err);
         }
         throw err;
@@ -690,4 +765,5 @@ if (typeof window !== 'undefined') {
         window._upgradeGeminiAPI();
     }
 }
+
 })();

@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-25582-daughters-of-the-puritans-a-group-of-brief-biographies",
+  "title": "Daughters of the Puritans: A Group of Brief Biographies",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Alcott, Louisa May, 1832-1888",
+    "Child, Lydia Maria Francis, 1802-1880",
+    "Dix, Dorothea Lynde, 1802-1887",
+    "Fuller, Margaret, 1810-1850",
+    "Sedgwick, Catharine Maria, 1789-1867",
+    "Stowe, Harriet Beecher, 1811-1896"
+  ],
+  "authors": [
+    "Beach, Seth Curtis"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/25582"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Daughters of the Puritans: A Group of Brief Biographies\" by Beach, Seth Curtis. Metadata tags include: Alcott, Louisa May, 1832-1888; Child, Lydia Maria Francis, 1802-1880; Dix, Dorothea Lynde, 1802-1887; Fuller, Margaret, 1810-1850."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 82
+  }
+}

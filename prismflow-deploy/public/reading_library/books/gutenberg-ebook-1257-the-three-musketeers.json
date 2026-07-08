@@ -1,0 +1,56 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-1257-the-three-musketeers",
+  "title": "The three musketeers",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Adventure and adventurers -- Fiction",
+    "France -- History -- Louis XIII, 1610-1643 -- Fiction",
+    "Historical fiction",
+    "Swordsmen -- Fiction"
+  ],
+  "authors": [
+    "Dumas, Alexandre",
+    "Maquet, Auguste"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1257"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The three musketeers\" by Dumas, Alexandre, Maquet, Auguste. Metadata tags include: Adventure and adventurers -- Fiction; France -- History -- Louis XIII, 1610-1643 -- Fiction; Historical fiction; Swordsmen -- Fiction."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 80
+  }
+}

@@ -9,7 +9,14 @@
  */
 
 // Browser IIFE that attaches to window and (guarded) exports for Node under jsdom.
-const { AIProvider, LOCAL_BACKENDS, isLocalTextBackend } = require('../public/ai_backend_module.js');
+const {
+  AIProvider,
+  LOCAL_BACKENDS,
+  isLocalTextBackend,
+  buildLocalModelProfile,
+  buildLocalTaskSupportFromProbe,
+  localModelSupportsTask,
+} = require('../public/ai_backend_module.js');
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 function jsonResponse(obj) {
@@ -51,6 +58,34 @@ describe('Phase 0 — isLocalTextBackend / LOCAL_BACKENDS gate', () => {
     ['gemini', 'claude', 'openai', undefined, null, ''].forEach((b) =>
       expect(isLocalTextBackend(b)).toBe(false)
     );
+  });
+});
+
+describe('Local model probe task support', () => {
+  test('records remediation readiness only when the remediation probe passes', () => {
+    const support = buildLocalTaskSupportFromProbe({
+      status: 'partial',
+      generatedAt: '2026-07-08T12:00:00.000Z',
+      tests: [
+        { id: 'plain-text', ok: true },
+        { id: 'strict-json', ok: true },
+        { id: 'remediation-shape', ok: false },
+      ],
+    });
+    expect(support).toMatchObject({
+      status: 'partial',
+      passed: 2,
+      total: 3,
+      simpleText: 'pass',
+      strictJson: 'pass',
+      remediationJson: 'fail',
+    });
+    const profile = buildLocalModelProfile({
+      backend: 'alloflow-local',
+      localModelProfile: { modelId: 'gemma-4-E4B-it-Q4_K_M', taskSupport: support },
+    });
+    expect(localModelSupportsTask(profile, 'strict-json')).toBe(true);
+    expect(localModelSupportsTask(profile, 'remediation-json')).toBe(false);
   });
 });
 

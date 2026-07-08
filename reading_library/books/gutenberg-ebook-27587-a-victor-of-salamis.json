@@ -1,0 +1,56 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-27587-a-victor-of-salamis",
+  "title": "A Victor of Salamis",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Greece -- History -- Fiction",
+    "Leonidas, King of Sparta, -480 B.C. -- Fiction",
+    "Salamis, Battle of, Greece, 480 B.C. -- Fiction",
+    "Themistocles, approximately 524 B.C.-approximately 459 B.C. -- Fiction",
+    "Xerxes I, King of Persia, 519 B.C.-465 B.C. or 464 B.C. -- Fiction"
+  ],
+  "authors": [
+    "Davis, William Stearns"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/27587"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"A Victor of Salamis\" by Davis, William Stearns. Metadata tags include: Greece -- History -- Fiction; Leonidas, King of Sparta, -480 B.C. -- Fiction; Salamis, Battle of, Greece, 480 B.C. -- Fiction; Themistocles, approximately 524 B.C.-approximately 459 B.C. -- Fiction."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 90
+  }
+}

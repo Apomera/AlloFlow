@@ -545,6 +545,7 @@ function _usesLocalTextBackend(config) {
 function _installLocalTextBridge(aiInstance, aiConfig) {
     if (!_usesLocalTextBackend(aiConfig) || !aiInstance || typeof aiInstance.generateText !== 'function') return false;
     const backend = aiConfig.backend;
+    const localProfile = aiConfig.localModelProfile || (aiConfig.localFallback && aiConfig.localFallback.localModelProfile) || null;
     const localCallGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null) => {
         try {
             return await aiInstance.generateText(prompt, {
@@ -567,6 +568,8 @@ function _installLocalTextBridge(aiInstance, aiConfig) {
             model: aiConfig.models?.default || '',
             providerId: aiConfig.providerId || backend,
             source: aiConfig.source || 'alloflow',
+            localModelProfile: localProfile,
+            taskSupport: localProfile ? localProfile.taskSupport : null,
         };
     }
     return true;
@@ -582,6 +585,8 @@ function _installLocalTextBridgeFromStorage() {
         models: userConfig.models || (typeof window !== 'undefined' ? window.GEMINI_MODELS : undefined),
         ttsProvider: userConfig.ttsProvider || 'auto',
         imageProvider: userConfig.imageProvider || 'auto',
+        localModelProfile: userConfig.localModelProfile,
+        localFallback: userConfig.localFallback,
         fetchWithRetry: fetchWithExponentialBackoff,
         optimizeImage: optimizeImage,
         debugLog: debugLog,
@@ -14707,6 +14712,8 @@ const parseTaggedContent = (text) => {
     models: _isCanvasEnv ? _CANVAS_MODELS : (_aiUserConfig?.models || _DEPLOY_MODELS),
     ttsProvider: _aiUserConfig?.ttsProvider || 'auto',
     imageProvider: _aiUserConfig?.imageProvider || 'auto',
+    localModelProfile: _aiUserConfig?.localModelProfile,
+    localFallback: _aiUserConfig?.localFallback,
     fetchWithRetry: fetchWithExponentialBackoff,
     optimizeImage: optimizeImage,
     debugLog: debugLog,

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-26282-the-witch-of-salem-or-credulity-run-mad",
+  "title": "The Witch of Salem; or, Credulity Run Mad",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Historical fiction",
+    "Salem (Mass.) -- History -- Colonial period, ca. 1600-1775 -- Fiction",
+    "Trials (Witchcraft) -- Fiction",
+    "Witches -- Fiction"
+  ],
+  "authors": [
+    "Musick, John R. (John Roy)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/26282"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Witch of Salem; or, Credulity Run Mad\" by Musick, John R. (John Roy). Metadata tags include: Historical fiction; Salem (Mass.) -- History -- Colonial period, ca. 1600-1775 -- Fiction; Trials (Witchcraft) -- Fiction; Witches -- Fiction."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 87
+  }
+}

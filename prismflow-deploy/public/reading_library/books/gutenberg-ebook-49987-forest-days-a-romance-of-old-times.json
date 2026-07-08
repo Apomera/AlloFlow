@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-49987-forest-days-a-romance-of-old-times",
+  "title": "Forest Days: A Romance of Old Times",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Adventure stories",
+    "Great Britain -- History -- Richard I, 1189-1199 -- Fiction",
+    "Historical fiction",
+    "Outlaws -- Fiction",
+    "Robin Hood (Legendary character) -- Fiction",
+    "Sherwood Forest (England) -- Fiction"
+  ],
+  "authors": [
+    "James, G. P. R. (George Payne Rainsford)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/49987"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Forest Days: A Romance of Old Times\" by James, G. P. R. (George Payne Rainsford). Metadata tags include: Adventure stories; Great Britain -- History -- Richard I, 1189-1199 -- Fiction; Historical fiction; Outlaws -- Fiction."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 85
+  }
+}

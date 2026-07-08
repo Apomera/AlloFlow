@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════
-// stem_tool_lifeskills.js — Life Skills Lab  v5.3
-// Enhanced STEM Lab tool — 18 sub-tools
+// stem_tool_lifeskills.js — Life Skills Lab  v5.12
+// Enhanced STEM Lab tool — 27 sub-tools
 // Start Here · Paycheck · Data Literacy · Decisions · Contracts
-// Insurance · Applied Science · Car Care · Home Repair
+// Records · Transportation · Insurance · Applied Science · Car Care · Home Repair
 // Home Systems · Budget · Credit · Cooking · Laundry Lab
 // Dental Care · Challenge · Battle · Learn
 // ═══════════════════════════════════════════════════════
@@ -73,16 +73,23 @@ window.StemLab = window.StemLab || {
     { id: 'data',       icon: '\uD83D\uDCCA', label: 'Data Literacy' },
     { id: 'decision',   icon: '\uD83E\uDDE0', label: 'Decisions' },
     { id: 'contract',   icon: '\uD83D\uDCDD', label: 'Contracts' },
+    { id: 'records',    icon: '\uD83D\uDCC1', label: 'Records' },
+    { id: 'transport',  icon: '\uD83D\uDE8C', label: 'Transportation' },
     { id: 'insurance',  icon: '\uD83C\uDFE5', label: 'Insurance' },
     { id: 'dental',     icon: '\uD83E\uDDB7', label: 'Dental Care' },
     { id: 'bodycare',   icon: '\uD83E\uDDCD', label: 'Body Care' },
     { id: 'sleep',      icon: '\uD83C\uDF19', label: 'Sleep & Energy' },
+    { id: 'meds',       icon: '\uD83D\uDC8A', label: 'Meds & Labels' },
+    { id: 'appointments', icon: '\uD83D\uDCC5', label: 'Appointments' },
+    { id: 'homesafety', icon: '\uD83D\uDEE1\uFE0F', label: 'Home Safety' },
+    { id: 'digitalsafety', icon: '\uD83D\uDD10', label: 'Digital Safety' },
     { id: 'science',    icon: '\uD83D\uDD2C', label: 'Applied Science' },
     { id: 'carcare',    icon: '\uD83D\uDE97', label: 'Car Care' },
     { id: 'homerepair', icon: '\uD83D\uDD27', label: 'Home Repair' },
     { id: 'homesys',    icon: '\uD83C\uDFE0', label: 'Home Systems' },
     { id: 'budget',     icon: '\uD83D\uDCB0', label: 'Budget' },
     { id: 'credit',     icon: '\uD83D\uDCB3', label: 'Credit' },
+    { id: 'foodconfidence', icon: '\uD83E\uDD57', label: 'Food Confidence' },
     { id: 'cooking',    icon: '\uD83C\uDF73', label: 'Cooking' },
     { id: 'laundry',    icon: '\uD83E\uDDFA', label: 'Laundry Lab' },
     { id: 'challenge',  icon: '\uD83C\uDFAF', label: 'Challenge' },
@@ -92,8 +99,8 @@ window.StemLab = window.StemLab || {
 
   var LIFE_SKILL_PATHS = [
     { id: 'money', icon: '\uD83D\uDCB0', title: 'Money basics', desc: 'Take-home pay, budgets, credit, insurance, and smart borrowing.', start: 'paycheck', accent: '#059669', steps: ['Paycheck', 'Budget', 'Credit', 'Insurance'] },
-    { id: 'choices', icon: '\uD83E\uDDE0', title: 'Better decisions', desc: 'Use evidence, spot misleading data, compare options, and read fine print.', start: 'data', accent: '#2563eb', steps: ['Data', 'Decisions', 'Contracts'] },
-    { id: 'care', icon: '\uD83E\uDDCD', title: 'Health routines', desc: 'Practice body care, sleep, dental care, food safety, and everyday prevention habits.', start: 'bodycare', accent: '#0f766e', steps: ['Body Care', 'Sleep', 'Dental', 'Cooking', 'Insurance'] },
+    { id: 'choices', icon: '\uD83E\uDDE0', title: 'Better decisions', desc: 'Use evidence, spot misleading data, compare options, read fine print, organize records, plan transportation, and stay safer online.', start: 'data', accent: '#2563eb', steps: ['Data', 'Decisions', 'Contracts', 'Records', 'Transportation', 'Digital Safety'] },
+    { id: 'care', icon: '\uD83E\uDDCD', title: 'Health routines', desc: 'Practice body care, appointments, transportation, sleep, medication labels, home safety, dental care, food confidence, and everyday prevention habits.', start: 'bodycare', accent: '#0f766e', steps: ['Body Care', 'Appointments', 'Transportation', 'Sleep', 'Meds', 'Home Safety', 'Dental', 'Food Confidence', 'Cooking', 'Insurance'] },
     { id: 'home', icon: '\uD83C\uDFE0', title: 'Home confidence', desc: 'Understand repairs, home systems, car care, laundry, and applied science.', start: 'homerepair', accent: '#d97706', steps: ['Home Repair', 'Home Systems', 'Car Care', 'Laundry'] },
     { id: 'practice', icon: '\uD83C\uDFAF', title: 'Practice mode', desc: 'Build fluency with challenge questions and the Adulting Defense battle.', start: 'challenge', accent: '#7c3aed', steps: ['Challenge', 'Battle', 'Learn'] }
   ];
@@ -104,6 +111,10 @@ window.StemLab = window.StemLab || {
     { id: 'dataDetect',  icon: '\uD83D\uDCCA', name: 'Data Detective', desc: 'Spot 3 misleading data tricks' },
     { id: 'decisionPro', icon: '\uD83E\uDDE0', name: 'Decision Pro', desc: 'Build a decision matrix' },
     { id: 'trapFinder',  icon: '\uD83D\uDCDD', name: 'Trap Finder', desc: 'Find all traps in a contract' },
+    { id: 'recordsReady', icon: '\uD83D\uDCC1', name: 'Records Ready', desc: 'Build a safe records checklist' },
+    { id: 'formNavigator', icon: '\uD83D\uDCCB', name: 'Form Navigator', desc: 'Practice 3 paperwork decisions' },
+    { id: 'tripReady', icon: '\uD83D\uDE8C', name: 'Trip Ready', desc: 'Build a transportation checklist' },
+    { id: 'routeNavigator', icon: '\uD83E\uDDED', name: 'Route Navigator', desc: 'Practice 3 transportation decisions' },
     { id: 'insured',     icon: '\uD83C\uDFE5', name: 'Plan Analyst', desc: 'Compare health insurance plans' },
     { id: 'dentalReady', icon: '\uD83E\uDDB7', name: 'Dental Ready', desc: 'Build a daily oral-care plan' },
     { id: 'toothTriage', icon: '\uD83E\uDDB7', name: 'Tooth Trouble Solver', desc: 'Practice 3 dental care decisions' },
@@ -111,6 +122,16 @@ window.StemLab = window.StemLab || {
     { id: 'ergoSolver', icon: '\uD83E\uDE91', name: 'Ergonomics Solver', desc: 'Practice 3 body-care decisions' },
     { id: 'sleepPlanner', icon: '\uD83C\uDF19', name: 'Sleep Planner', desc: 'Build a wind-down and wake-time plan' },
     { id: 'energyCoach', icon: '\u26A1', name: 'Energy Coach', desc: 'Practice 3 sleep and energy decisions' },
+    { id: 'medLabelReader', icon: '\uD83D\uDC8A', name: 'Label Reader', desc: 'Read the key parts of a medication label' },
+    { id: 'doseSafety', icon: '\uD83D\uDEE1\uFE0F', name: 'Dose Safety Solver', desc: 'Practice 3 medication label decisions' },
+    { id: 'appointmentReady', icon: '\uD83D\uDCC5', name: 'Appointment Ready', desc: 'Build an appointment prep plan' },
+    { id: 'selfAdvocate', icon: '\uD83D\uDDE3\uFE0F', name: 'Self Advocate', desc: 'Practice 3 appointment decisions' },
+    { id: 'homeSafetyReady', icon: '\uD83D\uDEE1\uFE0F', name: 'Home Safety Ready', desc: 'Build a home safety checklist' },
+    { id: 'safetyResponder', icon: '\uD83D\uDEA8', name: 'Safety Responder', desc: 'Practice 3 home safety decisions' },
+    { id: 'digitalReady', icon: '\uD83D\uDD10', name: 'Digital Ready', desc: 'Build a digital safety checklist' },
+    { id: 'scamSpotter', icon: '\uD83D\uDD0E', name: 'Scam Spotter', desc: 'Practice 3 digital safety decisions' },
+    { id: 'foodPlanner', icon: '\uD83E\uDD57', name: 'Food Planner', desc: 'Build a budget-friendly meal plan' },
+    { id: 'leftoverSafe', icon: '\uD83E\uDD61', name: 'Leftover Safety Solver', desc: 'Practice 3 food storage decisions' },
     { id: 'planMaker',   icon: '\uD83E\uDDED', name: 'Plan Maker', desc: 'Save a personal Life Skills action step' },
     { id: 'appliedSci',  icon: '\uD83D\uDD2C', name: 'Applied Scientist', desc: 'Use 3 applied science tools' },
     { id: 'mechanic',    icon: '\uD83D\uDE97', name: 'Shade Tree Mechanic', desc: 'Complete 3 car care exercises' },
@@ -208,12 +229,26 @@ window.StemLab = window.StemLab || {
     { tier: 1, q: 'How many minutes should a careful toothbrushing session usually last?', a: '2', h: 'Think of the common two-minute timer.' },
     { tier: 1, q: 'What body part should stay relaxed instead of raised while typing?', a: 'shoulders', h: 'Check whether they are creeping up toward your ears.' },
     { tier: 1, q: 'What is a good name for the quiet routine before bedtime?', a: 'wind down', h: 'It helps your body shift from busy to restful.' },
+    { tier: 1, q: 'What part of a medicine label names the ingredient that treats symptoms?', a: 'active ingredient', h: 'Look near the top of many drug facts labels.' },
+    { tier: 1, q: 'What should you bring to an appointment to remember your questions?', a: 'list', h: 'A written list helps when people feel nervous or rushed.' },
+    { tier: 1, q: 'What alarm should every home test for fire warning?', a: 'smoke alarm', h: 'It warns people to get out when there is smoke.' },
+    { tier: 1, q: 'What kind of password is safer: short and reused, or long and unique?', a: 'long and unique', h: 'Reuse spreads risk across accounts.' },
+    { tier: 1, q: 'Where should most leftovers go soon after a meal: counter, fridge, or warm oven?', a: 'fridge', h: 'Cold storage slows germ growth.' },
+    { tier: 1, q: 'What should you keep for a return, warranty, or proof you paid?', a: 'receipt', h: 'It records what you bought and when.' },
+    { tier: 1, q: 'What extra time do you add to a trip in case walking, traffic, or transit takes longer?', a: 'buffer', h: 'It gives your plan breathing room.' },
     { tier: 1, q: 'Why should you empty pockets before washing clothes?', a: 'damage', h: 'Pens, coins, and tissues can damage clothing or the washer.' },
     { tier: 1, q: 'What is a credit score used for?', a: 'borrowing', h: 'Lenders check this before giving you a loan.' },
     { tier: 2, q: 'What is the #1 factor in your FICO credit score?', a: 'payment history', h: 'It accounts for 35% of your score.' },
     { tier: 2, q: 'What do plaque bacteria use from sugary foods to make acids?', a: 'sugar', h: 'The same ingredient that makes candy sweet.' },
     { tier: 2, q: 'What is the word for designing a setup to fit the person and task?', a: 'ergonomics', h: 'It is about fit, comfort, access, and safer work habits.' },
     { tier: 2, q: 'What sleep habit means waking up at about the same time most days?', a: 'consistent', h: 'Your body clock likes patterns.' },
+    { tier: 2, q: 'Who can answer questions about a medicine label at a pharmacy?', a: 'pharmacist', h: 'They are trained to explain medicines and safety questions.' },
+    { tier: 2, q: 'What word means speaking up for your needs, questions, or accommodations?', a: 'self-advocacy', h: 'It can be respectful, clear, and prepared.' },
+    { tier: 2, q: 'What gas is dangerous because you cannot see or smell it and need a detector?', a: 'carbon monoxide', h: 'CO alarms help warn people.' },
+    { tier: 2, q: 'What is a message trying to trick you into sharing passwords or codes often called?', a: 'phishing', h: 'It may pretend to be a trusted person or company.' },
+    { tier: 2, q: 'What should you do with food from a bulging, leaking, or badly dented can?', a: 'throw it out', h: 'Damaged cans can signal unsafe food.' },
+    { tier: 2, q: 'If a form question is confusing or asks for private information, what should you do?', a: 'ask', h: 'Pause and ask a trusted helper or official source.' },
+    { tier: 2, q: 'Before a bus, train, ride, walk, or drive, what should you check: route, time, fare, or all?', a: 'all', h: 'A trip plan needs more than one detail.' },
     { tier: 2, q: 'A recipe makes 24 cookies. You want 36. What is the scaling factor?', a: '1.5', h: '36 / 24 = ?' },
     { tier: 2, q: 'What kind of detergent molecules help lift oil away from fabric?', a: 'surfactant', h: 'They have one water-loving end and one oil-loving end.' },
     { tier: 2, q: 'Credit utilization should be below what percentage for best scores?', a: '30', h: 'Below 10% is even better.' },
@@ -221,6 +256,13 @@ window.StemLab = window.StemLab || {
     { tier: 3, q: 'If you replace a toothbrush every 3 months, how many toothbrushes do you need per year?', a: '4', h: '12 months / 3 months each.' },
     { tier: 3, q: 'If 50 minutes of desk work is followed by a 5-minute reset, what percent of the 55-minute block is reset time? Round to the nearest whole percent.', a: '9', h: '5 divided by 55 is about 0.09.' },
     { tier: 3, q: 'You need 8 hours of sleep and wake at 6:30 AM. What bedtime gives 8 hours?', a: '10:30', h: 'Count backward 8 hours from 6:30 AM.' },
+    { tier: 3, q: 'Should you combine two medicines with the same active ingredient without checking the label or asking a professional?', a: 'no', h: 'Duplicate ingredients can be unsafe.' },
+    { tier: 3, q: 'What are the three useful details when describing a symptom: when it started, how it feels, and what makes it better or what?', a: 'worse', h: 'Better/worse patterns help the listener understand the situation.' },
+    { tier: 3, q: 'Should bleach be mixed with ammonia or other cleaners?', a: 'no', h: 'Some mixtures create dangerous fumes.' },
+    { tier: 3, q: 'What extra login protection asks for a second code or approval after a password?', a: 'two-factor authentication', h: 'Also called 2FA or multi-factor authentication.' },
+    { tier: 3, q: 'A simple budget meal often combines a base, a protein, a vegetable, and what extra part for taste?', a: 'flavor', h: 'Sauce, spices, herbs, or acid can make simple food satisfying.' },
+    { tier: 3, q: 'What word on a form means you agree or give permission?', a: 'consent', h: 'Consent should be understood before signing.' },
+    { tier: 3, q: 'A bus leaves at 8:10. Walking to the stop takes 7 minutes and you want a 5-minute buffer. How many minutes before 8:10 should you leave?', a: '12', h: 'Walk time plus buffer time.' },
     { tier: 3, q: 'Why can too much laundry detergent make clothes feel stiff or itchy?', a: 'residue', h: 'Extra detergent can stay in fabric when the rinse cannot remove it all.' },
     { tier: 3, q: 'Paying minimum ($25) on $5,000 at 24.99% APR \u2014 roughly how many years to pay off?', a: '30', h: 'Minimum payments are designed to maximize interest.' }
   ];
@@ -230,6 +272,10 @@ window.StemLab = window.StemLab || {
     { q: 'What percentage is FICA tax (Social Security + Medicare)?', a: '7.65', h: '6.2% + 1.45%.' },
     { q: 'What does "correlation does not equal causation" mean?', a: 'two things happening together does not mean one causes the other', h: 'Ice cream and drowning both rise in summer.' },
     { q: 'What is an early termination fee?', a: 'penalty for canceling a contract early', h: 'Common in phone plans and leases.' },
+    { q: 'What should you keep after paying a bill or buying something important?', a: 'receipt', h: 'It can help with returns, warranties, and proof of payment.' },
+    { q: 'What document usually proves your identity?', a: 'id', h: 'Examples include a school ID, state ID, passport, or license.' },
+    { q: 'What extra time in a trip plan helps with delays?', a: 'buffer', h: 'Leave a little earlier than the perfect-case plan.' },
+    { q: 'What should you make before traveling if your first route is delayed?', a: 'backup plan', h: 'A second route or trusted contact can reduce stress.' },
     { q: 'What is the name for the amount you pay before insurance kicks in?', a: 'deductible', h: 'Your first out-of-pocket cost.' },
     { q: 'What gas law relates tire pressure and temperature?', a: 'gay-lussac', h: 'P1/T1 = P2/T2 at constant volume.' },
     { q: 'What is the rubber seal at the bottom of a toilet tank called?', a: 'flapper', h: 'Lifts when you flush.' },
@@ -241,6 +287,16 @@ window.StemLab = window.StemLab || {
     { q: 'Should numbness, weakness, or worsening pain during an activity be ignored?', a: 'no', h: 'Stop, tell a trusted adult if needed, and get appropriate support.' },
     { q: 'What do we call a calm routine before bedtime?', a: 'wind down', h: 'It is a transition from busy time to rest time.' },
     { q: 'Is a consistent wake time helpful for sleep routines?', a: 'yes', h: 'Regular timing supports the body clock.' },
+    { q: 'What medicine label section names the ingredient doing the main job?', a: 'active ingredient', h: 'It helps avoid accidental duplicate ingredients.' },
+    { q: 'Is sharing prescription medicine with someone else safe?', a: 'no', h: 'Prescriptions are chosen for one person by a professional.' },
+    { q: 'What do we call speaking up clearly for needs, questions, or accommodations?', a: 'self-advocacy', h: 'It is a life skill for appointments, school, work, and services.' },
+    { q: 'What should you write before an appointment so you do not forget what to ask?', a: 'questions', h: 'A short list can help when time feels rushed.' },
+    { q: 'What alarm warns people about fire or smoke?', a: 'smoke alarm', h: 'It should be tested and taken seriously.' },
+    { q: 'Should cleaning products be mixed together to make them stronger?', a: 'no', h: 'Use one product as directed and ventilate.' },
+    { q: 'What is a scam message that tries to steal passwords or codes called?', a: 'phishing', h: 'Pause before clicking links or sharing codes.' },
+    { q: 'Should you reuse the same password for every important account?', a: 'no', h: 'One leak could unlock many accounts.' },
+    { q: 'When food safety is uncertain, what phrase means choose safety over risk?', a: 'when in doubt throw it out', h: 'Food poisoning risk is not worth a guess.' },
+    { q: 'What cold appliance keeps leftovers safer for the next meal?', a: 'fridge', h: 'Store leftovers promptly and reheat safely.' },
     { q: 'What does R-value measure?', a: 'insulation', h: 'Higher R = better insulating.' },
     { q: 'A heat pump with COP of 3 produces how many units of heat per unit of electricity?', a: '3', h: 'COP = output/input.' },
     { q: 'What temperature is the food danger zone lower bound (\u00B0F)?', a: '40', h: 'Bacteria grow fast between 40\u00B0F and 140\u00B0F.' },
@@ -278,6 +334,18 @@ window.StemLab = window.StemLab || {
       '6-8': 'Key financial concepts: compound interest (exponential growth of savings), insurance mechanics (premiums, deductibles, copays, out-of-pocket max), contract law basics (binding agreements, termination clauses), and the decision matrix (weighted multi-criteria analysis). These tools help you make rational financial decisions.',
       '9-12': 'Advanced financial literacy: time value of money (PV = FV/(1+r)^n), amortization schedules, tax-loss harvesting, insurance actuarial principles, behavioral economics (anchoring, loss aversion, sunk cost fallacy), and game theory in negotiations. Understanding these concepts is essential for major life decisions: housing, education, insurance, and retirement planning.'
     }},
+    { title: 'Records & Paperwork', icon: '\uD83D\uDCC1', tryIt: 'records', content: {
+      'K-2': 'Important papers help people prove who they are, where they live, what they paid for, or what someone agreed to. A safe folder and a trusted grown-up can make paperwork less confusing.',
+      '3-5': 'Records skills include keeping IDs, school papers, medical or insurance cards, receipts, and emergency contacts in places you can find. Forms are easier when you read one field at a time and ask before sharing private information.',
+      '6-8': 'Paperwork literacy means sorting documents by purpose, protecting private information, tracking deadlines, saving proof of payment, and knowing when a signature means agreement or consent. The goal is to reduce stress before appointments, returns, applications, and emergencies.',
+      '9-12': 'Records literacy includes identity documents, tax and income records, insurance cards, leases, warranties, receipts, forms, consent language, deadlines, secure storage, backups, and document-retention judgment. Good systems make adult tasks easier and help prevent scams, missed deadlines, and lost proof.'
+    }},
+    { title: 'Transportation & Navigation', icon: '\uD83D\uDE8C', tryIt: 'transport', content: {
+      'K-2': 'Transportation means getting from one place to another safely. A good plan includes where you are going, who is helping, and what to do if something changes.',
+      '3-5': 'Trip planning means checking the route, travel time, pickup or stop location, fare or ticket, and a trusted helper. Leaving a little early gives you a buffer if walking, traffic, or waiting takes longer.',
+      '6-8': 'Transportation literacy includes route comparison, transfers, schedules, fare systems, accessibility needs, safe waiting places, backup plans, and asking for help from trusted or official sources when a trip changes.',
+      '9-12': 'Navigation skills combine time management, risk awareness, wayfinding, cost planning, accessibility, situational awareness, and contingency planning. Strong travelers check route, timing, fare, alerts, backup options, and communication before stress hits.'
+    }},
     { title: 'Budgeting & Saving', icon: '\uD83D\uDCB0', tryIt: 'budget', content: {
       'K-2': 'A budget is a plan for your money! Imagine you have 10 tokens \u2014 you need some for food, some for fun, and you should save some for later.',
       '3-5': 'The 50/30/20 rule: spend 50% on things you NEED (food, housing), 30% on things you WANT (games, movies), and save 20%. Even kids can practice \u2014 if you get $10 allowance, save $2!',
@@ -313,6 +381,36 @@ window.StemLab = window.StemLab || {
       '3-5': 'Sleep and energy routines are about patterns. A steady wake time, wind-down routine, less bright screen time before bed, and a morning light-and-movement plan can make the day feel easier. Ask for help if sleep problems keep happening.',
       '6-8': 'Sleep literacy includes body clocks, routines, light, caffeine timing, stress, and recovery. The goal is not perfection; it is noticing what helps attention, mood, learning, and safety. Persistent insomnia, snoring, extreme sleepiness, or sleep worries deserve trusted adult or clinical support.',
       '9-12': 'Sleep and energy planning combines circadian rhythm, habit design, executive function, and self-advocacy. Compare fixed wake time, target sleep opportunity, wind-down length, caffeine cutoff, device boundaries, naps, and morning activation. Educational practice only: ongoing sleep disruption or unsafe sleepiness should be discussed with a professional.'
+    }},
+    { title: 'Medication & Health Labels', icon: '\uD83D\uDC8A', tryIt: 'meds', content: {
+      'K-2': 'Medicine labels have important directions. A safe habit is to ask a trusted grown-up before taking medicine and tell them if something feels wrong.',
+      '3-5': 'Medication safety starts with reading and asking. Check the name, active ingredient, directions, warnings, storage, and expiration date. Never share prescription medicine, and ask a trusted adult or pharmacist when a label is confusing.',
+      '6-8': 'Medication literacy means reading labels carefully, spotting duplicate active ingredients, understanding timing words, checking warnings, and knowing when to ask a pharmacist, prescriber, nurse, or trusted adult. This tool uses sample labels for practice only.',
+      '9-12': 'Medication-label literacy includes active ingredients, dose timing, maximum-use warnings, contraindications, interactions, storage, expiration, refills, and informed questions. This tool is educational: real medication decisions should follow the label and professional guidance.'
+    }},
+    { title: 'Appointments & Self-Advocacy', icon: '\uD83D\uDCC5', tryIt: 'appointments', content: {
+      'K-2': 'Appointments are times when you meet someone who can help, like a doctor, dentist, counselor, teacher, or helper. You can practice saying what you need and asking a trusted grown-up questions.',
+      '3-5': 'Appointment skills include knowing where you are going, bringing what you need, describing what happened, and asking questions. A short list can help you remember important things even if you feel nervous.',
+      '6-8': 'Self-advocacy means respectfully speaking up for your needs, questions, symptoms, goals, and accommodations. Good prep includes a timeline, examples, current medicines or supports, insurance or school forms, and a follow-up plan.',
+      '9-12': 'Appointment literacy includes scheduling, triage, privacy, consent, documentation, symptom descriptions, accommodations, follow-up instructions, referrals, and portal messages. The goal is not to memorize scripts; it is to communicate clearly and leave knowing the next step.'
+    }},
+    { title: 'Home Safety Basics', icon: '\uD83D\uDEE1\uFE0F', tryIt: 'homesafety', content: {
+      'K-2': 'Home safety means knowing how to get help, where to go if an alarm sounds, and telling a grown-up about smoke, fire, strange smells, or unsafe things.',
+      '3-5': 'Home safety skills include smoke alarms, carbon monoxide alarms, exit plans, safe cleaning products, first-aid basics, and knowing when to call for help. Practice plans before an emergency happens.',
+      '6-8': 'Home safety is prevention plus response. Check alarms, know two ways out, keep exits clear, store chemicals safely, never mix cleaners, use first-aid decision rules, and ask an adult or emergency service when danger is immediate.',
+      '9-12': 'Home safety literacy includes risk spotting, fire escape planning, CO awareness, basic first-aid triage, safe chemical handling, utility shutoff awareness, emergency communication, and post-incident follow-up. The goal is calm, practiced decision-making.'
+    }},
+    { title: 'Digital Safety & Privacy', icon: '\uD83D\uDD10', tryIt: 'digitalsafety', content: {
+      'K-2': 'Digital safety means asking a trusted grown-up before sharing personal information, clicking strange links, or talking to someone who makes you uncomfortable.',
+      '3-5': 'Digital safety skills include strong passwords, private information rules, kind communication, pausing before clicking links, and telling a trusted adult when something online feels wrong.',
+      '6-8': 'Digital literacy includes phishing clues, privacy settings, password managers, two-factor authentication, screenshots, reporting tools, respectful communication, and knowing when to stop, block, tell, or save evidence.',
+      '9-12': 'Digital safety includes threat modeling for everyday life: account security, social engineering, data privacy, consent, reputation, scams, harassment response, platform reporting, and recovery steps after a compromise.'
+    }},
+    { title: 'Food Confidence', icon: '\uD83E\uDD57', tryIt: 'foodconfidence', content: {
+      'K-2': 'Food confidence means knowing when to ask for help, washing hands, keeping hot foods hot and cold foods cold, and putting leftovers away safely.',
+      '3-5': 'Food confidence is everyday food decision-making: store leftovers, read simple labels, notice unsafe food signs, build balanced snacks, and make easy meals from basics.',
+      '6-8': 'Food confidence combines food safety, label literacy, budgeting, storage, and meal planning. A simple meal can start with a base, protein, vegetable or fruit, and flavor. When food safety is uncertain, choose safety.',
+      '9-12': 'Food confidence includes safe storage, leftovers, date-label judgment, pantry planning, budget meals, nutrition-label tradeoffs, batch cooking, and waste reduction. It is practical independence, not perfection.'
     }},
     { title: 'Laundry Science', icon: '\uD83E\uDDFA', tryIt: 'laundry', content: {
       'K-2': 'Laundry keeps clothes clean and safe to wear. You sort clothes, add a small amount of soap, choose a wash setting, dry them safely, and clean the lint trap.',
@@ -626,6 +724,284 @@ window.StemLab = window.StemLab || {
     { id: 'ask', icon: '\uD83E\uDD1D', title: 'Ask for help', use: 'Support matters when tiredness, stress, or sleep trouble keeps repeating.' }
   ];
 
+  var MED_LABEL_PARTS = [
+    { id: 'name', icon: '\uD83C\uDFF7\uFE0F', title: 'Medicine name', action: 'Confirm the exact medicine and strength.', why: 'Similar names or strengths can be easy to mix up.' },
+    { id: 'active', icon: '\uD83E\uDDEA', title: 'Active ingredient', action: 'Find the ingredient doing the main job.', why: 'Duplicate active ingredients across products can be unsafe.' },
+    { id: 'directions', icon: '\uD83D\uDCDD', title: 'Directions', action: 'Read how much, how often, and any maximum-use rules.', why: 'Timing words like every 6 hours or once daily matter.' },
+    { id: 'warnings', icon: '\u26A0\uFE0F', title: 'Warnings', action: 'Check who should ask first and what side effects or interactions matter.', why: 'Warnings point to situations where professional guidance is important.' },
+    { id: 'storage', icon: '\uD83C\uDF21\uFE0F', title: 'Storage', action: 'Check room temperature, refrigeration, light, moisture, and child-safe storage.', why: 'Storage can affect safety, potency, and accidental exposure.' },
+    { id: 'expiration', icon: '\uD83D\uDCC5', title: 'Expiration and disposal', action: 'Check the date and ask how to dispose of old or unused medicine safely.', why: 'Old medicine or unsafe disposal can create avoidable risk.' }
+  ];
+
+  var MED_SAMPLE_LABELS = [
+    { name: 'Mock Allergy Relief', active: 'loratadine sample ingredient', use: 'Practice label for allergy symptom relief.', directions: 'Sample only: follow a real package or professional instructions.', warnings: 'Ask before combining with other products or if unsure.', storage: 'Store dry and out of reach.', question: 'What section tells you the ingredient doing the main job?', answer: 'active ingredient' },
+    { name: 'Mock Fever Reducer', active: 'acetaminophen sample ingredient', use: 'Practice label for fever or pain language.', directions: 'Sample only: check timing and maximum-use rules on a real label.', warnings: 'Watch for duplicate active ingredients in other products.', storage: 'Store as directed on the actual label.', question: 'What risk appears when two products share the same active ingredient?', answer: 'duplicate' },
+    { name: 'Mock Antibiotic Rx', active: 'prescription-only sample ingredient', use: 'Practice prescription label reading.', directions: 'Sample only: take exactly as prescribed on a real label.', warnings: 'Do not share prescriptions. Ask if side effects or missed doses happen.', storage: 'Some medicines need special storage; read the label.', question: 'Who should you ask about missed doses or side effects?', answer: 'pharmacist' }
+  ];
+
+  var MED_ACTIONS = [
+    { id: 'read', label: 'Read the label first', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'ask', label: 'Ask a pharmacist or trusted adult', tone: 'bg-amber-50 text-amber-800 border-amber-200' },
+    { id: 'avoid', label: 'Do not take or combine yet', tone: 'bg-orange-50 text-orange-800 border-orange-200' },
+    { id: 'urgent', label: 'Get urgent help', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var MED_SCENARIOS = [
+    { prompt: 'Two cold products both list the same active ingredient, and you are not sure whether they can be taken together.', best: 'avoid', explain: 'Do not combine yet. Duplicate active ingredients can be unsafe. Ask a pharmacist, prescriber, nurse, or trusted adult.' },
+    { prompt: 'A label says every 6 hours, but only 3 hours have passed and symptoms are still annoying.', best: 'read', explain: 'Follow the timing and maximum-use directions on the real label. More often is not automatically safer.' },
+    { prompt: 'Someone develops trouble breathing, face swelling, fainting, or a severe reaction after taking medicine.', best: 'urgent', explain: 'Those can be emergency warning signs. Get urgent help immediately.' },
+    { prompt: 'A prescription was given to one person, and a friend has similar symptoms and asks to try it.', best: 'avoid', explain: 'Do not share prescriptions. A medicine chosen for one person may be unsafe for someone else.' },
+    { prompt: 'The directions are hard to understand or the label has tiny text.', best: 'ask', explain: 'Asking for help is a safety skill. Pharmacists can explain labels and may offer large-print or translated information.' },
+    { prompt: 'A medicine is expired or was stored in a hot, wet place, and you are unsure whether it is okay.', best: 'ask', explain: 'Ask a pharmacist or trusted adult what to do and how to dispose of it safely.' }
+  ];
+
+  var MED_QUESTION_PROMPTS = [
+    'What should I do if I miss a dose?',
+    'Can this be taken with my other medicines or supplements?',
+    'What side effects should I watch for?',
+    'Should this be taken with food, water, or at a certain time?',
+    'How should I store it and dispose of leftovers?'
+  ];
+
+  var APPOINTMENT_PREP_STEPS = [
+    { id: 'reason', icon: '\uD83D\uDCDD', title: 'Reason for visit', action: 'Write the main reason in one sentence.', why: 'A clear opening helps the appointment start in the right place.' },
+    { id: 'timeline', icon: '\u23F1\uFE0F', title: 'Timeline', action: 'Note when it started, how often it happens, and what changed.', why: 'Timing helps the listener understand patterns and urgency.' },
+    { id: 'details', icon: '\uD83D\uDD0E', title: 'Details and examples', action: 'Describe what it feels like, where it happens, and what makes it better or worse.', why: 'Specific examples are easier to act on than vague memory under pressure.' },
+    { id: 'bring', icon: '\uD83C\uDF92', title: 'What to bring', action: 'Bring ID/forms if needed, insurance or school paperwork, medicine list, glasses/hearing aids, and notes.', why: 'Missing information can slow down help or make the next step unclear.' },
+    { id: 'questions', icon: '\u2753', title: 'Questions', action: 'Write 2-3 questions before you go.', why: 'Prepared questions protect your priorities when time feels short.' },
+    { id: 'followup', icon: '\u2705', title: 'Follow-up plan', action: 'Ask what to do next, when to return, and who to contact if things change.', why: 'Leaving with a next step turns the visit into action.' }
+  ];
+
+  var APPOINTMENT_TYPES = [
+    { id: 'health', icon: '\uD83C\uDFE5', title: 'Health visit', bring: 'Insurance/card, medicine list, symptoms timeline, questions.', question: 'What should I watch for, and when should I follow up?' },
+    { id: 'dental', icon: '\uD83E\uDDB7', title: 'Dental visit', bring: 'Pain/sensitivity notes, oral-care questions, insurance info if needed.', question: 'What can I do at home, and when should I come back?' },
+    { id: 'school', icon: '\uD83C\uDFEB', title: 'School support meeting', bring: 'Work samples, examples, accommodations that help, questions.', question: 'What support can we try first, and how will we know it works?' },
+    { id: 'work', icon: '\uD83D\uDCBC', title: 'Work or service appointment', bring: 'Forms, schedule, ID if needed, goal for the meeting.', question: 'What is the next step, and when should I expect a response?' }
+  ];
+
+  var APPOINTMENT_ACTIONS = [
+    { id: 'prepare', label: 'Prepare notes first', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'ask', label: 'Ask for clarification', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'support', label: 'Bring or contact support', tone: 'bg-amber-50 text-amber-800 border-amber-200' },
+    { id: 'urgent', label: 'Get urgent help', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var APPOINTMENT_SCENARIOS = [
+    { prompt: 'You have a visit tomorrow and know the issue, but you are worried you will forget what to say.', best: 'prepare', explain: 'Write a short reason, timeline, examples, and questions. Notes are allowed.' },
+    { prompt: 'The person helping you uses a word you do not understand and moves on quickly.', best: 'ask', explain: 'Ask them to explain it another way or write it down. Clear understanding is part of the appointment.' },
+    { prompt: 'You need help explaining a concern or remembering instructions.', best: 'support', explain: 'Ask a trusted person to come with you, help you prepare, or review the follow-up plan.' },
+    { prompt: 'You have chest pain, trouble breathing, severe injury, or sudden weakness.', best: 'urgent', explain: 'Those are urgent warning signs. Get emergency help instead of waiting for a routine appointment.' },
+    { prompt: 'After the appointment, you cannot remember when to start the next step.', best: 'ask', explain: 'Contact the office, portal, school support person, or trusted adult. Follow-up questions are normal.' },
+    { prompt: 'You need an accommodation like larger print, an interpreter, sensory support, or extra processing time.', best: 'support', explain: 'Asking ahead of time or at the start is self-advocacy. The environment should help you communicate.' }
+  ];
+
+  var APPOINTMENT_SCRIPT_PROMPTS = [
+    'The main reason I am here is...',
+    'This started around...',
+    'It feels or affects me like...',
+    'One thing that makes it better or worse is...',
+    'My top question is...',
+    'Before I leave, I need to know...'
+  ];
+
+  var HOME_SAFETY_CHECKS = [
+    { id: 'smoke', icon: '\uD83D\uDEA8', title: 'Smoke alarms', action: 'Know where alarms are and test them with a grown-up or responsible adult.', why: 'Early warning gives people time to leave.' },
+    { id: 'co', icon: '\u26A0\uFE0F', title: 'Carbon monoxide alarm', action: 'Use a CO alarm near sleeping areas if the home has fuel-burning appliances or an attached garage.', why: 'Carbon monoxide cannot be seen or smelled.' },
+    { id: 'exits', icon: '\uD83D\uDEAA', title: 'Two ways out', action: 'Know two ways out of rooms when possible and keep exits clear.', why: 'A blocked exit should not trap someone.' },
+    { id: 'meet', icon: '\uD83D\uDCCD', title: 'Meeting place', action: 'Pick a safe outside meeting place for emergencies.', why: 'People need a simple plan to know everyone got out.' },
+    { id: 'chemicals', icon: '\uD83E\uDDFC', title: 'Cleaning product safety', action: 'Use one product as directed, ventilate, and never mix cleaners.', why: 'Some mixtures can release dangerous fumes.' },
+    { id: 'numbers', icon: '\u260E\uFE0F', title: 'Emergency contacts', action: 'Know how to call emergency services and who else to contact.', why: 'In a real emergency, looking up numbers wastes time.' }
+  ];
+
+  var HOME_SAFETY_ACTIONS = [
+    { id: 'prevent', label: 'Prevent and fix risk', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'leave', label: 'Leave and meet outside', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'ask', label: 'Ask an adult or expert', tone: 'bg-amber-50 text-amber-800 border-amber-200' },
+    { id: 'urgent', label: 'Call emergency help', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var HOME_SAFETY_SCENARIOS = [
+    { prompt: 'A smoke alarm sounds and you see smoke in the hallway.', best: 'leave', explain: 'Leave quickly, stay low if there is smoke, go to the meeting place, and call emergency help from outside.' },
+    { prompt: 'A carbon monoxide alarm sounds, but nobody sees smoke.', best: 'leave', explain: 'Treat CO alarms seriously. Leave for fresh air and call for help from outside.' },
+    { prompt: 'You are about to clean a bathroom and think mixing products might work faster.', best: 'prevent', explain: 'Use one product as directed and ventilate. Mixing cleaners can create dangerous fumes.' },
+    { prompt: 'A small cut is bleeding a little after washing hands.', best: 'ask', explain: 'Use basic first aid with adult support if needed. If bleeding is severe or will not stop, get urgent help.' },
+    { prompt: 'Someone is unconscious, having trouble breathing, or has a serious injury.', best: 'urgent', explain: 'That is an emergency. Call emergency services and follow dispatcher instructions.' },
+    { prompt: 'A hallway exit is blocked by boxes and shoes.', best: 'prevent', explain: 'Clear exits before an emergency. Good safety is mostly preparation.' }
+  ];
+
+  var FIRST_AID_CARDS = [
+    { id: 'cut', icon: '\uD83E\uDE79', title: 'Minor cut', first: 'Wash hands, rinse the cut, apply gentle pressure, cover if needed.', urgent: 'Get help if bleeding is heavy, deep, dirty, animal-related, or will not stop.' },
+    { id: 'burn', icon: '\uD83D\uDD25', title: 'Small burn', first: 'Cool under running water and tell an adult. Do not put butter or random products on it.', urgent: 'Get urgent help for large, severe, chemical, electrical, face/hand/genital, or blistering burns.' },
+    { id: 'choke', icon: '\uD83D\uDEAE', title: 'Choking', first: 'If someone cannot breathe, cough, or speak, get emergency help and a trained person.', urgent: 'Call emergency services immediately if choking is severe.' },
+    { id: 'fall', icon: '\uD83E\uDD15', title: 'Fall or injury', first: 'Pause, check pain, swelling, movement, and safety before moving.', urgent: 'Get urgent help for head injury, severe pain, deformity, weakness, or loss of consciousness.' }
+  ];
+
+  var HOME_SAFETY_PLAN_PROMPTS = [
+    'Our outside meeting place is...',
+    'Two exits I know are...',
+    'The emergency contact plan is...',
+    'A safety item to check this week is...',
+    'A cleaning product rule I will remember is...'
+  ];
+
+  var DIGITAL_SAFETY_CHECKS = [
+    { id: 'passwords', icon: '\uD83D\uDD11', title: 'Long unique passwords', action: 'Use long, unique passwords or a password manager for important accounts.', why: 'Reused passwords turn one leak into many account risks.' },
+    { id: 'mfa', icon: '\uD83D\uDCF2', title: 'Two-factor login', action: 'Turn on two-factor authentication where it is available.', why: 'A second approval can stop someone who only has the password.' },
+    { id: 'phishing', icon: '\uD83D\uDD0E', title: 'Pause before links', action: 'Check sender, link destination, urgency, spelling, and requests for codes or money.', why: 'Scams often rush people into clicking or sharing.' },
+    { id: 'privacy', icon: '\uD83D\uDD12', title: 'Privacy settings', action: 'Review what is public, who can contact you, and what location or profile info is shared.', why: 'Small settings can reveal more than intended.' },
+    { id: 'respect', icon: '\uD83D\uDCAC', title: 'Respectful communication', action: 'Pause before posting, ask consent before sharing others, and avoid pile-ons.', why: 'Digital choices affect real people and reputations.' },
+    { id: 'report', icon: '\uD83D\uDEA9', title: 'Block, report, save evidence', action: 'Know how to block/report and when to save screenshots or tell a trusted adult.', why: 'A plan helps when online behavior becomes unsafe or harassing.' }
+  ];
+
+  var DIGITAL_ACTIONS = [
+    { id: 'pause', label: 'Pause and verify', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'secure', label: 'Secure the account', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'tell', label: 'Tell or ask support', tone: 'bg-amber-50 text-amber-800 border-amber-200' },
+    { id: 'report', label: 'Block/report/save evidence', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var DIGITAL_SCENARIOS = [
+    { prompt: 'A text says your bank account will close unless you click a link and enter your password right now.', best: 'pause', explain: 'Urgency plus a password request is a scam clue. Do not use the link; verify through the official app, site, or phone number.' },
+    { prompt: 'A friend sends a code and asks you to read back a login code that arrived on your phone.', best: 'pause', explain: 'Never share login codes. The friend account might be compromised or someone may be trying to take over yours.' },
+    { prompt: 'You learn a site you use had a data breach and you reused that password elsewhere.', best: 'secure', explain: 'Change reused passwords, turn on two-factor authentication, and watch important accounts.' },
+    { prompt: 'Someone online keeps sending unwanted messages after you asked them to stop.', best: 'report', explain: 'Block/report, save evidence if needed, and tell a trusted person, especially if there are threats or pressure.' },
+    { prompt: 'You want to post a photo with another person in it.', best: 'tell', explain: 'Ask permission before sharing. Consent matters online too.' },
+    { prompt: 'An offer says you won a prize, but asks for a fee, gift card, or personal information first.', best: 'pause', explain: 'Prize scams often ask for money or information up front. Verify before responding.' }
+  ];
+
+  var DIGITAL_SCAM_SIGNS = [
+    { id: 'urgent', icon: '\u23F0', title: 'Urgency', clue: 'Act now or lose access.' },
+    { id: 'secret', icon: '\uD83E\uDD2B', title: 'Secrecy', clue: 'Do not tell anyone.' },
+    { id: 'money', icon: '\uD83D\uDCB8', title: 'Unusual payment', clue: 'Gift cards, wire transfers, crypto, fees for prizes.' },
+    { id: 'codes', icon: '\uD83D\uDD22', title: 'Codes/passwords', clue: 'Asks for login codes, passwords, or recovery links.' },
+    { id: 'impersonation', icon: '\uD83C\uDFAD', title: 'Impersonation', clue: 'Pretends to be a friend, boss, company, school, or agency.' },
+    { id: 'tooGood', icon: '\u2728', title: 'Too good', clue: 'Huge reward for almost no effort.' }
+  ];
+
+  var DIGITAL_PLAN_PROMPTS = [
+    'One account I should protect first is...',
+    'A password habit I can improve is...',
+    'A privacy setting I should check is...',
+    'If a message pressures me, I will...',
+    'If someone online makes me unsafe, I can...'
+  ];
+
+  var FOOD_CONFIDENCE_CHECKS = [
+    { id: 'hands', icon: '\uD83E\uDDFC', title: 'Wash and separate', action: 'Wash hands and keep raw meat, ready-to-eat foods, and clean tools separate.', why: 'Cross-contamination can move germs to food that will not be cooked again.' },
+    { id: 'cold', icon: '\u2744\uFE0F', title: 'Cold storage', action: 'Put leftovers and perishable foods in the fridge or freezer promptly.', why: 'Cold storage slows germ growth.' },
+    { id: 'label', icon: '\uD83C\uDFF7\uFE0F', title: 'Label leftovers', action: 'Add a date or note so future-you knows what it is and when it was stored.', why: 'Clear labels reduce mystery containers and waste.' },
+    { id: 'reheat', icon: '\uD83C\uDF72', title: 'Reheat safely', action: 'Reheat leftovers thoroughly and stir/check cold spots when using a microwave.', why: 'Uneven heating can leave parts of food cooler than expected.' },
+    { id: 'pantry', icon: '\uD83E\uDD6B', title: 'Pantry backup', action: 'Keep a few shelf-stable basics for quick meals.', why: 'Pantry staples make food decisions easier on busy or low-energy days.' },
+    { id: 'doubt', icon: '\u2753', title: 'When in doubt', action: 'Throw out food that smells wrong, looks unsafe, was stored unsafely, or is a mystery.', why: 'Food safety is not worth guessing.' }
+  ];
+
+  var FOOD_CONFIDENCE_ACTIONS = [
+    { id: 'store', label: 'Store and label it', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'eat', label: 'Use or reheat safely', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'toss', label: 'Throw it out', tone: 'bg-red-50 text-red-800 border-red-200' },
+    { id: 'ask', label: 'Ask or check guidance', tone: 'bg-amber-50 text-amber-800 border-amber-200' }
+  ];
+
+  var FOOD_CONFIDENCE_SCENARIOS = [
+    { prompt: 'Cooked rice sat on the counter all afternoon and nobody remembers when it was put out.', best: 'toss', explain: 'Time at room temperature matters. If storage time is unknown or unsafe, choose safety.' },
+    { prompt: 'You made soup, it is still fresh, and you want lunch tomorrow.', best: 'store', explain: 'Cool, cover, label, and refrigerate promptly so future-you knows what it is.' },
+    { prompt: 'A can is bulging, leaking, or sprays when opened.', best: 'toss', explain: 'Damaged or bulging cans can be dangerous. Do not taste-test.' },
+    { prompt: 'A label says "best if used by" yesterday, but the sealed food looks and smells normal.', best: 'ask', explain: 'Date labels can mean quality rather than immediate danger. Ask, check reliable guidance, and inspect carefully.' },
+    { prompt: 'Leftovers are cold from the fridge and you want to eat them hot.', best: 'eat', explain: 'Reheat thoroughly and stir/check cold spots, especially with microwaves.' },
+    { prompt: 'You need a cheap meal and have rice, beans, frozen vegetables, and salsa.', best: 'eat', explain: 'That is a solid budget meal pattern: base, protein, vegetable, and flavor.' }
+  ];
+
+  var FOOD_STORAGE_CARDS = [
+    { id: 'leftovers', icon: '\uD83E\uDD61', title: 'Leftovers', keep: 'Fridge promptly, covered and labeled.', watch: 'Mystery age, odd smell, mold, or unsafe time at room temperature.', tip: 'Plan a leftover day before cooking another big meal.' },
+    { id: 'frozen', icon: '\u2744\uFE0F', title: 'Freezer backup', keep: 'Freeze portions flat or in small containers.', watch: 'Freezer burn affects quality, not always safety, but labels help.', tip: 'Frozen vegetables can rescue quick meals.' },
+    { id: 'cans', icon: '\uD83E\uDD6B', title: 'Canned food', keep: 'Store cool and dry; rotate older cans forward.', watch: 'Bulging, leaking, rusted, or badly dented cans.', tip: 'Beans, tomatoes, tuna, and soups can anchor fast meals.' },
+    { id: 'produce', icon: '\uD83E\uDD66', title: 'Produce', keep: 'Wash when ready to use and store based on the food.', watch: 'Slimy texture, mold, or strong off smells.', tip: 'Use fading vegetables in soup, stir-fry, or eggs before they spoil.' },
+    { id: 'dry', icon: '\uD83C\uDF5A', title: 'Dry staples', keep: 'Seal rice, pasta, oats, and flour away from moisture.', watch: 'Pests, musty smells, or moisture.', tip: 'Dry staples stretch leftovers and lower meal cost.' }
+  ];
+
+  var FOOD_MEAL_BASES = [
+    { name: 'Rice', cost: 0.35, note: 'Cheap, filling base' },
+    { name: 'Pasta', cost: 0.45, note: 'Fast and flexible' },
+    { name: 'Tortilla', cost: 0.40, note: 'Wraps leftovers easily' },
+    { name: 'Oats', cost: 0.30, note: 'Breakfast or savory bowl' }
+  ];
+
+  var FOOD_MEAL_PROTEINS = [
+    { name: 'Beans', cost: 0.55, note: 'Budget-friendly fiber and protein' },
+    { name: 'Eggs', cost: 0.70, note: 'Quick protein when available' },
+    { name: 'Yogurt', cost: 0.85, note: 'No-cook option' },
+    { name: 'Chicken leftovers', cost: 1.25, note: 'Use safely stored leftovers' }
+  ];
+
+  var FOOD_MEAL_PRODUCE = [
+    { name: 'Frozen vegetables', cost: 0.60, note: 'Low-waste backup' },
+    { name: 'Cabbage', cost: 0.35, note: 'Keeps well and adds crunch' },
+    { name: 'Apple', cost: 0.55, note: 'Easy side' },
+    { name: 'Salsa', cost: 0.40, note: 'Flavor plus vegetables' }
+  ];
+
+  var FOOD_MEAL_FLAVORS = [
+    { name: 'Salsa', cost: 0.20, note: 'Bright flavor' },
+    { name: 'Soy sauce', cost: 0.10, note: 'Savory boost' },
+    { name: 'Peanut sauce', cost: 0.35, note: 'Rich and filling' },
+    { name: 'Lemon + herbs', cost: 0.25, note: 'Fresh finish' }
+  ];
+
+  var FOOD_LABEL_SAMPLES = [
+    { name: 'Granola bar', calories: 190, protein: 4, fiber: 2, addedSugar: 9, sodium: 90, question: 'Which number helps you compare added sweetness?', answer: 'added sugar' },
+    { name: 'Soup cup', calories: 240, protein: 8, fiber: 5, addedSugar: 2, sodium: 760, question: 'Which number might matter if someone is watching salt?', answer: 'sodium' },
+    { name: 'Yogurt bowl', calories: 160, protein: 12, fiber: 0, addedSugar: 6, sodium: 80, question: 'Which number helps compare how filling the protein may be?', answer: 'protein' }
+  ];
+
+  var RECORDS_CHECKS = [
+    { id: 'id', icon: '\uD83E\uDEAA', title: 'Identity basics', action: 'Know where an ID, school/work ID, or other identity document is kept.', why: 'Many forms, appointments, travel, jobs, and services ask for proof of identity.' },
+    { id: 'contacts', icon: '\u260E\uFE0F', title: 'Emergency contacts', action: 'Keep a current list of trusted contacts and important phone numbers.', why: 'A written backup helps when a phone is lost, dead, or unavailable.' },
+    { id: 'health', icon: '\uD83C\uDFE5', title: 'Health and insurance cards', action: 'Keep medical, dental, pharmacy, or insurance cards where they can be found for appointments.', why: 'Appointments go smoother when key information is ready.' },
+    { id: 'receipts', icon: '\uD83E\uDDFE', title: 'Receipts and proof', action: 'Save receipts, confirmation numbers, and proof of payment for important purchases or bills.', why: 'Proof helps with returns, warranties, disputes, and budgeting.' },
+    { id: 'forms', icon: '\uD83D\uDCCB', title: 'Forms one field at a time', action: 'Read the instructions, required fields, signature lines, and privacy notes before writing.', why: 'Forms are easier when they are decoded in small parts.' },
+    { id: 'storage', icon: '\uD83D\uDD12', title: 'Private storage', action: 'Store sensitive papers safely and avoid sharing private numbers unless the request is legitimate.', why: 'Identity and account information can be misused.' }
+  ];
+
+  var RECORD_ACTIONS = [
+    { id: 'store', label: 'Store or back it up', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'ask', label: 'Ask before sharing/signing', tone: 'bg-amber-50 text-amber-900 border-amber-200' },
+    { id: 'update', label: 'Update the record', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'protect', label: 'Protect private info', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var RECORD_SCENARIOS = [
+    { prompt: 'A school, clinic, or job form asks for a current emergency contact, but the phone number is old.', best: 'update', explain: 'Update the record before turning it in so helpers can reach the right person.' },
+    { prompt: 'A message says you must send a photo of an ID and Social Security number through an unknown link.', best: 'protect', explain: 'Private documents should only be shared through trusted, verified routes.' },
+    { prompt: 'You bought headphones with a one-year warranty and the box says to keep proof of purchase.', best: 'store', explain: 'Save the receipt or confirmation number where you can find it later.' },
+    { prompt: 'A permission form uses words you do not understand and has a signature line.', best: 'ask', explain: 'A signature can mean agreement or consent. Ask before signing confusing paperwork.' },
+    { prompt: 'You moved and your school, workplace, or clinic still has your old address.', best: 'update', explain: 'Current contact information prevents missed notices and delays.' },
+    { prompt: 'You need documents for an appointment tomorrow morning.', best: 'store', explain: 'Put ID, cards, forms, questions, and directions in one ready place the night before.' }
+  ];
+
+  var RECORD_TYPE_CARDS = [
+    { id: 'identity', icon: '\uD83E\uDEAA', title: 'Identity documents', keep: 'School ID, state ID, passport, birth certificate, or other proof of identity.', use: 'Appointments, applications, travel, jobs, and official forms.', protect: 'Keep originals secure; share copies only through trusted routes.' },
+    { id: 'health', icon: '\uD83C\uDFE5', title: 'Health records', keep: 'Insurance cards, medication lists, appointment notes, immunization records, and care instructions.', use: 'Appointments, pharmacy questions, school forms, and follow-up plans.', protect: 'Health information is private. Share it only with appropriate helpers or services.' },
+    { id: 'money', icon: '\uD83E\uDDFE', title: 'Money proof', keep: 'Receipts, confirmation numbers, pay stubs, bank letters, invoices, and bill records.', use: 'Returns, warranties, taxes, disputes, budgeting, and proof of payment.', protect: 'Cover account numbers when sharing and avoid posting financial records.' },
+    { id: 'housing', icon: '\uD83C\uDFE0', title: 'Home and housing', keep: 'Lease, utility account info, repair requests, renter insurance, and move-in notes.', use: 'Repairs, deposits, renewals, moving, and understanding responsibilities.', protect: 'Read before signing and keep copies of agreements.' },
+    { id: 'schoolwork', icon: '\uD83C\uDF93', title: 'School or work', keep: 'Schedules, permission slips, accommodations, applications, offer letters, and policy forms.', use: 'Deadlines, meetings, interviews, and knowing what is expected.', protect: 'Ask about unclear rules, consent, or required private information.' }
+  ];
+
+  var FORM_FIELD_CARDS = [
+    { id: 'required', icon: '\u2733\uFE0F', title: 'Required field', means: 'The form needs this answer before it can be submitted.', move: 'Answer only if the form is legitimate and you understand what is being requested.', watch: 'Required does not mean you should ignore privacy or safety concerns.' },
+    { id: 'optional', icon: '\u25CB', title: 'Optional field', means: 'You may be allowed to leave it blank.', move: 'Skip optional private details when they are not needed.', watch: 'Some optional fields are for marketing, not the main service.' },
+    { id: 'signature', icon: '\u270D\uFE0F', title: 'Signature', means: 'A signature may show agreement, permission, or confirmation.', move: 'Read the section above the signature and ask before signing unclear forms.', watch: 'Do not sign blank forms.' },
+    { id: 'consent', icon: '\uD83E\uDD1D', title: 'Consent', means: 'Consent means permission for something specific.', move: 'Check what you are agreeing to, who gets information, and whether you can say no.', watch: 'Consent should be informed, specific, and not hidden in confusing language.' },
+    { id: 'deadline', icon: '\u23F3', title: 'Deadline', means: 'The form or task is due by a certain date or time.', move: 'Add the deadline to a calendar or reminder and plan a first step.', watch: 'Waiting until the last minute can make missing documents harder to fix.' }
+  ];
+
+  var RECORD_PLAN_PROMPTS = [
+    'One document I should know how to find is...',
+    'A receipt or confirmation number I should save is...',
+    'A private number or document I should protect is...',
+    'A deadline or renewal I should track is...',
+    'A person I can ask about confusing paperwork is...'
+  ];
+
   function getGradeBand(ctx) {
     var g = parseInt(ctx.gradeLevel) || 5;
     if (g <= 2) return 'K-2';
@@ -711,7 +1087,7 @@ window.StemLab = window.StemLab || {
   window.StemLab.registerTool('lifeSkills', {
     title: 'Life Skills Lab',
     icon: '\uD83E\uDDED',
-    description: 'Essential knowledge for adulting \u2014 taxes, data literacy, contracts, dental care, body care, sleep routines, car care, laundry science, home systems, and critical thinking.',
+    description: 'Essential knowledge for adulting \u2014 taxes, data literacy, contracts, records, dental care, body care, sleep routines, medication labels, appointments, home safety, digital safety, food confidence, car care, laundry science, home systems, and critical thinking.',
     category: 'Life Skills',
     gradeRange: 'K-12',
     render: function(ctx) {
@@ -1190,6 +1566,245 @@ window.StemLab = window.StemLab || {
         if (correct && sleepScenarioScore + 1 >= 3) checkBadge('energyCoach');
       }
 
+      // MEDICATION & LABELS STATE
+      var medChecklist = d.medChecklist || {};
+      var medChecklistDone = MED_LABEL_PARTS.filter(function(part) { return !!medChecklist[part.id]; }).length;
+      var medLabelIdx = d.medLabelIdx || 0;
+      var medLabel = MED_SAMPLE_LABELS[medLabelIdx % MED_SAMPLE_LABELS.length];
+      var medLabelAnswer = d.medLabelAnswer || '';
+      var medLabelFb = d.medLabelFb || '';
+      var medScenarioIdx = d.medScenarioIdx || 0;
+      var medScenarioChoice = d.medScenarioChoice || '';
+      var medScenarioFb = d.medScenarioFb || '';
+      var medScenarioScore = d.medScenarioScore || 0;
+      var medCurrentScenario = MED_SCENARIOS[medScenarioIdx % MED_SCENARIOS.length];
+      var medQuestionIdx = d.medQuestionIdx || 0;
+      var medQuestionNote = d.medQuestionNote || '';
+      var medQuestionMsg = d.medQuestionMsg || '';
+      var medQuestionPrompt = MED_QUESTION_PROMPTS[medQuestionIdx % MED_QUESTION_PROMPTS.length];
+
+      function setMedChecklist(id, checked) {
+        var next = Object.assign({}, medChecklist);
+        next[id] = checked;
+        upd('medChecklist', next);
+        if (MED_LABEL_PARTS.every(function(part) { return !!next[part.id]; })) checkBadge('medLabelReader');
+      }
+
+      function checkMedLabelAnswer() {
+        if (!medLabelAnswer.trim()) return;
+        var correct = medLabelAnswer.trim().toLowerCase().replace(/[^a-z0-9]/g, '').indexOf(medLabel.answer.toLowerCase().replace(/[^a-z0-9]/g, '')) >= 0;
+        stemBeep(correct);
+        updMulti({
+          medLabelFb: correct ? '\u2705 Correct. This mock label is for reading practice only.' : '\uD83D\uDD0E Look for: ' + medLabel.answer + '. This mock label is for reading practice only.',
+          medLabelAnswer: ''
+        });
+        if (correct) checkBadge('medLabelReader');
+      }
+
+      function answerMedScenario(choice) {
+        var correct = choice === medCurrentScenario.best;
+        var action = MED_ACTIONS.find(function(a) { return a.id === medCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          medScenarioChoice: choice,
+          medScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : medCurrentScenario.best) + '. ') + medCurrentScenario.explain,
+          medScenarioScore: medScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && medScenarioScore + 1 >= 3) checkBadge('doseSafety');
+      }
+
+      // APPOINTMENTS & SELF-ADVOCACY STATE
+      var appointmentPrep = d.appointmentPrep || {};
+      var appointmentPrepDone = APPOINTMENT_PREP_STEPS.filter(function(step) { return !!appointmentPrep[step.id]; }).length;
+      var appointmentTypeIdx = d.appointmentTypeIdx || 0;
+      var appointmentType = APPOINTMENT_TYPES[appointmentTypeIdx % APPOINTMENT_TYPES.length];
+      var appointmentScenarioIdx = d.appointmentScenarioIdx || 0;
+      var appointmentScenarioChoice = d.appointmentScenarioChoice || '';
+      var appointmentScenarioFb = d.appointmentScenarioFb || '';
+      var appointmentScenarioScore = d.appointmentScenarioScore || 0;
+      var appointmentCurrentScenario = APPOINTMENT_SCENARIOS[appointmentScenarioIdx % APPOINTMENT_SCENARIOS.length];
+      var appointmentScriptIdx = d.appointmentScriptIdx || 0;
+      var appointmentScriptPrompt = APPOINTMENT_SCRIPT_PROMPTS[appointmentScriptIdx % APPOINTMENT_SCRIPT_PROMPTS.length];
+      var appointmentScriptNote = d.appointmentScriptNote || '';
+      var appointmentScriptMsg = d.appointmentScriptMsg || '';
+
+      function setAppointmentPrep(id, checked) {
+        var next = Object.assign({}, appointmentPrep);
+        next[id] = checked;
+        upd('appointmentPrep', next);
+        if (APPOINTMENT_PREP_STEPS.every(function(step) { return !!next[step.id]; })) checkBadge('appointmentReady');
+      }
+
+      function answerAppointmentScenario(choice) {
+        var correct = choice === appointmentCurrentScenario.best;
+        var action = APPOINTMENT_ACTIONS.find(function(a) { return a.id === appointmentCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          appointmentScenarioChoice: choice,
+          appointmentScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : appointmentCurrentScenario.best) + '. ') + appointmentCurrentScenario.explain,
+          appointmentScenarioScore: appointmentScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && appointmentScenarioScore + 1 >= 3) checkBadge('selfAdvocate');
+      }
+
+      // HOME SAFETY STATE
+      var homeSafetyChecklist = d.homeSafetyChecklist || {};
+      var homeSafetyDone = HOME_SAFETY_CHECKS.filter(function(step) { return !!homeSafetyChecklist[step.id]; }).length;
+      var homeSafetyScenarioIdx = d.homeSafetyScenarioIdx || 0;
+      var homeSafetyScenarioChoice = d.homeSafetyScenarioChoice || '';
+      var homeSafetyScenarioFb = d.homeSafetyScenarioFb || '';
+      var homeSafetyScenarioScore = d.homeSafetyScenarioScore || 0;
+      var homeSafetyCurrentScenario = HOME_SAFETY_SCENARIOS[homeSafetyScenarioIdx % HOME_SAFETY_SCENARIOS.length];
+      var firstAidIdx = d.firstAidIdx || 0;
+      var firstAidCard = FIRST_AID_CARDS[firstAidIdx % FIRST_AID_CARDS.length];
+      var homePlanIdx = d.homePlanIdx || 0;
+      var homePlanPrompt = HOME_SAFETY_PLAN_PROMPTS[homePlanIdx % HOME_SAFETY_PLAN_PROMPTS.length];
+      var homePlanNote = d.homePlanNote || '';
+      var homePlanMsg = d.homePlanMsg || '';
+
+      function setHomeSafetyCheck(id, checked) {
+        var next = Object.assign({}, homeSafetyChecklist);
+        next[id] = checked;
+        upd('homeSafetyChecklist', next);
+        if (HOME_SAFETY_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('homeSafetyReady');
+      }
+
+      function answerHomeSafetyScenario(choice) {
+        var correct = choice === homeSafetyCurrentScenario.best;
+        var action = HOME_SAFETY_ACTIONS.find(function(a) { return a.id === homeSafetyCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          homeSafetyScenarioChoice: choice,
+          homeSafetyScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : homeSafetyCurrentScenario.best) + '. ') + homeSafetyCurrentScenario.explain,
+          homeSafetyScenarioScore: homeSafetyScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && homeSafetyScenarioScore + 1 >= 3) checkBadge('safetyResponder');
+      }
+
+      // DIGITAL SAFETY STATE
+      var digitalChecklist = d.digitalChecklist || {};
+      var digitalChecklistDone = DIGITAL_SAFETY_CHECKS.filter(function(step) { return !!digitalChecklist[step.id]; }).length;
+      var digitalScenarioIdx = d.digitalScenarioIdx || 0;
+      var digitalScenarioChoice = d.digitalScenarioChoice || '';
+      var digitalScenarioFb = d.digitalScenarioFb || '';
+      var digitalScenarioScore = d.digitalScenarioScore || 0;
+      var digitalCurrentScenario = DIGITAL_SCENARIOS[digitalScenarioIdx % DIGITAL_SCENARIOS.length];
+      var digitalScamIdx = d.digitalScamIdx || 0;
+      var digitalScam = DIGITAL_SCAM_SIGNS[digitalScamIdx % DIGITAL_SCAM_SIGNS.length];
+      var digitalPlanIdx = d.digitalPlanIdx || 0;
+      var digitalPlanPrompt = DIGITAL_PLAN_PROMPTS[digitalPlanIdx % DIGITAL_PLAN_PROMPTS.length];
+      var digitalPlanNote = d.digitalPlanNote || '';
+      var digitalPlanMsg = d.digitalPlanMsg || '';
+
+      function setDigitalChecklist(id, checked) {
+        var next = Object.assign({}, digitalChecklist);
+        next[id] = checked;
+        upd('digitalChecklist', next);
+        if (DIGITAL_SAFETY_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('digitalReady');
+      }
+
+      function answerDigitalScenario(choice) {
+        var correct = choice === digitalCurrentScenario.best;
+        var action = DIGITAL_ACTIONS.find(function(a) { return a.id === digitalCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          digitalScenarioChoice: choice,
+          digitalScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : digitalCurrentScenario.best) + '. ') + digitalCurrentScenario.explain,
+          digitalScenarioScore: digitalScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && digitalScenarioScore + 1 >= 3) checkBadge('scamSpotter');
+      }
+
+      // RECORDS & PAPERWORK STATE
+      var recordsChecklist = d.recordsChecklist || {};
+      var recordsDone = RECORDS_CHECKS.filter(function(step) { return !!recordsChecklist[step.id]; }).length;
+      var recordScenarioIdx = d.recordScenarioIdx || 0;
+      var recordScenarioChoice = d.recordScenarioChoice || '';
+      var recordScenarioFb = d.recordScenarioFb || '';
+      var recordScenarioScore = d.recordScenarioScore || 0;
+      var recordCurrentScenario = RECORD_SCENARIOS[recordScenarioIdx % RECORD_SCENARIOS.length];
+      var recordTypeIdx = d.recordTypeIdx || 0;
+      var recordTypeCard = RECORD_TYPE_CARDS[recordTypeIdx % RECORD_TYPE_CARDS.length];
+      var formFieldIdx = d.formFieldIdx || 0;
+      var formFieldCard = FORM_FIELD_CARDS[formFieldIdx % FORM_FIELD_CARDS.length];
+      var recordPlanIdx = d.recordPlanIdx || 0;
+      var recordPlanPrompt = RECORD_PLAN_PROMPTS[recordPlanIdx % RECORD_PLAN_PROMPTS.length];
+      var recordPlanNote = d.recordPlanNote || '';
+      var recordPlanMsg = d.recordPlanMsg || '';
+
+      function setRecordsCheck(id, checked) {
+        var next = Object.assign({}, recordsChecklist);
+        next[id] = checked;
+        upd('recordsChecklist', next);
+        if (RECORDS_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('recordsReady');
+      }
+
+      function answerRecordScenario(choice) {
+        var correct = choice === recordCurrentScenario.best;
+        var action = RECORD_ACTIONS.find(function(a) { return a.id === recordCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          recordScenarioChoice: choice,
+          recordScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : recordCurrentScenario.best) + '. ') + recordCurrentScenario.explain,
+          recordScenarioScore: recordScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && recordScenarioScore + 1 >= 3) checkBadge('formNavigator');
+      }
+
+      // FOOD CONFIDENCE STATE
+      var foodConfidenceChecklist = d.foodConfidenceChecklist || {};
+      var foodConfidenceDone = FOOD_CONFIDENCE_CHECKS.filter(function(step) { return !!foodConfidenceChecklist[step.id]; }).length;
+      var foodConfidenceScenarioIdx = d.foodConfidenceScenarioIdx || 0;
+      var foodConfidenceScenarioChoice = d.foodConfidenceScenarioChoice || '';
+      var foodConfidenceScenarioFb = d.foodConfidenceScenarioFb || '';
+      var foodConfidenceScenarioScore = d.foodConfidenceScenarioScore || 0;
+      var foodConfidenceCurrentScenario = FOOD_CONFIDENCE_SCENARIOS[foodConfidenceScenarioIdx % FOOD_CONFIDENCE_SCENARIOS.length];
+      var foodStorageIdx = d.foodStorageIdx || 0;
+      var foodStorageCard = FOOD_STORAGE_CARDS[foodStorageIdx % FOOD_STORAGE_CARDS.length];
+      var foodBaseIdx = d.foodBaseIdx || 0;
+      var foodProteinIdx = d.foodProteinIdx || 0;
+      var foodProduceIdx = d.foodProduceIdx || 0;
+      var foodFlavorIdx = d.foodFlavorIdx || 0;
+      var foodBase = FOOD_MEAL_BASES[foodBaseIdx % FOOD_MEAL_BASES.length];
+      var foodProtein = FOOD_MEAL_PROTEINS[foodProteinIdx % FOOD_MEAL_PROTEINS.length];
+      var foodProduce = FOOD_MEAL_PRODUCE[foodProduceIdx % FOOD_MEAL_PRODUCE.length];
+      var foodFlavor = FOOD_MEAL_FLAVORS[foodFlavorIdx % FOOD_MEAL_FLAVORS.length];
+      var foodMealCost = foodBase.cost + foodProtein.cost + foodProduce.cost + foodFlavor.cost;
+      var foodLabelIdx = d.foodLabelIdx || 0;
+      var foodLabel = FOOD_LABEL_SAMPLES[foodLabelIdx % FOOD_LABEL_SAMPLES.length];
+      var foodLabelAnswer = d.foodLabelAnswer || '';
+      var foodLabelFb = d.foodLabelFb || '';
+
+      function setFoodConfidenceCheck(id, checked) {
+        var next = Object.assign({}, foodConfidenceChecklist);
+        next[id] = checked;
+        upd('foodConfidenceChecklist', next);
+        if (FOOD_CONFIDENCE_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('foodPlanner');
+      }
+
+      function answerFoodConfidenceScenario(choice) {
+        var correct = choice === foodConfidenceCurrentScenario.best;
+        var action = FOOD_CONFIDENCE_ACTIONS.find(function(a) { return a.id === foodConfidenceCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          foodConfidenceScenarioChoice: choice,
+          foodConfidenceScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : foodConfidenceCurrentScenario.best) + '. ') + foodConfidenceCurrentScenario.explain,
+          foodConfidenceScenarioScore: foodConfidenceScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && foodConfidenceScenarioScore + 1 >= 3) checkBadge('leftoverSafe');
+      }
+
+      function checkFoodLabelAnswer() {
+        if (!foodLabelAnswer.trim()) return;
+        var correct = foodLabelAnswer.trim().toLowerCase().replace(/[^a-z0-9]/g, '').indexOf(foodLabel.answer.toLowerCase().replace(/[^a-z0-9]/g, '')) >= 0;
+        stemBeep(correct);
+        updMulti({
+          foodLabelFb: correct ? '\u2705 Correct. Labels help compare foods, but the whole meal matters too.' : '\uD83D\uDD0E Look for: ' + foodLabel.answer + '. Labels are comparison tools, not grades.',
+          foodLabelAnswer: ''
+        });
+        if (correct) checkBadge('foodPlanner');
+      }
+
       var chalTier = d.chalTier || 1;
       var chalIdx = d.chalIdx != null ? d.chalIdx : 0;
       var chalAnswer = d.chalAnswer || '';
@@ -1235,7 +1850,7 @@ window.StemLab = window.StemLab || {
         updMulti({ battleActive: true, battleRound: 0, battlePlayerHP: 100, battleEnemyHP: 100, battleAnswer: '', battleFeedback: '', battleOver: false, battleWon: false, battleUseAI: !!useAI, battleOrder: order, battleAIQ: null, battleAILoading: false });
         if (useAI && callGemini) {
           upd('battleAILoading', true);
-          callGemini('Generate one life skills question for a ' + gradeBand + ' student about taxes, insurance, dental care, body care and ergonomics, sleep and energy routines, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+          callGemini('Generate one life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
             try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ battleAIQ: { q: p.q, a: p.a, h: p.h || 'Think practically!' }, battleAILoading: false }); } catch(e) { upd('battleAILoading', false); }
           }).catch(function() { upd('battleAILoading', false); });
         }
@@ -1333,16 +1948,22 @@ window.StemLab = window.StemLab || {
             data:       { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCCA', title: __alloT('stem.lifeskills.data_literacy', 'Data literacy'),           hint: __alloT('stem.lifeskills.spot_check_claims_with_order_of_magnit', 'Spot-check claims with order-of-magnitude reasoning. Per-capita vs total. Mean vs median. Sample size and selection bias \u2014 the four most-misrepresented quantities in everyday news.') },
             decision:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDE0', title: __alloT('stem.lifeskills.decision_frameworks', 'Decision frameworks'),     hint: __alloT('stem.lifeskills.pros_cons_opportunity_cost_reversibili', 'Pros/cons + opportunity cost + reversibility. Annie Duke\'s decision-quality model: "good decision" \u2260 "good outcome." Decide on process, not outcome.') },
             contract:   { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCDD', title: __alloT('stem.lifeskills.contracts_agreements', 'Contracts + agreements'),  hint: __alloT('stem.lifeskills.read_the_whole_thing_before_signing_wa', 'Read the whole thing before signing. Watch for arbitration clauses, auto-renewal, early-termination fees, and limit-of-liability caps. "Click to agree" is a contract.') },
+            records:    { accent: '#334155', soft: 'rgba(51,65,85,0.10)', icon: '\uD83D\uDCC1', title: __alloT('stem.lifeskills.records_paperwork', 'Records + paperwork'), hint: __alloT('stem.lifeskills.records_paperwork_hint', 'IDs, forms, receipts, health cards, deadlines, proof of payment, safe storage, and knowing when to ask before sharing or signing.') },
             insurance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFE5', title: __alloT('stem.lifeskills.insurance_basics', 'Insurance basics'),        hint: __alloT('stem.lifeskills.premium_deductible_out_of_pocket_max_n', 'Premium / deductible / out-of-pocket max / network. Insurance protects against catastrophic loss \u2014 not against everyday cost. High-deductible plans + HSA can beat low-deductible for healthy people.') },
             dental:     { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)',  icon: '\uD83E\uDDB7', title: __alloT('stem.lifeskills.dental_care', 'Dental care'),              hint: __alloT('stem.lifeskills.daily_oral_health_habits', 'Daily prevention, brushing and between-teeth cleaning, snack choices, dental plan math, and knowing when symptoms need a dentist. Educational practice only - not a diagnosis.') },
             bodycare:   { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)',  icon: '\uD83E\uDDCD', title: __alloT('stem.lifeskills.body_care_ergonomics', 'Body care + ergonomics'), hint: __alloT('stem.lifeskills.body_care_fit_task', 'Comfort checks, workspace fit, movement resets, accessibility options, and knowing when to ask for support. The goal is flexible comfort, not one perfect posture.') },
             sleep:      { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',   icon: '\uD83C\uDF19', title: __alloT('stem.lifeskills.sleep_energy', 'Sleep + energy'),            hint: __alloT('stem.lifeskills.sleep_energy_routines', 'Wind-down routines, wake-time math, caffeine timing, screen boundaries, and energy supports. Educational practice only - persistent sleep problems deserve real support.') },
+            meds:       { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)',  icon: '\uD83D\uDC8A', title: __alloT('stem.lifeskills.meds_labels', 'Medication + labels'),       hint: __alloT('stem.lifeskills.medication_label_safety', 'Mock label reading, active ingredients, directions, warnings, storage, expiration, and questions to ask. Practice only - real medication choices need label and professional guidance.') },
+            appointments: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '\uD83D\uDCC5', title: __alloT('stem.lifeskills.appointments_self_advocacy', 'Appointments + self-advocacy'), hint: __alloT('stem.lifeskills.appointment_prep', 'Prepare what to bring, describe concerns clearly, ask questions, request support, and leave with a follow-up plan. Useful for health, school, work, and service meetings.') },
+            homesafety: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '\uD83D\uDEE1\uFE0F', title: __alloT('stem.lifeskills.home_safety', 'Home safety'),            hint: __alloT('stem.lifeskills.home_safety_prep', 'Smoke and carbon monoxide alarms, exit plans, cleaning product safety, first-aid decision rules, emergency contacts, and calm response practice.') },
+            digitalsafety: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '\uD83D\uDD10', title: __alloT('stem.lifeskills.digital_safety', 'Digital safety'),        hint: __alloT('stem.lifeskills.digital_safety_prep', 'Phishing clues, passwords, two-factor login, privacy settings, respectful communication, and block/report/save-evidence plans.') },
             science:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: __alloT('stem.lifeskills.applied_science_at_home', 'Applied science at home'), hint: __alloT('stem.lifeskills.pressure_cookers_microwaves_refrigerat', 'Pressure cookers, microwaves, refrigeration, thermostats, water heaters \u2014 the physics is in your kitchen. Knowing the principle saves you from googling "why is my fridge warm" at 2 AM.') },
             carcare:    { accent: '#1f2937', soft: 'rgba(31,41,55,0.10)',   icon: '\uD83D\uDE97', title: __alloT('stem.lifeskills.car_care_basics', 'Car care basics'),         hint: __alloT('stem.lifeskills.oil_tire_pressure_battery_brakes_fluid', 'Oil + tire pressure + battery + brakes + fluids. Maintenance prevents 80% of breakdowns. Pairs with the Auto Repair Shop tool for deeper dives.') },
             homerepair: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDD27', title: __alloT('stem.lifeskills.home_repair_basics', 'Home repair basics'),      hint: __alloT('stem.lifeskills.toilet_flapper_faucet_washers_drywall_', 'Toilet flapper, faucet washers, drywall patches, GFCI resets, breaker tripping. Five repairs a homeowner does themselves vs five they call a pro for.') },
             homesys:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83C\uDFE0', title: __alloT('stem.lifeskills.home_systems', 'Home systems'),            hint: __alloT('stem.lifeskills.where_the_water_main_is_where_the_brea', 'Where the water main is. Where the breaker panel is. How HVAC + electrical + plumbing actually work. The five things every renter and homeowner should know on day one.') },
             budget:     { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDCB0', title: __alloT('stem.lifeskills.budgeting', 'Budgeting'),               hint: __alloT('stem.lifeskills.50_30_20_rule_needs_wants_save_debt_fi', '50/30/20 rule (needs/wants/save+debt). Fixed vs variable. Sinking funds for predictable irregulars (car insurance, holiday gifts). Cash-flow timing > total spend.') },
             credit:     { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDCB3', title: __alloT('stem.lifeskills.credit_debt', 'Credit + debt'),           hint: __alloT('stem.lifeskills.fico_factors_payment_history_35_utiliz', 'FICO factors: payment history (35%), utilization (30%), age (15%), mix (10%), inquiries (10%). Pay statement balance in full each cycle = no interest. Minimum payment = decades of debt.') },
+            foodconfidence: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83E\uDD57', title: __alloT('stem.lifeskills.food_confidence', 'Food confidence'), hint: __alloT('stem.lifeskills.food_confidence_hint', 'Leftovers, storage, date-label judgment, budget meals, pantry backups, simple nutrition labels, and choosing safety when food is uncertain.') },
             cooking:    { accent: '#f97316', soft: 'rgba(249,115,22,0.10)', icon: '\uD83C\uDF73', title: __alloT('stem.lifeskills.cooking_fundamentals', 'Cooking fundamentals'),    hint: __alloT('stem.lifeskills.heat_control_knife_skills_salt_timing_', 'Heat control, knife skills, salt timing, food safety (40\u2013140\u00B0F danger zone, 165\u00B0F poultry-safe). Five techniques cover 80% of home recipes \u2014 sear, simmer, roast, steam, saut\u00e9.') },
             laundry:    { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83E\uDDFA', title: __alloT('stem.lifeskills.laundry_science', 'Laundry science'),       hint: __alloT('stem.lifeskills.surfactants_enzymes_agitation_tempera', 'Surfactants, enzymes, agitation, temperature, rinse efficiency, and fabric chemistry. The point is not just "do laundry" \u2014 it is knowing why each step prevents residue, dye transfer, shrinkage, odor, and dryer risk.') },
             challenge:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAF', title: __alloT('stem.lifeskills.daily_challenge', 'Daily challenge'),         hint: __alloT('stem.lifeskills.a_new_life_skills_puzzle_every_session', 'A new life-skills puzzle every session \u2014 calculate a tip, decode a credit-card APR, debug a leaking faucet. Streak counter tracks daily wins.') },
@@ -1398,11 +2019,17 @@ window.StemLab = window.StemLab || {
               })
             )
           ),
-          h('div', { className: 'grid md:grid-cols-5 gap-3' },
+          h('div', { className: 'grid sm:grid-cols-2 xl:grid-cols-5 gap-3' },
             [
               { title: '10-minute money check', icon: '\uD83E\uDDFE', body: 'Estimate take-home pay, then jump to budget if there is time.', tab: 'paycheck' },
+              { title: 'Digital safety scan', icon: '\uD83D\uDD10', body: 'Spot scams, strengthen passwords, review privacy, and report harm.', tab: 'digitalsafety' },
+              { title: 'Paperwork quick sort', icon: '\uD83D\uDCC1', body: 'Find IDs, forms, receipts, deadlines, and private records before they are needed.', tab: 'records' },
               { title: 'Body comfort reset', icon: '\uD83E\uDDCD', body: 'Check posture, setup, movement breaks, and access needs.', tab: 'bodycare' },
+              { title: 'Food confidence check', icon: '\uD83E\uDD57', body: 'Plan leftovers, storage, labels, pantry meals, and safer choices.', tab: 'foodconfidence' },
+              { title: 'Appointment prep', icon: '\uD83D\uDCC5', body: 'Prepare notes, questions, support needs, and follow-up steps.', tab: 'appointments' },
+              { title: 'Home safety check', icon: '\uD83D\uDEE1\uFE0F', body: 'Practice alarms, exits, cleaners, first aid, and emergency contacts.', tab: 'homesafety' },
               { title: 'Sleep wind-down', icon: '\uD83C\uDF19', body: 'Plan bedtime, wake time, screens, caffeine, and energy supports.', tab: 'sleep' },
+              { title: 'Medication label check', icon: '\uD83D\uDC8A', body: 'Practice active ingredients, warnings, storage, and questions to ask.', tab: 'meds' },
               { title: 'Daily care reset', icon: '\uD83E\uDDB7', body: 'Build an oral-care routine and compare snack choices.', tab: 'dental' },
               { title: 'Fast practice', icon: '\uD83C\uDFAF', body: 'Answer a few challenge questions and grow a streak.', tab: 'challenge' }
             ].map(function(card) {
@@ -1671,6 +2298,138 @@ window.StemLab = window.StemLab || {
                 );
               })
             )
+          )
+        ),
+
+        tab === 'records' && h('div', { className: 'space-y-4', 'data-lifeskills-records-paperwork': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.records_lab', '\uD83D\uDCC1 Records & Paperwork Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice keeping important papers safe and asking before sharing or signing.',
+                  'Build a simple system for IDs, forms, receipts, deadlines, and private information.',
+                  'Decode paperwork by purpose: identity, proof, consent, deadlines, storage, and privacy.',
+                  'Model paperwork literacy as document triage, consent awareness, privacy protection, proof-of-payment tracking, and deadline planning.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-slate-100 border border-slate-300 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-slate-700' }, 'Records readiness'),
+                h('p', { className: 'text-2xl font-black text-slate-900 leading-none' }, Math.round(recordsDone / RECORDS_CHECKS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-700 bg-slate-50 border border-slate-200 rounded-xl p-2 leading-relaxed' }, 'Practice only. Do not share private IDs, account numbers, health details, or signatures through unknown links. Ask before sharing or signing when a request feels confusing, rushed, or unnecessary.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Records checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, recordsDone + '/' + RECORDS_CHECKS.length + ' record habits checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-300' }, 'Find it before stress')
+              ),
+              RECORDS_CHECKS.map(function(step) {
+                var checked = !!recordsChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-slate-400') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setRecordsCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-700 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-slate-700 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Paperwork decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200' }, 'Score ' + recordScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, recordCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                RECORD_ACTIONS.map(function(action) {
+                  var chosen = recordScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerRecordScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all focus:outline-none focus:ring-2 focus:ring-slate-700 ' + (chosen ? action.tone + ' ring-2 ring-offset-1 ring-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:border-slate-500') }, action.label);
+                })
+              ),
+              recordScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (recordScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, recordScenarioFb),
+              h('button', { onClick: function() { updMulti({ recordScenarioIdx: recordScenarioIdx + 1, recordScenarioChoice: '', recordScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-slate-800 text-white hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Document type cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, recordTypeCard.icon + ' ' + recordTypeCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Keep, use, protect')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                RECORD_TYPE_CARDS.map(function(card, i) {
+                  var active = i === recordTypeIdx % RECORD_TYPE_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('recordTypeIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-slate-700 ' + (active ? 'bg-slate-800 text-white border-slate-800' : 'bg-white border-slate-300 text-slate-700 hover:border-slate-500') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Keep'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, recordTypeCard.keep),
+                h('p', { className: 'text-xs font-black text-blue-800 pt-2 border-t border-slate-100' }, 'Use for'),
+                h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, recordTypeCard.use),
+                h('p', { className: 'text-xs font-black text-red-800 pt-2 border-t border-slate-100' }, 'Protect'),
+                h('p', { className: 'text-[11px] text-red-800 font-medium leading-relaxed' }, recordTypeCard.protect)
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Form field decoder'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, formFieldCard.icon + ' ' + formFieldCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-amber-50 text-amber-900 text-[11px] font-bold border border-amber-200' }, 'Read before signing')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                FORM_FIELD_CARDS.map(function(card, i) {
+                  var active = i === formFieldIdx % FORM_FIELD_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('formFieldIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-slate-700 ' + (active ? 'bg-slate-800 text-white border-slate-800' : 'bg-white border-slate-300 text-slate-700 hover:border-slate-500') }, card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Means'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, formFieldCard.means),
+                h('p', { className: 'text-xs font-black text-emerald-800 pt-2 border-t border-slate-100' }, 'Try this'),
+                h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, formFieldCard.move),
+                h('p', { className: 'text-xs font-black text-red-800 pt-2 border-t border-slate-100' }, 'Watch for'),
+                h('p', { className: 'text-[11px] text-red-800 font-medium leading-relaxed' }, formFieldCard.watch)
+              )
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Paperwork plan builder'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, recordPlanPrompt)
+              ),
+              h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-300' }, 'One next step')
+            ),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              RECORD_PLAN_PROMPTS.map(function(prompt, i) {
+                var active = i === recordPlanIdx % RECORD_PLAN_PROMPTS.length;
+                return h('button', { key: prompt, onClick: function() { updMulti({ recordPlanIdx: i, recordPlanNote: prompt, recordPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-500') }, 'Plan ' + (i + 1));
+              })
+            ),
+            h('textarea', { value: recordPlanNote, onChange: function(e) { upd('recordPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one record, form, or deadline action.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Paperwork plan note' }),
+            h('button', { onClick: function() {
+              if (!recordPlanNote.trim()) { upd('recordPlanMsg', 'Write one paperwork step first.'); return; }
+              updMulti({ recordPlanMsg: 'Plan saved: ' + recordPlanNote.trim(), recordPlanSaved: Date.now() });
+              checkBadge('recordsReady');
+              announceToSR('Paperwork plan saved');
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save paperwork plan'),
+            recordPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.recordPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, recordPlanMsg)
           )
         ),
 
@@ -2024,6 +2783,462 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'rounded-xl bg-indigo-50 border border-indigo-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-indigo-800' }, 'Anchor'), h('p', { className: 'text-sm font-black text-indigo-900' }, 'Wake time first'), h('p', { className: 'text-[11px] text-indigo-800 leading-relaxed' }, 'A steady wake time makes bedtime math easier.')),
             h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Transition'), h('p', { className: 'text-sm font-black text-blue-900' }, 'Wind down before bed'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'The routine starts before the pillow.')),
             h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'Support'), h('p', { className: 'text-sm font-black text-red-900' }, 'Ask when it repeats'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Ongoing sleep trouble or unsafe sleepiness is a support signal.'))
+          )
+        ),
+
+        tab === 'meds' && h('div', { className: 'space-y-4', 'data-lifeskills-medication-labels': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.medication_labels_lab', '\uD83D\uDC8A Medication & Labels Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice asking a grown-up and reading important label words.',
+                  'Read sample labels, spot active ingredients, and practice asking for help when directions are confusing.',
+                  'Build medication-label literacy: directions, warnings, storage, expiration, duplicate ingredients, and pharmacist questions.',
+                  'Practice medication-label analysis using mock labels: active ingredients, timing, warnings, interactions, storage, expiration, and support pathways.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-violet-50 border border-violet-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-violet-700' }, 'Label readiness'),
+                h('p', { className: 'text-2xl font-black text-violet-800 leading-none' }, Math.round(medChecklistDone / MED_LABEL_PARTS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-600 bg-violet-50 border border-violet-200 rounded-xl p-2' }, 'Educational practice only. These are mock labels, not dosing instructions. Real medication decisions should follow the actual label and guidance from a pharmacist, prescriber, nurse, or trusted adult.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Label safety checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, medChecklistDone + '/' + MED_LABEL_PARTS.length + ' parts checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-violet-50 text-violet-800 text-[11px] font-bold border border-violet-200' }, 'Read before deciding')
+              ),
+              MED_LABEL_PARTS.map(function(part) {
+                var checked = !!medChecklist[part.id];
+                return h('label', { key: part.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-violet-200') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setMedChecklist(part.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': part.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, part.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, part.title),
+                    h('span', { className: 'block text-[11px] text-slate-600 leading-relaxed' }, part.action),
+                    h('span', { className: 'block text-[11px] text-violet-700 mt-1 font-medium' }, 'Why: ' + part.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Mock label decoder'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, medLabel.name)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold' }, 'Sample only')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                MED_SAMPLE_LABELS.map(function(label, i) {
+                  var active = i === medLabelIdx % MED_SAMPLE_LABELS.length;
+                  return h('button', { key: label.name, onClick: function() { updMulti({ medLabelIdx: i, medLabelAnswer: '', medLabelFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border ' + (active ? 'bg-violet-700 text-white border-violet-700' : 'bg-white border-slate-300 text-slate-700 hover:border-violet-300') }, label.name);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2 text-[11px]' },
+                h('p', { className: 'font-black text-slate-800 text-xs' }, medLabel.name),
+                h('p', null, h('span', { className: 'font-bold text-violet-700' }, 'Active ingredient: '), medLabel.active),
+                h('p', null, h('span', { className: 'font-bold text-violet-700' }, 'Use: '), medLabel.use),
+                h('p', null, h('span', { className: 'font-bold text-violet-700' }, 'Directions: '), medLabel.directions),
+                h('p', null, h('span', { className: 'font-bold text-violet-700' }, 'Warnings: '), medLabel.warnings),
+                h('p', null, h('span', { className: 'font-bold text-violet-700' }, 'Storage: '), medLabel.storage)
+              ),
+              h('p', { className: 'text-xs font-bold text-slate-700' }, medLabel.question),
+              h('div', { className: 'flex gap-2' },
+                h('input', { type: 'text', value: medLabelAnswer, onChange: function(e) { upd('medLabelAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') checkMedLabelAnswer(); }, placeholder: 'Type your answer...', className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-sm', 'aria-label': 'Mock label answer' }),
+                h('button', { onClick: checkMedLabelAnswer, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-700 text-white hover:bg-violet-800' }, 'Check')
+              ),
+              medLabelFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (medLabelFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800') }, medLabelFb)
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Medication label decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the safest next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold' }, 'Score ' + medScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, medCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                MED_ACTIONS.map(function(action) {
+                  var chosen = medScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerMedScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all ' + (chosen ? action.tone + ' ring-2 ring-offset-1' : 'bg-white border-slate-300 text-slate-700 hover:border-violet-300') }, action.label);
+                })
+              ),
+              medScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (medScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800') }, medScenarioFb),
+              h('button', { onClick: function() { updMulti({ medScenarioIdx: medScenarioIdx + 1, medScenarioChoice: '', medScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-violet-700 text-white' }, 'Next scenario')
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Questions to ask'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, medQuestionPrompt)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-violet-50 text-violet-800 text-[11px] font-bold border border-violet-200' }, 'Self-advocacy')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                MED_QUESTION_PROMPTS.map(function(prompt, i) {
+                  var active = i === medQuestionIdx % MED_QUESTION_PROMPTS.length;
+                  return h('button', { key: prompt, onClick: function() { updMulti({ medQuestionIdx: i, medQuestionNote: prompt, medQuestionMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-violet-700 border-violet-200') }, 'Q' + (i + 1));
+                })
+              ),
+              h('textarea', { value: medQuestionNote, onChange: function(e) { upd('medQuestionNote', e.target.value); }, rows: 4, placeholder: 'Write a question you would ask a pharmacist, prescriber, nurse, or trusted adult.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Medication question note' }),
+              h('button', { onClick: function() {
+                if (!medQuestionNote.trim()) { upd('medQuestionMsg', 'Write one question first.'); return; }
+                updMulti({ medQuestionMsg: 'Question saved: ' + medQuestionNote.trim(), medQuestionSaved: Date.now() });
+                checkBadge('medLabelReader');
+                announceToSR('Medication question saved');
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Save question'),
+              medQuestionMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.medQuestionSaved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200') }, medQuestionMsg)
+            )
+          ),
+          h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
+            h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Duplicate check'), h('p', { className: 'text-sm font-black text-blue-900' }, 'Active ingredients'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'Two products can share the same ingredient even if their front labels look different.')),
+            h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-amber-800' }, 'Ask early'), h('p', { className: 'text-sm font-black text-amber-900' }, 'Confusing label?'), h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' }, 'A pharmacist or trusted adult can explain directions, warnings, and storage.')),
+            h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'Urgent signs'), h('p', { className: 'text-sm font-black text-red-900' }, 'Get help now'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Trouble breathing, swelling, fainting, or severe reactions need urgent help.'))
+          )
+        ),
+
+        tab === 'appointments' && h('div', { className: 'space-y-4', 'data-lifeskills-appointments': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.appointments_lab', '\uD83D\uDCC5 Appointments & Self-Advocacy Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice telling a helper what you need and asking questions.',
+                  'Prepare what to bring, what to say, and what to ask at appointments or support meetings.',
+                  'Build self-advocacy with timelines, examples, questions, accommodations, and follow-up plans.',
+                  'Practice appointment literacy: scheduling, documentation, support people, consent/privacy questions, accommodations, and next-step planning.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-cyan-50 border border-cyan-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-cyan-700' }, 'Prep readiness'),
+                h('p', { className: 'text-2xl font-black text-cyan-800 leading-none' }, Math.round(appointmentPrepDone / APPOINTMENT_PREP_STEPS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-600 bg-cyan-50 border border-cyan-200 rounded-xl p-2' }, 'Practice for health, dental, school, work, and service meetings. Urgent symptoms or safety concerns should use urgent help instead of waiting for a routine appointment.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Appointment prep checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, appointmentPrepDone + '/' + APPOINTMENT_PREP_STEPS.length + ' steps planned')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-cyan-50 text-cyan-800 text-[11px] font-bold border border-cyan-200' }, 'Bring notes')
+              ),
+              APPOINTMENT_PREP_STEPS.map(function(step) {
+                var checked = !!appointmentPrep[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-cyan-200') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setAppointmentPrep(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-600 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-cyan-700 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Appointment type planner'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, appointmentType.icon + ' ' + appointmentType.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold' }, 'What to bring')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                APPOINTMENT_TYPES.map(function(type, i) {
+                  var active = i === appointmentTypeIdx % APPOINTMENT_TYPES.length;
+                  return h('button', { key: type.id, onClick: function() { upd('appointmentTypeIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border ' + (active ? 'bg-cyan-700 text-white border-cyan-700' : 'bg-white border-slate-300 text-slate-700 hover:border-cyan-300') }, type.icon + ' ' + type.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Bring or prepare'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, appointmentType.bring),
+                h('p', { className: 'text-xs font-black text-slate-800 pt-2 border-t border-slate-100' }, 'Useful question'),
+                h('p', { className: 'text-[11px] text-cyan-700 font-medium leading-relaxed' }, appointmentType.question)
+              ),
+              h('button', { onClick: function() { checkBadge('appointmentReady'); awardXP(10, 'Appointment prep practiced'); announceToSR('Appointment prep practiced'); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-cyan-700 text-white hover:bg-cyan-800' }, 'Mark prep practiced')
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Appointment decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold' }, 'Score ' + appointmentScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, appointmentCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                APPOINTMENT_ACTIONS.map(function(action) {
+                  var chosen = appointmentScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerAppointmentScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all ' + (chosen ? action.tone + ' ring-2 ring-offset-1' : 'bg-white border-slate-300 text-slate-700 hover:border-cyan-300') }, action.label);
+                })
+              ),
+              appointmentScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (appointmentScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800') }, appointmentScenarioFb),
+              h('button', { onClick: function() { updMulti({ appointmentScenarioIdx: appointmentScenarioIdx + 1, appointmentScenarioChoice: '', appointmentScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-cyan-700 text-white' }, 'Next scenario')
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Self-advocacy script builder'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, appointmentScriptPrompt)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-cyan-50 text-cyan-800 text-[11px] font-bold border border-cyan-200' }, 'Practice words')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                APPOINTMENT_SCRIPT_PROMPTS.map(function(prompt, i) {
+                  var active = i === appointmentScriptIdx % APPOINTMENT_SCRIPT_PROMPTS.length;
+                  return h('button', { key: prompt, onClick: function() { updMulti({ appointmentScriptIdx: i, appointmentScriptNote: prompt, appointmentScriptMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-cyan-700 text-white border-cyan-700' : 'bg-white text-cyan-700 border-cyan-200') }, 'Line ' + (i + 1));
+                })
+              ),
+              h('textarea', { value: appointmentScriptNote, onChange: function(e) { upd('appointmentScriptNote', e.target.value); }, rows: 4, placeholder: 'Write a sentence you could say or show during the appointment.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Appointment script note' }),
+              h('button', { onClick: function() {
+                if (!appointmentScriptNote.trim()) { upd('appointmentScriptMsg', 'Write one sentence first.'); return; }
+                updMulti({ appointmentScriptMsg: 'Script saved: ' + appointmentScriptNote.trim(), appointmentScriptSaved: Date.now() });
+                checkBadge('selfAdvocate');
+                announceToSR('Appointment script saved');
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Save script'),
+              appointmentScriptMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.appointmentScriptSaved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200') }, appointmentScriptMsg)
+            )
+          ),
+          h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
+            h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Say the reason'), h('p', { className: 'text-sm font-black text-blue-900' }, 'One clear sentence'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'Start with the main goal so the helper knows where to focus.')),
+            h('div', { className: 'rounded-xl bg-emerald-50 border border-emerald-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-emerald-800' }, 'Ask clearly'), h('p', { className: 'text-sm font-black text-emerald-900' }, 'Repeat or write down'), h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, 'It is okay to ask for simpler words, notes, or more time.')),
+            h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'Urgent signs'), h('p', { className: 'text-sm font-black text-red-900' }, 'Do not wait'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Severe, sudden, or unsafe symptoms need urgent help.'))
+          )
+        ),
+
+        tab === 'homesafety' && h('div', { className: 'space-y-4', 'data-lifeskills-home-safety': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.home_safety_lab', '\uD83D\uDEE1\uFE0F Home Safety Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice safe choices at home: alarms, exits, helpers, and asking for emergency help.',
+                  'Build a home safety plan for alarms, exits, cleaning products, first aid, and emergency contacts.',
+                  'Use prevention plus response: check risks early, know when to leave, and choose the right kind of help.',
+                  'Model home safety as risk reduction, emergency communication, first-aid triage, chemical safety, and practiced response routines.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-red-50 border border-red-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-red-700' }, 'Safety readiness'),
+                h('p', { className: 'text-2xl font-black text-red-800 leading-none' }, Math.round(homeSafetyDone / HOME_SAFETY_CHECKS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-600 bg-red-50 border border-red-200 rounded-xl p-2' }, 'Practice only. If there is immediate danger, smoke/fire, carbon monoxide alarm, serious injury, trouble breathing, or an unconscious person, leave if needed and call emergency help.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Home safety checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, homeSafetyDone + '/' + HOME_SAFETY_CHECKS.length + ' safety checks')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-red-50 text-red-800 text-[11px] font-bold border border-red-200' }, 'Prepare before danger')
+              ),
+              HOME_SAFETY_CHECKS.map(function(step) {
+                var checked = !!homeSafetyChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-red-200') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setHomeSafetyCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-600 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-red-700 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Home safety decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the safest next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold' }, 'Score ' + homeSafetyScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, homeSafetyCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                HOME_SAFETY_ACTIONS.map(function(action) {
+                  var chosen = homeSafetyScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerHomeSafetyScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all ' + (chosen ? action.tone + ' ring-2 ring-offset-1' : 'bg-white border-slate-300 text-slate-700 hover:border-red-300') }, action.label);
+                })
+              ),
+              homeSafetyScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (homeSafetyScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800') }, homeSafetyScenarioFb),
+              h('button', { onClick: function() { updMulti({ homeSafetyScenarioIdx: homeSafetyScenarioIdx + 1, homeSafetyScenarioChoice: '', homeSafetyScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-red-700 text-white' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'First-aid decision cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, firstAidCard.icon + ' ' + firstAidCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-red-50 text-red-800 text-[11px] font-bold border border-red-200' }, 'Know when to escalate')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                FIRST_AID_CARDS.map(function(card, i) {
+                  var active = i === firstAidIdx % FIRST_AID_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('firstAidIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border ' + (active ? 'bg-red-700 text-white border-red-700' : 'bg-white border-slate-300 text-slate-700 hover:border-red-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'First step'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, firstAidCard.first),
+                h('p', { className: 'text-xs font-black text-red-700 pt-2 border-t border-slate-100' }, 'Get urgent help when'),
+                h('p', { className: 'text-[11px] text-red-700 font-medium leading-relaxed' }, firstAidCard.urgent)
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Emergency plan builder'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, homePlanPrompt)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-red-50 text-red-800 text-[11px] font-bold border border-red-200' }, 'Write it down')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                HOME_SAFETY_PLAN_PROMPTS.map(function(prompt, i) {
+                  var active = i === homePlanIdx % HOME_SAFETY_PLAN_PROMPTS.length;
+                  return h('button', { key: prompt, onClick: function() { updMulti({ homePlanIdx: i, homePlanNote: prompt, homePlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-red-700 text-white border-red-700' : 'bg-white text-red-700 border-red-200') }, 'Plan ' + (i + 1));
+                })
+              ),
+              h('textarea', { value: homePlanNote, onChange: function(e) { upd('homePlanNote', e.target.value); }, rows: 4, placeholder: 'Write one part of your emergency plan.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Home safety plan note' }),
+              h('button', { onClick: function() {
+                if (!homePlanNote.trim()) { upd('homePlanMsg', 'Write one plan note first.'); return; }
+                updMulti({ homePlanMsg: 'Plan saved: ' + homePlanNote.trim(), homePlanSaved: Date.now() });
+                checkBadge('homeSafetyReady');
+                announceToSR('Home safety plan saved');
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Save plan note'),
+              homePlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.homePlanSaved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200') }, homePlanMsg)
+            )
+          ),
+          h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
+            h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Alarms'), h('p', { className: 'text-sm font-black text-blue-900' }, 'Test and respond'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'Smoke and CO alarms are warnings to act, not background noise.')),
+            h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-amber-800' }, 'Cleaners'), h('p', { className: 'text-sm font-black text-amber-900' }, 'Never mix'), h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' }, 'Use one product as directed and keep air moving.')),
+            h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'Emergency'), h('p', { className: 'text-sm font-black text-red-900' }, 'Leave, call, meet'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Get out when needed, call from safety, and meet at the plan spot.'))
+          )
+        ),
+
+        tab === 'digitalsafety' && h('div', { className: 'space-y-4', 'data-lifeskills-digital-safety': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.digital_safety_lab', '\uD83D\uDD10 Digital Safety Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice asking before sharing, clicking, or talking to someone unsafe online.',
+                  'Build safer habits for passwords, privacy, links, messages, and asking for help online.',
+                  'Spot phishing, secure accounts, review privacy, and practice block/report/save-evidence decisions.',
+                  'Model digital safety as account security, privacy, social engineering defense, consent, reporting, and recovery planning.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-blue-50 border border-blue-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-blue-700' }, 'Digital readiness'),
+                h('p', { className: 'text-2xl font-black text-blue-800 leading-none' }, Math.round(digitalChecklistDone / DIGITAL_SAFETY_CHECKS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-600 bg-blue-50 border border-blue-200 rounded-xl p-2' }, 'Practice only. If someone threatens you, pressures you, shares private images, asks for secrets, or makes you feel unsafe, stop engaging, save evidence if safe, block/report, and tell a trusted person.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Digital safety checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, digitalChecklistDone + '/' + DIGITAL_SAFETY_CHECKS.length + ' habits checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Protect accounts')
+              ),
+              DIGITAL_SAFETY_CHECKS.map(function(step) {
+                var checked = !!digitalChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-blue-200') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setDigitalChecklist(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-600 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-blue-700 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Digital safety decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the safest next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold' }, 'Score ' + digitalScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, digitalCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                DIGITAL_ACTIONS.map(function(action) {
+                  var chosen = digitalScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerDigitalScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all ' + (chosen ? action.tone + ' ring-2 ring-offset-1' : 'bg-white border-slate-300 text-slate-700 hover:border-blue-300') }, action.label);
+                })
+              ),
+              digitalScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (digitalScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800') }, digitalScenarioFb),
+              h('button', { onClick: function() { updMulti({ digitalScenarioIdx: digitalScenarioIdx + 1, digitalScenarioChoice: '', digitalScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-blue-700 text-white' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Scam signal cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, digitalScam.icon + ' ' + digitalScam.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Look for patterns')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                DIGITAL_SCAM_SIGNS.map(function(sign, i) {
+                  var active = i === digitalScamIdx % DIGITAL_SCAM_SIGNS.length;
+                  return h('button', { key: sign.id, onClick: function() { upd('digitalScamIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border ' + (active ? 'bg-blue-700 text-white border-blue-700' : 'bg-white border-slate-300 text-slate-700 hover:border-blue-300') }, sign.icon + ' ' + sign.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Clue'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, digitalScam.clue),
+                h('p', { className: 'text-[11px] text-blue-700 font-medium leading-relaxed' }, 'Move: pause, verify through a separate trusted route, and do not share passwords or codes.')
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Privacy and recovery plan'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, digitalPlanPrompt)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'One small step')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                DIGITAL_PLAN_PROMPTS.map(function(prompt, i) {
+                  var active = i === digitalPlanIdx % DIGITAL_PLAN_PROMPTS.length;
+                  return h('button', { key: prompt, onClick: function() { updMulti({ digitalPlanIdx: i, digitalPlanNote: prompt, digitalPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-blue-700 border-blue-200') }, 'Plan ' + (i + 1));
+                })
+              ),
+              h('textarea', { value: digitalPlanNote, onChange: function(e) { upd('digitalPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one digital safety action you can take.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Digital safety plan note' }),
+              h('button', { onClick: function() {
+                if (!digitalPlanNote.trim()) { upd('digitalPlanMsg', 'Write one digital safety step first.'); return; }
+                updMulti({ digitalPlanMsg: 'Plan saved: ' + digitalPlanNote.trim(), digitalPlanSaved: Date.now() });
+                checkBadge('digitalReady');
+                announceToSR('Digital safety plan saved');
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Save digital plan'),
+              digitalPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.digitalPlanSaved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200') }, digitalPlanMsg)
+            )
+          ),
+          h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
+            h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Accounts'), h('p', { className: 'text-sm font-black text-blue-900' }, 'Long, unique, 2FA'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'Strong login habits reduce account-takeover risk.')),
+            h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-amber-800' }, 'Scams'), h('p', { className: 'text-sm font-black text-amber-900' }, 'Pause under pressure'), h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' }, 'Urgency, secrecy, and codes are common warning signs.')),
+            h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'Harm'), h('p', { className: 'text-sm font-black text-red-900' }, 'Block, report, tell'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Pressure, threats, harassment, or image abuse deserve support.'))
           )
         ),
 
@@ -2492,6 +3707,160 @@ window.StemLab = window.StemLab || {
         ),
 
         // ═══ COOKING TAB ═══
+        tab === 'foodconfidence' && h('div', { className: 'space-y-4', 'data-lifeskills-food-confidence': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.food_confidence_lab', '\uD83E\uDD57 Food Confidence Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice simple food choices: wash, store, label, ask, and throw food out when it seems unsafe.',
+                  'Build confidence with leftovers, storage, pantry meals, date labels, and safer food decisions.',
+                  'Use food-safety judgment, meal planning, budget ingredients, and nutrition-label comparison tools.',
+                  'Model food confidence as risk reduction, storage decisions, resource planning, label literacy, and low-waste meal strategy.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-emerald-800' }, 'Food readiness'),
+                h('p', { className: 'text-2xl font-black text-emerald-900 leading-none' }, Math.round(foodConfidenceDone / FOOD_CONFIDENCE_CHECKS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-700 bg-emerald-50 border border-emerald-200 rounded-xl p-2 leading-relaxed' }, 'Practice only. For allergies, medical diets, recalls, spoiled food, damaged cans, unsafe storage time, or uncertainty, ask a trusted adult or reliable food-safety source. When in doubt, throw it out.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Food confidence checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, foodConfidenceDone + '/' + FOOD_CONFIDENCE_CHECKS.length + ' habits checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200' }, 'Build the routine')
+              ),
+              FOOD_CONFIDENCE_CHECKS.map(function(step) {
+                var checked = !!foodConfidenceChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-emerald-300') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setFoodConfidenceCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-700 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-emerald-800 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Leftover and storage decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the safest next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200' }, 'Score ' + foodConfidenceScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, foodConfidenceCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                FOOD_CONFIDENCE_ACTIONS.map(function(action) {
+                  var chosen = foodConfidenceScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerFoodConfidenceScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all focus:outline-none focus:ring-2 focus:ring-emerald-700 ' + (chosen ? action.tone + ' ring-2 ring-offset-1 ring-emerald-700' : 'bg-white border-slate-300 text-slate-700 hover:border-emerald-300') }, action.label);
+                })
+              ),
+              foodConfidenceScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (foodConfidenceScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, foodConfidenceScenarioFb),
+              h('button', { onClick: function() { updMulti({ foodConfidenceScenarioIdx: foodConfidenceScenarioIdx + 1, foodConfidenceScenarioChoice: '', foodConfidenceScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-emerald-700 text-white hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-700' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Storage confidence cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, foodStorageCard.icon + ' ' + foodStorageCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Keep, watch, use')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                FOOD_STORAGE_CARDS.map(function(card, i) {
+                  var active = i === foodStorageIdx % FOOD_STORAGE_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('foodStorageIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-emerald-700 ' + (active ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white border-slate-300 text-slate-700 hover:border-emerald-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Keep'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, foodStorageCard.keep),
+                h('p', { className: 'text-xs font-black text-red-800 pt-2 border-t border-slate-100' }, 'Watch for'),
+                h('p', { className: 'text-[11px] text-red-800 font-medium leading-relaxed' }, foodStorageCard.watch),
+                h('p', { className: 'text-xs font-black text-emerald-800 pt-2 border-t border-slate-100' }, 'Low-waste tip'),
+                h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, foodStorageCard.tip)
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Budget meal builder'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, foodBase.name + ' + ' + foodProtein.name + ' + ' + foodProduce.name)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200' }, '$' + foodMealCost.toFixed(2) + ' estimate')
+              ),
+              [
+                { label: 'Base', value: foodBaseIdx, key: 'foodBaseIdx', items: FOOD_MEAL_BASES },
+                { label: 'Protein', value: foodProteinIdx, key: 'foodProteinIdx', items: FOOD_MEAL_PROTEINS },
+                { label: 'Produce', value: foodProduceIdx, key: 'foodProduceIdx', items: FOOD_MEAL_PRODUCE },
+                { label: 'Flavor', value: foodFlavorIdx, key: 'foodFlavorIdx', items: FOOD_MEAL_FLAVORS }
+              ].map(function(group) {
+                var current = group.items[group.value % group.items.length];
+                return h('div', { key: group.key, className: 'grid sm:grid-cols-[110px_1fr] gap-2 items-start' },
+                  h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase pt-2', htmlFor: group.key }, group.label),
+                  h('div', null,
+                    h('select', { id: group.key, value: group.value, onChange: function(e) { upd(group.key, parseInt(e.target.value, 10) || 0); }, className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-bold bg-white text-slate-800' },
+                      group.items.map(function(item, i) { return h('option', { key: item.name, value: i }, item.name + ' - $' + item.cost.toFixed(2)); })
+                    ),
+                    h('p', { className: 'text-[11px] text-slate-700 mt-1' }, current.note)
+                  )
+                );
+              }),
+              h('div', { className: 'rounded-xl bg-emerald-50 border border-emerald-200 p-3' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-emerald-800' }, 'Pattern'),
+                h('p', { className: 'text-sm font-black text-emerald-900' }, 'Base + protein + produce + flavor'),
+                h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, 'This pattern turns pantry basics and leftovers into a meal without needing a perfect recipe.')
+              )
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Simple nutrition label practice'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, foodLabel.name)
+                ),
+                h('button', { onClick: function() { updMulti({ foodLabelIdx: foodLabelIdx + 1, foodLabelAnswer: '', foodLabelFb: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-300 text-slate-700 hover:border-emerald-300' }, 'New label')
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-300 p-3' },
+                h('p', { className: 'text-base font-black text-slate-900 border-b border-slate-300 pb-1 mb-2' }, 'Nutrition Facts'),
+                [
+                  ['Calories', foodLabel.calories],
+                  ['Protein', foodLabel.protein + 'g'],
+                  ['Fiber', foodLabel.fiber + 'g'],
+                  ['Added sugar', foodLabel.addedSugar + 'g'],
+                  ['Sodium', foodLabel.sodium + 'mg']
+                ].map(function(row) {
+                  return h('div', { key: row[0], className: 'flex justify-between gap-3 py-1 border-b border-slate-100 text-xs' },
+                    h('span', { className: 'font-bold text-slate-700' }, row[0]),
+                    h('span', { className: 'font-black text-slate-900' }, row[1])
+                  );
+                })
+              ),
+              h('label', { className: 'block text-xs font-bold text-slate-700' },
+                foodLabel.question,
+                h('input', { value: foodLabelAnswer, onChange: function(e) { upd('foodLabelAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') checkFoodLabelAnswer(); }, placeholder: 'Type the label clue here', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white', 'aria-label': 'Nutrition label answer' })
+              ),
+              h('button', { onClick: checkFoodLabelAnswer, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Check label'),
+              foodLabelFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (foodLabelFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, foodLabelFb)
+            ),
+            h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
+              h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Leftovers'), h('p', { className: 'text-sm font-black text-blue-900' }, 'Cool, cover, label'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'A label turns a mystery container into a plan.')),
+              h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-amber-800' }, 'Date labels'), h('p', { className: 'text-sm font-black text-amber-900' }, 'Quality vs safety'), h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' }, 'Best-by dates are clues, not the only safety signal.')),
+              h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'When in doubt'), h('p', { className: 'text-sm font-black text-red-900' }, 'Throw it out'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Do not taste-test food that might be unsafe.'))
+            )
+          )
+        ),
+
         tab === 'cooking' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.cooking_food_safety', '\uD83C\uDF73 Cooking & Food Safety')),
@@ -2893,7 +4262,7 @@ window.StemLab = window.StemLab || {
               callGemini && h('button', { onClick: function() {
                 upd('chalAILoading', true);
                 var tierLabel = chalTier === 1 ? 'easy' : chalTier === 2 ? 'medium' : 'hard';
-                callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, dental care, body care and ergonomics, sleep and energy routines, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+                callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
                   try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ chalAILoading: false, chalFeedback: '', chalAnswer: '', chalAIQ: p }); } catch(e) { updMulti({ chalAILoading: false }); }
                 }).catch(function() { upd('chalAILoading', false); });
               }, disabled: d.chalAILoading, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl disabled:opacity-50' }, d.chalAILoading ? '\uD83E\uDDE0...' : '\u2728 AI Next')
@@ -2992,5 +4361,5 @@ window.StemLab = window.StemLab || {
     }
   });
 
-  console.log('[StemLab] stem_tool_lifeskills.js v5.5 loaded');
+  console.log('[StemLab] stem_tool_lifeskills.js v5.11 loaded');
 })();

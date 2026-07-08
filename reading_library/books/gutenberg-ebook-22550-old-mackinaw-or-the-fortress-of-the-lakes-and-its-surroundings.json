@@ -1,0 +1,54 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-22550-old-mackinaw-or-the-fortress-of-the-lakes-and-its-surroundings",
+  "title": "Old Mackinaw; Or, The Fortress of the Lakes and its Surroundings",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Great Lakes (North America)",
+    "Mackinac Island (Mich. : Island) -- History",
+    "Michigan -- History"
+  ],
+  "authors": [
+    "Strickland, W. P. (William Peter)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/22550"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Old Mackinaw; Or, The Fortress of the Lakes and its Surroundings\" by Strickland, W. P. (William Peter). Metadata tags include: Great Lakes (North America); Mackinac Island (Mich. : Island) -- History; Michigan -- History."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 84
+  }
+}

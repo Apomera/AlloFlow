@@ -1,0 +1,57 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-4367-personal-memoirs-of-u-s-grant-complete",
+  "title": "Personal Memoirs of U. S. Grant, Complete",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Generals -- United States -- Biography",
+    "Grant, Ulysses S. (Ulysses Simpson), 1822-1885",
+    "Mexican War, 1846-1848 -- Personal narratives",
+    "Presidents -- United States -- Biography",
+    "United States -- History -- Civil War, 1861-1865 -- Campaigns",
+    "United States. Army -- Biography"
+  ],
+  "authors": [
+    "Grant, Ulysses S. (Ulysses Simpson)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/4367"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"Personal Memoirs of U. S. Grant, Complete\" by Grant, Ulysses S. (Ulysses Simpson). Metadata tags include: Generals -- United States -- Biography; Grant, Ulysses S. (Ulysses Simpson), 1822-1885; Mexican War, 1846-1848 -- Personal narratives; Presidents -- United States -- Biography."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 90
+  }
+}

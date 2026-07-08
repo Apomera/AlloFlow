@@ -66,9 +66,15 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Start Here');
     expect(html).toContain('Paycheck');
     expect(html).toContain('Insurance');
+    expect(html).toContain('Records');
     expect(html).toContain('Dental Care');
     expect(html).toContain('Body Care');
     expect(html).toContain('Sleep &amp; Energy');
+    expect(html).toContain('Meds &amp; Labels');
+    expect(html).toContain('Appointments');
+    expect(html).toContain('Home Safety');
+    expect(html).toContain('Digital Safety');
+    expect(html).toContain('Food Confidence');
     expect(html).toContain('Laundry Lab');
   });
 
@@ -81,8 +87,14 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Health routines');
     expect(html).toContain('Home confidence');
     expect(html).toContain('10-minute money check');
+    expect(html).toContain('Digital safety scan');
+    expect(html).toContain('Paperwork quick sort');
     expect(html).toContain('Body comfort reset');
+    expect(html).toContain('Food confidence check');
+    expect(html).toContain('Appointment prep');
+    expect(html).toContain('Home safety check');
     expect(html).toContain('Sleep wind-down');
+    expect(html).toContain('Medication label check');
     expect(html).toContain('Daily care reset');
     expect(html).toContain('data-lifeskills-action-plan="true"');
     expect(html).toContain('My Life Skills Plan');
@@ -123,5 +135,79 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Sleep and energy decisions');
     expect(html).toContain('Daytime energy supports');
     expect(html).toContain('Educational practice only');
+  });
+
+  it('renders the medication labels Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'meds' } });
+
+    expect(html).toContain('data-lifeskills-medication-labels="true"');
+    expect(html).toContain('Medication &amp; Labels Lab');
+    expect(html).toContain('Label safety checklist');
+    expect(html).toContain('Mock label decoder');
+    expect(html).toContain('Medication label decisions');
+    expect(html).toContain('Questions to ask');
+    expect(html).toContain('mock labels, not dosing instructions');
+  });
+
+  it('renders the appointments and self-advocacy Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'appointments' } });
+
+    expect(html).toContain('data-lifeskills-appointments="true"');
+    expect(html).toContain('Appointments &amp; Self-Advocacy Lab');
+    expect(html).toContain('Appointment prep checklist');
+    expect(html).toContain('Appointment type planner');
+    expect(html).toContain('Appointment decisions');
+    expect(html).toContain('Self-advocacy script builder');
+    expect(html).toContain('Urgent symptoms or safety concerns');
+  });
+
+  it('renders the home safety Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'homesafety' } });
+
+    expect(html).toContain('data-lifeskills-home-safety="true"');
+    expect(html).toContain('Home Safety Lab');
+    expect(html).toContain('Home safety checklist');
+    expect(html).toContain('Home safety decisions');
+    expect(html).toContain('First-aid decision cards');
+    expect(html).toContain('Emergency plan builder');
+    expect(html).toContain('immediate danger');
+  });
+
+  it('renders the digital safety Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'digitalsafety' } });
+
+    expect(html).toContain('data-lifeskills-digital-safety="true"');
+    expect(html).toContain('Digital Safety Lab');
+    expect(html).toContain('Digital safety checklist');
+    expect(html).toContain('Digital safety decisions');
+    expect(html).toContain('Scam signal cards');
+    expect(html).toContain('Privacy and recovery plan');
+    expect(html).toContain('block/report');
+  });
+
+  it('renders the food confidence Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'foodconfidence' } });
+
+    expect(html).toContain('data-lifeskills-food-confidence="true"');
+    expect(html).toContain('Food Confidence Lab');
+    expect(html).toContain('Food confidence checklist');
+    expect(html).toContain('Leftover and storage decisions');
+    expect(html).toContain('Storage confidence cards');
+    expect(html).toContain('Budget meal builder');
+    expect(html).toContain('Simple nutrition label practice');
+    expect(html).toContain('When in doubt');
+  });
+
+  it('renders the records and paperwork Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'records' } });
+
+    expect(html).toContain('data-lifeskills-records-paperwork="true"');
+    expect(html).toContain('Records &amp; Paperwork Lab');
+    expect(html).toContain('Records checklist');
+    expect(html).toContain('Paperwork decisions');
+    expect(html).toContain('Document type cards');
+    expect(html).toContain('Form field decoder');
+    expect(html).toContain('Paperwork plan builder');
+    expect(html).toContain('Ask before sharing or signing');
   });
 });

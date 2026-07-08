@@ -17,6 +17,9 @@
     "package:mac": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --x64 --arm64",
     "package:mac-arm64": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --arm64",
     "package:mac-x64": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --x64",
+    "verify": "npm run electron:check && npm run verify:contract",
+    "verify:contract": "node scripts/check-runtime-contract.cjs",
+    "runtime:smoke": "node runtime/alloflow-desktop-runtime.cjs --smoke --port 0",
     "verify:artifacts": "node scripts/verify-desktop-artifacts.cjs"
   },
   "dependencies": {

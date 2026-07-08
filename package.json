@@ -30,6 +30,7 @@
     "verify:lessons": "node dev-tools/check_sample_lessons.cjs",
     "verify:css": "node dev-tools/check_css_template_literals.cjs",
     "verify:gemini": "node dev-tools/check_callgemini_jsonmode.cjs",
+    "verify:local-llm": "node dev-tools/check_local_llm_resource_matrix.cjs",
     "verify:plugins": "node dev-tools/check_plugin_guards.cjs",
     "verify:functions": "node dev-tools/check_firebase_functions.cjs",
     "verify:pdf": "node dev-tools/check_pdf_pipeline.cjs",

@@ -1518,6 +1518,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               setGenerationTaskProgress(i + 1, chunks.length, `Adapting section ${i + 1} of ${chunks.length}...`);
           } else {
               setGenerationStep(t('status_steps.adapting_text'));
+              if (usesLocalTextBackend) {
+                  setGenerationTaskProgress(0, 1, t('status_steps.adapting_text'));
+              }
           }
           const chunkIntro = isMultiChunk
               ? `Rewrite the following PART ${i+1} of ${chunks.length} of a text for ${effectiveGrade} level in ${effectiveLanguage}.`
@@ -1547,6 +1550,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             Text Segment: "${chunks[i]}"
           `;
           let targetResult = await callGemini(chunkTargetPrompt);
+          if (!isMultiChunk && usesLocalTextBackend) {
+              setGenerationTaskProgress(1, 1, t('status_steps.adapting_text'));
+          }
           targetResult = String(targetResult || "").replace(/^```[a-zA-Z]*\n/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
           fullTargetText += targetResult + "\n\n";
           if (effectiveLanguage !== 'English') {
@@ -1719,7 +1725,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${differentiationContext}
           Text: "${usesLocalTextBackend ? localExcerpt(textToProcess, 6500) : textToProcess}"
         `;
+        if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, t('status_steps.analyzing_structure'));
         const result = await callGemini(prompt, true);
+        if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, t('status_steps.analyzing_structure'));
         try {
             content = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
             if (!content) content = {};

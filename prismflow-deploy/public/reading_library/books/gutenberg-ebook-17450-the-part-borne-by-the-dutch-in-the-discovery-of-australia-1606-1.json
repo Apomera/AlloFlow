@@ -1,0 +1,53 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-17450-the-part-borne-by-the-dutch-in-the-discovery-of-australia-1606-1",
+  "title": "The Part Borne by the Dutch in the Discovery of Australia 1606-1765",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Australia -- Discovery and exploration",
+    "Dutch -- Australia"
+  ],
+  "authors": [
+    "Heeres, J. E. (Jan Ernst)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/17450"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Part Borne by the Dutch in the Discovery of Australia 1606-1765\" by Heeres, J. E. (Jan Ernst). Metadata tags include: Australia -- Discovery and exploration; Dutch -- Australia."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 79
+  }
+}

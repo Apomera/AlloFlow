@@ -11,6 +11,7 @@ const VIEWS = [
   'cranialNervesWillis',
   'homunculus',
   'visualPathway',
+  'languageNetwork',
   'neurotransmitters',
   'neuron',
   'synapses',
@@ -131,14 +132,45 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toMatch(/LGN/);
     expect(html).toMatch(/bitemporal hemianopia/i);
     expect(html).toMatch(/quadrantanopia/i);
-    expect(html).toMatch(/8 targets/);
+    expect(html).toMatch(/9 targets/);
     expect(src).toContain('currentView.isVisualPathway');
     expect(src).toContain('Visual pathway and field cuts');
+    expect(src).toContain('FIELD-CUT DECODER');
+    expect(src).toContain('Before chiasm');
+    expect(src).toContain('homonymous');
     expect(src).toContain('fieldCard(W * 0.195');
 
     const detail = render({ view: 'visualPathway', selectedRegion: 'optic_chiasm_visual_path' });
     expect(detail).toMatch(/Optic Chiasm/);
     expect(detail).toMatch(/bitemporal hemianopia/i);
+
+    const decoder = render({ view: 'visualPathway', selectedRegion: 'field_cut_decoder_visual' });
+    expect(decoder).toMatch(/Field-Cut Decoder/);
+    expect(decoder).toMatch(/Before the chiasm/i);
+    expect(decoder).toMatch(/macular sparing/i);
+  });
+
+  it('adds a language network aphasia diagram', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const html = render({ view: 'languageNetwork' });
+
+    expect(html).toContain('Language Network');
+    expect(html).toContain('width="780"');
+    expect(html).toContain('height="620"');
+    expect(html).toMatch(/Broca/i);
+    expect(html).toMatch(/Wernicke/i);
+    expect(html).toMatch(/Arcuate/i);
+    expect(html).toMatch(/aphasia/i);
+    expect(html).toMatch(/10 targets/);
+    expect(src).toContain('currentView.isLanguageNetwork');
+    expect(src).toContain('BROCA: nonfluent output');
+    expect(src).toContain('WERNICKE: fluent but poor comprehension');
+    expect(src).toContain('CONDUCTION: repetition breaks');
+
+    const detail = render({ view: 'languageNetwork', selectedRegion: 'arcuate_language' });
+    expect(detail).toMatch(/Arcuate Fasciculus/);
+    expect(detail).toMatch(/conduction aphasia/i);
   });
 
   it('adds a cranial nerves and Circle of Willis underside map', () => {
@@ -206,6 +238,40 @@ describe('brainAtlas refinement contracts', () => {
     expect(detail).toMatch(/Wernicke-Korsakoff/i);
   });
 
+  it('enhances cross-lateralization with corpus callosum research visuals', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const html = render({ view: 'crossLateral' });
+
+    expect(html).toContain('Cross-Lateralization');
+    expect(html).toContain('width="780"');
+    expect(html).toContain('height="620"');
+    expect(html).toMatch(/Corpus Callosum/i);
+    expect(html).toMatch(/Split-Brain Phenomenon/i);
+    expect(html).toMatch(/8 targets/);
+    expect(html).toMatch(/fixation task/i);
+    expect(html).toMatch(/left visual field -&gt; right hemisphere/i);
+    expect(src).toContain('SPLIT-BRAIN EVIDENCE');
+    expect(src).toContain('CALLOSAL TRANSFER');
+    expect(src).toContain('FIXATION TASK');
+    expect(src).toContain('INTACT');
+    expect(src).toContain('speech can name KEY');
+    expect(src).toContain('CALLOSOTOMY');
+    expect(src).toContain('Speech report');
+    expect(src).toContain('picks KEY');
+    expect(src).toContain('callosotomy blocks');
+
+    const detail = render({ view: 'crossLateral', selectedRegion: 'split_brain' });
+    expect(detail).toMatch(/Sperry and Gazzaniga/i);
+    expect(detail).toMatch(/fixation tasks/i);
+    expect(detail).toMatch(/left hand/i);
+
+    const taskDetail = render({ view: 'crossLateral', selectedRegion: 'fixation_task_cross' });
+    expect(taskDetail).toMatch(/Split-Brain Fixation Task/);
+    expect(taskDetail).toMatch(/speech can name KEY/);
+    expect(taskDetail).toMatch(/left hand can still choose/i);
+  });
+
   it('keeps simulation views discoverable as one grouped visual-support path', () => {
     loadTool(FILE, 'brainAtlas');
     const html = render({ view: 'stimulate', viewGroup: 'simulations' });
@@ -227,6 +293,7 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toMatch(/Cranial Nerves &amp; Willis/);
     expect(html).toMatch(/Motor\/Sensory Homunculus/);
     expect(html).toMatch(/Visual Pathway/);
+    expect(html).toMatch(/Language Network/);
   });
 
   it('keeps the basal ganglia movement loop discoverable in the systems view group', () => {

@@ -526,6 +526,7 @@
       var h = React.createElement;
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
+      var setStemLabTool = ctx.setStemLabTool || function() {};
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var callGemini = ctx.callGemini;
@@ -5590,6 +5591,36 @@
                 );
               })
             )
+          ),
+
+          sectionCard('Real-sky observing workflow',
+            h('div', null,
+              h('p', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, margin: '0 0 10px' } },
+                'A strong astronomy lesson can move from tonight\'s sky, to the telescope, to real survey imagery, to data analysis. These links keep that path close at hand.'
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 8 } },
+                [
+                  { title: 'Plan the sky', detail: 'Stellarium-style workflow: identify what is up tonight, then build observing confidence with seasons, constellations, and target visibility.', action: 'Stay here', color: '#6366f1', run: function() { upd({ tab: 'tonight' }); } },
+                  { title: 'Preview real galaxies', detail: 'Open Galaxy Explorer in Real Sky mode with Aladin Lite-style survey imagery and catalog overlays.', action: 'Galaxy Real Sky', color: '#0891b2', run: function() {
+                    setLabToolData(function(prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, { simMode: 'realSky', realSkyTarget: 'm31', realSkySurvey: 'P/DSS2/color', realSkyCatalog: 'simbad', quizMode: false }) }); });
+                    setStemLabTool('galaxy');
+                  } },
+                  { title: 'Size the telescope', detail: 'Use aperture, focal length, magnification, exit pupil, limiting magnitude, and resolution to predict what a scope can really show.', action: 'Optics Lab', color: '#0d9488', run: function() { setStemLabTool('opticsLab'); } },
+                  { title: 'Investigate data', detail: 'Move from seeing to measuring: spectra, redshift, H-R diagrams, light curves, catalogs, uncertainty, and classification.', action: 'Data Lab', color: '#7c3aed', run: function() { setStemLabTool('dataLab'); } }
+                ].map(function(card) {
+                  return h('div', { key: card.title, style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155', borderLeft: '3px solid ' + card.color } },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', marginBottom: 4 } }, card.title),
+                    h('div', { style: { fontSize: 11.5, color: '#94a3b8', lineHeight: 1.55, minHeight: 54 } }, card.detail),
+                    h('button', { type: 'button', onClick: card.run, style: { marginTop: 8, padding: '6px 10px', borderRadius: 8, border: '1px solid ' + card.color, background: card.color + '22', color: '#e2e8f0', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, card.action + ' \u2192')
+                  );
+                })
+              ),
+              h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.3)', fontSize: 11.5, color: '#bae6fd', lineHeight: 1.6 } },
+                h('strong', null, 'Best pairing: '),
+                'Astronomy handles the observing plan, Optics explains the instrument, Galaxy shows real survey images, Universe supplies cosmic context, and Data Lab turns the view into evidence.'
+              )
+            ),
+            '#0891b2'
           ),
 
           sectionCard('🌒 Light pollution: the Bortle scale',

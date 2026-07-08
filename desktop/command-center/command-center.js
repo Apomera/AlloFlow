@@ -19,6 +19,7 @@
     schoolBox: null,
     schoolBoxLogs: [],
     lanDiagnostics: null,
+    localEngineStatus: null,
   };
 
   const SETUP_SNOOZE_KEY = 'alloflow_desktop_key_setup_snoozed';
@@ -124,6 +125,70 @@
     });
     models.vision = pickVisionModel(provider, textModel);
     return models;
+  }
+
+  function localEngineModelId(status) {
+    return (status && status.model && (status.model.name || status.model.url))
+      || (status && status.capability && status.capability.modelId)
+      || 'local-model';
+  }
+
+  function normalizeLocalTaskSupport(status) {
+    const support = (status && status.taskSupport)
+      || (status && status.lastProbe && status.lastProbe.taskSupport)
+      || {};
+    return {
+      status: support.status || 'unknown',
+      generatedAt: support.generatedAt || '',
+      passed: Number(support.passed) || 0,
+      total: Number(support.total) || 0,
+      simpleText: support.simpleText || 'unknown',
+      strictJson: support.strictJson || 'unknown',
+      remediationJson: support.remediationJson || 'unknown',
+    };
+  }
+
+  function buildLocalEngineProfile(status) {
+    const cap = status && status.capability;
+    if (!cap) return null;
+    const modelId = localEngineModelId(status);
+    return {
+      id: cap.profileId || cap.id,
+      modelId,
+      contextWindow: cap.contextSize || cap.contextWindow,
+      contextSource: cap.contextSource,
+      safeInputTokens: cap.safeInputTokens,
+      safeOutputTokens: cap.safeOutputTokens,
+      safeJsonOutputTokens: cap.safeJsonOutputTokens,
+      taskSupport: normalizeLocalTaskSupport(status),
+      probeStatus: status.lastProbe ? status.lastProbe.status : '',
+      lastProbeAt: status.lastProbe ? status.lastProbe.generatedAt : '',
+    };
+  }
+
+  function buildLocalFallbackConfig(status) {
+    const profile = buildLocalEngineProfile(status);
+    if (!profile) return null;
+    const baseUrl = (status && status.baseUrl) || 'http://127.0.0.1:32173';
+    return {
+      enabled: Boolean((status && status.cloudFallbackEnabled) || (status && status.engine && status.engine.cloudFallbackEnabled)),
+      providerId: 'alloflow-local',
+      backend: 'alloflow-local',
+      baseUrl,
+      models: { default: profile.modelId },
+      localModelProfile: profile,
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  function summarizeLocalFallback(status) {
+    const fallback = buildLocalFallbackConfig(status);
+    if (!fallback || !fallback.enabled) return 'Off';
+    const support = fallback.localModelProfile.taskSupport || {};
+    if (support.remediationJson === 'pass') return 'On - remediation ready';
+    if (support.strictJson === 'pass') return 'On - JSON ready, remediation not checked';
+    if (support.simpleText === 'pass') return 'On - simple text only';
+    return 'On - run local model check';
   }
 
   function keyableProviders() {
@@ -608,7 +673,10 @@
       const previous = readBundledAppAiConfig();
       const backend = PROVIDER_BACKENDS[provider.id] || provider.protocol || provider.id;
       const isCloud = provider.group === 'cloud';
-      localStorage.setItem(BUNDLED_AI_CONFIG_KEY, JSON.stringify({
+      const localEngineProfile = buildLocalEngineProfile(state.localEngineStatus);
+      const localFallback = buildLocalFallbackConfig(state.localEngineStatus);
+      const localModelProfile = provider.id === 'alloflow-local' ? localEngineProfile : null;
+      const nextConfig = {
         ...previous,
         providerId: provider.id,
         backend,
@@ -618,7 +686,12 @@
         models: isCloud ? (previous.models || {}) : buildProviderModels(provider, previous.models),
         updatedAt: new Date().toISOString(),
         source: 'alloflow-desktop',
-      }));
+      };
+      if (localModelProfile) nextConfig.localModelProfile = localModelProfile;
+      else delete nextConfig.localModelProfile;
+      if (localFallback) nextConfig.localFallback = localFallback;
+      else delete nextConfig.localFallback;
+      localStorage.setItem(BUNDLED_AI_CONFIG_KEY, JSON.stringify(nextConfig));
       return true;
     } catch (_) {
       // Best effort only; the runtime config remains the source of truth.
@@ -840,17 +913,28 @@
       ? (status.model.name || 'not set') + (status.model.present ? ' (downloaded)' : ' (will download)') +
         (status.capability && status.capability.contextSize ? ' - ctx ' + status.capability.contextSize : '')
       : '-');
+    setText('#engine-context', status.capability
+      ? 'ctx ' + status.capability.contextSize + ' (' + status.capability.contextSource + '), input ' + status.capability.safeInputTokens + ', JSON ' + status.capability.safeJsonOutputTokens
+      : '-');
+    setText('#engine-fallback-state', summarizeLocalFallback(status));
     setText('#engine-disk', status.diskFreeBytes != null ? (status.diskFreeBytes / 1073741824).toFixed(1) + ' GB' : '-');
+    const fallbackToggle = $('#engine-cloud-fallback');
+    if (fallbackToggle && document.activeElement !== fallbackToggle) {
+      fallbackToggle.checked = Boolean((status.engine && status.engine.cloudFallbackEnabled) || status.cloudFallbackEnabled);
+    }
     const result = $('#engine-result');
     if (result) {
       if (status.lastError) result.textContent = status.lastError;
       else if (status.advisory) result.textContent = status.advisory;
       else if (status.running) result.textContent = 'Running (' + (status.arch || '?') + ') at ' + status.baseUrl + '. Select the "AlloFlow Built-in Engine" provider to use it.';
+      else if (status.lastProbe) result.textContent = 'Last local model check: ' + (status.lastProbe.summary || status.lastProbe.status || 'finished') + ' (' + (status.lastProbe.generatedAt || 'recent') + ').';
     }
   }
   async function refreshEngineStatus() {
     const status = await api('/api/engine/status');
+    state.localEngineStatus = status;
     renderEngineStatus(status);
+    syncSelectedProviderForBundledApp();
     const modelSelect = $('#engine-model-select');
     if (modelSelect && status.engine && status.engine.modelUrl) {
       const match = Array.from(modelSelect.options).find((option) => option.value === status.engine.modelUrl);
@@ -918,6 +1002,22 @@
       if (result) result.textContent = error.message || 'Could not save the model folder.';
     }
   }
+  async function toggleEngineCloudFallback(event) {
+    const result = $('#engine-result');
+    const enabled = Boolean(event && event.target && event.target.checked);
+    try {
+      await api('/api/config', { method: 'POST', body: JSON.stringify({ localEngine: { cloudFallbackEnabled: enabled } }) });
+      const status = await refreshEngineStatus();
+      if (result) {
+        result.textContent = enabled
+          ? summarizeLocalFallback(status) + '. Cloud text AI can try this local model after a cloud rate limit, only for task types the check has passed.'
+          : 'Cloud-rate-limit local fallback is off.';
+      }
+    } catch (error) {
+      if (event && event.target) event.target.checked = !enabled;
+      if (result) result.textContent = error.message || 'Could not save the local fallback setting.';
+    }
+  }
   function pollEngineUntilSettled() {
     if (enginePollTimer) clearInterval(enginePollTimer);
     enginePollTimer = setInterval(async () => {
@@ -946,6 +1046,40 @@
     } catch (error) {
       const result = $('#engine-result');
       if (result) result.textContent = error.message || 'Engine stop failed.';
+    }
+  }
+
+  function formatEngineProbe(probe) {
+    if (!probe) return 'No probe result returned.';
+    const lines = [];
+    lines.push((probe.summary || 'Local model check finished.') + (probe.model ? ' Model: ' + probe.model + '.' : ''));
+    if (probe.status === 'not-running') {
+      lines.push('Start the built-in engine first. This check does not start downloads or change settings.');
+    }
+    if (probe.engine && probe.engine.capability) {
+      const cap = probe.engine.capability;
+      lines.push('Capability: ctx ' + cap.contextSize + ' (' + cap.contextSource + '), safe input ' + cap.safeInputTokens + ', safe JSON output ' + cap.safeJsonOutputTokens + '.');
+    }
+    if (probe.taskSupport) {
+      const support = probe.taskSupport;
+      lines.push('Task support: text ' + (support.simpleText || 'unknown') + ', JSON ' + (support.strictJson || 'unknown') + ', remediation ' + (support.remediationJson || 'unknown') + '.');
+    }
+    (probe.tests || []).forEach((test) => {
+      lines.push((test.ok ? 'OK' : 'FAIL') + ' - ' + test.label + ' (' + test.latencyMs + ' ms): ' + (test.detail || ''));
+      if (!test.ok && test.preview) lines.push('  Preview: ' + test.preview);
+    });
+    return lines.join('\n');
+  }
+
+  async function probeBuiltInEngine() {
+    const result = $('#engine-result');
+    if (result) result.textContent = 'Checking the local model with small text and JSON probes...';
+    try {
+      const probe = await api('/api/engine/probe', { method: 'POST', body: '{}' });
+      await refreshEngineStatus();
+      if (result) result.textContent = formatEngineProbe(probe);
+    } catch (error) {
+      if (result) result.textContent = error.message || 'Local model check failed.';
     }
   }
 
@@ -1072,6 +1206,83 @@
       if (resultNode) resultNode.textContent = 'Copied redacted diagnostics to clipboard.';
     } catch (error) {
       if (resultNode) resultNode.textContent = error.message || 'Could not copy diagnostics.';
+    }
+  }
+
+  async function cacheEntryCount(cacheName, urlIncludes) {
+    try {
+      if (!window.caches) return 0;
+      const cache = await caches.open(cacheName);
+      const keys = await cache.keys();
+      return keys.filter((request) => !urlIncludes || String(request.url || '').includes(urlIncludes)).length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  async function collectBrowserReadiness() {
+    const appWindow = getBundledAppWindow();
+    let microphone = 'unknown';
+    try {
+      if (navigator.permissions && navigator.permissions.query) {
+        microphone = (await navigator.permissions.query({ name: 'microphone' })).state || 'unknown';
+      }
+    } catch (_) {
+      microphone = 'unknown';
+    }
+    const webGpuReady = await _webGpuAdapterOk();
+    const sdCacheEntries = await cacheEntryCount('allo-sd-turbo');
+    const kokoroCacheEntries = await cacheEntryCount('transformers-cache', 'Kokoro-82M');
+    return {
+      generatedAt: new Date().toISOString(),
+      appFrame: {
+        loadedSameOrigin: Boolean(appWindow),
+        href: appWindow ? appWindow.location.href : '',
+      },
+      localImages: {
+        webGpuReady,
+        sdTurboCacheEntries: sdCacheEntries,
+        status: !webGpuReady ? 'unsupported' : (sdCacheEntries > 0 ? 'downloaded' : 'available-not-downloaded'),
+      },
+      localVoice: {
+        kokoroReady: Boolean(appWindow && appWindow._kokoroTTS && appWindow._kokoroTTS.ready),
+        kokoroDownloading: Boolean(appWindow && appWindow.__kokoroTTSDownloading),
+        kokoroCacheEntries,
+        lastRoute: appWindow ? (appWindow.__ttsLastRoute || null) : null,
+      },
+      microphone: {
+        permission: microphone,
+      },
+    };
+  }
+
+  function formatReadinessSummary(report) {
+    const lines = [];
+    lines.push('Overall: ' + (report.overall || 'unknown') + ' - ' + (report.summary || ''));
+    (report.sections || []).forEach((section) => {
+      lines.push(section.label + ': ' + section.state + ' - ' + section.summary);
+      if (section.nextAction) lines.push('  Next: ' + section.nextAction);
+    });
+    if (report.browser) {
+      lines.push('Local images: ' + report.browser.localImages.status + (report.browser.localImages.webGpuReady ? ' (WebGPU ready)' : ' (no WebGPU adapter)'));
+      lines.push('Local voice: ' + (report.browser.localVoice.kokoroReady ? 'ready' : (report.browser.localVoice.kokoroCacheEntries ? 'downloaded' : 'not downloaded')));
+      lines.push('Microphone: ' + report.browser.microphone.permission);
+    }
+    return lines.join('\n');
+  }
+
+  async function copyReadinessReport() {
+    const resultNode = $('#readiness-result');
+    if (resultNode) resultNode.textContent = 'Collecting readiness report...';
+    try {
+      const report = await api('/api/readiness');
+      report.browser = await collectBrowserReadiness();
+      report.update = state.update || null;
+      report.copiedAt = new Date().toISOString();
+      await writeClipboard(JSON.stringify(report, null, 2));
+      if (resultNode) resultNode.textContent = formatReadinessSummary(report) + '\n\nCopied readiness report to clipboard.';
+    } catch (error) {
+      if (resultNode) resultNode.textContent = error.message || 'Could not copy readiness report.';
     }
   }
 
@@ -1378,7 +1589,7 @@
         setHealthRow('#health-asr', 'busy', asr.phase.replace(/-/g, ' ') + pct);
       } else if (asr.lastError) {
         setHealthRow('#health-asr', 'err', String(asr.lastError).slice(0, 80), 'Retry', () => api('/api/asr/start', { method: 'POST' }));
-      } else if (asr.modelBytes) {
+      } else if (asr.model && asr.model.present) {
         setHealthRow('#health-asr', 'warn', 'Downloaded but off', 'Start', () => api('/api/asr/start', { method: 'POST' }));
       } else {
         setHealthRow('#health-asr', 'warn', 'Off — reading practice uses the cloud', 'Enable (~148 MB once)', () => api('/api/asr/start', { method: 'POST' }));
@@ -1466,7 +1677,9 @@
     $('#download-sd').addEventListener('click', downloadSdTurbo);
     $('#test-voice').addEventListener('click', testKokoroVoice);
     $('#engine-start').addEventListener('click', startBuiltInEngine);
+    $('#engine-probe').addEventListener('click', probeBuiltInEngine);
     $('#engine-stop').addEventListener('click', stopBuiltInEngine);
+    $('#engine-cloud-fallback').addEventListener('change', toggleEngineCloudFallback);
     $('#engine-model-select').addEventListener('change', changeEngineModel);
     $('#engine-custom-apply').addEventListener('click', applyCustomEngineModel);
     $('#engine-custom-cancel').addEventListener('click', cancelCustomEngineModel);
@@ -1485,6 +1698,7 @@
       runUpdateAction('installUpdate', 'Installing update...');
     });
     $('#save-update-channel').addEventListener('click', saveUpdateChannel);
+    $('#copy-readiness').addEventListener('click', copyReadinessReport);
     $('#copy-diagnostics').addEventListener('click', copyDiagnostics);
     $('#toggle-app-focus').addEventListener('click', () => {
       setAppFocusMode(!state.appFocusMode);

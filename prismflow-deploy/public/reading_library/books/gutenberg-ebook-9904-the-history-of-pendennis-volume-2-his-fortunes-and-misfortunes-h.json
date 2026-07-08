@@ -1,0 +1,56 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-9904-the-history-of-pendennis-volume-2-his-fortunes-and-misfortunes-h",
+  "title": "The History of Pendennis, Volume 2: His Fortunes and Misfortunes, His Friends and His Greatest Enemy",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Autobiographical fiction",
+    "Bildungsromans",
+    "Great Britain -- History -- Victoria, 1837-1901 -- Fiction",
+    "Humorous stories",
+    "Young men -- Fiction"
+  ],
+  "authors": [
+    "Thackeray, William Makepeace"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/9904"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The History of Pendennis, Volume 2: His Fortunes and Misfortunes, His Friends and His Greatest Enemy\" by Thackeray, William Makepeace. Metadata tags include: Autobiographical fiction; Bildungsromans; Great Britain -- History -- Victoria, 1837-1901 -- Fiction; Humorous stories."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 87
+  }
+}

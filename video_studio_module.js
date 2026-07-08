@@ -240,10 +240,111 @@
       localizationCount: Math.max(0, Math.min(99, Math.round(Number(m.localizationCount) || 0))),
       hasVisualOverlays: !!m.hasVisualOverlays,
       hasMusicBed: !!m.hasMusicBed,
+      hasMediaCredits: !!m.hasMediaCredits,
+      mediaCreditCount: Math.max(0, Math.min(999, Math.round(Number(m.mediaCreditCount) || 0))),
+      mediaCreditWarningCount: Math.max(0, Math.min(999, Math.round(Number(m.mediaCreditWarningCount) || 0))),
       resourceCueCount: Math.max(0, Math.min(999, Math.round(Number(m.resourceCueCount) || 0))),
       thumb: thumb,
       createdAt: m.createdAt || null
     };
+  }
+
+  function vsMediaLicenseProfile(license) {
+    var raw = String(license || '').trim();
+    var key = raw.toLowerCase().replace(/creative commons/g, 'cc').replace(/[^a-z0-9]+/g, ' ').trim();
+    var profile = {
+      key: key || 'unknown',
+      label: raw || 'Unknown license',
+      attributionRequired: true,
+      commercialAllowed: false,
+      openContent: false,
+      agplFriendly: false,
+      review: true,
+      status: 'warn',
+      warning: 'License needs review before public sharing or bundling.'
+    };
+    var set = function (next) { Object.keys(next).forEach(function (k) { profile[k] = next[k]; }); return profile; };
+    if (!key) return profile;
+    if (/^(cc0|public domain|pd|us government public domain)$/.test(key)) {
+      return set({ label: /cc0/.test(key) ? 'CC0 1.0' : 'Public domain', attributionRequired: false, commercialAllowed: true, openContent: true, agplFriendly: true, review: false, status: 'ok', warning: '' });
+    }
+    if (/^cc by( 4 0| 3 0|)$/.test(key) || /^attribution( 4 0|)$/.test(key)) {
+      return set({ label: /3 0/.test(key) ? 'CC BY 3.0' : 'CC BY 4.0', attributionRequired: true, commercialAllowed: true, openContent: true, agplFriendly: true, review: false, status: 'ok', warning: 'Attribution required.' });
+    }
+    if (/^cc by sa( 4 0|)$/.test(key)) {
+      return set({ label: 'CC BY-SA 4.0', attributionRequired: true, commercialAllowed: true, openContent: true, agplFriendly: false, review: true, status: 'warn', warning: 'Share-alike license: keep attribution and review reuse terms for adaptations.' });
+    }
+    if (/^cc by nc/.test(key) || /noncommercial/.test(key)) {
+      return set({ label: raw || 'CC BY-NC', attributionRequired: true, commercialAllowed: false, openContent: false, agplFriendly: false, review: true, status: 'warn', warning: 'Noncommercial media is not safe for general AGPL project redistribution or public/commercial sharing.' });
+    }
+    if (/pixabay/.test(key)) {
+      return set({ label: 'Pixabay Content License', attributionRequired: false, commercialAllowed: true, openContent: false, agplFriendly: false, review: true, status: 'warn', warning: 'Free stock license, not open-source/open-content. Do not bundle as a reusable stock library; keep the source URL.' });
+    }
+    return profile;
+  }
+
+  function vsNormalizeMediaCredit(raw) {
+    var r = raw || {};
+    var clean = function (v, limit) { return String(v == null ? '' : v).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit || 160); };
+    var safeUrl = function (v) {
+      var s = clean(v, 600);
+      return /^https?:\/\//i.test(s) ? s : '';
+    };
+    var profile = vsMediaLicenseProfile(r.license || r.licenseName);
+    var source = clean(r.source || r.provider || 'Manual credit', 80);
+    var title = clean(r.title || r.name || 'Untitled media', 180) || 'Untitled media';
+    var creator = clean(r.creator || r.author || r.owner || 'Unknown creator', 180) || 'Unknown creator';
+    var url = safeUrl(r.url || r.sourceUrl || r.href);
+    var role = clean(r.role || r.kind || 'media asset', 80) || 'media asset';
+    var modified = !!r.modified;
+    var attribution = clean(r.attribution, 500);
+    if (!attribution) {
+      attribution = '"' + title + '" by ' + creator + (url ? ' (' + url + ')' : '') + ' - ' + profile.label;
+      if (modified) attribution += '; modified';
+      if (source) attribution += '; via ' + source;
+    }
+    return {
+      id: clean(r.id || ('credit-' + Math.random().toString(36).slice(2, 9)), 60),
+      title: title,
+      creator: creator,
+      source: source,
+      url: url,
+      license: profile.label,
+      role: role,
+      modified: modified,
+      attribution: attribution,
+      status: profile.status,
+      warning: profile.warning,
+      openContent: !!profile.openContent,
+      agplFriendly: !!profile.agplFriendly,
+      addedAt: clean(r.addedAt || new Date().toISOString(), 40)
+    };
+  }
+
+  function vsSanitizeMediaCredits(list) {
+    return (Array.isArray(list) ? list : []).map(vsNormalizeMediaCredit).filter(function (item) {
+      return item && (item.title || item.creator || item.url || item.attribution);
+    }).slice(0, 80);
+  }
+
+  function vsBuildMediaCredits(entries, title) {
+    var list = vsSanitizeMediaCredits(entries);
+    var lines = [
+      String(title || 'Video project') + ' media credits',
+      'Generated by AlloFlow Video Studio',
+      ''
+    ];
+    if (!list.length) {
+      lines.push('No third-party stock/open media credits were recorded.');
+      return lines.join('\n') + '\n';
+    }
+    list.forEach(function (item, idx) {
+      lines.push((idx + 1) + '. ' + item.attribution);
+      lines.push('   Role: ' + item.role);
+      if (item.warning) lines.push('   Review: ' + item.warning);
+      lines.push('');
+    });
+    return lines.join('\n').replace(/\n+$/, '\n');
   }
 
   // CRC-32 (IEEE, reflected) — backs the .allopack ZIP writer/reader below.
@@ -470,6 +571,40 @@
       else merged.push({ start: cur.start, end: cur.end, text: cur.text });
     }
     return merged;
+  }
+
+  // Transcript-line selection -> one safe time range. This powers text-based
+  // editing without pretending we can ripple-cut arbitrary middle ranges.
+  function vsTranscriptSelectionRange(cues, indices, duration, padding) {
+    var list = Array.isArray(cues) ? cues : [];
+    var dur = Math.max(0, Number(duration) || 0);
+    var pad = Math.max(0, Math.min(1, Number(padding) || 0));
+    var seen = {};
+    var picked = [];
+    (Array.isArray(indices) ? indices : []).forEach(function (idx) {
+      idx = Math.round(Number(idx));
+      if (!isFinite(idx) || idx < 0 || idx >= list.length || seen[idx]) return;
+      var c = list[idx] || {};
+      var a = Number(c.start), b = Number(c.end);
+      if (!isFinite(a) || !isFinite(b) || b <= a) return;
+      seen[idx] = true;
+      picked.push({ index: idx, start: a, end: b, text: String(c.text || '').replace(/[\r\n]+/g, ' ').trim() });
+    });
+    picked.sort(function (a, b) { return a.start - b.start; });
+    if (!picked.length) return null;
+    var start = Math.min.apply(null, picked.map(function (c) { return c.start; }));
+    var end = Math.max.apply(null, picked.map(function (c) { return c.end; }));
+    start = Math.max(0, start - pad);
+    end = dur ? Math.min(dur, end + pad) : end + pad;
+    if (end <= start) end = start + 0.1;
+    return {
+      start: start,
+      end: end,
+      duration: Math.max(0.1, end - start),
+      indices: picked.map(function (c) { return c.index; }),
+      lineCount: picked.length,
+      text: picked.map(function (c) { return c.text; }).filter(Boolean).join(' ')
+    };
   }
 
   // AI edit suggestions arrive as UNTRUSTED JSON (model output). This is the
@@ -1410,6 +1545,7 @@
       privacy: { tab: 'tabEdit', focus: 'transcriptSearch', action: 'Review' },
       audio: { tab: 'tabEdit', focus: 'editVideo', action: 'Preview' },
       localization: { tab: 'tabEdit', focus: 'localizeBtn', action: 'Review' },
+      media: { tab: 'tabEdit', focus: 'mediaCreditTitle', action: 'Review' },
       export: { tab: 'tabExport', focus: 'exportBtn', action: 'Prepare' }
     };
     var add = function (id, label, status, detail) {
@@ -1433,6 +1569,9 @@
     } else {
       add('localization', 'Localization', 'info', 'No localized draft attached.');
     }
+    var mediaCount = Math.max(0, Number(s.mediaCreditCount) || 0);
+    var mediaWarn = Math.max(0, Number(s.mediaCreditWarningCount) || 0);
+    add('media', 'Media credits', mediaWarn ? 'warn' : (mediaCount ? 'complete' : 'info'), mediaWarn ? (mediaWarn + ' media credit(s) need license review.') : (mediaCount ? (mediaCount + ' stock/open media credit(s) recorded.') : 'No third-party stock/open media credits recorded.'));
     add('export', 'Export ready', s.exported ? 'complete' : 'pending', s.exported ? 'A finished video export is ready.' : 'Prepare export after the checks above.');
     return items;
   }
@@ -1455,6 +1594,9 @@
     add('supports', 'Learning supports', supports ? 'complete' : 'info', supports ? (supports + ' support item(s): descriptions, chapters, inserts, or overlays.') : 'No extra learning supports attached.');
     var loc = Math.max(0, Number(s.localizationCount) || 0);
     add('localization', 'Localization', loc ? 'complete' : 'info', loc ? (loc + ' localized draft(s) included in the project/accessibility packet.') : 'No localized version attached.');
+    var mediaCount = Math.max(0, Number(s.mediaCreditCount) || 0);
+    var mediaWarn = Math.max(0, Number(s.mediaCreditWarningCount) || 0);
+    add('media', 'Media credits', mediaWarn ? 'warn' : (mediaCount ? 'complete' : 'info'), mediaWarn ? (mediaWarn + ' media credit(s) should be reviewed before sharing.') : (mediaCount ? (mediaCount + ' media credit(s) included in the packets and project bundle.') : 'No third-party stock/open media credits recorded.'));
     if (s.preset === 'student_family') add('audience', 'Audience preset', 'complete', 'Student/family version: burned captions and title card are intended for simple playback.');
     return items;
   }
@@ -1462,7 +1604,7 @@
   function vsPickNextFinishItem(items) {
     var list = Array.isArray(items) ? items : [];
     var rank = { warn: 1, review: 2, pending: 3 };
-    var order = { video: 1, captions: 2, privacy: 3, audio: 4, localization: 5, export: 6 };
+    var order = { video: 1, captions: 2, privacy: 3, audio: 4, localization: 5, media: 6, export: 7 };
     var itemRank = function (item) {
       if (item && item.id === 'video' && item.status === 'pending') return 0;
       return rank[item && item.status] || 99;
@@ -1589,7 +1731,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   // [VS_SHARED_END]
 
-  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav };
+  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -1604,6 +1746,32 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef, useCallback = React.useCallback;
 
   var STUDIO_URL = 'https://alloflow-cdn.pages.dev/video_studio/video_studio.html?v=1';
+  var STUDIO_ORIGIN = (function () {
+    try { return new URL(STUDIO_URL, window.location.href).origin; } catch (_) { return 'https://alloflow-cdn.pages.dev'; }
+  })();
+
+  function randomBridgeToken() {
+    try {
+      var bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+    } catch (_) {
+      return String(Date.now()) + '-' + Math.random().toString(36).slice(2);
+    }
+  }
+
+  function studioUrlWithBridge(token) {
+    try {
+      var u = new URL(STUDIO_URL, window.location.href);
+      if (window.location && window.location.origin && window.location.origin !== 'null') {
+        u.searchParams.set('allo_origin', window.location.origin);
+      }
+      if (token) u.searchParams.set('allo_bridge', token);
+      return u.href;
+    } catch (_) {
+      return STUDIO_URL;
+    }
+  }
 
   function makeT(t) {
     return function (key, fallback) {
@@ -1662,13 +1830,27 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var _st = useState('closed'); var studioState = _st[0], setStudioState = _st[1]; // closed | opening | open | blocked
     var _vd = useState([]); var videos = _vd[0], setVideos = _vd[1];
     var studioWinRef = useRef(null);
+    var bridgeTokenRef = useRef(null);
     var rootRef = useRef(null);
+
+    function postToStudio(win, msg) {
+      try {
+        if (!win || win.closed) return false;
+        var token = bridgeTokenRef.current;
+        var payload = token ? Object.assign({ bridge: token }, msg || {}) : (msg || {});
+        win.postMessage(payload, STUDIO_ORIGIN);
+        return true;
+      } catch (_) {}
+      return false;
+    }
 
     // postMessage receiver — accepts messages ONLY from the window we opened.
     useEffect(function () {
       function onMsg(ev) {
         if (!ev || !ev.data || typeof ev.data.type !== 'string') return;
         if (!studioWinRef.current || ev.source !== studioWinRef.current) return;
+        if (ev.origin && ev.origin !== STUDIO_ORIGIN) return;
+        if (bridgeTokenRef.current && ev.data.bridge !== bridgeTokenRef.current) return;
         if (ev.data.type === 'allostudio-ready') {
           setStudioState('open');
           announce(T('video_studio.ready', 'Video Studio window is ready.'));
@@ -1680,7 +1862,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var req = ev.data;
           var replyTo = studioWinRef.current;
           var respond = function (payload) {
-            try { if (replyTo && !replyTo.closed) replyTo.postMessage(Object.assign({ type: 'allostudio-ai-response', id: req.id }, payload), '*'); } catch (_) {}
+            postToStudio(replyTo, Object.assign({ type: 'allostudio-ai-response', id: req.id }, payload));
           };
           if (typeof props.callGemini !== 'function') { respond({ error: 'ai-unavailable' }); return; }
           var durSec = Math.max(1, Math.round(Number(req.duration) || 0));
@@ -1712,7 +1894,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var nreq = ev.data;
           var nReplyTo = studioWinRef.current;
           var nRespond = function (payload) {
-            try { if (nReplyTo && !nReplyTo.closed) nReplyTo.postMessage(Object.assign({ type: 'allostudio-narrate-response', id: nreq.id }, payload), '*'); } catch (_) {}
+            postToStudio(nReplyTo, Object.assign({ type: 'allostudio-narrate-response', id: nreq.id }, payload));
           };
           var visionFn = (typeof window !== 'undefined') ? window.callGeminiVision : null;
           if (typeof visionFn !== 'function') { nRespond({ error: 'vision-unavailable' }); return; }
@@ -1740,7 +1922,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var dreq = ev.data;
           var dReplyTo = studioWinRef.current;
           var dRespond = function (payload) {
-            try { if (dReplyTo && !dReplyTo.closed) dReplyTo.postMessage(Object.assign({ type: 'allostudio-describe-response', id: dreq.id }, payload), '*'); } catch (_) {}
+            postToStudio(dReplyTo, Object.assign({ type: 'allostudio-describe-response', id: dreq.id }, payload));
           };
           var describeVisionFn = (typeof window !== 'undefined') ? window.callGeminiVision : null;
           if (typeof describeVisionFn !== 'function') { dRespond({ error: 'vision-unavailable' }); return; }
@@ -1770,7 +1952,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var lreq = ev.data;
           var lReplyTo = studioWinRef.current;
           var lRespond = function (payload) {
-            try { if (lReplyTo && !lReplyTo.closed) lReplyTo.postMessage(Object.assign({ type: 'allostudio-lesson-response', id: lreq.id }, payload), '*'); } catch (_) {}
+            postToStudio(lReplyTo, Object.assign({ type: 'allostudio-lesson-response', id: lreq.id }, payload));
           };
           var lessonVisionFn = (typeof window !== 'undefined') ? window.callGeminiVision : null;
           var lDur = Math.max(1, Math.round(Number(lreq.duration) || 0));
@@ -1817,7 +1999,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var locReq = ev.data;
           var locReplyTo = studioWinRef.current;
           var locRespond = function (payload) {
-            try { if (locReplyTo && !locReplyTo.closed) locReplyTo.postMessage(Object.assign({ type: 'allostudio-localize-response', id: locReq.id }, payload), '*'); } catch (_) {}
+            postToStudio(locReplyTo, Object.assign({ type: 'allostudio-localize-response', id: locReq.id }, payload));
           };
           if (typeof props.callGemini !== 'function') { locRespond({ error: 'ai-unavailable' }); return; }
           var locDur = Math.max(1, Math.round(Number(locReq.duration) || 0));
@@ -1858,7 +2040,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var ireq = ev.data;
           var iReplyTo = studioWinRef.current;
           var iRespond = function (payload) {
-            try { if (iReplyTo && !iReplyTo.closed) iReplyTo.postMessage(Object.assign({ type: 'allostudio-teaching-inserts-response', id: ireq.id }, payload), '*'); } catch (_) {}
+            postToStudio(iReplyTo, Object.assign({ type: 'allostudio-teaching-inserts-response', id: ireq.id }, payload));
           };
           if (typeof props.callGemini !== 'function') { iRespond({ error: 'ai-unavailable' }); return; }
           var iDur = Math.max(1, Math.round(Number(ireq.duration) || 0));
@@ -1889,7 +2071,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var greq = ev.data;
           var gReplyTo = studioWinRef.current;
           var gRespond = function (payload) {
-            try { if (gReplyTo && !gReplyTo.closed) gReplyTo.postMessage(Object.assign({ type: 'allostudio-imagen-response', id: greq.id }, payload), '*'); } catch (_) {}
+            postToStudio(gReplyTo, Object.assign({ type: 'allostudio-imagen-response', id: greq.id }, payload));
           };
           var imagenFn = props.callImagen || (typeof window !== 'undefined' ? window.callImagen : null);
           if (typeof imagenFn !== 'function') { gRespond({ error: 'imagen-unavailable' }); return; }
@@ -1910,7 +2092,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var freq = ev.data;
           var fReplyTo = studioWinRef.current;
           var fRespond = function (payload) {
-            try { if (fReplyTo && !fReplyTo.closed) fReplyTo.postMessage(Object.assign({ type: 'allostudio-frame-image-response', id: freq.id }, payload), '*'); } catch (_) {}
+            postToStudio(fReplyTo, Object.assign({ type: 'allostudio-frame-image-response', id: freq.id }, payload));
           };
           var editFn = props.callGeminiImageEdit || (typeof window !== 'undefined' ? window.callGeminiImageEdit : null);
           var frameImagenFn = props.callImagen || (typeof window !== 'undefined' ? window.callImagen : null);
@@ -1943,7 +2125,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var creq = ev.data;
           var cReplyTo = studioWinRef.current;
           var cRespond = function (payload) {
-            try { if (cReplyTo && !cReplyTo.closed) cReplyTo.postMessage(Object.assign({ type: 'allostudio-resource-cues-response', id: creq.id }, payload), '*'); } catch (_) {}
+            postToStudio(cReplyTo, Object.assign({ type: 'allostudio-resource-cues-response', id: creq.id }, payload));
           };
           var hist = Array.isArray(props.history) ? props.history : (Array.isArray(props.resourceHistory) ? props.resourceHistory : []);
           if (!hist.length && typeof window !== 'undefined' && Array.isArray(window.__alloflowHistory)) hist = window.__alloflowHistory;
@@ -1953,7 +2135,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var txReq = ev.data;
           var txReplyTo = studioWinRef.current;
           var txRespond = function (payload) {
-            try { if (txReplyTo && !txReplyTo.closed) txReplyTo.postMessage(Object.assign({ type: 'allostudio-transcript-ack', id: txReq.id }, payload), '*'); } catch (_) {}
+            postToStudio(txReplyTo, Object.assign({ type: 'allostudio-transcript-ack', id: txReq.id }, payload));
           };
           var txResource = vsBuildTranscriptResource(txReq.payload || {});
           var txFn = props.onSendTranscriptToFlow || props.onAddTranscriptResource || props.onAddResource || props.addResource || (typeof window !== 'undefined' ? window.__alloflowAddResource : null);
@@ -1981,7 +2163,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var treq = ev.data;
           var tReplyTo = studioWinRef.current;
           var tRespond = function (payload) {
-            try { if (tReplyTo && !tReplyTo.closed) tReplyTo.postMessage(Object.assign({ type: 'allostudio-tts-response', id: treq.id }, payload), '*'); } catch (_) {}
+            postToStudio(tReplyTo, Object.assign({ type: 'allostudio-tts-response', id: treq.id }, payload));
           };
           var ttsFn = (typeof window !== 'undefined') ? window.fetchTTSBytes : null;
           if (typeof ttsFn !== 'function') { tRespond({ error: 'tts-unavailable' }); return; }
@@ -1999,6 +2181,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             addToast(T('video_studio.cinematic_unavailable', 'Cinematic Studio is not available from this view.'), 'error');
           }
         } else if (ev.data.type === 'allostudio-closed') {
+          studioWinRef.current = null;
+          bridgeTokenRef.current = null;
           setStudioState('closed');
         } else if (ev.data.type === 'allostudio-video' && ev.data.payload && ev.data.payload.blob instanceof Blob) {
           var p = ev.data.payload;
@@ -2046,7 +2230,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           setVideos(function (cur) { return [vid].concat(cur); });
           // Ack so the Studio can honestly say "sent" — without this, a send
           // while the panel is closed silently vanishes.
-          try { if (studioWinRef.current && !studioWinRef.current.closed) studioWinRef.current.postMessage({ type: 'allostudio-video-ack' }, '*'); } catch (_) {}
+          postToStudio(studioWinRef.current, { type: 'allostudio-video-ack' });
           addToast(T('video_studio.received', 'Video received from the Studio — it stays on this device until you download it.'), 'success');
           announce(T('video_studio.received_sr', 'Video received from the Studio.'));
         }
@@ -2079,8 +2263,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       }
       setStudioState('opening');
       var w = null;
-      try { w = window.open(STUDIO_URL, 'alloflow-video-studio', 'width=1320,height=860'); } catch (_) { w = null; }
+      var bridgeToken = randomBridgeToken();
+      bridgeTokenRef.current = bridgeToken;
+      try { w = window.open(studioUrlWithBridge(bridgeToken), 'alloflow-video-studio', 'width=1320,height=860'); } catch (_) { w = null; }
       if (!w) {
+        bridgeTokenRef.current = null;
         setStudioState('blocked');
         addToast(T('video_studio.popup_blocked', 'The Studio window was blocked. Allow pop-ups for this page, then try again.'), 'error');
         return;
@@ -2292,7 +2479,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
               }, studioState === 'open' ? T('video_studio.focus_btn', 'Focus the Studio window') : T('video_studio.open_btn', '🎬 Open the Studio window')),
               studioState === 'blocked' && h('span', { className: 'text-xs text-rose-600 font-semibold' }, T('video_studio.blocked_hint', 'Look for the blocked-pop-up icon in the address bar.'))
             ),
-            h('p', { className: 'text-xs text-slate-500 mt-3' }, T('video_studio.privacy_note', 'Nothing uploads anywhere: recording, editing, and captioning all run in your browser. Finished videos appear below and can be saved as .webm files. Before recording, close anything with student data — prefer sharing a single tab.'))
+            h('p', { className: 'text-xs text-slate-500 mt-3' }, T('video_studio.privacy_note', 'Local by default: recording, editing, and captioning run in your browser. Optional AI tools may send reviewed text, prompts, or sampled frame sheets through AlloFlow; before recording, close anything with student data and prefer sharing one tab.'))
           ),
           // Cinematic Studio lives HERE now (its hub card was removed 2026-07-02):
           // it is the prompt-craft companion for NotebookLM and other AI video

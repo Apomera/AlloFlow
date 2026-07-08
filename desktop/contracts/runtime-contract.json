@@ -90,6 +90,8 @@
         "model": "config localEngine.modelUrl GGUF, default Qwen2.5-3B-Instruct Q4_K_M (~2GB); swap URL + a CUDA/Vulkan binaryUrl for GPU boxes — zero code changes",
         "archFallback": "On Windows ARM64 a native loader failure (missing VC++ ARM64 runtime, exit 0xC000007B/0xC0000135) automatically falls back to the x64 build under emulation and surfaces a one-line advisory with the vc_redist.arm64 link",
         "diskPreflight": "Downloads require the file size plus 1.5GB free or they refuse with a plain-language message",
+        "cloudFallback": "config localEngine.cloudFallbackEnabled defaults false. When enabled, the app may use the private local text engine after a cloud quota/rate-limit only for task shapes passed by /api/engine/probe",
+        "probeTaskSupport": "The local model check reports simpleText, strictJson, and remediationJson readiness so JSON-heavy remediation never relies on model-name guesses",
         "boundary": "Binds 127.0.0.1 only; never exposed by the LAN share listener"
       }
     },
@@ -123,13 +125,15 @@
     { "method": "POST", "path": "/api/app/stop", "purpose": "Stop only the Desktop-managed AlloFlow web app process" },
     { "method": "GET", "path": "/api/app/logs", "purpose": "Recent managed AlloFlow app process logs" },
     { "method": "GET", "path": "/api/diagnostics", "purpose": "Redacted diagnostics bundle for copy/paste bug reports" },
+    { "method": "GET", "path": "/api/readiness", "purpose": "Redacted local-first readiness report for teacher/support review: app, selected AI provider, built-in engine, offline ASR, live sessions, School Box, and disk headroom" },
     { "method": "GET", "path": "/api/providers", "purpose": "Provider presets and availability" },
     { "method": "POST", "path": "/api/providers/test", "purpose": "Probe one provider by id/baseUrl" },
     { "method": "POST", "path": "/api/secrets/{providerId}", "purpose": "Store a provider key locally and return only redacted state" },
-    { "method": "GET", "path": "/api/engine/status", "purpose": "Built-in engine status: phase, download progress, model presence, disk headroom, arch, advisory" },
+    { "method": "GET", "path": "/api/engine/status", "purpose": "Built-in engine status: phase, download progress, model presence, disk headroom, arch, advisory, cloudFallbackEnabled, lastProbe, and taskSupport" },
     { "method": "POST", "path": "/api/engine/start", "purpose": "Download (first run) and start the managed llama-server; returns a snapshot immediately — poll status for progress" },
     { "method": "POST", "path": "/api/engine/stop", "purpose": "Stop the managed llama-server process tree" },
     { "method": "GET", "path": "/api/engine/logs", "purpose": "Recent built-in engine process logs" },
+    { "method": "POST", "path": "/api/engine/probe", "purpose": "Click-only local model capability check. Does not start the engine or change settings; when running, sends tiny plain-text, strict JSON, and remediation JSON probes to the private built-in engine and records taskSupport" },
     { "method": "GET", "path": "/api/asr/status", "purpose": "Offline speech-to-text (whisper.cpp) status: phase, download progress, model presence, arch, inference URL. 127.0.0.1 only; never on the LAN share listener. Practice-signal STT for oral-reading fluency, not norm-referenced" },
     { "method": "POST", "path": "/api/asr/start", "purpose": "Download (first run) and start the managed whisper-server; returns a snapshot immediately — poll status for progress. whisper.cpp ships x64-only on Windows (arm64 runs it under emulation)" },
     { "method": "POST", "path": "/api/asr/stop", "purpose": "Stop the managed whisper-server process tree" },
@@ -162,7 +166,7 @@
   ],
   "security": {
     "bindHost": "127.0.0.1",
-    "lanShare": "The optional LAN Share listener binds separately and exposes only app files, join pages, and LAN session endpoints. It does not expose config, diagnostics, provider, secret, app-management, or School Box control APIs.",
+    "lanShare": "The optional LAN Share listener binds separately and exposes only app files, join pages, and LAN session endpoints. It does not expose config, diagnostics, readiness, provider, secret, app-management, or School Box control APIs.",
     "configResponse": "secrets are redacted",
     "next": [
       "Move secrets into the OS keychain before production packaging.",

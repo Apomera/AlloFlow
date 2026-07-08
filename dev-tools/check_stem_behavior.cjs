@@ -176,12 +176,35 @@ const TEST_SUITES = [
           if (earlier.length === 0 || later.length === 0) return { pass: true, message: 'no traffic (skipped)' };
 
           // Match cars by index (heuristic — assumes order is stable across frames)
+          const earlierById = new Map();
+          for (const e of earlier) {
+            if (e && e.id) earlierById.set(e.id, e);
+          }
+          const pairs = [];
+          if (earlierById.size > 0 && later.some(l => l && l.id)) {
+            for (let i = 0; i < later.length; i++) {
+              const l = later[i];
+              if (!l || !l.id) continue;
+              const e = earlierById.get(l.id);
+              if (e) pairs.push({ label: l.id, e, l });
+            }
+          } else {
+            for (let i = 0; i < Math.min(earlier.length, later.length); i++) {
+              pairs.push({ label: i, e: earlier[i], l: later[i] });
+            }
+          }
+          if (pairs.length === 0) {
+            return { pass: true, message: 'no stable traffic matches across snapshots (respawns skipped)' };
+          }
+
           const MAP_SIZE = 96;
           const WRAPAROUND_THRESHOLD = MAP_SIZE / 2;  // jumps > half the map are chunk wraparounds, not real motion
           const violations = [];
-          for (let i = 0; i < Math.min(earlier.length, later.length); i++) {
-            const e = earlier[i];
-            const l = later[i];
+          let skippedRespawns = 0;
+          for (const pair of pairs) {
+            const e = pair.e;
+            const l = pair.l;
+            if (!e || !l) continue;
             const dx = l.x - e.x;
             const dy = l.y - e.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -192,6 +215,12 @@ const TEST_SUITES = [
             // Skip cars that traveled less than 5m — could be turning at an intersection
             // (heading changes mid-window; comparing motion to FINAL heading mis-flags this)
             if (distance < 5) continue;
+            const avgSpeed = (Math.abs(e.speed || 0) + Math.abs(l.speed || 0)) / 2;
+            const maxPlausibleDistance = Math.max(8, avgSpeed * 1.2);
+            if (distance > maxPlausibleDistance) {
+              skippedRespawns++;
+              continue;
+            }
             // Heading vector (where the car SHOULD be moving)
             const hx = Math.cos(l.heading);
             const hy = Math.sin(l.heading);
@@ -199,7 +228,7 @@ const TEST_SUITES = [
             // Flag only clearly-BACKWARD motion (< -0.5). 90°-off motion is normal at turns.
             if (motionDotHeading < -0.5) {
               violations.push({
-                idx: i,
+                idx: pair.label,
                 motionDotHeading: motionDotHeading.toFixed(2),
                 distance: distance.toFixed(2),
                 heading: l.heading.toFixed(2),
@@ -209,14 +238,14 @@ const TEST_SUITES = [
             }
           }
           // Only fail if MAJORITY of cars show backward motion (> 50% = systemic bug, not despawn artifacts)
-          if (violations.length > later.length / 2) {
+          if (violations.length > pairs.length / 2) {
             const sample = violations[0];
-            return { pass: false, message: 'SYSTEMIC: ' + violations.length + '/' + later.length + ' cars moving against heading. e.g. car ' + sample.idx + ' moved (Δx=' + sample.dx + ', Δy=' + sample.dy + ') with heading=' + sample.heading + ' rad' };
+            return { pass: false, message: 'SYSTEMIC: ' + violations.length + '/' + pairs.length + ' matched cars moving against heading. e.g. car ' + sample.idx + ' moved (Δx=' + sample.dx + ', Δy=' + sample.dy + ') with heading=' + sample.heading + ' rad' };
           }
           if (violations.length > 0) {
-            return { pass: true, message: violations.length + '/' + later.length + ' apparent reversals (likely despawn/respawn artifacts; only flagged as bug if >50% of cars affected)' };
+            return { pass: true, message: violations.length + '/' + pairs.length + ' matched cars apparent reversals; skipped ' + skippedRespawns + ' implausible respawn jump(s)' };
           }
-          return { pass: true, message: 'all moving cars travel forward in their heading direction' };
+          return { pass: true, message: 'all matched moving cars travel forward in their heading direction; skipped ' + skippedRespawns + ' respawn jump(s)' };
         },
       },
       {
@@ -284,7 +313,7 @@ const TEST_SUITES = [
         },
       },
       {
-        name: 'Pedestrians stay on sidewalks (within ±2 units of sidewalk x)',
+        name: 'Pedestrians stay on sidewalks or marked crosswalks',
         fn: (state) => {
           const peds = (state.pedsRef && state.pedsRef.current) || [];
           if (peds.length === 0) return { pass: true, message: 'no pedestrians (skipped)' };
@@ -294,17 +323,24 @@ const TEST_SUITES = [
           const sidewalkLeft = centerX - sidewalkOffset;
           const sidewalkRight = centerX + sidewalkOffset;
           const TOLERANCE = 2;  // peds can be at crosswalks (slightly off sidewalk)
-          // A ped is "on sidewalk" if within TOLERANCE of left or right sidewalk x
+          // A ped is "safe" if they are on a sidewalk, or actively crossing along
+          // the marked crosswalk span between sidewalks at their crosswalk row.
           const inRoad = peds.filter(p => {
             const distLeft = Math.abs(p.x - sidewalkLeft);
             const distRight = Math.abs(p.x - sidewalkRight);
-            return distLeft > TOLERANCE && distRight > TOLERANCE;
+            const onSidewalk = distLeft <= TOLERANCE || distRight <= TOLERANCE;
+            const onMarkedCrosswalk = p.crossing
+              && typeof p.crosswalkY === 'number'
+              && Math.abs(p.y - p.crosswalkY) <= TOLERANCE
+              && p.x >= Math.min(sidewalkLeft, sidewalkRight) - TOLERANCE
+              && p.x <= Math.max(sidewalkLeft, sidewalkRight) + TOLERANCE;
+            return !onSidewalk && !onMarkedCrosswalk;
           });
           if (inRoad.length > 0) {
             const sample = inRoad[0];
-            return { pass: false, message: inRoad.length + '/' + peds.length + ' pedestrians off-sidewalk (>' + TOLERANCE + ' units from x=' + sidewalkLeft + ' or x=' + sidewalkRight + '). e.g. ped at x=' + sample.x.toFixed(1) };
+            return { pass: false, message: inRoad.length + '/' + peds.length + ' pedestrians outside sidewalk/crosswalk safety zone. e.g. ped at x=' + sample.x.toFixed(1) + ', y=' + sample.y.toFixed(1) };
           }
-          return { pass: true, message: 'all ' + peds.length + ' pedestrians within ' + TOLERANCE + ' units of a sidewalk' };
+          return { pass: true, message: 'all ' + peds.length + ' pedestrians are on sidewalks or marked crosswalks' };
         },
       },
       {
@@ -320,6 +356,36 @@ const TEST_SUITES = [
             return { pass: false, message: invalid.length + '/' + signals.length + ' signals with invalid type/state. e.g. type="' + sample.type + '", state="' + sample.state + '"' };
           }
           return { pass: true, message: 'all ' + signals.length + ' signals have valid type/state' };
+        },
+      },
+      {
+        name: 'Residential cross streets render yellow centerline markers',
+        fn: (state) => {
+          const map = state.mapRef && state.mapRef.current;
+          const MAP_SIZE = (state.constants && state.constants.MAP_SIZE) || 96;
+          if (!Array.isArray(map) || map.length < MAP_SIZE) {
+            return { pass: false, message: 'mapRef.current missing or incomplete; cannot verify cross-street markings' };
+          }
+          const expectedCrossY = [20, 40, 56, 72];
+          const missing = [];
+          for (const y of expectedCrossY) {
+            const row = map[y];
+            if (!Array.isArray(row)) {
+              missing.push('row ' + y + ' missing');
+              continue;
+            }
+            let centerlineCells = 0;
+            for (let x = 0; x < MAP_SIZE; x++) {
+              if (row[x] === 3) centerlineCells++;
+            }
+            if (centerlineCells < MAP_SIZE * 0.75) {
+              missing.push('row ' + y + ' has only ' + centerlineCells + ' centerline cells');
+            }
+          }
+          if (missing.length > 0) {
+            return { pass: false, message: 'cross-street visual centerlines missing: ' + missing.join('; ') };
+          }
+          return { pass: true, message: expectedCrossY.length + ' residential cross streets include centerline marker cells' };
         },
       },
       {
@@ -470,7 +536,7 @@ const TEST_SUITES = [
         name: 'Per-chunk lane drift report (informational — heuristic centerline)',
         fn: (state) => {
           // HEURISTIC: assumes each chunk's road is approximately straight and the
-          // centerline is the median of (y - laneOffset) within that chunk. For
+          // centerline is the median of (x - laneOffset) within that chunk. For
           // curving/branching roads or intersections, the heuristic over-estimates
           // drift. Use the per-car data below to judge whether reported drift is
           // a real lane-wandering bug or expected variation.
@@ -478,6 +544,7 @@ const TEST_SUITES = [
           if (traffic.length === 0) return { pass: true, message: 'no traffic (skipped)' };
           const byChunk = new Map();
           for (const t of traffic) {
+            if (t.crossStreet) continue;
             if (typeof t.laneOffset !== 'number') continue;
             const key = t._chunk !== undefined ? t._chunk : 'main';
             if (!byChunk.has(key)) byChunk.set(key, []);
@@ -485,15 +552,16 @@ const TEST_SUITES = [
           }
           const driftReport = [];
           for (const [chunkKey, cars] of byChunk) {
-            const centers = cars.map(t => t.y - t.laneOffset).sort((a, b) => a - b);
+            const centers = cars.map(t => t.x - t.laneOffset).sort((a, b) => a - b);
             const median = centers[Math.floor(centers.length / 2)];
             for (const t of cars) {
               const expected = median + t.laneOffset;
-              const drift = Math.abs(t.y - expected);
+              const drift = Math.abs(t.x - expected);
               driftReport.push({ chunk: chunkKey, drift: drift, laneOffset: t.laneOffset, heading: t.heading.toFixed(2) });
             }
           }
           driftReport.sort((a, b) => b.drift - a.drift);
+          if (driftReport.length === 0) return { pass: true, message: 'no main-road lane-offset cars to report (skipped)' };
           const maxDrift = driftReport[0] ? driftReport[0].drift : 0;
           const meanDrift = driftReport.reduce((s, d) => s + d.drift, 0) / driftReport.length;
           // Always pass; report stats as informational

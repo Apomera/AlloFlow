@@ -181,6 +181,7 @@ const DEFAULT_CONFIG = {
     contextSize: 0,
     threads: 0,
     extraArgs: [],
+    cloudFallbackEnabled: false,
   },
   localAsr: {
     // Offline speech-to-text (whisper.cpp whisper-server) for oral-reading
@@ -304,6 +305,7 @@ const managedEngine = {
   modelPath: null,
   arch: null,
   advisory: null,
+  lastProbe: null,
   // Stop-during-start support: a user Stop must cancel in-flight downloads
   // and pre-spawn work, not just kill a live child.
   stopRequested: false,
@@ -2199,7 +2201,210 @@ async function getLocalEngineStatus(config = readConfig()) {
     lastError: managedEngine.lastError,
     arch: managedEngine.arch,
     advisory: managedEngine.advisory,
+    lastProbe: managedEngine.lastProbe,
+    taskSupport: buildEngineProbeTaskSupport(managedEngine.lastProbe || {}),
+    cloudFallbackEnabled: Boolean(engine.cloudFallbackEnabled),
   };
+}
+
+function cleanEngineProbeJson(text) {
+  return String(text || '')
+    .replace(/```(?:json|javascript|js)?/gi, '')
+    .replace(/```/g, '')
+    .trim();
+}
+
+function parseEngineProbeJson(text) {
+  const cleaned = cleanEngineProbeJson(text);
+  try { return JSON.parse(cleaned); } catch (_) {}
+  const firstObj = cleaned.indexOf('{');
+  const lastObj = cleaned.lastIndexOf('}');
+  if (firstObj >= 0 && lastObj > firstObj) {
+    try { return JSON.parse(cleaned.slice(firstObj, lastObj + 1)); } catch (_) {}
+  }
+  const firstArr = cleaned.indexOf('[');
+  const lastArr = cleaned.lastIndexOf(']');
+  if (firstArr >= 0 && lastArr > firstArr) {
+    try { return JSON.parse(cleaned.slice(firstArr, lastArr + 1)); } catch (_) {}
+  }
+  return null;
+}
+
+async function fetchEngineJson(url, body, timeoutMs = 25000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const text = await response.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch (_) {}
+    if (!response.ok) {
+      const message = data && data.error
+        ? (typeof data.error === 'string' ? data.error : data.error.message || JSON.stringify(data.error))
+        : text.slice(0, 240);
+      throw new Error('HTTP ' + response.status + ': ' + message);
+    }
+    return data || {};
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function resolveEngineApiModel(status) {
+  try {
+    const response = await fetch(status.baseUrl + '/v1/models', { headers: { Accept: 'application/json' } });
+    if (response.ok) {
+      const data = await response.json();
+      const first = Array.isArray(data.data) && data.data[0] ? data.data[0] : null;
+      if (first && first.id) return String(first.id);
+    }
+  } catch (_) {}
+  return status.capability?.modelId || status.model?.name || 'local-model';
+}
+
+function engineProbeResult(id, label, startedAt, ok, detail, rawContent = '', parsed = null) {
+  return {
+    id,
+    label,
+    ok: Boolean(ok),
+    latencyMs: Date.now() - startedAt,
+    detail: detail || '',
+    preview: String(rawContent || '').replace(/\s+/g, ' ').trim().slice(0, 220),
+    parsedShape: parsed && typeof parsed === 'object'
+      ? (Array.isArray(parsed) ? 'array[' + parsed.length + ']' : 'object{' + Object.keys(parsed).slice(0, 8).join(',') + '}')
+      : '',
+  };
+}
+
+function engineProbeTestState(probe, id) {
+  if (!probe || !Array.isArray(probe.tests) || probe.tests.length === 0) return 'unknown';
+  const test = probe.tests.find((item) => item && item.id === id);
+  if (!test) return 'unknown';
+  return test.ok ? 'pass' : 'fail';
+}
+
+function buildEngineProbeTaskSupport(probe = {}) {
+  const tests = Array.isArray(probe.tests) ? probe.tests : [];
+  return {
+    status: probe.status === 'not-running' ? 'unavailable' : (probe.status || 'unknown'),
+    generatedAt: probe.generatedAt || '',
+    passed: tests.filter((test) => test && test.ok).length,
+    total: tests.length,
+    simpleText: engineProbeTestState(probe, 'plain-text'),
+    strictJson: engineProbeTestState(probe, 'strict-json'),
+    remediationJson: engineProbeTestState(probe, 'remediation-shape'),
+  };
+}
+
+function attachEngineProbeTaskSupport(probe) {
+  if (!probe || typeof probe !== 'object') return probe;
+  probe.taskSupport = buildEngineProbeTaskSupport(probe);
+  return probe;
+}
+
+async function runEngineCompletionProbe(status, model, test) {
+  const startedAt = Date.now();
+  try {
+    const data = await fetchEngineJson(status.baseUrl + '/v1/chat/completions', {
+      model,
+      messages: [
+        { role: 'system', content: test.system || 'You are a concise local model diagnostic.' },
+        { role: 'user', content: test.prompt },
+      ],
+      temperature: 0,
+      max_tokens: test.maxTokens || 128,
+      ...(test.json ? { response_format: { type: 'json_object' } } : {}),
+    }, test.timeoutMs || 25000);
+    const content = data.choices && data.choices[0] && data.choices[0].message
+      ? String(data.choices[0].message.content || '')
+      : '';
+    const parsed = test.json ? parseEngineProbeJson(content) : null;
+    const ok = test.expect(content, parsed);
+    return engineProbeResult(test.id, test.label, startedAt, ok, ok ? 'passed' : test.failure, content, parsed);
+  } catch (error) {
+    return engineProbeResult(test.id, test.label, startedAt, false, error.name === 'AbortError' ? 'timed out' : error.message);
+  }
+}
+
+async function runLocalEngineProbe(config = readConfig()) {
+  const status = await getLocalEngineStatus(config);
+  if (!status.running) {
+    const result = {
+      implemented: true,
+      running: false,
+      status: 'not-running',
+      summary: 'Start the built-in engine before running the local model check.',
+      engine: {
+        phase: status.phase,
+        baseUrl: status.baseUrl,
+        model: status.model,
+        capability: status.capability,
+      },
+      tests: [],
+      generatedAt: new Date().toISOString(),
+    };
+    attachEngineProbeTaskSupport(result);
+    managedEngine.lastProbe = result;
+    return result;
+  }
+  const model = await resolveEngineApiModel(status);
+  const tests = [
+    {
+      id: 'plain-text',
+      label: 'Plain text response',
+      prompt: 'Reply with exactly this lowercase word and nothing else: ready',
+      maxTokens: 16,
+      failure: 'Expected the word "ready".',
+      expect: (content) => /^ready[.!]?\s*$/i.test(String(content || '').trim()),
+    },
+    {
+      id: 'strict-json',
+      label: 'Strict JSON response',
+      json: true,
+      prompt: 'Return ONLY valid JSON with this exact shape: {"ok":true,"steps":["read","plan","write"],"score":3}',
+      maxTokens: 120,
+      failure: 'Expected parseable JSON with ok=true and 3 steps.',
+      expect: (_content, parsed) => Boolean(parsed && parsed.ok === true && Array.isArray(parsed.steps) && parsed.steps.length === 3),
+    },
+    {
+      id: 'remediation-shape',
+      label: 'Remediation JSON shape',
+      json: true,
+      prompt: 'You are checking a short accessibility remediation task. Return ONLY valid JSON with this shape: {"issues":[{"id":"contrast","severity":"medium","fix":"Increase text contrast"}],"summary":"ready"}. Use exactly one issue.',
+      maxTokens: 512,
+      failure: 'Expected a remediation-style JSON object with one issue and a summary.',
+      expect: (_content, parsed) => Boolean(parsed && Array.isArray(parsed.issues) && parsed.issues.length === 1 && parsed.issues[0].id && parsed.issues[0].fix && parsed.summary),
+    },
+  ];
+  const results = [];
+  for (const test of tests) {
+    results.push(await runEngineCompletionProbe(status, model, test));
+  }
+  const passed = results.filter((test) => test.ok).length;
+  const result = {
+    implemented: true,
+    running: true,
+    status: passed === results.length ? 'pass' : (passed > 0 ? 'partial' : 'fail'),
+    summary: passed + '/' + results.length + ' local model checks passed.',
+    model,
+    engine: {
+      phase: status.phase,
+      baseUrl: status.baseUrl,
+      model: status.model,
+      capability: status.capability,
+      arch: status.arch,
+    },
+    tests: results,
+    generatedAt: new Date().toISOString(),
+  };
+  attachEngineProbeTaskSupport(result);
+  managedEngine.lastProbe = result;
+  return result;
 }
 
 async function launchEngineProcess(config, arch) {
@@ -2833,6 +3038,216 @@ async function buildDiagnostics(config = readConfig(), origin = getDefaultRuntim
   };
 }
 
+function readinessStateRank(state) {
+  return ({ ok: 0, busy: 1, warn: 2, err: 3 })[state] ?? 2;
+}
+
+function readinessItem(id, label, state, summary, nextAction, details = {}) {
+  return {
+    id,
+    label,
+    state,
+    summary,
+    nextAction: nextAction || '',
+    details,
+  };
+}
+
+async function buildReadinessReport(config = readConfig(), origin = getDefaultRuntimeOrigin()) {
+  const [providers, schoolBox, liveSession, engine, asr] = await Promise.all([
+    getProviderStatuses(config),
+    getSchoolBoxStatus(config),
+    getLiveSessionStatus(config, origin),
+    getLocalEngineStatus(config),
+    getLocalAsrStatus(config),
+  ]);
+  const appProbe = await probeUrl(getAppUrl(config, origin), 900);
+  const app = buildManagedAppStatus(config, appProbe, origin);
+  const selectedProvider = providers.find((provider) => provider.selected) || providers.find((provider) => provider.id === config.selectedProvider);
+  const sections = [];
+
+  sections.push(readinessItem(
+    'app',
+    'AlloFlow app',
+    app.reachable ? 'ok' : 'warn',
+    app.reachable ? 'The app is reachable from Desktop.' : 'The app is not reachable yet.',
+    app.reachable ? '' : (app.managed ? 'Start the Desktop-managed app.' : 'Check the app URL or start the web app.'),
+    { appUrl: getAppUrl(config, origin), status: app.status, pid: app.pid || null }
+  ));
+
+  const providerReady = selectedProvider && (selectedProvider.status === 'configured' || selectedProvider.status === 'available');
+  sections.push(readinessItem(
+    'provider',
+    'Selected AI provider',
+    providerReady ? 'ok' : 'warn',
+    selectedProvider
+      ? selectedProvider.label + ' is ' + (selectedProvider.status || 'unknown') + '.'
+      : 'No selected provider was found.',
+    providerReady ? '' : 'Choose a reachable local provider, start the built-in engine, or add a cloud API key.',
+    selectedProvider ? {
+      id: selectedProvider.id,
+      status: selectedProvider.status,
+      reachable: selectedProvider.reachable,
+      hasKey: selectedProvider.hasKey,
+      modelCount: selectedProvider.modelCount,
+    } : {}
+  ));
+
+  let engineState = 'warn';
+  let engineSummary = 'Built-in local text AI is not running.';
+  let engineAction = 'Start the built-in engine if you want local text generation.';
+  if (engine.running) {
+    engineState = 'ok';
+    engineSummary = 'Built-in local text AI is running.';
+    engineAction = '';
+  } else if (engine.lastError) {
+    engineState = 'err';
+    engineSummary = engine.lastError;
+    engineAction = 'Open the AI tab and retry after resolving the error.';
+  } else if (engine.download) {
+    engineState = 'busy';
+    engineSummary = 'Built-in local text AI is downloading ' + engine.download.file + '.';
+    engineAction = 'Keep Desktop open until the download finishes.';
+  } else if (engine.model && engine.model.present) {
+    engineSummary = 'Built-in local text AI model is downloaded but stopped.';
+    engineAction = 'Start the engine when local generation is needed.';
+  }
+  sections.push(readinessItem('local-engine', 'Built-in AI engine', engineState, engineSummary, engineAction, {
+    phase: engine.phase,
+    running: engine.running,
+    model: engine.model,
+    capability: engine.capability,
+    arch: engine.arch,
+    lastProbe: engine.lastProbe,
+    taskSupport: engine.taskSupport,
+    cloudFallbackEnabled: engine.cloudFallbackEnabled,
+  }));
+
+  if (engine.lastProbe) {
+    const probe = engine.lastProbe;
+    const probeState = probe.status === 'pass'
+      ? 'ok'
+      : (probe.status === 'fail' ? 'err' : 'warn');
+    sections.push(readinessItem(
+      'local-model-probe',
+      'Local model check',
+      probeState,
+      probe.summary || 'Local model check has run.',
+      probe.status === 'pass'
+        ? ''
+        : (probe.status === 'not-running' ? 'Start the built-in engine, then run Check local model.' : 'Use the probe details to decide whether this model should handle JSON-heavy local tasks.'),
+      {
+        status: probe.status,
+        generatedAt: probe.generatedAt,
+        model: probe.model || '',
+        taskSupport: probe.taskSupport || buildEngineProbeTaskSupport(probe),
+        tests: Array.isArray(probe.tests) ? probe.tests.map((test) => ({
+          id: test.id,
+          label: test.label,
+          ok: test.ok,
+          latencyMs: test.latencyMs,
+          detail: test.detail,
+          parsedShape: test.parsedShape,
+        })) : [],
+      }
+    ));
+  }
+
+  let asrState = 'warn';
+  let asrSummary = 'Offline speech-to-text is off.';
+  let asrAction = 'Enable speech-to-text if reading practice should stay fully on device.';
+  if (asr.running) {
+    asrState = 'ok';
+    asrSummary = 'Offline speech-to-text is running.';
+    asrAction = '';
+  } else if (asr.lastError) {
+    asrState = 'err';
+    asrSummary = asr.lastError;
+    asrAction = 'Retry from the Setup Health card after resolving the error.';
+  } else if (asr.download) {
+    asrState = 'busy';
+    asrSummary = 'Offline speech-to-text is downloading ' + asr.download.file + '.';
+    asrAction = 'Keep Desktop open until the download finishes.';
+  } else if (asr.model && asr.model.present) {
+    asrSummary = 'Offline speech-to-text model is downloaded but stopped.';
+    asrAction = 'Start it before local reading practice.';
+  }
+  sections.push(readinessItem('asr', 'Offline speech-to-text', asrState, asrSummary, asrAction, {
+    phase: asr.phase,
+    running: asr.running,
+    model: asr.model,
+    arch: asr.arch,
+  }));
+
+  const liveState = liveSession.firestoreAllowed
+    ? (liveSession.demoOnly ? 'err' : 'warn')
+    : (liveSession.lanBridge?.share?.active ? 'ok' : 'warn');
+  sections.push(readinessItem(
+    'live-session',
+    'Classroom live sessions',
+    liveState,
+    liveSession.firestoreAllowed
+      ? 'This mode allows cloud classroom session docs.'
+      : (liveSession.lanBridge?.share?.active ? 'LAN sharing is active.' : 'Cloud session docs are blocked; LAN sharing is not active.'),
+    liveSession.lanBridge?.share?.active
+      ? ''
+      : (liveSession.mode === 'schoolbox-lan' ? 'Start LAN Share before students join from other devices.' : 'Use School Box / Local Network for local classroom sessions.'),
+    {
+      mode: liveSession.mode,
+      dataLocation: liveSession.dataLocation,
+      firestoreAllowed: liveSession.firestoreAllowed,
+      lanBridge: liveSession.lanBridge,
+      warnings: liveSession.warnings,
+    }
+  ));
+
+  const schoolBoxOk = schoolBox.status === 'running' || schoolBox.status === 'ready';
+  const schoolBoxWarn = ['needs-setup', 'needs-docker', 'partial', 'missing-app-build'].includes(schoolBox.status);
+  sections.push(readinessItem(
+    'schoolbox',
+    'School Box',
+    schoolBoxOk ? 'ok' : (schoolBoxWarn ? 'warn' : 'err'),
+    'School Box status: ' + (schoolBox.status || 'unknown') + '.',
+    schoolBoxOk ? '' : ((schoolBox.nextActions && schoolBox.nextActions[0]) || 'Prepare and start School Box when local classroom services are needed.'),
+    {
+      status: schoolBox.status,
+      url: schoolBox.url,
+      services: schoolBox.services,
+      nextActions: schoolBox.nextActions,
+    }
+  ));
+
+  const diskFree = engine.diskFreeBytes;
+  if (diskFree != null) {
+    sections.push(readinessItem(
+      'disk',
+      'Local model storage',
+      diskFree < 2 * 1073741824 ? 'err' : (diskFree < 5 * 1073741824 ? 'warn' : 'ok'),
+      'Free space for Desktop data: ' + (diskFree / 1073741824).toFixed(1) + ' GB.',
+      diskFree < 5 * 1073741824 ? 'Free disk space before downloading large local models.' : '',
+      { diskFreeBytes: diskFree, dataDir: getDataDir() }
+    ));
+  }
+
+  const worst = sections.reduce((state, section) => (
+    readinessStateRank(section.state) > readinessStateRank(state) ? section.state : state
+  ), 'ok');
+
+  return {
+    generatedAt: new Date().toISOString(),
+    overall: worst,
+    summary: worst === 'ok'
+      ? 'Desktop is ready for local-first use.'
+      : 'Desktop has readiness items to review before a local-first class.',
+    sections,
+    environment: {
+      platform: process.platform,
+      arch: process.arch,
+      node: process.version,
+    },
+  };
+}
+
 function sendFile(res, filePath) {
   fs.readFile(filePath, (error, data) => {
     if (error) {
@@ -2955,6 +3370,11 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/readiness') {
+    jsonResponse(res, 200, await buildReadinessReport(config, origin));
+    return;
+  }
+
   if (req.method === 'GET' && url.pathname === '/api/config') {
     jsonResponse(res, 200, redactConfig(config));
     return;
@@ -2962,6 +3382,12 @@ async function handleApi(req, res, url) {
 
   if ((req.method === 'POST' || req.method === 'PUT') && url.pathname === '/api/config') {
     const body = await readRequestJson(req);
+    if (body && body.localEngine && typeof body.localEngine === 'object') {
+      const resetKeys = ['modelUrl', 'modelDirectory', 'contextSize', 'threads', 'extraArgs', 'binaryUrl'];
+      if (resetKeys.some((key) => Object.prototype.hasOwnProperty.call(body.localEngine, key))) {
+        managedEngine.lastProbe = null;
+      }
+    }
     const saved = writeConfig(deepMerge(config, body));
     jsonResponse(res, 200, redactConfig(saved));
     return;
@@ -3039,6 +3465,11 @@ async function handleApi(req, res, url) {
 
   if (req.method === 'GET' && url.pathname === '/api/engine/logs') {
     jsonResponse(res, 200, { logs: managedEngine.logs.slice(-100) });
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/engine/probe') {
+    jsonResponse(res, 200, await runLocalEngineProbe(config));
     return;
   }
 
@@ -3519,6 +3950,7 @@ async function runSmoke(args) {
       body: JSON.stringify({ doc: { kind: 'tampered' } }),
     }).then((response) => response.status);
     const schoolBox = await fetch(baseUrl + '/api/schoolbox/status').then((response) => response.json());
+    const readiness = await fetch(baseUrl + '/api/readiness').then((response) => response.json());
     if (health.status !== 'ok') throw new Error('Health endpoint did not return ok.');
     if (!Array.isArray(providers.providers)) throw new Error('Providers endpoint did not return a provider list.');
     if (!liveSession || !liveSession.mode) throw new Error('Live session endpoint did not return a mode.');
@@ -3528,12 +3960,17 @@ async function runSmoke(args) {
     if (publicCreateStatus !== 403) throw new Error('Public LAN share allowed session creation.');
     if (publicPatch.session?.data?.roster?.student?.name !== 'Learner') throw new Error('Public LAN share could not patch a session.');
     if (!schoolBox || !schoolBox.implemented) throw new Error('School Box endpoint did not return implemented status.');
+    if (!readiness || !Array.isArray(readiness.sections) || !readiness.sections.some((section) => section.id === 'local-engine')) {
+      throw new Error('Readiness endpoint did not return local-engine status.');
+    }
     const engineStatus = await fetch(baseUrl + '/api/engine/status').then((response) => response.json());
     const engineStop = await fetch(baseUrl + '/api/engine/stop', { method: 'POST' }).then((response) => response.json());
+    const engineProbe = await fetch(baseUrl + '/api/engine/probe', { method: 'POST' }).then((response) => response.json());
     if (engineStatus.implemented !== true) throw new Error('Engine status no longer reports implemented.');
     if (engineStatus.running !== false) throw new Error('Engine unexpectedly reports running in smoke.');
     if (typeof engineStatus.binaryPresent !== 'boolean' || !engineStatus.model) throw new Error('Engine status shape regressed.');
     if (engineStop.phase !== 'stopped') throw new Error('Engine stop was not idempotent.');
+    if (engineProbe.status !== 'not-running' || !Array.isArray(engineProbe.tests)) throw new Error('Engine probe did not safely no-op while stopped.');
     if (docPut.doc?.id !== 'asset_smoke_1') throw new Error('LAN doc create failed.');
     if (docGet.doc?.data?.resource?.id !== 'r1') throw new Error('LAN doc read failed.');
     if (publicDocGet.doc?.data?.kind !== 'sessionResource') throw new Error('Public LAN share could not read a class asset.');
@@ -3637,6 +4074,8 @@ module.exports = {
   getSecretStorageStatus,
   getSchoolBoxLogs,
   getSchoolBoxStatus,
+  buildReadinessReport,
+  runLocalEngineProbe,
   hasStaticAppBuild,
   parseArgs,
   prepareSchoolBoxEnv,

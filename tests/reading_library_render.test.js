@@ -356,6 +356,20 @@ describe('narration playback — audio track vs cue timings', () => {
     expect(labels.some((l) => /Read to me/.test(l))).toBe(false);
   });
 
+  it('shows a clear original-source link when a source URL exists', async () => {
+    await mountReader({
+      ...baseBook,
+      sourceId: 'gutenberg',
+      source: { id: 'gutenberg', name: 'Project Gutenberg', url: 'https://www.gutenberg.org/ebooks/23' },
+      license: 'Public Domain in the U.S. / Project Gutenberg License',
+      licenseUrl: 'https://www.gutenberg.org/policy/license.html',
+    });
+    const sourceLink = Array.from(host.querySelectorAll('a')).find((a) => /Open original/.test(textOf(a)));
+    expect(sourceLink).toBeTruthy();
+    expect(sourceLink.getAttribute('href')).toBe('https://www.gutenberg.org/ebooks/23');
+    expect(textOf(host)).toContain('Project Gutenberg');
+  });
+
   it('falls back to Gemini TTS when the narration mp3 fails to play', async () => {
     const spoken = [];
     const toasts = [];

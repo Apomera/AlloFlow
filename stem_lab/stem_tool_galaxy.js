@@ -142,7 +142,8 @@ window.StemLab = window.StemLab || {
 var d = labToolData.galaxy || {};
 if (!window._galaxyHasLoadedOnce) {
     window._galaxyHasLoadedOnce = true;
-    if (d.simMode && d.simMode !== 'galaxy') {
+    var allowedGalaxyModes = { galaxy: true, star: true, metalHunt: true, realSky: true };
+    if (d.simMode && !allowedGalaxyModes[d.simMode]) {
         setTimeout(function() { ctx.setToolData(function(prev) { return Object.assign({}, prev, { galaxy: Object.assign({}, prev.galaxy || {}, {simMode: 'galaxy'})}); })}, 10);
         d.simMode = 'galaxy';
     }
@@ -177,6 +178,18 @@ if (!window._galaxyHasLoadedOnce) {
           var observeMode = d.observeMode || 'visible';
 
           var dopplerVelocity = d.dopplerVelocity !== undefined ? d.dopplerVelocity : 0;
+
+          var realSkyTargetKey = d.realSkyTarget || 'm31';
+
+          var realSkySurveyKey = d.realSkySurvey || 'P/DSS2/color';
+
+          var realSkyCatalogKey = d.realSkyCatalog || 'simbad';
+
+          var realSkyStatus = d.realSkyStatus || 'idle';
+
+          var realSkyMessage = d.realSkyMessage || '';
+
+          var realSkyRetry = d.realSkyRetry || 0;
 
 
 
@@ -260,6 +273,80 @@ if (!window._galaxyHasLoadedOnce) {
           var dopplerDirection = dopplerVelocity < -8 ? 'blueshift' : dopplerVelocity > 8 ? 'redshift' : 'no shift';
           var dopplerColor = dopplerVelocity < -8 ? '#2563eb' : dopplerVelocity > 8 ? '#dc2626' : '#64748b';
           var dopplerZ = dopplerVelocity / 299792.458;
+
+          var REAL_SKY_TARGETS = [
+            { key: 'm31', name: 'Andromeda Galaxy', short: 'M31', target: 'M 31', ra: 10.6847, dec: 41.2692, fov: 4.2, type: 'Local Group spiral', bridge: 'Naked-eye smudge in dark skies; huge in binoculars.', astronomyTarget: 'andromeda', story: 'Use this to compare the simulated Milky Way disk with a real neighboring spiral galaxy.', lesson: ['Classify the shape: bulge, disk, spiral arms, and dust lanes.', 'Switch to infrared and look for dust-hidden structure.', 'Ask what evidence shows this galaxy is not inside the Milky Way.'] },
+            { key: 'm51', name: 'Whirlpool Galaxy', short: 'M51', target: 'M 51', ra: 202.4696, dec: 47.1953, fov: 0.75, type: 'Interacting grand-design spiral', bridge: 'A telescope/photography classic; spiral arms are easier in images than eyepieces.', astronomyTarget: 'andromeda', story: 'A dramatic case where interaction with a companion sharpens spiral structure.', lesson: ['Trace the spiral arms and find the companion galaxy.', 'Compare the bridge of material with the Galaxy Explorer interaction model.', 'Predict where star formation is strongest before changing surveys.'] },
+            { key: 'm87', name: 'M87', short: 'M87', target: 'M 87', ra: 187.7059, dec: 12.3911, fov: 0.7, type: 'Giant elliptical galaxy', bridge: 'Home of the first imaged black-hole shadow, M87*.', astronomyTarget: 'andromeda', story: 'A smooth elliptical galaxy that anchors the Virgo Cluster and hosts a supermassive black hole.', lesson: ['Compare its smooth light to spiral galaxies.', 'Use the catalog overlay to notice the crowded Virgo Cluster field.', 'Connect the bright core to black-hole evidence, not a visible event horizon.'] },
+            { key: 'm104', name: 'Sombrero Galaxy', short: 'M104', target: 'M 104', ra: 189.9976, dec: -11.6231, fov: 0.9, type: 'Dust-lane galaxy', bridge: 'A bright galaxy where dust lanes make structure visible.', astronomyTarget: 'andromeda', story: 'A striking real example of how dust can reveal a galaxy disk in silhouette.', lesson: ['Find the dark lane and infer the disk orientation.', 'Compare visible and infrared: what changes when dust is less opaque?', 'Decide whether this looks more spiral-like or elliptical-like.'] },
+            { key: 'm82', name: 'Cigar Galaxy', short: 'M82', target: 'M 82', ra: 148.9685, dec: 69.6797, fov: 0.8, type: 'Starburst galaxy', bridge: 'Best understood with multiwavelength views of gas and dust.', astronomyTarget: 'andromeda', story: 'A galaxy-wide starburst: intense star formation is driving material out of the disk.', lesson: ['Look for the disturbed shape instead of neat spiral arms.', 'Ask how a nearby galaxy interaction could trigger star birth.', 'Use infrared to hunt for dusty star-forming regions.'] },
+            { key: 'm1', name: 'Crab Nebula', short: 'M1', target: 'M 1', ra: 83.6331, dec: 22.0145, fov: 0.35, type: 'Supernova remnant', bridge: 'A real supernova remnant from the 1054 event.', astronomyTarget: 'orion-nebula', story: 'The afterglow of stellar death: a pulsar powers a tangled nebula of expanding debris.', lesson: ['Connect the filaments to expanding supernova ejecta.', 'Compare this remnant with Star Life supernova and neutron-star stages.', 'Ask what data would reveal the hidden pulsar.'] },
+            { key: 'm42', name: 'Orion Nebula', short: 'M42', target: 'M 42', ra: 83.8221, dec: -5.3911, fov: 1.25, type: 'Stellar nursery', bridge: 'One of the best beginner telescope targets.', astronomyTarget: 'orion-nebula', story: 'A nearby star-forming cloud where hot young stars light the gas around them.', lesson: ['Find the bright core and surrounding gas wings.', 'Compare optical and infrared views to see through dust.', 'Ask why this is a star nursery rather than a galaxy.'] },
+            { key: 'pleiades', name: 'Pleiades', short: 'M45', target: 'M 45', ra: 56.75, dec: 24.1167, fov: 3.2, type: 'Open cluster', bridge: 'Gorgeous in binoculars; too wide for many telescopes.', astronomyTarget: 'pleiades', story: 'A young cluster showing how stars are born together and drift apart over time.', lesson: ['Count bright blue stars and infer a young age.', 'Notice why binoculars can be better than high magnification.', 'Ask how an open cluster differs from a globular cluster.'] },
+            { key: 'carina', name: 'Carina Nebula', short: 'NGC 3372', target: 'NGC 3372', ra: 161.2875, dec: -59.8667, fov: 1.7, type: 'Massive stellar nursery', bridge: 'A southern-sky showpiece made famous by Hubble and JWST imagery.', astronomyTarget: 'orion-nebula', story: 'A huge star-forming complex where massive stars sculpt dust pillars and glowing gas.', lesson: ['Look for bright cavities carved by young massive stars.', 'Switch surveys and compare where dust is visible versus transparent.', 'Ask why massive stars reshape their birth clouds so quickly.'] },
+            { key: 'm16', name: 'Eagle Nebula', short: 'M16', target: 'M 16', ra: 274.7, dec: -13.8067, fov: 0.85, type: 'Pillars of Creation field', bridge: 'The Hubble/JWST Pillars are a famous close-up inside this star-forming region.', astronomyTarget: 'orion-nebula', story: 'Dense columns of gas and dust are being eroded by newborn stars while new stars form inside them.', lesson: ['Search for dark columns and bright ionized edges.', 'Predict which wavelengths reveal embedded protostars.', 'Compare pillar erosion to stellar feedback in Star Life.'] },
+            { key: 'stephan', name: 'Stephan\'s Quintet', short: 'HCG 92', target: 'Stephan Quintet', ra: 339.014, dec: 33.975, fov: 0.45, type: 'Compact interacting galaxy group', bridge: 'A JWST showcase for colliding galaxies, shock fronts, and tidal debris.', astronomyTarget: 'andromeda', story: 'A small patch of sky where multiple galaxies are gravitationally disturbing one another.', lesson: ['Identify which galaxies look distorted by interaction.', 'Ask what a shock front would look like in non-visible wavelengths.', 'Compare the group to M51: one companion versus several galaxies.'] },
+            { key: 'cartwheel', name: 'Cartwheel Galaxy', short: 'ESO 350-40', target: 'Cartwheel Galaxy', ra: 9.421, dec: -33.716, fov: 0.42, type: 'Ring galaxy after collision', bridge: 'A JWST/Hubble-friendly example of a collision-generated ring wave.', astronomyTarget: 'andromeda', story: 'A smaller galaxy likely punched through the disk, sending a star-forming ring outward.', lesson: ['Find the ring and compare it to ordinary spiral arms.', 'Ask why collisions can trigger new stars instead of only destroying structure.', 'Use the ring as evidence of a past encounter.'] }
+          ];
+
+          var REAL_SKY_SURVEYS = [
+            { id: 'P/DSS2/color', label: 'Optical', desc: 'Visible-light plates reveal star color, dust lanes, and galaxy structure.' },
+            { id: 'P/2MASS/color', label: 'Near infrared', desc: 'Infrared light cuts through dust and highlights cooler stars.' },
+            { id: 'P/allWISE/color', label: 'Mid infrared', desc: 'Warm dust and star-forming regions become easier to spot.' }
+          ];
+
+          var REAL_SKY_CATALOGS = [
+            { id: 'simbad', label: 'SIMBAD objects', desc: 'Scientific object IDs around the target.' },
+            { id: 'none', label: 'Clean survey', desc: 'Image-only mode for careful visual inspection.' }
+          ];
+
+          var activeRealSkyTarget = REAL_SKY_TARGETS.find(function (x) { return x.key === realSkyTargetKey; }) || REAL_SKY_TARGETS[0];
+          var activeRealSkySurvey = REAL_SKY_SURVEYS.find(function (x) { return x.id === realSkySurveyKey; }) || REAL_SKY_SURVEYS[0];
+          var activeRealSkyCatalog = REAL_SKY_CATALOGS.find(function (x) { return x.id === realSkyCatalogKey; }) || REAL_SKY_CATALOGS[0];
+          var activeAladinUrl = 'https://aladin.cds.unistra.fr/AladinLite/?target=' + encodeURIComponent(activeRealSkyTarget.target) + '&fov=' + encodeURIComponent(activeRealSkyTarget.fov);
+
+          function ensureGalaxyAladinLite(cb) {
+            if (window.A && window.A.aladin) { cb(true); return; }
+            if (typeof document === 'undefined') { cb(false); return; }
+            window._galaxyAladinCallbacks = window._galaxyAladinCallbacks || [];
+            window._galaxyAladinCallbacks.push(cb);
+            if (window._galaxyAladinLoading) return;
+            window._galaxyAladinLoading = true;
+            var finish = function (ok) {
+              window._galaxyAladinLoading = false;
+              var callbacks = window._galaxyAladinCallbacks || [];
+              window._galaxyAladinCallbacks = [];
+              callbacks.forEach(function (fn) { try { fn(ok); } catch (e) {} });
+            };
+            try {
+              if (!document.getElementById('galaxy-aladin-lite-css')) {
+                var css = document.createElement('link');
+                css.id = 'galaxy-aladin-lite-css';
+                css.rel = 'stylesheet';
+                css.href = 'https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.css';
+                document.head.appendChild(css);
+              }
+              var existing = document.getElementById('galaxy-aladin-lite-js');
+              if (existing && window._galaxyAladinFailed) {
+                try { existing.parentNode && existing.parentNode.removeChild(existing); } catch (e1) {}
+                existing = null;
+              }
+              if (existing) {
+                existing.addEventListener('load', function () { window._galaxyAladinFailed = false; finish(!!(window.A && window.A.aladin)); }, { once: true });
+                existing.addEventListener('error', function () { window._galaxyAladinFailed = true; finish(false); }, { once: true });
+                return;
+              }
+              var script = document.createElement('script');
+              script.id = 'galaxy-aladin-lite-js';
+              script.async = true;
+              script.src = 'https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js';
+              script.onload = function () { window._galaxyAladinFailed = false; finish(!!(window.A && window.A.aladin)); };
+              script.onerror = function () { window._galaxyAladinFailed = true; finish(false); };
+              document.head.appendChild(script);
+            } catch (e) {
+              finish(false);
+            }
+          }
 
 
 
@@ -735,10 +822,14 @@ if (!window._galaxyHasLoadedOnce) {
             var deepFieldGlow = { galaxies: 0.28, filaments: 0.16 };
             var foregroundGroup = new THREE.Group(); foregroundGroup.name = 'cinematicForeground';
             var warpStreakGroup = new THREE.Group(); warpStreakGroup.name = 'warpStreaks'; warpStreakGroup.visible = false;
+            var warpShockGroup = new THREE.Group(); warpShockGroup.name = 'warpArrivalShock'; warpShockGroup.visible = false;
+            var apertureSweepGroup = new THREE.Group(); apertureSweepGroup.name = 'cinematicApertureSweep';
             warpStreakGroup.position.set(0, 0, -0.62);
-            bgGroup.add(foregroundGroup); camera.add(warpStreakGroup);
-            var foregroundSprites = [], warpStreakSprites = [];
-            var cinematicMotion = { warp: 0, foreground: 1 };
+            warpShockGroup.position.set(0, 0, -0.86);
+            apertureSweepGroup.position.set(0, 0, -0.72);
+            bgGroup.add(foregroundGroup); camera.add(warpStreakGroup); camera.add(warpShockGroup); camera.add(apertureSweepGroup);
+            var foregroundSprites = [], warpStreakSprites = [], warpShockRings = [], apertureSweepSprites = [];
+            var cinematicMotion = { warp: 0, shock: 0, aperture: 0, foreground: 1 };
 
             (function () {
               var fgCv = document.createElement('canvas'); fgCv.width = 96; fgCv.height = 96;
@@ -773,6 +864,18 @@ if (!window._galaxyHasLoadedOnce) {
               streakCtx.fillStyle = 'rgba(255,255,255,0.32)'; streakCtx.fillRect(44, 15, 104, 2);
               var streakTex = new THREE.CanvasTexture(streakCv);
 
+              var sweepCv = document.createElement('canvas'); sweepCv.width = 384; sweepCv.height = 48;
+              var sweepCtx = sweepCv.getContext('2d');
+              var sweepGrad = sweepCtx.createLinearGradient(0, 24, 384, 24);
+              sweepGrad.addColorStop(0, 'rgba(255,255,255,0)');
+              sweepGrad.addColorStop(0.34, 'rgba(125,211,252,0.06)');
+              sweepGrad.addColorStop(0.5, 'rgba(255,255,255,0.46)');
+              sweepGrad.addColorStop(0.66, 'rgba(244,114,182,0.08)');
+              sweepGrad.addColorStop(1, 'rgba(255,255,255,0)');
+              sweepCtx.fillStyle = sweepGrad; sweepCtx.fillRect(0, 20, 384, 8);
+              sweepCtx.fillStyle = 'rgba(255,255,255,0.2)'; sweepCtx.fillRect(118, 23, 148, 2);
+              var sweepTex = new THREE.CanvasTexture(sweepCv);
+
               for (var fg = 0; fg < 42; fg++) {
                 var fgMat = new THREE.SpriteMaterial({ map: fgTex, transparent: true, opacity: 0.06 + Math.random() * 0.16, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, color: Math.random() < 0.6 ? 0xdbeafe : 0xfbcfe8, rotation: Math.random() * Math.PI });
                 var fgSprite = new THREE.Sprite(fgMat);
@@ -796,6 +899,27 @@ if (!window._galaxyHasLoadedOnce) {
                 wsSprite.userData = { angle: wsA, radius: wsR, speed: 0.006 + Math.random() * 0.012, baseScaleX: wsSprite.scale.x, baseScaleY: wsSprite.scale.y };
                 warpStreakGroup.add(wsSprite);
                 warpStreakSprites.push(wsSprite);
+              }
+
+              for (var wr = 0; wr < 3; wr++) {
+                var wrGeo = new THREE.RingGeometry(0.18 + wr * 0.035, 0.188 + wr * 0.035, 96);
+                var wrMat = new THREE.MeshBasicMaterial({ color: wr === 1 ? 0xf0abfc : 0x93c5fd, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+                var wrMesh = new THREE.Mesh(wrGeo, wrMat);
+                wrMesh.userData = { delay: wr * 0.12, baseOpacity: wr === 1 ? 0.18 : 0.24, spin: wr % 2 ? -0.0018 : 0.0022 };
+                wrMesh.renderOrder = 8;
+                warpShockGroup.add(wrMesh);
+                warpShockRings.push(wrMesh);
+              }
+
+              for (var swp = 0; swp < 3; swp++) {
+                var swpMat = new THREE.SpriteMaterial({ map: sweepTex, transparent: true, opacity: 0.035 + swp * 0.012, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: (swp - 1) * 0.11 });
+                var swpSprite = new THREE.Sprite(swpMat);
+                swpSprite.position.set((swp - 1) * 0.12, -0.2 + swp * 0.18, -0.04);
+                swpSprite.scale.set(1.1 + swp * 0.18, 0.05 + swp * 0.01, 1);
+                swpSprite.userData = { baseOpacity: swpMat.opacity, baseX: swpSprite.position.x, baseY: swpSprite.position.y, baseScaleX: swpSprite.scale.x, baseScaleY: swpSprite.scale.y, phase: swp * 1.7 };
+                swpSprite.renderOrder = 9;
+                apertureSweepGroup.add(swpSprite);
+                apertureSweepSprites.push(swpSprite);
               }
 
               var cloudCv = document.createElement('canvas'); cloudCv.width = 256; cloudCv.height = 256;
@@ -1034,6 +1158,41 @@ if (!window._galaxyHasLoadedOnce) {
             var visualGlow = { disk: 0.16, arms: 0.18, core: 0.42 };
             var diskSheenMat = null, armGlowMat = null, coreFlare = null;
             var coreLightBars = [];
+            var streamlineGroup = new THREE.Group(); streamlineGroup.name = 'orbitalStreamlines'; streamlineGroup.renderOrder = 3; armGroup.add(streamlineGroup);
+            var streamlineMats = [], streamlineGlow = 1;
+            (function () {
+              var streamCount = galaxyType === 'irregular' ? 5 : galaxyType === 'elliptical' ? 5 : 7;
+              var segments = 176;
+              for (var si = 0; si < streamCount; si++) {
+                var pts = [];
+                var baseR = (galaxyType === 'elliptical' ? 0.16 : 0.18) + si * (galaxyType === 'elliptical' ? 0.1 : 0.092);
+                for (var stp = 0; stp <= segments; stp++) {
+                  var t = stp / segments;
+                  var angle = t * Math.PI * 2;
+                  var radius = baseR;
+                  var y = Math.sin(angle * 2 + si) * 0.003;
+                  var zScale = galaxyType === 'elliptical' ? 0.68 : 1;
+                  if (galaxyType === 'irregular') {
+                    radius += Math.sin(angle * 2.7 + si * 1.4) * 0.05 + Math.sin(angle * 5.1 + si) * 0.016;
+                    y += Math.sin(angle * 3.2 + si) * 0.016;
+                    zScale = 0.82 + 0.08 * Math.sin(si);
+                  } else if (galaxyType !== 'elliptical') {
+                    var armCount = gType.arms || 4;
+                    radius += 0.026 * Math.sin(angle * armCount + si * 0.9);
+                    angle += 0.08 * Math.sin(t * Math.PI * 2 + si * 0.7);
+                  }
+                  pts.push(new THREE.Vector3(Math.cos(angle) * radius, y + 0.006, Math.sin(angle) * radius * zScale));
+                }
+                var streamGeo = new THREE.BufferGeometry().setFromPoints(pts);
+                var streamMat = new THREE.LineBasicMaterial({ color: si % 3 === 1 ? 0xf0abfc : si % 3 === 2 ? 0xfde68a : 0x93c5fd, transparent: true, opacity: 0.035 + si * 0.006, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending });
+                streamMat.userData = { baseOpacity: streamMat.opacity, phase: Math.random() * Math.PI * 2 };
+                var streamLine = new THREE.Line(streamGeo, streamMat);
+                streamLine.userData = { drift: (si % 2 ? -1 : 1) * (0.00008 + si * 0.000012) };
+                streamLine.renderOrder = 3;
+                streamlineGroup.add(streamLine);
+                streamlineMats.push(streamMat);
+              }
+            })();
             var sparkleGroup = new THREE.Group(); sparkleGroup.name = 'stellarGlints'; sparkleGroup.renderOrder = 3; armGroup.add(sparkleGroup);
             var sparkleSprites = [];
             var sparkleTex = null;
@@ -1480,10 +1639,35 @@ if (!window._galaxyHasLoadedOnce) {
 
             bhGlow.scale.set(0.25, 0.25, 1); bhGroup.add(bhGlow);
 
-            var blackHoleDrama = { photon: 0.36, lens: 0.18, jet: 0.1 };
-            var photonRings = [], lensingArcs = [], coreJets = [];
+            var blackHoleDrama = { photon: 0.36, lens: 0.18, jet: 0.1, hotspot: 0.32 };
+            var photonRings = [], lensingArcs = [], coreJets = [], accretionHotspots = [];
             var horizon = new THREE.Mesh(new THREE.SphereGeometry(0.018, 32, 32), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.96 }));
             bhGroup.add(horizon);
+
+            var hotCv = document.createElement('canvas'); hotCv.width = 96; hotCv.height = 32;
+            var hotCtx = hotCv.getContext('2d');
+            var hotGrad = hotCtx.createLinearGradient(0, 16, 96, 16);
+            hotGrad.addColorStop(0, 'rgba(255,255,255,0)');
+            hotGrad.addColorStop(0.32, 'rgba(251,146,60,0.34)');
+            hotGrad.addColorStop(0.5, 'rgba(255,255,255,0.92)');
+            hotGrad.addColorStop(0.7, 'rgba(125,211,252,0.22)');
+            hotGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            hotCtx.fillStyle = hotGrad; hotCtx.fillRect(0, 11, 96, 10);
+            var hotCore = hotCtx.createRadialGradient(48, 16, 0, 48, 16, 18);
+            hotCore.addColorStop(0, 'rgba(255,247,173,0.72)');
+            hotCore.addColorStop(1, 'rgba(255,255,255,0)');
+            hotCtx.fillStyle = hotCore; hotCtx.fillRect(28, 0, 40, 32);
+            var hotTex = new THREE.CanvasTexture(hotCv);
+            for (var hi = 0; hi < 16; hi++) {
+              var hotMat = new THREE.SpriteMaterial({ map: hotTex, transparent: true, opacity: 0.12, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, rotation: Math.random() * Math.PI });
+              var hotSpot = new THREE.Sprite(hotMat);
+              var hotRadius = 0.033 + Math.pow(Math.random(), 0.8) * 0.052;
+              hotSpot.scale.set(0.034 + Math.random() * 0.018, 0.008 + Math.random() * 0.004, 1);
+              hotSpot.userData = { angle: Math.random() * Math.PI * 2, radius: hotRadius, speed: 1.8 + Math.random() * 2.3, baseScaleX: hotSpot.scale.x, baseScaleY: hotSpot.scale.y, phase: Math.random() * Math.PI * 2 };
+              hotSpot.renderOrder = 6;
+              bhGroup.add(hotSpot);
+              accretionHotspots.push(hotSpot);
+            }
 
             for (var pr = 0; pr < 3; pr++) {
               var prMat = new THREE.MeshBasicMaterial({ color: pr === 0 ? 0xfff7ad : pr === 1 ? 0xf97316 : 0x7dd3fc, side: THREE.DoubleSide, transparent: true, opacity: blackHoleDrama.photon - pr * 0.08, depthWrite: false, blending: THREE.AdditiveBlending });
@@ -1688,15 +1872,18 @@ if (!window._galaxyHasLoadedOnce) {
               if (armGlowMat) armGlowMat.opacity = visualGlow.arms;
               if (coreFlare && coreFlare.material) coreFlare.material.opacity = visualGlow.core;
               cinematicMotion.foreground = currentObserveMode === 'radio' ? 0.55 : currentObserveMode === 'gravity' ? 0.68 : currentObserveMode === 'xray' ? 0.72 : 1;
+              streamlineGlow = currentObserveMode === 'radio' ? 1.45 : currentObserveMode === 'gravity' ? 1.18 : currentObserveMode === 'infrared' ? 1.05 : currentObserveMode === 'xray' ? 0.62 : 1;
               coreLightBars.forEach(function (bar, idx) { if (bar.material) bar.material.opacity = (bar.userData.baseOpacity || 0.18) * (visualGlow.core / 0.42) * (idx ? 0.82 : 1); });
               deepFieldGlow.galaxies = currentObserveMode === 'xray' ? 0.16 : currentObserveMode === 'radio' ? 0.18 : currentObserveMode === 'gravity' ? 0.24 : currentObserveMode === 'infrared' ? 0.26 : 0.28;
               deepFieldGlow.filaments = currentObserveMode === 'gravity' ? 0.28 : currentObserveMode === 'radio' ? 0.22 : currentObserveMode === 'xray' ? 0.1 : 0.16;
               blackHoleDrama.photon = currentObserveMode === 'xray' ? 0.62 : currentObserveMode === 'gravity' ? 0.28 : currentObserveMode === 'radio' ? 0.18 : 0.36;
               blackHoleDrama.lens = currentObserveMode === 'gravity' ? 0.36 : currentObserveMode === 'xray' ? 0.26 : currentObserveMode === 'radio' ? 0.12 : 0.18;
               blackHoleDrama.jet = currentObserveMode === 'xray' ? 0.28 : currentObserveMode === 'gravity' ? 0.12 : currentObserveMode === 'radio' ? 0.06 : 0.1;
+              blackHoleDrama.hotspot = currentObserveMode === 'xray' ? 0.62 : currentObserveMode === 'infrared' ? 0.38 : currentObserveMode === 'gravity' ? 0.24 : currentObserveMode === 'radio' ? 0.1 : 0.32;
               photonRings.forEach(function (r, idx) { if (r.material) r.material.opacity = Math.max(0, blackHoleDrama.photon - idx * 0.08); });
               lensingArcs.forEach(function (a, idx) { if (a.material) a.material.opacity = Math.max(0, blackHoleDrama.lens - idx * 0.018); });
               coreJets.forEach(function (j, idx) { if (j.material) j.material.opacity = blackHoleDrama.jet * (idx ? 0.72 : 1); });
+              accretionHotspots.forEach(function (h) { if (h.material) h.material.opacity = blackHoleDrama.hotspot * 0.34; });
               if (composer && canvasEl._bloomPass) {
                 canvasEl._bloomPass.strength = currentObserveMode === 'xray' ? 1.85 : currentObserveMode === 'infrared' ? 1.5 : currentObserveMode === 'radio' ? 1.05 : currentObserveMode === 'gravity' ? 1.24 : 1.35;
               }
@@ -1937,6 +2124,8 @@ if (!window._galaxyHasLoadedOnce) {
 
               warpTween = { t0: spherical.theta, p0: spherical.phi, r0: spherical.r, dt: dTheta, dp: toPhi - spherical.phi, dr: toR - spherical.r, start: Date.now(), dur: 1600 };
               cinematicMotion.warp = 1;
+              cinematicMotion.shock = 0;
+              cinematicMotion.aperture = 1;
               warpStreakGroup.visible = true;
 
             };
@@ -1966,12 +2155,31 @@ if (!window._galaxyHasLoadedOnce) {
 
                 updateCamera();
 
+                if (wk > 0.72 && !warpTween.arrivalShock) {
+                  warpTween.arrivalShock = true;
+                  cinematicMotion.shock = 1;
+                  warpShockGroup.visible = true;
+                }
+
                 if (wk >= 1) warpTween = null;
 
               } else if (!isDragging) { spherical.theta -= 0.0003; updateCamera(); }
               starShaderMat.uniforms.uTime.value = elapsed;
               var targetFov = 60 - cinematicMotion.warp * 4.5 + Math.sin(elapsed * 0.18) * 0.35;
               if (Math.abs(camera.fov - targetFov) > 0.02) { camera.fov = targetFov; camera.updateProjectionMatrix(); }
+              if (cinematicMotion.aperture > 0.01) cinematicMotion.aperture *= 0.94;
+              var apertureMode = currentObserveMode === 'xray' ? 0.46 : currentObserveMode === 'gravity' ? 0.22 : currentObserveMode === 'infrared' ? 0.14 : currentObserveMode === 'radio' ? 0.1 : 0.06;
+              var apertureLevel = Math.min(1.5, apertureMode + cinematicMotion.aperture * 0.66 + cinematicMotion.warp * 0.34 + cinematicMotion.shock * 0.24);
+              apertureSweepGroup.visible = apertureLevel > 0.035;
+              apertureSweepSprites.forEach(function (swp, idx) {
+                var su = swp.userData || {};
+                var sweepPulse = 0.7 + 0.3 * Math.sin(elapsed * (0.45 + idx * 0.12) + su.phase);
+                swp.position.x = (su.baseX || 0) + Math.sin(elapsed * 0.18 + idx) * 0.045 + cinematicMotion.warp * (idx - 1) * 0.05;
+                swp.position.y = (su.baseY || 0) + Math.sin(elapsed * 0.24 + su.phase) * 0.018;
+                swp.scale.set((su.baseScaleX || 1) * (1 + apertureLevel * 0.12), (su.baseScaleY || 0.05) * (0.92 + sweepPulse * 0.18), 1);
+                swp.material.rotation = (idx - 1) * 0.11 + Math.sin(elapsed * 0.12 + idx) * 0.025;
+                swp.material.opacity = Math.max(0, (su.baseOpacity || 0.035) * apertureLevel * sweepPulse);
+              });
 
               // Stars orbit per-vertex in the shader (rotation-curve model); the dust/gas
               // pattern deliberately stays fixed so stars visibly stream through the arms —
@@ -1979,6 +2187,13 @@ if (!window._galaxyHasLoadedOnce) {
 
               if (diskSheenMat) diskSheenMat.opacity = Math.max(0, visualGlow.disk + 0.018 * Math.sin(elapsed * 0.45));
               if (armGlowMat) armGlowMat.opacity = Math.max(0, visualGlow.arms + 0.035 * Math.sin(elapsed * 0.62 + 0.8));
+              streamlineGroup.rotation.y += 0.00018 + cinematicMotion.warp * 0.001;
+              streamlineGroup.children.forEach(function (line, idx) {
+                if (!line.material || !line.material.userData) return;
+                line.rotation.y += line.userData.drift;
+                var streamPulse = 0.74 + 0.26 * Math.sin(elapsed * 0.5 + line.material.userData.phase + idx * 0.4);
+                line.material.opacity = Math.max(0, (line.material.userData.baseOpacity || 0.04) * streamlineGlow * streamPulse);
+              });
               if (coreFlare && coreFlare.material) {
                 coreFlare.material.opacity = Math.max(0, visualGlow.core + 0.08 * Math.sin(elapsed * 1.1));
                 coreFlare.material.rotation = elapsed * 0.08;
@@ -2029,6 +2244,22 @@ if (!window._galaxyHasLoadedOnce) {
               } else if (warpStreakGroup.visible) {
                 warpStreakGroup.visible = false;
                 warpStreakSprites.forEach(function (ws) { if (ws.material) ws.material.opacity = 0; });
+              }
+
+              if (cinematicMotion.shock > 0.01) {
+                var shockAge = 1 - cinematicMotion.shock;
+                cinematicMotion.shock *= 0.91;
+                warpShockGroup.visible = true;
+                warpShockRings.forEach(function (ring, idx) {
+                  var ringAge = Math.max(0, Math.min(1, shockAge * 1.35 - ring.userData.delay));
+                  var ringScale = 0.7 + ringAge * (3.2 + idx * 0.45);
+                  ring.scale.set(ringScale, ringScale, 1);
+                  ring.rotation.z += ring.userData.spin;
+                  ring.material.opacity = Math.max(0, (ring.userData.baseOpacity || 0.2) * (1 - ringAge) * cinematicMotion.foreground);
+                });
+              } else if (warpShockGroup.visible) {
+                warpShockGroup.visible = false;
+                warpShockRings.forEach(function (ring) { if (ring.material) ring.material.opacity = 0; });
               }
 
               deepFieldGroup.rotation.y += 0.00008;
@@ -2091,6 +2322,16 @@ if (!window._galaxyHasLoadedOnce) {
                   var jetPulse = 1 + 0.08 * Math.sin(elapsed * 2.1 + idx);
                   j.scale.set(1, jetPulse, 1);
                   if (j.material) j.material.opacity = blackHoleDrama.jet * (idx ? 0.72 : 1) * (0.78 + 0.22 * Math.sin(elapsed * 1.7 + idx));
+                });
+                accretionHotspots.forEach(function (hot, idx) {
+                  var hu = hot.userData || {};
+                  var ha = (hu.angle || 0) + elapsed * (hu.speed || 2);
+                  var hr = (hu.radius || 0.05) * (1 + 0.08 * Math.sin(elapsed * 1.3 + hu.phase));
+                  var hp = 0.62 + 0.38 * Math.sin(elapsed * (1.8 + (idx % 4) * 0.15) + hu.phase);
+                  hot.position.set(Math.cos(ha) * hr, 0.003 * Math.sin(ha * 2.4 + idx), Math.sin(ha) * hr * 0.58);
+                  hot.material.rotation = Math.PI * 0.5 - ha;
+                  hot.material.opacity = Math.max(0, blackHoleDrama.hotspot * (0.38 + hp * 0.58));
+                  hot.scale.set((hu.baseScaleX || 0.035) * (0.82 + hp * 0.42), (hu.baseScaleY || 0.008) * (0.9 + hp * 0.22), 1);
                 });
 
               }
@@ -2365,6 +2606,98 @@ if (!window._galaxyHasLoadedOnce) {
           var activeMission = missionDefs.find(function (m) { return m.id === activeMissionId; }) || missionDefs[0];
           var activeMissionDone = countDone(activeMission.steps);
 
+          var setRealSkyStatus = function (status, message) {
+            if (d.realSkyStatus !== status || (d.realSkyMessage || '') !== (message || '')) {
+              patchGalaxy({ realSkyStatus: status, realSkyMessage: message || '' });
+            }
+          };
+
+          var syncRealSkyAladin = function (el) {
+            var aladin = el && el._galaxyAladin;
+            if (!aladin) return;
+            var signature = activeRealSkyTarget.key + '|' + activeRealSkySurvey.id + '|' + activeRealSkyCatalog.id;
+            if (el._galaxyAladinSignature === signature) return;
+            el._galaxyAladinSignature = signature;
+            try {
+              if (aladin.setFov) aladin.setFov(activeRealSkyTarget.fov);
+              if (aladin.gotoObject) {
+                aladin.gotoObject(activeRealSkyTarget.target, {
+                  success: function () { setRealSkyStatus('ready', activeRealSkyTarget.name + ' loaded from real sky survey data.'); },
+                  error: function () {
+                    if (aladin.gotoRaDec) aladin.gotoRaDec(activeRealSkyTarget.ra, activeRealSkyTarget.dec);
+                    setRealSkyStatus('ready', activeRealSkyTarget.name + ' loaded by coordinates.');
+                  }
+                });
+              } else if (aladin.gotoRaDec) {
+                aladin.gotoRaDec(activeRealSkyTarget.ra, activeRealSkyTarget.dec);
+              }
+            } catch (e) {}
+            try {
+              if (aladin.removeLayers) aladin.removeLayers();
+            } catch (e2) {}
+            try {
+              if (aladin.setImageSurvey) {
+                var surveySet = false;
+                if (aladin.newImageSurvey) {
+                  try {
+                    aladin.setImageSurvey(aladin.newImageSurvey(activeRealSkySurvey.id));
+                    surveySet = true;
+                  } catch (eSurvey) {}
+                }
+                if (!surveySet) aladin.setImageSurvey(activeRealSkySurvey.id);
+              }
+            } catch (e3) {}
+            try {
+              if (window.A && window.A.catalog && window.A.marker && aladin.addCatalog) {
+                var markerCat = window.A.catalog({ name: 'Classroom target', color: '#67e8f9', sourceSize: 10 });
+                markerCat.addSources([window.A.marker(activeRealSkyTarget.ra, activeRealSkyTarget.dec, { popupTitle: activeRealSkyTarget.name, popupDesc: activeRealSkyTarget.story })]);
+                aladin.addCatalog(markerCat);
+              }
+            } catch (e4) {}
+            try {
+              if (activeRealSkyCatalog.id === 'simbad' && window.A && window.A.catalogFromSimbad && aladin.addCatalog) {
+                var cat = window.A.catalogFromSimbad(activeRealSkyTarget.target, Math.min(0.5, Math.max(0.08, activeRealSkyTarget.fov / 4)), { name: 'SIMBAD', color: '#fbbf24', sourceSize: 7, onClick: 'showPopup' });
+                if (cat) aladin.addCatalog(cat);
+              }
+            } catch (e5) {}
+            setRealSkyStatus('ready', activeRealSkyTarget.name + ' loaded from real sky survey data.');
+          };
+
+          var realSkyRefCb = function (el) {
+            if (!el) return;
+            if (!el.id) el.id = 'galaxy-real-sky-aladin';
+            if (el._galaxyAladin) { syncRealSkyAladin(el); return; }
+            setRealSkyStatus('loading', 'Loading Aladin Lite real-sky atlas...');
+            ensureGalaxyAladinLite(function (ok) {
+              if (!el.isConnected) return;
+              if (!ok || !(window.A && window.A.aladin)) {
+                setRealSkyStatus('error', 'Real-sky atlas could not load. The external Aladin Lite service may be blocked or offline.');
+                return;
+              }
+              try {
+                el.innerHTML = '';
+                el._galaxyAladin = window.A.aladin('#' + el.id, {
+                  target: activeRealSkyTarget.target,
+                  survey: activeRealSkySurvey.id,
+                  fov: activeRealSkyTarget.fov,
+                  showReticle: true,
+                  showCooGrid: true,
+                  showSimbadPointerControl: true,
+                  showShareControl: false,
+                  showContextMenu: true,
+                  showFullscreenControl: true,
+                  showLayersControl: true,
+                  showGotoControl: true
+                });
+                el._galaxyAladinSignature = '';
+                syncRealSkyAladin(el);
+                if (typeof awardStemXP === 'function') awardStemXP('galaxy_real_sky', 2, 'Opened real sky survey');
+              } catch (e) {
+                setRealSkyStatus('error', 'Real-sky atlas could not initialize on this device.');
+              }
+            });
+          };
+
 
 
           // ── Toggle handler ──
@@ -2416,7 +2749,7 @@ if (!window._galaxyHasLoadedOnce) {
 
 
 
-          return React.createElement("div", { className: (simMode === 'star' ? 'max-w-7xl' : 'max-w-4xl') + " mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+          return React.createElement("div", { className: ((simMode === 'star' || simMode === 'realSky') ? 'max-w-7xl' : 'max-w-4xl') + " mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
 
             renderTutorial('galaxy', _tutGalaxy),
 
@@ -2430,7 +2763,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex gap-1 ml-auto bg-slate-100 rounded-lg p-0.5" },
 
-                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }, { key: 'metalHunt', icon: '\uD83C\uDF1F', label: 'Metallicity' }].map(function (m) {
+                [{ key: 'galaxy', icon: '\uD83C\uDF0C', label: 'Galaxy' }, { key: 'realSky', icon: '\uD83D\uDD2D', label: 'Real Sky' }, { key: 'star', icon: '\u2B50', label: 'Star Life' }, { key: 'quiz', icon: '\uD83E\uDDE0', label: 'Quiz' }, { key: 'metalHunt', icon: '\uD83C\uDF1F', label: 'Metallicity' }].map(function (m) {
 
                   var isActive = m.key === 'quiz' ? d.quizMode : (!d.quizMode && simMode === m.key);
 
@@ -2468,7 +2801,7 @@ if (!window._galaxyHasLoadedOnce) {
                         if (m.key === 'star') upd("showLifecycle", true);
                         // Canvas Narration: sim mode switch
                         if (typeof canvasNarrate === 'function') {
-                          var modeDesc = m.key === 'galaxy' ? 'Galaxy view. Explore the structure, stars, and nebulae of the Milky Way.' : 'Star Lifecycle. Adjust stellar mass to explore how stars are born, live, and die.';
+                          var modeDesc = m.key === 'galaxy' ? 'Galaxy view. Explore the structure, stars, and nebulae of the Milky Way.' : m.key === 'realSky' ? 'Real Sky. Compare the model with live sky survey imagery and object catalogs.' : m.key === 'metalHunt' ? 'Metallicity. Investigate how star chemistry records galaxy history.' : 'Star Lifecycle. Adjust stellar mass to explore how stars are born, live, and die.';
                           canvasNarrate('galaxy', 'simMode', {
                             first: 'Switched to ' + m.label + '. ' + modeDesc,
                             repeat: m.label + ' mode active.',
@@ -3413,6 +3746,138 @@ if (!window._galaxyHasLoadedOnce) {
               )
 
             ), // end Galaxy Simulation mode wrapper
+
+            !d.quizMode && simMode === 'realSky' && React.createElement("div", { className: "animate-in fade-in duration-300" },
+
+              React.createElement("div", { className: "mb-3 rounded-2xl border bg-slate-950 p-4 shadow-xl", style: { borderColor: 'rgba(14,165,233,0.32)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04), 0 22px 54px rgba(15,23,42,0.22)' } },
+                React.createElement("div", { className: "flex flex-wrap items-start gap-3" },
+                  React.createElement("div", { className: "h-11 w-11 rounded-xl flex items-center justify-center text-xl border", style: { borderColor: 'rgba(125,211,252,0.38)', background: 'radial-gradient(circle at 35% 25%, rgba(125,211,252,0.24), rgba(30,41,59,0.9))' } }, "\uD83D\uDD2D"),
+                  React.createElement("div", { className: "min-w-0 flex-1" },
+                    React.createElement("p", { className: "text-[10px] font-black uppercase tracking-wider text-cyan-200" }, "Real Sky Survey Mode"),
+                    React.createElement("h4", { className: "text-base font-black text-white" }, activeRealSkyTarget.name + " (" + activeRealSkyTarget.short + ")"),
+                    React.createElement("p", { className: "text-[12px] text-slate-300 leading-relaxed mt-1" }, activeRealSkyTarget.story)
+                  ),
+                  React.createElement("a", { href: activeAladinUrl, target: "_blank", rel: "noreferrer", className: "rounded-lg border px-3 py-1.5 text-[11px] font-bold text-cyan-100 hover:bg-cyan-400/10", style: { borderColor: 'rgba(103,232,249,0.35)' } }, "Open in Aladin")
+                ),
+                React.createElement("div", { className: "mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-[11px]" },
+                  React.createElement("div", { className: "rounded-lg border border-cyan-300/20 bg-cyan-300/10 p-2" },
+                    React.createElement("p", { className: "font-black text-cyan-100" }, activeRealSkyTarget.type),
+                    React.createElement("p", { className: "text-slate-300 leading-relaxed mt-1" }, activeRealSkyTarget.bridge)
+                  ),
+                  React.createElement("div", { className: "rounded-lg border border-violet-300/20 bg-violet-300/10 p-2" },
+                    React.createElement("p", { className: "font-black text-violet-100" }, activeRealSkySurvey.label + " survey"),
+                    React.createElement("p", { className: "text-slate-300 leading-relaxed mt-1" }, activeRealSkySurvey.desc)
+                  ),
+                  React.createElement("div", { className: "rounded-lg border border-amber-300/20 bg-amber-300/10 p-2" },
+                    React.createElement("p", { className: "font-black text-amber-100" }, activeRealSkyCatalog.label),
+                    React.createElement("p", { className: "text-slate-300 leading-relaxed mt-1" }, activeRealSkyCatalog.desc)
+                  )
+                )
+              ),
+
+              React.createElement("div", { className: "mb-3 rounded-xl border border-cyan-100 bg-white p-3 shadow-sm" },
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2" },
+                  React.createElement("span", { className: "text-base", "aria-hidden": "true" }, "\uD83E\uDDEA"),
+                  React.createElement("p", { className: "text-xs font-black text-slate-800" }, "Real Data Lesson Prompt"),
+                  React.createElement("span", { className: "ml-auto rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-bold text-cyan-700" }, activeRealSkyTarget.short)
+                ),
+                React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-2" },
+                  (activeRealSkyTarget.lesson || []).map(function (prompt, idx) {
+                    return React.createElement("div", { key: activeRealSkyTarget.key + "-lesson-" + idx, className: "rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-[11px] text-slate-700 leading-relaxed" },
+                      React.createElement("span", { className: "font-black text-cyan-700 mr-1" }, (idx + 1) + "."),
+                      prompt
+                    );
+                  })
+                )
+              ),
+
+              React.createElement("div", { className: "grid grid-cols-1 xl:grid-cols-[260px_1fr] gap-3" },
+                React.createElement("div", { className: "space-y-3" },
+                  React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
+                    React.createElement("p", { className: "text-xs font-black text-slate-800 mb-2" }, "Targets"),
+                    React.createElement("div", { className: "grid grid-cols-2 xl:grid-cols-1 gap-1.5" },
+                      REAL_SKY_TARGETS.map(function (target) {
+                        var on = target.key === activeRealSkyTarget.key;
+                        return React.createElement("button", {
+                          type: "button",
+                          key: target.key,
+                          onClick: function () { patchGalaxy({ realSkyTarget: target.key, realSkyStatus: 'idle', realSkyMessage: '' }); },
+                          className: "text-left rounded-lg border px-2.5 py-2 transition-all " + (on ? "bg-slate-900 text-white border-slate-900 shadow-sm" : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-white")
+                        },
+                          React.createElement("span", { className: "block text-[11px] font-black leading-tight" }, target.short + " " + target.name),
+                          React.createElement("span", { className: "block text-[10px] leading-tight mt-0.5 opacity-70" }, target.type)
+                        );
+                      })
+                    )
+                  ),
+                  React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
+                    React.createElement("p", { className: "text-xs font-black text-slate-800 mb-2" }, "Survey Light"),
+                    React.createElement("div", { className: "space-y-1.5" },
+                      REAL_SKY_SURVEYS.map(function (survey) {
+                        var on = survey.id === activeRealSkySurvey.id;
+                        return React.createElement("button", {
+                          type: "button",
+                          key: survey.id,
+                          onClick: function () { patchGalaxy({ realSkySurvey: survey.id, realSkyStatus: 'idle', realSkyMessage: '' }); },
+                          className: "w-full text-left rounded-lg border px-2.5 py-2 text-[11px] font-bold transition-all " + (on ? "bg-cyan-50 text-cyan-800 border-cyan-300" : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-white")
+                        }, survey.label, React.createElement("span", { className: "block text-[10px] font-semibold opacity-70" }, survey.desc));
+                      })
+                    )
+                  ),
+                  React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
+                    React.createElement("p", { className: "text-xs font-black text-slate-800 mb-2" }, "Catalog Overlay"),
+                    React.createElement("div", { className: "space-y-1.5" },
+                      REAL_SKY_CATALOGS.map(function (catalog) {
+                        var on = catalog.id === activeRealSkyCatalog.id;
+                        return React.createElement("button", {
+                          type: "button",
+                          key: catalog.id,
+                          onClick: function () { patchGalaxy({ realSkyCatalog: catalog.id, realSkyStatus: 'idle', realSkyMessage: '' }); },
+                          className: "w-full text-left rounded-lg border px-2.5 py-2 text-[11px] font-bold transition-all " + (on ? "bg-amber-50 text-amber-800 border-amber-300" : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-white")
+                        }, catalog.label, React.createElement("span", { className: "block text-[10px] font-semibold opacity-70" }, catalog.desc));
+                      })
+                    )
+                  )
+                ),
+
+                React.createElement("div", { className: "min-w-0" },
+                  React.createElement("div", { className: "relative rounded-2xl overflow-hidden border bg-slate-950 shadow-2xl", style: { borderColor: 'rgba(14,165,233,0.32)' } },
+                    React.createElement("div", { key: activeRealSkyTarget.key + "-" + activeRealSkySurvey.id + "-" + activeRealSkyCatalog.id + "-" + realSkyRetry, id: "galaxy-real-sky-aladin", ref: realSkyRefCb, style: { height: 590, minHeight: 420, background: 'radial-gradient(circle at 50% 35%, rgba(14,165,233,0.2), rgba(2,6,23,0.98) 62%)' } }),
+                    realSkyStatus !== 'ready' && React.createElement("div", { className: "absolute inset-0 flex items-center justify-center p-6 text-center", style: { pointerEvents: realSkyStatus === 'error' ? 'auto' : 'none', background: realSkyStatus === 'error' ? 'rgba(2,6,23,0.86)' : 'linear-gradient(180deg, rgba(2,6,23,0.62), rgba(2,6,23,0.34))' } },
+                      React.createElement("div", { className: "max-w-sm rounded-xl border border-cyan-300/20 bg-slate-950/80 p-4 text-white shadow-xl" },
+                        React.createElement("p", { className: "text-xl mb-1" }, realSkyStatus === 'error' ? "\u26A0\uFE0F" : "\uD83D\uDD2D"),
+                        React.createElement("p", { className: "text-sm font-black text-cyan-100" }, realSkyStatus === 'error' ? "Real-sky atlas unavailable" : "Connecting to real sky surveys"),
+                        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed mt-1" }, realSkyMessage || "Loading Aladin Lite, sky survey tiles, and catalog services."),
+                        realSkyStatus === 'error' && React.createElement("div", { className: "mt-3 flex flex-wrap items-center justify-center gap-2" },
+                          React.createElement("button", { type: "button", onClick: function () { patchGalaxy({ realSkyStatus: 'idle', realSkyMessage: '', realSkyRetry: realSkyRetry + 1 }); }, className: "rounded-lg border border-cyan-200/50 bg-cyan-400/15 px-3 py-1.5 text-[11px] font-bold text-cyan-50 hover:bg-cyan-400/25" }, "Retry atlas"),
+                          React.createElement("a", { href: activeAladinUrl, target: "_blank", rel: "noreferrer", className: "inline-block rounded-lg bg-cyan-500 px-3 py-1.5 text-[11px] font-bold text-white" }, "Open external atlas")
+                        )
+                      )
+                    )
+                  ),
+
+                  React.createElement("div", { className: "mt-3 grid grid-cols-1 md:grid-cols-3 gap-2" },
+                    [
+                      { title: 'Observe it', body: 'Move this target into Night Sky & Astronomy to compare real survey data with telescope expectations.', action: 'Astronomy', onClick: function () {
+                        setLabToolData(function (prev) { return Object.assign({}, prev, { astronomy: Object.assign({}, prev.astronomy || {}, { tab: 'observe', eyepieceTarget: activeRealSkyTarget.astronomyTarget || 'andromeda' }) }); });
+                        setStemLabTool('astronomy');
+                      } },
+                      { title: 'Place it in time', body: 'Jump to Universe to connect this object with cosmic history, redshift, galaxy formation, and deep-field scale.', action: 'Universe', onClick: function () {
+                        setLabToolData(function (prev) { return Object.assign({}, prev, { universe: Object.assign({}, prev.universe || {}, { showImages: true }) }); });
+                        setStemLabTool('universe');
+                      } },
+                      { title: 'Analyze data', body: 'Use Data Lab for the next step: spectra, brightness, color, classification, and student research questions.', action: 'Data Lab', onClick: function () { setStemLabTool('dataLab'); } }
+                    ].map(function (card) {
+                      return React.createElement("div", { key: card.title, className: "rounded-xl border border-slate-200 bg-white p-3 shadow-sm" },
+                        React.createElement("p", { className: "text-xs font-black text-slate-800" }, card.title),
+                        React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed mt-1" }, card.body),
+                        React.createElement("button", { type: "button", onClick: card.onClick, className: "mt-2 rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100" }, card.action + " \u2192")
+                      );
+                    })
+                  )
+                )
+              )
+            ),
 
 // ── Quiz mode ──
 

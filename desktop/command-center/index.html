@@ -152,6 +152,8 @@
             <dl class="kv tight">
               <dt>Status</dt><dd id="engine-phase">-</dd>
               <dt>Model</dt><dd id="engine-model">-</dd>
+              <dt>Context</dt><dd id="engine-context">-</dd>
+              <dt>Fallback</dt><dd id="engine-fallback-state">-</dd>
               <dt>Disk free</dt><dd id="engine-disk">-</dd>
             </dl>
             <label for="engine-model-select">AI model</label>
@@ -197,8 +199,13 @@
             </div>
             <div class="button-row">
               <button id="engine-start" type="button">Start engine</button>
+              <button id="engine-probe" type="button">Check local model</button>
               <button id="engine-stop" type="button">Stop</button>
             </div>
+            <label class="check-row" for="engine-cloud-fallback">
+              <input id="engine-cloud-fallback" type="checkbox">
+              <span>Use checked local model when cloud text AI hits rate limits</span>
+            </label>
             <pre id="engine-result" class="result" aria-live="polite">Local text AI with nothing else to install: the runtime downloads llama-server plus a small model once (about 2 GB), then serves it privately on this device. Select the "AlloFlow Built-in Engine" provider to use it.</pre>
           </section>
         </div>
@@ -362,8 +369,10 @@
         <section class="panel wide">
           <h2>Diagnostics</h2>
           <div class="button-row">
+            <button id="copy-readiness" type="button">Copy Readiness Report</button>
             <button id="copy-diagnostics" type="button">Copy Diagnostics</button>
           </div>
+          <pre id="readiness-result" class="result" aria-live="polite">Readiness checks local-first classroom features without changing settings.</pre>
           <pre id="diagnostics-result" class="result" aria-live="polite">Diagnostics are redacted before copying.</pre>
         </section>
       </section>

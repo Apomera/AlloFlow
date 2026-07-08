@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-22010-the-tribes-and-castes-of-the-central-provinces-of-india-volume-2",
+  "title": "The Tribes and Castes of the Central Provinces of India, Volume 2",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Caste -- India -- Madhya Pradesh",
+    "Ethnology -- India -- Madhya Pradesh",
+    "Madhya Pradesh (India) -- Religion",
+    "Madhya Pradesh (India) -- Scheduled tribes"
+  ],
+  "authors": [
+    "Russell, R. V. (Robert Vane)"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/22010"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Tribes and Castes of the Central Provinces of India, Volume 2\" by Russell, R. V. (Robert Vane). Metadata tags include: Caste -- India -- Madhya Pradesh; Ethnology -- India -- Madhya Pradesh; Madhya Pradesh (India) -- Religion; Madhya Pradesh (India) -- Scheduled tribes."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 94
+  }
+}

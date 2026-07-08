@@ -1,0 +1,53 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "gutenberg-ebook-75883-the-roll-of-honour-volume-1-b-a-biographical-record-of-all-membe",
+  "title": "The Roll of Honour, Volume 1 : $b A biographical record of all members of His Majesty's naval and military forces who have fallen in the war",
+  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "gutenberg",
+  "contentType": "public-domain-catalog-card",
+  "subjects": [
+    "Soldiers -- Great Britain -- Biography",
+    "World War, 1914-1918 -- Registers of dead -- Great Britain"
+  ],
+  "authors": [
+    "Ruvigny et Raineval, Melville Henry Massue, marquis de"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Project Gutenberg",
+  "license": "Public Domain in the U.S. / Project Gutenberg License",
+  "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+  "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/75883"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Project Gutenberg catalog record for \"The Roll of Honour, Volume 1 : $b A biographical record of all members of His Majesty's naval and military forces who have fallen in the war\" by Ruvigny et Raineval, Melville Henry Massue, marquis de. Metadata tags include: Soldiers -- Great Britain -- Biography; World War, 1914-1918 -- Registers of dead -- Great Britain."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 105
+  }
+}

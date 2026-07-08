@@ -392,7 +392,41 @@ var d = labToolData.brainAtlas || {};
 
                 { id: 'parietal_radiation_visual', name: t('stem.brainatlas.visual_parietal_radiation', 'Parietal Optic Radiation'), x: 0.74, y: 0.34, w: 0.08, fn: 'Parietal optic radiations carry inferior visual-field information from the contralateral side. The mnemonic is "pie on the floor" for parietal-lobe lesions.', brodmann: 'Optic radiation to V1', blood: 'Middle cerebral artery superior division and posterior cerebral artery contributions.', conditions: 'Parietal stroke can combine inferior quadrantanopia with sensory loss, neglect, or spatial deficits depending on hemisphere.', damage: 'Parietal radiation damage causes contralateral inferior quadrantanopia: a "pie on the floor" field cut.' },
 
-                { id: 'v1_visual_path', name: t('stem.brainatlas.visual_primary_visual_cortex', 'Primary Visual Cortex (V1)'), x: 0.88, y: 0.50, w: 0.08, fn: 'Primary visual cortex sits along the calcarine sulcus in the occipital lobe. It receives a precise map of the contralateral visual field; the macula has a large posterior representation.', brodmann: 'BA 17', blood: 'Posterior cerebral artery; macular area can receive collateral middle cerebral artery supply.', conditions: 'PCA stroke causes contralateral homonymous hemianopia, sometimes with macular sparing. Bilateral occipital damage can cause cortical blindness.', damage: 'V1 lesion causes contralateral homonymous field loss. Macular sparing may occur because central vision has dual/collateral blood supply.' }
+                { id: 'v1_visual_path', name: t('stem.brainatlas.visual_primary_visual_cortex', 'Primary Visual Cortex (V1)'), x: 0.88, y: 0.50, w: 0.08, fn: 'Primary visual cortex sits along the calcarine sulcus in the occipital lobe. It receives a precise map of the contralateral visual field; the macula has a large posterior representation.', brodmann: 'BA 17', blood: 'Posterior cerebral artery; macular area can receive collateral middle cerebral artery supply.', conditions: 'PCA stroke causes contralateral homonymous hemianopia, sometimes with macular sparing. Bilateral occipital damage can cause cortical blindness.', damage: 'V1 lesion causes contralateral homonymous field loss. Macular sparing may occur because central vision has dual/collateral blood supply.' },
+
+                { id: 'field_cut_decoder_visual', name: t('stem.brainatlas.visual_field_cut_decoder', 'Field-Cut Decoder'), x: 0.50, y: 0.15, w: 0.12, fn: 'A fast localization rule for visual-field deficits. Before the chiasm, the loss is usually monocular. At the chiasm, crossing nasal retinal fibers create bitemporal hemianopia. After the chiasm, deficits are homonymous: the same side of visual space is lost in both eyes. Temporal Meyer loop lesions cut the superior visual field ("pie in the sky"); parietal radiations tend to cut the inferior field ("pie on the floor"); occipital V1 lesions may show macular sparing.', brodmann: 'Clinical localization guide across retina, optic nerve, chiasm, tract, radiations, and V1', blood: 'Depends on the affected segment: ophthalmic/retinal circulation, hypophyseal/chiasmal branches, anterior choroidal, MCA radiations, or PCA occipital territory.', conditions: 'Useful for localizing optic neuritis, pituitary compression, optic tract lesions, temporal/parietal lobe injury, PCA stroke, and surgical risk around optic radiations.', damage: 'The field pattern localizes the lesion: one eye before chiasm, both temporal fields at chiasm, same-side field loss after chiasm, quadrant patterns in optic radiations, and homonymous loss with possible macular sparing in V1.' }
+
+              ]
+
+            },
+
+            languageNetwork: {
+
+              name: t('stem.brainatlas.language_network', 'Language Network'), desc: t('stem.brainatlas.language_network_desc', 'Dominant-hemisphere speech, comprehension, reading, and repetition circuit'),
+
+              isLanguageNetwork: true,
+
+              regions: [
+
+                { id: 'auditory_language', name: t('stem.brainatlas.language_auditory_word_input', 'Auditory Word Input'), x: 0.22, y: 0.62, w: 0.08, fn: 'Primary auditory cortex and superior temporal input decode speech sounds before the language network maps them onto word meaning. This is the spoken-language entry point for the dominant hemisphere.', brodmann: 'BA 41/42 plus superior temporal language cortex', blood: 'Middle cerebral artery inferior division and temporal branches.', conditions: 'Pure word deafness or auditory verbal agnosia can make spoken words hard to understand even when hearing itself is partly preserved.', damage: 'Impaired understanding of spoken words, especially when auditory association cortex or its connections are injured.' },
+
+                { id: 'wernicke_language', name: t('stem.brainatlas.language_wernicke_area', 'Wernicke Area'), x: 0.39, y: 0.53, w: 0.08, fn: 'Posterior superior temporal cortex links word sounds to meaning. It is the classic comprehension hub for spoken language and connects with frontal speech planning through the arcuate fasciculus.', brodmann: 'BA 22 dominant hemisphere', blood: 'Middle cerebral artery inferior division.', conditions: 'Wernicke aphasia: fluent output with poor comprehension, poor repetition, and paraphasic or nonsensical speech.', damage: 'Fluent but poorly meaningful speech, impaired comprehension, poor repetition, and limited awareness of errors.' },
+
+                { id: 'angular_language', name: t('stem.brainatlas.language_angular_gyrus', 'Angular Gyrus'), x: 0.54, y: 0.39, w: 0.08, fn: 'Angular gyrus integrates visual, semantic, numeric, and written-language information. It helps convert seen words into meaning and supports reading, writing, calculation, and naming.', brodmann: 'BA 39 dominant inferior parietal lobule', blood: 'Middle cerebral artery angular branch and posterior border-zone supply.', conditions: 'Gerstmann syndrome, alexia with agraphia, anomia, and semantic reading/writing problems can involve this region.', damage: 'Reading, writing, calculation, naming, and multimodal semantic integration deficits.' },
+
+                { id: 'supramarginal_language', name: t('stem.brainatlas.language_supramarginal_gyrus', 'Supramarginal Gyrus'), x: 0.52, y: 0.58, w: 0.08, fn: 'Supramarginal gyrus supports phonological working memory: holding word sounds in mind long enough to repeat, compare, and assemble them for speech.', brodmann: 'BA 40 dominant inferior parietal lobule', blood: 'Middle cerebral artery inferior division.', conditions: 'Conduction aphasia can involve supramarginal cortex, arcuate fasciculus, or their shared network.', damage: 'Poor repetition, phonemic paraphasias, and trouble keeping sound sequences stable.' },
+
+                { id: 'arcuate_language', name: t('stem.brainatlas.language_arcuate_fasciculus', 'Arcuate Fasciculus'), x: 0.56, y: 0.48, w: 0.08, fn: 'The arcuate fasciculus is a white-matter tract linking posterior comprehension areas with frontal speech planning. It is especially important for repetition.', brodmann: 'Dominant-hemisphere association white matter tract', blood: 'Middle cerebral artery long association fiber territory.', conditions: 'Conduction aphasia: fluent speech and relatively good comprehension but poor repetition, often with phonemic errors.', damage: 'Poor repetition, phonemic paraphasias, and difficulty relaying heard language into planned output.' },
+
+                { id: 'broca_language', name: t('stem.brainatlas.language_broca_area', 'Broca Area'), x: 0.70, y: 0.43, w: 0.08, fn: 'Inferior frontal cortex plans and sequences speech output. It turns intended meaning into a motor speech program and supports grammar, articulation planning, and verbal fluency.', brodmann: 'BA 44/45 dominant inferior frontal gyrus', blood: 'Middle cerebral artery superior division.', conditions: 'Broca aphasia: nonfluent, effortful speech with relatively preserved comprehension and impaired repetition.', damage: 'Nonfluent aphasia, agrammatism, impaired repetition, speech frustration, and sometimes right face/arm weakness from nearby motor cortex.' },
+
+                { id: 'motor_speech_language', name: t('stem.brainatlas.language_motor_speech_cortex', 'Motor Speech Cortex'), x: 0.84, y: 0.34, w: 0.08, fn: 'Lower precentral gyrus drives lips, tongue, jaw, larynx, and face for speech execution. It is the output edge of the language network.', brodmann: 'BA 4 lower precentral gyrus', blood: 'Middle cerebral artery lateral motor territory.', conditions: 'Dysarthria, apraxia of speech, or face/tongue weakness can follow injury near this region.', damage: 'Weak or imprecise articulation, impaired speech motor sequencing, or contralateral lower facial weakness.' },
+
+                { id: 'visual_word_language', name: t('stem.brainatlas.language_visual_word_input', 'Visual Word Input'), x: 0.20, y: 0.30, w: 0.08, fn: 'Occipital and ventral occipitotemporal systems begin reading by recognizing letters and word forms before sending them into semantic language cortex.', brodmann: 'Visual cortex and ventral occipitotemporal word-form region', blood: 'Posterior cerebral artery and posterior MCA/PCA border-zone supply.', conditions: 'Alexia without agraphia can occur when visual word input is disconnected from dominant language cortex.', damage: 'Reading impairment with variable spelling or writing effects depending on whether the language network remains connected.' },
+
+                { id: 'semantic_language', name: t('stem.brainatlas.language_semantic_network', 'Semantic Network'), x: 0.40, y: 0.31, w: 0.08, fn: 'Temporal and inferior parietal association cortex stores and retrieves word meaning. It helps connect names, concepts, categories, and context.', brodmann: 'Temporal and parietal association cortex', blood: 'Middle cerebral and posterior cerebral artery branches.', conditions: 'Anomic aphasia, semantic dementia, temporal-lobe seizures, and tumor can disrupt naming or word meaning.', damage: 'Word-finding trouble, loss of concept knowledge, naming errors, or impaired comprehension of meaning.' },
+
+                { id: 'aphasia_cards_language', name: t('stem.brainatlas.language_aphasia_clue_cards', 'Aphasia Clue Cards'), x: 0.50, y: 0.84, w: 0.08, fn: 'Classic bedside aphasia patterns help localize language network injury. Fluency, comprehension, repetition, naming, reading, and writing are tested together.', brodmann: 'Clinical pattern map', blood: 'Depends on cortical, subcortical, and white-matter territory.', conditions: 'Stroke is the common acute cause; seizure, migraine, tumor, infection, and neurodegeneration can mimic or evolve into aphasia patterns.', damage: 'Use fluency, comprehension, repetition, naming, reading, and writing to distinguish Broca, Wernicke, conduction, global, transcortical, and anomic aphasia.' }
 
               ]
 
@@ -604,7 +638,7 @@ var d = labToolData.brainAtlas || {};
 
             crossLateral: {
 
-              name: t('stem.brainatlas.cross_lateralization', '\uD83D\uDD00 Cross-Lateralization'), desc: t('stem.brainatlas.how_each_hemisphere_controls_the_oppos', 'How each hemisphere controls the opposite side of the body'),
+              name: t('stem.brainatlas.cross_lateralization', '\uD83D\uDD00 Cross-Lateralization'), desc: t('stem.brainatlas.how_each_hemisphere_controls_the_oppos', 'How each hemisphere controls the opposite side of the body and shares information through the corpus callosum'),
 
               isCrossLateral: true,
 
@@ -622,7 +656,9 @@ var d = labToolData.brainAtlas || {};
 
                 { id: 'handedness_lat', name: t('stem.brainatlas.handedness_motor_dominance', 'Handedness & Motor Dominance'), x: 0.72, y: 0.35, w: 0.08, fn: 'Hand preference is determined primarily by contralateral motor cortex specialization. Left hemisphere motor cortex controls the right hand (dominant in ~90% of humans). The dominant hemisphere shows larger cortical representation for the preferred hand (expanded motor homunculus). Handedness correlates with but does not perfectly predict language lateralization. Mixed handedness (ambidexterity) is associated with subtle differences in interhemispheric connectivity.', conditions: 'Forced handedness change: historically attempted, now recognized as harmful. Pathological left-handedness: early left-hemisphere damage causing shift to left-hand dominance. Mirror writing (Leonardo da Vinci): more natural for left-handers, facilitated by right-hemisphere spatial processing.', damage: 'Lesion to dominant motor cortex causes contralateral hand weakness/clumsiness. Recovery depends on plasticity and interhemispheric compensation via corpus callosum.' },
 
-                { id: 'split_brain', name: t('stem.brainatlas.split_brain_phenomenon', 'Split-Brain Phenomenon'), x: 0.50, y: 0.18, w: 0.10, fn: 'When the corpus callosum is severed (callosotomy, performed for intractable epilepsy), each hemisphere operates independently. In split-brain patients: objects presented to the right visual field (left hemisphere) can be named verbally, but objects in the left visual field (right hemisphere) cannot be named but can be identified by touch with the left hand. Demonstrates the modular nature of hemispheric specialization and that consciousness may have dual aspects.', conditions: 'Split-brain syndrome: cannot verbally name objects in left visual field, left-hand tactile anomia, inability to match objects across visual fields. Alien hand syndrome: one hand acts contrary to conscious intention (usually left hand). These effects are most dramatic in lab testing \u2014 daily life compensation is remarkably good.', damage: 'Callosotomy eliminates interhemispheric seizure spread (therapeutic) but creates disconnection: each hemisphere has independent awareness, emotional responses, and decision-making.' }
+                { id: 'split_brain', name: t('stem.brainatlas.split_brain_phenomenon', 'Split-Brain Phenomenon'), x: 0.50, y: 0.18, w: 0.10, fn: 'When the corpus callosum is severed (callosotomy, performed for intractable epilepsy), each hemisphere operates more independently. Classic Sperry and Gazzaniga split-brain studies used fixation tasks to flash stimuli into one visual field. Objects presented to the right visual field (left hemisphere) can often be named verbally, while objects in the left visual field (right hemisphere) may not be named but can be identified by touch with the left hand. This demonstrates hemispheric specialization and interhemispheric transfer.', conditions: 'Split-brain syndrome: cannot verbally name objects in left visual field, left-hand tactile anomia, inability to match objects across visual fields. Alien hand syndrome: one hand acts contrary to conscious intention (usually left hand). These effects are most dramatic in lab testing; daily life compensation can be remarkably good.', damage: 'Callosotomy can reduce interhemispheric seizure spread but creates disconnection: sensory information, language report, and motor choices can separate when the corpus callosum cannot share information.' },
+
+                { id: 'fixation_task_cross', name: t('stem.brainatlas.split_brain_fixation_task', 'Split-Brain Fixation Task'), x: 0.50, y: 0.65, w: 0.12, fn: 'In a split-brain fixation task, the patient keeps looking at a central point while a word or object flashes briefly to one visual field. A KEY flashed in the left visual field projects first to the right hemisphere. With an intact corpus callosum, that information can transfer to left-language cortex, so speech can name KEY. After callosotomy, speech may not name the KEY, while the left hand can still choose the matching object.', conditions: 'This task structure made hemispheric specialization visible in classic split-brain research: visual field, hemisphere, verbal report, and hand choice can be separated experimentally.', damage: 'Without callosal transfer, right-hemisphere visual information may guide the left hand but fail to reach dominant left-hemisphere speech systems.' }
 
               ]
 
@@ -2689,11 +2725,224 @@ var d = labToolData.brainAtlas || {};
                   ctx.restore();
                 }
 
+                function decoderChip(x, y, w, title, body, color) {
+                  ctx.save();
+                  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+                  ctx.strokeStyle = color + '88';
+                  ctx.lineWidth = 1;
+                  ctx.beginPath(); ctx.roundRect(x, y, w, H * 0.055, 8); ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = color;
+                  ctx.font = 'bold ' + Math.round(6.3 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(title, x + w / 2, y + H * 0.020);
+                  ctx.fillStyle = '#475569';
+                  ctx.font = Math.round(5.8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(body, x + w / 2, y + H * 0.040);
+                  ctx.restore();
+                }
+
+                ctx.save();
+                var decoderX = W * 0.055;
+                var decoderY = H * 0.112;
+                var decoderW = W * 0.89;
+                ctx.fillStyle = 'rgba(15,23,42,0.84)';
+                ctx.beginPath(); ctx.roundRect(decoderX, decoderY, decoderW, H * 0.050, 10); ctx.fill();
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = 'bold ' + Math.round(8.2 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('FIELD-CUT DECODER', decoderX + W * 0.014, decoderY + H * 0.032);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = Math.round(6.5 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('pattern -> lesion level', decoderX + W * 0.175, decoderY + H * 0.032);
+                ctx.restore();
+
+                var chipY = H * 0.155;
+                var chipW = W * 0.150;
+                decoderChip(W * 0.095, chipY, chipW, 'Before chiasm', 'one eye', '#7c3aed');
+                decoderChip(W * 0.270, chipY, chipW, 'Chiasm', 'bitemporal', '#f59e0b');
+                decoderChip(W * 0.445, chipY, chipW, 'After chiasm', 'homonymous', '#0f766e');
+                decoderChip(W * 0.620, chipY, chipW, 'Temporal loop', 'pie in sky', '#ef4444');
+                decoderChip(W * 0.795, chipY, chipW, 'Parietal / V1', 'floor / macula', '#2563eb');
+
                 fieldCard(W * 0.035, H * 0.765, 'Optic nerve', 'all', null, '#7c3aed');
                 fieldCard(W * 0.195, H * 0.765, 'Chiasm', 'temporalLeft', 'temporalRight', '#f59e0b');
                 fieldCard(W * 0.355, H * 0.765, 'Optic tract', 'rightHalf', 'rightHalf', '#0f766e');
                 fieldCard(W * 0.515, H * 0.765, 'Meyer loop', 'upperRight', 'upperRight', '#ef4444');
                 fieldCard(W * 0.675, H * 0.765, 'Parietal/V1', 'lowerRight', 'rightHalfMacula', '#2563eb');
+
+              } else if (currentView.isLanguageNetwork) {
+
+                var langT = canvas._brainTick || 0;
+                var inputColor = '#2563eb';
+                var meaningColor = '#14b8a6';
+                var outputColor = '#7c3aed';
+                var warningColor = '#ef4444';
+                var tractColor = '#f59e0b';
+
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillRect(0, 0, W, H);
+                var langGrad = ctx.createLinearGradient(0, 0, W, H);
+                langGrad.addColorStop(0, 'rgba(37,99,235,0.14)');
+                langGrad.addColorStop(0.48, 'rgba(255,255,255,0.94)');
+                langGrad.addColorStop(1, 'rgba(124,58,237,0.13)');
+                ctx.fillStyle = langGrad;
+                ctx.fillRect(0, 0, W, H);
+
+                ctx.fillStyle = '#0f172a';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold ' + Math.round(18 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('Dominant-hemisphere language network', W * 0.5, H * 0.055);
+                ctx.fillStyle = '#64748b';
+                ctx.font = Math.round(10.5 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('Trace reading and hearing into meaning, repetition, speech planning, and motor output.', W * 0.5, H * 0.092);
+
+                ctx.save();
+                ctx.fillStyle = 'rgba(255,255,255,0.72)';
+                ctx.strokeStyle = 'rgba(148,163,184,0.35)';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(W * 0.13, H * 0.46);
+                ctx.bezierCurveTo(W * 0.15, H * 0.22, W * 0.36, H * 0.14, W * 0.58, H * 0.16);
+                ctx.bezierCurveTo(W * 0.84, H * 0.18, W * 0.91, H * 0.35, W * 0.86, H * 0.54);
+                ctx.bezierCurveTo(W * 0.82, H * 0.72, W * 0.55, H * 0.76, W * 0.34, H * 0.70);
+                ctx.bezierCurveTo(W * 0.18, H * 0.66, W * 0.11, H * 0.56, W * 0.13, H * 0.46);
+                ctx.fill();
+                ctx.stroke();
+                ctx.strokeStyle = 'rgba(124,58,237,0.18)';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.moveTo(W * 0.39, H * 0.18);
+                ctx.bezierCurveTo(W * 0.31, H * 0.31, W * 0.34, H * 0.53, W * 0.46, H * 0.69);
+                ctx.stroke();
+                ctx.strokeStyle = 'rgba(20,184,166,0.18)';
+                ctx.beginPath();
+                ctx.moveTo(W * 0.55, H * 0.17);
+                ctx.bezierCurveTo(W * 0.48, H * 0.32, W * 0.51, H * 0.53, W * 0.63, H * 0.67);
+                ctx.stroke();
+                ctx.restore();
+
+                var langNodes = {
+                  visual_word_language: { x: W * 0.20, y: H * 0.30, w: W * 0.145, h: H * 0.070, color: inputColor, label: 'Visual word', sub: 'reading input' },
+                  auditory_language: { x: W * 0.22, y: H * 0.62, w: W * 0.145, h: H * 0.070, color: inputColor, label: 'Auditory word', sub: 'speech sounds' },
+                  semantic_language: { x: W * 0.40, y: H * 0.31, w: W * 0.150, h: H * 0.070, color: meaningColor, label: 'Semantic hub', sub: 'meaning' },
+                  wernicke_language: { x: W * 0.39, y: H * 0.53, w: W * 0.150, h: H * 0.070, color: meaningColor, label: 'Wernicke', sub: 'comprehension' },
+                  angular_language: { x: W * 0.55, y: H * 0.39, w: W * 0.145, h: H * 0.070, color: '#0ea5e9', label: 'Angular', sub: 'reading/writing' },
+                  supramarginal_language: { x: W * 0.53, y: H * 0.58, w: W * 0.160, h: H * 0.070, color: '#0891b2', label: 'Supramarginal', sub: 'phonology' },
+                  arcuate_language: { x: W * 0.57, y: H * 0.49, w: W * 0.145, h: H * 0.066, color: tractColor, label: 'Arcuate', sub: 'repetition tract' },
+                  broca_language: { x: W * 0.72, y: H * 0.43, w: W * 0.135, h: H * 0.070, color: outputColor, label: 'Broca', sub: 'speech plan' },
+                  motor_speech_language: { x: W * 0.85, y: H * 0.34, w: W * 0.135, h: H * 0.070, color: outputColor, label: 'Motor speech', sub: 'mouth output' }
+                };
+
+                function langPoint(id) {
+                  var n = langNodes[id];
+                  return [n.x, n.y];
+                }
+
+                function bezierPoint(p0, p1, p2, p3, f) {
+                  var inv = 1 - f;
+                  return [
+                    inv * inv * inv * p0[0] + 3 * inv * inv * f * p1[0] + 3 * inv * f * f * p2[0] + f * f * f * p3[0],
+                    inv * inv * inv * p0[1] + 3 * inv * inv * f * p1[1] + 3 * inv * f * f * p2[1] + f * f * f * p3[1]
+                  ];
+                }
+
+                function langCurve(fromId, toId, c1x, c1y, c2x, c2y, color, phase, width) {
+                  var a = langPoint(fromId);
+                  var b = langPoint(toId);
+                  var c1 = [W * c1x, H * c1y];
+                  var c2 = [W * c2x, H * c2y];
+                  ctx.save();
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = width || 3.5;
+                  ctx.lineCap = 'round';
+                  ctx.shadowColor = color + '55';
+                  ctx.shadowBlur = 7;
+                  ctx.beginPath();
+                  ctx.moveTo(a[0], a[1]);
+                  ctx.bezierCurveTo(c1[0], c1[1], c2[0], c2[1], b[0], b[1]);
+                  ctx.stroke();
+                  if (!brainMotionReduced) {
+                    var f = ((langT * 0.006 + (phase || 0)) % 1);
+                    var dot = bezierPoint(a, c1, c2, b, f);
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath(); ctx.arc(dot[0], dot[1], 5.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = color;
+                    ctx.beginPath(); ctx.arc(dot[0], dot[1], 3.1, 0, Math.PI * 2); ctx.fill();
+                  }
+                  ctx.restore();
+                }
+
+                function langNode(id) {
+                  var n = langNodes[id];
+                  var active = !!(sel && sel.id === id);
+                  ctx.save();
+                  ctx.fillStyle = active ? n.color : 'rgba(255,255,255,0.94)';
+                  ctx.strokeStyle = n.color;
+                  ctx.lineWidth = active ? 3 : 1.4;
+                  ctx.shadowColor = active ? n.color + '88' : 'rgba(15,23,42,0.10)';
+                  ctx.shadowBlur = active ? 16 : 8;
+                  ctx.beginPath();
+                  ctx.roundRect(n.x - n.w / 2, n.y - n.h / 2, n.w, n.h, 11);
+                  ctx.fill(); ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = active ? '#fff' : n.color;
+                  ctx.font = 'bold ' + Math.round(8.7 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(n.label, n.x, n.y - n.h * 0.07);
+                  ctx.fillStyle = active ? '#e2e8f0' : '#64748b';
+                  ctx.font = Math.round(6.8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(n.sub, n.x, n.y + n.h * 0.22);
+                  ctx.restore();
+                }
+
+                langCurve('visual_word_language', 'angular_language', 0.28, 0.23, 0.43, 0.33, inputColor + 'cc', 0.02, 3.5);
+                langCurve('auditory_language', 'wernicke_language', 0.27, 0.64, 0.34, 0.55, inputColor + 'cc', 0.18, 3.5);
+                langCurve('angular_language', 'semantic_language', 0.52, 0.30, 0.45, 0.28, meaningColor + 'cc', 0.31, 3);
+                langCurve('wernicke_language', 'semantic_language', 0.34, 0.44, 0.35, 0.38, meaningColor + 'cc', 0.42, 3);
+                langCurve('wernicke_language', 'supramarginal_language', 0.43, 0.61, 0.49, 0.62, meaningColor + 'cc', 0.50, 3);
+                langCurve('supramarginal_language', 'arcuate_language', 0.56, 0.59, 0.58, 0.54, tractColor + 'cc', 0.60, 3.2);
+                langCurve('arcuate_language', 'broca_language', 0.63, 0.45, 0.67, 0.41, tractColor + 'dd', 0.70, 4.1);
+                langCurve('semantic_language', 'broca_language', 0.49, 0.22, 0.66, 0.29, outputColor + 'bb', 0.80, 3.2);
+                langCurve('broca_language', 'motor_speech_language', 0.77, 0.35, 0.81, 0.32, outputColor + 'dd', 0.90, 4);
+
+                ['visual_word_language', 'auditory_language', 'semantic_language', 'wernicke_language', 'angular_language', 'supramarginal_language', 'arcuate_language', 'broca_language', 'motor_speech_language'].forEach(langNode);
+
+                function langClueCard(regionId, x, y, w, title, line1, line2, color) {
+                  var active = !!(sel && sel.id === regionId);
+                  ctx.save();
+                  ctx.fillStyle = active ? color : 'rgba(255,255,255,0.93)';
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = active ? 2.4 : 1.2;
+                  ctx.shadowColor = active ? color + '77' : 'rgba(15,23,42,0.08)';
+                  ctx.shadowBlur = active ? 13 : 6;
+                  ctx.beginPath();
+                  ctx.roundRect(x, y, w, H * 0.112, 11);
+                  ctx.fill(); ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = active ? '#fff' : color;
+                  ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'left';
+                  ctx.fillText(title, x + W * 0.014, y + H * 0.032);
+                  ctx.fillStyle = active ? '#f8fafc' : '#475569';
+                  ctx.font = Math.round(7.1 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(line1, x + W * 0.014, y + H * 0.063);
+                  ctx.fillText(line2, x + W * 0.014, y + H * 0.088);
+                  ctx.restore();
+                }
+
+                ctx.save();
+                ctx.fillStyle = 'rgba(15,23,42,0.84)';
+                ctx.beginPath(); ctx.roundRect(W * 0.08, H * 0.725, W * 0.84, H * 0.035, 10); ctx.fill();
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('APHASIA CLUES: test fluency, comprehension, repetition, naming, reading, and writing together.', W * 0.5, H * 0.748);
+                ctx.restore();
+
+                langClueCard('aphasia_cards_language', W * 0.08, H * 0.785, W * 0.255, 'BROCA: nonfluent output', 'Comprehension often stronger', 'Repetition usually impaired', outputColor);
+                langClueCard('aphasia_cards_language', W * 0.372, H * 0.785, W * 0.275, 'WERNICKE: fluent but poor comprehension', 'Speech can sound effortless', 'Meaning breaks down', meaningColor);
+                langClueCard('arcuate_language', W * 0.685, H * 0.785, W * 0.235, 'CONDUCTION: repetition breaks', 'Fluent + understands', 'Arcuate pathway clue', tractColor);
 
               } else if (currentView.isBasalGanglia) {
 
@@ -3921,7 +4170,7 @@ var d = labToolData.brainAtlas || {};
               } else if (currentView.isCrossLateral) {
 
                 // ── Cross-Lateralization (Coronal View) ──
-                var clT = canvas._brainTick;
+                var clT = canvas._brainTick || 0;
 
                 // Gently scalloped (gyral) edge so the coronal hemispheres read as brain lobes,
                 // not plain ellipses — deterministic, and the interior is left clear for the pathways.
@@ -3995,10 +4244,66 @@ var d = labToolData.brainAtlas || {};
                 ccGrad.addColorStop(0, '#ddd6fe'); ccGrad.addColorStop(0.5, '#f5f3ff'); ccGrad.addColorStop(1, '#ddd6fe');
                 ctx.fillStyle = ccGrad; ctx.fill();
                 ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5; ctx.stroke();
+                for (var ccFiber = 0; ccFiber < 5; ccFiber++) {
+                  var fy = brCy - brRy * 0.08 + (ccFiber - 2) * brRy * 0.025;
+                  ctx.beginPath();
+                  ctx.moveTo(brCx - brRx * 0.24, fy);
+                  ctx.quadraticCurveTo(brCx, fy - brRy * 0.08, brCx + brRx * 0.24, fy);
+                  ctx.strokeStyle = 'rgba(124,58,237,0.30)';
+                  ctx.lineWidth = 0.9;
+                  ctx.stroke();
+                }
+                if (!brainMotionReduced) {
+                  for (var ccPulse = 0; ccPulse < 3; ccPulse++) {
+                    var cp = ((clT * 0.007 + ccPulse * 0.33) % 1);
+                    var cxp = brCx - brRx * 0.24 + brRx * 0.48 * cp;
+                    var cyp = brCy - brRy * 0.06 - Math.sin(cp * Math.PI) * brRy * 0.045;
+                    ctx.beginPath(); ctx.arc(cxp, cyp, 4.5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fff'; ctx.fill();
+                    ctx.beginPath(); ctx.arc(cxp, cyp, 2.6, 0, Math.PI * 2);
+                    ctx.fillStyle = '#7c3aed'; ctx.fill();
+                  }
+                }
                 ctx.font = Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
                 ctx.fillStyle = '#7c3aed80'; ctx.textAlign = 'center';
                 ctx.fillText('Corpus Callosum', brCx, brCy + 3);
                 ctx.restore();
+
+                function callosalResearchCard(x, y, w, h, title, lines, color) {
+                  ctx.save();
+                  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+                  ctx.strokeStyle = color + '88';
+                  ctx.lineWidth = 1.1;
+                  ctx.shadowColor = 'rgba(15,23,42,0.08)';
+                  ctx.shadowBlur = 7;
+                  ctx.beginPath();
+                  ctx.roundRect(x, y, w, h, 10);
+                  ctx.fill(); ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = color;
+                  ctx.font = 'bold ' + Math.round(6.9 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'left';
+                  ctx.fillText(title, x + 9, y + 16);
+                  ctx.fillStyle = '#475569';
+                  ctx.font = Math.round(6.4 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  for (var li = 0; li < lines.length; li++) {
+                    ctx.fillText(lines[li], x + 9, y + 34 + li * 15);
+                  }
+                  ctx.restore();
+                }
+
+                callosalResearchCard(W * 0.025, H * 0.155, W * 0.150, H * 0.220, 'SPLIT-BRAIN EVIDENCE', [
+                  'Left visual field',
+                  '-> right hemisphere',
+                  'speech cannot name',
+                  'left hand can pick'
+                ], '#dc2626');
+                callosalResearchCard(W * 0.825, H * 0.155, W * 0.150, H * 0.220, 'CALLOSAL TRANSFER', [
+                  'Intact callosum',
+                  'shares visual info',
+                  'callosotomy blocks',
+                  'cross-report'
+                ], '#7c3aed');
 
                 // Brainstem + medulla below
                 ctx.save();
@@ -4125,6 +4430,113 @@ var d = labToolData.brainAtlas || {};
                 );
                 ctx.restore();
 
+                function splitBrainExperimentInset() {
+                  var bx = W * 0.195;
+                  var by = H * 0.550;
+                  var bw = W * 0.610;
+                  var bh = H * 0.170;
+                  ctx.save();
+                  ctx.fillStyle = 'rgba(255,255,255,0.94)';
+                  ctx.strokeStyle = 'rgba(124,58,237,0.35)';
+                  ctx.lineWidth = 1.2;
+                  ctx.shadowColor = 'rgba(15,23,42,0.10)';
+                  ctx.shadowBlur = 8;
+                  ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 12); ctx.fill(); ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = '#7c3aed';
+                  ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'left';
+                  ctx.fillText('FIXATION TASK', bx + 12, by + 18);
+                  ctx.fillStyle = '#64748b';
+                  ctx.font = Math.round(6.8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText('Callosotomy blocks transfer; intact callosum shares the cue.', bx + 94, by + 18);
+
+                  var sx = bx + 14, sy = by + 34, sw = bw * 0.36, sh = bh * 0.46;
+                  ctx.fillStyle = '#f8fafc';
+                  ctx.strokeStyle = '#cbd5e1';
+                  ctx.lineWidth = 1;
+                  ctx.beginPath(); ctx.roundRect(sx, sy, sw, sh, 8); ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = 'rgba(220,38,38,0.10)';
+                  ctx.fillRect(sx + 1, sy + 1, sw * 0.5 - 1, sh - 2);
+                  ctx.fillStyle = 'rgba(37,99,235,0.10)';
+                  ctx.fillRect(sx + sw * 0.5, sy + 1, sw * 0.5 - 1, sh - 2);
+                  ctx.strokeStyle = '#94a3b8';
+                  ctx.beginPath(); ctx.moveTo(sx + sw * 0.5, sy + 5); ctx.lineTo(sx + sw * 0.5, sy + sh - 5); ctx.stroke();
+                  ctx.fillStyle = '#0f172a';
+                  ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText('+', sx + sw * 0.5, sy + sh * 0.52);
+                  ctx.fillStyle = '#dc2626';
+                  ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText('KEY', sx + sw * 0.25, sy + sh * 0.50);
+                  if (!brainMotionReduced) {
+                    var flash = 0.35 + 0.35 * Math.sin(clT * 0.045);
+                    ctx.globalAlpha = flash;
+                    ctx.fillStyle = '#fef2f2';
+                    ctx.beginPath(); ctx.roundRect(sx + 8, sy + 8, sw * 0.22, sh - 16, 6); ctx.fill();
+                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = '#dc2626';
+                    ctx.fillText('KEY', sx + sw * 0.25, sy + sh * 0.50);
+                  }
+                  ctx.fillStyle = '#64748b';
+                  ctx.font = Math.round(6.2 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText('left visual field', sx + sw * 0.25, sy + sh + 12);
+                  ctx.fillText('right visual field', sx + sw * 0.75, sy + sh + 12);
+
+                  function conditionChip(x, y, title, body, color) {
+                    ctx.save();
+                    ctx.fillStyle = color + '12';
+                    ctx.strokeStyle = color + '88';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.roundRect(x, y, bw * 0.245, bh * 0.290, 8); ctx.fill(); ctx.stroke();
+                    ctx.fillStyle = color;
+                    ctx.font = 'bold ' + Math.round(6.4 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(title, x + 8, y + 13);
+                    ctx.fillStyle = '#334155';
+                    ctx.font = Math.round(6.2 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.fillText(body, x + 8, y + 28);
+                    ctx.restore();
+                  }
+
+                  function outcomeBox(x, y, title, body, color) {
+                    ctx.save();
+                    ctx.fillStyle = color + '10';
+                    ctx.strokeStyle = color + '88';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.roundRect(x, y, bw * 0.245, bh * 0.370, 9); ctx.fill(); ctx.stroke();
+                    ctx.fillStyle = color;
+                    ctx.font = 'bold ' + Math.round(7.2 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(title, x + 9, y + 16);
+                    ctx.fillStyle = '#334155';
+                    ctx.font = Math.round(6.6 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.fillText(body, x + 9, y + 34);
+                    ctx.restore();
+                  }
+                  var ox = bx + bw * 0.435;
+                  conditionChip(ox, by + 29, 'INTACT', 'speech can name KEY', '#16a34a');
+                  conditionChip(ox + bw * 0.285, by + 29, 'CALLOSOTOMY', 'speech blocked', '#dc2626');
+                  outcomeBox(ox, by + 67, 'Speech report', 'cannot name KEY', '#7c3aed');
+                  outcomeBox(ox + bw * 0.285, by + 67, 'Left hand', 'picks KEY', '#dc2626');
+
+                  ctx.strokeStyle = '#dc2626';
+                  ctx.lineWidth = 1.4;
+                  ctx.setLineDash([4, 3]);
+                  ctx.beginPath();
+                  ctx.moveTo(sx + sw * 0.25, sy + sh * 0.50);
+                  ctx.quadraticCurveTo(bx + bw * 0.42, by + bh * 0.30, ox + bw * 0.02, by + 84);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+                  ctx.fillStyle = '#dc2626';
+                  ctx.font = Math.round(6.4 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText('LVF -> right hemisphere', bx + bw * 0.43, by + 62);
+                  ctx.restore();
+                }
+
+                splitBrainExperimentInset();
+
                 // ── Language lateralization highlight (left hemisphere) ──
                 ctx.save();
                 ctx.globalAlpha = 0.12;
@@ -4187,7 +4599,7 @@ var d = labToolData.brainAtlas || {};
 
 
               // ── Enhanced Region Markers (anatomical views only) ──
-              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG && !currentView.isSynapse && !currentView.isStim && !currentView.isHomunculus && !currentView.isVisualPathway && !currentView.isBasalGanglia && !currentView.isCranialWillis && !currentView.isLimbicPapez)
+              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG && !currentView.isSynapse && !currentView.isStim && !currentView.isHomunculus && !currentView.isVisualPathway && !currentView.isLanguageNetwork && !currentView.isBasalGanglia && !currentView.isCranialWillis && !currentView.isLimbicPapez)
               filtered.forEach(function (r) {
 
                 var px = r.x * W, py = r.y * H;
@@ -4388,7 +4800,7 @@ var d = labToolData.brainAtlas || {};
           var selectedLabel = sel && sel.name ? sel.name : (t('stem.brainatlas.none_selected', 'None selected') || 'None selected');
           selectedLabel = String(selectedLabel || 'None selected');
           var showNtInquiry = viewKey === 'neurotransmitters' || !!d.showNtInquiry;
-          var specialAtlasView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse || currentView.isHomunculus || currentView.isVisualPathway || currentView.isBasalGanglia || currentView.isCranialWillis || currentView.isLimbicPapez || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral);
+          var specialAtlasView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse || currentView.isHomunculus || currentView.isVisualPathway || currentView.isLanguageNetwork || currentView.isBasalGanglia || currentView.isCranialWillis || currentView.isLimbicPapez || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral);
           // Neurochemistry diagrams (synapse release, neuron anatomy, synapse
           // growth) pack many labels into a tall vertical stack and were
           // cramped / overlapping. Give them a larger canvas so the diagram
@@ -4396,14 +4808,15 @@ var d = labToolData.brainAtlas || {};
           // so the extra room becomes label SPACING, not bigger glyphs.
           // Safe: hit-testing is fraction-based [0,1], independent of canvas px.
           var neurochemView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse);
-          var atlasW = currentView.isNeuron ? 820 : (currentView.isSynapse ? 780 : (currentView.isVisualPathway ? 780 : (currentView.isBasalGanglia ? 780 : (currentView.isLimbicPapez ? 780 : (currentView.isCranialWillis ? 780 : (currentView.isHomunculus ? 720 : (currentView.isNT ? 680 : (specialAtlasView ? 600 : 520))))))));
-          var atlasH = currentView.isNeuron ? 760 : (currentView.isSynapse ? 620 : (currentView.isVisualPathway ? 620 : (currentView.isBasalGanglia ? 620 : (currentView.isLimbicPapez ? 620 : (currentView.isCranialWillis ? 620 : (currentView.isHomunculus ? 560 : (currentView.isNT ? 660 : (specialAtlasView ? 500 : 460))))))));
+          var wideAtlasView = !!(currentView.isSynapse || currentView.isLanguageNetwork || currentView.isVisualPathway || currentView.isBasalGanglia || currentView.isLimbicPapez || currentView.isCranialWillis || currentView.isCrossLateral);
+          var atlasW = currentView.isNeuron ? 820 : (wideAtlasView ? 780 : (currentView.isHomunculus ? 720 : (currentView.isNT ? 680 : (specialAtlasView ? 600 : 520))));
+          var atlasH = currentView.isNeuron ? 760 : (currentView.isNT ? 660 : (wideAtlasView ? 620 : (currentView.isHomunculus ? 560 : (specialAtlasView ? 500 : 460))));
           var missionText = sel
             ? t('stem.brainatlas.now_studying_region_detail', 'Now studying selected region details, function, related conditions, and damage patterns.')
             : currentView.desc;
           var quizScoreLabel = (d.quizCorrect || 0) + ' correct';
           var VIEW_GROUPS = [
-            { id: 'atlas', label: t('stem.brainatlas.group_atlas', 'Atlas'), note: t('stem.brainatlas.group_atlas_note', 'Lobes, deep structures, orientation, nerves, and vessels'), views: ['lateral', 'medial', 'superior', 'inferior', 'cranialNervesWillis', 'homunculus', 'visualPathway'] },
+            { id: 'atlas', label: t('stem.brainatlas.group_atlas', 'Atlas'), note: t('stem.brainatlas.group_atlas_note', 'Lobes, language, body maps, orientation, nerves, and vessels'), views: ['lateral', 'medial', 'superior', 'inferior', 'cranialNervesWillis', 'homunculus', 'visualPathway', 'languageNetwork'] },
             { id: 'systems', label: t('stem.brainatlas.group_systems', 'Systems'), note: t('stem.brainatlas.group_systems_note', 'Cells, synapses, chemistry, memory, emotion, and movement loops'), views: ['neurotransmitters', 'neuron', 'synapses', 'basalGangliaLoop', 'limbicPapezLoop'] },
             { id: 'simulations', label: t('stem.brainatlas.group_simulations', 'Simulations'), note: t('stem.brainatlas.group_simulations_note', 'Stimulation, sleep, rhythms, and wiring'), views: ['stimulate', 'sleepStages', 'eegWaves', 'crossLateral'] }
           ];
@@ -4434,13 +4847,14 @@ var d = labToolData.brainAtlas || {};
             if (currentView.isSynapse) return t('stem.brainatlas.teacher_prompt_synapse', 'Ask students to explain how strengthening or pruning a synapse could change learning over time.');
             if (currentView.isHomunculus) return t('stem.brainatlas.teacher_prompt_homunculus', 'Ask students to choose one body part, then predict whether a nearby lesion would change movement, sensation, or both.');
             if (currentView.isVisualPathway) return t('stem.brainatlas.teacher_prompt_visual_pathway', 'Ask students to cover one pathway segment and predict the exact visual-field cut before revealing the card.');
+            if (currentView.isLanguageNetwork) return t('stem.brainatlas.teacher_prompt_language_network', 'Ask students to trace one spoken or written word from input to comprehension to speech output, then predict the aphasia clue.');
             if (currentView.isBasalGanglia) return t('stem.brainatlas.teacher_prompt_basal_ganglia', 'Ask students to trace the GO and NO-GO loops, then predict how dopamine loss changes movement.');
             if (currentView.isLimbicPapez) return t('stem.brainatlas.teacher_prompt_limbic_papez', 'Ask students to trace one memory signal around Papez circuit, then explain how amygdala output changes the body.');
             if (currentView.isCranialWillis) return t('stem.brainatlas.teacher_prompt_cranial_willis', 'Ask students to pick one nerve or vessel, then name the bedside clue that would localize a lesion there.');
             if (currentView.isStim) return t('stem.brainatlas.teacher_prompt_stim', 'Ask students to predict the patient response first, then revise their reasoning after feedback.');
             if (currentView.isSleep) return t('stem.brainatlas.teacher_prompt_sleep', 'Ask students to compare two sleep stages and connect each to memory, attention, or recovery.');
             if (currentView.isEEG) return t('stem.brainatlas.teacher_prompt_eeg', 'Ask students to match a brain-wave pattern to a state, then explain the clue they used.');
-            if (currentView.isCrossLateral) return t('stem.brainatlas.teacher_prompt_cross', 'Ask students to trace why a left-side brain injury can affect the right side of the body.');
+            if (currentView.isCrossLateral) return t('stem.brainatlas.teacher_prompt_cross', 'Ask students to predict what the patient can say versus what the left hand can pick, then explain why the corpus callosum matters.');
             return t('stem.brainatlas.teacher_prompt_atlas', 'Ask students to choose one region, name its everyday job, and predict what might change if it were damaged.');
           }
           function brainAtlasCanvasSummary() {
@@ -4449,14 +4863,15 @@ var d = labToolData.brainAtlas || {};
             if (currentView.isNeuron) return t('stem.brainatlas.canvas_summary_neuron', 'Neuron anatomy view showing dendrites, soma, axon, myelin, nodes, and terminals so students can follow signal flow.');
             if (currentView.isSynapse) return t('stem.brainatlas.canvas_summary_synapse', 'Synapse and development view showing how neural connections can strengthen, weaken, or be pruned through experience.');
             if (currentView.isHomunculus) return t('stem.brainatlas.canvas_summary_homunculus', 'Motor and sensory homunculus view showing primary motor cortex, primary somatosensory cortex, the central sulcus, and enlarged hand, face, and tongue representations.');
-            if (currentView.isVisualPathway) return t('stem.brainatlas.canvas_summary_visual_pathway', 'Visual pathway view showing retina, optic nerve, optic chiasm, optic tract, LGN, optic radiations, V1, and classic field cuts such as bitemporal hemianopia and quadrantanopia.');
+            if (currentView.isVisualPathway) return t('stem.brainatlas.canvas_summary_visual_pathway', 'Visual pathway view showing retina, optic nerve, optic chiasm, optic tract, LGN, optic radiations, V1, a field-cut decoder, and classic patterns such as bitemporal hemianopia, homonymous hemianopia, quadrantanopia, and macular sparing.');
+            if (currentView.isLanguageNetwork) return t('stem.brainatlas.canvas_summary_language_network', 'Language network view showing auditory and visual word input, Wernicke comprehension, angular and supramarginal integration, arcuate fasciculus repetition, Broca speech planning, motor speech output, and classic aphasia clues.');
             if (currentView.isBasalGanglia) return t('stem.brainatlas.canvas_summary_basal_ganglia', 'Basal ganglia loop view showing direct GO and indirect NO-GO pathways, GPi/SNr thalamic braking, STN excitation, and dopamine modulation from substantia nigra pars compacta.');
             if (currentView.isLimbicPapez) return t('stem.brainatlas.canvas_summary_limbic_papez', 'Limbic and Papez loop view showing hippocampus, fornix, mammillary bodies, mammillothalamic tract, anterior thalamus, cingulate, cingulum, entorhinal cortex, amygdala, hypothalamus, and prefrontal regulation.');
             if (currentView.isCranialWillis) return t('stem.brainatlas.canvas_summary_cranial_willis', 'Cranial nerves and Circle of Willis view showing inferior brain anatomy, CN I, II, III, V, VI, VII/VIII, IX/X/XI, XII, AComm/ACA, PComm/ICA, and basilar/vertebral arteries.');
             if (currentView.isStim) return t('stem.brainatlas.canvas_summary_stim', 'Stimulation Lab view for predicting what a patient may experience when different brain areas are gently stimulated.');
             if (currentView.isSleep) return t('stem.brainatlas.canvas_summary_sleep', 'Sleep-stage view showing the cycle from light sleep through deep sleep and REM, with memory and recovery connections.');
             if (currentView.isEEG) return (t('stem.brainatlas.canvas_summary_eeg_active', 'EEG rhythm view comparing delta, theta, alpha, beta, and gamma waves across different brain states. Active state: ') || 'EEG rhythm view comparing delta, theta, alpha, beta, and gamma waves across different brain states. Active state: ') + activeEegMode.label + '.';
-            if (currentView.isCrossLateral) return t('stem.brainatlas.canvas_summary_cross', 'Cross-lateral wiring view showing how motor, sensory, visual, and language pathways cross or specialize across hemispheres.');
+            if (currentView.isCrossLateral) return t('stem.brainatlas.canvas_summary_cross', 'Cross-lateral wiring view showing motor, sensory, and visual crossing, language lateralization, corpus callosum transfer between hemispheres, and a split-brain fixation task where left visual field -> right hemisphere information cannot be verbally named but the left hand can pick the object.');
             return currentView.name + ': ' + brainAtlasShortText(currentView.desc, 170) + ' ' + filtered.length + ' selectable targets are available in this view.';
           }
           var teacherPrompt = brainAtlasTeacherPrompt();
@@ -4467,11 +4882,12 @@ var d = labToolData.brainAtlas || {};
             { id: 'base', view: 'cranialNervesWillis', badge: t('stem.brainatlas.route_badge_base', 'Base'), title: t('stem.brainatlas.route_cranial_willis_title', 'Map nerves and vessels'), copy: t('stem.brainatlas.route_cranial_willis_copy', 'Use the underside map to connect nerve exits, blood supply, and classic lesion clues.'), color: '#dc2626' },
             { id: 'bodymap', view: 'homunculus', badge: t('stem.brainatlas.route_badge_map', 'Map'), title: t('stem.brainatlas.route_homunculus_title', 'Map the body'), copy: t('stem.brainatlas.route_homunculus_copy', 'Compare motor output and sensory input across the cortical homunculus.'), color: '#0ea5e9' },
             { id: 'vision', view: 'visualPathway', badge: t('stem.brainatlas.route_badge_vision', 'Vision'), title: t('stem.brainatlas.route_visual_pathway_title', 'Trace vision'), copy: t('stem.brainatlas.route_visual_pathway_copy', 'Follow retinal fibers through the chiasm and match each lesion to its field cut.'), color: '#2563eb' },
+            { id: 'language', view: 'languageNetwork', badge: t('stem.brainatlas.route_badge_language', 'Language'), title: t('stem.brainatlas.route_language_network_title', 'Map language'), copy: t('stem.brainatlas.route_language_network_copy', 'Trace hearing, reading, comprehension, repetition, and speech output across the dominant-hemisphere network.'), color: '#7c3aed' },
             { id: 'movement', view: 'basalGangliaLoop', badge: t('stem.brainatlas.route_badge_movement', 'Movement'), title: t('stem.brainatlas.route_basal_ganglia_title', 'Balance GO and NO-GO'), copy: t('stem.brainatlas.route_basal_ganglia_copy', 'Trace direct, indirect, and dopamine pathways that select movement.'), color: '#14b8a6' },
             { id: 'memory', view: 'limbicPapezLoop', badge: t('stem.brainatlas.route_badge_memory', 'Memory'), title: t('stem.brainatlas.route_limbic_papez_title', 'Link memory and emotion'), copy: t('stem.brainatlas.route_limbic_papez_copy', 'Trace Papez circuit and compare it with amygdala-driven body responses.'), color: '#f59e0b' },
             { id: 'signals', view: 'neuron', badge: t('stem.brainatlas.route_badge_cells', 'Cells'), title: t('stem.brainatlas.route_signals_title', 'Follow a signal'), copy: t('stem.brainatlas.route_signals_copy', 'Zoom from neuron anatomy into firing, myelin, and synaptic flow.'), color: '#d97706' },
             { id: 'rhythms', view: 'eegWaves', badge: t('stem.brainatlas.route_badge_rhythms', 'Rhythms'), title: t('stem.brainatlas.route_rhythms_title', 'Read brain waves'), copy: t('stem.brainatlas.route_rhythms_copy', 'Compare delta through gamma and connect waves to sleep and attention.'), color: '#be185d' },
-            { id: 'crossing', view: 'crossLateral', badge: t('stem.brainatlas.route_badge_wiring', 'Wiring'), title: t('stem.brainatlas.route_crossing_title', 'Trace left vs right'), copy: t('stem.brainatlas.route_crossing_copy', 'See why one hemisphere affects the opposite side of the body.'), color: '#dc2626' }
+            { id: 'crossing', view: 'crossLateral', badge: t('stem.brainatlas.route_badge_wiring', 'Wiring'), title: t('stem.brainatlas.route_crossing_title', 'Trace left vs right'), copy: t('stem.brainatlas.route_crossing_copy', 'See why one hemisphere affects the opposite side of the body and why the corpus callosum lets the halves share information.'), color: '#dc2626' }
           ];
           // Patient Simulator: an AI patient roleplays the real effect of a hidden
           // stimulation; the student guesses the region. Grounded in STIM_SCENARIOS.
@@ -4806,11 +5222,12 @@ var d = labToolData.brainAtlas || {};
                 inferior:          { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '⬇️', title: t('stem.brainatlas.inferior_view_bottom_up', 'Inferior view — bottom-up'),                      hint: t('stem.brainatlas.look_up_from_underneath_cranial_nerves', 'Look up from underneath. Cranial nerves I–XII exit here. The Circle of Willis (basilar + vertebral + ICA) supplies the brain — strokes happen at these branch points.') },
                 homunculus:        { accent: '#14b8a6', soft: 'rgba(20,184,166,0.10)', icon: '✋', title: t('stem.brainatlas.homunculus_motor_sensory_body_map', 'Homunculus — motor/sensory body map'),       hint: t('stem.brainatlas.homunculus_map_hint', 'A Penfield-style map of the precentral motor strip and postcentral sensory strip. Hands, lips, face, and tongue look oversized because they get more cortical real estate.') },
                 visualPathway:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '👁️', title: t('stem.brainatlas.visual_pathway_field_cuts', 'Visual pathway — field cuts'),             hint: t('stem.brainatlas.visual_pathway_hint', 'Follow light from retina to optic nerve, chiasm, tract, LGN, radiations, and V1. The mini cards show why each lesion creates a different visual-field pattern.') },
+                languageNetwork:   { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: 'LN', title: t('stem.brainatlas.language_network_broca_wernicke', 'Language network - Broca/Wernicke'),     hint: t('stem.brainatlas.language_network_hint', 'A dominant-hemisphere map linking auditory and visual word input to Wernicke comprehension, arcuate fasciculus repetition, Broca speech planning, and motor speech output.') },
                 neurotransmitters: { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '🧪', title: t('stem.brainatlas.neurotransmitters_chemistry_of_mind', 'Neurotransmitters — chemistry of mind'),          hint: t('stem.brainatlas.glutamate_excite_gaba_inhibit_dopamine', 'Glutamate (excite), GABA (inhibit), dopamine (reward + motor), serotonin (mood + GI), norepinephrine (alertness), acetylcholine (memory + autonomic). Drug targets all live here.') },
                 neuron:            { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🪡', title: t('stem.brainatlas.neuron_anatomy_single_cell', 'Neuron anatomy — single cell'),                  hint: t('stem.brainatlas.dendrites_input_soma_axon_output_termi', 'Dendrites (input) → soma → axon (output) → terminal. Action potential travels at 10–120 m/s; myelin makes it faster. Synapses can be excitatory or inhibitory.') },
                 sleepStages:       { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)', icon: '😴', title: t('stem.brainatlas.sleep_stages_n1_n2_n3_rem', 'Sleep stages — N1, N2, N3, REM'),               hint: t('stem.brainatlas.cycles_every_90_min_n3_deep_for_memory', 'Cycles every ~90 min. N3 (deep) for memory consolidation; REM for emotional processing + procedural memory. Adolescents need 8–10 hrs; chronic deprivation impairs everything cognitive.') },
                 eegWaves:          { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '📈', title: t('stem.brainatlas.eeg_waves_brain_rhythms', 'EEG waves — brain rhythms'),                    hint: t('stem.brainatlas.delta_deep_sleep_theta_drowsy_memory_a', 'Delta (deep sleep) → Theta (drowsy + memory) → Alpha (relaxed wakefulness) → Beta (active thinking) → Gamma (focused attention). Frequency rises with arousal level.') },
-                crossLateral:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '⚡', title: t('stem.brainatlas.cross_lateral_wiring_left_vs_right', 'Cross-lateral wiring — left vs right'),          hint: t('stem.brainatlas.each_hemisphere_controls_the_opposite_', 'Each hemisphere controls the OPPOSITE side of the body. Left = language + sequential reasoning (most people); right = spatial + emotional processing. Stroke maps directly here.') }
+                crossLateral:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '⚡', title: t('stem.brainatlas.cross_lateral_wiring_left_vs_right', 'Cross-lateral wiring — left vs right'),          hint: t('stem.brainatlas.each_hemisphere_controls_the_opposite_', 'Each hemisphere controls the OPPOSITE side of the body, while the corpus callosum transfers information between hemispheres. Split-brain studies make that bridge visible: what one hemisphere sees may not be verbally reportable unless information crosses.') }
               };
               var meta = VIEW_META[viewKey] || VIEW_META.lateral;
               if (viewKey === 'cranialNervesWillis') {

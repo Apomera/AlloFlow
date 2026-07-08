@@ -12,9 +12,10 @@
   so getDisplayMedia works even when the AlloFlow app itself is inside Gemini
   Canvas's sandboxed iframe, and IndexedDB here persists normally.
 
-  Everything is local: capture (MediaRecorder), captions (Web Speech), trim/
-  re-encode (canvas + AudioContext), storage (IndexedDB drafts). Finished videos
-  go back to the opener via postMessage as Blobs; nothing touches a server.
+  Recording, local captioning, trim/re-encode, and storage run in-browser by
+  default. Optional AI tools can send reviewed text, prompts, or sampled frame
+  sheets through the AlloFlow AI bridge; raw video bytes stay local unless the
+  teacher downloads or sends the finished file back to AlloFlow.
 
   The VS-shared script block (see the markers below) is a verbatim copy of the
   same block in video_studio_module.js; tests/video_studio.test.js pins the two
@@ -179,7 +180,11 @@
   .project-row { display: grid; grid-template-columns: minmax(180px, 1fr) auto; gap: 10px; align-items: center; background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; }
   .project-row[aria-current="true"] { border-color: var(--accent2); }
   .transcript-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow: auto; margin-top: 10px; }
-  .transcript-line { width: 100%; text-align: left; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--panel2); color: var(--text); cursor: pointer; }
+  .transcript-line { width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; text-align: left; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--panel2); color: var(--text); }
+  .transcript-line[aria-selected="true"] { border-color: var(--accent2); background: rgba(99,102,241,0.18); }
+  .transcript-line input { margin-top: 3px; }
+  .transcript-jump { border: 0; background: transparent; color: var(--accent2); font: inherit; font-weight: 800; padding: 0; cursor: pointer; }
+  .transcript-jump span { color: var(--text); font-weight: 500; }
   .transcript-line mark { background: rgba(251,191,36,0.35); color: #fff; border-radius: 3px; padding: 0 2px; }
   .privacy-flag { display: inline-block; margin: 3px 4px 3px 0; border: 1px solid rgba(251,191,36,0.45); background: rgba(251,191,36,0.12); color: #fde68a; border-radius: 999px; padding: 3px 8px; font-size: 11px; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
@@ -193,7 +198,7 @@
   <span style="font-size:22px" aria-hidden="true">🎥</span>
   <div>
     <h1>AlloFlow Video Studio</h1>
-    <div class="sub">Record · Trim · Caption · Export — everything stays on this device</div>
+    <div class="sub">Record · Trim · Caption · Export - local by default, AI optional</div>
   </div>
   <div id="linkState" style="margin-left:auto;font-size:12px;color:var(--dim)"></div>
 </header>
@@ -214,7 +219,7 @@
 
   <!-- ─── RECORD ─── -->
   <section id="panelRecord" role="tabpanel" aria-labelledby="tabRecord">
-    <div class="ferpa">⚠️ <strong>Before you record:</strong> screen capture shows everything visible. Close gradebooks, rosters, email, and other student data — safest is sharing <em>one tab</em> in the picker. Your recording never leaves this computer.</div>
+    <div class="ferpa">⚠️ <strong>Before you record:</strong> screen capture shows everything visible. Close gradebooks, rosters, email, and other student data — safest is sharing <em>one tab</em> in the picker. Recording and export stay local by default; optional AI tools later may send reviewed text, prompts, or sampled frame sheets through AlloFlow.</div>
     <div class="card">
       <h2>Start here</h2>
       <div class="choice-grid" aria-label="Video Studio workflows">
@@ -312,13 +317,13 @@
     <div class="card edit-focus-card">
       <div>
         <h2>Editor focus</h2>
-        <div class="status" id="editorFocusStatus">All editor tools are visible.</div>
+        <div class="status" id="editorFocusStatus">Lesson polish tools are visible.</div>
       </div>
       <div class="row">
         <label for="editorFocusMode">Focus</label>
         <select id="editorFocusMode" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
           <option value="all">All tools</option>
-          <option value="record">Lesson polish</option>
+          <option value="record" selected>Lesson polish</option>
           <option value="caption">Caption cleanup</option>
           <option value="narrate">Narration/audio</option>
           <option value="describe">Visual accessibility</option>
@@ -613,6 +618,15 @@
             <button class="quiet" id="mergeCuesBtn">Merge tight caption splits</button>
             <button class="quiet" id="downloadTranscriptBtn">Download transcript (.txt)</button>
             <button class="quiet" id="sendTranscriptBtn">Send transcript to AlloFlow</button>
+          </div>
+          <div class="row" style="margin-bottom:8px">
+            <span class="status" id="transcriptEditStatus" style="margin-top:0">Select transcript lines to edit by text.</span>
+            <button class="quiet" id="transcriptMuteBtn">Silence selected audio</button>
+            <button class="quiet" id="transcriptTrimBeforeBtn">Trim before selection</button>
+            <button class="quiet" id="transcriptTrimAfterBtn">Trim after selection</button>
+            <button class="quiet" id="transcriptClipBtn">Clip from selection</button>
+            <button class="quiet" id="transcriptChapterBtn">Chapter from selection</button>
+            <button class="quiet" id="transcriptClearBtn">Clear selection</button>
           </div>
           <div class="status" id="transcriptStatus">Search captions, click a line to jump the video, or scan for possible names and private details before export.</div>
           <div id="privacyFlags" style="margin-top:6px"></div>
@@ -1326,6 +1340,40 @@
       else merged.push({ start: cur.start, end: cur.end, text: cur.text });
     }
     return merged;
+  }
+
+  // Transcript-line selection -> one safe time range. This powers text-based
+  // editing without pretending we can ripple-cut arbitrary middle ranges.
+  function vsTranscriptSelectionRange(cues, indices, duration, padding) {
+    var list = Array.isArray(cues) ? cues : [];
+    var dur = Math.max(0, Number(duration) || 0);
+    var pad = Math.max(0, Math.min(1, Number(padding) || 0));
+    var seen = {};
+    var picked = [];
+    (Array.isArray(indices) ? indices : []).forEach(function (idx) {
+      idx = Math.round(Number(idx));
+      if (!isFinite(idx) || idx < 0 || idx >= list.length || seen[idx]) return;
+      var c = list[idx] || {};
+      var a = Number(c.start), b = Number(c.end);
+      if (!isFinite(a) || !isFinite(b) || b <= a) return;
+      seen[idx] = true;
+      picked.push({ index: idx, start: a, end: b, text: String(c.text || '').replace(/[\r\n]+/g, ' ').trim() });
+    });
+    picked.sort(function (a, b) { return a.start - b.start; });
+    if (!picked.length) return null;
+    var start = Math.min.apply(null, picked.map(function (c) { return c.start; }));
+    var end = Math.max.apply(null, picked.map(function (c) { return c.end; }));
+    start = Math.max(0, start - pad);
+    end = dur ? Math.min(dur, end + pad) : end + pad;
+    if (end <= start) end = start + 0.1;
+    return {
+      start: start,
+      end: end,
+      duration: Math.max(0.1, end - start),
+      indices: picked.map(function (c) { return c.index; }),
+      lineCount: picked.length,
+      text: picked.map(function (c) { return c.text; }).filter(Boolean).join(' ')
+    };
   }
 
   // AI edit suggestions arrive as UNTRUSTED JSON (model output). This is the
@@ -2899,9 +2947,40 @@ function vsPcmToWav(pcmBytes, sampleRate) {
 
   // ── Opener handshake (veraPDF pattern, reversed roles) ──
   var opener = window.opener || null;
-  function postToOpener(msg) { try { if (opener) opener.postMessage(msg, '*'); } catch (_) {} }
+  var bridgeParams = new URLSearchParams(window.location.search || '');
+  var bridgeToken = bridgeParams.get('allo_bridge') || '';
+  function originFromUrl(url) {
+    try {
+      var origin = new URL(url).origin;
+      return origin && origin !== 'null' ? origin : '';
+    } catch (_) { return ''; }
+  }
+  var openerOrigin = originFromUrl(bridgeParams.get('allo_origin') || '') || originFromUrl(document.referrer || '');
+  function openerTargetOrigin() { return openerOrigin || ''; }
+  function withBridge(msg) {
+    var payload = Object.assign({}, msg || {});
+    if (bridgeToken) payload.bridge = bridgeToken;
+    return payload;
+  }
+  function isOpenerMessage(ev, type, id) {
+    if (!opener || ev.source !== opener || !ev.data || ev.data.type !== type) return false;
+    if (!openerOrigin && ev.origin && ev.origin !== 'null') openerOrigin = ev.origin;
+    if (openerOrigin && ev.origin && ev.origin !== openerOrigin) return false;
+    if (bridgeToken && ev.data.bridge !== bridgeToken) return false;
+    return id == null || ev.data.id === id;
+  }
+  function postToOpener(msg) {
+    try {
+      var target = openerTargetOrigin();
+      if (opener && target) {
+        opener.postMessage(withBridge(msg), target);
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
   window.addEventListener('message', function (ev) {
-    if (opener && ev.source === opener && ev.data && ev.data.type === 'allostudio-ping') {
+    if (isOpenerMessage(ev, 'allostudio-ping')) {
       postToOpener({ type: 'allostudio-ready' });
     }
   });
@@ -2952,9 +3031,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     describe: ['takes', 'timeline', 'inserts', 'visual', 'chapters', 'captions', 'localization'],
     family: ['takes', 'timeline', 'inserts', 'captions', 'transcript', 'chapters', 'localization', 'ai']
   };
+  var EDITOR_FOCUS_DEFAULT = 'record';
   var EDITOR_FOCUS_COPY = {
     all: 'All editor tools are visible.',
-    record: 'Showing lesson polish tools: trim, timeline, zooms, inserts, audio, captions, and chapters.',
+    record: 'Lesson polish tools are visible: trim, timeline, zooms, inserts, audio, captions, and chapters.',
     caption: 'Showing caption cleanup tools: captions, transcript, chapters, localization, and review.',
     narrate: 'Showing narration and audio tools with captions nearby for script support.',
     describe: 'Showing visual accessibility tools: inserts, visual descriptions, chapters, and captions.',
@@ -2966,7 +3046,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return el && el.closest ? el.closest('.card') : null;
   }
   function setEditorFocusMode(mode, showAll) {
-    mode = EDITOR_FOCUS_GROUPS[mode] ? mode : 'all';
+    mode = EDITOR_FOCUS_GROUPS[mode] ? mode : EDITOR_FOCUS_DEFAULT;
     var forceAll = !!showAll || mode === 'all';
     var active = EDITOR_FOCUS_GROUPS[mode] || EDITOR_FOCUS_GROUPS.all;
     var activeMap = {};
@@ -2986,11 +3066,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return 'record';
   }
   function syncEditorFocusFromControls() {
-    setEditorFocusMode($('editorFocusMode') ? $('editorFocusMode').value : 'all', $('editorShowAll') && $('editorShowAll').checked);
+    setEditorFocusMode($('editorFocusMode') ? $('editorFocusMode').value : EDITOR_FOCUS_DEFAULT, $('editorShowAll') && $('editorShowAll').checked);
   }
   if ($('editorFocusMode')) $('editorFocusMode').addEventListener('change', function () { if ($('editorShowAll')) $('editorShowAll').checked = false; syncEditorFocusFromControls(); });
   if ($('editorShowAll')) $('editorShowAll').addEventListener('change', syncEditorFocusFromControls);
-  setEditorFocusMode('all', false);
+  setEditorFocusMode(EDITOR_FOCUS_DEFAULT, false);
   function currentCaptionStyleKey() {
     return $('captionStyle') ? $('captionStyle').value : 'clean-card';
   }
@@ -3207,7 +3287,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('flowDescribe').addEventListener('click', function () { applyTemplate('mini_lesson'); setWorkflowStatus('Workflow: visual description. Next: import or record a video, then describe sampled frames.', 'ok'); if (currentTake()) { showTab('tabEdit'); $('visualDescribeBtn').focus(); } else { setStatus($('projectStatus'), 'Import or record a video first, then use Visual description in the editor.', 'warn'); $('importInput').click(); } });
   $('flowCinematic').addEventListener('click', function () {
     setWorkflowStatus('Workflow: AI-video prompt tools. Next: open Cinematic Studio, then return here to caption or package the result.', 'ok');
-    if (opener && !opener.closed) { postToOpener({ type: 'allostudio-open-cinematic' }); setStatus($('projectStatus'), 'Asked AlloFlow to open Cinematic Studio.', 'ok'); }
+    if (opener && !opener.closed && postToOpener({ type: 'allostudio-open-cinematic' })) { setStatus($('projectStatus'), 'Asked AlloFlow to open Cinematic Studio.', 'ok'); }
     else setStatus($('projectStatus'), 'Open this Studio from AlloFlow to jump to Cinematic Studio.', 'warn');
   });
 
@@ -4606,10 +4686,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       setStatus($('insertStatus'), suggested.length + ' suggested insert' + (suggested.length === 1 ? '' : 's') + ' added. Review and delete anything you do not want.', 'ok');
     }
     function onResp(ev) {
-      if (opener && ev.source === opener && ev.data && ev.data.type === 'allostudio-teaching-inserts-response' && ev.data.id === id) done(ev.data);
+      if (isOpenerMessage(ev, 'allostudio-teaching-inserts-response', id)) done(ev.data);
     }
     window.addEventListener('message', onResp);
-    postToOpener({ type: 'allostudio-teaching-inserts-request', id: id, transcript: transcript, duration: t.duration, title: $('titleInput').value || '' });
+    if (!postToOpener({ type: 'allostudio-teaching-inserts-request', id: id, transcript: transcript, duration: t.duration, title: $('titleInput').value || '' })) {
+      done({ error: 'AlloFlow bridge is not connected. Reopen Video Studio from AlloFlow and try again.' });
+    }
   });
   $('lessonAssistBtn').addEventListener('click', async function () {
     var t = currentTake();
@@ -4662,10 +4744,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       setStatus($('insertStatus'), 'Generated visual card added at the playhead. It will render into export.', 'ok');
     }
     function onResp(ev) {
-      if (opener && ev.source === opener && ev.data && ev.data.type === 'allostudio-imagen-response' && ev.data.id === id) done(ev.data);
+      if (isOpenerMessage(ev, 'allostudio-imagen-response', id)) done(ev.data);
     }
     window.addEventListener('message', onResp);
-    postToOpener({ type: 'allostudio-imagen-request', id: id, prompt: prompt });
+    if (!postToOpener({ type: 'allostudio-imagen-request', id: id, prompt: prompt })) {
+      done({ error: 'AlloFlow bridge is not connected. Reopen Video Studio from AlloFlow and try again.' });
+    }
   });
   $('frameVisualCardBtn').addEventListener('click', async function () {
     var t = currentTake();
@@ -4998,10 +5082,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       announce(sugs.length + ' Gemini suggestions received');
     }
     function onResp(ev) {
-      if (opener && ev.source === opener && ev.data && ev.data.type === 'allostudio-ai-response' && ev.data.id === id) done(ev.data);
+      if (isOpenerMessage(ev, 'allostudio-ai-response', id)) done(ev.data);
     }
     window.addEventListener('message', onResp);
-    postToOpener({ type: 'allostudio-ai-request', id: id, transcript: transcript, duration: t.duration, title: $('titleInput').value || '' });
+    if (!postToOpener({ type: 'allostudio-ai-request', id: id, transcript: transcript, duration: t.duration, title: $('titleInput').value || '' })) {
+      done({ error: 'AlloFlow bridge is not connected. Reopen Video Studio from AlloFlow and try again.' });
+    }
   }
   $('aiSuggestBtn').addEventListener('click', aiSuggest);
 
@@ -5297,14 +5383,18 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var responseType = type.replace('-request', '-response');
       var timer = setTimeout(function () { window.removeEventListener('message', onMsg); resolve({ error: 'timed out' }); }, timeoutMs || 90000);
       function onMsg(ev) {
-        if (opener && ev.source === opener && ev.data && ev.data.type === responseType && ev.data.id === id) {
+        if (isOpenerMessage(ev, responseType, id)) {
           clearTimeout(timer);
           window.removeEventListener('message', onMsg);
           resolve(ev.data);
         }
       }
       window.addEventListener('message', onMsg);
-    postToOpener(Object.assign({ type: type, id: id }, payload));
+      if (!postToOpener(Object.assign({ type: type, id: id }, payload))) {
+        clearTimeout(timer);
+        window.removeEventListener('message', onMsg);
+        resolve({ error: 'AlloFlow bridge is not connected. Reopen Video Studio from AlloFlow and try again.' });
+      }
     });
   }
 
@@ -6155,7 +6245,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('importCapInput').addEventListener('change', function () { if ($('importCapInput').files[0]) importCaptionFile($('importCapInput').files[0]); $('importCapInput').value = ''; });
 
   // ── Takes / editor ──
-  function currentTake() { return takes.find(function (t) { return t.id === selectedTakeId; }) || null; }
+  function currentTake() { return (Array.isArray(takes) ? takes : []).find(function (t) { return t.id === selectedTakeId; }) || null; }
 
   function renderTakes() {
     var list = $('takesList');
@@ -7558,6 +7648,100 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     if (pos < text.length) parent.appendChild(document.createTextNode(text.slice(pos)));
   }
+  var transcriptSelection = {};
+  function transcriptSelectedIndices(cues) {
+    var max = Array.isArray(cues) ? cues.length : 0;
+    return Object.keys(transcriptSelection).map(function (k) { return Number(k); }).filter(function (idx) {
+      return isFinite(idx) && idx >= 0 && idx < max && transcriptSelection[idx];
+    }).sort(function (a, b) { return a - b; });
+  }
+  function currentTranscriptSelectionRange(padding) {
+    var t = currentTake();
+    if (!t) return null;
+    return vsTranscriptSelectionRange(t.captions || [], transcriptSelectedIndices(t.captions || []), t.duration || 0, padding);
+  }
+  function updateTranscriptEditStatus() {
+    var t = currentTake();
+    var range = currentTranscriptSelectionRange(0);
+    var buttons = ['transcriptMuteBtn', 'transcriptTrimBeforeBtn', 'transcriptTrimAfterBtn', 'transcriptClipBtn', 'transcriptChapterBtn', 'transcriptClearBtn'];
+    buttons.forEach(function (id) { if ($(id)) $(id).disabled = !range; });
+    if (!$('transcriptEditStatus')) return;
+    if (!t || !(t.captions || []).length) {
+      setStatus($('transcriptEditStatus'), 'Add captions before editing by transcript.');
+    } else if (!range) {
+      setStatus($('transcriptEditStatus'), 'Select transcript lines to silence audio, set trim edges, or create a chapter.');
+    } else {
+      setStatus($('transcriptEditStatus'), range.lineCount + ' line' + (range.lineCount === 1 ? '' : 's') + ' selected: ' + fmtClock(range.start) + ' - ' + fmtClock(range.end) + '.', 'ok');
+    }
+  }
+  function clearTranscriptSelection() {
+    transcriptSelection = {};
+    renderTranscript();
+  }
+  function applyTranscriptMuteSelection() {
+    var t = currentTake();
+    var range = currentTranscriptSelectionRange(0.08);
+    if (!t || !range) { updateTranscriptEditStatus(); return; }
+    ensureAudio(t).muteSpans.push({ start: range.start, end: range.end, source: 'transcript', note: range.text.slice(0, 120) });
+    saveDraft(t);
+    renderAudio();
+    renderEditMap();
+    drawWave();
+    renderFinishChecklist();
+    setStatus($('transcriptStatus'), 'Silenced selected transcript range from ' + fmtClock(range.start) + ' to ' + fmtClock(range.end) + '. Review it in Audio > Silences.', 'ok');
+    announce('Transcript selection silenced');
+  }
+  function applyTranscriptTrimEdge(which) {
+    var t = currentTake();
+    var range = currentTranscriptSelectionRange(0);
+    if (!t || !range) { updateTranscriptEditStatus(); return; }
+    var dur = Math.max(0.1, Number(t.duration) || 0.1);
+    var trimStart = Number($('trimStart').value) || 0;
+    var trimEnd = Number($('trimEnd').value) || 0;
+    if (which === 'before') {
+      $('trimStart').value = String(Math.min(Math.max(trimStart, range.start), Math.max(0, dur - trimEnd - 0.1)));
+      setStatus($('transcriptStatus'), 'Trim start moved to the first selected transcript line. Preview from Trim before export.', 'ok');
+    } else {
+      $('trimEnd').value = String(Math.min(Math.max(trimEnd, dur - range.end), Math.max(0, dur - trimStart - 0.1)));
+      setStatus($('transcriptStatus'), 'Trim end moved to the last selected transcript line. Preview from Trim before export.', 'ok');
+    }
+    $('trimStart').dispatchEvent(new Event('input'));
+    $('trimEnd').dispatchEvent(new Event('input'));
+    drawWave();
+    announce('Transcript selection applied to trim');
+  }
+  function addChapterFromTranscriptSelection() {
+    var t = currentTake();
+    var range = currentTranscriptSelectionRange(0);
+    if (!t || !range) { updateTranscriptEditStatus(); return; }
+    t.chapters = t.chapters || [];
+    var title = vsCleanCaptionText(range.text).replace(/[.!?]$/, '').slice(0, 80) || 'New section';
+    t.chapters.push({ start: range.start, title: title, source: 'transcript' });
+    t.chapters.sort(function (a, b) { return (Number(a.start) || 0) - (Number(b.start) || 0); });
+    saveDraft(t);
+    renderChapters();
+    renderEditMap();
+    drawWave();
+    setStatus($('transcriptStatus'), 'Chapter marker added from the selected transcript line.', 'ok');
+    announce('Chapter added from transcript');
+  }
+  function addClipFromTranscriptSelection() {
+    var t = currentTake();
+    var range = currentTranscriptSelectionRange(0.08);
+    if (!t || !range) { updateTranscriptEditStatus(); return; }
+    sceneItems.push({
+      id: sceneNewId('clip'),
+      type: 'clip',
+      takeId: t.id,
+      start: range.start,
+      end: range.end,
+      transition: sceneItems.length ? sceneDefaultTransition() : 'cut'
+    });
+    renderSceneBuilder();
+    if ($('sceneStatus')) setStatus($('sceneStatus'), 'Transcript clip added to the scene builder.', 'ok');
+    setStatus($('transcriptStatus'), 'Selected transcript range added as a scene clip. Open Scene builder to arrange or export it.', 'ok');
+    announce('Transcript clip added');
+  }
   function renderTranscript() {
     var list = $('transcriptList'); if (!list) return;
     var t = currentTake();
@@ -7580,19 +7764,35 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var hay = (txt + ' ' + vsFormatTimestamp(c.start || 0)).toLowerCase();
       if (q && hay.indexOf(q) === -1) return;
       shown++;
-      var row = document.createElement('button');
-      row.type = 'button';
+      var row = document.createElement('div');
       row.className = 'transcript-line';
-      row.setAttribute('aria-label', 'Jump to caption ' + (idx + 1) + ' at ' + fmtClock(c.start || 0));
+      row.setAttribute('aria-selected', transcriptSelection[idx] ? 'true' : 'false');
+      var pick = document.createElement('input');
+      pick.type = 'checkbox';
+      pick.checked = !!transcriptSelection[idx];
+      pick.setAttribute('aria-label', 'Select transcript line ' + (idx + 1) + ' for editing');
       var time = document.createElement('strong');
       time.textContent = fmtClock(c.start || 0);
+      var jump = document.createElement('button');
+      jump.type = 'button';
+      jump.className = 'transcript-jump';
+      jump.setAttribute('aria-label', 'Jump to caption ' + (idx + 1) + ' at ' + fmtClock(c.start || 0));
       var span = document.createElement('span');
       appendHighlighted(span, txt, q);
-      row.appendChild(time);
-      row.appendChild(span);
-      row.addEventListener('click', function () {
+      jump.appendChild(time);
+      jump.appendChild(document.createTextNode('  '));
+      jump.appendChild(span);
+      pick.addEventListener('change', function () {
+        if (pick.checked) transcriptSelection[idx] = true;
+        else delete transcriptSelection[idx];
+        row.setAttribute('aria-selected', pick.checked ? 'true' : 'false');
+        updateTranscriptEditStatus();
+      });
+      jump.addEventListener('click', function () {
         try { $('editVideo').currentTime = Math.max(0, Number(c.start) || 0); $('editVideo').focus(); } catch (_) {}
       });
+      row.appendChild(pick);
+      row.appendChild(jump);
       list.appendChild(row);
     });
     if (!cues.length) {
@@ -7601,6 +7801,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       list.innerHTML = '<p class="status">No transcript lines match that search.</p>';
     }
     setStatus($('transcriptStatus'), cues.length ? (shown + ' line' + (shown === 1 ? '' : 's') + ' shown' + (flags.length ? ' - ' + flags.length + ' possible privacy flag' + (flags.length === 1 ? '' : 's') : '')) : 'Transcript appears after captions are added.', flags.length ? 'warn' : '');
+    updateTranscriptEditStatus();
   }
   function mergeTightCues() {
     var t = currentTake(); if (!t || !t.captions.length) return;
@@ -7664,6 +7865,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     saveDraft(t); renderCues();
   });
   $('transcriptSearch').addEventListener('input', renderTranscript);
+  $('transcriptMuteBtn').addEventListener('click', applyTranscriptMuteSelection);
+  $('transcriptTrimBeforeBtn').addEventListener('click', function () { applyTranscriptTrimEdge('before'); });
+  $('transcriptTrimAfterBtn').addEventListener('click', function () { applyTranscriptTrimEdge('after'); });
+  $('transcriptClipBtn').addEventListener('click', addClipFromTranscriptSelection);
+  $('transcriptChapterBtn').addEventListener('click', addChapterFromTranscriptSelection);
+  $('transcriptClearBtn').addEventListener('click', clearTranscriptSelection);
   $('cleanCaptionBtn').addEventListener('click', function () {
     var t = currentTake();
     if (!t || !t.captions.length) { setStatus($('autoCapStatus'), 'Add captions before cleaning them.', 'warn'); return; }
@@ -7743,7 +7950,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var id = 'tx' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     var acked = false;
     var onAck = function (ev) {
-      if (opener && ev.source === opener && ev.data && ev.data.type === 'allostudio-transcript-ack' && ev.data.id === id) {
+      if (isOpenerMessage(ev, 'allostudio-transcript-ack', id)) {
         acked = true;
         window.removeEventListener('message', onAck);
         setStatus(statusEl, ev.data.ok ? (ev.data.message || 'Transcript sent to AlloFlow.') : (ev.data.message || 'Transcript copied; AlloFlow could not add it automatically.'), ev.data.ok ? 'ok' : 'warn');
@@ -7752,7 +7959,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     };
     window.addEventListener('message', onAck);
     setStatus(statusEl, 'Sending transcript to AlloFlow...');
-    postToOpener({ type: 'allostudio-transcript', id: id, payload: payload });
+    if (!postToOpener({ type: 'allostudio-transcript', id: id, payload: payload })) {
+      window.removeEventListener('message', onAck);
+      copyTextToClipboard(payload.text).then(function (ok) {
+        setStatus(statusEl, ok ? 'AlloFlow bridge is not connected; transcript copied to the clipboard.' : 'AlloFlow bridge is not connected. Download the transcript instead.', 'warn');
+      });
+      return;
+    }
     setTimeout(function () {
       if (acked) return;
       window.removeEventListener('message', onAck);
@@ -8508,7 +8721,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       // "Sent ✓" here would be a lie.
       var acked = false;
       var onAck = function (ev) {
-        if (opener && ev.source === opener && ev.data && ev.data.type === 'allostudio-video-ack') {
+        if (isOpenerMessage(ev, 'allostudio-video-ack')) {
           acked = true;
           window.removeEventListener('message', onAck);
           setStatus($('resultStatus'), 'Sent to AlloFlow ✓ (it’s in the Video Studio panel)', 'ok');
@@ -8519,7 +8732,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var take = sceneTakeForExport(lastExport);
       var safeMusic = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, take.duration || 0) : null;
       var sendVtt = lastExport.vtt || (take && take.captions && take.captions.length ? vsBuildVtt(take.captions) : null);
-      postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, outputFormat: lastExport.outputFormat || null, outputFraming: lastExport.outputFraming || null, outputContainer: lastExport.outputContainer || null, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } });
+      if (!postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, outputFormat: lastExport.outputFormat || null, outputFraming: lastExport.outputFraming || null, outputContainer: lastExport.outputContainer || null, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } })) {
+        window.removeEventListener('message', onAck);
+        setStatus($('resultStatus'), 'AlloFlow bridge is not connected - use Download, or reopen Video Studio from AlloFlow and press Send again.', 'warn');
+        return;
+      }
       setTimeout(function () {
         if (acked) return;
         window.removeEventListener('message', onAck);

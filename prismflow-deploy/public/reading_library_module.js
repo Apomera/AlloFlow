@@ -512,6 +512,7 @@
       : bookPlainText(book);
     var bookSourceName = (book.source && book.source.name) || sourceLabel(bookSourceId(book));
     var bookSourceUrl = (book.source && book.source.url) || '#';
+    var bookSourceHref = bookSourceUrl && bookSourceUrl !== '#' ? bookSourceUrl : '';
 
     useEffect(function () { setTranslation(null); setTxMenuOpen(false); }, [book.slug]);
 
@@ -774,6 +775,13 @@
           onClick: function () { stopAll(); props.onExit && props.onExit(false); },
         }, '← ' + tr('readinglib_back', 'Library')),
         e('div', { className: 'font-bold text-slate-800 truncate flex-1 min-w-0', dir: 'auto', title: displayTitle }, displayTitle),
+        bookSourceHref ? e('a', {
+          className: 'px-3 py-1.5 rounded-lg text-sm font-semibold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100',
+          href: bookSourceHref,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          title: tr('readinglib_open_original_hint', 'Open the official source page for this text'),
+        }, tr('readinglib_open_original', 'Open original')) : null,
         hasAudioTrack && !txReady ? e('button', {
           className: 'px-3 py-1.5 rounded-lg text-sm font-semibold ' + (narrating ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'),
           onClick: toggleNarration,

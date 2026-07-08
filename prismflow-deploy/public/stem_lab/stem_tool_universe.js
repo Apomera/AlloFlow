@@ -631,6 +631,26 @@ var d = labToolData.universe || {};
             { name: 'Chandra X-ray Observatory', year: '1999+', type: 'X-ray', achievement: 'Images of supernova remnants, black hole jets, galaxy cluster collisions.', icon: '\u2728' }
           ];
 
+          var OPEN_ASTRONOMY_ENGINES = [
+            { name: 'WorldWide Telescope', fit: 'Best web bridge', toolFit: 'Universe', license: 'Open source', link: 'https://worldwidetelescope.org/home', use: 'Embeddable WebGL sky, tours, multiwavelength imagery, annotations, and classroom storytelling.', next: 'Use for real Hubble/JWST/sky-survey scenes inside Universe.' },
+            { name: 'Aladin Lite', fit: 'Best real-sky atlas', toolFit: 'Galaxy + Astronomy', license: 'GPL ecosystem', link: 'https://aladin.cds.unistra.fr/AladinLite/doc/API/', use: 'Browser widget for HiPS surveys, SIMBAD/VizieR/NED catalog overlays, object search, and sky coordinates.', next: 'Use for a Real Galaxy Viewer: M31, M51, M87, Crab, Orion.' },
+            { name: 'Gaia Sky', fit: 'Best 3D Milky Way', toolFit: 'Galaxy', license: 'Open source', link: 'https://gaiasky.space/', use: 'Desktop/VR 3D universe platform using Gaia, SDSS, nearby galaxies, nebulae, quasars, and other datasets.', next: 'Use as the model for star-density, proper-motion, and 3D catalog lessons.' },
+            { name: 'OpenSpace', fit: 'Best planetarium scale', toolFit: 'Universe + Solar System', license: 'MIT', link: 'https://www.openspaceproject.com/', use: 'Open-source software designed to visualize the entire known universe with observation, simulation, and mission data.', next: 'Use for dome-style journeys from Earth to the cosmic web.' },
+            { name: 'Stellarium', fit: 'Best observer sky', toolFit: 'Astronomy + Telescope', license: 'GPL', link: 'https://stellarium.org/', use: 'Realistic planetarium sky with huge star/deep-sky catalogs, HiPS surveys, sky cultures, scripting, and telescope control.', next: 'Use for night-sky pedagogy: what students can actually observe tonight.' },
+            { name: 'Astropy + Glue', fit: 'Best data lab stack', toolFit: 'Data Lab + StatsLab', license: 'Open source', link: 'https://www.astropy.org/', use: 'Python tools for FITS files, coordinates, units, catalogs, linked plots, and research-style student investigations.', next: 'Use for inquiry labs: measure redshift, plot H-R diagrams, compare survey data.' }
+          ];
+
+          var WWT_REAL_DATA_TOUR = [
+            { id: 'deep-field', title: 'Hubble + JWST Deep Fields', epoch: 'galaxies across cosmic time', icon: '\u2728', desc: 'Use WorldWide Telescope as the real-image companion to the timeline: a tiny field becomes a history book of distant galaxies.', look: 'Look for color, size, and shape differences between nearby-looking and distant-looking galaxies.', question: 'What evidence suggests that a small patch of sky contains galaxies at very different ages?' },
+            { id: 'm51', title: 'Whirlpool Galaxy', epoch: 'nearby interacting galaxies', icon: '\uD83C\uDF00', desc: 'A real spiral-and-companion scene for connecting gravity, tidal structure, and star formation to the Galaxy Explorer model.', look: 'Trace the spiral arms, bridge, and companion galaxy before comparing the view with the simulated interaction effects.', question: 'How does gravity leave visible evidence in the shape of the galaxy?' },
+            { id: 'm87', title: 'M87 Black-Hole Context', epoch: 'galaxy clusters and active cores', icon: '\u26AB', desc: 'A Virgo Cluster anchor that lets students connect galaxy type, cluster environment, and supermassive black-hole evidence.', look: 'Compare the smooth elliptical glow with crowded surrounding galaxies and the bright central core.', question: 'Why can we infer a black hole from surrounding light and motion even when the event horizon is not directly visible here?' },
+            { id: 'cmb', title: 'Cosmic Microwave Background', epoch: 'early universe afterglow', icon: '\uD83C\uDF21', desc: 'Pair the early-timeline glow with real microwave-background maps and ask what the universe looked like before stars.', look: 'Notice that the CMB is nearly uniform, but not perfectly smooth; tiny differences become the seeds of structure.', question: 'How can tiny early density differences grow into galaxies and clusters?' },
+            { id: 'scale', title: 'Solar System to Cosmic Web', epoch: 'scale ladder', icon: '\uD83D\uDEF0', desc: 'A guided zoom idea: Earth, Solar System, Milky Way, Local Group, galaxy clusters, and the observable universe.', look: 'Track what changes at each zoom level: objects, distances, light travel time, and the kind of data scientists use.', question: 'At what point does a map stop being a normal picture and become a model built from many observations?' }
+          ];
+
+          var wwtTourStopId = d.wwtTourStop || 'deep-field';
+          var activeWWTStop = WWT_REAL_DATA_TOUR.find(function (stop) { return stop.id === wwtTourStopId; }) || WWT_REAL_DATA_TOUR[0];
+
           // Cosmic numbers
           var COSMIC_NUMBERS = [
             { label: 'Stars in the Milky Way', value: '200-400 billion', icon: '\u2B50' },
@@ -883,7 +903,7 @@ var d = labToolData.universe || {};
 
             for (var i = 0; i < 400; i++) {
 
-              particles.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 2 + 0.5, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5, c: Math.random(), age: Math.random() * 100 });
+              particles.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 2 + 0.5, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5, c: Math.random(), depth: Math.random(), age: Math.random() * 100 });
 
             }
 
@@ -909,6 +929,14 @@ var d = labToolData.universe || {};
 
               nebulae.push({ x: Math.random(), y: Math.random(), size: 0.05 + Math.random() * 0.08, hue: ni % 4 === 0 ? '200,100,255' : ni % 4 === 1 ? '100,180,255' : ni % 4 === 2 ? '255,150,100' : '150,255,200', phase: Math.random() * Math.PI * 2 });
 
+            }
+
+            var deepField = [];
+            for (var df = 0; df < 34; df++) {
+              deepField.push({
+                x: Math.random(), y: Math.random(), r: 0.004 + Math.random() * 0.018,
+                angle: Math.random() * Math.PI, hue: df % 4, phase: Math.random() * Math.PI * 2
+              });
             }
 
             function draw() {
@@ -994,6 +1022,61 @@ var d = labToolData.universe || {};
                 }
 
                 ctx.fillStyle = skyGrad; ctx.fillRect(0, 0, W, H);
+
+                // Cinematic deep-field layer: distant galaxies and epoch-specific light.
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                if (t < 0.22) {
+                  var rayLife = Math.max(0, 1 - t / 0.22);
+                  for (var ray = 0; ray < 28; ray++) {
+                    var rayA = ray * Math.PI * 2 / 28 + tick * 0.0015;
+                    var rayLen = W * (0.28 + (ray % 5) * 0.07);
+                    var rayAlpha = rayLife * (0.06 + (ray % 4) * 0.018);
+                    var rayGrad = ctx.createLinearGradient(cx, cy, cx + Math.cos(rayA) * rayLen, cy + Math.sin(rayA) * rayLen);
+                    rayGrad.addColorStop(0, 'rgba(255,255,255,' + (rayAlpha * 1.8) + ')');
+                    rayGrad.addColorStop(0.35, 'rgba(255,190,90,' + rayAlpha + ')');
+                    rayGrad.addColorStop(1, 'rgba(255,120,50,0)');
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.lineTo(cx + Math.cos(rayA - 0.012) * rayLen, cy + Math.sin(rayA - 0.012) * rayLen);
+                    ctx.lineTo(cx + Math.cos(rayA + 0.012) * rayLen, cy + Math.sin(rayA + 0.012) * rayLen);
+                    ctx.closePath();
+                    ctx.fillStyle = rayGrad;
+                    ctx.fill();
+                  }
+                }
+                if (t > 0.45) {
+                  var dfAlpha = Math.min(0.72, (t - 0.45) / 3.2);
+                  deepField.forEach(function (dfg, idx) {
+                    var dfx = dfg.x * W + Math.sin(tick * 0.0007 + dfg.phase) * 5 * dpr;
+                    var dfy = dfg.y * H + Math.cos(tick * 0.0006 + dfg.phase) * 4 * dpr;
+                    var dfr = dfg.r * Math.min(W, H) * (1 + 0.08 * Math.sin(tick * 0.01 + dfg.phase));
+                    var dfHue = dfg.hue === 0 ? '125,211,252' : dfg.hue === 1 ? '244,114,182' : dfg.hue === 2 ? '254,240,138' : '196,181,253';
+                    ctx.save();
+                    ctx.translate(dfx, dfy);
+                    ctx.rotate(dfg.angle + tick * 0.00015 * (idx % 2 ? -1 : 1));
+                    var dg = ctx.createRadialGradient(0, 0, 0, 0, 0, dfr);
+                    dg.addColorStop(0, 'rgba(255,255,255,' + (0.14 * dfAlpha) + ')');
+                    dg.addColorStop(0.35, 'rgba(' + dfHue + ',' + (0.1 * dfAlpha) + ')');
+                    dg.addColorStop(1, 'rgba(' + dfHue + ',0)');
+                    ctx.scale(1.9, 0.55);
+                    ctx.beginPath(); ctx.arc(0, 0, dfr, 0, Math.PI * 2);
+                    ctx.fillStyle = dg; ctx.fill();
+                    if (idx % 5 === 0) {
+                      ctx.strokeStyle = 'rgba(' + dfHue + ',' + (0.12 * dfAlpha) + ')';
+                      ctx.lineWidth = Math.max(0.5, 0.8 * dpr);
+                      ctx.beginPath(); ctx.arc(0, 0, dfr * 0.65, 0.2, Math.PI * 1.5); ctx.stroke();
+                    }
+                    ctx.restore();
+                  });
+                }
+                var horizonAlpha = Math.min(0.18, 0.035 + t / 13.8 * 0.14);
+                ctx.strokeStyle = 'rgba(147,197,253,' + horizonAlpha + ')';
+                ctx.lineWidth = 1 * dpr;
+                ctx.beginPath();
+                ctx.arc(cx, cy, Math.min(W, H) * (0.42 + 0.018 * Math.sin(tick * 0.006)), 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
 
 
 
@@ -1127,7 +1210,8 @@ var d = labToolData.universe || {};
 
                   var p = particles[pi];
 
-                  p.x += p.vx; p.y += p.vy;
+                  var depthDrift = 0.34 + (p.depth || 0) * 1.05;
+                  p.x += p.vx * depthDrift; p.y += p.vy * depthDrift;
 
                   if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
 
@@ -1149,17 +1233,18 @@ var d = labToolData.universe || {};
 
                   else hue = '255,160,120'; // red giant
 
-                  ctx.beginPath(); ctx.arc(p.x, p.y, p.s * dpr * twinkle, 0, Math.PI * 2);
+                  var starDepthSize = p.s * dpr * (0.58 + (p.depth || 0) * 0.9);
+                  ctx.beginPath(); ctx.arc(p.x, p.y, starDepthSize * twinkle, 0, Math.PI * 2);
 
-                  ctx.fillStyle = 'rgba(' + hue + ',' + (starBrightness * twinkle * 0.85) + ')';
+                  ctx.fillStyle = 'rgba(' + hue + ',' + (starBrightness * twinkle * (0.45 + (p.depth || 0) * 0.55)) + ')';
 
                   ctx.fill();
 
                   // Glow around bright stars
 
-                  if (p.s > 1.8 && twinkle > 0.7) {
+                  if ((p.s > 1.8 || p.depth > 0.82) && twinkle > 0.7) {
 
-                    var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.s * dpr * 3);
+                    var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, starDepthSize * 3.8);
 
                     glow.addColorStop(0, 'rgba(' + hue + ',' + (twinkle * 0.15) + ')');
 
@@ -1348,6 +1433,98 @@ var d = labToolData.universe || {};
 
 
                 // â”€â”€ Dark Matter Halos (subtle glow behind galaxies) â”€â”€
+
+                if (t > 3) {
+
+                  var clusterAlpha = Math.min(0.46, (t - 3) * 0.045);
+
+                  ctx.save();
+
+                  ctx.globalCompositeOperation = 'lighter';
+
+                  for (var cli = 0; cli < 4; cli++) {
+
+                    var clx = ((cli * 211 + 96) % (W / dpr)) * dpr;
+
+                    var cly = ((cli * 157 + 72) % (H / dpr)) * dpr;
+
+                    var clR = (44 + cli * 9) * dpr;
+
+                    var clPulse = 0.78 + 0.22 * Math.sin(tick * 0.012 + cli);
+
+                    var clGrad = ctx.createRadialGradient(clx, cly, 0, clx, cly, clR * 1.35);
+
+                    clGrad.addColorStop(0, 'rgba(255,255,255,' + (0.07 * clusterAlpha * clPulse) + ')');
+
+                    clGrad.addColorStop(0.32, 'rgba(125,211,252,' + (0.08 * clusterAlpha) + ')');
+
+                    clGrad.addColorStop(1, 'rgba(125,211,252,0)');
+
+                    ctx.beginPath(); ctx.arc(clx, cly, clR * 1.35, 0, Math.PI * 2);
+
+                    ctx.fillStyle = clGrad; ctx.fill();
+
+                    for (var cgi = 0; cgi < 10; cgi++) {
+
+                      var cga = cgi * Math.PI * 2 / 10 + cli * 0.7 + tick * 0.0005;
+
+                      var cgr = clR * (0.16 + ((cgi * 37 + cli * 11) % 100) / 145);
+
+                      var cgx = clx + Math.cos(cga) * cgr;
+
+                      var cgy = cly + Math.sin(cga) * cgr * 0.72;
+
+                      var cgs = (2.4 + (cgi % 4) * 0.75) * dpr;
+
+                      var cgHue = cgi % 3 === 0 ? '254,240,138' : cgi % 3 === 1 ? '147,197,253' : '244,114,182';
+
+                      ctx.save();
+
+                      ctx.translate(cgx, cgy);
+
+                      ctx.rotate(cga + tick * 0.001);
+
+                      ctx.scale(1.7, 0.55);
+
+                      ctx.beginPath(); ctx.arc(0, 0, cgs, 0, Math.PI * 2);
+
+                      ctx.fillStyle = 'rgba(' + cgHue + ',' + (0.4 * clusterAlpha) + ')';
+
+                      ctx.fill();
+
+                      ctx.restore();
+
+                    }
+
+                    if (cli < 3) {
+
+                      ctx.strokeStyle = 'rgba(196,181,253,' + (0.18 * clusterAlpha * clPulse) + ')';
+
+                      ctx.lineWidth = 1.1 * dpr;
+
+                      ctx.beginPath();
+
+                      ctx.arc(clx, cly, clR * (0.78 + cli * 0.08), Math.PI * (0.1 + cli * 0.24), Math.PI * (0.95 + cli * 0.24));
+
+                      ctx.stroke();
+
+                      ctx.strokeStyle = 'rgba(125,211,252,' + (0.12 * clusterAlpha) + ')';
+
+                      ctx.beginPath();
+
+                      ctx.arc(clx, cly, clR * (1.02 + cli * 0.06), Math.PI * (1.12 + cli * 0.18), Math.PI * (1.84 + cli * 0.18));
+
+                      ctx.stroke();
+
+                    }
+
+                  }
+
+                  ctx.restore();
+
+                }
+
+
 
                 if (t > 1.5) {
 
@@ -1557,6 +1734,32 @@ var d = labToolData.universe || {};
 
                 // Dark backdrop for readability
 
+                ctx.save();
+                var topMatte = ctx.createLinearGradient(0, 0, 0, H * 0.22);
+                topMatte.addColorStop(0, 'rgba(2,6,23,0.84)');
+                topMatte.addColorStop(1, 'rgba(2,6,23,0)');
+                ctx.fillStyle = topMatte; ctx.fillRect(0, 0, W, H * 0.22);
+                var bottomMatte = ctx.createLinearGradient(0, H, 0, H * 0.78);
+                bottomMatte.addColorStop(0, 'rgba(2,6,23,0.88)');
+                bottomMatte.addColorStop(1, 'rgba(2,6,23,0)');
+                ctx.fillStyle = bottomMatte; ctx.fillRect(0, H * 0.78, W, H * 0.22);
+                var scanY = H * (0.46 + 0.025 * Math.sin(tick * 0.008));
+                var scanGrad = ctx.createLinearGradient(W * 0.12, scanY, W * 0.88, scanY);
+                scanGrad.addColorStop(0, 'rgba(255,255,255,0)');
+                scanGrad.addColorStop(0.42, 'rgba(125,211,252,0.16)');
+                scanGrad.addColorStop(0.5, 'rgba(255,255,255,0.32)');
+                scanGrad.addColorStop(0.58, 'rgba(244,114,182,0.12)');
+                scanGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.strokeStyle = scanGrad; ctx.lineWidth = 1 * dpr;
+                ctx.beginPath(); ctx.moveTo(W * 0.12, scanY); ctx.lineTo(W * 0.88, scanY); ctx.stroke();
+                ctx.strokeStyle = 'rgba(226,232,240,0.36)';
+                ctx.lineWidth = 1 * dpr;
+                var gate = 22 * dpr, gateLen = 58 * dpr;
+                [[gate, gate, 1, 1], [W - gate, gate, -1, 1], [gate, H - gate, 1, -1], [W - gate, H - gate, -1, -1]].forEach(function (g) {
+                  ctx.beginPath(); ctx.moveTo(g[0], g[1] + g[3] * gateLen); ctx.lineTo(g[0], g[1]); ctx.lineTo(g[0] + g[2] * gateLen, g[1]); ctx.stroke();
+                });
+                ctx.restore();
+
                 ctx.fillStyle = 'rgba(0,0,0,0.5)';
 
                 var labelW = 220 * dpr, labelH = 48 * dpr;
@@ -1641,9 +1844,12 @@ var d = labToolData.universe || {};
 
             // Canvas
 
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-violet-300 shadow-lg", style: { height: '55vh', minHeight: '360px', maxHeight: '700px', background: '#050510' } },
+            React.createElement("div", { className: "relative rounded-xl overflow-hidden border shadow-lg", style: { height: '55vh', minHeight: '360px', maxHeight: '700px', background: 'radial-gradient(circle at 50% 46%, rgba(30,41,59,0.55), #03040d 74%)', borderColor: 'rgba(167,139,250,0.46)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -54px 110px rgba(2,6,23,0.84), 0 22px 52px rgba(15,23,42,0.25)' } },
 
-              React.createElement("canvas", { tabIndex: 0, "data-universe-canvas": "true", ref: canvasRefCb, "data-time": String(cosmicTime), role: 'img', 'aria-label': 'Universe time-lapse visualization showing 13.8 billion years of cosmic history from the Big Bang to the present day', style: { width: '100%', height: '100%', display: 'block' } })
+              React.createElement("canvas", { tabIndex: 0, "data-universe-canvas": "true", ref: canvasRefCb, "data-time": String(cosmicTime), role: 'img', 'aria-label': 'Universe time-lapse visualization showing 13.8 billion years of cosmic history from the Big Bang to the present day', style: { width: '100%', height: '100%', display: 'block' } }),
+              React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 48%, transparent 34%, rgba(2,6,23,0.58) 100%), linear-gradient(rgba(167,139,250,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(125,211,252,0.035) 1px, transparent 1px)', backgroundSize: '100% 100%, 42px 42px, 42px 42px', mixBlendMode: 'screen', opacity: 0.62 } }),
+              React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(2,6,23,0.72) 0%, rgba(2,6,23,0.14) 10%, rgba(2,6,23,0) 22%, rgba(2,6,23,0) 78%, rgba(2,6,23,0.18) 90%, rgba(2,6,23,0.78) 100%)' } }),
+              React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: '14px', pointerEvents: 'none', border: '1px solid rgba(226,232,240,0.07)', backgroundImage: 'linear-gradient(90deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(90deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.52), rgba(226,232,240,0))', backgroundPosition: 'top left, top left, top right, top right, bottom left, bottom left, bottom right, bottom right', backgroundSize: '88px 1px, 1px 54px, 88px 1px, 1px 54px, 88px 1px, 1px 54px, 88px 1px, 1px 54px', backgroundRepeat: 'no-repeat', opacity: 0.7 } })
 
             ),
 
@@ -1750,6 +1956,107 @@ var d = labToolData.universe || {};
             ),
 
             // â”€â”€ Current epoch info card (enhanced with dark theme + extra fields) â”€â”€
+
+            React.createElement("div", { className: "mt-3 rounded-xl border bg-slate-950 p-3 shadow-lg", style: { borderColor: 'rgba(167,139,250,0.3)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04), 0 18px 42px rgba(15,23,42,0.22)' } },
+              React.createElement("div", { className: "flex flex-wrap items-start gap-3" },
+                React.createElement("div", { className: "min-w-[220px] flex-1" },
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, "\uD83C\uDF0C"),
+                    React.createElement("p", { className: "text-xs font-black text-violet-100" }, "WorldWide Telescope Real-Data Tour"),
+                    React.createElement("span", { className: "rounded-full border px-2 py-0.5 text-[10px] font-bold text-cyan-100", style: { borderColor: 'rgba(125,211,252,0.35)', background: 'rgba(14,165,233,0.14)' } }, "guided bridge")
+                  ),
+                  React.createElement("p", { className: "mt-1 text-[11px] text-slate-300 leading-relaxed" }, "Pair the cinematic universe timeline with real survey imagery, telescope mosaics, and observation questions students can bring back into the model.")
+                ),
+                React.createElement("a", { href: "https://worldwidetelescope.org/webclient/", target: "_blank", rel: "noreferrer", className: "rounded-lg bg-violet-500 px-3 py-2 text-[11px] font-black text-white shadow-sm hover:bg-violet-400" }, "Launch WWT")
+              ),
+              React.createElement("div", { className: "mt-3 grid grid-cols-2 md:grid-cols-5 gap-2" },
+                WWT_REAL_DATA_TOUR.map(function (stop) {
+                  var selected = stop.id === activeWWTStop.id;
+                  return React.createElement("button", {
+                    key: stop.id,
+                    type: "button",
+                    onClick: function () {
+                      upd("wwtTourStop", stop.id);
+                      if (typeof awardStemXP === 'function') awardStemXP('universe_wwt_tour', 2, 'Selected WWT tour stop: ' + stop.title);
+                    },
+                    className: "rounded-lg border px-2 py-2 text-left transition-all hover:-translate-y-0.5",
+                    style: selected ? { borderColor: 'rgba(196,181,253,0.75)', background: 'linear-gradient(135deg, rgba(124,58,237,0.35), rgba(8,145,178,0.22))', color: '#ffffff' } : { borderColor: 'rgba(148,163,184,0.2)', background: 'rgba(15,23,42,0.74)', color: '#cbd5e1' }
+                  },
+                    React.createElement("span", { className: "block text-base mb-1", "aria-hidden": "true" }, stop.icon),
+                    React.createElement("span", { className: "block text-[10px] font-black leading-tight" }, stop.title),
+                    React.createElement("span", { className: "block mt-1 text-[9px] font-semibold opacity-75 leading-tight" }, stop.epoch)
+                  );
+                })
+              ),
+              React.createElement("div", { className: "mt-3 grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-3" },
+                React.createElement("div", { className: "rounded-xl border p-3", style: { borderColor: 'rgba(125,211,252,0.24)', background: 'radial-gradient(circle at 18% 12%, rgba(125,211,252,0.15), rgba(15,23,42,0.88) 52%)' } },
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2" },
+                    React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, activeWWTStop.icon),
+                    React.createElement("div", { className: "min-w-0 flex-1" },
+                      React.createElement("p", { className: "text-sm font-black text-white" }, activeWWTStop.title),
+                      React.createElement("p", { className: "text-[10px] font-bold text-cyan-200" }, activeWWTStop.epoch)
+                    )
+                  ),
+                  React.createElement("p", { className: "text-[11px] text-slate-200 leading-relaxed" }, activeWWTStop.desc),
+                  React.createElement("div", { className: "mt-3 grid grid-cols-1 md:grid-cols-2 gap-2" },
+                    [
+                      { label: 'Look for', body: activeWWTStop.look },
+                      { label: 'Ask', body: activeWWTStop.question }
+                    ].map(function (item) {
+                      return React.createElement("div", { key: item.label, className: "rounded-lg border p-2", style: { borderColor: 'rgba(226,232,240,0.12)', background: 'rgba(2,6,23,0.45)' } },
+                        React.createElement("p", { className: "text-[10px] font-black text-violet-200 mb-1" }, item.label),
+                        React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, item.body)
+                      );
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "rounded-xl border p-3", style: { borderColor: 'rgba(52,211,153,0.22)', background: 'rgba(6,78,59,0.16)' } },
+                  React.createElement("p", { className: "text-[11px] font-black text-emerald-100 mb-2" }, "Classroom Flight Plan"),
+                  [
+                    'Open WWT and search this stop.',
+                    'Name one real feature the model hinted at.',
+                    'Return here and explain the evidence.'
+                  ].map(function (step, idx) {
+                    return React.createElement("div", { key: step, className: "flex gap-2 text-[11px] text-slate-200 leading-relaxed mb-2 last:mb-0" },
+                      React.createElement("span", { className: "shrink-0 rounded-full bg-emerald-300/15 px-1.5 py-0.5 text-[10px] font-black text-emerald-100" }, idx + 1),
+                      React.createElement("span", null, step)
+                    );
+                  })
+                )
+              )
+            ),
+
+            React.createElement("div", { className: "mt-3 rounded-xl border bg-slate-950 p-3 shadow-lg", style: { borderColor: 'rgba(125,211,252,0.24)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03), 0 14px 34px rgba(15,23,42,0.18)' } },
+              React.createElement("div", { className: "flex flex-wrap items-start gap-2 mb-2" },
+                React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, "\uD83D\uDD2D"),
+                React.createElement("div", { className: "min-w-0 flex-1" },
+                  React.createElement("p", { className: "text-xs font-black text-cyan-200" }, "Real-Data Astronomy Engines"),
+                  React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, "The simulation above is a teaching model. These open-source projects are the bridge to real sky surveys, catalog data, planetarium-scale navigation, and classroom inquiry.")
+                ),
+                React.createElement("span", { className: "rounded-full border px-2 py-0.5 text-[10px] font-bold text-violet-200", style: { borderColor: 'rgba(196,181,253,0.38)', background: 'rgba(124,58,237,0.16)' } }, "open ecosystem")
+              ),
+              React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2" },
+                OPEN_ASTRONOMY_ENGINES.map(function (engine) {
+                  return React.createElement("a", {
+                    key: engine.name,
+                    href: engine.link,
+                    target: "_blank",
+                    rel: "noreferrer",
+                    className: "block rounded-lg border p-2.5 transition-all hover:-translate-y-0.5 hover:bg-slate-900",
+                    style: { borderColor: 'rgba(148,163,184,0.2)', background: 'rgba(15,23,42,0.78)' }
+                  },
+                    React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                      React.createElement("span", { className: "text-[11px] font-black text-white" }, engine.name),
+                      React.createElement("span", { className: "ml-auto rounded-full px-2 py-0.5 text-[9px] font-bold text-cyan-100", style: { background: 'rgba(8,145,178,0.24)' } }, engine.fit)
+                    ),
+                    React.createElement("p", { className: "text-[10px] font-black text-emerald-200 mb-1" }, "Best paired with: " + engine.toolFit),
+                    React.createElement("p", { className: "text-[10px] font-bold text-violet-200 mb-1" }, engine.license),
+                    React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, engine.use),
+                    React.createElement("p", { className: "mt-1.5 text-[10px] font-semibold text-emerald-200 leading-relaxed" }, engine.next)
+                  );
+                })
+              )
+            ),
 
             React.createElement("div", { className: "mt-3 rounded-xl border-2 p-5 animate-in fade-in duration-300 shadow-lg", style: { backgroundColor: epoch.color, borderColor: epoch.border } },
 

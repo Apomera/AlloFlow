@@ -870,6 +870,49 @@ function inferLocalContextWindow(modelId) {
     if (plain) return clampLocalNumber(Number(plain[1]) * 1024, LOCAL_CONTEXT_MIN, LOCAL_CONTEXT_MAX, LOCAL_CONTEXT_FALLBACK);
     return null;
 }
+function normalizeLocalTaskState(value) {
+    const state = String(value || '').toLowerCase();
+    return ['pass', 'fail', 'partial', 'unknown', 'unavailable'].includes(state) ? state : 'unknown';
+}
+function localProbeTestState(probe, id) {
+    if (!probe || !Array.isArray(probe.tests) || probe.tests.length === 0) return 'unknown';
+    const test = probe.tests.find((item) => item && item.id === id);
+    if (!test) return 'unknown';
+    return test.ok ? 'pass' : 'fail';
+}
+function buildLocalTaskSupportFromProbe(probe = {}) {
+    const tests = Array.isArray(probe.tests) ? probe.tests : [];
+    const passed = tests.filter((test) => test && test.ok).length;
+    return {
+        status: normalizeLocalTaskState(probe.status === 'not-running' ? 'unavailable' : probe.status),
+        generatedAt: probe.generatedAt || '',
+        passed,
+        total: tests.length,
+        simpleText: localProbeTestState(probe, 'plain-text'),
+        strictJson: localProbeTestState(probe, 'strict-json'),
+        remediationJson: localProbeTestState(probe, 'remediation-shape'),
+    };
+}
+function normalizeLocalTaskSupport(value = {}) {
+    const probeSupport = value.probe ? buildLocalTaskSupportFromProbe(value.probe) : {};
+    const support = value.taskSupport || value.support || value || {};
+    return {
+        status: normalizeLocalTaskState(support.status || probeSupport.status),
+        generatedAt: support.generatedAt || probeSupport.generatedAt || '',
+        passed: clampLocalNumber(support.passed, 0, 99, probeSupport.passed || 0),
+        total: clampLocalNumber(support.total, 0, 99, probeSupport.total || 0),
+        simpleText: normalizeLocalTaskState(support.simpleText || support.plainText || probeSupport.simpleText),
+        strictJson: normalizeLocalTaskState(support.strictJson || support.json || probeSupport.strictJson),
+        remediationJson: normalizeLocalTaskState(support.remediationJson || support.remediation || probeSupport.remediationJson),
+    };
+}
+function localModelSupportsTask(profile = {}, task = 'simple-text') {
+    const support = normalizeLocalTaskSupport(profile.taskSupport || {});
+    const normalizedTask = String(task || 'simple-text').toLowerCase();
+    if (normalizedTask === 'remediation' || normalizedTask === 'remediation-json') return support.remediationJson === 'pass';
+    if (normalizedTask === 'json' || normalizedTask === 'strict-json') return support.strictJson === 'pass';
+    return support.simpleText === 'pass';
+}
 function buildLocalModelProfile(config = {}) {
     const backend = config.backend || 'local';
     const supplied = config.localModelProfile || config.localModel || config.capabilities || {};
@@ -909,6 +952,10 @@ function buildLocalModelProfile(config = {}) {
         outputTokenLimit,
         jsonOutputTokenLimit,
         reserveTokens: clampLocalNumber(supplied.reserveTokens, 128, 2048, 384),
+        taskSupport: normalizeLocalTaskSupport({
+            taskSupport: supplied.taskSupport,
+            probe: supplied.lastProbe || supplied.probe,
+        }),
     };
 }
 function tuneLocalTextOptions(prompt, opts = {}, profile = buildLocalModelProfile()) {
@@ -936,7 +983,14 @@ function tuneLocalTextOptions(prompt, opts = {}, profile = buildLocalModelProfil
 // collide with real streamed content.
 const STREAM_DONE = (typeof Symbol === 'function') ? Symbol('alloflow.stream.done') : ' __ALLO_STREAM_DONE__';
 if (typeof window !== 'undefined') {
-    window.AIBackendLocal = { LOCAL_BACKENDS: LOCAL_BACKENDS.slice(), isLocalTextBackend, buildLocalModelProfile, tuneLocalTextOptions };
+    window.AIBackendLocal = {
+        LOCAL_BACKENDS: LOCAL_BACKENDS.slice(),
+        isLocalTextBackend,
+        buildLocalModelProfile,
+        tuneLocalTextOptions,
+        buildLocalTaskSupportFromProbe,
+        localModelSupportsTask,
+    };
 }
 
 class AIProvider {
@@ -1052,6 +1106,8 @@ class AIProvider {
                     safeInputTokens: cap.safeInputTokens,
                     safeOutputTokens: cap.safeOutputTokens,
                     safeJsonOutputTokens: cap.safeJsonOutputTokens,
+                    taskSupport: status.taskSupport || (status.lastProbe && status.lastProbe.taskSupport),
+                    lastProbe: status.lastProbe,
                 },
             });
         } catch (err) {
@@ -2304,7 +2360,15 @@ if (typeof window !== 'undefined') {
 // Node/CommonJS export — test harness only. Guarded so the browser <script>
 // load is unaffected (`module` is undefined there). Purely additive.
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { AIProvider, LOCAL_BACKENDS: LOCAL_BACKENDS.slice(), isLocalTextBackend, buildLocalModelProfile, tuneLocalTextOptions };
+    module.exports = {
+        AIProvider,
+        LOCAL_BACKENDS: LOCAL_BACKENDS.slice(),
+        isLocalTextBackend,
+        buildLocalModelProfile,
+        tuneLocalTextOptions,
+        buildLocalTaskSupportFromProbe,
+        localModelSupportsTask,
+    };
 }
 
     console.log('[AI Backend Module] Loaded: WebSearchProvider + AIProvider + Firebase Shim Factory');

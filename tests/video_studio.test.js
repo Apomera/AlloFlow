@@ -46,6 +46,61 @@ describe('shared-block sync gate', () => {
 // ─── vsFormatTimestamp ───────────────────────────────────────────────────────
 describe('Scene builder popup wiring', () => {
   const popup = () => readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+  it('keeps startup guards and exact privacy framing in the popup', () => {
+    const html = popup();
+    const moduleText = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
+    expect(html).toContain('local by default, AI optional');
+    expect(html).toContain('optional AI tools later may send reviewed text, prompts, or sampled frame sheets through AlloFlow');
+    expect(moduleText).toContain('Local by default: recording, editing, and captioning run in your browser.');
+    expect(moduleText).toContain('Optional AI tools may send reviewed text, prompts, or sampled frame sheets through AlloFlow');
+    expect(html).toContain('function currentTake() { return (Array.isArray(takes) ? takes : [])');
+  });
+  it('starts the editor in lesson-polish focus instead of every tool', () => {
+    const html = popup();
+    expect(html).toContain('id="editorFocusStatus">Lesson polish tools are visible.');
+    expect(html).toContain('<option value="record" selected>Lesson polish</option>');
+    expect(html).toContain("var EDITOR_FOCUS_DEFAULT = 'record';");
+    expect(html).toContain('setEditorFocusMode(EDITOR_FOCUS_DEFAULT, false);');
+    expect(html).not.toContain("setEditorFocusMode('all', false);");
+  });
+  it('keeps transcript-based editing controls in the transcript workspace', () => {
+    const html = popup();
+    expect(html).toContain('id="transcriptEditStatus"');
+    expect(html).toContain('id="transcriptMuteBtn"');
+    expect(html).toContain('id="transcriptTrimBeforeBtn"');
+    expect(html).toContain('id="transcriptTrimAfterBtn"');
+    expect(html).toContain('id="transcriptClipBtn"');
+    expect(html).toContain('id="transcriptChapterBtn"');
+    expect(html).toContain('function applyTranscriptMuteSelection');
+    expect(html).toContain('function addClipFromTranscriptSelection');
+    expect(html).toContain('Transcript clip added to the scene builder.');
+    expect(html).toContain('vsTranscriptSelectionRange');
+    expect(html).toContain('source: \'transcript\'');
+  });
+  it('pins the popup bridge to the opener origin and nonce', () => {
+    const html = popup();
+    const moduleText = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
+    expect(html).toContain("bridgeParams.get('allo_bridge')");
+    expect(html).toContain("bridgeParams.get('allo_origin')");
+    expect(html).toContain('function isOpenerMessage');
+    expect(html).toContain('var target = openerTargetOrigin();');
+    expect(html).toContain('opener.postMessage(withBridge(msg), target);');
+    expect(html).toContain('return true;');
+    expect(html).toContain('return false;');
+    expect(html).toContain('if (!postToOpener(Object.assign({ type: type, id: id }, payload)))');
+    expect(html).toContain('AlloFlow bridge is not connected. Reopen Video Studio from AlloFlow and try again.');
+    expect(html).not.toContain("return openerOrigin || '*'");
+    expect(html).not.toMatch(/postMessage\([^\n]*['"]\*['"]/);
+    expect(moduleText).toContain('var STUDIO_ORIGIN');
+    expect(moduleText).toContain('function studioUrlWithBridge');
+    expect(moduleText).toContain("u.searchParams.set('allo_origin'");
+    expect(moduleText).toContain("u.searchParams.set('allo_bridge'");
+    expect(moduleText).toContain('ev.origin && ev.origin !== STUDIO_ORIGIN');
+    expect(moduleText).toContain('ev.data.bridge !== bridgeTokenRef.current');
+    expect(moduleText).toContain('win.postMessage(payload, STUDIO_ORIGIN)');
+    expect(moduleText).toContain('bridgeTokenRef.current = null');
+    expect(moduleText).not.toMatch(/postMessage\([^\n]*['"]\*['"]/);
+  });
   it('keeps the scene assembly controls in the editor', () => {
     const html = popup();
     expect(html).toContain('<h2>Scene builder</h2>');
@@ -482,6 +537,31 @@ describe('vsDetectFillerSpans', () => {
   it('tolerates malformed word entries', () => {
     expect(VS.vsDetectFillerSpans([null, w('', 1, 2), w('um', NaN, 2), w('um', 3, 3)])).toHaveLength(0);
     expect(VS.vsDetectFillerSpans('nope')).toEqual([]);
+  });
+});
+
+describe('vsTranscriptSelectionRange', () => {
+  it('builds a padded, sorted time range from selected caption lines', () => {
+    const cues = [
+      { start: 0, end: 1, text: 'Opening setup.' },
+      { start: 2, end: 3, text: 'Student name mentioned.' },
+      { start: 3.2, end: 4.4, text: 'Keep going.' },
+    ];
+    const range = VS.vsTranscriptSelectionRange(cues, [2, 1, 1, 99], 10, 0.1);
+    expect(range).toMatchObject({
+      indices: [1, 2],
+      lineCount: 2,
+      text: 'Student name mentioned. Keep going.',
+    });
+    expect(range.start).toBeCloseTo(1.9);
+    expect(range.end).toBeCloseTo(4.5);
+    expect(range.duration).toBeCloseTo(2.6);
+  });
+  it('drops invalid lines and clamps padding to the take duration', () => {
+    expect(VS.vsTranscriptSelectionRange([{ start: 4, end: 4, text: 'bad' }], [0], 5, 0.2)).toBeNull();
+    const range = VS.vsTranscriptSelectionRange([{ start: 0.05, end: 4.95, text: 'whole take' }], [0], 5, 1);
+    expect(range.start).toBe(0);
+    expect(range.end).toBe(5);
   });
 });
 
