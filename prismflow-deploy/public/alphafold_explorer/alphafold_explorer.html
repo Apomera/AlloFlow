@@ -596,6 +596,25 @@
       </div>
     </section>
 
+    <section aria-labelledby="bioContextTitle">
+      <h2 id="bioContextTitle">Biology context</h2>
+      <label for="bioContextSelect">Unit or phenomenon</label>
+      <select id="bioContextSelect">
+        <option value="model">Scientific models and uncertainty</option>
+        <option value="homeostasis">Homeostasis and hormones</option>
+        <option value="enzyme">Enzymes and active sites</option>
+        <option value="transport">Membrane transport</option>
+        <option value="cytoskeleton">Cell structure and movement</option>
+        <option value="bioinformatics">Bioinformatics validation</option>
+      </select>
+      <div id="bioContextOutput" class="summaryBox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="setBioExampleBtn" type="button">Set suggested accession</button>
+        <button class="secondary" id="copyBioBriefBtn" type="button">Copy investigation brief</button>
+        <span class="status" id="bioContextStatus" role="status"></span>
+      </div>
+    </section>
+
     <section aria-labelledby="routeTitle">
       <h2 id="routeTitle">Choose your route</h2>
       <label for="routeSelect">Learning path</label>
@@ -1148,6 +1167,80 @@
       assessment: 'Use the rubric categories: source/privacy, claim language, evidence, limitation, and scientific humility.'
     }
   };
+  var BIOLOGY_CONTEXTS = {
+    model: {
+      label: 'Scientific models and uncertainty',
+      example: 'Human ubiquitin',
+      accession: 'P0CG47',
+      unit: 'Nature of science, modeling, and evidence',
+      anchor: 'How can a model be useful even when it is not final proof?',
+      task: 'Compare one confident-looking region with one uncertainty or limitation statement, then decide what the model can and cannot support.',
+      evidence: 'Source, confidence note, compact fold, flexible-looking regions, and careful wording.',
+      caution: 'Do not treat the 3D image as the actual protein or as proof of function by itself.',
+      extension: 'Ask students to revise a claim that uses "proves" into a claim that uses "suggests" or "is consistent with."',
+      access: 'Students can use the accessible summary, a drawing, oral observation, or one written sentence as equivalent evidence routines.'
+    },
+    homeostasis: {
+      label: 'Homeostasis and hormones',
+      example: 'Human insulin',
+      accession: 'P01308',
+      unit: 'Feedback, hormones, and cellular communication',
+      anchor: 'How can a small protein model help us ask questions about signaling without overclaiming?',
+      task: 'Inspect the public insulin record, name one visible structure feature, and connect it cautiously to the idea of signaling or regulation.',
+      evidence: 'Public source, protein size, visible fold, confidence note, and class reading about hormone signaling.',
+      caution: 'Do not use the model for diagnosis, treatment, disease-risk interpretation, or personal medical discussion.',
+      extension: 'Compare a structure-based observation with a textbook or teacher-provided explanation of hormone signaling.',
+      access: 'Offer a two-column note catcher: "What I observe" and "What I still need evidence for."'
+    },
+    enzyme: {
+      label: 'Enzymes and active sites',
+      example: 'Human lysozyme',
+      accession: 'P61626',
+      unit: 'Enzyme structure, substrate interaction, and specificity',
+      anchor: 'What kinds of shape evidence might suggest where an enzyme interacts with another molecule?',
+      task: 'Look for a pocket, groove, surface, or compact domain, then write a cautious claim about possible interaction evidence.',
+      evidence: 'Pocket/surface language, confidence, domain shape, and a reference or class reading about enzyme function.',
+      caution: 'A visible pocket or surface does not prove the active site without reference or experimental evidence.',
+      extension: 'Have students name one experiment, database comparison, or reference image that could strengthen the claim.',
+      access: 'Let students describe the feature in text before rotating the 3D model; avoid making color the only evidence signal.'
+    },
+    transport: {
+      label: 'Membrane transport',
+      example: 'Aquaporin 1',
+      accession: 'P29972',
+      unit: 'Membranes, channels, transport, and structure-function relationships',
+      anchor: 'How might a protein shape support a channel or transport role?',
+      task: 'Inspect the public aquaporin record and look for a repeated, channel-like, or surface pattern that could support a cautious structure-function question.',
+      evidence: 'Visible fold pattern, possible channel-like geometry, confidence, and comparison with class materials on membrane transport.',
+      caution: 'A predicted channel-like shape is not proof of transport rate, selectivity, or mechanism.',
+      extension: 'Ask students what lab data or reference structure would help test a transport claim.',
+      access: 'Pair 3D inspection with a text summary and let students answer with a labeled sketch or written evidence statement.'
+    },
+    cytoskeleton: {
+      label: 'Cell structure and movement',
+      example: 'Actin beta',
+      accession: 'P60709',
+      unit: 'Cytoskeleton, cell shape, and movement',
+      anchor: 'How can protein shape support questions about cell structure and movement?',
+      task: 'Inspect actin beta and identify one structural feature that could support a question about assembly, interaction, or cellular support.',
+      evidence: 'Domain shape, surface features, confidence note, and comparison with class diagrams of cytoskeleton organization.',
+      caution: 'The prediction alone cannot show how proteins assemble in the cell or move over time.',
+      extension: 'Connect the model to a diagram of the cytoskeleton and name what the diagram adds that the model does not show.',
+      access: 'Use a concept map linking structure, evidence, limitation, and next test for students who need organizational support.'
+    },
+    bioinformatics: {
+      label: 'Bioinformatics validation',
+      example: 'Hemoglobin alpha',
+      accession: 'P69905',
+      unit: 'Databases, model quality, and evidence validation',
+      anchor: 'How do computational predictions, database annotations, and experimental evidence work together?',
+      task: 'Inspect the public record, cite confidence or uncertainty, and name a database, literature, or experiment-based validation step.',
+      evidence: 'Accession, source, confidence, domain or interface language, PAE when available, and external reference comparison.',
+      caution: 'Model confidence, annotation, and validation are different kinds of evidence and should not be blended into one certainty claim.',
+      extension: 'Students write one claim the model supports and one claim that needs outside validation.',
+      access: 'Keep acronyms expanded, require a plain-language summary, and let students use the copied accessible summary as their evidence table.'
+    }
+  };
 
   var viewer = null;
   var viewerPromise = null;
@@ -1202,6 +1295,11 @@
   var copyLessonPlanBtn = document.getElementById('copyLessonPlanBtn');
   var copyStudentDirectionsBtn = document.getElementById('copyStudentDirectionsBtn');
   var lessonPlanStatus = document.getElementById('lessonPlanStatus');
+  var bioContextSelect = document.getElementById('bioContextSelect');
+  var bioContextOutput = document.getElementById('bioContextOutput');
+  var setBioExampleBtn = document.getElementById('setBioExampleBtn');
+  var copyBioBriefBtn = document.getElementById('copyBioBriefBtn');
+  var bioContextStatus = document.getElementById('bioContextStatus');
   var routeSelect = document.getElementById('routeSelect');
   var routeOutput = document.getElementById('routeOutput');
   var readyPredictionInput = document.getElementById('readyPredictionInput');
@@ -1261,6 +1359,7 @@
       'What this explorer does: loads public structures, opens local result files, prepares classroom-safe JSON, and helps students write cautious claim-evidence-limit notes.',
       'Grade band: ' + currentGradeTutorial().label,
       'Lesson sequence: ' + currentLessonLength().label,
+      'Biology context: ' + currentBiologyContext().label,
       'Selected route: ' + currentRoute().label,
       'Student workflow: load a public record, inspect shape and confidence, write one cautious claim, cite evidence, and name a limit or next test.',
       'Careful wording: predictions are useful models, not final proof, diagnosis, treatment guidance, ancestry interpretation, or personal genetic analysis.',
@@ -1306,6 +1405,14 @@
     return LESSON_LENGTHS[currentLessonLengthKey()] || LESSON_LENGTHS.guided;
   }
 
+  function currentBiologyContextKey() {
+    return bioContextSelect ? bioContextSelect.value : 'model';
+  }
+
+  function currentBiologyContext() {
+    return BIOLOGY_CONTEXTS[currentBiologyContextKey()] || BIOLOGY_CONTEXTS.model;
+  }
+
   function gradeTutorialText() {
     var t = currentGradeTutorial();
     var lines = [
@@ -1335,6 +1442,7 @@
     gradeTutorialOutput.textContent = gradeTutorialText();
     setStatus(gradeTutorialStatus, '', '');
     renderLessonPlan();
+    renderBiologyContext();
     renderActivityCard();
     renderAccessibleSummary();
   }
@@ -1366,14 +1474,18 @@
   function lessonPlanText() {
     var tutorial = currentGradeTutorial();
     var length = currentLessonLength();
+    var bio = currentBiologyContext();
     var route = ROUTES[tutorial.route] || currentRoute();
     var ctx = CONTEXT_LAYERS[tutorial.context] || currentContext();
     var lines = [
       'AlphaFold grade-level lesson sequence',
       'Grade band: ' + tutorial.label,
       'Class time: ' + length.label,
+      'Biology context: ' + bio.label,
+      'Suggested public example: ' + bio.example + ' (' + bio.accession + ')',
       'Learning goal: ' + tutorial.objective,
       'AlphaFold purpose: ' + tutorial.use,
+      'Anchor question: ' + bio.anchor,
       'Recommended route: ' + route.label,
       'Recommended support lens: ' + ctx.label,
       'Teacher launch language: ' + tutorial.intro,
@@ -1387,9 +1499,13 @@
       'Student artifact: ' + length.artifact,
       'Vocabulary: ' + tutorial.vocabulary,
       'Student sentence frame: ' + tutorial.frame,
+      'Context evidence focus: ' + bio.evidence,
       'Accessibility and UDL supports: ' + tutorial.access,
+      'Context accessibility move: ' + bio.access,
       'Misconception to watch for: ' + tutorial.misconception,
+      'Context caution: ' + bio.caution,
       'Assessment look-for: ' + length.assessment,
+      'Extension: ' + bio.extension,
       'Exit ticket: ' + tutorial.exit,
       'Privacy guardrail: Use public, synthetic, or teacher-approved classroom samples only. Do not use personal, family, patient, ancestry, private genetic-test, diagnosis, treatment, or disease-risk information.'
     ]).join('\n');
@@ -1398,16 +1514,21 @@
   function studentDirectionsText() {
     var tutorial = currentGradeTutorial();
     var length = currentLessonLength();
+    var bio = currentBiologyContext();
     return [
       'AlphaFold student directions',
       'Grade band: ' + tutorial.label,
       'Time: ' + length.label,
+      'Biology context: ' + bio.label,
+      'Public example: ' + bio.example + ' (' + bio.accession + ')',
       'Goal: ' + tutorial.objective,
+      'Anchor question: ' + bio.anchor,
       '1. Use only the public example or teacher-approved classroom sample.',
       '2. Remember that AlphaFold gives a prediction/model, not final proof.',
       '3. Inspect the structure, text summary, confidence, or other evidence clue.',
       '4. Use this frame: ' + tutorial.frame,
       '5. Add one limit, question, reference, or next test before you finish.',
+      'Evidence focus: ' + bio.evidence,
       'What to turn in: ' + length.artifact,
       'Exit ticket: ' + tutorial.exit,
       'Privacy: Do not enter personal, family, patient, ancestry, private genetic-test, diagnosis, treatment, or disease-risk information.'
@@ -1442,6 +1563,51 @@
       });
     } else {
       setStatus(lessonPlanStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function biologyBriefText() {
+    var bio = currentBiologyContext();
+    var tutorial = currentGradeTutorial();
+    return [
+      'AlphaFold biology-context investigation brief',
+      'Context: ' + bio.label,
+      'Unit connection: ' + bio.unit,
+      'Grade band: ' + tutorial.label,
+      'Suggested public example: ' + bio.example + ' (' + bio.accession + ')',
+      'Anchor question: ' + bio.anchor,
+      'Student task: ' + bio.task,
+      'Evidence focus: ' + bio.evidence,
+      'Sentence frame: ' + tutorial.frame,
+      'Accessibility support: ' + bio.access,
+      'Caution: ' + bio.caution,
+      'Extension: ' + bio.extension,
+      'Lesson sequence: ' + currentLessonLength().label,
+      'Privacy: Use public, synthetic, or teacher-approved classroom samples only.'
+    ].join('\n');
+  }
+
+  function renderBiologyContext() {
+    bioContextOutput.textContent = biologyBriefText();
+    setStatus(bioContextStatus, '', '');
+  }
+
+  function setBiologyExample() {
+    var bio = currentBiologyContext();
+    accessionInput.value = bio.accession;
+    setStatus(bioContextStatus, bio.example + ' accession set. Press Load when ready.', 'ok');
+  }
+
+  function copyBiologyBrief() {
+    var text = biologyBriefText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(bioContextStatus, 'Investigation brief copied.', 'ok');
+      }).catch(function () {
+        setStatus(bioContextStatus, 'Copy failed. Select the brief text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(bioContextStatus, 'Clipboard is unavailable in this browser.', 'warn');
     }
   }
 
@@ -1511,20 +1677,25 @@
   function activityCardText() {
     var ctx = currentContext();
     var tutorial = currentGradeTutorial();
+    var bio = currentBiologyContext();
     var moves = ACTIVITY_CARDS[currentContextKey()] || ACTIVITY_CARDS.middle;
     return [
       'AlphaFold classroom activity card',
       'Grade band: ' + tutorial.label,
       'Lesson sequence: ' + currentLessonLength().label,
+      'Biology context: ' + bio.label,
+      'Suggested public example: ' + bio.example + ' (' + bio.accession + ')',
       'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + ctx.label,
       'Route: ' + currentRoute().label,
       'Purpose: ' + ctx.focus,
+      'Anchor question: ' + bio.anchor,
       moves[0],
       moves[1],
       moves[2],
       moves[3],
       'Grade-level frame: ' + tutorial.frame,
+      'Context evidence focus: ' + bio.evidence,
       'Accessibility support: ' + tutorial.access,
       'Claim routine: Students should write one cautious claim, one evidence line, and one limit or next test.',
       'Privacy: Use public, synthetic, or teacher-approved classroom samples only.'
@@ -1565,6 +1736,7 @@
   function accessibleSummaryText() {
     var ctx = currentContext();
     var tutorial = currentGradeTutorial();
+    var bio = currentBiologyContext();
     var record = current || {};
     var bits = [];
     if (record.accession) bits.push(record.accession);
@@ -1574,6 +1746,8 @@
       'Accessible AlphaFold summary',
       'Grade band: ' + tutorial.label,
       'Lesson sequence: ' + currentLessonLength().label,
+      'Biology context: ' + bio.label,
+      'Anchor question: ' + bio.anchor,
       'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + ctx.label,
       'Status: ' + (current ? 'Structure loaded for inspection.' : 'No structure loaded yet.'),
@@ -1591,6 +1765,7 @@
       'Claim review: ' + claimReviewSummary(),
       'Rubric feedback: ' + rubricRating(),
       'Context guidance: ' + ctx.next,
+      'Context evidence focus: ' + bio.evidence,
       'Grade-level support: ' + tutorial.access,
       'Privacy: This summary excludes raw sequence text.'
     ];
@@ -1797,6 +1972,7 @@
 
   function renderGuide() {
     var tutorial = currentGradeTutorial();
+    var bio = currentBiologyContext();
     guideSteps.innerHTML = '';
     GUIDE_STEPS.forEach(function (step, idx) {
       var done = guideDone(step.key);
@@ -1810,6 +1986,8 @@
     });
     guidePrompt.textContent = [
       'Grade band: ' + tutorial.label,
+      'Biology context: ' + bio.label,
+      'Anchor question: ' + bio.anchor,
       'Tutorial frame: ' + tutorial.frame,
       GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length],
       'Context lens: ' + currentContext().guide
@@ -1894,12 +2072,17 @@
 
   function guideContext() {
     var ctx = currentContext();
+    var bio = currentBiologyContext();
     return {
       currentPrompt: guidePrompt.textContent || '',
       gradeBand: currentGradeTutorial().label,
       gradeTutorial: gradeTutorialText(),
       lessonLength: currentLessonLength().label,
       lessonSequence: lessonPlanText(),
+      biologyContext: bio.label,
+      biologyAnchor: bio.anchor,
+      suggestedExample: bio.example + ' (' + bio.accession + ')',
+      investigationBrief: biologyBriefText(),
       learningContext: ctx.label,
       accessibilityFocus: ctx.focus,
       contextGuidance: ctx.guide,
@@ -2390,6 +2573,7 @@
   function labNoteText() {
     var record = current || {};
     var tutorial = currentGradeTutorial();
+    var bio = currentBiologyContext();
     var citation = record.citation || citationFor(record);
     var observation = noteInput.value.trim();
     var accessionBits = [];
@@ -2399,6 +2583,8 @@
       'AlphaFold Explorer lab note',
       'Grade band: ' + tutorial.label,
       'Lesson sequence: ' + currentLessonLength().label,
+      'Biology context: ' + bio.label,
+      'Anchor question: ' + bio.anchor,
       'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + currentContext().label,
       'Name: ' + (record.name || 'Not recorded'),
@@ -2416,6 +2602,7 @@
       'Rubric feedback: ' + rubricRating(),
       'Grade-level support: ' + tutorial.access,
       'Misconception check: ' + misconceptionPrompt().replace(/^Misconception check:\s*/, ''),
+      'Context caution: ' + bio.caution,
       'Claim check: Cite the record, inspect confidence or PAE when available, and compare with experimental/reference evidence before treating a prediction as settled.'
     ];
     if (citation) lines.push('Citation: ' + citation);
@@ -2540,9 +2727,24 @@
   gradeTutorialSelect.addEventListener('change', function () { renderGradeTutorial(); renderGuide(); });
   applyGradeTutorialBtn.addEventListener('click', applyGradeTutorial);
   copyGradeTutorialBtn.addEventListener('click', copyGradeTutorial);
-  lessonLengthSelect.addEventListener('change', function () { renderLessonPlan(); renderGuide(); });
+  lessonLengthSelect.addEventListener('change', function () {
+    renderLessonPlan();
+    renderBiologyContext();
+    renderActivityCard();
+    renderAccessibleSummary();
+    renderGuide();
+  });
   copyLessonPlanBtn.addEventListener('click', copyLessonPlan);
   copyStudentDirectionsBtn.addEventListener('click', copyStudentDirections);
+  bioContextSelect.addEventListener('change', function () {
+    renderBiologyContext();
+    renderLessonPlan();
+    renderActivityCard();
+    renderAccessibleSummary();
+    renderGuide();
+  });
+  setBioExampleBtn.addEventListener('click', setBiologyExample);
+  copyBioBriefBtn.addEventListener('click', copyBiologyBrief);
   routeSelect.addEventListener('change', function () { renderRoute(); renderGuide(); });
   readyPredictionInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
   readyEvidenceInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
