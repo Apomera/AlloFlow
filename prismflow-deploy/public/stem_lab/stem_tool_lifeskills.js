@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════
-// stem_tool_lifeskills.js — Life Skills Lab  v5.11
-// Enhanced STEM Lab tool — 26 sub-tools
+// stem_tool_lifeskills.js — Life Skills Lab  v5.12
+// Enhanced STEM Lab tool — 27 sub-tools
 // Start Here · Paycheck · Data Literacy · Decisions · Contracts
-// Records · Insurance · Applied Science · Car Care · Home Repair
+// Records · Transportation · Insurance · Applied Science · Car Care · Home Repair
 // Home Systems · Budget · Credit · Cooking · Laundry Lab
 // Dental Care · Challenge · Battle · Learn
 // ═══════════════════════════════════════════════════════
@@ -74,6 +74,7 @@ window.StemLab = window.StemLab || {
     { id: 'decision',   icon: '\uD83E\uDDE0', label: 'Decisions' },
     { id: 'contract',   icon: '\uD83D\uDCDD', label: 'Contracts' },
     { id: 'records',    icon: '\uD83D\uDCC1', label: 'Records' },
+    { id: 'transport',  icon: '\uD83D\uDE8C', label: 'Transportation' },
     { id: 'insurance',  icon: '\uD83C\uDFE5', label: 'Insurance' },
     { id: 'dental',     icon: '\uD83E\uDDB7', label: 'Dental Care' },
     { id: 'bodycare',   icon: '\uD83E\uDDCD', label: 'Body Care' },
@@ -98,8 +99,8 @@ window.StemLab = window.StemLab || {
 
   var LIFE_SKILL_PATHS = [
     { id: 'money', icon: '\uD83D\uDCB0', title: 'Money basics', desc: 'Take-home pay, budgets, credit, insurance, and smart borrowing.', start: 'paycheck', accent: '#059669', steps: ['Paycheck', 'Budget', 'Credit', 'Insurance'] },
-    { id: 'choices', icon: '\uD83E\uDDE0', title: 'Better decisions', desc: 'Use evidence, spot misleading data, compare options, read fine print, organize records, and stay safer online.', start: 'data', accent: '#2563eb', steps: ['Data', 'Decisions', 'Contracts', 'Records', 'Digital Safety'] },
-    { id: 'care', icon: '\uD83E\uDDCD', title: 'Health routines', desc: 'Practice body care, appointments, sleep, medication labels, home safety, dental care, food confidence, and everyday prevention habits.', start: 'bodycare', accent: '#0f766e', steps: ['Body Care', 'Appointments', 'Sleep', 'Meds', 'Home Safety', 'Dental', 'Food Confidence', 'Cooking', 'Insurance'] },
+    { id: 'choices', icon: '\uD83E\uDDE0', title: 'Better decisions', desc: 'Use evidence, spot misleading data, compare options, read fine print, organize records, plan transportation, and stay safer online.', start: 'data', accent: '#2563eb', steps: ['Data', 'Decisions', 'Contracts', 'Records', 'Transportation', 'Digital Safety'] },
+    { id: 'care', icon: '\uD83E\uDDCD', title: 'Health routines', desc: 'Practice body care, appointments, transportation, sleep, medication labels, home safety, dental care, food confidence, and everyday prevention habits.', start: 'bodycare', accent: '#0f766e', steps: ['Body Care', 'Appointments', 'Transportation', 'Sleep', 'Meds', 'Home Safety', 'Dental', 'Food Confidence', 'Cooking', 'Insurance'] },
     { id: 'home', icon: '\uD83C\uDFE0', title: 'Home confidence', desc: 'Understand repairs, home systems, car care, laundry, and applied science.', start: 'homerepair', accent: '#d97706', steps: ['Home Repair', 'Home Systems', 'Car Care', 'Laundry'] },
     { id: 'practice', icon: '\uD83C\uDFAF', title: 'Practice mode', desc: 'Build fluency with challenge questions and the Adulting Defense battle.', start: 'challenge', accent: '#7c3aed', steps: ['Challenge', 'Battle', 'Learn'] }
   ];
@@ -112,6 +113,8 @@ window.StemLab = window.StemLab || {
     { id: 'trapFinder',  icon: '\uD83D\uDCDD', name: 'Trap Finder', desc: 'Find all traps in a contract' },
     { id: 'recordsReady', icon: '\uD83D\uDCC1', name: 'Records Ready', desc: 'Build a safe records checklist' },
     { id: 'formNavigator', icon: '\uD83D\uDCCB', name: 'Form Navigator', desc: 'Practice 3 paperwork decisions' },
+    { id: 'tripReady', icon: '\uD83D\uDE8C', name: 'Trip Ready', desc: 'Build a transportation checklist' },
+    { id: 'routeNavigator', icon: '\uD83E\uDDED', name: 'Route Navigator', desc: 'Practice 3 transportation decisions' },
     { id: 'insured',     icon: '\uD83C\uDFE5', name: 'Plan Analyst', desc: 'Compare health insurance plans' },
     { id: 'dentalReady', icon: '\uD83E\uDDB7', name: 'Dental Ready', desc: 'Build a daily oral-care plan' },
     { id: 'toothTriage', icon: '\uD83E\uDDB7', name: 'Tooth Trouble Solver', desc: 'Practice 3 dental care decisions' },
@@ -232,6 +235,7 @@ window.StemLab = window.StemLab || {
     { tier: 1, q: 'What kind of password is safer: short and reused, or long and unique?', a: 'long and unique', h: 'Reuse spreads risk across accounts.' },
     { tier: 1, q: 'Where should most leftovers go soon after a meal: counter, fridge, or warm oven?', a: 'fridge', h: 'Cold storage slows germ growth.' },
     { tier: 1, q: 'What should you keep for a return, warranty, or proof you paid?', a: 'receipt', h: 'It records what you bought and when.' },
+    { tier: 1, q: 'What extra time do you add to a trip in case walking, traffic, or transit takes longer?', a: 'buffer', h: 'It gives your plan breathing room.' },
     { tier: 1, q: 'Why should you empty pockets before washing clothes?', a: 'damage', h: 'Pens, coins, and tissues can damage clothing or the washer.' },
     { tier: 1, q: 'What is a credit score used for?', a: 'borrowing', h: 'Lenders check this before giving you a loan.' },
     { tier: 2, q: 'What is the #1 factor in your FICO credit score?', a: 'payment history', h: 'It accounts for 35% of your score.' },
@@ -244,6 +248,7 @@ window.StemLab = window.StemLab || {
     { tier: 2, q: 'What is a message trying to trick you into sharing passwords or codes often called?', a: 'phishing', h: 'It may pretend to be a trusted person or company.' },
     { tier: 2, q: 'What should you do with food from a bulging, leaking, or badly dented can?', a: 'throw it out', h: 'Damaged cans can signal unsafe food.' },
     { tier: 2, q: 'If a form question is confusing or asks for private information, what should you do?', a: 'ask', h: 'Pause and ask a trusted helper or official source.' },
+    { tier: 2, q: 'Before a bus, train, ride, walk, or drive, what should you check: route, time, fare, or all?', a: 'all', h: 'A trip plan needs more than one detail.' },
     { tier: 2, q: 'A recipe makes 24 cookies. You want 36. What is the scaling factor?', a: '1.5', h: '36 / 24 = ?' },
     { tier: 2, q: 'What kind of detergent molecules help lift oil away from fabric?', a: 'surfactant', h: 'They have one water-loving end and one oil-loving end.' },
     { tier: 2, q: 'Credit utilization should be below what percentage for best scores?', a: '30', h: 'Below 10% is even better.' },
@@ -257,6 +262,7 @@ window.StemLab = window.StemLab || {
     { tier: 3, q: 'What extra login protection asks for a second code or approval after a password?', a: 'two-factor authentication', h: 'Also called 2FA or multi-factor authentication.' },
     { tier: 3, q: 'A simple budget meal often combines a base, a protein, a vegetable, and what extra part for taste?', a: 'flavor', h: 'Sauce, spices, herbs, or acid can make simple food satisfying.' },
     { tier: 3, q: 'What word on a form means you agree or give permission?', a: 'consent', h: 'Consent should be understood before signing.' },
+    { tier: 3, q: 'A bus leaves at 8:10. Walking to the stop takes 7 minutes and you want a 5-minute buffer. How many minutes before 8:10 should you leave?', a: '12', h: 'Walk time plus buffer time.' },
     { tier: 3, q: 'Why can too much laundry detergent make clothes feel stiff or itchy?', a: 'residue', h: 'Extra detergent can stay in fabric when the rinse cannot remove it all.' },
     { tier: 3, q: 'Paying minimum ($25) on $5,000 at 24.99% APR \u2014 roughly how many years to pay off?', a: '30', h: 'Minimum payments are designed to maximize interest.' }
   ];
@@ -268,6 +274,8 @@ window.StemLab = window.StemLab || {
     { q: 'What is an early termination fee?', a: 'penalty for canceling a contract early', h: 'Common in phone plans and leases.' },
     { q: 'What should you keep after paying a bill or buying something important?', a: 'receipt', h: 'It can help with returns, warranties, and proof of payment.' },
     { q: 'What document usually proves your identity?', a: 'id', h: 'Examples include a school ID, state ID, passport, or license.' },
+    { q: 'What extra time in a trip plan helps with delays?', a: 'buffer', h: 'Leave a little earlier than the perfect-case plan.' },
+    { q: 'What should you make before traveling if your first route is delayed?', a: 'backup plan', h: 'A second route or trusted contact can reduce stress.' },
     { q: 'What is the name for the amount you pay before insurance kicks in?', a: 'deductible', h: 'Your first out-of-pocket cost.' },
     { q: 'What gas law relates tire pressure and temperature?', a: 'gay-lussac', h: 'P1/T1 = P2/T2 at constant volume.' },
     { q: 'What is the rubber seal at the bottom of a toilet tank called?', a: 'flapper', h: 'Lifts when you flush.' },
@@ -331,6 +339,12 @@ window.StemLab = window.StemLab || {
       '3-5': 'Records skills include keeping IDs, school papers, medical or insurance cards, receipts, and emergency contacts in places you can find. Forms are easier when you read one field at a time and ask before sharing private information.',
       '6-8': 'Paperwork literacy means sorting documents by purpose, protecting private information, tracking deadlines, saving proof of payment, and knowing when a signature means agreement or consent. The goal is to reduce stress before appointments, returns, applications, and emergencies.',
       '9-12': 'Records literacy includes identity documents, tax and income records, insurance cards, leases, warranties, receipts, forms, consent language, deadlines, secure storage, backups, and document-retention judgment. Good systems make adult tasks easier and help prevent scams, missed deadlines, and lost proof.'
+    }},
+    { title: 'Transportation & Navigation', icon: '\uD83D\uDE8C', tryIt: 'transport', content: {
+      'K-2': 'Transportation means getting from one place to another safely. A good plan includes where you are going, who is helping, and what to do if something changes.',
+      '3-5': 'Trip planning means checking the route, travel time, pickup or stop location, fare or ticket, and a trusted helper. Leaving a little early gives you a buffer if walking, traffic, or waiting takes longer.',
+      '6-8': 'Transportation literacy includes route comparison, transfers, schedules, fare systems, accessibility needs, safe waiting places, backup plans, and asking for help from trusted or official sources when a trip changes.',
+      '9-12': 'Navigation skills combine time management, risk awareness, wayfinding, cost planning, accessibility, situational awareness, and contingency planning. Strong travelers check route, timing, fare, alerts, backup options, and communication before stress hits.'
     }},
     { title: 'Budgeting & Saving', icon: '\uD83D\uDCB0', tryIt: 'budget', content: {
       'K-2': 'A budget is a plan for your money! Imagine you have 10 tokens \u2014 you need some for food, some for fun, and you should save some for later.',
