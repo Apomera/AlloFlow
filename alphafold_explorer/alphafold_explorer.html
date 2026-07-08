@@ -580,6 +580,22 @@
       </div>
     </section>
 
+    <section aria-labelledby="lessonPlanTitle">
+      <h2 id="lessonPlanTitle">Lesson sequence</h2>
+      <label for="lessonLengthSelect">Class time</label>
+      <select id="lessonLengthSelect">
+        <option value="launch">10-minute launch</option>
+        <option value="guided" selected>25-minute guided activity</option>
+        <option value="investigation">45-minute investigation</option>
+      </select>
+      <div id="lessonPlanOutput" class="coachbox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyLessonPlanBtn" type="button">Copy lesson sequence</button>
+        <button class="secondary" id="copyStudentDirectionsBtn" type="button">Copy student directions</button>
+        <span class="status" id="lessonPlanStatus" role="status"></span>
+      </div>
+    </section>
+
     <section aria-labelledby="routeTitle">
       <h2 id="routeTitle">Choose your route</h2>
       <label for="routeSelect">Learning path</label>
@@ -1091,6 +1107,47 @@
       exit: 'Collect one revised claim plus one student-named limit or next test.'
     }
   };
+  var LESSON_LENGTHS = {
+    launch: {
+      label: '10-minute launch',
+      phases: [
+        '0-2 min: Name the privacy boundary and say that AlphaFold predictions are models, not final proof.',
+        '2-5 min: Open one public example and ask students to notice one visible feature or text-summary detail.',
+        '5-8 min: Use the grade-level sentence frame to write one cautious observation.',
+        '8-10 min: Share one limit or question the model cannot answer yet.'
+      ],
+      grouping: 'Whole-class demo, quick pair talk, or individual exit ticket.',
+      artifact: 'One observation plus one wonder or limit.',
+      assessment: 'Listen for students using model, evidence, and cautious wording instead of certainty language.'
+    },
+    guided: {
+      label: '25-minute guided activity',
+      phases: [
+        '0-4 min: Review the grade tutorial, vocabulary, and privacy guardrail.',
+        '4-9 min: Load a public AlphaFold DB example and inspect one shape feature with the accessible summary visible.',
+        '9-16 min: Students write a claim, evidence line, and limit while the local review flags missing evidence or overclaiming.',
+        '16-21 min: Students revise using the rubric and compare observation versus inference.',
+        '21-25 min: Copy the lab note, accessible summary, or exit ticket for discussion or submission.'
+      ],
+      grouping: 'Teacher-guided start, then pairs or independent notes.',
+      artifact: 'Revised claim-evidence-limit note.',
+      assessment: 'Check whether the claim names structure evidence and a meaningful limitation.'
+    },
+    investigation: {
+      label: '45-minute investigation',
+      phases: [
+        '0-5 min: Establish source, privacy, and model-limit expectations.',
+        '5-12 min: Choose or assign a public protein connected to the unit topic.',
+        '12-25 min: Inspect structure, confidence, domains, flexible regions, pockets, surfaces, or PAE when available.',
+        '25-34 min: Draft and revise a claim using the local claim review and rubric feedback.',
+        '34-41 min: Compare with a reference, database note, class reading, or planned validation test.',
+        '41-45 min: Export the lab note and identify one supported claim plus one unsupported claim.'
+      ],
+      grouping: 'Pairs, small groups, or independent investigation with teacher conferences.',
+      artifact: 'Lab note with source, evidence, cautious claim, limitation, and next validation step.',
+      assessment: 'Use the rubric categories: source/privacy, claim language, evidence, limitation, and scientific humility.'
+    }
+  };
 
   var viewer = null;
   var viewerPromise = null;
@@ -1140,6 +1197,11 @@
   var applyGradeTutorialBtn = document.getElementById('applyGradeTutorialBtn');
   var copyGradeTutorialBtn = document.getElementById('copyGradeTutorialBtn');
   var gradeTutorialStatus = document.getElementById('gradeTutorialStatus');
+  var lessonLengthSelect = document.getElementById('lessonLengthSelect');
+  var lessonPlanOutput = document.getElementById('lessonPlanOutput');
+  var copyLessonPlanBtn = document.getElementById('copyLessonPlanBtn');
+  var copyStudentDirectionsBtn = document.getElementById('copyStudentDirectionsBtn');
+  var lessonPlanStatus = document.getElementById('lessonPlanStatus');
   var routeSelect = document.getElementById('routeSelect');
   var routeOutput = document.getElementById('routeOutput');
   var readyPredictionInput = document.getElementById('readyPredictionInput');
@@ -1198,6 +1260,7 @@
       'What AlphaFold DB is: a public database of predicted protein structures developed by Google DeepMind and EMBL-EBI.',
       'What this explorer does: loads public structures, opens local result files, prepares classroom-safe JSON, and helps students write cautious claim-evidence-limit notes.',
       'Grade band: ' + currentGradeTutorial().label,
+      'Lesson sequence: ' + currentLessonLength().label,
       'Selected route: ' + currentRoute().label,
       'Student workflow: load a public record, inspect shape and confidence, write one cautious claim, cite evidence, and name a limit or next test.',
       'Careful wording: predictions are useful models, not final proof, diagnosis, treatment guidance, ancestry interpretation, or personal genetic analysis.',
@@ -1235,6 +1298,14 @@
     return GRADE_TUTORIALS[currentGradeTutorialKey()] || GRADE_TUTORIALS.middle;
   }
 
+  function currentLessonLengthKey() {
+    return lessonLengthSelect ? lessonLengthSelect.value : 'guided';
+  }
+
+  function currentLessonLength() {
+    return LESSON_LENGTHS[currentLessonLengthKey()] || LESSON_LENGTHS.guided;
+  }
+
   function gradeTutorialText() {
     var t = currentGradeTutorial();
     var lines = [
@@ -1263,6 +1334,7 @@
   function renderGradeTutorial() {
     gradeTutorialOutput.textContent = gradeTutorialText();
     setStatus(gradeTutorialStatus, '', '');
+    renderLessonPlan();
     renderActivityCard();
     renderAccessibleSummary();
   }
@@ -1289,6 +1361,88 @@
     renderGradeTutorial();
     renderGuide();
     setStatus(gradeTutorialStatus, 'Recommended route, support lens, and tutorial frame applied.', 'ok');
+  }
+
+  function lessonPlanText() {
+    var tutorial = currentGradeTutorial();
+    var length = currentLessonLength();
+    var route = ROUTES[tutorial.route] || currentRoute();
+    var ctx = CONTEXT_LAYERS[tutorial.context] || currentContext();
+    var lines = [
+      'AlphaFold grade-level lesson sequence',
+      'Grade band: ' + tutorial.label,
+      'Class time: ' + length.label,
+      'Learning goal: ' + tutorial.objective,
+      'AlphaFold purpose: ' + tutorial.use,
+      'Recommended route: ' + route.label,
+      'Recommended support lens: ' + ctx.label,
+      'Teacher launch language: ' + tutorial.intro,
+      'Sequence:'
+    ];
+    length.phases.forEach(function (phase, idx) {
+      lines.push(String(idx + 1) + '. ' + phase);
+    });
+    return lines.concat([
+      'Grouping: ' + length.grouping,
+      'Student artifact: ' + length.artifact,
+      'Vocabulary: ' + tutorial.vocabulary,
+      'Student sentence frame: ' + tutorial.frame,
+      'Accessibility and UDL supports: ' + tutorial.access,
+      'Misconception to watch for: ' + tutorial.misconception,
+      'Assessment look-for: ' + length.assessment,
+      'Exit ticket: ' + tutorial.exit,
+      'Privacy guardrail: Use public, synthetic, or teacher-approved classroom samples only. Do not use personal, family, patient, ancestry, private genetic-test, diagnosis, treatment, or disease-risk information.'
+    ]).join('\n');
+  }
+
+  function studentDirectionsText() {
+    var tutorial = currentGradeTutorial();
+    var length = currentLessonLength();
+    return [
+      'AlphaFold student directions',
+      'Grade band: ' + tutorial.label,
+      'Time: ' + length.label,
+      'Goal: ' + tutorial.objective,
+      '1. Use only the public example or teacher-approved classroom sample.',
+      '2. Remember that AlphaFold gives a prediction/model, not final proof.',
+      '3. Inspect the structure, text summary, confidence, or other evidence clue.',
+      '4. Use this frame: ' + tutorial.frame,
+      '5. Add one limit, question, reference, or next test before you finish.',
+      'What to turn in: ' + length.artifact,
+      'Exit ticket: ' + tutorial.exit,
+      'Privacy: Do not enter personal, family, patient, ancestry, private genetic-test, diagnosis, treatment, or disease-risk information.'
+    ].join('\n');
+  }
+
+  function renderLessonPlan() {
+    lessonPlanOutput.textContent = lessonPlanText();
+    setStatus(lessonPlanStatus, '', '');
+  }
+
+  function copyLessonPlan() {
+    var text = lessonPlanText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(lessonPlanStatus, 'Lesson sequence copied.', 'ok');
+      }).catch(function () {
+        setStatus(lessonPlanStatus, 'Copy failed. Select the lesson text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(lessonPlanStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function copyStudentDirections() {
+    var text = studentDirectionsText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(lessonPlanStatus, 'Student directions copied.', 'ok');
+      }).catch(function () {
+        setStatus(lessonPlanStatus, 'Copy failed. Select the student directions manually.', 'warn');
+      });
+    } else {
+      setStatus(lessonPlanStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
   }
 
   function currentRoute() {
@@ -1361,6 +1515,7 @@
     return [
       'AlphaFold classroom activity card',
       'Grade band: ' + tutorial.label,
+      'Lesson sequence: ' + currentLessonLength().label,
       'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + ctx.label,
       'Route: ' + currentRoute().label,
@@ -1418,6 +1573,7 @@
     var lines = [
       'Accessible AlphaFold summary',
       'Grade band: ' + tutorial.label,
+      'Lesson sequence: ' + currentLessonLength().label,
       'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + ctx.label,
       'Status: ' + (current ? 'Structure loaded for inspection.' : 'No structure loaded yet.'),
@@ -1742,6 +1898,8 @@
       currentPrompt: guidePrompt.textContent || '',
       gradeBand: currentGradeTutorial().label,
       gradeTutorial: gradeTutorialText(),
+      lessonLength: currentLessonLength().label,
+      lessonSequence: lessonPlanText(),
       learningContext: ctx.label,
       accessibilityFocus: ctx.focus,
       contextGuidance: ctx.guide,
@@ -2240,6 +2398,7 @@
     var lines = [
       'AlphaFold Explorer lab note',
       'Grade band: ' + tutorial.label,
+      'Lesson sequence: ' + currentLessonLength().label,
       'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + currentContext().label,
       'Name: ' + (record.name || 'Not recorded'),
@@ -2381,6 +2540,9 @@
   gradeTutorialSelect.addEventListener('change', function () { renderGradeTutorial(); renderGuide(); });
   applyGradeTutorialBtn.addEventListener('click', applyGradeTutorial);
   copyGradeTutorialBtn.addEventListener('click', copyGradeTutorial);
+  lessonLengthSelect.addEventListener('change', function () { renderLessonPlan(); renderGuide(); });
+  copyLessonPlanBtn.addEventListener('click', copyLessonPlan);
+  copyStudentDirectionsBtn.addEventListener('click', copyStudentDirections);
   routeSelect.addEventListener('change', function () { renderRoute(); renderGuide(); });
   readyPredictionInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
   readyEvidenceInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
