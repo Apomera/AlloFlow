@@ -335,6 +335,48 @@
     font-size: 11.5px;
     line-height: 1.4;
   }
+  .activityActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .activityActions button.secondary {
+    width: auto;
+    min-height: 32px;
+  }
+  .reviewBox {
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .reviewItem {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px;
+    background: rgba(15, 23, 42, 0.42);
+    color: var(--soft);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .reviewItem b {
+    display: block;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .reviewItem.ok {
+    border-color: rgba(74, 222, 128, 0.42);
+    background: rgba(74, 222, 128, 0.08);
+  }
+  .reviewItem.warn {
+    border-color: rgba(251, 191, 36, 0.48);
+    background: rgba(251, 191, 36, 0.09);
+  }
+  .reviewItem.guard {
+    border-color: rgba(248, 113, 113, 0.48);
+    background: rgba(248, 113, 113, 0.09);
+  }
   .guideSteps {
     display: grid;
     gap: 6px;
@@ -442,6 +484,11 @@
         <option value="teacher">Teacher facilitation</option>
       </select>
       <div id="contextOutput" class="summaryBox" aria-live="polite"></div>
+      <div id="activityCard" class="coachbox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyActivityCardBtn" type="button">Copy activity card</button>
+        <span class="status" id="activityStatus" role="status"></span>
+      </div>
     </section>
 
     <section aria-labelledby="examplesTitle">
@@ -582,6 +629,7 @@
       <textarea id="evidenceInput" class="mini" placeholder="Example: Most of the folded core is high confidence; the tail is lower confidence."></textarea>
       <label for="cautionInput">Limit or next test</label>
       <textarea id="cautionInput" class="mini" placeholder="Example: I would compare with an experiment or reference before claiming function."></textarea>
+      <div id="claimReview" class="reviewBox" aria-live="polite"></div>
       <div class="row">
         <button class="primary" id="guideAiBtn" type="button">Ask AI guide</button>
         <button class="secondary" id="guidePromptBtn" type="button">Next prompt</button>
@@ -711,6 +759,44 @@
     { term: 'Interface', def: 'A region where protein chains or molecules touch and may interact.', contexts: 'ap teacher high' },
     { term: 'Sentence frame', def: 'A starter structure for writing: "The model suggests..., because..., but...".', contexts: 'ell middle teacher screen' }
   ];
+  var ACTIVITY_CARDS = {
+    middle: [
+      'Launch: Pick one public example and name one shape you can see.',
+      'Student task: Write "The model suggests..." and one reason to be careful.',
+      'Discussion: Which part of the model would you trust most, and why?',
+      'Accessibility check: Let students answer with a sketch, spoken observation, or one-sentence note.'
+    ],
+    high: [
+      'Launch: Connect one visible structure feature to a possible protein job.',
+      'Student task: Write a claim, then underline the evidence phrase.',
+      'Discussion: What is observation, and what is inference?',
+      'Accessibility check: Offer the vocabulary list before students inspect the 3D viewer.'
+    ],
+    ap: [
+      'Launch: Compare confident and uncertain regions before making a functional claim.',
+      'Student task: Use confidence, PAE when available, and a reference check in the limit.',
+      'Discussion: What evidence would move this from plausible model to supported claim?',
+      'Accessibility check: Pair visual inspection with the accessible summary and a written evidence table.'
+    ],
+    ell: [
+      'Launch: Read one key term aloud, then use it in a sentence frame.',
+      'Student task: Complete "I notice ___. This may mean ___. I am not sure because ___."',
+      'Discussion: Which words show careful science instead of certainty?',
+      'Accessibility check: Use short sentences, repeated terms, and partner rehearsal before writing.'
+    ],
+    screen: [
+      'Launch: Start from the accessible summary before using the 3D viewer.',
+      'Student task: Write a text-only evidence statement using source, confidence, and one observation.',
+      'Discussion: What can be concluded without depending only on color or 3D position?',
+      'Accessibility check: Do not make color the only signal; keep record, confidence, and claim text copyable.'
+    ],
+    teacher: [
+      'Launch: Ask students to rank two claims from overconfident to well-supported.',
+      'Student task: Revise one claim so it includes evidence and a limit.',
+      'Discussion: What misconception might AlphaFold predictions create if students skip confidence?',
+      'Accessibility check: Let students choose visual, text, oral, or paired evidence routines.'
+    ]
+  };
 
   var viewer = null;
   var viewerPromise = null;
@@ -755,6 +841,9 @@
   var aiState = document.getElementById('aiState');
   var contextSelect = document.getElementById('contextSelect');
   var contextOutput = document.getElementById('contextOutput');
+  var activityCard = document.getElementById('activityCard');
+  var copyActivityCardBtn = document.getElementById('copyActivityCardBtn');
+  var activityStatus = document.getElementById('activityStatus');
   var glossaryList = document.getElementById('glossaryList');
   var accessibleSummary = document.getElementById('accessibleSummary');
   var guideSteps = document.getElementById('guideSteps');
@@ -762,6 +851,7 @@
   var claimInput = document.getElementById('claimInput');
   var evidenceInput = document.getElementById('evidenceInput');
   var cautionInput = document.getElementById('cautionInput');
+  var claimReview = document.getElementById('claimReview');
   var guideAiBtn = document.getElementById('guideAiBtn');
   var guideAiOutput = document.getElementById('guideAiOutput');
   var guidePromptBtn = document.getElementById('guidePromptBtn');
@@ -795,6 +885,10 @@
     return CONTEXT_LAYERS[key] || CONTEXT_LAYERS.middle;
   }
 
+  function currentContextKey() {
+    return contextSelect ? contextSelect.value : 'middle';
+  }
+
   function lengthLabel(value) {
     var text = String(value || '').trim();
     if (!text) return '';
@@ -808,13 +902,48 @@
       'Classroom move: ' + ctx.next,
       'AI guidance: ' + ctx.guide
     ].join('\n');
+    renderActivityCard();
     renderGlossary();
     renderAccessibleSummary();
     renderGuide();
   }
 
+  function activityCardText() {
+    var ctx = currentContext();
+    var moves = ACTIVITY_CARDS[currentContextKey()] || ACTIVITY_CARDS.middle;
+    return [
+      'AlphaFold classroom activity card',
+      'Learning context: ' + ctx.label,
+      'Purpose: ' + ctx.focus,
+      moves[0],
+      moves[1],
+      moves[2],
+      moves[3],
+      'Claim routine: Students should write one cautious claim, one evidence line, and one limit or next test.',
+      'Privacy: Use public, synthetic, or teacher-approved classroom samples only.'
+    ].join('\n');
+  }
+
+  function renderActivityCard() {
+    activityCard.textContent = activityCardText();
+    setStatus(activityStatus, '', '');
+  }
+
+  function copyActivityCard() {
+    var text = activityCardText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(activityStatus, 'Activity card copied.', 'ok');
+      }).catch(function () {
+        setStatus(activityStatus, 'Copy failed. Select the card text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(activityStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
   function renderGlossary() {
-    var key = contextSelect ? contextSelect.value : 'middle';
+    var key = currentContextKey();
     glossaryList.innerHTML = '';
     GLOSSARY_TERMS.filter(function (item) {
       return (' ' + item.contexts + ' ').indexOf(' ' + key + ' ') >= 0;
@@ -846,6 +975,7 @@
       'Cautious claim: ' + (claimInput.value.trim() || 'Not recorded'),
       'Evidence to cite: ' + (evidenceInput.value.trim() || 'Not recorded'),
       'Limit or next test: ' + (cautionInput.value.trim() || 'Not recorded'),
+      'Claim review: ' + claimReviewSummary(),
       'Context guidance: ' + ctx.next,
       'Privacy: This summary excludes raw sequence text.'
     ];
@@ -854,6 +984,78 @@
 
   function renderAccessibleSummary() {
     accessibleSummary.textContent = accessibleSummaryText();
+  }
+
+  function claimReviewItems() {
+    var claim = claimInput.value.trim();
+    var evidence = evidenceInput.value.trim();
+    var caution = cautionInput.value.trim();
+    var observation = noteInput.value.trim();
+    var items = [];
+    function add(level, label, text) {
+      items.push({ level: level, label: label, text: text });
+    }
+    var combined = [claim, evidence, caution, observation, sequenceInput.value].join(' ');
+    var overclaim = /\b(prove|proves|proved|confirm|confirms|confirmed|definitely|certainly|guarantee|guarantees|always|never|causes)\b|shows that|means that/i.test(claim);
+    var evidenceReady = /\b(confidence|plddt|pae|uncertain|uncertainty|domain|pocket|surface|flexible|loop|tail|interface|chain|reference|experiment|model|fold|core)\b/i.test(evidence + ' ' + observation);
+    var cautionReady = /\b(compare|reference|experiment|test|limit|uncertain|uncertainty|evidence|pae|confidence|not sure|before|validate|support)\b/i.test(caution);
+    var privacyRisk = /\b(my dna|my genome|my sequence|my protein|family genetic|patient|diagnos\w*|medical report|ancestry|23andme|genetic test|private genetic|disease risk|diseases?|treatments?|cures?)\b/i.test(combined);
+
+    if (!claim) {
+      add('warn', 'Claim needed', 'Write one cautious structure claim using "suggests" or "is consistent with."');
+    } else if (overclaim) {
+      add('warn', 'Overclaim check', 'Revise certainty words. AlphaFold predictions support hypotheses; they do not prove function by themselves.');
+    } else {
+      add('ok', 'Claim language', 'The claim avoids obvious certainty language.');
+    }
+
+    if (!evidence) {
+      add('warn', 'Evidence needed', 'Add structure evidence such as confidence, PAE, a domain, pocket, surface, interface, or flexible region.');
+    } else if (!evidenceReady) {
+      add('warn', 'Evidence specificity', 'Name the specific structure or confidence clue that supports the claim.');
+    } else {
+      add('ok', 'Evidence link', 'The evidence names a structure or confidence clue.');
+    }
+
+    if (!caution) {
+      add('warn', 'Limit needed', 'Add a limit, reference comparison, experiment, or next test before treating the prediction as settled.');
+    } else if (!cautionReady) {
+      add('warn', 'Limit specificity', 'Make the limit testable: name a reference, experiment, confidence check, or comparison.');
+    } else {
+      add('ok', 'Limit or next test', 'The note includes a useful caution or next step.');
+    }
+
+    if (privacyRisk) {
+      add('guard', 'Privacy guardrail', 'Remove personal, family, patient, ancestry, private genetic-test, diagnosis, treatment, or disease-risk language.');
+    } else {
+      add('ok', 'Privacy guardrail', 'No obvious personal genetics or medical wording detected in the student text.');
+    }
+
+    var hasGuard = items.some(function (item) { return item.level === 'guard'; });
+    var hasWarn = items.some(function (item) { return item.level === 'warn'; });
+    return {
+      rating: hasGuard ? 'Guardrail needed' : (hasWarn ? 'Needs revision' : 'Ready for discussion'),
+      items: items
+    };
+  }
+
+  function claimReviewSummary() {
+    var review = claimReviewItems();
+    return review.rating + ': ' + review.items.map(function (item) {
+      return item.label + ' - ' + item.text;
+    }).join(' | ');
+  }
+
+  function renderClaimReview() {
+    var review = claimReviewItems();
+    claimReview.innerHTML = '';
+    claimReview.appendChild(el('div', { class: 'badge' }, 'Claim review: ' + review.rating));
+    review.items.forEach(function (item) {
+      var wrap = el('div', { class: 'reviewItem ' + item.level });
+      wrap.appendChild(el('b', null, item.label));
+      wrap.appendChild(el('span', null, item.text));
+      claimReview.appendChild(wrap);
+    });
   }
 
   function guideDone(key) {
@@ -881,6 +1083,7 @@
       guideSteps.appendChild(wrap);
     });
     guidePrompt.textContent = GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length] + '\n\nContext lens: ' + currentContext().guide;
+    renderClaimReview();
     renderAccessibleSummary();
   }
 
@@ -964,6 +1167,8 @@
       learningContext: ctx.label,
       accessibilityFocus: ctx.focus,
       contextGuidance: ctx.guide,
+      activityCard: activityCardText(),
+      claimReview: claimReviewSummary(),
       observation: noteInput.value.trim(),
       claim: claimInput.value.trim(),
       evidence: evidenceInput.value.trim(),
@@ -1462,6 +1667,7 @@
       'Cautious claim: ' + (claimInput.value.trim() || 'Not recorded'),
       'Structure evidence: ' + (evidenceInput.value.trim() || 'Not recorded'),
       'Limit or next test: ' + (cautionInput.value.trim() || 'Not recorded'),
+      'Claim review: ' + claimReviewSummary(),
       'Claim check: Cite the record, inspect confidence or PAE when available, and compare with experimental/reference evidence before treating a prediction as settled.'
     ];
     if (citation) lines.push('Citation: ' + citation);
@@ -1597,6 +1803,7 @@
   copyCitationBtn.addEventListener('click', copyCitation);
   copyLabNoteBtn.addEventListener('click', copyLabNote);
   copyAccessibleSummaryBtn.addEventListener('click', copyAccessibleSummary);
+  copyActivityCardBtn.addEventListener('click', copyActivityCard);
   coachBtn.addEventListener('click', coach);
 
   var params = new URLSearchParams(window.location.search);
