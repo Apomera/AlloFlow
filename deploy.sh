@@ -293,7 +293,7 @@ fi
 #   (1) Hash consistency  — root AlloFlowANTI.txt pluginCdnVersion == @BUILD_HASH
 #                            == the prismflow-deploy/src mirror, and is a real
 #                            commit. Catches build.js-didn't-rewrite / drift.   [HARD]
-#   (2) Firebase host      — https://prismflow-911fe.web.app → 200 + non-trivial.[HARD]
+#   (2) Firebase host      — verify an explicitly configured school-owned host, or confirm it was intentionally skipped.
 #   (3) CDN modules        — alloflow-cdn.pages.dev key modules → 200 (HARD) and
 #                            md5 == local root module (FRESHNESS — soft warning,
 #                            Cloudflare Pages rebuilds async ~1-2 min after push).
@@ -369,7 +369,7 @@ else
     # make a genuinely-fresh CDN copy look "stale". HEAD is what was pushed, so it's the truth.
     LOCAL_MD5=$(git show "HEAD:$mod" 2>/dev/null | md5sum | awk '{print $1}')
     TMP=$(mktemp)
-    HCODE=$(curl -s -o "$TMP" -w "%{http_code}" "$CDN_BASE/$mod?v=$BUILD_HASH" 2>/dev/null || echo "000")
+    HCODE=$(curl -sL -o "$TMP" -w "%{http_code}" "$CDN_BASE/$mod?v=$BUILD_HASH" 2>/dev/null || echo "000")
     if [[ "$HCODE" != "200" || ! -s "$TMP" ]]; then
       pv_fail "$mod → HTTP ${HCODE} / empty (CDN unreachable or misconfigured)"
       rm -f "$TMP"; continue
@@ -395,7 +395,7 @@ else
     # make a genuinely-fresh CDN copy look "stale". HEAD is what was pushed, so it's the truth.
     LOCAL_MD5=$(git show "HEAD:$mod" 2>/dev/null | md5sum | awk '{print $1}')
       TMP=$(mktemp)
-      curl -s -o "$TMP" "$CDN_BASE/$mod?v=$BUILD_HASH" 2>/dev/null || true
+      curl -sL -o "$TMP" "$CDN_BASE/$mod?v=$BUILD_HASH" 2>/dev/null || true
       CDN_MD5=$(md5sum "$TMP" | awk '{print $1}'); rm -f "$TMP"
       if [[ "$CDN_MD5" == "$LOCAL_MD5" ]]; then
         pv_ok "$mod now fresh (md5 matches local)"

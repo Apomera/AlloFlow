@@ -1,7 +1,7 @@
 /**
  * Post-build script: INLINES EVERYTHING into a single self-contained HTML.
  * 
- * Problem: Chrome's network pipeline to prismflow-911fe.web.app is completely
+ * Problem: Chrome's network pipeline to some Firebase Hosting deployments is completely
  * broken on reload - even the HTML document request hangs with "Provisional 
  * headers are shown" and 0 bytes transferred. The ONLY reason the loading 
  * screen appears is because Chrome has a cached version.

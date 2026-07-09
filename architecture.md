@@ -469,8 +469,8 @@ isolation from UI. Run with `node tests/clinical_tests.js`.
 ### End-to-end tests (`tests/e2e/`)
 
 Fourteen Playwright spec files (~65 tests) run against the deployed
-Firebase mirror (`https://prismflow-911fe.web.app` by default, overridable
-via `PW_BASE_URL`):
+Cloudflare student shell (`https://alloflow-cdn.pages.dev/app/` by default,
+overridable via `PW_BASE_URL`):
 
 | Spec | Scope |
 |---|---|
@@ -539,8 +539,8 @@ The full deploy is a 9-step orchestrator at the repo root:
    starts its own build in parallel (~30-60 sec); see "CDN Hosting" below.
 3. **Run build.js** (regenerate `App.jsx` with Cloudflare Pages URLs)
 4. **npm run build** (CRA build to `prismflow-deploy/build/`)
-5. **Firebase deploy** (static hosting for the local-test mirror at
-   `prismflow-911fe.web.app`; Canvas users do NOT fetch from here)
+5. **Optional district Firebase deploy** (only when a school-owned project is
+   explicitly configured; otherwise the Cloudflare `/app/` shell is used)
 6. **Post-deploy commit** (mostly a no-op now that URLs don't include
    a hash; still re-runs build.js to catch any drift)
 7. **Push post-deploy commit to origin**

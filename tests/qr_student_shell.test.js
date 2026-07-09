@@ -219,6 +219,35 @@ describe('incomplete QR privacy guard', () => {
   });
 });
 
+describe('Prismflow demo isolation', () => {
+  it('does not route production launchers, citations, or deployment defaults to the demo', () => {
+    const productionFiles = [
+      'lms_bookmarklet.js',
+      'garden_demo.html',
+      'prismflow-deploy/postbuild.js',
+      'stem_lab/stem_tool_printingpress.js',
+      'ui_strings.js',
+      'deploy.sh',
+      'architecture.md',
+    ];
+
+    for (const file of productionFiles) {
+      const contents = readFileSync(resolve(process.cwd(), file), 'utf8');
+      expect(contents, file).not.toContain('https://prismflow-911fe.web.app');
+    }
+  });
+
+  it('keeps the demo hosts in the QR denylist', () => {
+    expect(rootSource).toContain("const ALLOFLOW_DEMO_STUDENT_HOSTS = ['prismflow-911fe.web.app', 'prismflow-911fe.firebaseapp.com']");
+  });
+
+  it('makes unconfigured Firebase an explicit skip and follows Cloudflare redirects', () => {
+    const deployScript = readFileSync(resolve(process.cwd(), 'deploy.sh'), 'utf8');
+    expect(deployScript).toContain('no school-owned Firebase project is configured');
+    expect(deployScript).toContain('Firebase intentionally skipped; no maintainer/demo project was touched');
+    expect(deployScript).toContain('HCODE=$(curl -sL');
+  });
+});
 describe('Cloudflare student shell build wiring', () => {
   it('keeps the committed /app artifact self-contained and Cloudflare-sized', () => {
     const shellDir = resolve(process.cwd(), 'prismflow-deploy/public/app');

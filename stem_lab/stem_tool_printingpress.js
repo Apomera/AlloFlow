@@ -9396,7 +9396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.5 } },
               __alloT('stem.printingpress.for_lesson_plans_student_bibliographie', 'For lesson plans, student bibliographies, or teaching portfolios:')),
             h('div', { style: { fontSize: 12, fontFamily: 'ui-monospace, "SF Mono", Consolas, monospace', color: T.text, background: T.cardAlt, padding: 10, borderRadius: 6, border: '1px solid ' + T.border, lineHeight: 1.6 } },
-              __alloT('stem.printingpress.printingpress_an_interactive_printing_', 'PrintingPress: an interactive printing-press history and simulation tool. AlloFlow STEM Lab (Pomeranz, A., '), new Date().getFullYear(), __alloT('stem.printingpress.retrieved', '). Retrieved '), new Date().toLocaleDateString(), __alloT('stem.printingpress.from_prismflow_911fe_web_app', ' from prismflow-911fe.web.app.')
+              __alloT('stem.printingpress.printingpress_an_interactive_printing_', 'PrintingPress: an interactive printing-press history and simulation tool. AlloFlow STEM Lab (Pomeranz, A., '), new Date().getFullYear(), __alloT('stem.printingpress.retrieved', '). Retrieved '), new Date().toLocaleDateString(), __alloT('stem.printingpress.from_alloflow_project', ' from https://github.com/Apomera/AlloFlow.')
             )
           ),
           disclaimerFooter()
