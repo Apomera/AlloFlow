@@ -257,12 +257,111 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
   function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
 
+  // ── Shared sprite shading defs (WCAG-safe: decorative only) ──────────
+  // A single hidden <svg><defs> injected once into the DOM. Bird sprites
+  // reference these via fill="url(#…)". objectBoundingBox gradients rescale
+  // to each shape, so one highlight/shadow pair volumizes any-sized body.
+  // Cross-<svg> url(#id) resolution is well-supported in all evergreen
+  // browsers. Light is modeled coming from the upper-left, matching the
+  // scenes' sky gradients.
+  (function() {
+    if (document.getElementById('birdlab-sprite-defs')) return;
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.id = 'birdlab-sprite-defs';
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('width', '0'); svg.setAttribute('height', '0');
+    svg.setAttribute('focusable', 'false');
+    svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;';
+    svg.innerHTML = [
+      '<defs>',
+      // Top-left highlight — soft sheen for feather roundness
+      '<radialGradient id="blHiTL" cx="32%" cy="24%" r="72%">',
+      '  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>',
+      '  <stop offset="42%" stop-color="#ffffff" stop-opacity="0.14"/>',
+      '  <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>',
+      '</radialGradient>',
+      // Bottom-right core shadow — grounds the body volume
+      '<radialGradient id="blShBR" cx="68%" cy="76%" r="78%">',
+      '  <stop offset="0%" stop-color="#000000" stop-opacity="0"/>',
+      '  <stop offset="58%" stop-color="#000000" stop-opacity="0"/>',
+      '  <stop offset="100%" stop-color="#101418" stop-opacity="0.30"/>',
+      '</radialGradient>',
+      // Belly-lift — subtle pale gradient for pale undersides
+      '<linearGradient id="blBelly" x1="0" y1="0" x2="0" y2="1">',
+      '  <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>',
+      '  <stop offset="100%" stop-color="#ffffff" stop-opacity="0.35"/>',
+      '</linearGradient>',
+      // Iridescent sheen (waterfowl heads) — blue→green→transparent shimmer
+      '<linearGradient id="blIridescent" x1="0" y1="0" x2="1" y2="1">',
+      '  <stop offset="0%" stop-color="#2fbf6e" stop-opacity="0.85"/>',
+      '  <stop offset="45%" stop-color="#0e9a5a" stop-opacity="0.5"/>',
+      '  <stop offset="100%" stop-color="#1a5fae" stop-opacity="0.55"/>',
+      '</linearGradient>',
+      // Soft grounding drop-shadow filter for the whole sprite
+      '<filter id="blSoftDrop" x="-30%" y="-30%" width="160%" height="170%">',
+      '  <feDropShadow dx="0.5" dy="1.1" stdDeviation="0.8" flood-color="#0a1420" flood-opacity="0.32"/>',
+      '</filter>',
+      // ── Scene atmosphere (applied over habitat backdrops) ──
+      // Warm sky light pouring from top-left
+      '<radialGradient id="blSkyLight" cx="28%" cy="8%" r="90%">',
+      '  <stop offset="0%" stop-color="#fff6d8" stop-opacity="0.45"/>',
+      '  <stop offset="40%" stop-color="#fff6d8" stop-opacity="0.12"/>',
+      '  <stop offset="100%" stop-color="#fff6d8" stop-opacity="0"/>',
+      '</radialGradient>',
+      // Atmospheric-perspective haze rising off the horizon (pushes distance back)
+      '<linearGradient id="blHaze" x1="0" y1="0" x2="0" y2="1">',
+      '  <stop offset="0%" stop-color="#e8f0f4" stop-opacity="0"/>',
+      '  <stop offset="72%" stop-color="#e8f0f4" stop-opacity="0"/>',
+      '  <stop offset="100%" stop-color="#eef4f6" stop-opacity="0.5"/>',
+      '</linearGradient>',
+      // Cinematic vignette — darkens corners a touch to focus the eye
+      '<radialGradient id="blVignette" cx="50%" cy="46%" r="72%">',
+      '  <stop offset="0%" stop-color="#0a1420" stop-opacity="0"/>',
+      '  <stop offset="68%" stop-color="#0a1420" stop-opacity="0"/>',
+      '  <stop offset="100%" stop-color="#0a1420" stop-opacity="0.20"/>',
+      '</radialGradient>',
+      '</defs>'
+    ].join('');
+    document.body.appendChild(svg);
+  })();
+
+  // Sprite helpers — kept tiny so per-species svg() stays readable.
+  // blShade: overlay a highlight + core-shadow pass matched to a body ellipse,
+  //   instantly volumizing a flat fill. Call AFTER plumage, BEFORE crisp
+  //   details (eye/bill/legs) so field marks stay sharp.
+  function blShade(h, cx, cy, rx, ry) {
+    return [
+      h('ellipse', { key: 'sh-hi', cx: cx, cy: cy, rx: rx, ry: ry, fill: 'url(#blHiTL)' }),
+      h('ellipse', { key: 'sh-sh', cx: cx, cy: cy, rx: rx, ry: ry, fill: 'url(#blShBR)' })
+    ];
+  }
+  // blEye: glossy eye with a bright catchlight + faint eyering for life.
+  function blEye(h, cx, cy, r, opts) {
+    opts = opts || {};
+    var ring = opts.ring;
+    var iris = opts.iris || '#0a0a0a';
+    var parts = [];
+    if (ring) parts.push(h('circle', { key: 'er', cx: cx, cy: cy, r: r + 0.7, fill: 'none', stroke: ring, strokeWidth: 0.5 }));
+    parts.push(h('circle', { key: 'e0', cx: cx, cy: cy, r: r, fill: iris }));
+    parts.push(h('circle', { key: 'e1', cx: cx, cy: cy, r: r, fill: 'none', stroke: '#000', strokeWidth: 0.25, opacity: 0.5 }));
+    parts.push(h('circle', { key: 'e2', cx: cx - r * 0.35, cy: cy - r * 0.4, r: Math.max(0.28, r * 0.4), fill: '#fff', opacity: 0.95 }));
+    return h('g', { key: 'eye' }, parts);
+  }
+  // blLeg: a perched leg with a foot grip — thin tapered stroke + toe.
+  function blLeg(h, x, y1, y2, color, key) {
+    return h('g', { key: key || 'leg' },
+      h('line', { x1: x, y1: y1, x2: x, y2: y2, stroke: color, strokeWidth: 1, strokeLinecap: 'round' }),
+      h('path', { d: 'M ' + x + ' ' + y2 + ' l -1.6 1.4 M ' + x + ' ' + y2 + ' l 1.6 1.4 M ' + x + ' ' + y2 + ' l 0 1.8', stroke: color, strokeWidth: 0.8, strokeLinecap: 'round', fill: 'none' })
+    );
+  }
+
   // ─────────────────────────────────────────────────────
   // BIRD SVG BUILDERS — each species rendered as an inline SVG <g> group.
-  // Schematic / field-guide style, NOT photoreal. Pairs with Merlin Bird ID
-  // for real photos. ~24px tall typical (bigger for raptors).
-  // Signatures are color + shape + posture; field marks are accurate per
-  // Cornell Lab All About Birds guides.
+  // Field-guide style with volumetric shading. Pairs with Merlin Bird ID
+  // for real photos. ~24px tall typical (bigger for raptors). Light from
+  // upper-left. Signatures are color + shape + posture; field marks are
+  // accurate per Cornell Lab All About Birds guides.
   // ─────────────────────────────────────────────────────
   var BIRDS = {
     chickadee: {
@@ -276,26 +375,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Whistled "fee-bee" (high then low) and the chatty "chick-a-dee-dee-dee" (more "dees" = higher alert)',
       movement: 'perch-bob',
       svg: function(h) {
-        return h('g', null,
-          // Body (buffy white)
-          h('ellipse', { cx: 12, cy: 14, rx: 9, ry: 7, fill: '#f8e8c8', stroke: '#5a4a32', strokeWidth: 0.6 }),
-          // Black cap
-          h('path', { d: 'M 4 11 Q 4 5 12 5 Q 20 5 20 11 L 18 11 Q 18 7 12 7 Q 6 7 6 11 Z', fill: '#1a1a1a' }),
-          // Black bib
-          h('ellipse', { cx: 12, cy: 17, rx: 4, ry: 2.5, fill: '#1a1a1a' }),
-          // White cheek
-          h('ellipse', { cx: 12, cy: 13, rx: 6, ry: 2.2, fill: '#ffffff' }),
-          // Wing (gray)
-          h('ellipse', { cx: 16, cy: 14, rx: 4, ry: 5, fill: '#8a8a8a' }),
-          // Wing edges (white)
-          h('path', { d: 'M 14 11 L 19 11 M 14 14 L 19 14', stroke: '#ffffff', strokeWidth: 0.7 }),
-          // Tail
-          h('path', { d: 'M 19 14 L 25 12 L 25 16 L 19 16 Z', fill: '#5a5a5a' }),
-          // Eye (dark, no ring)
-          h('circle', { cx: 9, cy: 11, r: 1, fill: '#000' }),
-          h('circle', { cx: 9.3, cy: 10.7, r: 0.3, fill: '#fff' }),
-          // Bill (short, stout, dark)
-          h('path', { d: 'M 4 12 L 1 12.5 L 4 13 Z', fill: '#222' })
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          // Perch legs
+          blLeg(h, 11, 20, 24, '#5a5040', 'lg1'),
+          blLeg(h, 14, 20, 24, '#5a5040', 'lg2'),
+          // Tail (soft grey, layered feathers)
+          h('path', { d: 'M 18 13 L 26 11 L 26 17 L 18 16 Z', fill: '#6a6a6a' }),
+          h('path', { d: 'M 20 13.5 L 26 12 M 20 15 L 26 15', stroke: '#4a4a4a', strokeWidth: 0.4, opacity: 0.6 }),
+          // Plump body (buffy flanks) — teardrop
+          h('path', { d: 'M 5 13 Q 4 7.5 12 7.2 Q 21 7 21.5 14 Q 21 20.5 12 20.8 Q 4.5 20 5 13 Z', fill: '#efe0bf', stroke: '#8a7752', strokeWidth: 0.5 }),
+          // Warm buffy wash on flanks
+          h('path', { d: 'M 13 15 Q 19 15 20.5 18 Q 17 21 12 20.5 Q 12 17 13 15 Z', fill: '#e2c99a', opacity: 0.7 }),
+          // Pale grey folded wing with feather edges
+          h('path', { d: 'M 12 10 Q 20 10 20.5 14 Q 20 18 14 18 Q 12 14 12 10 Z', fill: '#9a9a9a' }),
+          h('path', { d: 'M 13 12 L 20 12.4 M 13.5 14 L 20 14.2 M 14 16 L 19 16', stroke: '#d8d8d8', strokeWidth: 0.5 }),
+          h('path', { d: 'M 13 13 L 20 13.2 M 14 15 L 19 15', stroke: '#6a6a6a', strokeWidth: 0.3, opacity: 0.6 }),
+          // Body volume
+          blShade(h, 12, 13.5, 8.5, 6.8),
+          // Glossy black cap sweeping over the crown
+          h('path', { d: 'M 3.5 11 Q 3.5 4.2 12 4.2 Q 20.5 4.2 20.5 11 Q 20.5 8.5 18 8.5 Q 18 6.5 12 6.5 Q 6 6.5 6 8.5 Q 4 8.5 3.5 11 Z', fill: '#141414' }),
+          h('path', { d: 'M 6 6 Q 12 5 18 6', stroke: '#3a3a3a', strokeWidth: 0.6, fill: 'none', opacity: 0.6 }),
+          // Crisp white cheek
+          h('path', { d: 'M 4 11 Q 4 13.6 8 13.8 Q 13 13.8 14.5 12.6 Q 10 11 4 11 Z', fill: '#ffffff' }),
+          // Black bib below the bill
+          h('path', { d: 'M 5 12.5 Q 5 17 10 17.2 Q 13 16.5 12.5 13.5 Q 8 12.5 5 12.5 Z', fill: '#161616' }),
+          // Eye + short stout bill
+          blEye(h, 8.3, 10.4, 1.05),
+          h('path', { d: 'M 4.4 11.4 L 1 11.9 L 4.4 12.7 Z', fill: '#2a2a2a', stroke: '#000', strokeWidth: 0.2 }),
+          h('path', { d: 'M 4.4 11.9 L 1 11.9', stroke: '#555', strokeWidth: 0.25, opacity: 0.6 })
         );
       }
     },
@@ -310,22 +417,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Nasal "yank-yank-yank" — sounds like a tiny tin horn',
       movement: 'walk-down',
       svg: function(h) {
-        return h('g', null,
-          // Body (white belly)
-          h('ellipse', { cx: 12, cy: 16, rx: 8, ry: 6, fill: '#ffffff', stroke: '#5a4a32', strokeWidth: 0.6 }),
-          // Black cap and back stripe
-          h('path', { d: 'M 4 12 Q 4 6 12 6 Q 20 6 20 12 L 20 14 L 4 14 Z', fill: '#1a1a1a' }),
-          // Blue-gray back / wings
-          h('path', { d: 'M 4 13 Q 4 9 12 9 Q 20 9 20 13 L 20 16 L 4 16 Z', fill: '#7a8da0' }),
-          // Wing detail
-          h('path', { d: 'M 16 12 L 21 14 L 16 16 Z', fill: '#5a6e80' }),
-          // Tail (pointing UP because head-down posture)
-          h('path', { d: 'M 17 18 L 23 22 L 17 22 Z', fill: '#5a6e80' }),
-          // Eye
-          h('circle', { cx: 9, cy: 11, r: 1, fill: '#000' }),
-          h('circle', { cx: 9.3, cy: 10.7, r: 0.3, fill: '#fff' }),
-          // Bill (long, slender, slightly upturned)
-          h('path', { d: 'M 4 11.5 L 0 11 L 4 12.5 Z', fill: '#1a1a1a' })
+        // Classic head-DOWN trunk posture: head low-left, tail cocked up-right.
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          // Short square tail pointing UP (head-down posture)
+          h('path', { d: 'M 16 17 L 22 21 L 18.5 22.5 L 15.5 20 Z', fill: '#5f7386' }),
+          // Body — white underparts, teardrop
+          h('path', { d: 'M 5 15 Q 4.5 9.5 12 9.5 Q 19.5 9.8 20 16 Q 19 21 12 21.2 Q 5 20.5 5 15 Z', fill: '#fbfbf7', stroke: '#8a8577', strokeWidth: 0.5 }),
+          // Rusty wash on lower flank (subtle, as in life)
+          h('path', { d: 'M 15 18 Q 19 18 19.5 20 Q 16 21.5 13 20.5 Q 13 18.5 15 18 Z', fill: '#c99a72', opacity: 0.45 }),
+          // Blue-grey mantle / folded wing
+          h('path', { d: 'M 5 13.5 Q 5 9 12 9 Q 20 9 20.2 13.8 L 20 16.5 Q 12 15 5 16 Z', fill: '#7d90a4' }),
+          // Wing flight-feather barring
+          h('path', { d: 'M 13 11 L 20 12.5 M 13 12.6 L 20 14 M 13.5 14.2 L 19 15.4', stroke: '#4f6376', strokeWidth: 0.55 }),
+          h('path', { d: 'M 13 11.8 L 20 13.2 M 13.5 13.4 L 19.5 14.7', stroke: '#aebccb', strokeWidth: 0.3, opacity: 0.7 }),
+          blShade(h, 12, 14.5, 8, 6.2),
+          // Glossy black crown + nape stripe running onto the back
+          h('path', { d: 'M 4 12 Q 4 6.2 12 6.2 Q 20 6.5 20 12 Q 20 10 15 10 Q 8 9.5 4 12 Z', fill: '#151515' }),
+          // Clean white face/cheek
+          h('path', { d: 'M 3.8 12 Q 7 12.4 11 12 Q 8 13.4 4.4 13.2 Q 3.8 12.6 3.8 12 Z', fill: '#ffffff' }),
+          // Eye + long slender slightly-upturned bill
+          blEye(h, 8.6, 11, 1),
+          h('path', { d: 'M 4.2 11.6 L -0.4 10.7 L 4.2 12.5 Z', fill: '#1a1a1a' }),
+          h('path', { d: 'M 4.2 11.9 L -0.4 10.9', stroke: '#5a5a5a', strokeWidth: 0.25, opacity: 0.7 })
         );
       }
     },
@@ -340,22 +453,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Loud, ringing "kuk-kuk-kuk-kuk" laugh; powerful drumming on hollow trees',
       movement: 'perch-bob',
       svg: function(h) {
-        return h('g', null,
-          // Body (large, mostly black)
-          h('ellipse', { cx: 16, cy: 22, rx: 12, ry: 10, fill: '#1a1a1a', stroke: '#000', strokeWidth: 0.6 }),
-          // Red crest (the pileatus = "capped")
-          h('path', { d: 'M 8 10 Q 12 0 18 4 L 18 12 L 8 12 Z', fill: '#d63a2f' }),
-          // White face stripe
-          h('path', { d: 'M 6 14 L 14 14 L 14 16 L 6 16 Z', fill: '#ffffff' }),
-          // Black malar stripe (cheek)
-          h('path', { d: 'M 8 16 L 14 16 L 14 19 L 8 19 Z', fill: '#1a1a1a' }),
-          // White on neck side
-          h('path', { d: 'M 14 16 L 16 14 L 17 18 L 14 19 Z', fill: '#ffffff' }),
-          // Eye
-          h('circle', { cx: 11, cy: 13, r: 0.8, fill: '#fff' }),
-          h('circle', { cx: 11, cy: 13, r: 0.3, fill: '#000' }),
-          // Bill (long, chisel-shaped, ivory)
-          h('path', { d: 'M 6 14.5 L -1 14 L 6 16 Z', fill: '#e8d8a8', stroke: '#8a7a4a', strokeWidth: 0.4 })
+        // Clinging vertically to a trunk — body angled, strong tail brace.
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          // Stiff bracing tail (props against bark)
+          h('path', { d: 'M 16 30 L 12 40 L 20 40 L 22 30 Z', fill: '#0f0f0f' }),
+          h('path', { d: 'M 15 32 L 14 39 M 18 31 L 18 39', stroke: '#333', strokeWidth: 0.5, opacity: 0.7 }),
+          // Big black body
+          h('path', { d: 'M 6 20 Q 5 12 16 12 Q 27 12 27 22 Q 27 31 16 31.5 Q 6 31 6 20 Z', fill: '#181818', stroke: '#000', strokeWidth: 0.5 }),
+          // Folded wing with feather rows + white leading edge
+          h('path', { d: 'M 17 15 Q 27 15 27.5 22 Q 26 29 19 29 Q 16 21 17 15 Z', fill: '#0c0c0c' }),
+          h('path', { d: 'M 18 17 L 26 18 M 18 20 L 27 21 M 18.5 23 L 26.5 24 M 19 26 L 25 27', stroke: '#333', strokeWidth: 0.5 }),
+          h('path', { d: 'M 6.5 15 Q 6 13 9 12.6', stroke: '#fff', strokeWidth: 1.1, fill: 'none', opacity: 0.85 }),
+          blShade(h, 16, 21, 11.5, 10),
+          // Flaming red full crest (male — crest reaches the bill)
+          h('path', { d: 'M 5 12 Q 6 1 12 3 Q 15 4.5 15 9 Q 12 6 9 8 Q 7 9.5 7 12 Z', fill: '#d83326' }),
+          h('path', { d: 'M 6 11 Q 8 4 12 4.5', stroke: '#f0655a', strokeWidth: 0.7, fill: 'none', opacity: 0.8 }),
+          // White face stripe from bill down the neck
+          h('path', { d: 'M 3 14 Q 9 13.5 14 15 L 13.5 17 Q 8 15.5 3.5 16 Z', fill: '#f8f8f4' }),
+          // Black malar (cheek) stripe
+          h('path', { d: 'M 5 16.5 Q 10 16.5 13.5 18 L 12 20.5 Q 8 19 5.5 19 Z', fill: '#141414' }),
+          // Red malar dash (male mark)
+          h('path', { d: 'M 5 15.5 L 9 15 L 8 16.6 L 5 16.8 Z', fill: '#d83326' }),
+          // Bold yellow eye + long chisel bill (ivory, dark ridge)
+          blEye(h, 11.5, 13, 1.05, { iris: '#f2d24a', ring: '#000' }),
+          h('circle', { cx: 11.5, cy: 13, r: 0.4, fill: '#000' }),
+          h('path', { d: 'M 4 14.5 L -3 13.4 Q -3.6 15 -2.8 15.8 L 4 16 Z', fill: '#e9dcb0', stroke: '#8a7a4a', strokeWidth: 0.4 }),
+          h('path', { d: 'M 4 15.3 L -3 14.4', stroke: '#8a7a4a', strokeWidth: 0.35, opacity: 0.8 })
         );
       }
     },
@@ -370,26 +493,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: '"Here-I-am, where-are-you" repeated endlessly through the day, even in summer heat',
       movement: 'flit',
       svg: function(h) {
-        return h('g', null,
-          // Body (olive-green back, white belly)
-          h('ellipse', { cx: 12, cy: 14, rx: 9, ry: 6, fill: '#ffffff', stroke: '#5a4a32', strokeWidth: 0.5 }),
-          // Olive back
-          h('path', { d: 'M 3 11 Q 3 7 12 7 Q 21 7 21 11 L 21 14 L 3 14 Z', fill: '#7a8a4a' }),
-          // Gray crown
-          h('path', { d: 'M 4 9 Q 4 5 12 5 Q 20 5 20 9 L 18 9 Q 18 7 12 7 Q 6 7 6 9 Z', fill: '#6a7080' }),
-          // White supercilium (eyebrow)
-          h('path', { d: 'M 4 10 Q 12 9.5 20 10', stroke: '#ffffff', strokeWidth: 1.2, fill: 'none' }),
-          // Dark eye line
-          h('path', { d: 'M 4 11 Q 12 11 18 11', stroke: '#3a3a3a', strokeWidth: 0.7, fill: 'none' }),
-          // Red eye (the namesake)
-          h('circle', { cx: 9, cy: 10.8, r: 0.9, fill: '#a82828' }),
-          h('circle', { cx: 9, cy: 10.8, r: 0.3, fill: '#000' }),
-          // Wing
-          h('ellipse', { cx: 16, cy: 13, rx: 4, ry: 4, fill: '#8a9050' }),
-          // Tail
-          h('path', { d: 'M 19 14 L 24 13 L 24 15 L 19 15 Z', fill: '#7a8a4a' }),
-          // Bill (slightly hooked at tip — vireo bills are stubbier than warblers)
-          h('path', { d: 'M 4 11.5 L 1 11 L 4 13 Z', fill: '#3a3a3a' })
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          blLeg(h, 11, 19.5, 23, '#6a6250', 'lg1'),
+          blLeg(h, 14, 19.5, 23, '#6a6250', 'lg2'),
+          // Olive tail
+          h('path', { d: 'M 18 13 L 24.5 12 L 24.5 15.5 L 18 15.5 Z', fill: '#77894a' }),
+          // Body — white/lemon underparts
+          h('path', { d: 'M 4 13.5 Q 3.5 8 12 8 Q 20.5 8 21 14 Q 20 19.5 12 19.8 Q 4 19 4 13.5 Z', fill: '#f6f4e6', stroke: '#8a875f', strokeWidth: 0.45 }),
+          // Olive-green mantle + folded wing
+          h('path', { d: 'M 4 12 Q 4 7.5 12 7.5 Q 21 7.5 21 12.5 L 21 15 Q 12 13 4 14 Z', fill: '#7f9050' }),
+          h('path', { d: 'M 13 10 L 20.5 11 M 13 12 L 20.5 12.8 M 13.5 13.8 L 20 14.4', stroke: '#63723a', strokeWidth: 0.45 }),
+          h('path', { d: 'M 13 10.8 L 20.5 11.8', stroke: '#a4b26e', strokeWidth: 0.3, opacity: 0.7 }),
+          blShade(h, 12, 13.5, 8.5, 6),
+          // Blue-grey crown
+          h('path', { d: 'M 3.6 9.4 Q 3.6 5 12 5 Q 20 5 20 9.2 Q 20 7 12 7 Q 5 7 3.6 9.4 Z', fill: '#727a8a' }),
+          // Bold white supercilium + dark eyeline framing the red eye
+          h('path', { d: 'M 3.4 9.6 Q 10 8.9 18 9.6', stroke: '#ffffff', strokeWidth: 1.3, fill: 'none' }),
+          h('path', { d: 'M 3.4 11 Q 10 11 17 11', stroke: '#3a3a3a', strokeWidth: 0.75, fill: 'none' }),
+          // Red eye (the namesake) with catchlight
+          blEye(h, 8.6, 10.7, 1, { iris: '#a52a26' }),
+          // Stubby slightly-hooked bill
+          h('path', { d: 'M 3.8 11 L 0.6 10.5 Q 0.2 11.6 0.9 12 L 3.8 12.4 Z', fill: '#4a4a44' })
         );
       }
     },
@@ -404,24 +528,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Liquid, melodic "cheerily-cheer-up-cheerily" sung at dawn and dusk',
       movement: 'perch-bob',
       svg: function(h) {
-        return h('g', null,
-          // Dark gray back
-          h('ellipse', { cx: 14, cy: 14, rx: 10, ry: 7, fill: '#5a5a5a', stroke: '#3a3a3a', strokeWidth: 0.5 }),
-          // Orange breast
-          h('ellipse', { cx: 12, cy: 17, rx: 7, ry: 5, fill: '#d65a2a' }),
-          // Dark head
-          h('ellipse', { cx: 8, cy: 11, rx: 5, ry: 4, fill: '#2a2a2a' }),
-          // White eye-arc
-          h('path', { d: 'M 5.5 10 Q 7 9 8 10', stroke: '#ffffff', strokeWidth: 0.7, fill: 'none' }),
-          h('path', { d: 'M 8 10.5 Q 9 9.5 10 11', stroke: '#ffffff', strokeWidth: 0.7, fill: 'none' }),
-          // Eye
-          h('circle', { cx: 7, cy: 10.5, r: 0.7, fill: '#000' }),
-          // Wing
-          h('ellipse', { cx: 17, cy: 14, rx: 5, ry: 5, fill: '#3a3a3a' }),
-          // Tail
-          h('path', { d: 'M 21 14 L 27 13 L 27 17 L 21 17 Z', fill: '#3a3a3a' }),
-          // Yellow bill
-          h('path', { d: 'M 3.5 11 L 0 10.5 L 3.5 12 Z', fill: '#e8b020' })
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          blLeg(h, 12, 21, 26, '#3a2a1a', 'lg1'),
+          blLeg(h, 16, 21, 26, '#3a2a1a', 'lg2'),
+          // Long dark tail
+          h('path', { d: 'M 21 13 L 28.5 12 L 28.5 18 L 21 17.5 Z', fill: '#3d3d3d' }),
+          h('path', { d: 'M 23 12.5 L 23 17.7 M 26 12.2 L 26 17.9', stroke: '#252525', strokeWidth: 0.4, opacity: 0.6 }),
+          // Slate-grey back / body
+          h('path', { d: 'M 5 13.5 Q 4 7.5 14 7.5 Q 24 7.5 24 14 Q 23 20 14 20.5 Q 5 20 5 13.5 Z', fill: '#5e6064', stroke: '#3a3a3a', strokeWidth: 0.5 }),
+          // Rich brick-orange breast (rounded, sits lower-front)
+          h('path', { d: 'M 5 15.5 Q 4.5 10.5 12 10.5 Q 18 11 18.5 16 Q 17 21 11 21 Q 5 20.5 5 15.5 Z', fill: '#d15f2a' }),
+          h('path', { d: 'M 6 16 Q 4.8 12 10 11.4', stroke: '#e88a53', strokeWidth: 0.8, fill: 'none', opacity: 0.7 }),
+          // Folded wing with feather detail
+          h('path', { d: 'M 14 10 Q 24 10 24 15 Q 22 20 16 20 Q 14 15 14 10 Z', fill: '#48484a' }),
+          h('path', { d: 'M 15 12 L 23 12.6 M 15 14.5 L 23.5 15.2 M 15.5 17 L 22 17.6', stroke: '#2e2e30', strokeWidth: 0.5 }),
+          h('path', { d: 'M 15 13 L 23 13.6', stroke: '#6a6a6c', strokeWidth: 0.3, opacity: 0.6 }),
+          blShade(h, 12, 15, 9, 6.5),
+          // Charcoal head
+          h('path', { d: 'M 3.5 11 Q 3.5 6 9 6 Q 14 6 14 11.5 Q 12 14 8 14 Q 4 13.5 3.5 11 Z', fill: '#2b2b2b' }),
+          // Broken white eye-ring (robin field mark)
+          h('path', { d: 'M 5.4 9.8 Q 7 8.7 8.4 9.6', stroke: '#ffffff', strokeWidth: 0.7, fill: 'none' }),
+          h('path', { d: 'M 8.2 11.2 Q 9.2 10.3 10.2 11.4', stroke: '#ffffff', strokeWidth: 0.7, fill: 'none' }),
+          blEye(h, 7, 10.4, 0.85),
+          // Yellow bill with dark tip
+          h('path', { d: 'M 3.6 11 L 0 10.4 Q -0.4 11 0.2 11.5 L 3.6 12.2 Z', fill: '#e8b020' }),
+          h('path', { d: 'M 0.6 10.6 L 0 10.4 Q -0.4 11 0.2 11.5 L 0.7 11.6 Z', fill: '#7a5a10' })
         );
       }
     },
@@ -436,24 +567,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: '"Kek-kek-kek" near nests; usually silent in flight',
       movement: 'soar',
       svg: function(h) {
-        return h('g', null,
-          // Body (slate gray back)
-          h('ellipse', { cx: 18, cy: 16, rx: 14, ry: 8, fill: '#6a7080', stroke: '#3a3a3a', strokeWidth: 0.5 }),
-          // White underside with rusty barring (rusty horizontal bars)
-          h('ellipse', { cx: 15, cy: 19, rx: 10, ry: 5, fill: '#f0e0d0' }),
-          h('path', { d: 'M 7 18 L 23 18 M 7 20 L 23 20 M 7 22 L 23 22', stroke: '#a85030', strokeWidth: 0.5 }),
-          // Dark cap (Cooper\'s hawk has a darker cap than juveniles)
-          h('path', { d: 'M 4 12 Q 4 7 12 7 Q 18 7 18 12 L 16 12 Q 16 9 12 9 Q 6 9 6 12 Z', fill: '#3a3a4a' }),
-          // Yellow eye (red in older adults — yellow is more common in Maine)
-          h('circle', { cx: 8, cy: 11, r: 1.4, fill: '#e8b820' }),
+        // Perched accipiter — upright profile, long banded tail (key mark).
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          blLeg(h, 12, 22, 27, '#e8b830', 'lg1'),
+          blLeg(h, 16, 22, 27, '#e8b830', 'lg2'),
+          // Long banded tail, dropping down-right behind the perched body
+          h('path', { d: 'M 20 16 L 28 15 L 30 27 L 23 27 Z', fill: '#5a6070' }),
+          h('path', { d: 'M 22 17 L 24.5 26.6 M 25 16.6 L 27.2 26.4', stroke: '#171a20', strokeWidth: 0.8 }),
+          h('path', { d: 'M 30 27 L 23 27 L 23.4 25.4 L 29.6 25.4 Z', fill: '#e6e2d6', opacity: 0.9 }),
+          // Slate-grey back / body (upright teardrop)
+          h('path', { d: 'M 5 15 Q 4 8 15 8 Q 25 8 25 16 Q 24 23 14 23.5 Q 5 22.5 5 15 Z', fill: '#69707e', stroke: '#3a3a3a', strokeWidth: 0.5 }),
+          // Pale rusty-barred underside
+          h('path', { d: 'M 6 16 Q 5.5 11 13 11 Q 20 11.5 20 16.5 Q 19 22 12 22 Q 6 21.5 6 16 Z', fill: '#f2e5d6' }),
+          h('path', { d: 'M 7 14 L 19 14 M 7 15.8 L 19.5 15.8 M 7 17.6 L 19 17.6 M 7.5 19.4 L 18 19.4 M 8 21 L 17 21', stroke: '#b0603a', strokeWidth: 0.5, opacity: 0.85 }),
+          // Folded blue-slate wing with feather rows
+          h('path', { d: 'M 15 10 Q 25 10 25 15.5 Q 24 21 17 21 Q 15 15 15 10 Z', fill: '#565d6c' }),
+          h('path', { d: 'M 16 12 L 24 12.8 M 16 15 L 24.5 15.8 M 16.5 18 L 23 18.6', stroke: '#2e333e', strokeWidth: 0.5 }),
+          blShade(h, 13, 15, 10, 7.5),
+          // Blue-slate cap
+          h('path', { d: 'M 3.5 12 Q 3.5 6 12 6 Q 18 6 18 12 Q 16 8.6 12 8.6 Q 6 8.6 3.5 12 Z', fill: '#33384a' }),
+          // Fierce yellow-orange eye + heavy brow
+          h('path', { d: 'M 5 9.6 Q 8 8.6 11 9.6', stroke: '#2a2a2a', strokeWidth: 0.9, fill: 'none' }),
+          blEye(h, 8, 11, 1.4, { iris: '#e8a820' }),
           h('circle', { cx: 8, cy: 11, r: 0.5, fill: '#000' }),
-          // Hooked beak
-          h('path', { d: 'M 3 12 L -1 11 Q -1 13 0 13.5 L 3 13 Z', fill: '#3a3a3a' }),
-          // Yellow cere (above beak)
-          h('path', { d: 'M 3 11 L 0 10.5 L 3 11.5 Z', fill: '#e8c020' }),
-          // Long tail with bands (Cooper\'s hawk = long banded tail, key field mark)
-          h('path', { d: 'M 28 14 L 38 12 L 38 20 L 28 18 Z', fill: '#5a6070' }),
-          h('path', { d: 'M 30 14.5 L 30 17.5 M 33 14 L 33 18 M 36 13 L 36 19', stroke: '#1a1a1a', strokeWidth: 0.7 })
+          // Yellow cere + hooked beak
+          h('path', { d: 'M 3.5 10.6 L 0.5 10 L 3.5 11.3 Z', fill: '#e8c020' }),
+          h('path', { d: 'M 3 11.2 L -1.6 10.2 Q -2 11.8 -0.8 12.6 Q 1 12.4 3 12.2 Z', fill: '#2e2e34' })
         );
       }
     },
@@ -468,25 +607,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Famous "drink-your-tea-EEEEE" song; sharp "chewink!" call when disturbed',
       movement: 'hidden',
       svg: function(h) {
-        return h('g', null,
-          // Body (rufous flanks, white belly)
-          h('ellipse', { cx: 14, cy: 14, rx: 10, ry: 7, fill: '#a85020', stroke: '#5a2a10', strokeWidth: 0.5 }),
-          // White belly stripe
-          h('ellipse', { cx: 12, cy: 16, rx: 4, ry: 4, fill: '#ffffff' }),
-          // Black hood (males — adjust for females in v2)
-          h('ellipse', { cx: 9, cy: 11, rx: 6, ry: 5, fill: '#1a1a1a' }),
-          // Red eye
-          h('circle', { cx: 7, cy: 10.5, r: 1, fill: '#a82020' }),
-          h('circle', { cx: 7, cy: 10.5, r: 0.4, fill: '#000' }),
-          // Black wing with white spots
-          h('ellipse', { cx: 18, cy: 13, rx: 4, ry: 5, fill: '#1a1a1a' }),
-          h('circle', { cx: 17, cy: 12, r: 0.6, fill: '#fff' }),
-          h('circle', { cx: 19, cy: 14, r: 0.6, fill: '#fff' }),
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          blLeg(h, 11, 20, 25, '#c99a6a', 'lg1'),
+          blLeg(h, 15, 20, 25, '#c99a6a', 'lg2'),
           // Long black tail with white corners (key field mark)
-          h('path', { d: 'M 21 14 L 28 13 L 28 17 L 21 16 Z', fill: '#1a1a1a' }),
-          h('path', { d: 'M 27 13 L 28 13 L 28 17 L 27 17 Z', fill: '#fff' }),
-          // Stout finch bill
-          h('path', { d: 'M 3 11 L 0 11 L 3 13 Z', fill: '#1a1a1a' })
+          h('path', { d: 'M 21 13.5 L 29 12 L 29 17.5 L 21 16.5 Z', fill: '#151515' }),
+          h('path', { d: 'M 27.4 12.3 L 29 12 L 29 17.5 L 27.6 17.3 Z', fill: '#ffffff' }),
+          // Body — rich rufous flanks
+          h('path', { d: 'M 4 14 Q 3.5 8 14 8 Q 23 8 23 14.5 Q 22 20 13 20.5 Q 4 20 4 14 Z', fill: '#b05a24', stroke: '#5a2a10', strokeWidth: 0.5 }),
+          h('path', { d: 'M 13 16 Q 20 16 22 18.5 Q 18 20.5 12 20 Q 12 17.5 13 16 Z', fill: '#8f4318', opacity: 0.7 }),
+          // Clean white central belly
+          h('path', { d: 'M 7 15.5 Q 6.5 12 11 12 Q 15 12.5 14.5 16 Q 13 19.5 9 19 Q 7 18 7 15.5 Z', fill: '#fbfbf7' }),
+          // Glossy black wing with white flash spots
+          h('path', { d: 'M 13 10 Q 23 10 23.5 14 Q 22 19 16 19 Q 13 14 13 10 Z', fill: '#141414' }),
+          h('path', { d: 'M 14 12 L 22 12.6 M 14 14.5 L 23 15.2', stroke: '#333', strokeWidth: 0.4, opacity: 0.7 }),
+          h('circle', { cx: 16.5, cy: 12, r: 0.6, fill: '#fff', opacity: 0.95 }),
+          h('circle', { cx: 19, cy: 13.4, r: 0.55, fill: '#fff', opacity: 0.95 }),
+          h('circle', { cx: 21, cy: 14.6, r: 0.5, fill: '#fff', opacity: 0.9 }),
+          blShade(h, 13, 14, 9.5, 6.5),
+          // Glossy black hood
+          h('path', { d: 'M 3.4 11 Q 3.4 5.5 9.5 5.5 Q 15 5.5 15 12 Q 13 15 9 15 Q 4 14 3.4 11 Z', fill: '#141414' }),
+          h('path', { d: 'M 5 8 Q 9 6.2 13 7.8', stroke: '#3a3a3a', strokeWidth: 0.5, fill: 'none', opacity: 0.6 }),
+          // Fiery red eye (the namesake) + catchlight
+          blEye(h, 7, 10.4, 1.05, { iris: '#a51f1f' }),
+          // Stout pale finch bill
+          h('path', { d: 'M 3.4 11 L 0 10.8 Q -0.4 11.6 0.2 12.2 L 3.4 12.6 Z', fill: '#3a3a34' }),
+          h('path', { d: 'M 3.4 11.4 L 0 11.3', stroke: '#7a7a70', strokeWidth: 0.3, opacity: 0.6 })
         );
       }
     },
@@ -503,27 +649,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Loud, harsh "fraaank!" given when alarmed; usually silent while hunting',
       movement: 'hidden',
       svg: function(h) {
-        return h('g', null,
-          // Long legs
-          h('line', { x1: 14, y1: 30, x2: 14, y2: 50, stroke: '#a8a040', strokeWidth: 1 }),
-          h('line', { x1: 18, y1: 30, x2: 18, y2: 50, stroke: '#a8a040', strokeWidth: 1 }),
-          // Body (slate gray)
-          h('ellipse', { cx: 16, cy: 25, rx: 9, ry: 6, fill: '#7a8090', stroke: '#3a3a3a', strokeWidth: 0.5 }),
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          // Long legs with backward-bent joint + splayed toes
+          h('path', { d: 'M 14 30 L 13 40 L 11 49', stroke: '#b0a840', strokeWidth: 1.1, fill: 'none', strokeLinecap: 'round' }),
+          h('path', { d: 'M 18 30 L 18.5 40 L 20 49', stroke: '#9a9238', strokeWidth: 1.1, fill: 'none', strokeLinecap: 'round' }),
+          h('path', { d: 'M 11 49 l -2 1.5 M 11 49 l 2 1.6 M 20 49 l -2 1.6 M 20 49 l 2 1.5', stroke: '#9a9238', strokeWidth: 0.8, fill: 'none', strokeLinecap: 'round' }),
+          // Drooping plume feathers off the back
+          h('path', { d: 'M 22 26 Q 30 27 34 31 Q 27 30 22 29 Z', fill: '#8b93a3', opacity: 0.85 }),
+          // Body (slate blue-grey)
+          h('path', { d: 'M 7 25 Q 6 18 16 18 Q 26 18 26 25 Q 25 31 15 31.5 Q 7 31 7 25 Z', fill: '#7c8494', stroke: '#3a3a3a', strokeWidth: 0.5 }),
+          // Folded wing with feather lines
+          h('path', { d: 'M 15 20 Q 26 20 26 26 Q 24 30 18 30 Q 15 25 15 20 Z', fill: '#69707e' }),
+          h('path', { d: 'M 16 22 L 25 22.6 M 16 24.5 L 25.5 25.2 M 16.5 27 L 24 27.6', stroke: '#4c525e', strokeWidth: 0.5 }),
+          blShade(h, 16, 24.5, 9.5, 6.5),
           // Long S-curved neck
-          h('path', { d: 'M 12 22 Q 8 18 10 12 Q 12 6 18 6', stroke: '#9aa0b0', strokeWidth: 4, fill: 'none' }),
+          h('path', { d: 'M 12.5 23 Q 7.5 18 10 11.5 Q 12 5.5 18.5 5.6', stroke: '#98a0b0', strokeWidth: 4.2, fill: 'none', strokeLinecap: 'round' }),
+          h('path', { d: 'M 12 22 Q 8 17.5 10 12', stroke: '#7c8494', strokeWidth: 1, fill: 'none', opacity: 0.6 }),
           // Head
-          h('ellipse', { cx: 19, cy: 6, rx: 3, ry: 2, fill: '#9aa0b0' }),
-          // Black crown stripe
-          h('path', { d: 'M 18 4 L 22 5 L 22 6 L 18 6 Z', fill: '#1a1a1a' }),
-          // Eye
-          h('circle', { cx: 20, cy: 6, r: 0.6, fill: '#e8b020' }),
-          h('circle', { cx: 20, cy: 6, r: 0.2, fill: '#000' }),
+          h('ellipse', { cx: 19, cy: 5.6, rx: 3.2, ry: 2.1, fill: '#9aa2b2' }),
+          // Black crown + trailing head plume
+          h('path', { d: 'M 17.5 4.2 Q 20 3 22 4 Q 24 5 27 4.5 Q 23 5.6 21.5 5.4 Q 19 5.6 17.5 4.8 Z', fill: '#161616' }),
+          blEye(h, 20.2, 5.4, 0.6, { iris: '#e8b020' }),
           // Long yellow dagger bill
-          h('path', { d: 'M 22 6 L 30 6 L 22 7 Z', fill: '#e8c040', stroke: '#8a7020', strokeWidth: 0.3 }),
-          // Wing edge / shoulder accent
-          h('path', { d: 'M 16 22 Q 22 21 24 26', stroke: '#5a5a5a', strokeWidth: 0.7, fill: 'none' }),
-          // Tail
-          h('path', { d: 'M 24 27 L 28 28 L 28 30 L 24 30 Z', fill: '#5a5a5a' })
+          h('path', { d: 'M 22 5.4 L 31 5.9 L 22 6.8 Z', fill: '#e8c040', stroke: '#8a7020', strokeWidth: 0.3 }),
+          h('path', { d: 'M 22 6.1 L 31 5.9', stroke: '#a88a20', strokeWidth: 0.3, opacity: 0.7 })
         );
       }
     },
@@ -538,24 +687,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Loud, raspy "konk-la-REE!" with the rattly final note (males); softer "chek" calls (females + alarm)',
       movement: 'perch-bob',
       svg: function(h) {
-        return h('g', null,
-          // Body (jet black)
-          h('ellipse', { cx: 12, cy: 14, rx: 9, ry: 6, fill: '#0a0a0a' }),
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          blLeg(h, 11, 20, 25, '#2a2a2a', 'lg1'),
+          blLeg(h, 15, 20, 25, '#2a2a2a', 'lg2'),
+          // Long black tail
+          h('path', { d: 'M 19 13.5 L 26 12.5 L 26 16.5 L 19 15.5 Z', fill: '#0a0a0a' }),
+          // Glossy black body — teardrop
+          h('path', { d: 'M 4 14 Q 3.5 8 12 8 Q 21 8 21 14 Q 20 20 12 20.5 Q 4 20 4 14 Z', fill: '#111111' }),
+          // Subtle blue-sheen highlight on the back (glossy blackbird)
+          h('path', { d: 'M 8 9.5 Q 15 8.5 20 11', stroke: '#2a3550', strokeWidth: 1, fill: 'none', opacity: 0.5 }),
+          // Folded wing
+          h('path', { d: 'M 12 10 Q 21 10 21 14.5 Q 20 19 14 19 Q 12 14 12 10 Z', fill: '#050505' }),
+          h('path', { d: 'M 13 12 L 20 12.6 M 13 15 L 20.5 15.6 M 13.5 17.5 L 19 18', stroke: '#2c2c2c', strokeWidth: 0.4 }),
+          // RED shoulder epaulet with YELLOW lower border (THE field mark)
+          h('path', { d: 'M 11.5 10.5 Q 16 10 18.5 11.5 Q 17.5 13.5 13 13.5 Q 11.5 12 11.5 10.5 Z', fill: '#d81f1f' }),
+          h('path', { d: 'M 10.5 8.8 Q 15 8.4 18 10', stroke: '#f2493f', strokeWidth: 0.6, fill: 'none', opacity: 0.7 }),
+          h('path', { d: 'M 11.5 13.5 Q 15 13.4 17.5 13.9 L 17 15 Q 14 14.6 11.8 14.6 Z', fill: '#eec12a' }),
+          blShade(h, 12, 14, 8.5, 6),
           // Head
-          h('ellipse', { cx: 8, cy: 11, rx: 5, ry: 4, fill: '#0a0a0a' }),
-          // RED shoulder patch (the field mark)
-          h('path', { d: 'M 13 11 L 19 11 L 18 14 L 12 14 Z', fill: '#d62020' }),
-          // YELLOW underline (epaulet)
-          h('path', { d: 'M 13 14 L 18 14 L 18 15 L 13 15 Z', fill: '#e8c020' }),
-          // Wing
-          h('ellipse', { cx: 16, cy: 14, rx: 4, ry: 5, fill: '#1a1a1a' }),
-          // Tail
-          h('path', { d: 'M 19 14 L 25 13 L 25 16 L 19 15 Z', fill: '#0a0a0a' }),
-          // Eye
-          h('circle', { cx: 6, cy: 10, r: 0.7, fill: '#fff' }),
-          h('circle', { cx: 6, cy: 10, r: 0.3, fill: '#000' }),
-          // Bill (sharp, conical)
-          h('path', { d: 'M 3 11 L 0 11 L 3 12.5 Z', fill: '#1a1a1a' })
+          h('path', { d: 'M 3.4 11 Q 3.4 5.8 9 5.8 Q 14 5.8 14 11.5 Q 12 14.5 8 14.5 Q 4 13.5 3.4 11 Z', fill: '#0c0c0c' }),
+          // Pale eye + catchlight
+          blEye(h, 6, 10, 0.75, { iris: '#d8d2b8' }),
+          // Sharp conical black bill
+          h('path', { d: 'M 3.4 10.8 L -0.2 10.6 L 3.4 12.2 Z', fill: '#1a1a1a' }),
+          h('path', { d: 'M 3.4 11.3 L -0.2 10.7', stroke: '#4a4a4a', strokeWidth: 0.25, opacity: 0.6 })
         );
       }
     },
@@ -570,29 +725,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Famous "quack-quack" (females); males give softer rasping calls',
       movement: 'glide',
       svg: function(h) {
-        return h('g', null,
-          // Body (gray-brown)
-          h('ellipse', { cx: 18, cy: 18, rx: 12, ry: 6, fill: '#a89878', stroke: '#5a4a32', strokeWidth: 0.5 }),
-          // White underside / breast separation
-          h('ellipse', { cx: 14, cy: 19, rx: 5, ry: 4, fill: '#7a5a3a' }),
-          // Iridescent green head (male)
-          h('ellipse', { cx: 8, cy: 12, rx: 5, ry: 4, fill: '#1a8a4a' }),
-          h('ellipse', { cx: 9, cy: 11, rx: 3, ry: 2, fill: '#2aa05a', opacity: 0.7 }),
+        // Floating drake on the water — waterline hides feet.
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          // Water reflection shimmer under the body
+          h('ellipse', { cx: 17, cy: 24, rx: 13, ry: 1.6, fill: '#3a5a8a', opacity: 0.3 }),
+          // Grey-brown vermiculated body
+          h('path', { d: 'M 5 18 Q 4.5 12.5 18 12.5 Q 30 12.5 30 18.5 Q 29 23.5 17 23.8 Q 5 23 5 18 Z', fill: '#b0a184', stroke: '#5a4a32', strokeWidth: 0.5 }),
+          h('path', { d: 'M 7 15.5 L 28 15.5 M 7 17.5 L 29 17.5 M 8 19.5 L 28 19.5', stroke: '#8f7f60', strokeWidth: 0.3, opacity: 0.55 }),
+          // Chestnut breast
+          h('path', { d: 'M 5 17.5 Q 5 13 11 13 Q 16 13.5 16 17.5 Q 15 22 10 21.5 Q 5 21 5 17.5 Z', fill: '#8a5a38' }),
+          blShade(h, 17, 18, 12.5, 5.5),
+          // Iridescent green head (male) — structural sheen
+          h('path', { d: 'M 3.6 12 Q 3.6 6.5 9 6.5 Q 14 6.5 14 12 Q 12.5 15 8 15 Q 4.4 14.5 3.6 12 Z', fill: '#127a3e' }),
+          h('path', { d: 'M 3.6 12 Q 3.6 6.5 9 6.5 Q 14 6.5 14 12 Q 12.5 15 8 15 Q 4.4 14.5 3.6 12 Z', fill: 'url(#blIridescent)' }),
+          h('path', { d: 'M 5 9 Q 8.5 7 12.5 9', stroke: '#4fd98a', strokeWidth: 0.7, fill: 'none', opacity: 0.6 }),
           // White neck ring
-          h('path', { d: 'M 4 14.5 Q 8 14 12 15', stroke: '#ffffff', strokeWidth: 1.2, fill: 'none' }),
+          h('path', { d: 'M 4 14.4 Q 8.5 14 13 15.2', stroke: '#ffffff', strokeWidth: 1.4, fill: 'none' }),
           // Eye
-          h('circle', { cx: 6, cy: 11, r: 0.7, fill: '#fff' }),
-          h('circle', { cx: 6, cy: 11, r: 0.3, fill: '#000' }),
-          // Yellow bill
-          h('path', { d: 'M 3 12.5 L -1 12.5 Q -1 13.5 0 14 L 3 13.5 Z', fill: '#e8c440', stroke: '#8a7020', strokeWidth: 0.3 }),
-          // Wing detail (speculum — blue with white borders)
-          h('rect', { x: 18, y: 15, width: 8, height: 2, fill: '#3a5aaa' }),
+          blEye(h, 6, 10.6, 0.75, { iris: '#0a0a0a' }),
+          // Yellow bill with dark nail
+          h('path', { d: 'M 3.6 12 L -1.4 11.8 Q -1.6 13 -0.6 13.6 L 3.6 13.6 Z', fill: '#e8c440', stroke: '#8a7020', strokeWidth: 0.3 }),
+          h('path', { d: 'M -1.4 11.8 Q -1.6 12.6 -1.2 13 L -0.4 12.6 Z', fill: '#3a3018' }),
+          // Speculum — blue panel with white borders
+          h('rect', { x: 18, y: 15, width: 8, height: 2, rx: 0.4, fill: '#3a5aaa' }),
+          h('rect', { x: 18, y: 15, width: 8, height: 1, rx: 0.4, fill: '#5a7ad0', opacity: 0.6 }),
           h('rect', { x: 18, y: 14, width: 8, height: 0.8, fill: '#fff' }),
           h('rect', { x: 18, y: 17, width: 8, height: 0.8, fill: '#fff' }),
-          // Curly tail (male feature)
-          h('path', { d: 'M 28 17 Q 32 13 30 18 Q 28 20 28 18 Z', fill: '#1a1a1a' }),
-          // Tail
-          h('path', { d: 'M 28 19 L 33 19 L 33 21 L 28 21 Z', fill: '#7a6840' })
+          // Curly drake tail feather + rear
+          h('path', { d: 'M 29 16.5 Q 33 12.5 31 17.5 Q 29.5 19 29 17.5 Z', fill: '#141414' }),
+          h('path', { d: 'M 29 18.5 L 33.5 18.5 L 33.5 20.5 L 29 20.5 Z', fill: '#efe9d8' })
         );
       }
     },
@@ -607,27 +768,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Loud, dry, mechanical RATTLE — sounds like a wooden noisemaker; given in flight along streams',
       movement: 'hover',
       svg: function(h) {
-        return h('g', null,
-          // Body (blue-gray)
-          h('ellipse', { cx: 14, cy: 16, rx: 9, ry: 7, fill: '#5a8aa0', stroke: '#3a3a3a', strokeWidth: 0.5 }),
-          // Big shaggy crest (the namesake)
-          h('path', { d: 'M 6 8 L 10 4 L 14 6 L 12 10 Z', fill: '#5a8aa0' }),
-          h('path', { d: 'M 14 6 L 18 5 L 16 9 Z', fill: '#5a8aa0' }),
-          // White collar
-          h('ellipse', { cx: 12, cy: 14, rx: 6, ry: 1.5, fill: '#ffffff' }),
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          // Tail
+          h('path', { d: 'M 20 16 L 26 15 L 26 18.5 L 20 17.5 Z', fill: '#3f6076' }),
+          h('path', { d: 'M 22 15.3 L 22 18 M 24 15.1 L 24 18.2', stroke: '#2a4356', strokeWidth: 0.3, opacity: 0.6 }),
+          // Blue-grey body
+          h('path', { d: 'M 5 16 Q 4.5 10 14 10 Q 23 10 23 16.5 Q 22 22 13 22.3 Q 5 21.5 5 16 Z', fill: '#5f90a6', stroke: '#3a3a3a', strokeWidth: 0.5 }),
           // White breast
-          h('ellipse', { cx: 12, cy: 17, rx: 5, ry: 3, fill: '#ffffff' }),
-          // Blue chest band (the "belt")
-          h('rect', { x: 7, y: 17, width: 10, height: 1.6, fill: '#5a8aa0' }),
-          // Eye
-          h('circle', { cx: 7, cy: 9, r: 0.8, fill: '#000' }),
-          h('circle', { cx: 7.3, cy: 8.7, r: 0.3, fill: '#fff' }),
-          // Long heavy bill
-          h('path', { d: 'M 4 10 L -2 10 L 4 11.5 Z', fill: '#1a1a1a' }),
-          // Wing
-          h('ellipse', { cx: 17, cy: 16, rx: 5, ry: 5, fill: '#3a5a70' }),
-          // Tail (short)
-          h('path', { d: 'M 22 16 L 26 15 L 26 18 L 22 17 Z', fill: '#3a5a70' })
+          h('path', { d: 'M 6 17 Q 6 13.5 11 13.5 Q 16 13.8 16 17.5 Q 15 21 10 20.8 Q 6 20 6 17 Z', fill: '#fbfbf7' }),
+          // Folded wing with feather rows
+          h('path', { d: 'M 14 12 Q 23 12 23 16.5 Q 22 21 16 21 Q 14 16 14 12 Z', fill: '#3f6076' }),
+          h('path', { d: 'M 15 14 L 22 14.6 M 15 16.5 L 22.5 17.2 M 15.5 19 L 21 19.5', stroke: '#2a4356', strokeWidth: 0.5 }),
+          h('path', { d: 'M 15 15 L 22 15.6', stroke: '#7fa8bd', strokeWidth: 0.3, opacity: 0.6 }),
+          // Slate-blue chest band (the "belt")
+          h('path', { d: 'M 6.5 16.5 Q 11 16 15.5 16.5 L 15.5 18.3 Q 11 17.8 6.5 18.3 Z', fill: '#5f90a6' }),
+          blShade(h, 13, 16, 9, 6.5),
+          // Big shaggy double-peaked crest (the namesake)
+          h('path', { d: 'M 5 11 Q 6 4 9.5 5.5 Q 11 3 13 5.5 Q 15 4.5 15.5 7.5 Q 12 7 10 8 Q 7 8.5 5 11 Z', fill: '#5f90a6' }),
+          h('path', { d: 'M 6 10 Q 8 6 11 6.5', stroke: '#8fb8ce', strokeWidth: 0.5, fill: 'none', opacity: 0.6 }),
+          // White collar
+          h('path', { d: 'M 4 13.6 Q 9 13 14 13.8 L 13.5 15 Q 9 14.2 4.4 14.8 Z', fill: '#ffffff' }),
+          // Eye + white loral spot
+          h('circle', { cx: 5.6, cy: 9.6, r: 0.7, fill: '#fff', opacity: 0.9 }),
+          blEye(h, 7, 9.4, 0.85),
+          // Long heavy dagger bill
+          h('path', { d: 'M 4 9.8 L -2.6 9.4 L 4 11.3 Z', fill: '#1a1a1a' }),
+          h('path', { d: 'M 4 10.4 L -2.6 9.6', stroke: '#4a4a4a', strokeWidth: 0.3, opacity: 0.6 })
         );
       }
     },
@@ -644,22 +810,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Clear whistled "what-cheer-cheer-cheer-cheer" or "pretty-pretty-pretty"; sharp "chip!" call',
       movement: 'perch-bob',
       svg: function(h) {
-        return h('g', null,
-          // Body (brilliant red — male)
-          h('ellipse', { cx: 12, cy: 14, rx: 9, ry: 7, fill: '#d61a1a', stroke: '#7a0a0a', strokeWidth: 0.5 }),
-          // Red crest (pointed)
-          h('path', { d: 'M 8 8 L 10 0 L 13 8 Z', fill: '#d61a1a' }),
-          // Black face mask
-          h('ellipse', { cx: 7, cy: 11, rx: 4, ry: 2.5, fill: '#1a1a1a' }),
-          // Eye
-          h('circle', { cx: 6, cy: 10.5, r: 0.6, fill: '#fff' }),
-          h('circle', { cx: 6, cy: 10.5, r: 0.3, fill: '#000' }),
-          // Big orange-red conical bill (seedeater)
-          h('path', { d: 'M 3 11 L -1 10 L 3 12.5 Z', fill: '#e88030' }),
-          // Wing
-          h('ellipse', { cx: 16, cy: 14, rx: 4, ry: 5, fill: '#a01010' }),
-          // Tail (long)
-          h('path', { d: 'M 19 14 L 27 13 L 27 16 L 19 16 Z', fill: '#a01010' })
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          blLeg(h, 11, 20, 25, '#6a4530', 'lg1'),
+          blLeg(h, 15, 20, 25, '#6a4530', 'lg2'),
+          // Long tail
+          h('path', { d: 'M 19 13.5 L 28 12 L 28 16 L 19 15.5 Z', fill: '#b01414' }),
+          h('path', { d: 'M 22 12.7 L 22 15.7 M 25 12.3 L 25 15.9', stroke: '#8a0c0c', strokeWidth: 0.3, opacity: 0.6 }),
+          // Brilliant red body — teardrop
+          h('path', { d: 'M 4 14 Q 3.5 8 12 8 Q 21 8 21 14 Q 20 20 12 20.5 Q 4 20 4 14 Z', fill: '#d81c1c', stroke: '#7a0a0a', strokeWidth: 0.5 }),
+          // Deeper red on lower flank
+          h('path', { d: 'M 12 16 Q 19 16 20.5 18.5 Q 17 20.5 11 20 Q 11 17.5 12 16 Z', fill: '#b81414', opacity: 0.75 }),
+          // Folded wing with feather rows
+          h('path', { d: 'M 12 10 Q 21 10 21 14.5 Q 20 19 14 19 Q 12 14 12 10 Z', fill: '#b81212' }),
+          h('path', { d: 'M 13 12 L 20 12.6 M 13 15 L 20.5 15.6 M 13.5 17.5 L 19 18', stroke: '#8a0c0c', strokeWidth: 0.5 }),
+          h('path', { d: 'M 13 13 L 20 13.5', stroke: '#f04a4a', strokeWidth: 0.3, opacity: 0.5 }),
+          blShade(h, 12, 14, 8.5, 6),
+          // Tall pointed red crest
+          h('path', { d: 'M 7 9 Q 8.5 1 10.5 0.2 Q 11 3 12.5 4.5 Q 13.5 6.5 13 9 Q 10 8 7 9 Z', fill: '#d81c1c' }),
+          h('path', { d: 'M 8.5 8 Q 9.5 3 10.8 1.5', stroke: '#f04a4a', strokeWidth: 0.5, fill: 'none', opacity: 0.6 }),
+          // Black face mask around bill + eye
+          h('path', { d: 'M 2.5 11 Q 5 8.5 9 9 Q 11 10 10.5 12.5 Q 8 14 5 13.5 Q 3 12.5 2.5 11 Z', fill: '#161616' }),
+          blEye(h, 6, 10.6, 0.7),
+          // Big orange-red conical seed-cracking bill
+          h('path', { d: 'M 3 10.8 L -1.2 9.8 Q -1.6 11 -1 11.8 L 3 12.6 Z', fill: '#ec8a3a', stroke: '#b85a1a', strokeWidth: 0.3 }),
+          h('path', { d: 'M 3 11.6 L -1.2 10.9', stroke: '#c86a20', strokeWidth: 0.3, opacity: 0.7 })
         );
       }
     },
@@ -674,30 +848,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: '"JAY-jay!" harsh scream; also a musical "queedle-queedle" + perfect Red-shouldered Hawk imitations',
       movement: 'perch-bob',
       svg: function(h) {
-        return h('g', null,
-          // Body (blue back, white belly)
-          h('ellipse', { cx: 12, cy: 14, rx: 10, ry: 7, fill: '#ffffff', stroke: '#3a3a3a', strokeWidth: 0.5 }),
-          h('path', { d: 'M 3 7 Q 3 11 12 11 Q 21 11 21 7 Q 21 5 12 4 Q 3 5 3 7 Z', fill: '#3a78c8' }),
-          // Wing
-          h('ellipse', { cx: 17, cy: 14, rx: 5, ry: 5, fill: '#3a78c8' }),
-          // Wing barring (white + black bars)
-          h('path', { d: 'M 14 12 L 21 12 M 14 14 L 21 14', stroke: '#fff', strokeWidth: 0.6 }),
-          h('path', { d: 'M 14 13 L 21 13 M 14 15 L 21 15', stroke: '#1a1a1a', strokeWidth: 0.4 }),
-          // Black necklace
-          h('path', { d: 'M 4 12 Q 12 14 20 12', stroke: '#1a1a1a', strokeWidth: 1.2, fill: 'none' }),
-          // Crest (pointed back)
-          h('path', { d: 'M 6 5 L 4 1 L 8 4 Z', fill: '#3a78c8' }),
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          blLeg(h, 11, 20, 25, '#2a2a2a', 'lg1'),
+          blLeg(h, 15, 20, 25, '#2a2a2a', 'lg2'),
+          // Long blue tail tapering to white-tipped feathers with black bars
+          h('path', { d: 'M 20 13.5 L 29 12.2 L 30.5 14.5 L 29 16.8 L 20 16 Z', fill: '#3a78c8' }),
+          h('path', { d: 'M 23 12.9 L 23.4 16.3 M 26 12.5 L 26.4 16.6', stroke: '#12213a', strokeWidth: 0.7 }),
+          h('path', { d: 'M 28.4 12.4 L 29 12.2 L 30.5 14.5 L 29 16.8 L 28.6 16.6 Z', fill: '#ffffff' }),
+          // Body — white/pale-grey underparts
+          h('path', { d: 'M 4 14 Q 3.5 8.5 12 8.5 Q 21 8.5 21.5 14 Q 20.5 20 12 20.5 Q 4 20 4 14 Z', fill: '#f2f2ee', stroke: '#3a3a3a', strokeWidth: 0.5 }),
+          // Blue back / mantle
+          h('path', { d: 'M 3.5 10 Q 3.5 6.5 12 6.5 Q 21.5 6.5 21.5 11 Q 21.5 13.5 12 12.5 Q 4 12 3.5 10 Z', fill: '#3a78c8' }),
+          // Blue folded wing with the classic white+black barring
+          h('path', { d: 'M 13 11 Q 21.5 11 21.5 15 Q 20.5 19 15 19 Q 13 15 13 11 Z', fill: '#3a78c8' }),
+          h('path', { d: 'M 14 12.6 L 21 13 M 14 14.4 L 21.4 14.8 M 14.5 16.2 L 20.5 16.6', stroke: '#12213a', strokeWidth: 0.6 }),
+          h('path', { d: 'M 14 13.4 L 21 13.8 M 14.3 15.2 L 21 15.6 M 15 17 L 20 17.3', stroke: '#ffffff', strokeWidth: 0.6 }),
+          blShade(h, 12, 14, 9, 6),
+          // Pointed blue crest
+          h('path', { d: 'M 5 7 Q 4 1.5 6.5 1 Q 7 3.5 9 5 Q 8 6.5 5.5 7 Z', fill: '#3a78c8' }),
+          h('path', { d: 'M 5.6 6.5 Q 5.2 3 6.4 1.6', stroke: '#6aa0e0', strokeWidth: 0.4, fill: 'none', opacity: 0.6 }),
           // White face
-          h('ellipse', { cx: 8, cy: 9, rx: 4, ry: 2, fill: '#ffffff' }),
-          // Black eye line
-          h('path', { d: 'M 4 9 L 11 9', stroke: '#1a1a1a', strokeWidth: 0.7 }),
-          // Eye
-          h('circle', { cx: 7, cy: 10, r: 0.7, fill: '#000' }),
-          // Bill (stout, dark)
-          h('path', { d: 'M 3 10 L -1 10 L 3 11.5 Z', fill: '#1a1a1a' }),
-          // Tail (long, blue with white tip)
-          h('path', { d: 'M 21 14 L 30 13 L 30 17 L 21 16 Z', fill: '#3a78c8' }),
-          h('rect', { x: 28, y: 13, width: 2, height: 4, fill: '#fff' })
+          h('path', { d: 'M 3.6 10.4 Q 7 9 11 9.4 Q 12 11 10.5 12.6 Q 6.5 12.8 3.8 12 Z', fill: '#f6f6f2' }),
+          // Black necklace + eye line
+          h('path', { d: 'M 4 12 Q 11 14 19 12', stroke: '#141414', strokeWidth: 1.2, fill: 'none' }),
+          h('path', { d: 'M 4 9.2 Q 8 8.8 11.5 9.6', stroke: '#141414', strokeWidth: 0.8, fill: 'none' }),
+          blEye(h, 7, 10.2, 0.75),
+          // Stout dark bill
+          h('path', { d: 'M 3.6 10 L -0.6 9.6 Q -1 10.4 -0.4 11 L 3.6 11.6 Z', fill: '#161616' })
         );
       }
     },
@@ -712,22 +889,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Long, jumbled warbling song with a downward "zwee" at the end; cheerful "queet!" call',
       movement: 'perch-bob',
       svg: function(h) {
-        return h('g', null,
-          // Body (brown-streaked)
-          h('ellipse', { cx: 12, cy: 14, rx: 8, ry: 6, fill: '#a89070', stroke: '#5a4a32', strokeWidth: 0.5 }),
-          // Streaks on belly
-          h('path', { d: 'M 8 16 L 10 19 M 12 17 L 13 20 M 16 16 L 17 19', stroke: '#5a4a30', strokeWidth: 0.5 }),
-          // RED head + breast (male — females are gray-streaked)
-          h('ellipse', { cx: 9, cy: 11, rx: 5, ry: 4, fill: '#d63a40' }),
-          h('ellipse', { cx: 10, cy: 14, rx: 4, ry: 2, fill: '#d63a40' }),
-          // Eye
-          h('circle', { cx: 7, cy: 10.5, r: 0.6, fill: '#000' }),
-          // Stout conical bill
-          h('path', { d: 'M 3 11 L 0 11 L 3 12.5 Z', fill: '#3a3a3a' }),
-          // Wing
-          h('ellipse', { cx: 15, cy: 14, rx: 4, ry: 4, fill: '#7a6240' }),
-          // Tail (slightly notched)
-          h('path', { d: 'M 18 14 L 24 13 L 24 16 L 18 15 Z', fill: '#7a6240' })
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          blLeg(h, 10, 19.5, 23.5, '#8a6a48', 'lg1'),
+          blLeg(h, 13, 19.5, 23.5, '#8a6a48', 'lg2'),
+          // Notched brown tail
+          h('path', { d: 'M 17 13.5 L 24 12.5 L 22.5 14 L 24 15.5 L 17 15 Z', fill: '#7c6644' }),
+          // Warm brown body
+          h('path', { d: 'M 4 14 Q 3.5 8.5 12 8.5 Q 20 8.5 20 14 Q 19 19 12 19.5 Q 4 19 4 14 Z', fill: '#ab936f', stroke: '#5a4a32', strokeWidth: 0.5 }),
+          // Crisp brown belly streaks (female-type field mark, shared)
+          h('path', { d: 'M 8 15 L 8.6 19 M 11 15.5 L 11.5 19.5 M 14 15 L 14.5 18.8 M 16.5 15 L 17 18.5', stroke: '#5a4a30', strokeWidth: 0.55 }),
+          // Folded brown wing with pale wingbars
+          h('path', { d: 'M 12 10.5 Q 20 10.5 20 14.5 Q 19 18.5 14.5 18.5 Q 12 14.5 12 10.5 Z', fill: '#7c6644' }),
+          h('path', { d: 'M 13 12.4 L 19.5 13 M 13 15 L 19.5 15.6', stroke: '#d8c49a', strokeWidth: 0.5 }),
+          h('path', { d: 'M 13 13.4 L 19.5 14', stroke: '#4a3a24', strokeWidth: 0.35, opacity: 0.6 }),
+          blShade(h, 12, 14, 8, 5.5),
+          // Rosy-red forehead, eyebrow + breast (male)
+          h('path', { d: 'M 4 11.4 Q 4 7.5 9 7.5 Q 13.5 7.8 13.5 11 Q 11 10 8 10.5 Q 5.5 10.8 4 11.4 Z', fill: '#d83a40' }),
+          h('path', { d: 'M 4.5 12.5 Q 4.5 15.5 8 15.5 Q 11 15.2 11 13 Q 8 12.6 4.5 12.5 Z', fill: '#d83a40' }),
+          h('path', { d: 'M 5 9 Q 8 7.8 11.5 8.6', stroke: '#f06066', strokeWidth: 0.5, fill: 'none', opacity: 0.6 }),
+          blEye(h, 6.6, 10.4, 0.7),
+          // Stout conical seed bill
+          h('path', { d: 'M 3.4 10.8 L -0.2 10.4 Q -0.5 11.2 0 11.8 L 3.4 12.4 Z', fill: '#6a5a3a' }),
+          h('path', { d: 'M 3.4 11.4 L -0.2 10.9', stroke: '#4a3a24', strokeWidth: 0.3, opacity: 0.6 })
         );
       }
     },
@@ -744,25 +927,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Mostly silent at sea; soft growling "arr-arr-arr" near burrows',
       movement: 'glide',
       svg: function(h) {
-        return h('g', null,
-          // Stocky body (black above, white below)
-          h('ellipse', { cx: 12, cy: 14, rx: 9, ry: 8, fill: '#ffffff', stroke: '#3a3a3a', strokeWidth: 0.5 }),
-          // Black back + head
-          h('path', { d: 'M 3 7 Q 3 12 12 12 Q 21 12 21 7 Q 21 4 12 3 Q 3 4 3 7 Z', fill: '#0a0a0a' }),
-          h('path', { d: 'M 3 12 Q 3 14 6 14 Q 9 14 9 12 Z', fill: '#0a0a0a' }),
-          // White face patch (around eye)
-          h('ellipse', { cx: 7, cy: 9, rx: 3, ry: 2, fill: '#e8e0d8' }),
-          // Eye
-          h('circle', { cx: 7, cy: 9, r: 0.7, fill: '#000' }),
-          // FAMOUS PARROT-LIKE BILL — orange + yellow + blue stripes (breeding plumage)
-          h('path', { d: 'M 3 9.5 L -3 9 Q -4 11 -3 13 L 3 12 Z', fill: '#e85a20', stroke: '#7a3010', strokeWidth: 0.4 }),
-          h('path', { d: 'M -2 10 L 1 10 L 1 12 L -2 12 Z', fill: '#e8c020' }),
-          h('path', { d: 'M -3 11 L 1 11', stroke: '#3a3a8a', strokeWidth: 0.4 }),
-          // Wing
-          h('ellipse', { cx: 16, cy: 13, rx: 4, ry: 5, fill: '#0a0a0a' }),
-          // Orange feet (visible on island, not at sea)
-          h('rect', { x: 9, y: 21, width: 2, height: 2, fill: '#e88030' }),
-          h('rect', { x: 13, y: 21, width: 2, height: 2, fill: '#e88030' })
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          // Bright orange webbed feet (on the ledge)
+          h('path', { d: 'M 8 21 Q 7 24 5.5 25 Q 8 24.5 9.5 24.5 Q 11 24.5 11.5 25 Q 10.5 23.5 10 21 Z', fill: '#ee8a2a', stroke: '#b85a15', strokeWidth: 0.3 }),
+          h('path', { d: 'M 13 21 Q 12 24 10.5 25 Q 13 24.5 14.5 24.5 Q 16 24.5 16.5 25 Q 15.5 23.5 15 21 Z', fill: '#ee8a2a', stroke: '#b85a15', strokeWidth: 0.3 }),
+          // Stocky body — white below
+          h('path', { d: 'M 3.5 14 Q 3 6.5 12 6.5 Q 21 6.5 21 14 Q 20 22 12 22.3 Q 4 21.5 3.5 14 Z', fill: '#fbfbf7', stroke: '#3a3a3a', strokeWidth: 0.5 }),
+          // Black back + hood (sharp demarcation)
+          h('path', { d: 'M 3.4 8.5 Q 3.4 13 12 13 Q 21 13 21 9 Q 21 4 12 3.2 Q 3.4 4 3.4 8.5 Z', fill: '#0d0d0d' }),
+          // Grey collar band between black hood and white breast
+          h('path', { d: 'M 3.6 12.5 Q 12 14 20.5 12.5 L 20.5 14 Q 12 15.4 3.6 14 Z', fill: '#8a8a8a', opacity: 0.85 }),
+          // Folded black wing with feather tips
+          h('path', { d: 'M 13 11 Q 21 11 21 15 Q 20 20 15 20 Q 13 15 13 11 Z', fill: '#0a0a0a' }),
+          h('path', { d: 'M 14.5 13 L 20.5 13.6 M 14.5 15.5 L 20.5 16 M 15 18 L 19.5 18.4', stroke: '#333', strokeWidth: 0.4, opacity: 0.7 }),
+          blShade(h, 12, 14, 8.5, 7.5),
+          // Rounded grey-white cheek patch (breeding face is white)
+          h('ellipse', { cx: 7, cy: 9, rx: 3.4, ry: 2.6, fill: '#f0ebe2' }),
+          // Sad-looking triangular eye patch (puffin field mark)
+          h('path', { d: 'M 6 7.5 L 4.4 9 L 6.2 9.2 Z', fill: '#3a3a3a' }),
+          blEye(h, 6.8, 8.9, 0.75),
+          // FAMOUS triangular parrot bill — blue-grey base, red-orange tip, yellow ridge
+          h('path', { d: 'M 3.4 9.6 L -4 8.6 Q -5 11 -4 13.2 L 3.4 12.4 Z', fill: '#e85a20', stroke: '#7a3010', strokeWidth: 0.4 }),
+          h('path', { d: 'M -0.6 9.3 L 3 9.6 L 3.2 12.3 L -0.4 12.6 Q -1 11 -0.6 9.3 Z', fill: '#7a86b0' }),
+          h('path', { d: 'M -1 10.4 Q 1.4 10.2 3.2 10.6 M -1 11.6 Q 1.4 11.5 3.2 11.7', stroke: '#f2c83a', strokeWidth: 0.45, fill: 'none' }),
+          h('path', { d: 'M -0.7 9.8 Q 0 11 -0.4 12.4', stroke: '#c8b030', strokeWidth: 0.4, fill: 'none', opacity: 0.7 })
         );
       }
     },
@@ -777,26 +965,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Long laughing call ("kyow-kyow-kyow"); sharp "kak!" alarm; the iconic "seagull" cry',
       movement: 'soar',
       svg: function(h) {
-        return h('g', null,
-          // Body (white)
-          h('ellipse', { cx: 16, cy: 16, rx: 13, ry: 7, fill: '#ffffff', stroke: '#5a5a5a', strokeWidth: 0.4 }),
-          // Light gray back/wings
-          h('path', { d: 'M 5 13 Q 5 9 16 9 Q 27 9 27 13 L 27 16 L 5 16 Z', fill: '#b8c0c8' }),
-          // BLACK WINGTIPS (key field mark — all our common gulls have black tips with white spots)
-          h('path', { d: 'M 25 11 L 36 8 L 36 15 L 25 14 Z', fill: '#1a1a1a' }),
-          h('circle', { cx: 32, cy: 11, r: 0.8, fill: '#fff' }),
-          h('circle', { cx: 34, cy: 12, r: 0.8, fill: '#fff' }),
-          // Yellow bill with red spot (the "begging spot" chicks peck for food)
-          h('path', { d: 'M 4 14 L -3 14 L 4 15.5 Z', fill: '#e8c440', stroke: '#8a7020', strokeWidth: 0.3 }),
-          h('circle', { cx: -1, cy: 14.7, r: 0.6, fill: '#d62020' }),
-          // Eye (pale yellow)
-          h('circle', { cx: 8, cy: 12, r: 0.7, fill: '#e8d8a0' }),
-          h('circle', { cx: 8, cy: 12, r: 0.3, fill: '#000' }),
-          // Pink legs
-          h('line', { x1: 14, y1: 22, x2: 14, y2: 27, stroke: '#e8a0a0', strokeWidth: 1 }),
-          h('line', { x1: 18, y1: 22, x2: 18, y2: 27, stroke: '#e8a0a0', strokeWidth: 1 }),
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          // Pink legs with webbed feet
+          h('line', { x1: 14, y1: 22, x2: 14, y2: 27, stroke: '#e89aa0', strokeWidth: 1, strokeLinecap: 'round' }),
+          h('line', { x1: 18, y1: 22, x2: 18, y2: 27, stroke: '#dc8e94', strokeWidth: 1, strokeLinecap: 'round' }),
+          h('path', { d: 'M 14 27 q -2 0.4 -3 1.6 q 3 -0.4 3 0.2 q 0 -0.6 3 -0.2 q -1 -1.2 -3 -1.6 Z', fill: '#e89aa0' }),
+          h('path', { d: 'M 18 27 q -2 0.4 -3 1.6 q 3 -0.4 3 0.2 q 0 -0.6 3 -0.2 q -1 -1.2 -3 -1.6 Z', fill: '#dc8e94' }),
+          // White body
+          h('path', { d: 'M 4 16 Q 3 9.5 16 9.5 Q 29 9.5 29 16 Q 28 23 16 23.3 Q 4 22.5 4 16 Z', fill: '#fbfbf7', stroke: '#5a5a5a', strokeWidth: 0.4 }),
+          // Pale grey mantle
+          h('path', { d: 'M 5 13 Q 5 9 16 9 Q 27 9 27 13.5 Q 16 12 5 13.5 Z', fill: '#bcc4cc' }),
+          // Folded wing feather lines
+          h('path', { d: 'M 14 12 L 26 12.4 M 14 14 L 27 14.6 M 15 16 L 26 16.4', stroke: '#98a2ac', strokeWidth: 0.4, opacity: 0.7 }),
+          // Grey wing tapering back, tipped BLACK with white "mirror" spots (field mark)
+          h('path', { d: 'M 20 11.5 Q 30 11 34 13.2 Q 30 15.6 22 15.5 Z', fill: '#b0b8c0' }),
+          h('path', { d: 'M 28 11.8 Q 34 12.4 37 15 Q 33 16 28.5 15.4 Q 27 13.4 28 11.8 Z', fill: '#1a1a1a' }),
+          h('circle', { cx: 31, cy: 13, r: 0.7, fill: '#fff' }),
+          h('circle', { cx: 33, cy: 14, r: 0.6, fill: '#fff' }),
+          blShade(h, 16, 16, 12.5, 6.8),
           // Tail
-          h('path', { d: 'M 27 16 L 33 17 L 33 19 L 27 18 Z', fill: '#fff' })
+          h('path', { d: 'M 26 16.5 L 31 17 L 31 18.8 L 26 18.4 Z', fill: '#f4f4ef' }),
+          // Pale-yellow eye ringed by a faint orbital
+          blEye(h, 8, 12, 0.85, { iris: '#e6d68f', ring: '#c04030' }),
+          // Yellow bill with red gonydeal spot + dark tip band
+          h('path', { d: 'M 4 14 L -3.4 13.6 Q -3.8 14.6 -3.2 15.4 L 4 15.6 Z', fill: '#e6c23e', stroke: '#8a7020', strokeWidth: 0.3 }),
+          h('circle', { cx: -1.8, cy: 14.9, r: 0.7, fill: '#d62020' }),
+          h('path', { d: 'M -2.8 13.7 L -3.4 13.6 Q -3.8 14.4 -3.4 15 L -2.6 15 Z', fill: '#c8a230' })
         );
       }
     },
@@ -811,24 +1005,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Distinctive "ah-OOO-uh" cooing from males in spring; surprisingly soft for a large duck',
       movement: 'glide',
       svg: function(h) {
-        return h('g', null,
-          // Body (white above, black below — male)
-          h('ellipse', { cx: 16, cy: 17, rx: 12, ry: 7, fill: '#ffffff', stroke: '#3a3a3a', strokeWidth: 0.5 }),
-          // Black underside
-          h('path', { d: 'M 6 18 Q 6 23 16 23 Q 26 23 26 18 Z', fill: '#0a0a0a' }),
-          // Black on top of head
-          h('path', { d: 'M 5 11 Q 5 7 12 7 Q 18 8 18 13 L 12 13 Z', fill: '#0a0a0a' }),
-          // Greenish nape (subtle)
-          h('ellipse', { cx: 13, cy: 11, rx: 3, ry: 1.5, fill: '#9aa07a' }),
-          // White face
-          h('ellipse', { cx: 9, cy: 12, rx: 3, ry: 2.5, fill: '#ffffff' }),
-          // Eye
-          h('circle', { cx: 7, cy: 12, r: 0.6, fill: '#000' }),
-          // Long sloping bill (flat-topped, wedge-shaped — diagnostic for eiders)
-          h('path', { d: 'M 5 12 L -2 11 L -1 14 L 5 14 Z', fill: '#a8a070', stroke: '#5a5030', strokeWidth: 0.3 }),
-          // Wing
-          h('ellipse', { cx: 19, cy: 16, rx: 5, ry: 4, fill: '#fff' }),
-          // Tail (short, dark)
+        // Drake eider floating — the striking white-above / black-below pattern.
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          // Water reflection
+          h('ellipse', { cx: 17, cy: 23.5, rx: 12, ry: 1.4, fill: '#3a5a8a', opacity: 0.28 }),
+          // Black underside / belly
+          h('path', { d: 'M 5 17 Q 4.5 23.5 16 23.8 Q 27 23.5 27 17 Q 16 19.5 5 17 Z', fill: '#0c0c0c' }),
+          // White back / breast
+          h('path', { d: 'M 4 15.5 Q 3.5 9.5 16 9.5 Q 28 9.5 28 15.5 Q 28 18 16 18 Q 4.5 18 4 15.5 Z', fill: '#fbfbf7', stroke: '#3a3a3a', strokeWidth: 0.4 }),
+          // Pale peach flush on the breast (real eider drake mark)
+          h('path', { d: 'M 6 14 Q 6 11 11 11 Q 15 11.2 15 14 Q 12 15 6 14 Z', fill: '#f0d8c0', opacity: 0.7 }),
+          blShade(h, 16, 15.5, 12, 6),
+          // Wedge-shaped head with black crown
+          h('path', { d: 'M 4 12 Q 4 6.5 11 6.5 Q 18 7 18.5 12.5 Q 18.5 9.5 12 9.5 Q 6 9.5 4 12 Z', fill: '#0c0c0c' }),
+          // Pale sea-green nape wash
+          h('path', { d: 'M 12 10.5 Q 16 10 17.5 11.5 Q 15 12.6 12 12.4 Q 11.5 11.2 12 10.5 Z', fill: '#a2b488', opacity: 0.9 }),
+          // White cheek/face
+          h('path', { d: 'M 4 12 Q 7 10.6 11 11 Q 12 12.6 10.5 14 Q 6.5 14.2 4.2 13.4 Z', fill: '#ffffff' }),
+          blEye(h, 7, 11.6, 0.65),
+          // Long sloping wedge bill (diagnostic) — olive-yellow
+          h('path', { d: 'M 4.4 12 L -2.6 10.8 Q -3.2 12.5 -2 14.4 L 4.4 13.8 Z', fill: '#b0a86e', stroke: '#5a5030', strokeWidth: 0.3 }),
+          h('path', { d: 'M -2.6 10.8 Q -1.6 11.6 -1.8 12.8 L 0.4 12.2 Z', fill: '#d0c890', opacity: 0.8 }),
+          // Tail
           h('path', { d: 'M 26 17 L 31 17 L 31 20 L 26 20 Z', fill: '#0a0a0a' })
         );
       }
@@ -844,23 +1042,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Surprisingly small "weak-eek-eek-eek" — not the dramatic scream you hear in movies (that\'s a Red-tailed Hawk overdubbed)',
       movement: 'soar',
       svg: function(h) {
-        return h('g', null,
-          // Big dark brown body
-          h('ellipse', { cx: 20, cy: 18, rx: 16, ry: 8, fill: '#5a3a1a', stroke: '#2a1a0a', strokeWidth: 0.5 }),
-          // White head (the "bald" — actually means "white-headed")
-          h('ellipse', { cx: 8, cy: 12, rx: 6, ry: 5, fill: '#ffffff', stroke: '#5a5a5a', strokeWidth: 0.4 }),
-          // Massive yellow hooked beak
-          h('path', { d: 'M 2 12 L -5 11 Q -6 14 -4 15 L 2 14 Z', fill: '#e8c020', stroke: '#8a7020', strokeWidth: 0.4 }),
-          // Yellow eye + cere
-          h('circle', { cx: 6, cy: 11, r: 1.4, fill: '#e8c020' }),
-          h('circle', { cx: 6, cy: 11, r: 0.5, fill: '#000' }),
-          // White tail
-          h('path', { d: 'M 32 16 L 42 14 L 42 22 L 32 20 Z', fill: '#ffffff', stroke: '#5a5a5a', strokeWidth: 0.4 }),
-          // Wing detail (tipped)
-          h('path', { d: 'M 25 14 L 30 12 L 30 17 Z', fill: '#3a2a0a' }),
-          // Yellow legs/feet
-          h('line', { x1: 17, y1: 25, x2: 17, y2: 30, stroke: '#e8c020', strokeWidth: 1.2 }),
-          h('line', { x1: 22, y1: 25, x2: 22, y2: 30, stroke: '#e8c020', strokeWidth: 1.2 })
+        // Perched adult — the unmistakable white head + tail on a dark body.
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          // Powerful yellow legs gripping the perch
+          h('path', { d: 'M 14 25 L 13.5 31 M 19 25 L 19.5 31', stroke: '#e8c020', strokeWidth: 1.4, fill: 'none', strokeLinecap: 'round' }),
+          h('path', { d: 'M 13.5 31 l -1.8 1.6 M 13.5 31 l 1.6 1.8 M 13.5 31 l 0 2 M 19.5 31 l -1.6 1.8 M 19.5 31 l 1.8 1.6 M 19.5 31 l 0 2', stroke: '#c8a418', strokeWidth: 1, fill: 'none', strokeLinecap: 'round' }),
+          // White tail (short, down-right)
+          h('path', { d: 'M 22 18 L 30 17 L 31 25 L 24 25 Z', fill: '#fbfbf7', stroke: '#c8c8c0', strokeWidth: 0.4 }),
+          h('path', { d: 'M 24 18.6 L 25.5 24.6 M 27 18 L 28.5 24.4', stroke: '#e0e0d8', strokeWidth: 0.4, opacity: 0.7 }),
+          // Big dark-brown body (upright)
+          h('path', { d: 'M 5 17 Q 4 9 17 9 Q 29 9 29 17.5 Q 28 26 16 26.5 Q 5 25.5 5 17 Z', fill: '#5f3d1c', stroke: '#2a1a0a', strokeWidth: 0.5 }),
+          // Folded wing with feather rows
+          h('path', { d: 'M 15 11 Q 29 11 29 17 Q 28 24 18 24 Q 15 17 15 11 Z', fill: '#4a2f13' }),
+          h('path', { d: 'M 16 13.5 L 28 14.4 M 16 16.5 L 28.5 17.6 M 16.5 19.5 L 27 20.6 M 17 22 L 25 23', stroke: '#361f0c', strokeWidth: 0.5 }),
+          h('path', { d: 'M 16 14.5 L 28 15.4 M 16.5 17.5 L 27.5 18.6', stroke: '#7a5228', strokeWidth: 0.3, opacity: 0.5 }),
+          blShade(h, 15, 17, 11.5, 8.5),
+          // White head + neck (the "bald" = white-headed)
+          h('path', { d: 'M 2.5 12 Q 2.5 5.5 9.5 5.5 Q 16 5.5 16 12 Q 16 16 9 16.5 Q 3 16 2.5 12 Z', fill: '#fbfbf7', stroke: '#c8c8c0', strokeWidth: 0.4 }),
+          h('path', { d: 'M 4 14 Q 8 15.6 14 14', stroke: '#dcdcd4', strokeWidth: 0.4, fill: 'none', opacity: 0.7 }),
+          // Fierce brow + pale eye
+          h('path', { d: 'M 3.6 9.6 Q 6.6 8.6 9.4 9.8', stroke: '#c8b830', strokeWidth: 0.8, fill: 'none' }),
+          blEye(h, 6.6, 10.6, 1.05, { iris: '#f0e08a' }),
+          h('circle', { cx: 6.6, cy: 10.6, r: 0.4, fill: '#000' }),
+          // Massive yellow hooked beak + cere
+          h('path', { d: 'M 3 10.6 L -0.4 10 L 3 11.4 Z', fill: '#e8c020' }),
+          h('path', { d: 'M 2.6 11.2 L -4.4 10.2 Q -5.2 12.8 -3 14.4 Q 0 13.8 2.6 13.4 Z', fill: '#eec72a', stroke: '#8a7020', strokeWidth: 0.4 }),
+          h('path', { d: 'M -4.4 10.2 Q -5 11.6 -4.4 12.6 L -1.8 12.2 Z', fill: '#c8a418' })
         );
       }
     },
@@ -877,20 +1084,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Musical trill on one pitch, like a tiny sewing machine; sharp "tsick" calls',
       movement: 'flit',
       svg: function(h) {
-        return h('g', null,
-          // Body (slate-gray above, white below)
-          h('ellipse', { cx: 12, cy: 14, rx: 8, ry: 6, fill: '#ffffff', stroke: '#3a3a3a', strokeWidth: 0.5 }),
-          // Slate-gray hood + back
-          h('path', { d: 'M 4 12 Q 4 7 12 7 Q 20 7 20 12 L 20 14 L 4 14 Z', fill: '#5a6a7a' }),
-          // Eye
-          h('circle', { cx: 7, cy: 10.5, r: 0.6, fill: '#000' }),
-          // Pink bill (key field mark)
-          h('path', { d: 'M 3 11 L 0 11 L 3 12.5 Z', fill: '#e8b8b0' }),
-          // Wing
-          h('ellipse', { cx: 15, cy: 13, rx: 4, ry: 4, fill: '#3a4a5a' }),
-          // White outer tail feathers (key flash field mark)
-          h('path', { d: 'M 18 14 L 25 13 L 25 16 L 18 16 Z', fill: '#3a4a5a' }),
-          h('path', { d: 'M 23 13 L 25 13 L 25 16 L 23 16 Z', fill: '#fff' })
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          blLeg(h, 11, 19.5, 23, '#e0a898', 'lg1'),
+          blLeg(h, 14, 19.5, 23, '#e0a898', 'lg2'),
+          // Slate tail with white outer feathers (the "turn-signal" flash)
+          h('path', { d: 'M 18 13.5 L 25.5 12.5 L 25.5 16 L 18 15.5 Z', fill: '#3f4f60' }),
+          h('path', { d: 'M 23.6 12.7 L 25.5 12.5 L 25.5 16 L 23.8 15.8 Z', fill: '#ffffff' }),
+          // Crisp white belly / underparts
+          h('path', { d: 'M 4 14.5 Q 3.5 10 8 10 Q 13 10 13 15 Q 12 19.5 8 19.5 Q 4 19 4 14.5 Z', fill: '#fbfbf7', stroke: '#3a3a3a', strokeWidth: 0.4 }),
+          // Slate-grey hood + back (clean bib line against white)
+          h('path', { d: 'M 3.6 12 Q 3.6 6.5 12 6.5 Q 20.5 6.5 20.5 13 Q 20 16.5 15 16 Q 8 14 3.6 13.5 Z', fill: '#5f6f80' }),
+          // Folded wing
+          h('path', { d: 'M 12 10.5 Q 20.5 10.5 20.5 14 Q 19.5 17.5 15 17.5 Q 12 14 12 10.5 Z', fill: '#42525f' }),
+          h('path', { d: 'M 13 12.4 L 19.5 13 M 13 14.4 L 20 15 M 13.5 16 L 19 16.4', stroke: '#2c3844', strokeWidth: 0.45 }),
+          blShade(h, 11, 13.5, 8, 6),
+          // Rounded slate head
+          h('path', { d: 'M 3.6 11 Q 3.6 6.5 9 6.5 Q 13.5 6.8 13.5 11 Q 11.5 13.5 8 13.5 Q 4.4 13 3.6 11 Z', fill: '#5f6f80' }),
+          blEye(h, 6.6, 10.2, 0.7),
+          // Pale pink conical bill (key field mark)
+          h('path', { d: 'M 3.4 10.6 L -0.2 10.4 Q -0.5 11.2 0 11.8 L 3.4 12.2 Z', fill: '#eebcb2', stroke: '#c08878', strokeWidth: 0.25 })
         );
       }
     },
@@ -905,20 +1117,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       callDescription: 'Deep, hollow "cronk-cronk" — much deeper and more guttural than a crow\'s caw. Also: knocking sounds, mimicked human words, complex vocabulary',
       movement: 'soar',
       svg: function(h) {
-        return h('g', null,
-          // Big jet-black body
-          h('ellipse', { cx: 15, cy: 15, rx: 12, ry: 7, fill: '#0a0a0a' }),
-          // Shaggy throat ("hackles" — distinguishes raven from crow)
-          h('path', { d: 'M 8 13 L 5 17 L 9 16 L 7 19 L 11 17 Z', fill: '#1a1a1a' }),
+        // Perched raven — heavy bill, shaggy throat, glossy black, wedge tail.
+        return h('g', { filter: 'url(#blSoftDrop)' },
+          blLeg(h, 13, 21, 26, '#161616', 'lg1'),
+          blLeg(h, 17, 21, 26, '#161616', 'lg2'),
+          // Long wedge-shaped tail (distinguishes from crow's fan tail)
+          h('path', { d: 'M 22 15 L 31 13.5 L 33 17 L 31 20.5 L 22 18.5 Z', fill: '#0a0a0a' }),
+          h('path', { d: 'M 24 15.4 L 31 16 M 24 18 L 31 16.8', stroke: '#242424', strokeWidth: 0.4, opacity: 0.6 }),
+          // Big glossy black body
+          h('path', { d: 'M 5 15 Q 4 8.5 16 8.5 Q 27 8.5 27 15.5 Q 26 22 15 22.5 Q 5 21.5 5 15 Z', fill: '#0e0e0e' }),
+          // Folded wing with feather rows
+          h('path', { d: 'M 15 10.5 Q 27 10.5 27 15.5 Q 26 21 17 21 Q 15 15 15 10.5 Z', fill: '#080808' }),
+          h('path', { d: 'M 16 12.5 L 26 13.4 M 16 15.5 L 26.5 16.6 M 16.5 18.5 L 25 19.4', stroke: '#242424', strokeWidth: 0.5, opacity: 0.8 }),
+          // Purple-blue gloss sheen on the back
+          h('path', { d: 'M 8 11 Q 16 9.4 24 12', stroke: '#2a2540', strokeWidth: 1.1, fill: 'none', opacity: 0.5 }),
+          blShade(h, 14, 15, 11, 7),
           // Heavy head
-          h('ellipse', { cx: 8, cy: 12, rx: 5, ry: 4, fill: '#0a0a0a' }),
-          // Big curved bill (much heavier than crow)
-          h('path', { d: 'M 3 11 Q -3 11 -3 13 Q -2 14 3 13 Z', fill: '#1a1a1a' }),
-          // Eye
-          h('circle', { cx: 7, cy: 10.5, r: 0.7, fill: '#fff' }),
-          h('circle', { cx: 7, cy: 10.5, r: 0.3, fill: '#000' }),
-          // Wedge-shaped tail (distinguishes from crow's fan tail)
-          h('path', { d: 'M 26 14 L 35 16 L 26 18 Z', fill: '#0a0a0a' })
+          h('path', { d: 'M 3.2 12 Q 3.2 6.5 9.5 6.5 Q 15 6.8 15 12.5 Q 13 15.5 8.8 15.5 Q 4.2 14.5 3.2 12 Z', fill: '#0c0c0c' }),
+          // Shaggy throat hackles (the raven field mark)
+          h('path', { d: 'M 7 14.5 L 4 18.5 L 8 17 L 6 20.5 L 10.5 18 L 8.5 21 L 12.5 17.5 Z', fill: '#171717' }),
+          blEye(h, 7, 10.4, 0.85, { iris: '#0a0a0a' }),
+          h('circle', { cx: 6.7, cy: 10.1, r: 0.32, fill: '#e8e8e8', opacity: 0.9 }),
+          // Massive curved bill (much heavier than crow) + nasal bristles
+          h('path', { d: 'M 3.2 10.8 Q -3.8 10.4 -4 12.8 Q -3 14.4 3.2 13.4 Z', fill: '#111111' }),
+          h('path', { d: 'M 3.2 11 Q 0 11.2 -2.6 11.9', stroke: '#2e2e2e', strokeWidth: 0.5, fill: 'none', opacity: 0.7 }),
+          h('path', { d: 'M 0.6 10.8 L -1.4 11.5 M 1.4 10.9 L -0.4 11.6', stroke: '#333', strokeWidth: 0.3, opacity: 0.6 })
         );
       }
     }
@@ -10234,6 +10457,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   // Static habitat layers 0-3
                   habitat.renderLayer(h, 0),
                   habitat.renderLayer(h, 1),
+                  // Atmospheric-perspective haze off the horizon — pushes the
+                  // distant layers back for a sense of depth. Behind midground.
+                  h('rect', { key: 'atmo-haze', x: 0, y: 0, width: habitat.width, height: habitat.height, fill: 'url(#blHaze)', 'aria-hidden': 'true', style: { pointerEvents: 'none' } }),
                   // Birds at layer 2 (back / hidden)
                   habitat.birds.filter(function(b) { return b.layer === 2; }).map(function(b, i) {
                     var sp = BIRDS[b.species];
@@ -10286,6 +10512,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       h('g', { className: 'birdlab-' + sp.movement }, sp.svg(h))
                     );
                   }),
+                  // ── Scene atmosphere overlays (decorative, non-interactive) ──
+                  // Warm top-left sky light + gentle vignette unify the scene and
+                  // draw the eye inward. Low opacity so birds stay clearly visible.
+                  h('rect', { key: 'atmo-light', x: 0, y: 0, width: habitat.width, height: habitat.height, fill: 'url(#blSkyLight)', 'aria-hidden': 'true', style: { pointerEvents: 'none' } }),
+                  h('rect', { key: 'atmo-vignette', x: 0, y: 0, width: habitat.width, height: habitat.height, fill: 'url(#blVignette)', 'aria-hidden': 'true', style: { pointerEvents: 'none' } }),
                   // ── Hint pulse: a pulsing amber ring on the hinted bird's position ──
                   // Rendered above all bird layers so it's clearly visible even on
                   // tightly-clustered birds. Auto-clears 3.5s after triggered.
