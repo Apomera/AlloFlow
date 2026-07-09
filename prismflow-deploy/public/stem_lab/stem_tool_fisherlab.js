@@ -7938,6 +7938,266 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     boat.position.set(0, 0, 0);
     scene.add(boat);
 
+    // ═══════════════════════════════════════════════════════════════════
+    // AMBIENT VISUAL FX — a "living sea & sky" rendering layer draped over
+    // the existing scene. Purely visual: the fisheries SIMULATION (catch
+    // rules, size/slot limits, V-notch conservation, buoyage, COLREGS,
+    // physics) is untouched. Every subsystem is fail-safe (try/caught — a
+    // failure can never break the sim), honors prefers-reduced-motion, and
+    // self-throttles on low-power hardware. Kill-switch: window.AlloPostFXEnabled === false.
+    // ═══════════════════════════════════════════════════════════════════
+    var AF = { update: function () {}, applyEnv: function () {}, dispose: function () {}, seaChop: 0.15 };
+    (function buildAmbientFX() {
+      try {
+        var lowPower = reducedMotion || (typeof navigator !== 'undefined' && !!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+        var disp = [];   // textures / geometries / materials to free
+        var objs = [];   // scene objects to remove on dispose
+        function keep(o) { if (o) disp.push(o); return o; }
+        function add(o) { if (o) { scene.add(o); objs.push(o); } return o; }
+
+        // ── procedural textures ──
+        function radialTex(inner, outer) {
+          var c = document.createElement('canvas'); c.width = c.height = 64;
+          var g = c.getContext('2d');
+          var grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+          grd.addColorStop(0, inner); grd.addColorStop(1, outer);
+          g.fillStyle = grd; g.fillRect(0, 0, 64, 64);
+          return keep(new THREE.CanvasTexture(c));
+        }
+        function streakTex() {
+          var c = document.createElement('canvas'); c.width = 8; c.height = 32;
+          var g = c.getContext('2d');
+          var gr = g.createLinearGradient(0, 0, 0, 32);
+          gr.addColorStop(0, 'rgba(205,222,236,0)'); gr.addColorStop(0.5, 'rgba(214,230,242,0.9)'); gr.addColorStop(1, 'rgba(205,222,236,0)');
+          g.fillStyle = gr; g.fillRect(2, 0, 4, 32);
+          return keep(new THREE.CanvasTexture(c));
+        }
+        function gullTex() {
+          var c = document.createElement('canvas'); c.width = 32; c.height = 32;
+          var g = c.getContext('2d');
+          g.strokeStyle = 'rgba(58,66,76,0.92)'; g.lineWidth = 2.6; g.lineCap = 'round';
+          g.beginPath(); g.moveTo(4, 20); g.quadraticCurveTo(12, 9, 16, 16); g.quadraticCurveTo(20, 9, 28, 20); g.stroke();
+          return keep(new THREE.CanvasTexture(c));
+        }
+
+        // ── 1. Guarded bloom (house style: async CDN addon load, fail-safe) ──
+        renderer._alloComposer = null;
+        (function () {
+          if (typeof window !== 'undefined' && window.AlloPostFXEnabled === false) return;
+          var ensure = function (cb) {
+            if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
+            var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
+            var i = 0; (function n() { if (i >= u.length) { cb(); return; } var s = document.createElement('script'); s.src = u[i]; s.onload = function () { i++; n(); }; s.onerror = function () { i++; n(); }; document.head.appendChild(s); })();
+          };
+          ensure(function () {
+            try {
+              var T = window.THREE; if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
+              var rs = lowPower ? 0.5 : 1;
+              var cc = new T.EffectComposer(renderer);
+              cc.addPass(new T.RenderPass(scene, camera));
+              // Threshold high (0.86): only the sun/moon disc + nav lights + sun-glint bloom; whitewater foam stays crisp.
+              cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round((canvas.clientWidth || W) * rs)), Math.max(1, Math.round((canvas.clientHeight || H) * rs))), lowPower ? 0.5 : 0.72, 0.42, 0.86));
+              renderer._alloComposer = cc;
+            } catch (e) { try { renderer._alloComposer = null; } catch (_) {} }
+          });
+        })();
+
+        // ── 2. Gradient sky dome (kills the flat background color) ──
+        var sky = null, skyColArr = null, skyColAttr = null, skyYArr = null;
+        var skyGeo = keep(new THREE.SphereGeometry(560, 24, 16));
+        var scount = skyGeo.attributes.position.count;
+        skyColArr = new Float32Array(scount * 3);
+        skyYArr = new Float32Array(scount);
+        var sp0 = skyGeo.attributes.position;
+        for (var si = 0; si < scount; si++) { skyYArr[si] = Math.max(0, Math.min(1, sp0.getY(si) / 560)); }
+        skyColAttr = new THREE.BufferAttribute(skyColArr, 3);
+        skyGeo.setAttribute('color', skyColAttr);
+        var skyMat = keep(new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false, depthTest: false }));
+        sky = add(new THREE.Mesh(skyGeo, skyMat)); sky.renderOrder = -10;
+
+        // ── 3. Sun/moon disc + soft horizon glow (fixed in the sky, recolored by env) ──
+        var sunDir = sun.position.clone().normalize().multiplyScalar(485);
+        var discMat = keep(new THREE.SpriteMaterial({ map: radialTex('rgba(255,255,255,1)', 'rgba(255,255,255,0)'), color: 0xfff2c8, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, fog: false }));
+        var sunDisc = add(new THREE.Sprite(discMat)); sunDisc.scale.set(70, 70, 1); sunDisc.position.copy(sunDir); sunDisc.renderOrder = -8;
+        var glowMat = keep(new THREE.SpriteMaterial({ map: radialTex('rgba(255,224,168,0.9)', 'rgba(255,186,120,0)'), color: 0xffd8a0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, fog: false }));
+        var sunGlow = add(new THREE.Sprite(glowMat)); sunGlow.scale.set(340, 230, 1); sunGlow.position.copy(sunDir); sunGlow.renderOrder = -9;
+
+        // ── 4. Sun-glitter path on the water (the classic shimmering sun trail) ──
+        var glMat = keep(new THREE.MeshBasicMaterial({ map: radialTex('rgba(255,240,205,0.85)', 'rgba(255,240,205,0)'), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: true, side: THREE.DoubleSide }));
+        var glGeo = keep(new THREE.PlaneGeometry(56, 190));
+        var glitter = add(new THREE.Mesh(glGeo, glMat));
+        glitter.rotation.x = -Math.PI / 2;
+        glitter.rotation.z = -Math.atan2(sun.position.x, sun.position.z);
+        glitter.position.set(0, 0.06, 0); glitter.renderOrder = 1;
+
+        // ── 5. Boat wake foam (visualizes speed = the physics you're driving) ──
+        var wake = [], wcur = 0, WAKE_N = lowPower ? 0 : 26;
+        var foamTex = WAKE_N ? radialTex('rgba(232,242,248,0.95)', 'rgba(232,242,248,0)') : null;
+        for (var fi = 0; fi < WAKE_N; fi++) {
+          var fm = new THREE.SpriteMaterial({ map: foamTex, color: 0xe4eef4, transparent: true, opacity: 0, depthWrite: false, fog: true });
+          var fs = add(new THREE.Sprite(fm)); fs.scale.set(0.3, 0.3, 1); fs.visible = false; fs.renderOrder = 2;
+          fs.userData = { life: 0, max: 1 }; wake.push(fs);
+        }
+        // ── bow spray (brief additive burst at higher speed) ──
+        var spray = [], scur = 0, SPRAY_N = lowPower ? 0 : 12;
+        var sprayTex = SPRAY_N ? radialTex('rgba(255,255,255,0.95)', 'rgba(255,255,255,0)') : null;
+        for (var pi = 0; pi < SPRAY_N; pi++) {
+          var pm = new THREE.SpriteMaterial({ map: sprayTex, color: 0xf0f8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: true });
+          var ps = add(new THREE.Sprite(pm)); ps.scale.set(0.2, 0.2, 1); ps.visible = false; ps.renderOrder = 3;
+          ps.userData = { life: 0, max: 1, vy: 0 }; spray.push(ps);
+        }
+
+        // ── 6. Rain (weather coupling — falls only when weather is rainy) ──
+        var rain = null, rainPos = null, rainGeo = null, RAIN_N = lowPower ? 0 : 620;
+        if (RAIN_N) {
+          rainGeo = keep(new THREE.BufferGeometry());
+          rainPos = new Float32Array(RAIN_N * 3);
+          for (var ri = 0; ri < RAIN_N; ri++) {
+            rainPos[ri * 3] = (Math.random() - 0.5) * 80;
+            rainPos[ri * 3 + 1] = Math.random() * 42;
+            rainPos[ri * 3 + 2] = (Math.random() - 0.5) * 80;
+          }
+          rainGeo.setAttribute('position', new THREE.BufferAttribute(rainPos, 3));
+          var rainMat = keep(new THREE.PointsMaterial({ map: streakTex(), size: 1.7, transparent: true, opacity: 0, depthWrite: false, color: 0xc4d6e4, sizeAttenuation: true }));
+          rain = add(new THREE.Points(rainGeo, rainMat)); rain.visible = false; rain.renderOrder = 4;
+        }
+
+        // ── 7. Night star field (additive, night-only, gentle twinkle) ──
+        var stars = null, STAR_N = lowPower ? 120 : 320;
+        var starGeo = keep(new THREE.BufferGeometry());
+        var starPos = new Float32Array(STAR_N * 3);
+        for (var sti = 0; sti < STAR_N; sti++) {
+          var th = Math.random() * Math.PI * 2, yy = 0.18 + Math.random() * 0.8, rr = Math.sqrt(Math.max(0, 1 - yy * yy)) * 540;
+          starPos[sti * 3] = Math.cos(th) * rr; starPos[sti * 3 + 1] = yy * 540; starPos[sti * 3 + 2] = Math.sin(th) * rr;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        var starMat = keep(new THREE.PointsMaterial({ map: radialTex('rgba(255,255,255,1)', 'rgba(255,255,255,0)'), size: 3.2, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false, sizeAttenuation: true }));
+        stars = add(new THREE.Points(starGeo, starMat)); stars.visible = false; stars.renderOrder = -7;
+
+        // ── 8. Seabirds (a little life; hidden under reduced motion) ──
+        var gulls = [], GULL_N = (reducedMotion || lowPower) ? 0 : 4;
+        var gTex = GULL_N ? gullTex() : null;
+        for (var gi = 0; gi < GULL_N; gi++) {
+          var gm = new THREE.SpriteMaterial({ map: gTex, transparent: true, opacity: 0.85, depthWrite: false, fog: true });
+          var gs = add(new THREE.Sprite(gm)); gs.scale.set(2.4, 1.4, 1); gs.renderOrder = 5;
+          gs.userData = { r: 10 + Math.random() * 22, ang: Math.random() * 6.28, sp: 0.12 + Math.random() * 0.12, cx: (Math.random() - 0.5) * 40, cz: -30 - Math.random() * 60, h: 9 + Math.random() * 7, ph: Math.random() * 6.28 };
+          gulls.push(gs);
+        }
+
+        // ── env-driven targets (opacities lerp toward these each frame) ──
+        var T_ = { disc: 1, glow: 0, glitter: 0.6, rain: 0, stars: 0 };
+        var C_ = { disc: 1, glow: 0, glitter: 0, rain: 0, stars: 0 };
+        var wacc = 0, sacc = 0;
+
+        function spawnWake() {
+          var w = wake[wcur]; wcur = (wcur + 1) % wake.length;
+          var p = boat.localToWorld(new THREE.Vector3((Math.random() - 0.5) * 1.7, 0.16, -2.6));
+          w.position.copy(p); w.position.y = 0.09;
+          w.userData.max = 1.1 + Math.random() * 0.7; w.userData.life = w.userData.max;
+          w.material.opacity = 0.5; w.scale.setScalar(0.35); w.visible = true;
+        }
+        function spawnSpray() {
+          var s = spray[scur]; scur = (scur + 1) % spray.length;
+          var p = boat.localToWorld(new THREE.Vector3((Math.random() - 0.5) * 1.1, 0.4, 2.7));
+          s.position.copy(p);
+          s.userData.max = 0.5 + Math.random() * 0.3; s.userData.life = s.userData.max; s.userData.vy = 1.8 + Math.random() * 1.6;
+          s.material.opacity = 0.7; s.scale.setScalar(0.18); s.visible = true;
+        }
+
+        AF.applyEnv = function (o) {
+          try {
+            var tod = o.tod || 'day', weather = o.weather || 'clear';
+            // sky gradient: horizon = env background, zenith = deeper sky by time/weather
+            if (sky && skyColArr) {
+              var hor = new THREE.Color(o.bg != null ? o.bg : skyColorHex);
+              var zenHex = tod === 'night' ? 0x01030a : tod === 'sunset' ? 0x241a3a : 0x1f4e78;
+              if (weather === 'foggy') zenHex = 0x8a97a3;
+              else if (weather === 'rainy') zenHex = 0x263243;
+              var zen = new THREE.Color(zenHex);
+              for (var i = 0; i < skyYArr.length; i++) {
+                var tt = Math.pow(skyYArr[i], 1.4);
+                skyColArr[i * 3] = hor.r + (zen.r - hor.r) * tt;
+                skyColArr[i * 3 + 1] = hor.g + (zen.g - hor.g) * tt;
+                skyColArr[i * 3 + 2] = hor.b + (zen.b - hor.b) * tt;
+              }
+              skyColAttr.needsUpdate = true;
+            }
+            // sun becomes a pale moon at night
+            if (tod === 'night') { discMat.color.setHex(0xdfe8ff); T_.disc = 0.9; sunDisc.scale.setScalar(46); }
+            else { discMat.color.setHex(o.sunColorHex != null ? o.sunColorHex : 0xfff2c8); sunDisc.scale.setScalar(70); T_.disc = (weather === 'foggy') ? 0.25 : (weather === 'rainy') ? 0.15 : 1; }
+            T_.glow = (tod === 'sunset') ? 0.9 : (tod === 'day') ? 0.22 : 0;
+            if (weather === 'foggy' || weather === 'rainy') T_.glow *= 0.4;
+            glMat.color.setHex(tod === 'sunset' ? 0xffb877 : 0xfff0cd);
+            T_.glitter = (tod === 'night') ? 0 : (weather === 'foggy') ? 0.06 : (weather === 'rainy') ? 0.1 : (tod === 'sunset') ? 0.5 : 0.6;
+            T_.rain = (weather === 'rainy') ? 0.8 : 0;
+            T_.stars = (tod === 'night' && weather !== 'foggy' && weather !== 'rainy') ? 1 : 0;
+            // sea state responds to weather (rougher in rain) — feeds the wave amplitude
+            AF.seaChop = (weather === 'rainy') ? 1 : (weather === 'foggy') ? 0.35 : (tod === 'sunset') ? 0.28 : 0.15;
+          } catch (_) {}
+        };
+
+        AF.update = function (dt, elapsed) {
+          try {
+            var k = Math.min(1, dt * 2.5);
+            C_.disc += (T_.disc - C_.disc) * k; C_.glow += (T_.glow - C_.glow) * k;
+            C_.glitter += (T_.glitter - C_.glitter) * k; C_.rain += (T_.rain - C_.rain) * k; C_.stars += (T_.stars - C_.stars) * k;
+            discMat.opacity = C_.disc; glowMat.opacity = C_.glow;
+            if (glitter) { glitter.position.x = boat.position.x; glitter.position.z = boat.position.z; glMat.opacity = C_.glitter * (0.82 + 0.18 * Math.sin(elapsed * 2.3)); }
+            if (stars) { stars.visible = C_.stars > 0.01; starMat.opacity = C_.stars * (0.72 + 0.28 * Math.sin(elapsed * 1.3)); }
+            if (rain) {
+              rain.visible = C_.rain > 0.01; rain.material.opacity = C_.rain;
+              if (rain.visible) {
+                rain.position.set(boat.position.x, 0, boat.position.z);
+                for (var i = 0; i < RAIN_N; i++) {
+                  rainPos[i * 3 + 1] -= dt * (24 + (i % 9) * 2.5);
+                  if (rainPos[i * 3 + 1] < 0) { rainPos[i * 3 + 1] = 42; rainPos[i * 3] = (Math.random() - 0.5) * 80; rainPos[i * 3 + 2] = (Math.random() - 0.5) * 80; }
+                }
+                rainGeo.attributes.position.needsUpdate = true;
+              }
+            }
+            // wake + spray tied to actual boat speed
+            if (!reducedMotion) {
+              var sp = Math.abs(boatState.speed);
+              if (wake.length) {
+                wacc += dt * Math.min(14, sp) * 1.3;
+                while (wacc >= 1) { wacc -= 1; spawnWake(); }
+                for (var wi = 0; wi < wake.length; wi++) {
+                  var w = wake[wi]; if (w.userData.life <= 0) continue;
+                  w.userData.life -= dt; var lr = 1 - Math.max(0, w.userData.life) / w.userData.max;
+                  w.scale.setScalar(0.35 + lr * 1.75); w.material.opacity = Math.max(0, 0.5 * (1 - lr));
+                  if (w.userData.life <= 0) w.visible = false;
+                }
+              }
+              if (spray.length && sp > 3.2) { sacc += dt * (sp - 2.5) * 1.1; while (sacc >= 1) { sacc -= 1; spawnSpray(); } }
+              for (var qi = 0; qi < spray.length; qi++) {
+                var s = spray[qi]; if (s.userData.life <= 0) continue;
+                s.userData.life -= dt; s.userData.vy -= dt * 3.2; s.position.y += s.userData.vy * dt;
+                var sr = 1 - Math.max(0, s.userData.life) / s.userData.max;
+                s.scale.setScalar(0.18 + sr * 0.5); s.material.opacity = Math.max(0, 0.7 * (1 - sr));
+                if (s.userData.life <= 0 || s.position.y < 0.1) s.visible = false;
+              }
+              for (var ui = 0; ui < gulls.length; ui++) {
+                var g = gulls[ui]; g.userData.ang += dt * g.userData.sp;
+                g.position.set(g.userData.cx + Math.cos(g.userData.ang) * g.userData.r, g.userData.h + Math.sin(elapsed * 1.1 + g.userData.ph) * 0.7, g.userData.cz + Math.sin(g.userData.ang) * g.userData.r);
+                g.scale.y = 1.1 + 0.5 * Math.abs(Math.sin(elapsed * 6 + g.userData.ph));
+              }
+            }
+          } catch (_) {}
+        };
+
+        AF.dispose = function () {
+          try {
+            objs.forEach(function (o) { try { scene.remove(o); } catch (_) {} });
+            wake.forEach(function (w) { try { if (w.material) w.material.dispose(); } catch (_) {} });
+            spray.forEach(function (s) { try { if (s.material) s.material.dispose(); } catch (_) {} });
+            gulls.forEach(function (g) { try { if (g.material) g.material.dispose(); } catch (_) {} });
+            disp.forEach(function (d) { try { if (d && d.dispose) d.dispose(); } catch (_) {} });
+            try { var ac = renderer._alloComposer; if (ac) { (ac.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); renderer._alloComposer = null; } } catch (_) {}
+          } catch (_) {}
+        };
+      } catch (e) { try { console.warn('[FisherLab] ambient FX unavailable:', e); } catch (_) {} }
+    })();
+
     // ─── Buoyage — populated based on region.
     var buoys = [];
     function addBuoy(x, z, type) {
@@ -8532,6 +8792,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       stbdGlow.intensity = dark ? (tod === 'night' ? 1.2 : 0.8) : 0.0;
       sternGlow.intensity = dark ? (tod === 'night' ? 1.5 : 1.0) : 0.0;
       beam.userData.tgt = dark ? 0.35 : 0; // beam now FADES via the loop (was a hard visible snap)
+
+      // Drive the ambient sky/sun/water/weather FX from the same env state.
+      if (typeof AF !== 'undefined') {
+        try { AF.applyEnv({ tod: tod, weather: weather, region: activeRegion, bg: bg, fg: fg, waterColor: waterColor, dark: dark, sunColorHex: sunColor, sunInt: sunInt }); } catch (_) {}
+      }
     }
 
     // ─── Keyboard state
@@ -8902,12 +9167,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         if (sp.id === 'cod' && isKeeper) boatState.keptKeeperCod = true;
       }
 
-      // Wave animation
+      // Wave animation — 3 octaves; amplitude scales with weather-driven sea state
+      // (calm on clear days, choppy in rain) so the water visibly reads the weather sim.
       if (!reducedMotion) {
+        var chop = 1 + (AF.seaChop || 0.15) * 1.7;
+        var amp1 = 0.15 * chop, amp2 = 0.12 * chop, amp3 = 0.05 * chop;
         for (var iv = 0; iv < waterPosArr.length / 3; iv++) {
           var px = waterPosArr[iv * 3];
           var pz = waterPosArr[iv * 3 + 1];
-          waterPosArr[iv * 3 + 2] = initialZ[iv] + Math.sin(px * 0.08 + elapsed * 1.1) * 0.15 + Math.cos(pz * 0.12 + elapsed * 0.9) * 0.12;
+          waterPosArr[iv * 3 + 2] = initialZ[iv]
+            + Math.sin(px * 0.08 + elapsed * 1.1) * amp1
+            + Math.cos(pz * 0.12 + elapsed * 0.9) * amp2
+            + Math.sin((px + pz) * 0.22 + elapsed * 2.1) * amp3;
         }
         waterPositions.needsUpdate = true;
       }
@@ -8964,7 +9235,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         weather: boatState.weather
       });
 
-      renderer.render(scene, camera);
+      AF.update(dt, elapsed);
+      var _ac = renderer._alloComposer;
+      if (_ac) { try { _ac.render(); } catch (e) { renderer._alloComposer = null; renderer.render(scene, camera); } }
+      else { renderer.render(scene, camera); }
       raf = requestAnimationFrame(tick);
     }
     raf = requestAnimationFrame(tick);
@@ -8975,6 +9249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       renderer.setSize(nw, nh, false);
       camera.aspect = nw / nh;
       camera.updateProjectionMatrix();
+      try { if (renderer._alloComposer) renderer._alloComposer.setSize(nw, nh); } catch (_) {}
     }
     window.addEventListener('resize', onResize);
 
@@ -8985,6 +9260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         window.removeEventListener('keydown', onKeyDown);
         window.removeEventListener('keyup', onKeyUp);
         window.removeEventListener('resize', onResize);
+        try { AF.dispose(); } catch (_) {}
         try { renderer.dispose(); } catch (_) {}
         if (audioCtx) {
           try { audioCtx.close(); } catch (_) {}
