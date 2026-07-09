@@ -76,13 +76,55 @@ function createQrRuntime({
 function relevantQrSections(source) {
   return [
     sliceBetween(source, 'const ALLO_QR_STUDENT_AI_OFF_KEY', 'function _isQrStudentAiDisabled()'),
-    sliceBetween(source, 'const ALLO_QR_BLOCKED_FIREBASE_CONFIG', 'const firebaseApp = initializeApp(firebaseConfig);'),
+    sliceBetween(source, 'const ALLO_QR_BLOCKED_FIREBASE_CONFIG', 'let appCheck = null;'),
     sliceBetween(source, "const liveCode = _alloCleanLiveSessionCode", 'const handleExportPDF'),
     sliceBetween(source, "const assignmentId = _alloCleanQrAssignmentId", "if (activeView === 'adventure'"),
   ].join('\n--- QR SECTION ---\n');
 }
 
 describe('QR student shell URL construction', () => {
+  it('boots the Canvas Firebase configuration without a Node process global', () => {
+    const envReader = sliceBetween(rootSource, 'function _alloReadEnv(name)', 'function _alloNormalizeShareBaseUrl');
+    const firebaseBootstrap = sliceBetween(
+      rootSource,
+      'const ALLO_QR_BLOCKED_FIREBASE_CONFIG',
+      'let appCheck = null;',
+    );
+    expect(firebaseBootstrap).not.toMatch(/\bprocess(?:\.|\?\.)env/);
+
+    const factory = new Function(
+      'process',
+      'initializeApp',
+      'getAuth',
+      'getFirestore',
+      '__app_id',
+      '__firebase_config',
+      '_alloQrFirebaseHandoff',
+      '_alloQrFirebaseHandoffRequiredButMissing',
+      `${envReader}\n${firebaseBootstrap}\nreturn { firebaseConfig, appId: _alloRuntimeAppId, configuredProject: _alloConfiguredFirebaseProject, appCheckSiteKey: _alloAppCheckSiteKey };`,
+    );
+    const teacherConfig = {
+      apiKey: 'teacher-key',
+      authDomain: 'teacher.example',
+      projectId: 'teacher-project',
+      appId: '1:123:web:teacher',
+    };
+    const runtime = factory(
+      undefined,
+      (config) => ({ config }),
+      () => ({}),
+      () => ({}),
+      'canvas-classroom-app',
+      JSON.stringify(teacherConfig),
+      null,
+      false,
+    );
+
+    expect(runtime.firebaseConfig).toEqual(teacherConfig);
+    expect(runtime.appId).toBe('canvas-classroom-app');
+    expect(runtime.configuredProject).toBe('');
+    expect(runtime.appCheckSiteKey).toBe('');
+  });
   it('defaults Canvas sharing to the Cloudflare /app shell with the teacher Firebase handoff', () => {
     const teacherConfig = {
       apiKey: 'teacher-key',

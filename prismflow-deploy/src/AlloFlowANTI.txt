@@ -1046,26 +1046,26 @@ const ALLO_QR_BLOCKED_FIREBASE_CONFIG = Object.freeze({
 const _alloRuntimeAppId = (_alloQrFirebaseHandoff && _alloQrFirebaseHandoff.appId)
   || (_alloQrFirebaseHandoffRequiredButMissing
     ? 'incomplete-qr'
-    : (typeof __app_id !== 'undefined' ? __app_id : (process.env.REACT_APP_APP_ID || 'default-app-id')));
+    : (typeof __app_id !== 'undefined' ? __app_id : (_alloReadEnv('REACT_APP_APP_ID') || 'default-app-id')));
 const firebaseConfig = (_alloQrFirebaseHandoff && _alloQrFirebaseHandoff.firebaseConfig)
   || (_alloQrFirebaseHandoffRequiredButMissing
     ? ALLO_QR_BLOCKED_FIREBASE_CONFIG
     : (typeof __firebase_config !== 'undefined'
       ? JSON.parse(__firebase_config)
       : {
-          apiKey: process.env.REACT_APP_API_KEY || '',
-          authDomain: process.env.REACT_APP_AUTH_DOMAIN || '',
-          projectId: process.env.REACT_APP_PROJECT_ID || '',
-          storageBucket: process.env.REACT_APP_STORAGE_BUCKET || '',
-          messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID || '',
-          appId: process.env.REACT_APP_APP_ID || '',
-          measurementId: process.env.REACT_APP_MEASUREMENT_ID || '',
+          apiKey: _alloReadEnv('REACT_APP_API_KEY'),
+          authDomain: _alloReadEnv('REACT_APP_AUTH_DOMAIN'),
+          projectId: _alloReadEnv('REACT_APP_PROJECT_ID'),
+          storageBucket: _alloReadEnv('REACT_APP_STORAGE_BUCKET'),
+          messagingSenderId: _alloReadEnv('REACT_APP_MESSAGING_SENDER_ID'),
+          appId: _alloReadEnv('REACT_APP_APP_ID'),
+          measurementId: _alloReadEnv('REACT_APP_MEASUREMENT_ID'),
         }));
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
-const _alloConfiguredFirebaseProject = process.env.REACT_APP_PROJECT_ID || '';
-const _alloAppCheckSiteKey = process.env.REACT_APP_FIREBASE_APP_CHECK_SITE_KEY || '';
+const _alloConfiguredFirebaseProject = _alloReadEnv('REACT_APP_PROJECT_ID');
+const _alloAppCheckSiteKey = _alloReadEnv('REACT_APP_FIREBASE_APP_CHECK_SITE_KEY');
 let appCheck = null;
 if (_alloAppCheckSiteKey && _alloConfiguredFirebaseProject && firebaseConfig.projectId === _alloConfiguredFirebaseProject) {
   try {
@@ -1099,8 +1099,8 @@ window.addEventListener('beforeunload', () => {
 });
 
 let alloData = null; // Set after async init below
-const DATA_BACKEND = (typeof process !== 'undefined' && process.env?.REACT_APP_DATA_BACKEND) || 'auto';
-const POCKETBASE_URL = (typeof process !== 'undefined' && process.env?.REACT_APP_POCKETBASE_URL) || 'http://localhost:8090';
+const DATA_BACKEND = _alloReadEnv('REACT_APP_DATA_BACKEND') || 'auto';
+const POCKETBASE_URL = _alloReadEnv('REACT_APP_POCKETBASE_URL') || 'http://localhost:8090';
 const DEBUG_LOG = false;
 // ── In-app diagnostics buffer (2026-06-18) ── Inside Gemini Canvas the app runs in a sandboxed
 // iframe whose browser console the teacher can't open, so the pipeline's warnLog/debugLog
