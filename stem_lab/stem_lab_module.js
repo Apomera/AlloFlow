@@ -1708,6 +1708,17 @@
           ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', '_tutorialSeen'].forEach(function (k) {
             if (labToolData[k]) _toSave[k] = labToolData[k];
           });
+          // flightSim progression (badges, visited airports, flight time,
+          // discoveries, tutorial dismissals) was never in the whitelist, so
+          // every "persists" promise in SkySchool silently reset on reload.
+          // Strip per-session keys: view must not reload into 'flying', and
+          // rescue/survey are transient mission state tied to the sim clock.
+          if (labToolData.flightSim) {
+            var _fs = Object.assign({}, labToolData.flightSim);
+            delete _fs.view; delete _fs.rescue; delete _fs.survey;
+            delete _fs.weatherLesson; delete _fs.nearestWaypoint; delete _fs.showHelp;
+            _toSave.flightSim = _fs;
+          }
           localStorage.setItem('alloflow_stemlab_v2', JSON.stringify(_toSave));
         } catch (e) { }
       }, [labToolData]);

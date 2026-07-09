@@ -26,6 +26,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
 (function() {
   'use strict';
+  // ── roundRect polyfill ──
+  // The tool calls ctx.roundRect ~40 times, including in the per-frame HUD
+  // tapes; browsers without it (Safari <16, Chrome <99, Firefox <112) would
+  // throw every frame. Trace an equivalent path when it's missing.
+  if (typeof CanvasRenderingContext2D !== 'undefined' && CanvasRenderingContext2D.prototype && !CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+      var rr = typeof r === 'number' ? [r, r, r, r] : (r && r.length ? [r[0], r[1] != null ? r[1] : r[0], r[2] != null ? r[2] : r[0], r[3] != null ? r[3] : (r[1] != null ? r[1] : r[0])] : [0, 0, 0, 0]);
+      var lim = Math.min(Math.abs(w) / 2, Math.abs(h) / 2);
+      rr = rr.map(function(v) { return Math.max(0, Math.min(v, lim)); });
+      this.moveTo(x + rr[0], y);
+      this.lineTo(x + w - rr[1], y); this.arcTo(x + w, y, x + w, y + rr[1], rr[1]);
+      this.lineTo(x + w, y + h - rr[2]); this.arcTo(x + w, y + h, x + w - rr[2], y + h, rr[2]);
+      this.lineTo(x + rr[3], y + h); this.arcTo(x, y + h, x, y + h - rr[3], rr[3]);
+      this.lineTo(x, y + rr[0]); this.arcTo(x, y, x + rr[0], y, rr[0]);
+      this.closePath();
+      return this;
+    };
+  }
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
     if (document.getElementById('allo-live-flightsim')) return;
@@ -116,9 +134,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
     // Landmarks (non-cities)
     { name: 'Grand Canyon', type: 'landmark', country: 'United States', lat: 36.107, lon: -112.113, pop: null, fact: 'The Grand Canyon is 277 miles long and over 1 mile deep. The rocks at the bottom are 1.8 billion years old.' },
-    { name: 'Amazon Rainforest', type: 'landmark', country: 'Brazil', lat: -3.465, lon: -62.216, pop: null, fact: 'The Amazon produces 20% of the world\'s oxygen. It contains 10% of all species on Earth.' },
+    { name: 'Amazon Rainforest', type: 'landmark', country: 'Brazil', lat: -3.465, lon: -62.216, pop: null, fact: 'The Amazon produces roughly 6-9% of the world\'s oxygen (the "20%" figure is a popular myth). It contains 10% of all species on Earth.' },
     { name: 'Sahara Desert', type: 'landmark', country: 'Africa', lat: 23.417, lon: 25.663, pop: null, fact: 'The Sahara is roughly the same size as the United States. Only 25% of it is sand — the rest is rocky plateau.' },
-    { name: 'Himalayas', type: 'landmark', country: 'Nepal/China', lat: 27.988, lon: 86.925, pop: null, fact: 'Mount Everest grows about 4mm per year due to tectonic activity. The Himalayas are still rising.' },
+    { name: 'Himalayas', type: 'landmark', country: 'Nepal/China', lat: 28.600, lon: 84.000, pop: null, fact: 'Mount Everest grows about 4mm per year due to tectonic activity. The Himalayas are still rising.' },
     { name: 'Great Barrier Reef', type: 'landmark', country: 'Australia', lat: -18.286, lon: 147.700, pop: null, fact: 'The Great Barrier Reef is the largest living structure on Earth — visible from space. It\'s home to 1,500+ species of fish.' },
     { name: 'North Pole', type: 'landmark', country: 'Arctic', lat: 89.0, lon: 0, pop: null, fact: 'At the North Pole, every direction is south. The sun rises once and sets once per year (6 months of daylight, 6 of darkness).' },
     // Additional places for educational coverage
@@ -145,7 +163,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { name: 'Uluru (Ayers Rock)', type: 'landmark', country: 'Australia', lat: -25.345, lon: 131.036, pop: null, fact: 'Uluru is a sacred site for the Anangu Aboriginal people. The sandstone monolith is 1,142 ft tall and 5.8 miles around.' },
     { name: 'Dead Sea', type: 'landmark', country: 'Jordan/Israel', lat: 31.510, lon: 35.473, pop: null, fact: 'The Dead Sea is the lowest point on land at 1,412 ft below sea level. Its salt concentration (34%) makes swimming impossible \u2014 you just float.' },
     { name: 'Yellowstone', type: 'landmark', country: 'United States', lat: 44.428, lon: -110.588, pop: null, fact: 'Yellowstone sits on a supervolcano. Old Faithful erupts roughly every 90 minutes. The park has over 10,000 geothermal features.' },
-    { name: 'Mariana Trench', type: 'landmark', country: 'Pacific Ocean', lat: 11.350, lon: 142.200, pop: null, fact: 'The Mariana Trench is 36,070 ft deep \u2014 deeper than Mount Everest is tall. Only 3 people have ever been to the bottom.' },
+    { name: 'Mariana Trench', type: 'landmark', country: 'Pacific Ocean', lat: 11.350, lon: 142.200, pop: null, fact: 'The Mariana Trench is 36,070 ft deep \u2014 deeper than Mount Everest is tall. Fewer than 30 people have ever been to the bottom \u2014 more have walked on the Moon than had visited until recently.' },
     { name: 'Serengeti', type: 'landmark', country: 'Tanzania', lat: -2.333, lon: 34.833, pop: null, fact: 'The Serengeti hosts the Great Migration \u2014 1.5 million wildebeest and 250,000 zebras move in a 500-mile loop every year.' },
     { name: 'Baikal', type: 'landmark', country: 'Russia', lat: 53.558, lon: 108.165, pop: null, fact: 'Lake Baikal is the deepest lake on Earth (5,387 ft) and holds 20% of the world\u2019s unfrozen surface fresh water. It\u2019s over 25 million years old.' },
     { name: 'Petra', type: 'landmark', country: 'Jordan', lat: 30.329, lon: 35.443, pop: null, fact: 'Petra was carved into rose-red sandstone cliffs by the Nabataeans over 2,000 years ago. It was lost to the Western world until 1812.' },
@@ -172,7 +190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   // ── HYPERJET GEOGRAPHY SPRINT ROUTES ──
   var SPRINT_ROUTES = [
     { id: 'americas', name: '🌎 Americas Sprint', desc: 'Fly from Canada to Argentina — name every capital!', places: ['Ottawa','Washington D.C.','Havana','Mexico City','Bogotá','Lima','Brasília','Buenos Aires'], speed: 2000 },
-    { id: 'europe', name: '🌍 Europe Express', desc: 'Blast through 8 European capitals in 90 seconds!', places: ['Reykjavik','London','Paris','Madrid','Rome','Berlin','Athens','Moscow'], speed: 2500 },
+    { id: 'europe', name: '🌍 Europe Express', desc: 'Blast through 8 European capitals — beat the clock!', places: ['Reykjavik','London','Paris','Madrid','Rome','Berlin','Athens','Moscow'], speed: 2500 },
     { id: 'asia', name: '🌏 Asia Dash', desc: 'From the Middle East to the Pacific — how many can you name?', places: ['Jerusalem','Dubai','New Delhi','Bangkok','Beijing','Seoul','Tokyo','Sydney'], speed: 2200 },
     { id: 'world', name: '🌐 Around the World', desc: 'The ultimate challenge — 12 cities across every continent!', places: ['London','Cairo','Nairobi','New Delhi','Beijing','Tokyo','Sydney','Buenos Aires','Lima','Mexico City','New York City','Reykjavik'], speed: 3000 },
     { id: 'capitals', name: '🏛️ Capital Challenge', desc: 'Capitals only — can you get all 20?', places: ['Washington D.C.','Ottawa','Mexico City','Havana','Bogotá','Lima','Brasília','Buenos Aires','London','Paris','Berlin','Rome','Madrid','Moscow','Athens','Cairo','Nairobi','Addis Ababa','New Delhi','Tokyo'], speed: 2800 },
@@ -183,11 +201,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   var AIRCRAFT = [
     { id: 'cessna172', name: 'Cessna 172 Skyhawk', icon: '🛩️', desc: 'The most popular training aircraft in the world. Forgiving, stable, perfect for learning.', category: 'Trainer',
       wingArea: 174, weight: 2550, maxThrust: 400, cl0: 0.3, clPerAoa: 0.1, cd0: 0.028, cdK: 0.042,
-      maxSpeed: 302, ceiling: 14000, fuelBurn: 8, range: 640,
+      maxSpeed: 163, ceiling: 14000, fuelBurn: 8, range: 640, /* kts (Vne). Data was a mixed-unit mess: 302 here was km/h, fighters were mph, while physics read it as kts */
       lesson: 'The Cessna 172 has a high wing design, which makes it inherently stable. High wings create a pendulum effect — the weight hangs below, naturally resisting bank.' },
     { id: 'boeing737', name: 'Boeing 737-800', icon: '✈️', desc: 'The workhorse of commercial aviation. Fast but needs longer runways and careful speed management.', category: 'Airliner',
       wingArea: 1341, weight: 144500, maxThrust: 54000, cl0: 0.35, clPerAoa: 0.11, cd0: 0.022, cdK: 0.038,
-      maxSpeed: 544, ceiling: 41000, fuelBurn: 850, range: 3115,
+      maxSpeed: 460, ceiling: 41000, fuelBurn: 850, range: 3115, /* kts TAS */
       lesson: 'The 737 uses swept wings (25° sweep angle) to reduce drag at high speeds. Swept wings delay the formation of shock waves near Mach 1 — this is called the critical Mach number.' },
     { id: 'glider', name: 'ASK 21 Glider', icon: '🪂', desc: 'No engine! Pure energy management — trade altitude for speed. The ultimate physics lesson.', category: 'Glider',
       wingArea: 182, weight: 1100, maxThrust: 0, cl0: 0.45, clPerAoa: 0.12, cd0: 0.012, cdK: 0.035,
@@ -195,11 +213,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       lesson: 'Gliders have a glide ratio of ~34:1, meaning for every foot of altitude lost, they travel 34 feet forward. Finding thermals (rising warm air) is how glider pilots gain altitude without an engine.' },
     { id: 'f16', name: 'F-16 Fighting Falcon', icon: '🔥', desc: 'Supersonic fighter jet. Incredible thrust-to-weight ratio enables vertical climbs and tight turns.', category: 'Fighter',
       wingArea: 300, weight: 19700, maxThrust: 28600, cl0: 0.2, clPerAoa: 0.08, cd0: 0.015, cdK: 0.05,
-      maxSpeed: 1320, ceiling: 58000, fuelBurn: 250, range: 2280,
+      maxSpeed: 800, ceiling: 58000, fuelBurn: 250, range: 2280, /* kts — arcade cap; keeps Mach 1 (661 kts) reachable */
       lesson: 'The F-16 has a thrust-to-weight ratio greater than 1, meaning it can accelerate straight up. Its fly-by-wire system means a computer translates pilot inputs into control surface movements 40 times per second.' },
     { id: 'sr71', name: 'SR-71 Blackbird', icon: '🦅', desc: 'The fastest air-breathing aircraft ever built. Mach 3.3 at 85,000 ft — the edge of space.', category: 'Reconnaissance',
       wingArea: 1800, weight: 152000, maxThrust: 68000, cl0: 0.15, clPerAoa: 0.06, cd0: 0.009, cdK: 0.06,
-      maxSpeed: 2200, ceiling: 85000, fuelBurn: 8000, range: 3200,
+      maxSpeed: 1900, ceiling: 85000, fuelBurn: 8000, range: 3200, /* kts ≈ Mach 3.3 at altitude */
       lesson: 'The SR-71 flies so fast that its titanium skin heats to over 600°F from air friction. The fuel tanks are designed to leak on the ground — they only seal properly when the metal expands at operating temperature!' },
     { id: 'rescue_heli', name: 'UH-60 Rescue Helicopter', icon: '🚁', desc: 'A search-and-rescue helicopter. Hovers in place, lifts straight up, no runway needed. Different physics from fixed-wing — collective controls vertical thrust, cyclic pitches the rotor disk for forward motion.', category: 'Rotor',
       isHelicopter: true,
@@ -209,7 +227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { id: 'drone', name: 'DJI Mavic Drone', icon: '🛸', desc: 'A consumer quadcopter. Snappy, GPS-stabilized, capped at 400 ft AGL by FAA Part 107. Smaller than a helicopter — built for photography, mapping, and survey work.', category: 'Drone',
       isDrone: true,
       wingArea: 0.5, weight: 2 /* lbs */, maxThrust: 4 /* very high thrust-to-weight */, cl0: 0, clPerAoa: 0, cd0: 0.4, cdK: 0,
-      maxSpeed: 100, ceiling: 400 /* AGL clamp enforced in physics */, fuelBurn: 0, range: 4 /* nm visual line-of-sight */,
+      maxSpeed: 60, ceiling: 400 /* AGL clamp enforced in physics */, fuelBurn: 0, range: 4 /* nm visual line-of-sight */, /* kts — consumer quadcopter sport mode */
       lesson: 'A quadcopter has 4 rotors that vary individual thrust to control roll, pitch, and yaw. GPS holds altitude when you release the throttle — release the stick and the drone hovers in place. Under FAA Part 107, you must keep visual line of sight, fly below 400 ft AGL, and stay clear of airports. These rules exist because drones share airspace with crewed aircraft, and a 2 lb drone hitting a windshield at 200 mph is a real safety issue.' },
   ];
 
@@ -261,8 +279,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     CD_INDUCED_K: 0.042, // induced drag factor
 
     airDensity: function(alt) {
-      // Standard atmosphere approximation
-      return this.RHO_SL * Math.pow(1 - 0.0000068756 * alt, 4.2561);
+      // Standard atmosphere approximation. Clamp the base at 0: above
+      // ~145,000 ft the linear term goes negative and a fractional power of
+      // a negative number is NaN, which poisons lift/drag/stallSpeed and
+      // then the whole sim state.
+      return this.RHO_SL * Math.pow(Math.max(0, 1 - 0.0000068756 * alt), 4.2561);
     },
 
     liftForce: function(speed, alt, aoa) {
@@ -329,7 +350,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Vertical accel — direct, no aoa coupling
         var vertAccelH = (verticalLift - this.WEIGHT) / (this.WEIGHT / this.G);
         vsi += vertAccelH * dt * 0.5;
-        vsi *= 0.96; // damping (helicopters are responsive but not bouncy)
+        vsi *= Math.pow(0.96, dt * 30); // damping (helicopters are responsive but not bouncy); per-30fps-frame factor, dt-corrected
         alt += vsi * dt;
         var fieldElevH = state.fieldElev || 0;
         if (alt < fieldElevH) alt = fieldElevH;
@@ -403,9 +424,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // barometric + GPS feedback to actively hold altitude.
         var hoverColl = 0.5;
         if (Math.abs(dCollective - hoverColl) < 0.05) {
-          vsi *= 0.85; // strong damping at hover throttle
+          vsi *= Math.pow(0.85, dt * 30); // strong damping at hover throttle (dt-corrected)
         } else {
-          vsi *= 0.94;
+          vsi *= Math.pow(0.94, dt * 30);
         }
         alt += vsi * dt;
         var fieldElevD = state.fieldElev || 0;
@@ -476,12 +497,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var accelForward = (thrust * Math.cos(pitchRad) - drag - this.WEIGHT * Math.sin(pitchRad)) / (this.WEIGHT / this.G);
       speed += accelForward * dt;
       speed = Math.max(0, speed);
+      // Vne cap (kts → ft/s). Fixed-wing had no speed ceiling at all;
+      // SPRINT_MODE (HyperJet geography game) deliberately exceeds it.
+      if (!this.SPRINT_MODE) {
+        var vneFtS = (this.MAX_SPEED_KTS || 999) * 1.6878;
+        if (speed > vneFtS) speed = vneFtS;
+      }
 
       // Vertical component
       var liftVertical = lift * Math.cos(bank * Math.PI / 180);
       var vertAccel = (liftVertical - this.WEIGHT) / (this.WEIGHT / this.G);
       vsi += vertAccel * dt * 0.3; // damped for stability
-      vsi *= 0.98; // slight damping
+      vsi *= Math.pow(0.98, dt * 30); // slight damping (per-30fps-frame factor, dt-corrected)
       alt += vsi * dt;
       // Field elevation (airport MSL) — passed in via state.fieldElev. Defaults to 0.
       // The plane sits ON the runway at fieldElev, not at sea level. Without this,
@@ -1410,20 +1437,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       role: 'Avionics technician',
       training: 'AMT school + avionics endorsement OR military electronics training',
       payRange: '$50K - $90K',
-      role: 'Install and maintain aircraft electronics, instruments, navigation systems',
+      duties: 'Install and maintain aircraft electronics, instruments, navigation systems',
     },
     {
       role: 'Aerospace manufacturing technician',
       training: 'High school + on-the-job; sometimes 2-year programs',
       payRange: '$40K - $75K',
-      role: 'Build and assemble aircraft components',
+      duties: 'Build and assemble aircraft components',
     },
     {
       role: 'Aviation safety inspector',
       training: 'Pilot or mechanic certification + FAA hiring process',
       payRange: '$80K - $150K',
       employer: 'FAA',
-      role: 'Inspect operators, investigate incidents',
+      duties: 'Inspect operators, investigate incidents',
     },
     {
       role: 'Aviation lawyer',
@@ -1435,14 +1462,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       role: 'Flight dispatcher',
       training: '~5-8 weeks ATC dispatch school',
       payRange: '$45K - $120K',
-      role: 'Plan flights, monitor weather, share legal responsibility with the captain',
+      duties: 'Plan flights, monitor weather, share legal responsibility with the captain',
       certification: 'FAA Aircraft Dispatcher Certificate',
     },
     {
       role: 'Flight attendant',
       training: 'Airline-provided (~6 weeks)',
       payRange: '$30K (entry) - $80K+ (senior)',
-      role: 'Cabin safety + service. Primarily safety; service is secondary.',
+      duties: 'Cabin safety + service. Primarily safety; service is secondary.',
     },
     {
       role: 'Drone operator (commercial)',
@@ -1454,7 +1481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       role: 'Aerospace medicine physician',
       training: 'MD + aerospace medicine residency',
       payRange: '$200K+',
-      role: 'FAA-designated Aviation Medical Examiner (AME); flight medical exams',
+      duties: 'FAA-designated Aviation Medical Examiner (AME); flight medical exams',
     },
     {
       role: 'Aviation educator (FAA-certificated)',
@@ -1465,7 +1492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       role: 'Aviation manager / FBO operator',
       training: 'Business + aviation background',
       payRange: '$60K - $200K',
-      role: 'Run airport operations, fuel sales, charter companies',
+      duties: 'Run airport operations, fuel sales, charter companies',
     },
     {
       role: 'Aerospace researcher (academic)',
@@ -1622,7 +1649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       difficulty: 'easy',
     },
     {
-      question: 'How many pilots in the world have ATP certificates?',
+      question: 'Roughly how many pilots in the United States hold ATP certificates?',
       options: ['About 1,000', 'About 100,000', 'About 750,000', 'About 5 million'],
       correct: 'About 100,000',
       explanation: '~100K Airline Transport Pilots in the US, ~600K total pilots of all certificates. Globally maybe 300-500K ATPs.',
@@ -1739,12 +1766,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   ];
 
   // ─── Force calculator inputs ───────────────────────────────────────────
+  // Units are IMPERIAL (ft², lb, kts) — that's what the Lift Calculator
+  // renders and computes with. The old values were SI (m², N, m/s), so a
+  // "Cessna 172" showed 16 ft² of wing and 11,400 lb of weight, and L/W at
+  // realistic inputs came out ~0.01 — the demo's core lesson (lift ≥ weight
+  // at flying speed) was unreachable.
   var FORCE_CALCULATOR_PRESETS = [
-    { name: 'Cessna 172', wingArea: 16.2, weight: 11400, maxSpeed: 64, cl: 1.5, notes: 'Most-trained-on aircraft in history' },
-    { name: 'Boeing 747', wingArea: 511, weight: 3900000, maxSpeed: 257, cl: 1.4, notes: 'Iconic jumbo jet' },
-    { name: 'Cessna Citation X', wingArea: 49, weight: 161000, maxSpeed: 312, cl: 0.5, notes: 'High-speed business jet' },
-    { name: 'F-22 Raptor', wingArea: 78, weight: 282000, maxSpeed: 750, cl: 0.4, notes: 'Stealth fighter' },
-    { name: 'Sopwith Camel', wingArea: 21, weight: 4400, maxSpeed: 51, cl: 1.6, notes: 'WWI biplane' },
+    { name: 'Cessna 172', wingArea: 174, weight: 2550, maxSpeed: 124, cl: 1.5, notes: 'Most-trained-on aircraft in history' },
+    { name: 'Boeing 747', wingArea: 5500, weight: 875000, maxSpeed: 490, cl: 1.4, notes: 'Iconic jumbo jet' },
+    { name: 'Cessna Citation X', wingArea: 527, weight: 36100, maxSpeed: 528, cl: 0.5, notes: 'High-speed business jet' },
+    { name: 'F-22 Raptor', wingArea: 840, weight: 64000, maxSpeed: 1200, cl: 0.4, notes: 'Stealth fighter' },
+    { name: 'Sopwith Camel', wingArea: 231, weight: 1455, maxSpeed: 100, cl: 1.6, notes: 'WWI biplane' },
   ];
 
   // ─── Aviation glossary (verbose) ───────────────────────────────────────
@@ -1837,7 +1869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { year: 1995, event: 'Eileen Collins becomes first woman to pilot a Space Shuttle.' },
     { year: 2003, event: 'Concorde retires. SpaceShipOne reaches space.' },
     { year: 2004, event: 'SpaceShipOne wins the X Prize.' },
-    { year: 2008, event: 'Sully Sullenberger ditches US Airways 1549 in the Hudson River; all 155 survive.' },
+    { year: 2009, event: 'Sully Sullenberger ditches US Airways 1549 in the Hudson River; all 155 survive.' },
     { year: 2010, event: 'First successful solar-powered manned flight (Solar Impulse).' },
     { year: 2012, event: 'SpaceX Dragon: first private spacecraft to dock with ISS.' },
     { year: 2015, event: 'Solar Impulse 2 begins circumnavigation on solar power alone (completed 2016).' },
@@ -2562,7 +2594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     },
     {
       type: 'Medium hub (Class C)',
-      examples: 'PWM Portland ME, SAN San Diego, IND Indianapolis, MEM Memphis',
+      examples: 'PWM Portland ME, BUR Burbank, IND Indianapolis, JAX Jacksonville',
       passengers: '~5-20 million per year',
       runways: '2-3 runways, 5,000-9,000 ft',
       operations: 'ATC required. Radar coverage. Mixed commercial + general aviation.',
@@ -2596,7 +2628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     },
     {
       type: 'Military',
-      examples: 'Bagram, Andersen, Bagram AB, Wright-Patterson',
+      examples: 'Bagram, Andersen, Ramstein, Wright-Patterson',
       operations: 'Generally closed to civilian traffic. Some "joint use" facilities support both.',
     },
   ];
@@ -2842,7 +2874,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       pilotResponse: 'Don oxygen mask, descend rapidly to below 10,000 ft, declare emergency',
       famousIncidents: [
         'Aloha 243 (1988): Top fuselage ripped off in flight; one flight attendant lost. Crew landed safely.',
-        'Sioux Falls (1989): Window blew out; passenger almost lost.',
+        'British Airways 5390 (1990): Cockpit windscreen blew out at 17,300 ft; the captain was partially pulled out and survived. Cause: wrong windscreen bolts.',
         'Southwest 1380 (2018): Engine failure shattered window; one passenger fatality.',
       ],
     },
@@ -2884,7 +2916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       concept: 'Famous wake encounter accidents',
       list: [
         'AA 587 (2001): A300 lost vertical fin after wake encounter + pilot overcontrol. Vertical stabilizer separated. 265 dead.',
-        'AA 1572 (2017): Boeing 737 inverted by wake from a Heavy in approach pattern. Recovered safely.',
+        'Delta 9570 (1972): DC-9 crashed at Fort Worth after encountering wake turbulence from a DC-10 on approach — the accident that drove today\'s wake-separation standards.',
       ],
     },
   ];
@@ -3668,7 +3700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       role: 'Avionics technician',
       training: 'AMT school + avionics endorsement OR military electronics + civilian transition',
       payProgression: '$50-90K',
-      role: 'Install, troubleshoot, and repair aircraft electrical and avionics systems',
+      duties: 'Install, troubleshoot, and repair aircraft electrical and avionics systems',
       growth: 'Rapidly evolving field as glass cockpits become standard.',
     },
     {
@@ -3683,14 +3715,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       role: 'Aerospace manufacturing technician',
       training: 'High school + on-the-job; sometimes 2-year programs',
       payProgression: '$40-75K',
-      role: 'Build and assemble aircraft and spacecraft components',
+      duties: 'Build and assemble aircraft and spacecraft components',
       employers: 'Boeing, Airbus, SpaceX, Lockheed, suppliers',
     },
     {
       role: 'Flight dispatcher',
       training: '5-8 week dispatch school, then airline-specific training',
       payProgression: '$45-120K',
-      role: 'Plan flights, monitor weather, share legal responsibility with captain',
+      duties: 'Plan flights, monitor weather, share legal responsibility with captain',
       certification: 'FAA Aircraft Dispatcher Certificate',
       schedule: 'Shift work; airlines operate 24/7',
     },
@@ -3711,33 +3743,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       role: 'Aviation safety inspector (FAA)',
       training: 'Pilot or mechanic certification + FAA hiring process',
       payProgression: '$80-150K',
-      role: 'Conduct check rides, inspect operators, investigate incidents, certify training programs',
+      duties: 'Conduct check rides, inspect operators, investigate incidents, certify training programs',
       schedule: 'Travel-heavy in some roles',
     },
     {
       role: 'Airport manager',
       training: 'Business or aviation degree + experience',
       payProgression: '$60-200K depending on airport size',
-      role: 'Oversee airport operations, security, facilities, financial planning',
+      duties: 'Oversee airport operations, security, facilities, financial planning',
     },
     {
       role: 'Aviation educator / professor',
       training: 'PhD or master\'s + significant industry experience',
       payProgression: '$60-150K',
       employers: 'University aviation programs (Embry-Riddle, Purdue, Western Michigan, etc.)',
-      role: 'Teach next generation of aviation professionals',
+      duties: 'Teach next generation of aviation professionals',
     },
     {
       role: 'Aerospace medicine physician',
       training: 'MD + aerospace medicine residency',
       payProgression: '$200K+',
-      role: 'FAA-designated Aviation Medical Examiner; supports astronaut and pilot health',
+      duties: 'FAA-designated Aviation Medical Examiner; supports astronaut and pilot health',
     },
     {
       role: 'Aviation insurance underwriter',
       training: 'Business or aviation background + insurance industry experience',
       payProgression: '$60-150K',
-      role: 'Assess risk for aircraft and aviation operations; price policies',
+      duties: 'Assess risk for aircraft and aviation operations; price policies',
     },
     {
       role: 'Aviation journalism / media',
@@ -4115,7 +4147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     'Avoid the "press on" mindset.',
     'Talk to other pilots. Learn from their experience.',
     'Visit a control tower. See how the ATC side works.',
-    'Read McNabb\'s Aerial: Mark McNab on Cessna 172 mastery.',
+    'Read Stick and Rudder by Wolfgang Langewiesche — the classic explanation of why airplanes fly the way they do.',
     'Read Langewiesche\'s "Stick and Rudder" — classic for a reason.',
     'Build a personal weather minimum and stick to it.',
     'Build a personal fuel reserve minimum and stick to it.',
@@ -5081,7 +5113,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { question: 'What does ATIS provide?', options: ['Weather and airport info via continuous broadcast', 'Aircraft tracking', 'In-flight entertainment', 'Pilot certification'], correct: 'Weather and airport info via continuous broadcast', explanation: 'Automatic Terminal Information Service. Pre-recorded info: weather, runway in use, NOTAMs. Pilots listen and confirm "with information [letter]" to ATC.', topic: 'Radio', difficulty: 'medium' },
     { question: 'In aviation, what is a "stretcher"?', options: ['A passenger plane with longer wings', 'A version of an aircraft with longer fuselage and more seats', 'A medical evacuation flight', 'A weather forecast term'], correct: 'A version of an aircraft with longer fuselage and more seats', explanation: 'Aircraft "stretches" (737-700, -800, -900) keep the same basic design but add cabin length. Common manufacturer strategy.', topic: 'Aircraft', difficulty: 'medium' },
     { question: 'The Concorde flew at what cruise altitude?', options: ['30,000 ft', '40,000 ft', '50,000 ft', '60,000 ft'], correct: '60,000 ft', explanation: 'Concorde cruised at FL550-FL600 (~55,000-60,000 ft) at Mach 2. Higher than any other commercial airliner.', topic: 'History', difficulty: 'hard' },
-    { question: 'What is "alpha protection"?', options: 'Modern fly-by-wire feature that prevents aircraft from exceeding critical angle of attack', explanation: 'Airbus aircraft cannot stall in normal law. Boeing 787 has similar protections. Doesn\'t fully replace pilot skill.', options: ['Aircraft seat assignment', 'Modern fly-by-wire feature preventing exceeding critical AoA', 'Type of aircraft paint', 'A military designation'], correct: 'Modern fly-by-wire feature preventing exceeding critical AoA', topic: 'Aerodynamics', difficulty: 'hard' },
+    { question: 'What is "alpha protection"?', explanation: 'Airbus aircraft cannot stall in normal law. Boeing 787 has similar protections. Doesn\'t fully replace pilot skill.', options: ['Aircraft seat assignment', 'Modern fly-by-wire feature preventing exceeding critical AoA', 'Type of aircraft paint', 'A military designation'], correct: 'Modern fly-by-wire feature preventing exceeding critical AoA', topic: 'Aerodynamics', difficulty: 'hard' },
     { question: 'What killed Amelia Earhart?', options: ['Engine failure over the Pacific', 'Unknown — she disappeared', 'Hit by another aircraft', 'She landed on a remote island and survived briefly'], correct: 'Unknown — she disappeared', explanation: 'July 2, 1937, somewhere near Howland Island. Theories abound; no definitive evidence has surfaced.', topic: 'History', difficulty: 'easy' },
     { question: 'How many engines does a Boeing 747?', options: ['2', '3', '4', '6'], correct: '4', explanation: 'The 747 has 4 engines. The 777 has 2 (most powerful turbofans ever built). Most modern airliners have 2 because engines are now reliable enough.', topic: 'Aircraft', difficulty: 'easy' },
     { question: 'What\'s the abbreviation for "Knots Indicated Airspeed"?', options: ['KIAS', 'KCAS', 'KTAS', 'KGS'], correct: 'KIAS', explanation: 'KIAS = what airspeed indicator shows. KCAS = calibrated. KTAS = true (at altitude). KGS = ground speed.', topic: 'Instruments', difficulty: 'medium' },
@@ -5265,7 +5297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { acronym: 'CRM', meaning: 'Crew Resource Management' },
     { acronym: 'CTAF', meaning: 'Common Traffic Advisory Frequency' },
     { acronym: 'DA', meaning: 'Density Altitude; also Decision Altitude' },
-    { acronym: 'DCA', meaning: 'Drone Congregation Area; airport code for Washington Reagan' },
+    { acronym: 'DCA', meaning: 'Airport code for Ronald Reagan Washington National Airport' },
     { acronym: 'DG', meaning: 'Directional Gyro (heading indicator)' },
     { acronym: 'DME', meaning: 'Distance Measuring Equipment' },
     { acronym: 'EFB', meaning: 'Electronic Flight Bag' },
@@ -6154,7 +6186,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     },
     {
       use: 'Wildlife research',
-      use: 'Track collared animals, count populations, monitor habitat',
+      benefit: 'Track collared animals, count populations, monitor habitat',
     },
     {
       use: 'Atmospheric sampling',
@@ -6319,12 +6351,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     },
     {
       type: 'Movie',
-      title: 'The Right Stuff',
-      year: 1983,
-      summary: 'Tom Wolfe\'s book → film about early test pilots and Mercury astronauts',
-    },
-    {
-      type: 'Movie',
       title: 'Catch Me If You Can',
       year: 2002,
       summary: 'Pan Am pilot impersonator Frank Abagnale. Showcases the prestige of 1960s commercial aviation.',
@@ -6397,7 +6423,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { title: 'Code Talker', author: 'Chester Nez', why: 'WWII Navajo Code Talker memoir touches on Pacific aviation.' },
     { title: 'Fly: The Complete Book of Sky Surfing', why: 'For the truly adventurous.' },
     { title: 'Aerodynamics for Naval Aviators', author: 'H.H. Hurt Jr.', year: 1965, why: 'The serious technical reference. Free online from US Navy.' },
-    { title: 'The Killing Zone', author: 'Paul A. Craig', why: 'Statistical analysis of GA pilot deaths. Sobering and useful.' },
     { title: 'Pilot Error', author: 'Paul A. Craig', why: 'Companion to The Killing Zone — what kills pilots and how to avoid it.' },
     { title: 'Volar al Sur', author: 'Antoine de Saint-Exupéry', why: 'Spanish edition of Wind, Sand and Stars.' },
     { title: 'I Could Never Be So Lucky Again', author: 'James "Jimmy" Doolittle', year: 1991, why: 'Memoir of Doolittle (Tokyo Raid). One of the great aviators.' },
@@ -7865,7 +7890,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { fact: 'A 747 has 162 miles of wiring inside it.' },
     { fact: 'The Wright Flyer\'s first flight could have fit entirely inside the cargo hold of a 747.' },
     { fact: 'At cruise altitude, the temperature outside an airliner is about -65°F (-54°C).' },
-    { fact: 'The fastest jet engine ever built (NK-93 turbofan) produces 80,000 pounds of thrust.' },
+    { fact: 'The most powerful jet engine ever built (the GE9X on the Boeing 777X) produces over 134,000 pounds of thrust.' },
     { fact: 'The SR-71 Blackbird leaked fuel on the ground because its panels were designed to expand when hot from high-speed friction.' },
     { fact: 'A small dot of dust striking an aircraft at Mach 2 hits with the force of a baseball at the same speed.' },
     { fact: 'Concorde\'s nose drooped during takeoff and landing to give the pilots forward visibility — the supersonic shape blocked the view.' },
@@ -8033,7 +8058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       phenomenon: 'Lapse rate',
       standard: '2°C per 1000 ft (in troposphere)',
       reality: 'Varies. "Dry adiabatic" (rising parcel) = 3°C/1000 ft. "Wet adiabatic" = 1.5°C/1000 ft.',
-      implication: 'When wet > dry rate, atmosphere is stable. When dry < wet rate, unstable (storms possible).',
+      implication: 'Stability depends on the ENVIRONMENTAL lapse rate: cooler-than-adiabatic air aloft resists rising parcels (stable); when the environment cools faster than a rising parcel does, the parcel keeps rising (unstable — storms possible).',
     },
     {
       phenomenon: 'Fog',
@@ -8392,10 +8417,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     {
       name: 'Tammie Jo Shults (1961-)',
       contribution: 'Captain of Southwest 1380 in 2018, landed safely after engine explosion shattered window. 5th woman in Navy F/A-18 program.',
-    },
-    {
-      name: 'Bessie Coleman (further detail)',
-      legacy: 'Bessie Coleman Aviation Day at Mountain View, CA airport remembers her.',
     },
     {
       name: 'Patty Wagstaff (1951-)',
@@ -8781,11 +8802,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { number: '50 hours', meaning: 'Minimum instrument time for Instrument Rating' },
     { number: '250 hours', meaning: 'Minimum for Commercial Pilot Certificate' },
     { number: '6 nm', meaning: 'Typical separation between heavy + light aircraft' },
-    { number: '120 mph', meaning: 'Cruise speed of original Wright Flyer (modern reproduction)' },
+    { number: '30 mph', meaning: 'Approximate speed of the original Wright Flyer' },
     { number: '500 fpm', meaning: 'Standard climb rate' },
     { number: '700 fpm', meaning: 'Standard descent rate' },
     { number: '2,500 lb', meaning: 'Cessna 172 maximum gross weight (range varies by model)' },
-    { number: '875,000 lb', meaning: 'Boeing 747-8 maximum gross weight' },
+    { number: '987,000 lb', meaning: 'Boeing 747-8 maximum takeoff weight' },
     { number: '6 miles', meaning: 'Maximum visual range from a typical GA aircraft' },
     { number: '~$10,000-15,000', meaning: 'Cost of Private Pilot training (40+ hours)' },
     { number: '~$143 million', meaning: 'Cost of one F-22 Raptor' },
@@ -8795,7 +8816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { number: '~$3.5 trillion', meaning: 'Aviation\'s contribution to global GDP per year' },
     { number: '~11 million', meaning: 'People directly employed in aviation globally' },
     { number: '~35,000', meaning: 'Daily commercial flights worldwide' },
-    { number: '5 million', meaning: 'Annual airline passenger flights worldwide' },
+    { number: '35 million', meaning: 'Annual airline passenger flights worldwide (pre-pandemic peak)' },
     { number: '1 in 5 million', meaning: 'Approximate odds of dying on a commercial flight' },
   ];
 
@@ -9622,6 +9643,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           renderer.setSize(W, H, false);
           camera.aspect = W / H;
           camera.updateProjectionMatrix();
+          // The bloom composer keeps its own render targets — without this
+          // it kept rendering at the pre-resize resolution (stretched/blurry).
+          try { if (renderer._alloComposer && renderer._alloComposer.setSize) renderer._alloComposer.setSize(W, H); } catch (e) {}
         }
 
         var playerLoc = geodeticToLocal(state.lat, state.lon, state.altitude);
@@ -9642,7 +9666,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var bankRad = (state.bank || 0) * Math.PI / 180;
         var headingRad = (state.heading || 0) * Math.PI / 180;
 
-        acMesh.rotation.set(pitchRad, -headingRad, -bankRad, 'YXZ');
+        // Models are built nose-toward +Z, but heading 0 = north = local -Z:
+        // the old (pitch, -heading, -bank) euler pointed every aircraft's
+        // TAIL along the direction of travel (prop facing the chase camera)
+        // and inverted apparent pitch. yaw = PI - heading puts the nose on
+        // the velocity vector; pitch/bank signs re-derived for that frame.
+        acMesh.rotation.set(-pitchRad, Math.PI - headingRad, bankRad, 'YXZ');
         acMesh.visible = !!d.thirdPerson;
 
         if (acMesh.userData.props) {
@@ -9759,12 +9788,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         
         Object.keys(resources.runwayMeshes).forEach(function(code) {
           var rw = resources.runwayMeshes[code];
-          var dist = acMesh.position.distanceTo(rw.position);
-          if (dist > 10 * 6076) {
+          // Removal must use the SAME measure as creation (ground-track nm).
+          // The old 3D distanceTo included altitude, so a high overflight
+          // satisfied both remove (>10 nm 3D) and create (<10 nm ground) at
+          // once — the ~30-mesh runway group was torn down and rebuilt every
+          // frame. The 0.5 nm hysteresis stops boundary flapping, and the
+          // traverse disposes geometries/materials (they were leaked before).
+          var rwWp = WAYPOINTS.find(function(w) { return w.code === code; });
+          var rwDistNm = rwWp ? haversineNm(state.lat, state.lon, rwWp.lat, rwWp.lon) : 99;
+          if (rwDistNm > 10.5) {
             scene.remove(rw);
+            rw.traverse(function(child) {
+              if (child.geometry) child.geometry.dispose();
+              if (child.material) { if (child.material.map) child.material.map.dispose(); child.material.dispose(); }
+            });
             delete resources.runwayMeshes[code];
             if (resources.papiLights[code]) {
-              resources.papiLights[code].forEach(function(l) { scene.remove(l); });
+              resources.papiLights[code].forEach(function(l) {
+                scene.remove(l);
+                if (l.geometry) l.geometry.dispose();
+                if (l.material) l.material.dispose();
+              });
               delete resources.papiLights[code];
             }
           }
@@ -10038,7 +10082,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         region.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
         document.body.appendChild(region);
         skyA11yRef.current = region;
-        return function() { if (region.parentNode) region.parentNode.removeChild(region); };
+        // Null the ref on cleanup — otherwise a re-run (StrictMode double
+        // invoke) early-returns on the stale ref and every screen-reader
+        // announcement writes into a detached node.
+        return function() { if (region.parentNode) region.parentNode.removeChild(region); skyA11yRef.current = null; };
       }, []);
       var skyAnnounce = function(msg) {
         if (skyA11yRef.current) { skyA11yRef.current.textContent = ''; setTimeout(function() { skyA11yRef.current.textContent = msg; }, 50); }
@@ -10064,17 +10111,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // student can type elsewhere on the page.
       useEffect(function() {
         if (view !== 'flying') return;
-        var FLIGHT_KEYS = { 'arrowup': 1, 'arrowdown': 1, 'arrowleft': 1, 'arrowright': 1, 'w': 1, 'a': 1, 's': 1, 'd': 1, ' ': 1, 'spacebar': 1, 'q': 1, 'e': 1, 'shift': 1 };
+        // Every key the flight loop consumes must be in this allowlist — the
+        // 2026-05-10 scroll fix narrowed capture to it, which silently killed
+        // throttle-down (Ctrl/-), view (V), info (I), forces (F), help (?/),
+        // autopilot (B), and quiz answers (1-4) because keysRef never saw them.
+        var FLIGHT_KEYS = { 'arrowup': 1, 'arrowdown': 1, 'arrowleft': 1, 'arrowright': 1, 'w': 1, 'a': 1, 's': 1, 'd': 1, ' ': 1, 'spacebar': 1, 'q': 1, 'e': 1, 'shift': 1, 'control': 1, '-': 1, '=': 1, 'v': 1, 'i': 1, 'f': 1, 'b': 1, '?': 1, '/': 1, '1': 1, '2': 1, '3': 1, '4': 1, 'escape': 1 };
         var onKey = function(e) {
+          // Let students type in chat/search fields without flying the plane
+          var tgt = e.target;
+          if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable)) return;
           var k = (e.key || '').toLowerCase();
           if (FLIGHT_KEYS[k]) {
-            keysRef.current[k] = e.type === 'keydown';
+            // OS auto-repeat must not re-arm edge-triggered keys (Space pause,
+            // quiz answers) that the loop clears after consuming.
+            if (!(e.type === 'keydown' && e.repeat)) keysRef.current[k] = e.type === 'keydown';
             if (e.type === 'keydown') e.preventDefault();
           }
         };
+        // Alt-Tab / focus loss eats keyup events — clear held keys so the
+        // plane doesn't keep pitching or throttling on its own.
+        var onBlur = function() { keysRef.current = {}; };
         window.addEventListener('keydown', onKey);
         window.addEventListener('keyup', onKey);
-        return function() { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKey); };
+        window.addEventListener('blur', onBlur);
+        return function() { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKey); window.removeEventListener('blur', onBlur); };
       }, [view]);
 
       // ── ESC to Exit Fullscreen ──
@@ -10219,7 +10279,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var centerY = y + h2 / 2;
         var step = alt > 10000 ? 500 : 100;
         for (var a = Math.max(0, Math.floor(alt / step) * step - 3000); a <= alt + 3000; a += step) {
-          var tickY = centerY - (a - alt) * pxPer100 / (step / 100);
+          var tickY = centerY - (a - alt) * (pxPer100 / 100);
           if (tickY < y || tickY > y + h2) continue;
           var isMajor = a % (step * 2) === 0;
           gfx.strokeStyle = isMajor ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)';
@@ -10442,19 +10502,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       };
       var terrainHeight = function(lat, lon) {
         // Major mountain ranges of the world
+        // Each falloff factor is clamped individually: with the old
+        // max(0, product) form, two NEGATIVE factors (far away in both lat
+        // AND lon) multiplied into a huge positive — phantom max-height
+        // peaks at the diagonal corners of every range, growing without
+        // bound with distance.
+        var range = function(peak, latC, latW, lonC, lonW) {
+          return peak * Math.max(0, 1 - Math.abs(lat - latC) / latW) * Math.max(0, 1 - Math.abs(lon - lonC) / lonW);
+        };
         var h = 0;
-        h += Math.max(0, 8000 * (1 - Math.abs(lat - 39) / 5) * (1 - Math.abs(lon + 105) / 8));  // Rocky Mountains
-        h += Math.max(0, 6000 * (1 - Math.abs(lat - 46) / 3) * (1 - Math.abs(lon + 7) / 5));    // Alps
-        h += Math.max(0, 12000 * (1 - Math.abs(lat - 28) / 4) * (1 - Math.abs(lon - 85) / 8));   // Himalayas
-        h += Math.max(0, 5000 * (1 - Math.abs(lat - 44) / 4) * (1 - Math.abs(lon + 120) / 3));   // Cascades
-        h += Math.max(0, 7000 * (1 - Math.abs(lat + 33) / 8) * (1 - Math.abs(lon + 70) / 3));    // Andes
-        h += Math.max(0, 4000 * (1 - Math.abs(lat - 57) / 4) * (1 - Math.abs(lon + 5) / 8));     // Scottish Highlands
-        h += Math.max(0, 5500 * (1 - Math.abs(lat - 3) / 3) * (1 - Math.abs(lon - 37) / 3));     // East African Rift / Kilimanjaro
-        h += Math.max(0, 4500 * (1 - Math.abs(lat + 44) / 4) * (1 - Math.abs(lon - 170) / 3));   // Southern Alps NZ
-        h += Math.max(0, 5000 * (1 - Math.abs(lat - 43) / 5) * (1 - Math.abs(lon - 45) / 5));    // Caucasus
-        h += Math.max(0, 3500 * (1 - Math.abs(lat - 35) / 3) * (1 - Math.abs(lon - 137) / 4));   // Japanese Alps
-        h += Math.max(0, 3000 * (1 - Math.abs(lat - 62) / 5) * (1 - Math.abs(lon - 15) / 5));    // Scandinavian Mountains
-        h += Math.max(0, 4000 * (1 - Math.abs(lat - 37) / 2) * (1 - Math.abs(lon + 119) / 2));   // Sierra Nevada
+        h += range(8000, 39, 5, -105, 8);   // Rocky Mountains
+        h += range(6000, 46, 3, 10, 5);     // Alps (centered ~10°E; the old -7 put them in the Atlantic)
+        h += range(12000, 28, 4, 85, 8);    // Himalayas
+        h += range(5000, 44, 4, -120, 3);   // Cascades
+        h += range(7000, -33, 8, -70, 3);   // Andes
+        h += range(4000, 57, 4, -5, 8);     // Scottish Highlands
+        h += range(5500, 3, 3, 37, 3);      // East African Rift / Kilimanjaro
+        h += range(4500, -44, 4, 170, 3);   // Southern Alps NZ
+        h += range(5000, 43, 5, 45, 5);     // Caucasus
+        h += range(3500, 35, 3, 137, 4);    // Japanese Alps
+        h += range(3000, 62, 5, 15, 5);     // Scandinavian Mountains
+        h += range(4000, 37, 2, -119, 2);   // Sierra Nevada
         // Multi-octave noise for natural variation
         h += terrainHash(lat * 10, lon * 10) * 500;
         h += terrainHash(lat * 20 + 5, lon * 20 + 5) * 200;
@@ -12014,8 +12082,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var t = (r + 1) / rows;
           var y = horizonY + (H - horizonY) * t;
           var depth = t * t;
-          var scanLat = state.lat - cosHdg * depth * (alt / 2000);
-          var scanLon = state.lon - sinHdg * depth * (alt / 2000);
+          // Sample AHEAD of the plane (+heading). The old minus signs made
+          // the terrain rows show what was BEHIND you: coasts and mountains
+          // never appeared at the horizon, then popped in after you crossed
+          // them — and disagreed with the ahead-facing low-alt detail layer.
+          var scanLat = state.lat + cosHdg * depth * (alt / 2000);
+          var scanLon = state.lon + sinHdg * depth * (alt / 2000);
 
           var water = isWater(scanLat, scanLon);
           var elev = water ? 0 : terrainHeight(scanLat, scanLon);
@@ -13244,10 +13316,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           { id: 'takeoff', cond: !state.onGround && state.altitude > 50, msg: '🛫 LIFTOFF! Lift just exceeded weight. The wing is generating enough low pressure on top to overcome gravity.', color: '#22d3ee' },
           { id: 'speed100', cond: kts > 100, msg: '💨 100 knots! At this speed, the wing generates ~1,200 lbs of lift. A knot = 1 nautical mile per hour (1.15 mph).', color: '#a78bfa' },
           { id: 'alt5000', cond: state.altitude > 5000, msg: '🏔️ 5,000 ft! Air density is ~86% of sea level. Your engine produces less power up here, but there\'s also less drag.', color: '#4ade80' },
-          { id: 'alt10000', cond: state.altitude > 10000, msg: '✈️ 10,000 ft! Above this altitude, the FAA requires supplemental oxygen. Air pressure is only 70% of sea level.', color: '#60a5fa' },
+          { id: 'alt10000', cond: state.altitude > 10000, msg: '✈️ 10,000 ft! Pilots flying unpressurized above 12,500 ft for more than 30 minutes need supplemental oxygen (FAR 91.211). Air pressure here is only ~70% of sea level.', color: '#60a5fa' },
           { id: 'alt18000', cond: state.altitude > 18000, msg: '🌌 Flight Level 180! Above 18,000 ft, all pilots set their altimeters to 29.92 inHg (standard pressure). Welcome to the flight levels.', color: '#c084fc' },
-          { id: 'alt30000', cond: state.altitude > 30000, msg: '🚀 30,000 ft — the stratosphere boundary! Temperature here is about -50°F. Jet engines are most efficient at this altitude.', color: '#f472b6' },
-          { id: 'stall_recovery', cond: state.stalling && state.speed > Physics.stallSpeed(state.altitude), msg: '✅ Stall recovery! You lowered the nose and added power. The wing is flying again — angle of attack is back below critical.', color: '#22c55e' },
+          { id: 'alt30000', cond: state.altitude > 30000, msg: '🚀 30,000 ft — jet cruise territory! Temperature here is about -50°F, nearing the tropopause (~36,000 ft) where the stratosphere begins. Jet engines are most efficient up here.', color: '#f472b6' },
+          // Recovery = WAS stalling last frame, now flying again. The old
+          // condition (stalling && speed > Vs) matched the approach band on
+          // the way INTO a stall, congratulating students for the mistake.
+          { id: 'stall_recovery', cond: !!ms.wasStalling && !state.stalling && !state.onGround, msg: '✅ Stall recovery! You lowered the nose and added power. The wing is flying again — angle of attack is back below critical.', color: '#22c55e' },
         ];
 
         milestones.forEach(function(m) {
@@ -13256,13 +13331,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             skyAnnounce(m.msg);
           }
         });
+        ms.wasStalling = state.stalling;
 
-        // Render active milestone
+        // Render active milestones, stacked so simultaneous banners (takeoff
+        // + 100 kts happen within seconds) don't overprint each other.
+        var msRow = 0;
         milestones.forEach(function(m) {
           var showTime = ms.shown[m.id];
           if (showTime && time - showTime < 6) {
             var alpha = Math.min(1, (6 - (time - showTime)) / 1.5);
-            var yPos = 64;
+            var yPos = 64 + msRow * 38;
+            msRow++;
             gfx.fillStyle = 'rgba(0,0,0,' + (alpha * 0.7) + ')';
             gfx.fillRect(20, yPos, W - 40, 32);
             gfx.fillStyle = m.color; gfx.globalAlpha = alpha;
@@ -13360,7 +13439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (dist < 50) {
             gfx.font = '8px monospace';
             gfx.fillStyle = 'rgba(255,255,255,' + (alpha * 0.4) + ')';
-            var brgTo = Math.round(bearing(state.lat, state.lon, p.lat, p.lon));
+            var brgTo = Math.round(bearing(state.lat, state.lon, p.lat, p.lon)) % 360;
             gfx.fillText(Math.round(dist) + ' nm \u2022 ' + String(brgTo).padStart(3, '0') + '\u00b0', screenX, screenY + fontSize + (alt > 3000 ? fontSize - 1 : 2));
           }
 
@@ -13407,18 +13486,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var discIcon = p.type === 'capital' ? '\u2605' : p.type === 'city' ? '\uD83C\uDFD9\uFE0F' : '\uD83C\uDF0D';
           gfx.fillStyle = '#fff'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'left';
           gfx.fillText(discIcon + '  DISCOVERED: ' + p.name.toUpperCase(), cardX + 10, cardY + 15);
-          // XP indicator
+          // Discovery badge (the old "+5 XP" promised a reward no XP system
+          // ever granted, and it collided with the pop readout drawn below)
           gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'right';
-          gfx.fillText('+5 XP', cardX + cardW - 10, cardY + 15);
+          gfx.fillText('\ud83d\udccd Discovered!', cardX + cardW - 10, cardY + 15);
 
           // Subtitle line
           gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui'; gfx.textAlign = 'left';
           gfx.fillText((p.type === 'capital' ? '\u2605 Capital of ' : '') + p.country + (p.pop ? ' \u2022 Pop: ' + p.pop : ''), cardX + 10, cardY + 32);
 
           gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui';
-          // Wrap fact text
+          // Wrap fact text \u2014 starts a full line below the subtitle (was
+          // cardY+35, 3 px under the subtitle baseline, overprinting it)
           var words = p.fact.split(' ');
-          var line = ''; var lineY = cardY + 35;
+          var line = ''; var lineY = cardY + 47;
           words.forEach(function(word) {
             var test = line + (line ? ' ' : '') + word;
             if (gfx.measureText(test).width > cardW - 24) {
@@ -13427,11 +13508,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             } else { line = test; }
           });
           if (line) gfx.fillText(line, cardX + 12, lineY);
-
-          if (p.pop) {
-            gfx.fillStyle = '#94a3b8'; gfx.font = '9px system-ui'; gfx.textAlign = 'right';
-            gfx.fillText('Pop: ' + p.pop, cardX + cardW - 12, cardY + 18);
-          }
 
           gfx.globalAlpha = 1;
         }
@@ -13488,7 +13564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         { name: __alloT('stem.flightsim.brandenburg_gate', 'Brandenburg Gate'), lat: 52.516, lon: 13.378, type: 'gate', fact: __alloT('stem.flightsim.18th_century_neoclassical_arch_symbol_', '18th-century neoclassical arch. Symbol of German reunification (1989).') },
         { name: __alloT('stem.flightsim.kremlin', 'Kremlin'), lat: 55.752, lon: 37.617, type: 'kremlin', fact: __alloT('stem.flightsim.fortified_complex_15th_c_contains_4_pa', 'Fortified complex (15th c.). Contains 4 palaces, 4 cathedrals, and red-brick walls.') },
         { name: __alloT('stem.flightsim.arc_de_triomphe', 'Arc de Triomphe'), lat: 48.874, lon: 2.295, type: 'arch', fact: __alloT('stem.flightsim.164_ft_tall_arch_commissioned_by_napol', '164 ft tall arch commissioned by Napoleon (1806). Honors French war heroes.') },
-        { name: __alloT('stem.flightsim.leaning_tower_of_shanghai', 'Leaning Tower of Shanghai'), lat: 31.245, lon: 121.506, type: 'megatower', height: 2073, color: '#c8d0d8', fact: __alloT('stem.flightsim.shanghai_tower_2nd_tallest_building_in', 'Shanghai Tower — 2nd tallest building in the world. Twists 120° to reduce wind load.') },
+        { name: __alloT('stem.flightsim.leaning_tower_of_shanghai', 'Shanghai Tower'), lat: 31.245, lon: 121.506, type: 'megatower', height: 2073, color: '#c8d0d8', fact: __alloT('stem.flightsim.shanghai_tower_2nd_tallest_building_in', 'Shanghai Tower — 2nd tallest building in the world. Twists 120° to reduce wind load.') },
         { name: __alloT('stem.flightsim.neuschwanstein_castle', 'Neuschwanstein Castle'), lat: 47.557, lon: 10.750, type: 'castle', fact: __alloT('stem.flightsim.bavarian_fairy_tale_castle_1869_inspir', 'Bavarian fairy-tale castle (1869). Inspiration for Disney\'s Sleeping Beauty Castle.') },
         { name: __alloT('stem.flightsim.kennedy_space_center', 'Kennedy Space Center'), lat: 28.573, lon: -80.649, type: 'rocketpad', fact: __alloT('stem.flightsim.nasa_launch_complex_since_1962_site_of', 'NASA launch complex since 1962. Site of every crewed US moon mission (Apollo 11 onward).') },
         { name: __alloT('stem.flightsim.las_vegas_strip', 'Las Vegas Strip'), lat: 36.115, lon: -115.173, type: 'vegas', fact: __alloT('stem.flightsim.4_2_mile_stretch_of_casinos_visible_fr', '4.2-mile stretch of casinos. Visible from space at night due to extreme light output.') },
@@ -15407,7 +15483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Scroll rate ~3x stronger than the prior 0.015 coefficient so the
         // takeoff roll has obvious optical flow even at 30 kt taxi speed.
         // The +0.02 idle term keeps a slow drift visible at engine start.
-        var scrollPh = ((timeRef.current * (state.speed * 0.045 + 0.02)) % 1);
+        var scrollPh = scrollAccumRef.current.rwy;
         for (var di = 0; di < dashCount; di++) {
           var tRaw = ((di + scrollPh) % dashCount) / dashCount;
           var dashY = rwyTopY + (rwyBotY - rwyTopY) * (tRaw * tRaw); // squared for perspective
@@ -15719,7 +15795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // wind at a glance (into-the-wind takeoff is cheaper). Weather is read
         // from the outer closure's weatherRef; fall back to calm if unavailable.
         if (groundFactor > 0.3) {
-          var wSpd = (weatherRef.current && weatherRef.current.wind) || 5;
+          var wSpd = (weatherRef.current && weatherRef.current.wind != null) ? weatherRef.current.wind : 5;
           var wDir = (weatherRef.current && weatherRef.current.windDir) || 270;
           var relWind = ((wDir - state.heading + 540) % 360) - 180; // -180..180
           // Crosswind component (sin) decides how much the sock swings left/right
@@ -15804,6 +15880,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // ── Runway Visualization ──
       var drawRunway = function(gfx, W, H, horizonY, state, nearWp, nearDist) {
         if (!nearWp || nearDist > 10 || state.altitude > 5000) return;
+        // `time` was a free variable here (no param, no outer decl) — under
+        // 'use strict' the approach-light flash threw a ReferenceError every
+        // frame of every landing approach, aborting the rest of the frame.
+        var time = timeRef.current;
 
         // Runway parameters
         var relBrg = ((bearing(state.lat, state.lon, nearWp.lat, nearWp.lon) - state.heading + 180 + 360) % 360) - 180;
@@ -16193,31 +16273,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var earnedBadges = d.earnedBadges || {};
       var achievementPopRef = useRef({ id: null, time: 0 });
       var oceanNmRef = useRef(0);
+      // Mission progress accumulators. These MUST live in refs: deriving
+      // them from persisted toolData each frame meant the per-frame delta
+      // (dt ≈ 0.03 s) never exceeded the 0.05 persist threshold, so hoist
+      // and photo-capture progress were stuck at zero forever.
+      var hoistAccumRef = useRef(0);
+      var capAccumRef = useRef(0);
+      // Integrated scroll phases (∫ rate·dt). Computing phase as t × rate
+      // made runway dashes and speed-lines jump several cycles on any speed
+      // change (the error term is t·Δrate) — during the takeoff roll they
+      // strobed instead of flowing.
+      var scrollAccumRef = useRef({ rwy: 0, px: 0 });
 
-      var checkAchievements = function(state, time) {
+      var checkAchievements = function(state, time, dt) {
+        // Read live toolData: this fn is called from the RAF loop, whose
+        // closure holds the flight-start render's copy. Using the stale `d`
+        // here re-detected and re-wrote badges every frame and could erase
+        // badges earned mid-flight (stale set overwrote the persisted one).
+        var dLive = dataRef.current;
+        var earnedLive = dLive.earnedBadges || {};
         var extra = {
           butterLanding: landingRef.current.scored && landingRef.current.touchdownFPM < 100,
           isNight: getDayNight(state.lon, time).isNight,
           discovered: Object.keys(geoDiscoveredRef.current).length,
-          airports: (d.visitedAirports || []).length,
+          airports: (dLive.visitedAirports || []).length,
           quizScore: geoQuizRef.current.score,
-          perfectSprint: sprintRef.current.phase === 'result' && sprintRef.current.score === sprintRef.current.places?.length && sprintRef.current.score > 0,
+          perfectSprint: sprintRef.current.phase === 'result' && sprintRef.current.places && sprintRef.current.score === sprintRef.current.places.length - 1 && sprintRef.current.score > 0,
           oceanCrossing: oceanNmRef.current > 50,
-          rescuesCompleted: d.rescuesCompleted || 0
+          rescuesCompleted: dLive.rescuesCompleted || 0
         };
-        // Track ocean crossing
-        if (isWater(state.lat, state.lon)) { oceanNmRef.current += 0.05; } else { oceanNmRef.current = 0; }
+        // Track ocean crossing by actual distance flown, not per-frame ticks
+        // (the old +=0.05/frame credited "nm" at whatever the frame rate was)
+        if (isWater(state.lat, state.lon)) { oceanNmRef.current += state.speed * (dt || 1 / 30) / 6076.12; } else { oceanNmRef.current = 0; }
 
         var newBadges = {};
         var justEarned = null;
         ACHIEVEMENTS.forEach(function(ach) {
-          if (earnedBadges[ach.id]) return;
+          if (earnedLive[ach.id]) return;
           try {
             if (ach.check(state, extra)) { newBadges[ach.id] = true; justEarned = ach; }
           } catch(e) {}
         });
         if (Object.keys(newBadges).length > 0) {
-          var updated = Object.assign({}, earnedBadges, newBadges);
+          var updated = Object.assign({}, earnedLive, newBadges);
           upd('earnedBadges', updated);
           if (justEarned) { achievementPopRef.current = { id: justEarned.id, time: time, ach: justEarned }; }
         }
@@ -16584,6 +16682,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.textAlign = 'center'; gfx.letterSpacing = '4px';
           gfx.fillText(label.name, screenX, screenY);
           gfx.globalAlpha = 1;
+          // letterSpacing persists on the 2D context — without this reset,
+          // one frame with a world label in view left ALL later canvas text
+          // (HUD, quiz cards) permanently letter-spaced on Chromium.
+          gfx.letterSpacing = '0px';
         });
       };
 
@@ -16617,16 +16719,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         };
         controlsRef.current = { throttle: 0.95, pitch: 0, bank: 0 };
 
+        // Start at placeIndex 1: the plane SPAWNS at places[0], so a target
+        // of 0 generated a question at dist 0 and auto-skipped it on the very
+        // next tick — a guaranteed miss + streak reset on every run.
+        // Timer scales with leg count (~20 s per leg to warp in and answer);
+        // the old places.length*12 budget couldn't cover even one real leg.
+        var sprintTime = (places.length - 1) * 20;
         sprintRef.current = {
-          active: true, route: route, places: places, placeIndex: 0,
-          score: 0, streak: 0, bestStreak: 0, timer: route.places.length * 12,
-          maxTime: route.places.length * 12, approaching: null, options: [],
+          active: true, route: route, places: places, placeIndex: 1,
+          score: 0, streak: 0, bestStreak: 0, timer: sprintTime,
+          maxTime: sprintTime, approaching: null, options: [],
           answered: false, correct: null, results: [], phase: 'flying',
           speed: route.speed
         };
         timeRef.current = 0;
         flyingRef.current = true;
         milestoneRef.current.shown = {};
+        Physics.SPRINT_MODE = true; // HyperJet exceeds Vne by design
         logRef.current = { startTime: 0, maxAlt: 0, maxSpeed: 0, airports: [], distance: 0, lastLat: 0, lastLon: 0 };
         updMulti({ view: 'flying', showForces: false });
       };
@@ -16647,11 +16756,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         controlsRef.current.bank = Math.max(-30, Math.min(30, hdgDiff * 0.8));
         controlsRef.current.pitch = 0;
         controlsRef.current.throttle = 0.95;
-        // Override speed for hyperjet
-        flightRef.current.speed = sp.speed;
-        flightRef.current.altitude = 35000;
+        // Sprint autopilot slews heading directly: bank-induced turn rate at
+        // HyperJet speeds (g·tanφ/v) is a fraction of a degree per second,
+        // so the plane could never actually line up on the next city.
+        var hdgSlew = Math.max(-90 * dt, Math.min(90 * dt, hdgDiff));
+        flightRef.current.heading = ((state.heading + hdgSlew) % 360 + 360) % 360;
 
         var dist = haversineNm(state.lat, state.lon, targetPlace.lat, targetPlace.lon);
+        // HyperJet warp: physics integrates position at real ground speed,
+        // so a 1,000 nm leg would take ~50 minutes and every sprint timed
+        // out during leg one. Scale speed with distance-to-target so a leg
+        // closes in ~12-15 s while still decelerating through the sub-50 nm
+        // question window.
+        flightRef.current.speed = Math.max(sp.speed, dist * 6076.12 / 6);
+        flightRef.current.altitude = 35000;
 
         if (sp.phase === 'flying' && dist < 50) {
           // Generate question as we approach
@@ -16851,7 +16969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (!dep || !dest) return;
         var dist = haversineNm(dep.lat, dep.lon, dest.lat, dest.lon);
         var hdg = bearing(dep.lat, dep.lon, dest.lat, dest.lon);
-        var cruiseKts = currentAC.maxSpeed * 0.59 * 0.75; // 75% of max
+        var cruiseKts = currentAC.maxSpeed * 0.75; // 75% of max (maxSpeed is kts now)
         var estMinutes = dist / cruiseKts * 60;
         flightPlanRef.current = {
           departure: dep, destination: dest,
@@ -16859,7 +16977,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           distNm: Math.round(dist),
           estTime: Math.round(estMinutes),
           initialHdg: Math.round(hdg),
-          cruiseAlt: dist > 500 ? 35000 : dist > 100 ? 18000 : 8000
+          cruiseAlt: (currentAC && currentAC.isDrone) ? 400 : (dist > 500 ? 35000 : dist > 100 ? 18000 : 8000)
         };
       };
 
@@ -16941,7 +17059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         // Range label
         gfx.fillStyle = 'rgba(255,255,255,0.3)'; gfx.font = '7px system-ui'; gfx.textAlign = 'center';
-        gfx.fillText(Math.round(scale * 200) + ' nm', x + r, y + size + 8);
+        gfx.fillText(Math.round(scale * 120) + ' nm', x + r, y + size + 8);
 
         // Distance to destination
         if (fp.destination) {
@@ -17150,7 +17268,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         controlsRef.current = { throttle: 0, pitch: 0, bank: 0 };
         timeRef.current = 0;
         flyingRef.current = true;
+        Physics.SPRINT_MODE = false; // normal flights respect the Vne cap
         blackBoxRef.current = [];
+        // Fresh flight: no held keys from the previous flight, not paused,
+        // and last flight's landing score must not leak into this debrief.
+        keysRef.current = {};
+        pausedRef.current = false;
+        landingRef.current = { wasAirborne: false, lastVSI: 0, scored: false, peakAGL: 0 };
+        hoistAccumRef.current = 0;
+        capAccumRef.current = 0;
         // Reset quiz state for fresh flight
         geoQuizRef.current = { active: false, place: null, options: [], answer: null, correct: null, showResult: false, score: 0, total: 0 };
         logRef.current = { distance: 0, maxAlt: wp.alt, maxSpeed: 0, airports: [], startTime: 0 };
@@ -17161,6 +17287,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (view !== 'flying' || !canvasRef.current) return;
         var canvas = canvasRef.current;
         var gfx = canvas.getContext('2d');
+        var lastTs = 0;        // wall-clock of the previous frame (ms)
+        var loopErrCount = 0;  // consecutive failed frames — stops runaway 60fps error spam
 
         var loop = function() {
           try {
@@ -17185,8 +17313,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var threeLoaded = !!(window.THREE && webglCanvasRef.current);
           var W = canvas.width = canvas.clientWidth || canvas.parentElement?.clientWidth || 800;
           var H = canvas.height = canvas.clientHeight || canvas.parentElement?.clientHeight || 500;
-          var dt = 1 / 30;
-          timeRef.current += dt;
+          // Real elapsed time, not a fixed 1/30 s per RAF frame. RAF fires at
+          // the display refresh rate, so the old constant ran the entire sim
+          // (speeds, climb rates, timers, missions) 2x too fast on a 60 Hz
+          // screen and ~4-5x on 120/144 Hz laptops — and the knots/fpm the
+          // HUD taught students were only true at exactly 30 fps. Clamp to
+          // 100 ms so a backgrounded tab doesn't teleport the plane on return.
+          var nowTs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+          var dt = lastTs ? Math.min(0.1, Math.max(0.001, (nowTs - lastTs) / 1000)) : 1 / 60;
+          lastTs = nowTs;
+          // Per-frame control gains/decays below were tuned assuming a 30 fps
+          // step; dtScale keeps control feel refresh-rate independent.
+          var dtScale = dt * 30;
 
           // WCAG 2.2.1: Pause support
           var keys = keysRef.current;
@@ -17220,6 +17358,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             animRef.current = requestAnimationFrame(loop);
             return;
           }
+          // Sim clock only advances while unpaused — it feeds the flight
+          // timer, day/night cycle, and debrief stats, none of which should
+          // count wall time spent paused.
+          timeRef.current += dt;
 
           // Process keyboard input
           var ctrl = controlsRef.current;
@@ -17231,38 +17373,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // yaw rate, GPS auto-centering.
           var heliMode = !!(currentAC && currentAC.isHelicopter);
           var droneMode = !!(currentAC && currentAC.isDrone);
+          // Auto-centering must not fight a held touch stick — a stationary
+          // finger used to decay back to wings-level because the keyboard
+          // else-branches ran unconditionally.
+          var touchHeld = touchRef.current.active && touchRef.current.zone === 'stick';
           if (droneMode) {
             // Drone: snappy responses, returns to neutral fast (GPS stabilized)
-            if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(25, ctrl.pitch + 1.0);
-            else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-25, ctrl.pitch - 1.0);
-            else ctrl.pitch *= 0.78; // GPS stabilization auto-levels
-            if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-25, ctrl.bank - 1.2);
-            else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(25, ctrl.bank + 1.2);
-            else ctrl.bank *= 0.78;
+            if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(25, ctrl.pitch + 1.0 * dtScale);
+            else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-25, ctrl.pitch - 1.0 * dtScale);
+            else if (!touchHeld) ctrl.pitch *= Math.pow(0.78, dtScale); // GPS stabilization auto-levels
+            if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-25, ctrl.bank - 1.2 * dtScale);
+            else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(25, ctrl.bank + 1.2 * dtScale);
+            else if (!touchHeld) ctrl.bank *= Math.pow(0.78, dtScale);
             // Yaw stick — faster than helicopter
-            if (keys['q']) ctrl.yawRate = Math.max(-45, (ctrl.yawRate || 0) - 2.5);
-            else if (keys['e']) ctrl.yawRate = Math.min(45, (ctrl.yawRate || 0) + 2.5);
-            else ctrl.yawRate = (ctrl.yawRate || 0) * 0.7;
+            if (keys['q']) ctrl.yawRate = Math.max(-45, (ctrl.yawRate || 0) - 2.5 * dtScale);
+            else if (keys['e']) ctrl.yawRate = Math.min(45, (ctrl.yawRate || 0) + 2.5 * dtScale);
+            else ctrl.yawRate = (ctrl.yawRate || 0) * Math.pow(0.7, dtScale);
           } else if (heliMode) {
             // Cyclic pitch (W/S): ±20° rotor disk tilt, snappier response
-            if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(20, ctrl.pitch + 0.7);
-            else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-20, ctrl.pitch - 0.7);
-            else ctrl.pitch *= 0.88; // returns to neutral when released (rotor recenters)
+            if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(20, ctrl.pitch + 0.7 * dtScale);
+            else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-20, ctrl.pitch - 0.7 * dtScale);
+            else if (!touchHeld) ctrl.pitch *= Math.pow(0.88, dtScale); // returns to neutral when released (rotor recenters)
             // Cyclic roll (A/D): sideways disk tilt for translation
-            if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-30, ctrl.bank - 0.8);
-            else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(30, ctrl.bank + 0.8);
-            else ctrl.bank *= 0.90;
+            if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-30, ctrl.bank - 0.8 * dtScale);
+            else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(30, ctrl.bank + 0.8 * dtScale);
+            else if (!touchHeld) ctrl.bank *= Math.pow(0.90, dtScale);
             // Tail rotor pedals (Q/E): yaw rate in deg/s. Continuous hold.
-            if (keys['q']) ctrl.yawRate = Math.max(-25, (ctrl.yawRate || 0) - 1.5);
-            else if (keys['e']) ctrl.yawRate = Math.min(25, (ctrl.yawRate || 0) + 1.5);
-            else ctrl.yawRate = (ctrl.yawRate || 0) * 0.85;
+            if (keys['q']) ctrl.yawRate = Math.max(-25, (ctrl.yawRate || 0) - 1.5 * dtScale);
+            else if (keys['e']) ctrl.yawRate = Math.min(25, (ctrl.yawRate || 0) + 1.5 * dtScale);
+            else ctrl.yawRate = (ctrl.yawRate || 0) * Math.pow(0.85, dtScale);
           } else {
-            if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(15, ctrl.pitch + 0.5);
-            else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-15, ctrl.pitch - 0.5);
-            else ctrl.pitch *= 0.92;
-            if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-45, ctrl.bank - 1);
-            else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(45, ctrl.bank + 1);
-            else ctrl.bank *= 0.95;
+            if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(15, ctrl.pitch + 0.5 * dtScale);
+            else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-15, ctrl.pitch - 0.5 * dtScale);
+            else if (!touchHeld) ctrl.pitch *= Math.pow(0.92, dtScale);
+            if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-45, ctrl.bank - 1 * dtScale);
+            else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(45, ctrl.bank + 1 * dtScale);
+            else if (!touchHeld) ctrl.bank *= Math.pow(0.95, dtScale);
             ctrl.yawRate = 0;
           }
           // Engine-start cough: first time throttle leaves zero on the ground,
@@ -17270,8 +17416,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // smoke and the HUD can print "IGNITION" briefly. Reset once we're
           // airborne.
           var prevThrottle = ctrl.throttle;
-          if (keys['shift'] || keys['=']) ctrl.throttle = Math.min(1, ctrl.throttle + 0.01);
-          if (keys['control'] || keys['-']) ctrl.throttle = Math.max(0, ctrl.throttle - 0.01);
+          if (keys['shift'] || keys['=']) ctrl.throttle = Math.min(1, ctrl.throttle + 0.01 * dtScale);
+          if (keys['control'] || keys['-']) ctrl.throttle = Math.max(0, ctrl.throttle - 0.01 * dtScale);
           if (flightRef.current.onGround && prevThrottle < 0.005 && ctrl.throttle >= 0.005 && !flightRef.current._ignitionTime) {
             flightRef.current._ignitionTime = timeRef.current;
             if (typeof skyAnnounce === 'function') skyAnnounce('Engine started');
@@ -17306,19 +17452,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
           if (ap.spd) {
             var apSpdDiff = ap.tgtSpd - flightRef.current.speed * 0.5924838;
-            ctrl.throttle = Math.max(0, Math.min(1, ctrl.throttle + apSpdDiff * 0.001));
+            ctrl.throttle = Math.max(0, Math.min(1, ctrl.throttle + apSpdDiff * 0.001 * dtScale));
           }
           // Manual input disengages autopilot
           if ((ap.hdg || ap.alt || ap.spd) && (keys['w'] || keys['s'] || keys['a'] || keys['d'] || keys['arrowup'] || keys['arrowdown'] || keys['arrowleft'] || keys['arrowright'])) {
             upd('autopilot', { hdg: false, alt: false, spd: false });
             skyAnnounce('Autopilot disengaged by manual input.');
           }
-          // Geography quiz
+          // Geography quiz. In helicopter/drone mode Q is the left yaw
+          // pedal (held continuously above), so it must NOT double as the
+          // quiz trigger there — that popped the quiz and stole the held key.
           var quiz = geoQuizRef.current;
-          if (keys['q']) {
+          if (keys['q'] && !heliMode && !droneMode) {
             keys['q'] = false;
             if (quiz.active && quiz.showResult) { quiz.active = false; quiz._showTime = null; } // dismiss after result
             else if (!quiz.active) { triggerGeoQuiz(flightRef.current); }
+          }
+          // ESC closes the quiz overlay (the quiz card advertises this)
+          if (keys['escape']) {
+            keys['escape'] = false;
+            if (quiz.active) { quiz.active = false; quiz._showTime = null; }
           }
           // Quiz answer keys (1-4)
           ['1','2','3','4'].forEach(function(k, idx) {
@@ -17347,6 +17500,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Physics step
           var state = Physics.step(flightRef.current, dt, ctrl);
           flightRef.current = state;
+          // Advance integrated scroll phases with the frame's actual dt
+          scrollAccumRef.current.rwy = (scrollAccumRef.current.rwy + (state.speed * 0.045 + 0.02) * dt) % 1;
+          scrollAccumRef.current.px = (scrollAccumRef.current.px + state.speed * 0.5924838 * 0.5 * dt) % 100000;
 
           // ── Coastal rescue mission tick ──
           // Tracks hover-stability over the survivor and recovery progress.
@@ -17356,6 +17512,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (rescue && rescue.active && !rescue.completed) {
             // Lazy-init startedAt the first tick after mission begins
             if (!rescue.startedAt) {
+              hoistAccumRef.current = 0;
               upd('rescue', Object.assign({}, rescue, { startedAt: timeRef.current }));
               rescue = d.rescue || rescue;
             }
@@ -17365,17 +17522,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var hoverable = rDist < 0.05 && rAgl < 100 && rAgl > 5
                          && rKts < 10 && Math.abs(state.vsi * 60) < 200;
             if (!rescue.recovered) {
-              var hoist = rescue.hoistTime || 0;
+              // Accumulate in the ref — recomputing from persisted hoistTime
+              // each frame meant progress could never cross the 0.05 persist
+              // gate below, so the hoist never advanced past one frame.
+              var hoist = hoistAccumRef.current;
               hoist = hoverable ? Math.min(5.5, hoist + dt) : Math.max(0, hoist - dt * 1.5);
-              if (hoist >= 5 && !rescue.recovered) {
+              hoistAccumRef.current = hoist;
+              if (hoist >= 5) {
                 upd('rescue', Object.assign({}, rescue, { hoistTime: 5, recovered: true, recoveredAt: timeRef.current }));
                 if (typeof addToast === 'function') addToast('🚁 Survivor recovered! Return to PWM and land.', 'success');
                 if (typeof skyAnnounce === 'function') skyAnnounce('Survivor recovered. Return to base and land.');
-              } else if (hoist !== rescue.hoistTime) {
-                // Update without spamming — only meaningful change
-                if (Math.abs(hoist - rescue.hoistTime) > 0.05) {
-                  upd('rescue', Object.assign({}, rescue, { hoistTime: hoist }));
-                }
+              } else if (Math.abs(hoist - (rescue.hoistTime || 0)) > 0.05) {
+                // Persist without spamming — only meaningful change
+                upd('rescue', Object.assign({}, rescue, { hoistTime: hoist }));
               }
             } else if (rescue.recovered && state.onGround) {
               // Find PWM for return-distance check
@@ -17400,7 +17559,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (survey && survey.active && !survey.completed) {
             var anyChange = false;
             var photos = survey.photos || [];
-            var capProgress = survey.captureProgress || 0;
+            // Ref-based accumulator — same fix as the rescue hoist: reading
+            // the persisted value back each frame kept progress below the
+            // persist threshold forever, making photo capture impossible.
+            var capProgress = capAccumRef.current;
             var aglS = state.altitude - (state.fieldElev || 0);
             var ktsS = state.speed * 0.5924838;
             var sMode = survey.mode || 'aerial';
@@ -17434,6 +17596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             } else {
               capProgress = Math.max(0, capProgress - dt * 1.5);
             }
+            capAccumRef.current = capProgress;
             // Battery decay — full motors burn ~10%/min; idle ~3%/min
             var batDrain = (0.05 + 0.12 * Math.abs(ctrl.throttle || 0)) * dt;
             var newBat = Math.max(0, (survey.battery != null ? survey.battery : 100) - batDrain);
@@ -17462,7 +17625,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               anyChange = true;
             }
             // Persist update — only if meaningful change to avoid render thrash
-            if (anyChange || Math.abs(capProgress - (survey.captureProgress || 0)) > 0.05 || Math.abs(newBat - (survey.battery || 100)) > 0.5) {
+            if (anyChange || Math.abs(capProgress - (survey.captureProgress || 0)) > 0.05 || Math.abs(newBat - (survey.battery != null ? survey.battery : 100)) > 0.5) {
               upd('survey', Object.assign({}, survey, {
                 photos: photos, captureProgress: capProgress, battery: newBat
               }));
@@ -18841,7 +19004,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // spatial grounding — students sense their speed and altitude
           // because the shadow sweeps across terrain with them. Fades above
           // 800 ft AGL and disappears over water.
-          if (!state.onGround && state.altitude < 1500
+          if (!state.onGround && (state.altitude - (state.fieldElev || 0)) < 1500
               && !isWater(state.lat, state.lon)
               && !(nearWp && nearDist < 2)) {
             var gsElev = terrainHeight(state.lat, state.lon) || (state.fieldElev || 0);
@@ -18916,7 +19079,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 var tpProx = 1 - tpDist / 6;
                 // Traffic is at 1000 ft AGL — render it above or below horizon
                 // based on how high the PLAYER is.
-                var tpScreenY = horizonY - (tpAglLocal - 1000) * 0.0015 * (H - horizonY)
+                var tpScreenY = horizonY + (tpAglLocal - 1000) * 0.0015 * (H - horizonY)
                               - tpProx * 8;
                 tpScreenY = Math.max(horizonY - 40, Math.min(H - 40, tpScreenY));
                 var tpSize = 2 + tpProx * 10;
@@ -19043,7 +19206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
 
           // Check & render achievements
-          checkAchievements(state, timeRef.current);
+          checkAchievements(state, timeRef.current, dt);
           drawAchievementPopup(gfx, W, H, timeRef.current);
 
           // Coastal rescue overlay (distress beacon, hover bar, success card)
@@ -19107,7 +19270,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.strokeStyle = 'rgba(200,220,255,' + speedAlpha + ')';
             gfx.lineWidth = 1;
             for (var sl = 0; sl < Math.min(20, kts / 30); sl++) {
-              var slx = (sl * 97 + timeRef.current * kts * 0.5) % W;
+              var slx = (sl * 97 + scrollAccumRef.current.px) % W;
               var sly = (sl * 61 + 20) % (H * 0.7) + H * 0.15;
               var slLen = 10 + kts * 0.05;
               gfx.beginPath(); gfx.moveTo(slx, sly); gfx.lineTo(slx - slLen, sly + slLen * 0.2); gfx.stroke();
@@ -19370,7 +19533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // Reset when solidly airborne
             if (vAgl > 500 && !state.onGround) fl._callouts = { v1: 0, vr: 0, climb: 0 };
             var calloutMsg = null, calloutColor = '#38bdf8';
-            if (state.onGround && vKts >= 45 && vKts < 54 && !fl._callouts.v1) {
+            if (state.onGround && vKts >= 45 && vKts < 55 && !fl._callouts.v1) {
               calloutMsg = 'V1 — committed to takeoff';
               fl._callouts.v1 = timeRef.current;
               if (typeof skyAnnounce === 'function') skyAnnounce('V one');
@@ -19651,7 +19814,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillRect(0, 0, W, H);
 
           // ── Cockpit Frame Overlay (first-person mode only) ──
-          if (!d.thirdPerson) {
+          // DISABLED: superseded by the dashboard/glareshield + yoke block
+          // above. Both ran every first-person frame, stacking two panel
+          // bars and two different yokes on top of each other.
+          if (false && !d.thirdPerson) {
             gfx.save();
             // Windshield frame — dark border simulating cockpit interior
             gfx.strokeStyle = '#1a1a2e';
@@ -19688,7 +19854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
 
           // ── First-time Flying Tutorial (shows for first 15 seconds) ──
-          if (timeRef.current < 15 && !d.tutorialDismissed) {
+          if (timeRef.current < 15 && !d.takeoffTutorialDismissed) {
             var tutAlpha = timeRef.current < 12 ? 0.9 : 0.9 * (1 - (timeRef.current - 12) / 3);
             gfx.fillStyle = 'rgba(15,23,42,' + tutAlpha + ')';
             var tutW = Math.min(360, W * 0.6);
@@ -19721,8 +19887,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fillStyle = 'rgba(200,200,220,0.5)'; gfx.font = '9px system-ui'; gfx.textAlign = 'right';
           gfx.fillText('W/S: Pitch | A/D: Bank | Shift/Ctrl: Throttle | V: View | Q: Quiz | F: Forces | Space: Pause | ?: Help', W - 10, H - 8);
 
+          loopErrCount = 0;
           animRef.current = requestAnimationFrame(loop);
-          } catch(loopErr) { console.error('[SkySchool] Render loop error:', loopErr); animRef.current = requestAnimationFrame(loop); }
+          } catch(loopErr) {
+            // Don't spin-log at 60 fps forever on a persistent draw error:
+            // log the first hit, sample afterwards, and give up after ~30 s
+            // of consecutive failures instead of masking a dead sim.
+            loopErrCount++;
+            if (loopErrCount === 1 || loopErrCount % 300 === 0) console.error('[SkySchool] Render loop error (frame ' + loopErrCount + '):', loopErr);
+            if (loopErrCount < 1800) { animRef.current = requestAnimationFrame(loop); }
+            else { console.error('[SkySchool] Render loop halted after repeated errors.'); }
+          }
         };
 
         flyingRef.current = true;
@@ -19857,8 +20032,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var depWp = WAYPOINTS.find(function(w) { return w.id === (d.planDep || 'kpwm'); }) || WAYPOINTS[0];
             var destWp = WAYPOINTS.find(function(w) { return w.id === (d.planDest || 'kjfk'); }) || WAYPOINTS[1];
             var dist = depWp && destWp ? Math.round(haversineNm(depWp.lat, depWp.lon, destWp.lat, destWp.lon)) : 0;
-            var hdg = depWp && destWp ? Math.round(bearing(depWp.lat, depWp.lon, destWp.lat, destWp.lon)) : 0;
-            var cruiseKts = Math.max(1, Math.round(currentAC.maxSpeed * 0.59 * 0.75));
+            var hdg = depWp && destWp ? Math.round(bearing(depWp.lat, depWp.lon, destWp.lat, destWp.lon)) % 360 : 0;
+            var cruiseKts = Math.max(1, Math.round(currentAC.maxSpeed * 0.75));
             var estMin = dist ? Math.max(1, Math.round(dist / cruiseKts * 60)) : 0;
             var flightMinutes = Math.floor((d.totalFlightTime || 0) / 60);
             var discoveryCount = Object.keys(d.geoDiscovered || {}).length;
@@ -19998,8 +20173,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 var destWp = WAYPOINTS.find(function(w) { return w.id === (d.planDest || 'kjfk'); });
                 if (!depWp || !destWp || depWp.id === destWp.id) return null;
                 var dist = Math.round(haversineNm(depWp.lat, depWp.lon, destWp.lat, destWp.lon));
-                var hdg = Math.round(bearing(depWp.lat, depWp.lon, destWp.lat, destWp.lon));
-                var cruiseKts = Math.round(currentAC.maxSpeed * 0.59 * 0.75);
+                var hdg = Math.round(bearing(depWp.lat, depWp.lon, destWp.lat, destWp.lon)) % 360;
+                var cruiseKts = Math.round(currentAC.maxSpeed * 0.75);
                 var estMin = Math.round(dist / cruiseKts * 60);
                 var cruiseAlt = dist > 500 ? 35000 : dist > 100 ? 18000 : 8000;
                 return h('div', null,
@@ -20052,7 +20227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               ),
               h('p', { style: { fontSize: '10px', color: '#94a3b8', margin: '0 0 6px', lineHeight: '1.4' } }, currentAC.desc),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', marginBottom: '6px' } },
-                [['Max Speed', Math.round(currentAC.maxSpeed * 0.59) + ' kts', Math.min(100, currentAC.maxSpeed * 0.59 / 5), '#60a5fa'],
+                [['Max Speed', Math.round(currentAC.maxSpeed) + ' kts', Math.min(100, currentAC.maxSpeed / 5), '#60a5fa'],
                  ['Ceiling', (currentAC.ceiling / 1000).toFixed(0) + 'K ft', Math.min(100, currentAC.ceiling / 500), '#a78bfa'],
                  ['Range', currentAC.range + ' nm', Math.min(100, currentAC.range / 30), '#4ade80'],
                  ['Weight', (currentAC.weight / 1000).toFixed(1) + 'K lbs', Math.min(100, currentAC.weight / 7000 * 100), '#f59e0b']
@@ -20105,7 +20280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, __alloT('stem.flightsim.learn_practice_calculate', '🎓 Learn, Practice, Calculate')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' } },
               [
-                { id: 'learn',      icon: '📚', label: __alloT('stem.flightsim.learn', 'Learn'),       desc: __alloT('stem.flightsim.20_topics_forces_instruments_history_c', '20 topics: forces, instruments, history, careers...'), bg: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
+                { id: 'learn',      icon: '📚', label: __alloT('stem.flightsim.learn', 'Learn'),       desc: __alloT('stem.flightsim.20_topics_forces_instruments_history_c', '100 topics: forces, instruments, history, careers...'), bg: 'linear-gradient(135deg, #3b82f6, #2563eb)' },
                 { id: 'quiz',       icon: '🎯', label: __alloT('stem.flightsim.quiz', 'Quiz'),        desc: __alloT('stem.flightsim.test_your_knowledge_with_scoring_strea', 'Test your knowledge with scoring + streaks'),          bg: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' },
                 { id: 'preflight',  icon: '✅', label: 'Pre-Flight',  desc: __alloT('stem.flightsim.interactive_checklist_real_pilots_use', 'Interactive checklist real pilots use'),              bg: 'linear-gradient(135deg, #16a34a, #15803d)' },
                 { id: 'calculator', icon: '🧮', label: __alloT('stem.flightsim.lift_calc', 'Lift Calc'),   desc: __alloT('stem.flightsim.compute_lift_for_any_aircraft_speed_al', 'Compute lift for any aircraft + speed + altitude'),   bg: 'linear-gradient(135deg, #ea580c, #c2410c)' },
@@ -20281,20 +20456,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Overlay controls
           h('div', { style: { position: 'absolute', top: '40px', left: '10px', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 10, padding: '7px', borderRadius: '12px', background: 'rgba(2,6,23,0.58)', border: '1px solid rgba(148,163,184,0.16)', boxShadow: '0 12px 30px rgba(2,6,23,0.32)', backdropFilter: 'blur(14px)' } },
             h('button', { onClick: function() {
-              flyingRef.current = false; stopEngineSound(); updateStallHorn(false);
+              flyingRef.current = false; stopEngineSound(); stopWindSound(); updateStallHorn(false);
               // Generate flight debrief
               var log = logRef.current;
               var ft = Math.round(timeRef.current - (log.startTime || 0));
               var discovered = Object.keys(geoDiscoveredRef.current).length;
-              var badges = Object.keys(earnedBadges).length;
-              upd('lastDebrief', {
-                flightTime: ft, distance: Math.round(log.distance), maxAlt: Math.round(log.maxAlt),
-                maxSpeed: Math.round(log.maxSpeed), airports: log.airports.length,
-                discovered: discovered, badges: badges, aircraft: currentAC.name,
-                landings: landingRef.current.scored ? 1 : 0,
-                bestLanding: landingRef.current.touchdownFPM ? Math.round(landingRef.current.touchdownFPM) : null
+              var dLive = dataRef.current;
+              var badges = Object.keys(dLive.earnedBadges || {}).length;
+              // Accumulate total flight time and persist this flight's
+              // discoveries — the fly-10-min quest hook and the menu stats
+              // read these keys, but nothing ever wrote them before.
+              updMulti({
+                view: 'debrief',
+                totalFlightTime: (dLive.totalFlightTime || 0) + ft,
+                geoDiscovered: Object.assign({}, dLive.geoDiscovered || {}, geoDiscoveredRef.current),
+                lastDebrief: {
+                  flightTime: ft, distance: Math.round(log.distance), maxAlt: Math.round(log.maxAlt),
+                  maxSpeed: Math.round(log.maxSpeed), airports: log.airports.length,
+                  discovered: discovered, badges: badges, aircraft: currentAC.name,
+                  landings: landingRef.current.scored ? 1 : 0,
+                  bestLanding: landingRef.current.touchdownFPM ? Math.round(landingRef.current.touchdownFPM) : null
+                }
               });
-              updMulti({ view: 'debrief' });
             },
               style: flightGlassButton(false, '#f87171')
             }, __alloT('stem.flightsim.exit', '✕ Exit')),
@@ -21153,11 +21336,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var calcCl = d.calcCl != null ? d.calcCl : preset.cl;
 
         // Density at altitude (simplified ISA model)
-        // rho = rho_sl * (1 - 0.0065*h/288.15)^5.2561
+        // DENSITY ratio σ = θ^4.2561 (θ^5.2561 is the PRESSURE ratio — using
+        // it here understated air density ~25% at altitude in a tool whose
+        // whole point is teaching the density term of the lift equation).
         var rhoSl = 0.002378;  // slugs/ft^3
         var hFt = Math.max(0, calcAltitude);
         var theta = 1 - (0.0065 * hFt * 0.3048) / 288.15;  // h in meters
-        var sigma = Math.max(0, Math.pow(theta, 5.2561));
+        var sigma = Math.max(0, Math.pow(theta, 4.2561));
         var rho = rhoSl * sigma;
         // Speed: knots to ft/s
         var vFtS = calcSpeed * 1.6878;
@@ -21181,7 +21366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           return h('div', { style: { marginBottom: '14px' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '4px' } },
               h('label', { style: { fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, label),
-              h('span', { style: { fontSize: '14px', color: '#22d3ee', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, value.toFixed(value < 1 ? 2 : 0) + ' ' + unit)
+              h('span', { style: { fontSize: '14px', color: '#22d3ee', fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' } }, value.toFixed(step < 1 ? 2 : 0) + ' ' + unit)
             ),
             h('input', {
               type: 'range', min: min, max: max, step: step, value: value,
@@ -21231,7 +21416,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               h('h3', { style: { fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '14px' } }, __alloT('stem.flightsim.inputs', 'Inputs')),
               slider('Airspeed', calcSpeed, 0, preset.maxSpeed * 1.5, 1, function(v) { upd('calcSpeed', v); }, 'kts'),
               slider('Altitude', calcAltitude, 0, 50000, 500, function(v) { upd('calcAltitude', v); }, 'ft MSL'),
-              slider('Wing area', calcWingArea, 5, 600, 1, function(v) { upd('calcWingArea', v); }, 'ft²'),
+              slider('Wing area', calcWingArea, 5, Math.max(600, Math.ceil(preset.wingArea * 1.5)), 1, function(v) { upd('calcWingArea', v); }, 'ft²'),
               slider('Lift coefficient (Cₗ)', calcCl, 0.1, 2.0, 0.05, function(v) { upd('calcCl', v); }, '')
             ),
 
@@ -21279,11 +21464,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       if (view === 'stallHunt') {
         var iq = d.stallHunt || { airspeed: 130, altitude: 5000, aoa: 8, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) { upd('stallHunt', Object.assign({}, iq, patch)); }
-        // Critical AoA ~17° for most general aviation. Stall depends primarily on AoA, not airspeed.
-        // Lift drops off rapidly above critical AoA. We model 3-state:
+        // Critical AoA ~17° for most general aviation. Stall depends ONLY on
+        // AoA — that IS the discovery this widget exists to teach. The old
+        // `+2 if airspeed < 65` hack made the state flip while sweeping the
+        // airspeed slider at fixed AoA, directly contradicting the intended
+        // takeaway (and its own guided prompt).
         // < 14° = normal flow; 14-17° = boundary separation; > 17° = full stall
-        // Low airspeed compounds: stall AoA gets effectively reached at higher critical-angle margins
-        var effectiveAoA = iq.aoa + (iq.airspeed < 65 ? 2 : 0);
+        var effectiveAoA = iq.aoa;
         var state;
         if (effectiveAoA < 14) state = 'normal';
         else if (effectiveAoA < 17) state = 'boundary';
