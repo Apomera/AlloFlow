@@ -211,10 +211,24 @@ echo "=== Step 4: npm run build (prismflow-deploy) ==="
 echo "  ✓ npm build complete."
 
 # ── Step 5: Firebase deploy ────────────────────────────────────────
+# The public repo deliberately ships with YOUR_PROJECT_ID so a normal deploy
+# can never target the maintainer demo. District/self-hosted checkouts may set
+# projects.default in .firebaserc (or ALLOFLOW_FIREBASE_PROJECT) explicitly.
 echo ""
 echo "=== Step 5: Firebase deploy ==="
-(cd prismflow-deploy && npx firebase deploy --only hosting)
-echo "  ✓ Firebase deploy complete."
+FIREBASE_DEPLOYED=0
+FIREBASE_PROJECT="${ALLOFLOW_FIREBASE_PROJECT:-$(node -e "try{const c=JSON.parse(require('fs').readFileSync('./prismflow-deploy/.firebaserc','utf8'));process.stdout.write(String(c.projects?.default||''))}catch(_){process.stdout.write('')}")}"
+if [[ "${SKIP_FIREBASE_DEPLOY:-0}" == "1" ]]; then
+  echo "  Skipped via SKIP_FIREBASE_DEPLOY=1."
+elif [[ -z "$FIREBASE_PROJECT" || "$FIREBASE_PROJECT" == "YOUR_PROJECT_ID" ]]; then
+  echo "  Skipped: no school-owned Firebase project is configured."
+  echo "  Cloudflare /app/ remains the public student shell; the maintainer demo is never used as a fallback."
+else
+  (cd prismflow-deploy && npx firebase deploy --only hosting --project "$FIREBASE_PROJECT")
+  FIREBASE_DEPLOYED=1
+  FIREBASE_URL="${ALLOFLOW_FIREBASE_HOST_URL:-https://${FIREBASE_PROJECT}.web.app}"
+  echo "  ✓ Firebase deploy complete ($FIREBASE_PROJECT)."
+fi
 
 # ── Step 6: Post-deploy commit (hash refs in mirror files) ────────
 echo ""
@@ -292,7 +306,7 @@ else
   echo ""
   echo "=== Step 10: Post-deploy verification ==="
 
-  FIREBASE_URL="https://prismflow-911fe.web.app"
+  FIREBASE_URL="${FIREBASE_URL:-}"
   CDN_BASE="https://alloflow-cdn.pages.dev"
   # Modules most worth confirming reached the CDN (pipeline-critical first).
   CDN_MODULES=(doc_pipeline_module.js view_pdf_audit_module.js gemini_api_module.js)
@@ -327,14 +341,19 @@ else
     fi
   fi
 
-  # ── Check 2: Firebase host reachable ──
-  echo "  [2/3] Firebase host ($FIREBASE_URL)…"
-  FB_RESP=$(curl -s -o /dev/null -w "%{http_code} %{size_download}" "$FIREBASE_URL" 2>/dev/null || echo "000 0")
-  FB_CODE=${FB_RESP%% *}; FB_SIZE=${FB_RESP##* }
-  if [[ "$FB_CODE" == "200" && "${FB_SIZE:-0}" -gt 1000 ]]; then
-    pv_ok "host returned 200 (${FB_SIZE} bytes)"
+  # ── Check 2: Firebase host reachable when a school-owned target deployed ──
+  if [[ "$FIREBASE_DEPLOYED" == "1" && -n "$FIREBASE_URL" ]]; then
+    echo "  [2/3] Firebase host ($FIREBASE_URL)…"
+    FB_RESP=$(curl -s -o /dev/null -w "%{http_code} %{size_download}" "$FIREBASE_URL" 2>/dev/null || echo "000 0")
+    FB_CODE=${FB_RESP%% *}; FB_SIZE=${FB_RESP##* }
+    if [[ "$FB_CODE" == "200" && "${FB_SIZE:-0}" -gt 1000 ]]; then
+      pv_ok "host returned 200 (${FB_SIZE} bytes)"
+    else
+      pv_fail "host returned HTTP ${FB_CODE}, ${FB_SIZE} bytes (expected 200 + >1KB)"
+    fi
   else
-    pv_fail "host returned HTTP ${FB_CODE}, ${FB_SIZE} bytes (expected 200 + >1KB)"
+    echo "  [2/3] Firebase host (not configured)…"
+    pv_ok "Firebase intentionally skipped; no maintainer/demo project was touched"
   fi
 
   # ── Check 3: CDN modules reachable (HARD) + fresh (soft, retried) ──
@@ -403,7 +422,11 @@ else
 fi
 echo "════════════════════════════════════════════"
 echo ""
-echo "  Live URL:  https://prismflow-911fe.web.app"
+if [[ "$FIREBASE_DEPLOYED" == "1" && -n "$FIREBASE_URL" ]]; then
+  echo "  Live URL:  $FIREBASE_URL"
+else
+  echo "  Live URL:  https://alloflow-cdn.pages.dev/app/"
+fi
 echo "  Hash:      @${HASH_FINAL}"
 echo "  GitHub:    https://github.com/Apomera/AlloFlow"
 echo "  Codeberg:  https://codeberg.org/Pomera/AlloFlow-backup"
