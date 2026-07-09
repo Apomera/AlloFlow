@@ -33,7 +33,11 @@ describe('OCR coverage net — guaranteed text layer (no silent page drop)', () 
     expect(tagger).toContain('_drawBlockLayer(true)');
   });
   it('a page that drew NOTHING via per-word still gets a guaranteed block (only if the block was not already tried)', () => {
-    expect(tagger).toContain('if (!_pageDrewAny && !_blockTried) { if (await _drawBlockLayer(false)) _pageDrewAny = true; }');
+    // H1b (2026-07-09): the net is additionally SKIPPED on per-leaf planned pages — there,
+    // _drawBlockLayer's bare drawText would be content that is neither Artifact nor tagged
+    // (veraPDF §7.1) and would wire the ParentTree to MCIDs that were never emitted. A per-leaf
+    // page that truly drew nothing goes artifact-only and strips its unbacked leaf MCRs instead.
+    expect(tagger).toContain('if (!_pageDrewAny && !_blockTried && !(_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi))) { if (await _drawBlockLayer(false)) _pageDrewAny = true; }');
   });
   it('marks the per-word path as having drawn so the last-resort does not double-draw', () => {
     expect(tagger).toContain('_pageDrewAny = true;');
