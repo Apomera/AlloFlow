@@ -6,6 +6,12 @@ import { TextDecoder, TextEncoder } from 'node:util';
 const rootSource = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const mirrorSource = readFileSync(resolve(process.cwd(), 'prismflow-deploy/src/AlloFlowANTI.txt'), 'utf8');
 const appSource = readFileSync(resolve(process.cwd(), 'prismflow-deploy/src/App.jsx'), 'utf8');
+const phaseOSource = readFileSync(resolve(process.cwd(), 'phase_o_misc_handlers_source.jsx'), 'utf8');
+const phaseOModule = readFileSync(resolve(process.cwd(), 'phase_o_misc_handlers_module.js'), 'utf8');
+const phaseOPublicModule = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/phase_o_misc_handlers_module.js'), 'utf8');
+const sessionModalSource = readFileSync(resolve(process.cwd(), 'view_session_modal_source.jsx'), 'utf8');
+const sessionModalModule = readFileSync(resolve(process.cwd(), 'view_session_modal_module.js'), 'utf8');
+const sessionModalPublicModule = readFileSync(resolve(process.cwd(), 'prismflow-deploy/public/view_session_modal_module.js'), 'utf8');
 
 function sliceBetween(source, startMarker, endMarker) {
   const start = source.indexOf(startMarker);
@@ -202,6 +208,56 @@ describe('QR student shell URL construction', () => {
   });
 });
 
+describe('Canvas-managed QR auth sequencing', () => {
+  it('serializes Firebase sign-in and waits for an ID token', () => {
+    const helper = sliceBetween(rootSource, 'let _alloAuthSignInPromise = null;', 'let appCheck = null;');
+    expect(helper).toContain('if (auth.currentUser?.uid) return auth.currentUser;');
+    expect(helper).toContain('await signInWithCustomToken(auth, __initial_auth_token)');
+    expect(helper).toContain('await signInAnonymously(auth)');
+    expect(helper).toContain('await signedInUser.getIdToken()');
+
+    const authEffect = sliceBetween(rootSource, 'const initAuth = async (retryCount = 0)', 'const unsubscribe = onAuthStateChanged');
+    expect(authEffect).toContain('await _alloEnsureAuthenticatedUser()');
+    expect(authEffect).not.toContain('await signInAnonymously(auth)');
+    expect(authEffect).not.toContain('await signInWithCustomToken(auth');
+  });
+
+  it('authenticates teacher creation and student join before touching a session', () => {
+    const teacherStart = sliceBetween(rootSource, 'const startClassSession = async () => {', 'const toggleSessionMode = async () => {');
+    expect(teacherStart.indexOf('await _alloEnsureAuthenticatedUser()')).toBeLessThan(teacherStart.indexOf('_m.startClassSession'));
+    expect(teacherStart).toContain('user: sessionUser');
+
+    const join = sliceBetween(rootSource, "const joinClassSession = async (code, hostOverride = '')", '// Desktop LAN classroom auto-join:');
+    const auth = join.indexOf('await _alloEnsureAuthenticatedUser()');
+    const read = join.indexOf('await getDoc(sessionRef)');
+    const roster = join.indexOf('await updateDoc(sessionRef');
+    const activate = join.indexOf('setActiveSessionCode(cleanCode)');
+    expect(auth).toBeGreaterThanOrEqual(0);
+    expect(read).toBeGreaterThan(auth);
+    expect(roster).toBeGreaterThan(read);
+    expect(activate).toBeGreaterThan(roster);
+    expect(join).toContain('uid: authenticatedUser.uid');
+    expect(join).toContain('[`roster.${authenticatedUser.uid}`]');
+    expect(join).not.toContain("'anon-' + Date.now()");
+    expect(join.slice(join.indexOf('} catch(e)'))).not.toContain("t('session.error_not_found')");
+  });
+
+  it('authenticates homework reads and never shares local-preview fallback codes', () => {
+    const assignment = sliceBetween(
+      rootSource,
+      "const assignmentId = _alloCleanQrAssignmentId",
+      "if (activeView === 'adventure'",
+    );
+    expect(assignment.indexOf('await _alloEnsureAuthenticatedUser()')).toBeLessThan(assignment.indexOf('await getDoc(assignmentRef)'));
+
+    expect(phaseOSource).toContain('isLocalOnly: true');
+    expect(phaseOSource).toContain("transport: 'local-preview'");
+    expect(sessionModalSource).toContain("if (isLocalOnly || !activeSessionCode || typeof window === 'undefined') return '';");
+    expect(sessionModalSource).toContain('This code was not saved to Firebase, so students cannot join it.');
+    expect(phaseOModule).toBe(phaseOPublicModule);
+    expect(sessionModalModule).toBe(sessionModalPublicModule);
+  });
+});
 describe('incomplete QR privacy guard', () => {
   it('marks a QR without allo_fb as blocked', () => {
     const runtime = createQrRuntime({
@@ -222,9 +278,9 @@ describe('incomplete QR privacy guard', () => {
     ).toBe(true);
 
     const authStart = rootSource.indexOf("Firebase auth skipped: QR link has no valid teacher handoff.");
-    const anonymousSignIn = rootSource.indexOf('await signInAnonymously(auth);', authStart);
+    const guardedSignIn = rootSource.indexOf('await _alloEnsureAuthenticatedUser();', authStart);
     expect(authStart).toBeGreaterThanOrEqual(0);
-    expect(anonymousSignIn).toBeGreaterThan(authStart);
+    expect(guardedSignIn).toBeGreaterThan(authStart);
   });
 
   it('shows the incomplete-link error before live join can run', () => {

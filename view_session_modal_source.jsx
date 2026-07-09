@@ -57,11 +57,12 @@ function SessionModal({
   const ChevronRight = window.ChevronRight || noop;
   const XCircle = window.XCircle || noop;
   const lanJoinUrl = Array.isArray(sessionData?.joinUrls) ? sessionData.joinUrls[0] : '';
+  const isLocalOnly = sessionData?.isLocalOnly === true || sessionData?.transport === 'local-preview';
   const [liveQrSvg, setLiveQrSvg] = React.useState('');
   const [liveQrError, setLiveQrError] = React.useState(false);
 
   const liveJoinUrl = React.useMemo(() => {
-    if (!activeSessionCode || typeof window === 'undefined') return '';
+    if (isLocalOnly || !activeSessionCode || typeof window === 'undefined') return '';
     const params = {
       allo_join: activeSessionCode,
       allo_host: activeSessionAppId || appId,
@@ -89,7 +90,7 @@ function SessionModal({
     } catch (_) {
       return '';
     }
-  }, [activeSessionAppId, activeSessionCode, appId]);
+  }, [activeSessionAppId, activeSessionCode, appId, isLocalOnly]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -125,8 +126,8 @@ function SessionModal({
             <Wifi size={48} className="text-green-600 animate-pulse" />
           </div>
         </div>
-        <h2 className="text-2xl font-black text-slate-800 mb-2">{t('session.live_title')}</h2>
-        <p className="text-slate-600 mb-6 font-medium">{t('session.live_instruction')}</p>
+        <h2 className="text-2xl font-black text-slate-800 mb-2">{isLocalOnly ? 'Local preview' : t('session.live_title')}</h2>
+        <p className="text-slate-600 mb-6 font-medium">{isLocalOnly ? 'Firebase did not create a shareable session. This preview stays on the teacher device.' : t('session.live_instruction')}</p>
         <div
           className="bg-indigo-50 border-4 border-indigo-100 rounded-2xl p-6 mb-6 cursor-pointer hover:bg-indigo-100 transition-colors group relative"
           onClick={() => copyToClipboard(activeSessionCode)}
@@ -161,8 +162,8 @@ function SessionModal({
         )}
         {!liveJoinUrl && (
           <div className="mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left">
-            <p className="text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center">Student QR unavailable</p>
-            <p className="text-xs text-amber-900 text-center">This host is not configured as a student join path. Use the class code, local network link, or a district/student app URL.</p>
+            <p className="text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center">{isLocalOnly ? 'Local preview only' : 'Student QR unavailable'}</p>
+            <p className="text-xs text-amber-900 text-center">{isLocalOnly ? 'This code was not saved to Firebase, so students cannot join it. Reload, start a new live session, and share only when a QR appears.' : 'This host is not configured as a student join path. Use the class code, local network link, or a student app URL.'}</p>
           </div>
         )}
         {lanJoinUrl && (

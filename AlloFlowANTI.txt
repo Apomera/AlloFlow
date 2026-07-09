@@ -1066,6 +1066,37 @@ const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 const _alloConfiguredFirebaseProject = _alloReadEnv('REACT_APP_PROJECT_ID');
 const _alloAppCheckSiteKey = _alloReadEnv('REACT_APP_FIREBASE_APP_CHECK_SITE_KEY');
+let _alloAuthSignInPromise = null;
+async function _alloEnsureAuthenticatedUser() {
+  if (_alloQrFirebaseHandoffRequiredButMissing) {
+    const error = new Error('QR Firebase handoff is missing.');
+    error.code = 'allo/qr-firebase-handoff-missing';
+    throw error;
+  }
+  if (auth.currentUser?.uid) return auth.currentUser;
+  if (!_alloAuthSignInPromise) {
+    _alloAuthSignInPromise = (async () => {
+      const credential = (typeof __initial_auth_token !== 'undefined' && __initial_auth_token)
+        ? await signInWithCustomToken(auth, __initial_auth_token)
+        : await signInAnonymously(auth);
+      const signedInUser = credential?.user || auth.currentUser;
+      if (!signedInUser?.uid) {
+        const error = new Error('Firebase Authentication did not return a user.');
+        error.code = 'allo/auth-user-missing';
+        throw error;
+      }
+      if (typeof signedInUser.getIdToken === 'function') await signedInUser.getIdToken();
+      return signedInUser;
+    })();
+  }
+  const attempt = _alloAuthSignInPromise;
+  try {
+    return await attempt;
+  } finally {
+    if (_alloAuthSignInPromise === attempt) _alloAuthSignInPromise = null;
+  }
+}
+
 let appCheck = null;
 if (_alloAppCheckSiteKey && _alloConfiguredFirebaseProject && firebaseConfig.projectId === _alloConfiguredFirebaseProject) {
   try {
@@ -1079,12 +1110,8 @@ if (_alloAppCheckSiteKey && _alloConfiguredFirebaseProject && firebaseConfig.pro
 }
 const getFunctionSecurityHeaders = async () => {
   if (!appCheck) throw new Error('Firebase App Check is not configured for this deployment.');
-  let currentUser = auth.currentUser;
-  if (!currentUser) {
-    const credential = await signInAnonymously(auth);
-    currentUser = credential?.user || auth.currentUser;
-  }
-  if (!currentUser) throw new Error('Firebase Authentication is unavailable.');
+  const currentUser = await _alloEnsureAuthenticatedUser();
+
   const [idToken, appCheckResult] = await Promise.all([currentUser.getIdToken(), _fbGetAppCheckToken(appCheck, false)]);
   if (!appCheckResult?.token) throw new Error('Firebase App Check token is unavailable.');
   return { Authorization: `Bearer ${idToken}`, 'X-Firebase-AppCheck': appCheckResult.token };
@@ -11007,11 +11034,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     let authRetryTimer = null;
     const initAuth = async (retryCount = 0) => {
       try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
+        await _alloEnsureAuthenticatedUser();
+
       } catch (error) {
         warnLog(`Firebase Auth Error (Attempt ${retryCount + 1}):`, error);
         const isNetworkError = error.code === 'auth/network-request-failed' || error.message?.includes('network');
@@ -19042,6 +19066,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       return sessionData?.groups?.[myGroupId]?.karaokeMode ?? null;
   };
   const startClassSession = async () => {
+    let sessionUser;
+    try {
+      sessionUser = await _alloEnsureAuthenticatedUser();
+      setUser(sessionUser);
+    } catch (error) {
+      warnLog('Live session authentication failed:', error);
+      addToast('Live session sign-in failed. Reload the app and try again.', 'error');
+      return;
+    }
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
     if (_m && typeof _m.startClassSession === "function") return _m.startClassSession({
         gradeLevel,
@@ -19059,7 +19092,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         dokLevel,
         rosterKey,
         sessionData,
-        user,
+        user: sessionUser,
         appId,
         activeSessionAppId,
         activeSessionCode,
@@ -19220,10 +19253,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       const requestedAppId = String(hostOverride || joinAppIdInput || '').trim();
       const targetAppId = _alloCleanFirestoreDocId(requestedAppId, appId) || appId;
-      setActiveSessionAppId(targetAppId);
-      setActiveSessionCode(cleanCode);
       setIsJoinPopoverOpen(false);
       try {
+          const authenticatedUser = await _alloEnsureAuthenticatedUser();
+          setUser(authenticatedUser);
           const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', cleanCode);
           const sessionSnap = await getDoc(sessionRef);
           if (!sessionSnap.exists()) {
@@ -19240,18 +19273,27 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               return;
           }
           const userEntry = {
-              uid: user?.uid || 'anon-' + Date.now(),
+              uid: authenticatedUser.uid,
               name: studentNickname || "Student",
               joinedAt: new Date().toISOString(),
               status: 'active',
           };
           await updateDoc(sessionRef, {
-              [`roster.${userEntry.uid}`]: userEntry
+              [`roster.${authenticatedUser.uid}`]: userEntry
           });
+          setActiveSessionAppId(targetAppId);
+          setActiveSessionCode(cleanCode);
           addToast(t('session.joining', { code: cleanCode, host: targetAppId.slice(0,8) }), "info");
       } catch(e) {
-          warnLog("Auto-join roster failed", e);
-          addToast(t('session.error_not_found') || "Could not join session.", "error");
+          warnLog("Session join failed", e);
+          const errorCode = String(e?.code || '');
+          if (errorCode === 'permission-denied') {
+              addToast('Canvas did not allow this student connection. Ask the teacher to end the session, start a new one, and scan the new QR code.', "error");
+          } else if (errorCode.startsWith('auth/') || errorCode.startsWith('allo/')) {
+              addToast('Student sign-in was not accepted by this Canvas session. Reload once and scan the QR code again.', "error");
+          } else {
+              addToast('Could not join this live session. Check the code and try again.', "error");
+          }
           setActiveSessionCode(null);
           setActiveSessionAppId(appId);
       }
@@ -20442,6 +20484,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setActiveSessionAppId(hostId);
           const loadAssignment = async () => {
               try {
+                  const assignmentUser = await _alloEnsureAuthenticatedUser();
+                  setUser(assignmentUser);
                   const assignmentRef = doc(db, 'artifacts', hostId, 'public', 'data', 'sessions', assignmentId);
                   const snap = await getDoc(assignmentRef);
                   if (!snap.exists()) throw new Error('Assignment not found');

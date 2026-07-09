@@ -41,10 +41,11 @@ function SessionModal({
   const ChevronRight = window.ChevronRight || noop;
   const XCircle = window.XCircle || noop;
   const lanJoinUrl = Array.isArray(sessionData?.joinUrls) ? sessionData.joinUrls[0] : "";
+  const isLocalOnly = sessionData?.isLocalOnly === true || sessionData?.transport === "local-preview";
   const [liveQrSvg, setLiveQrSvg] = React.useState("");
   const [liveQrError, setLiveQrError] = React.useState(false);
   const liveJoinUrl = React.useMemo(() => {
-    if (!activeSessionCode || typeof window === "undefined") return "";
+    if (isLocalOnly || !activeSessionCode || typeof window === "undefined") return "";
     const params = {
       allo_join: activeSessionCode,
       allo_host: activeSessionAppId || appId,
@@ -70,7 +71,7 @@ function SessionModal({
     } catch (_) {
       return "";
     }
-  }, [activeSessionAppId, activeSessionCode, appId]);
+  }, [activeSessionAppId, activeSessionCode, appId, isLocalOnly]);
   React.useEffect(() => {
     let cancelled = false;
     if (!liveJoinUrl || typeof window === "undefined") {
@@ -102,7 +103,7 @@ function SessionModal({
       cancelled = true;
     };
   }, [liveJoinUrl]);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowSessionModalToFalse }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-label": t("session.live_title") }, /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowSessionModalToFalse, className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-4 rounded-full shadow-inner" }, /* @__PURE__ */ React.createElement(Wifi, { size: 48, className: "text-green-600 animate-pulse" }))), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mb-2" }, t("session.live_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6 font-medium" }, t("session.live_instruction")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowSessionModalToFalse }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-label": t("session.live_title") }, /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowSessionModalToFalse, className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-4 rounded-full shadow-inner" }, /* @__PURE__ */ React.createElement(Wifi, { size: 48, className: "text-green-600 animate-pulse" }))), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mb-2" }, isLocalOnly ? "Local preview" : t("session.live_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6 font-medium" }, isLocalOnly ? "Firebase did not create a shareable session. This preview stays on the teacher device." : t("session.live_instruction")), /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "bg-indigo-50 border-4 border-indigo-100 rounded-2xl p-6 mb-6 cursor-pointer hover:bg-indigo-100 transition-colors group relative",
@@ -120,7 +121,7 @@ function SessionModal({
     },
     "Copy student join link ",
     /* @__PURE__ */ React.createElement(Copy, { size: 12 })
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800 mt-2 text-center" }, "QR students join this live session with AI generation off.")), !liveJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center" }, "Student QR unavailable"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900 text-center" }, "This host is not configured as a student join path. Use the class code, local network link, or a district/student app URL.")), lanJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1" }, "Local network join link"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800 mt-2 text-center" }, "QR students join this live session with AI generation off.")), !liveJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center" }, isLocalOnly ? "Local preview only" : "Student QR unavailable"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900 text-center" }, isLocalOnly ? "This code was not saved to Firebase, so students cannot join it. Reload, start a new live session, and share only when a QR appears." : "This host is not configured as a student join path. Use the class code, local network link, or a student app URL.")), lanJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1" }, "Local network join link"), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.copy"),
