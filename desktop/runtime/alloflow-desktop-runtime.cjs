@@ -539,6 +539,65 @@ function getRequestOrigin(req) {
   return `http://${host}`;
 }
 
+function hostnameFromHostHeader(hostHeader) {
+  const raw = String(hostHeader || '').trim();
+  if (!raw) return '';
+  if (raw.startsWith('[')) { // IPv6 literal, e.g. [::1]:32170
+    const end = raw.indexOf(']');
+    return (end > 0 ? raw.slice(1, end) : raw).toLowerCase();
+  }
+  const colon = raw.lastIndexOf(':');
+  return (colon > -1 ? raw.slice(0, colon) : raw).toLowerCase();
+}
+
+function isLoopbackHostname(hostname) {
+  return hostname === '127.0.0.1' || hostname === 'localhost' || hostname === '::1';
+}
+
+// The private runtime API (loopback) is reached only through a loopback origin:
+// the Electron command-center window and the bundled app served from /app/.
+// Two browser-driven attacks would otherwise cross that trust boundary:
+//   • DNS rebinding — a page on evil.com whose name later resolves to 127.0.0.1
+//     reaches the API, but its requests carry `Host: evil.com`. Requiring a
+//     loopback (or the explicitly configured bind) Host rejects them.
+//   • CSRF — a page can send a "simple" cross-origin POST to a guessable port
+//     with real side effects (rewrite config, start the engine, store a secret).
+//     Such a request carries `Origin: https://evil.com`; same-origin calls carry
+//     the loopback origin and non-browser clients send none. Reject a present,
+//     non-loopback Origin on any state-changing method.
+// This guard is applied ONLY to the private server (handleApi); the public LAN
+// share server is addressed by LAN IP by design and must not be gated here.
+function isAllowedPrivateHost(hostname) {
+  if (isLoopbackHostname(hostname)) return true;
+  const bind = String(getRuntimeBindHost() || '').toLowerCase();
+  return Boolean(bind) && bind !== '0.0.0.0' && bind !== '::' && bind === hostname;
+}
+
+function isLoopbackOrigin(originHeader) {
+  const value = String(originHeader || '');
+  if (!value || value === 'null') return false;
+  try {
+    return isLoopbackHostname(new URL(value).hostname.toLowerCase());
+  } catch (_) {
+    return false;
+  }
+}
+
+function privateApiGuardRejection(req) {
+  const hostname = hostnameFromHostHeader(req.headers && req.headers.host);
+  if (!isAllowedPrivateHost(hostname)) {
+    return { status: 403, error: 'This endpoint is only reachable on the local device.' };
+  }
+  const method = String((req && req.method) || 'GET').toUpperCase();
+  if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+    const originHeader = req.headers && req.headers.origin;
+    if (originHeader && !isLoopbackOrigin(originHeader)) {
+      return { status: 403, error: 'Cross-origin request rejected.' };
+    }
+  }
+  return null;
+}
+
 function hasStaticAppBuild() {
   return fs.existsSync(path.join(STATIC_APP_DIR, 'index.html'));
 }
@@ -856,9 +915,17 @@ function isDeleteFieldSentinel(value) {
   return value && typeof value === 'object' && value.__op === 'deleteField';
 }
 
+// Keys that reach an object's prototype chain. A dotted update key like
+// "__proto__.polluted" — reachable from any LAN device via
+// PATCH /api/lan-sessions/{code}, and unauthenticated by default (no PIN) —
+// would otherwise walk onto Object.prototype and corrupt every object in the
+// runtime process. Refuse any path segment that names a prototype hook.
+const PROTO_POLLUTION_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
 function setDottedValue(target, dottedPath, value) {
   const parts = String(dottedPath || '').split('.').filter(Boolean);
   if (!parts.length) return;
+  if (parts.some((part) => PROTO_POLLUTION_KEYS.has(part))) return;
   let cursor = target;
   for (let i = 0; i < parts.length - 1; i += 1) {
     const key = parts[i];
@@ -2038,7 +2105,69 @@ function findFileRecursive(dir, name) {
   return null;
 }
 
-async function downloadEngineFile(url, destination, label) {
+// A managed binary/model is fetched and then executed (llama-server /
+// whisper-server) or memory-mapped, so its transport must be authenticated.
+// Refuse anything but HTTPS for remote downloads — this blocks a plaintext
+// MITM from swapping the executable, and rejects an http:// URL slipped into
+// config. Local file paths (USB models) never reach here; they are resolved
+// and existence-checked before any download is attempted.
+function assertSecureDownloadUrl(url, label) {
+  let parsed;
+  try {
+    parsed = new URL(String(url || ''));
+  } catch (_) {
+    throw new Error('The ' + label + ' URL is not a valid URL.');
+  }
+  if (parsed.protocol !== 'https:') {
+    throw new Error('The ' + label + ' must be downloaded over HTTPS (got "' + parsed.protocol.replace(':', '') +
+      '"). Refusing to fetch an executable or model over an unencrypted connection.');
+  }
+}
+
+function sha256File(filePath) {
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash('sha256');
+    const stream = fs.createReadStream(filePath);
+    stream.on('error', reject);
+    stream.on('data', (chunk) => hash.update(chunk));
+    stream.on('end', () => resolve(hash.digest('hex')));
+  });
+}
+
+// Optional integrity pin: when localEngine.binarySha256 / modelSha256 (or the
+// ASR equivalents) are configured, the downloaded file is verified before it is
+// installed and a mismatch is deleted, never run. No pin = behavior unchanged.
+async function verifyDownloadIntegrity(filePath, expectedSha256, label) {
+  const expected = String(expectedSha256 || '').trim().toLowerCase();
+  if (!expected) return;
+  const actual = (await sha256File(filePath)).toLowerCase();
+  if (actual !== expected) {
+    try { fs.unlinkSync(filePath); } catch (_) {}
+    throw new Error('The downloaded ' + label + ' failed its integrity check (SHA-256 mismatch). It was not installed.');
+  }
+}
+
+// Extra llama.cpp / whisper.cpp flags are a documented power-user knob, spawned
+// as an argv array (no shell), so injection is not the concern — but coerce to
+// clean strings, drop control characters, and bound the count/length so a
+// corrupted or hostile config cannot smuggle newlines or an unbounded argv.
+function sanitizeSpawnExtraArgs(extraArgs) {
+  if (!Array.isArray(extraArgs)) return [];
+  const hasControlChar = (arg) => {
+    for (let i = 0; i < arg.length; i += 1) {
+      const code = arg.charCodeAt(i);
+      if (code < 0x20 || code === 0x7f) return true;
+    }
+    return false;
+  };
+  return extraArgs
+    .map((arg) => String(arg))
+    .filter((arg) => arg.length > 0 && arg.length <= 256 && !hasControlChar(arg))
+    .slice(0, 32);
+}
+
+async function downloadEngineFile(url, destination, label, expectedSha256) {
+  assertSecureDownloadUrl(url, label);
   const signal = managedEngine.abortController ? managedEngine.abortController.signal : undefined;
   const response = await fetch(url, { redirect: 'follow', signal });
   if (!response.ok || !response.body) throw new Error(label + ' download failed (HTTP ' + response.status + ').');
@@ -2062,6 +2191,7 @@ async function downloadEngineFile(url, destination, label) {
     output.on('finish', resolveDone);
     reader.pipe(output);
   });
+  await verifyDownloadIntegrity(temp, expectedSha256, label);
   fs.renameSync(temp, destination);
   managedEngine.download = null;
 }
@@ -2122,7 +2252,7 @@ async function ensureEngineBinary(config, arch) {
     managedEngine.phase = 'downloading-binary';
     appendEngineLog('Downloading engine binary (' + arch + '): ' + url);
     const zipPath = path.join(archDir, 'llama-server-download.zip');
-    await downloadEngineFile(url, zipPath, 'engine program');
+    await downloadEngineFile(url, zipPath, 'engine program', engine.binarySha256);
     throwIfEngineStopRequested();
     await expandEngineZip(zipPath, archDir);
     try { fs.unlinkSync(zipPath); } catch (_) {}
@@ -2150,7 +2280,7 @@ async function ensureEngineAssets(config, arch) {
     throwIfEngineStopRequested();
     managedEngine.phase = 'downloading-model';
     appendEngineLog('Downloading AI model: ' + engine.modelUrl);
-    await downloadEngineFile(engine.modelUrl, modelFile, 'AI model');
+    await downloadEngineFile(engine.modelUrl, modelFile, 'AI model', engine.modelSha256);
   }
   throwIfEngineStopRequested();
   managedEngine.binaryPath = binary;
@@ -2439,7 +2569,7 @@ async function launchEngineProcess(config, arch) {
   const args = ['-m', modelFile, '--host', '127.0.0.1', '--port', String(engine.port),
     '-c', String(capability.contextSize), '--no-webui'];
   if (engine.threads) args.push('-t', String(engine.threads));
-  (Array.isArray(engine.extraArgs) ? engine.extraArgs : []).forEach((arg) => args.push(String(arg)));
+  sanitizeSpawnExtraArgs(engine.extraArgs).forEach((arg) => args.push(arg));
   let exitCode = null;
   const child = spawn(binary, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
   managedEngine.child = child;
@@ -2622,7 +2752,8 @@ const PRIMARY_ASR_ARCH = 'x64';
 
 // Reuses the generic download primitive shape but writes progress into
 // managedAsr.download (downloadEngineFile is coupled to managedEngine state).
-async function downloadAsrFile(url, destination, label) {
+async function downloadAsrFile(url, destination, label, expectedSha256) {
+  assertSecureDownloadUrl(url, label);
   const signal = managedAsr.abortController ? managedAsr.abortController.signal : undefined;
   const response = await fetch(url, { redirect: 'follow', signal });
   if (!response.ok || !response.body) throw new Error(label + ' download failed (HTTP ' + response.status + ').');
@@ -2644,6 +2775,7 @@ async function downloadAsrFile(url, destination, label) {
     output.on('finish', resolveDone);
     reader.pipe(output);
   });
+  await verifyDownloadIntegrity(temp, expectedSha256, label);
   fs.renameSync(temp, destination);
   managedAsr.download = null;
 }
@@ -2671,7 +2803,7 @@ async function ensureAsrBinary(config, arch) {
     managedAsr.phase = 'downloading-binary';
     appendAsrLog('Downloading ASR binary (' + arch + '): ' + url);
     const zipPath = path.join(archDir, 'whisper-server-download.zip');
-    await downloadAsrFile(url, zipPath, 'speech-to-text program');
+    await downloadAsrFile(url, zipPath, 'speech-to-text program', asr.binarySha256);
     throwIfAsrStopRequested();
     await expandEngineZip(zipPath, archDir);
     try { fs.unlinkSync(zipPath); } catch (_) {}
@@ -2697,7 +2829,7 @@ async function ensureAsrAssets(config, arch) {
     throwIfAsrStopRequested();
     managedAsr.phase = 'downloading-model';
     appendAsrLog('Downloading speech model: ' + asr.modelUrl);
-    await downloadAsrFile(asr.modelUrl, modelFile, 'speech model');
+    await downloadAsrFile(asr.modelUrl, modelFile, 'speech model', asr.modelSha256);
   }
   throwIfAsrStopRequested();
   managedAsr.binaryPath = binary;
@@ -2768,7 +2900,7 @@ async function launchAsrProcess(config, arch) {
   const args = ['-m', modelFile, '--host', '127.0.0.1', '--port', String(asr.port), '--inference-path', '/inference', '--convert'];
   if (asr.language && String(asr.language).trim()) args.push('-l', String(asr.language).trim());
   if (asr.threads) args.push('-t', String(asr.threads));
-  (Array.isArray(asr.extraArgs) ? asr.extraArgs : []).forEach((arg) => args.push(String(arg)));
+  sanitizeSpawnExtraArgs(asr.extraArgs).forEach((arg) => args.push(arg));
   let exitCode = null;
   const child = spawn(binary, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
   managedAsr.child = child;
@@ -3326,6 +3458,11 @@ function serveBundledApp(res, pathname) {
 }
 
 async function handleApi(req, res, url) {
+  const guardRejection = privateApiGuardRejection(req);
+  if (guardRejection) {
+    jsonResponse(res, guardRejection.status, { error: guardRejection.error });
+    return;
+  }
   const config = readConfig();
   const origin = getRequestOrigin(req);
 
@@ -3985,6 +4122,38 @@ async function runSmoke(args) {
     if (docGet.doc?.data?.resource?.id !== 'r1') throw new Error('LAN doc read failed.');
     if (publicDocGet.doc?.data?.kind !== 'sessionResource') throw new Error('Public LAN share could not read a class asset.');
     if (publicDocPutStatus !== 403) throw new Error('Public LAN share allowed asset writes.');
+    // ── Prototype-pollution guard (LAN session PATCH is the unauthenticated-
+    // by-default vector: any LAN device can PATCH when no PIN is set) ──
+    await fetch(shareUrl + '/api/lan-sessions/SMOKE1', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ updates: { '__proto__.polluted': 'yes', 'constructor.prototype.polluted2': 'yes' } }),
+    }).then((response) => response.json());
+    if (({}).polluted !== undefined || ({}).polluted2 !== undefined) {
+      throw new Error('Prototype-pollution guard failed: Object.prototype was polluted via LAN session PATCH.');
+    }
+    // ── Private API CSRF + DNS-rebinding guard ──
+    const csrfStatus = await fetch(baseUrl + '/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain', Origin: 'https://evil.example' },
+      body: '{}',
+    }).then((response) => response.status);
+    if (csrfStatus !== 403) throw new Error('Private API accepted a cross-origin POST (got ' + csrfStatus + ').');
+    const rebindStatus = await new Promise((resolve, reject) => {
+      const request = http.request(
+        { host: '127.0.0.1', port: address.port, path: '/api/config', method: 'GET', headers: { Host: 'attacker.example' } },
+        (response) => { response.resume(); resolve(response.statusCode); }
+      );
+      request.on('error', reject);
+      request.end();
+    });
+    if (rebindStatus !== 403) throw new Error('Private API answered a rebinding Host header (got ' + rebindStatus + ').');
+    const sameOriginPost = await fetch(baseUrl + '/api/lan-sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Origin: baseUrl },
+      body: JSON.stringify({ code: 'SMOKE2', session: { mode: 'sync', roster: {} } }),
+    }).then((response) => response.status);
+    if (sameOriginPost !== 200) throw new Error('Private API rejected a legitimate same-origin POST (got ' + sameOriginPost + ').');
     // ── Classroom PIN gate (latched at share start) ──
     await stopLanShare();
     const pinnedConfig = deepMerge(readConfig(), { liveSession: { lan: { sharePort: 0, pin: 'SMOKE-PIN' } } });
@@ -4006,7 +4175,7 @@ async function runSmoke(args) {
     if (!/allo_lan_join/.test(joinGoodPin)) throw new Error('Join page with a correct PIN did not serve the app link.');
     if (docNoPinStatus !== 401) throw new Error('Doc PIN gate did not reject a missing pin (got ' + docNoPinStatus + ').');
     if (docGoodPin.doc?.id !== 'asset_smoke_1') throw new Error('Doc PIN gate rejected the correct pin (header form).');
-    console.log('[AlloFlow Desktop] Smoke passed at ' + baseUrl + ' (incl. LAN share isolation + PIN gate)');
+    console.log('[AlloFlow Desktop] Smoke passed at ' + baseUrl + ' (incl. LAN share isolation, PIN gate, CSRF/rebinding + prototype-pollution guards)');
   } finally {
     await stopLanShare().catch(() => {});
     await new Promise((resolve) => server.close(resolve));

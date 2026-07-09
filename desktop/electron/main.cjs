@@ -375,6 +375,25 @@ async function autoStartAlloFlowApp() {
   }
 }
 
+// The command center renders untrusted content (student/LAN session data, model
+// output). A link in that content is handed to the OS via shell.openExternal,
+// which will launch non-web schemes (file:, and OS-registered protocol handlers)
+// — a foothold for opening local files or other apps. Restrict handoff to the
+// web/mail schemes a "click a link" gesture legitimately needs.
+function openExternalIfSafe(url) {
+  try {
+    const scheme = new URL(url).protocol;
+    if (scheme === 'http:' || scheme === 'https:' || scheme === 'mailto:') {
+      shell.openExternal(url);
+      return true;
+    }
+  } catch (_) {
+    // Not a parseable absolute URL — fall through to the block path.
+  }
+  logLine('Blocked external open for non-web URL: ' + String(url).slice(0, 200));
+  return false;
+}
+
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 1320,
@@ -402,14 +421,14 @@ function createMainWindow() {
   mainWindow.on('leave-full-screen', () => notifyFullScreenChange(false));
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
+    openExternalIfSafe(url);
     return { action: 'deny' };
   });
 
   mainWindow.webContents.on('will-navigate', (event, url) => {
     if (!url.startsWith(getCommandCenterUrl())) {
       event.preventDefault();
-      shell.openExternal(url);
+      openExternalIfSafe(url);
     }
   });
 
