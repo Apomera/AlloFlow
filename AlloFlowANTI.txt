@@ -19389,13 +19389,18 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           addToast(t('session.joining', { code: cleanCode, host: targetAppId.slice(0,8) }), "info");
       } catch(e) {
           warnLog("Session join failed", e);
-          const errorCode = String(e?.code || '');
+          const errorCode = String(e?.code || e?.message || 'unknown');
+          // Keep the raw code visible: a student screenshot of this toast is
+          // the only field diagnostic we get from an external phone.
+          const codeSuffix = ' [' + errorCode + ']';
           if (errorCode === 'permission-denied') {
-              addToast('Canvas did not allow this student connection. Ask the teacher to end the session, start a new one, and scan the new QR code.', "error");
+              addToast("The class Firebase project refused this student device — its security rules denied the session read/write. The teacher's hosting environment may not accept outside student devices." + codeSuffix, "error");
+          } else if (errorCode === 'auth/operation-not-allowed' || errorCode === 'auth/admin-restricted-operation') {
+              addToast('Anonymous student sign-in is turned off on the class Firebase project, so QR devices cannot authenticate. Live QR needs a session backend with Anonymous Authentication enabled.' + codeSuffix, "error");
           } else if (errorCode.startsWith('auth/') || errorCode.startsWith('allo/')) {
-              addToast('Student sign-in was not accepted by this Canvas session. Reload once and scan the QR code again.', "error");
+              addToast('Student sign-in did not complete on this device. Reload once and scan the QR code again.' + codeSuffix, "error");
           } else {
-              addToast('Could not join this live session. Check the code and try again.', "error");
+              addToast('Could not join this live session. Check the code and try again.' + codeSuffix, "error");
           }
           setActiveSessionCode(null);
           setActiveSessionAppId(appId);
