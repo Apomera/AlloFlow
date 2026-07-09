@@ -3673,10 +3673,29 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     ffmpegWasmBlobUrl = URL.createObjectURL(stitched);
     return ffmpegWasmBlobUrl;
   }
-  function mp4AbortError() {
-    var err = new Error('MP4 conversion canceled');
+  function exportAbortError(message) {
+    var err = new Error(message || 'Export canceled');
     err.name = 'AbortError';
     return err;
+  }
+  function mp4AbortError() {
+    return exportAbortError('MP4 conversion canceled');
+  }
+  // Set while the canvas re-encode is rolling; the export cancel button cancels
+  // whichever stage is live (re-encode first, then the strict-MP4 converter).
+  var activeReencodeCancel = null;
+  function cancelActiveExport() {
+    if (activeReencodeCancel) { activeReencodeCancel(); return; }
+    cancelMp4Conversion();
+  }
+  function setReencodeUi(active, message) {
+    if ($('exportCancelBtn')) {
+      $('exportCancelBtn').textContent = active ? 'Cancel export' : 'Cancel MP4 conversion';
+      $('exportCancelBtn').hidden = !active;
+    }
+    if ($('exportProgressDetail')) $('exportProgressDetail').hidden = !active;
+    if ($('exportProgressTitle')) $('exportProgressTitle').textContent = active ? 'Re-encoding video' : 'Preparing export';
+    if ($('exportProgressText')) $('exportProgressText').textContent = message || 'Keep this window visible while Video Studio finishes the file.';
   }
   function mp4ConverterTroubleshootingMessage(err) {
     var msg = String(err && (err.message || err) || '');
@@ -9889,7 +9908,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // ── Export ──
   var lastExport = null; // {blob, vtt, title, duration, url, takeId}
   $('exportBtn').addEventListener('click', doExport);
-  if ($('exportCancelBtn')) $('exportCancelBtn').addEventListener('click', cancelMp4Conversion);
+  if ($('exportCancelBtn')) $('exportCancelBtn').addEventListener('click', cancelActiveExport);
 
   async function doExport() {
     var t = currentTake();
@@ -10186,9 +10205,38 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function reencode(take, seg, cues, burnCaptions, titleCard, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, outputOptions) {
     return new Promise(function (resolve, reject) {
       var v = document.createElement('video');
+      // Every exit path (success, failure, cancel) must run the SAME cleanup:
+      // stop the recorder, pause playback, close the AudioContext, revoke the
+      // narration/clip/music blob URLs, clear the progress ticker. Before this
+      // existed, a failed export left the recorder rolling, the progress
+      // interval spinning forever, and leaked one blob URL per mix item.
+      var settled = false, canceled = false, cleanupFns = [];
+      function cleanup() {
+        cleanupFns.splice(0).forEach(function (fn) { try { fn(); } catch (_) {} });
+      }
+      function fail(err) {
+        if (settled) return;
+        settled = true;
+        activeReencodeCancel = null;
+        cleanup();
+        reject(err);
+      }
+      function succeed(result) {
+        if (settled) return;
+        settled = true;
+        activeReencodeCancel = null;
+        cleanup();
+        resolve(result);
+      }
+      activeReencodeCancel = function () {
+        canceled = true;
+        announce('Export canceled');
+        fail(exportAbortError('Export canceled'));
+      };
       v.src = take.url; v.muted = false; v.volume = 1; v.playsInline = true;
-      v.addEventListener('error', function () { reject(new Error('could not decode the take')); });
+      v.addEventListener('error', function () { fail(new Error('could not decode the take')); });
       v.addEventListener('loadedmetadata', function () {
+        if (settled) return;
         var opts = outputOptions || {};
         var outputFormat = exportCanvasSizeFor(opts.format || 'original', v.videoWidth || 1280, v.videoHeight || 720);
         var outputFraming = sanitizeExportFraming(opts.framing || 'fit');
@@ -10207,7 +10255,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             gainNode.gain.value = vsGainAt(audioCfg && audioCfg.muteSpans, audioCfg ? audioCfg.volume : 1, seg.start);
             ac.createMediaElementSource(v).connect(gainNode);
             gainNode.connect(dest);
-          } catch (_) { gainNode = null; }
+          } catch (_) {
+            // Don't ship a silently muted file: the teacher must hear about it.
+            gainNode = null;
+            setStatus($('exportStatus'), 'Heads up: the original audio could not be captured for this export — the video sound will be missing (narration, clips, and music still mix in). Try again after reloading the Studio window.', 'warn');
+            announce('Original audio could not be captured — export may be silent.');
+          }
         }
         // Narration + sound clips mix in through their own gain nodes, timed
         // against take-absolute video time — they play even when the original
@@ -10217,10 +10270,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         (take.audioClips || []).forEach(function (c) { if (c && c.blob) mixItems.push({ kind: 'speech', blob: c.blob, at: Number(c.t) || 0, vol: c.volume }); });
         var safeMusic = musicBed && musicBed.blob ? vsSanitizeMusicBed(musicBed, take.duration || 0) : null;
         if (safeMusic && safeMusic.blob) mixItems.push(Object.assign({ kind: 'music', blob: safeMusic.blob, at: safeMusic.start, vol: safeMusic.volume }, safeMusic));
+        var mixUrls = [];
         mixItems.forEach(function (m) {
           try {
             var el = document.createElement('audio');
             el.src = URL.createObjectURL(m.blob);
+            mixUrls.push(el.src);
             el.preload = 'auto';
             var g = ac.createGain();
             g.gain.value = Math.max(0, Math.min(2, Number(m.vol != null ? m.vol : 1)));
@@ -10232,9 +10287,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         var stream = cv.captureStream(30);
         if ((!removeAudio || mixItems.length) && dest.stream.getAudioTracks().length) stream.addTrack(dest.stream.getAudioTracks()[0]);
         var mr;
-        try { mr = new MediaRecorder(stream, outputMimeInfo.mime ? { mimeType: outputMimeInfo.mime, videoBitsPerSecond: exportVideoBitrate(w, hgt) } : undefined); } catch (e) { reject(e); return; }
+        try { mr = new MediaRecorder(stream, outputMimeInfo.mime ? { mimeType: outputMimeInfo.mime, videoBitsPerSecond: exportVideoBitrate(w, hgt) } : undefined); } catch (e) { fail(e); return; }
         var chunks = [];
         mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+        // Registered in stop-before-close order; cleanup() runs them on every
+        // exit path (see the head of this Promise).
+        cleanupFns.push(function () { cancelAnimationFrame(raf); });
+        cleanupFns.push(function () { try { v.pause(); } catch (_) {} });
+        cleanupFns.push(function () { mixItems.forEach(function (m) { try { if (m._el) m._el.pause(); } catch (_) {} }); });
+        cleanupFns.push(function () { try { if (mr.state !== 'inactive') mr.stop(); } catch (_) {} });
+        cleanupFns.push(function () { try { ac.close(); } catch (_) {} });
+        cleanupFns.push(function () { mixUrls.splice(0).forEach(function (u) { try { URL.revokeObjectURL(u); } catch (_) {} }); });
         var insertList = vsSanitizeTeachingInserts(inserts || [], take.duration || 0);
         var insertImagesReady = Promise.all(insertList.map(function (ins) {
           return new Promise(function (res) {
@@ -10248,17 +10311,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         var cardDur = titleCard ? 2.5 : 0;
         var totalDur = cardDur + (seg.end - seg.start);
         mr.onstop = function () {
-          try { ac.close(); } catch (_) {}
+          if (settled || canceled) return;
           var raw = new Blob(chunks, { type: mr.mimeType || outputMimeInfo.mime || 'video/webm' });
           finalizeRecordedVideoBlob(raw, totalDur).then(function (blob) {
-            resolve({
+            succeed({
               blob: blob,
               duration: totalDur,
               outputFormat: outputFormat,
               outputFraming: outputFraming,
               outputContainer: outputContainerInfoForBlob(blob, outputContainerChoice, { fallback: outputMimeInfo.fallback, needsConverter: outputMimeInfo.needsConverter })
             });
-          }, reject);
+          }, fail);
         };
         var captionStyle = vsResolveCaptionStyle(captionStyleKey, captionCustom);
         var startedAt = 0, raf = 0, phase = titleCard ? 'card' : 'video';
@@ -10322,7 +10385,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             if (el >= cardDur) {
               phase = 'video';
               v.currentTime = seg.start;
-              v.play().catch(function () { reject(new Error('playback blocked')); });
+              v.play().catch(function () { fail(new Error('playback blocked')); });
             }
           } else {
             // Audio edits track the playhead: mute spans + master volume via
@@ -10382,19 +10445,31 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           });
         }));
         Promise.all([readyAll, insertImagesReady]).then(function () {
+          if (settled) return;
           mr.start(1000);
           if (!titleCard) {
             v.currentTime = seg.start;
-            v.play().then(function () { raf = requestAnimationFrame(frame); }).catch(function () { reject(new Error('playback blocked')); });
+            v.play().then(function () { raf = requestAnimationFrame(frame); }).catch(function () { fail(new Error('playback blocked')); });
           } else {
             raf = requestAnimationFrame(frame);
           }
+          // Honest progress: the re-encode plays the take through at 1x, so
+          // "time remaining" IS the edited length minus wall-clock elapsed.
+          setReencodeUi(true, 'Starting… the export plays your video through in real time, so it takes about as long as the edited video.');
           var prog = setInterval(function () {
+            if (settled) { clearInterval(prog); return; }
             var el2 = startedAt ? (performance.now() - startedAt) / 1000 : 0;
             $('exportProgress').hidden = false;
             $('exportProgress').value = Math.min(100, Math.round(el2 / totalDur * 100));
+            setReencodeUi(true, 'About ' + fmtClock(Math.max(0, totalDur - el2)) + ' left — the export plays your video through in real time.');
             if (mr.state === 'inactive') { clearInterval(prog); $('exportProgress').hidden = true; }
           }, 300);
+          cleanupFns.push(function () {
+            clearInterval(prog);
+            setReencodeUi(false);
+            $('exportProgress').hidden = true;
+            $('exportProgress').value = 0;
+          });
         });
       });
     });

@@ -1725,3 +1725,85 @@ describe('vsMakePackReference (pack-size guard)', () => {
     expect(ref.thumb).toBeNull();
   });
 });
+
+// ─── vsBuildStudioTakeRecord (take persistence, 2026-07-09) ──────────────────
+describe('vsBuildStudioTakeRecord', () => {
+  it('normalizes an allostudio-video payload into a storable record', () => {
+    const blob = new Blob(['fake-webm-bytes'], { type: 'video/webm' });
+    const rec = VS.vsBuildStudioTakeRecord({
+      blob,
+      title: 'Fractions demo',
+      duration: 93.6,
+      vtt: 'WEBVTT\n\n00:00:01.000 --> 00:00:02.000\nHi',
+      thumb: 'data:image/jpeg;base64,abc',
+      chapters: [{ start: 5, title: 'Intro' }, { start: 'bad' }, { title: '   ' }],
+      musicBed: { blob: new Blob(['audio']), start: 0, end: 10, volume: 0.4 },
+      visualDescriptions: [{ start: 1, end: 3, description: 'A graph appears', checked: true }],
+    });
+    expect(rec.blob).toBe(blob);
+    expect(rec.size).toBe(blob.size);
+    expect(rec.title).toBe('Fractions demo');
+    expect(rec.duration).toBe(93.6);
+    expect(rec.vtt).toContain('WEBVTT');
+    expect(rec.chapters).toEqual([{ start: 5, title: 'Intro' }]);
+    // Object URLs are per-mount, never stored; music blobs never persist.
+    expect(Object.keys(rec)).not.toContain('url');
+    expect(rec.musicBed.blob).toBeNull();
+    expect(rec.sha256).toBeNull();
+    expect(rec.id).toMatch(/^v/);
+    expect(rec.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(rec.visualDescriptions.length).toBe(1);
+    expect(rec.visualDescriptions[0].checked).toBe(true);
+  });
+  it('rejects payloads without a real Blob', () => {
+    expect(VS.vsBuildStudioTakeRecord(null)).toBeNull();
+    expect(VS.vsBuildStudioTakeRecord({})).toBeNull();
+    expect(VS.vsBuildStudioTakeRecord({ blob: 'not-a-blob' })).toBeNull();
+  });
+});
+
+// ─── Batch-1 hardening wiring (2026-07-09) ───────────────────────────────────
+// Take persistence + always-on bridge receiver in the module; export cleanup,
+// cancel, and honest real-time ETA in the popup. Structural pins: these prove
+// the wiring exists in the shipped source (the runtime paths need a browser).
+describe('take persistence + export hardening wiring', () => {
+  const moduleText = () => readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
+  const popup = () => readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf-8');
+  it('module keeps takes at module scope, mirrored into IndexedDB, with a per-tab bridge token', () => {
+    const m = moduleText();
+    expect(m).toContain("var VS_TOKEN_KEY = 'allo_vs_bridge_token';");
+    expect(m).toContain("var VS_TAKE_DB = 'alloflow_video_studio';");
+    expect(m).toContain('function vsTakeDb(op, arg)');
+    expect(m).toContain('var vsTakeStore = {');
+    expect(m).toContain('function vsBackgroundBridgeReceiver(ev)');
+    expect(m).toContain("window.addEventListener('message', vsBackgroundBridgeReceiver);");
+    // The background receiver is the SOLE video ingester and still acks.
+    expect(m).toContain("ev.source.postMessage({ bridge: vsTakeStore.token, type: 'allostudio-video-ack' }, STUDIO_ORIGIN);");
+    expect(m).toContain('vsTakeStore.setToken(bridgeToken);');
+    // The component no longer ingests videos directly.
+    expect(m).not.toContain("ev.data.type === 'allostudio-video' && ev.data.payload");
+  });
+  it('module gallery gains remove + persistence note', () => {
+    const m = moduleText();
+    expect(m).toContain("T('video_studio.remove', '🗑 Remove')");
+    expect(m).toContain("T('video_studio.remove_confirm'");
+    expect(m).toContain("T('video_studio.gallery_note'");
+    expect(m).toContain('removeTake: function (id)');
+  });
+  it('popup re-encode cleans up on every exit and is cancelable', () => {
+    const html = popup();
+    expect(html).toContain('function exportAbortError(message)');
+    expect(html).toContain('function cancelActiveExport()');
+    expect(html).toContain("addEventListener('click', cancelActiveExport)");
+    expect(html).toContain('var activeReencodeCancel = null;');
+    expect(html).toContain('var settled = false, canceled = false, cleanupFns = [];');
+    // Blob URLs for narration/clips/music are tracked and revoked.
+    expect(html).toContain('mixUrls.push(el.src);');
+    expect(html).toContain("mixUrls.splice(0).forEach(function (u) { try { URL.revokeObjectURL(u); } catch (_) {} });");
+    // A failed original-audio tap warns instead of shipping a silent file.
+    expect(html).toContain('the original audio could not be captured for this export');
+    // Honest real-time ETA + stage-aware cancel label.
+    expect(html).toContain('the export plays your video through in real time');
+    expect(html).toContain("$('exportCancelBtn').textContent = active ? 'Cancel export' : 'Cancel MP4 conversion';");
+  });
+});

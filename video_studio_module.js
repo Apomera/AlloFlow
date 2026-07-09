@@ -2458,7 +2458,63 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   // [VS_SHARED_END]
 
-  var VS_HELPERS = { vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav };
+  // Module-only (NOT part of the shared block): normalize an allostudio-video
+  // payload into a storable take record. Every field is sanitized/clamped the
+  // same way the gallery always did; the object URL is deliberately NOT here —
+  // whoever renders the record creates (and revokes) its own URL, so records
+  // can live in IndexedDB across panel closes and app reloads.
+  function vsBuildStudioTakeRecord(p) {
+    if (!p || typeof Blob === 'undefined' || !(p.blob instanceof Blob)) return null;
+    var dur = Number(p.duration) || 0;
+    var rawVisualDescriptions = Array.isArray(p.visualDescriptions) ? p.visualDescriptions : [];
+    var visualDescriptions = vsSanitizeVisualDescriptions({ descriptions: rawVisualDescriptions }, dur).map(function (s, idx) {
+      s.checked = !!(rawVisualDescriptions[idx] && rawVisualDescriptions[idx].checked);
+      return s;
+    });
+    var rawChapters = Array.isArray(p.chapters) ? p.chapters : [];
+    var chapters = rawChapters.filter(function (c) { return c && isFinite(Number(c.start)) && String(c.title || '').trim(); }).map(function (c) {
+      return { start: Math.max(0, Number(c.start) || 0), title: String(c.title || '').slice(0, 80) };
+    });
+    var inserts = vsSanitizeTeachingInserts(Array.isArray(p.inserts) ? p.inserts : [], dur);
+    var visualPrompts = (Array.isArray(p.visualPrompts) ? p.visualPrompts : []).filter(function (vp) { return vp && String(vp.prompt || '').trim(); }).map(function (vp) {
+      return { id: String(vp.id || '').slice(0, 40), start: Math.max(0, Number(vp.start) || 0), type: String(vp.type || 'image_prompt').slice(0, 40), label: String(vp.label || 'Visual support').slice(0, 90), prompt: String(vp.prompt || '').slice(0, 600), source: String(vp.source || '').slice(0, 40) };
+    });
+    var localizations = (Array.isArray(p.localizations) ? p.localizations : []).map(function (loc) {
+      return vsSanitizeLocalizedDraft(loc, dur);
+    }).filter(function (loc) {
+      return loc && (loc.captions.length || loc.narration.length || loc.inserts.length || loc.chapters.length || loc.visualDescriptions.length);
+    });
+    var musicBed = p.musicBed ? vsSanitizeMusicBed(p.musicBed, dur) : null;
+    if (musicBed) musicBed.blob = null;
+    var mediaCredits = vsSanitizeMediaCredits(Array.isArray(p.mediaCredits) ? p.mediaCredits : []);
+    var transcriptEdits = vsSanitizeTranscriptEdits(Array.isArray(p.transcriptEdits) ? p.transcriptEdits : [], dur);
+    var transcriptWords = vsSanitizeTranscriptWords(Array.isArray(p.transcriptWords) ? p.transcriptWords : [], dur);
+    var audioEdits = p.audioEdits ? vsBuildAudioEditManifest(Object.assign({}, p.audioEdits, { duration: dur })) : null;
+    if (audioEdits && !audioEdits.hasAudioEdits) audioEdits = null;
+    return {
+      id: 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      blob: p.blob,
+      vtt: (typeof p.vtt === 'string' && p.vtt) ? p.vtt : null,
+      visualDescriptions: visualDescriptions,
+      chapters: chapters,
+      transcriptEdits: transcriptEdits,
+      transcriptWords: transcriptWords,
+      inserts: inserts,
+      visualPrompts: visualPrompts,
+      localizations: localizations,
+      mediaCredits: mediaCredits,
+      musicBed: musicBed,
+      audioEdits: audioEdits,
+      title: String(p.title || 'Teacher video'),
+      duration: dur,
+      size: p.blob.size,
+      thumb: (typeof p.thumb === 'string') ? p.thumb : null,
+      sha256: null,
+      createdAt: new Date().toISOString()
+    };
+  }
+
+  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -2486,6 +2542,123 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       return String(Date.now()) + '-' + Math.random().toString(36).slice(2);
     }
   }
+
+  // ── Session take store + always-on bridge receiver ─────────────────────────
+  // The gallery component unmounts whenever the panel closes (CDNModuleGate
+  // renders null), which used to destroy every received take — and a video
+  // sent while the panel was closed vanished without an ack. Takes now live
+  // here at module scope for the whole session, mirrored best-effort into
+  // IndexedDB so they survive an app reload; the bridge token is kept in
+  // sessionStorage (per-tab) so a reload mid-recording can still accept and
+  // ack the popup's send. Video bytes still never leave the device.
+  var VS_TOKEN_KEY = 'allo_vs_bridge_token';
+  var VS_TAKE_DB = 'alloflow_video_studio';
+  var VS_TAKE_STORE_NAME = 'takes';
+  var VS_MAX_STORED_TAKES = 12;
+
+  function vsTakeDb(op, arg) {
+    return new Promise(function (resolve) {
+      var fallback = op === 'all' ? [] : null;
+      try {
+        if (!window.indexedDB) { resolve(fallback); return; }
+        var req = indexedDB.open(VS_TAKE_DB, 1);
+        req.onupgradeneeded = function () {
+          try { req.result.createObjectStore(VS_TAKE_STORE_NAME, { keyPath: 'id' }); } catch (_) {}
+        };
+        req.onerror = function () { resolve(fallback); };
+        req.onsuccess = function () {
+          var db = req.result;
+          try {
+            var tx = db.transaction(VS_TAKE_STORE_NAME, op === 'all' ? 'readonly' : 'readwrite');
+            var store = tx.objectStore(VS_TAKE_STORE_NAME);
+            var r = op === 'all' ? store.getAll() : op === 'put' ? store.put(arg) : store.delete(arg);
+            r.onsuccess = function () { resolve(op === 'all' ? (r.result || []) : true); try { db.close(); } catch (_) {} };
+            r.onerror = function () { resolve(fallback); try { db.close(); } catch (_) {} };
+          } catch (_) { resolve(fallback); try { db.close(); } catch (_2) {} }
+        };
+      } catch (_) { resolve(fallback); }
+    });
+  }
+
+  var vsTakeStore = {
+    takes: [],
+    studioWin: null,
+    token: (function () { try { return sessionStorage.getItem(VS_TOKEN_KEY) || null; } catch (_) { return null; } })(),
+    listeners: [],
+    subscribe: function (fn) {
+      var self = this;
+      self.listeners.push(fn);
+      return function () { var i = self.listeners.indexOf(fn); if (i >= 0) self.listeners.splice(i, 1); };
+    },
+    notify: function (kind, extra) {
+      this.listeners.slice().forEach(function (fn) { try { fn(kind, extra); } catch (_) {} });
+    },
+    setToken: function (token) {
+      this.token = token || null;
+      try { if (token) sessionStorage.setItem(VS_TOKEN_KEY, token); else sessionStorage.removeItem(VS_TOKEN_KEY); } catch (_) {}
+    },
+    addTake: function (rec) {
+      if (!rec || !rec.id) return;
+      var next = [rec].concat(this.takes);
+      var dropped = next.slice(VS_MAX_STORED_TAKES);
+      this.takes = next.slice(0, VS_MAX_STORED_TAKES);
+      vsTakeDb('put', rec);
+      dropped.forEach(function (d) { vsTakeDb('delete', d.id); });
+      this.notify('takes', { added: rec.id });
+    },
+    patchTake: function (id, patch) {
+      var found = null;
+      this.takes = this.takes.map(function (t) { if (t.id === id) { found = Object.assign({}, t, patch); return found; } return t; });
+      if (found) { vsTakeDb('put', found); this.notify('takes'); }
+    },
+    removeTake: function (id) {
+      var before = this.takes.length;
+      this.takes = this.takes.filter(function (t) { return t.id !== id; });
+      if (this.takes.length !== before) { vsTakeDb('delete', id); this.notify('takes'); }
+    }
+  };
+
+  // Hydrate from IndexedDB (survives an app reload; Canvas may clear it
+  // between sessions — that only costs reload-survival, not session-survival).
+  vsTakeDb('all').then(function (rows) {
+    var have = {};
+    vsTakeStore.takes.forEach(function (t) { have[t.id] = true; });
+    var restored = (rows || []).filter(function (r) { return r && r.id && !have[r.id] && typeof Blob !== 'undefined' && r.blob instanceof Blob; });
+    if (!restored.length) return;
+    restored.sort(function (a, b) { return String(b.createdAt || '').localeCompare(String(a.createdAt || '')); });
+    vsTakeStore.takes = vsTakeStore.takes.concat(restored).slice(0, VS_MAX_STORED_TAKES);
+    vsTakeStore.notify('takes');
+  });
+
+  // Sole ingester for allostudio-video: runs whether or not the panel is
+  // mounted. After an app reload the studio window reference is gone, but the
+  // sessionStorage bridge token (128-bit, per-tab) still proves the sender is
+  // our popup — re-adopt it so the send is accepted and acked, not dropped.
+  function vsBackgroundBridgeReceiver(ev) {
+    try {
+      if (!ev || !ev.data || typeof ev.data.type !== 'string') return;
+      if (!vsTakeStore.token || ev.data.bridge !== vsTakeStore.token) return;
+      if (ev.origin && ev.origin !== STUDIO_ORIGIN) return;
+      if (vsTakeStore.studioWin && !vsTakeStore.studioWin.closed && ev.source !== vsTakeStore.studioWin) return;
+      if ((!vsTakeStore.studioWin || vsTakeStore.studioWin.closed) && ev.source && typeof ev.source.postMessage === 'function') {
+        vsTakeStore.studioWin = ev.source;
+        vsTakeStore.notify('studio');
+      }
+      if (ev.data.type === 'allostudio-closed') {
+        vsTakeStore.studioWin = null;
+        vsTakeStore.setToken(null);
+        vsTakeStore.notify('studio');
+        return;
+      }
+      if (ev.data.type !== 'allostudio-video') return;
+      var rec = vsBuildStudioTakeRecord(ev.data.payload);
+      if (!rec) return;
+      vsTakeStore.addTake(rec);
+      sha256Hex(rec.blob).then(function (hex) { if (hex) vsTakeStore.patchTake(rec.id, { sha256: hex }); });
+      try { ev.source.postMessage({ bridge: vsTakeStore.token, type: 'allostudio-video-ack' }, STUDIO_ORIGIN); } catch (_) {}
+    } catch (_) {}
+  }
+  window.addEventListener('message', vsBackgroundBridgeReceiver);
 
   function studioUrlWithBridge(token) {
     try {
@@ -2911,74 +3084,61 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           studioWinRef.current = null;
           bridgeTokenRef.current = null;
           setStudioState('closed');
-        } else if (ev.data.type === 'allostudio-video' && ev.data.payload && ev.data.payload.blob instanceof Blob) {
-          var p = ev.data.payload;
-          var rawVisualDescriptions = Array.isArray(p.visualDescriptions) ? p.visualDescriptions : [];
-          var visualDescriptions = vsSanitizeVisualDescriptions({ descriptions: rawVisualDescriptions }, Number(p.duration) || 0).map(function (s, idx) {
-            s.checked = !!(rawVisualDescriptions[idx] && rawVisualDescriptions[idx].checked);
-            return s;
-          });
-          var rawChapters = Array.isArray(p.chapters) ? p.chapters : [];
-          var chapters = rawChapters.filter(function (c) { return c && isFinite(Number(c.start)) && String(c.title || '').trim(); }).map(function (c) {
-            return { start: Math.max(0, Number(c.start) || 0), title: String(c.title || '').slice(0, 80) };
-          });
-          var inserts = vsSanitizeTeachingInserts(Array.isArray(p.inserts) ? p.inserts : [], Number(p.duration) || 0);
-          var visualPrompts = (Array.isArray(p.visualPrompts) ? p.visualPrompts : []).filter(function (vp) { return vp && String(vp.prompt || '').trim(); }).map(function (vp) {
-            return { id: String(vp.id || '').slice(0, 40), start: Math.max(0, Number(vp.start) || 0), type: String(vp.type || 'image_prompt').slice(0, 40), label: String(vp.label || 'Visual support').slice(0, 90), prompt: String(vp.prompt || '').slice(0, 600), source: String(vp.source || '').slice(0, 40) };
-          });
-          var localizations = (Array.isArray(p.localizations) ? p.localizations : []).map(function (loc) {
-            return vsSanitizeLocalizedDraft(loc, Number(p.duration) || 0);
-          }).filter(function (loc) {
-            return loc && (loc.captions.length || loc.narration.length || loc.inserts.length || loc.chapters.length || loc.visualDescriptions.length);
-          });
-          var musicBed = p.musicBed ? vsSanitizeMusicBed(p.musicBed, Number(p.duration) || 0) : null;
-          if (musicBed) musicBed.blob = null;
-          var mediaCredits = vsSanitizeMediaCredits(Array.isArray(p.mediaCredits) ? p.mediaCredits : []);
-          var transcriptEdits = vsSanitizeTranscriptEdits(Array.isArray(p.transcriptEdits) ? p.transcriptEdits : [], Number(p.duration) || 0);
-          var transcriptWords = vsSanitizeTranscriptWords(Array.isArray(p.transcriptWords) ? p.transcriptWords : [], Number(p.duration) || 0);
-          var audioEdits = p.audioEdits ? vsBuildAudioEditManifest(Object.assign({}, p.audioEdits, { duration: Number(p.duration) || 0 })) : null;
-          if (audioEdits && !audioEdits.hasAudioEdits) audioEdits = null;
-          var vid = {
-            id: 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-            blob: p.blob,
-            url: URL.createObjectURL(p.blob),
-            vtt: (typeof p.vtt === 'string' && p.vtt) ? p.vtt : null,
-            visualDescriptions: visualDescriptions,
-            chapters: chapters,
-            transcriptEdits: transcriptEdits,
-            transcriptWords: transcriptWords,
-            inserts: inserts,
-            visualPrompts: visualPrompts,
-            localizations: localizations,
-            mediaCredits: mediaCredits,
-            musicBed: musicBed,
-            audioEdits: audioEdits,
-            title: String(p.title || 'Teacher video'),
-            duration: Number(p.duration) || 0,
-            size: p.blob.size,
-            thumb: (typeof p.thumb === 'string') ? p.thumb : null,
-            sha256: null,
-            createdAt: new Date().toISOString()
-          };
-          sha256Hex(p.blob).then(function (hex) {
-            if (hex) setVideos(function (cur) { return cur.map(function (v) { return v.id === vid.id ? Object.assign({}, v, { sha256: hex }) : v; }); });
-          });
-          setVideos(function (cur) { return [vid].concat(cur); });
-          // Ack so the Studio can honestly say "sent" — without this, a send
-          // while the panel is closed silently vanishes.
-          postToStudio(studioWinRef.current, { type: 'allostudio-video-ack' });
-          addToast(T('video_studio.received', 'Video received from the Studio — it stays on this device until you download it.'), 'success');
-          announce(T('video_studio.received_sr', 'Video received from the Studio.'));
         }
+        // NOTE: 'allostudio-video' is deliberately NOT handled here. The
+        // module-scope vsBackgroundBridgeReceiver is the sole ingester (it
+        // stores + acks even when this panel is closed or the app reloaded);
+        // this component just mirrors vsTakeStore via the subscription below.
       }
       window.addEventListener('message', onMsg);
       return function () { window.removeEventListener('message', onMsg); };
     }, []);
 
-    // Revoke object URLs on unmount only (videos live for the session).
+    // Mirror the module-scope take store. Records live at module scope (and
+    // best-effort in IndexedDB); object URLs are per-mount — created here on
+    // demand, revoked for vanished takes on every sync and all on unmount.
+    var urlMapRef = useRef({});
+    var syncVideosFromStore = useCallback(function () {
+      var map = urlMapRef.current;
+      var live = {};
+      vsTakeStore.takes.forEach(function (r) { live[r.id] = true; });
+      Object.keys(map).forEach(function (k) {
+        if (!live[k]) { try { if (map[k]) URL.revokeObjectURL(map[k]); } catch (_) {} delete map[k]; }
+      });
+      setVideos(vsTakeStore.takes.map(function (rec) {
+        if (!map[rec.id]) { try { map[rec.id] = URL.createObjectURL(rec.blob); } catch (_) { map[rec.id] = ''; } }
+        return Object.assign({}, rec, { url: map[rec.id] });
+      }));
+    }, []);
+    useEffect(function () {
+      var unsub = vsTakeStore.subscribe(function (kind, extra) {
+        if (kind === 'takes') {
+          syncVideosFromStore();
+          if (extra && extra.added) {
+            addToast(T('video_studio.received', 'Video received from the Studio — it stays on this device until you download it.'), 'success');
+            announce(T('video_studio.received_sr', 'Video received from the Studio.'));
+          }
+        } else if (kind === 'studio') {
+          studioWinRef.current = vsTakeStore.studioWin;
+          bridgeTokenRef.current = vsTakeStore.token;
+          setStudioState(vsTakeStore.studioWin ? 'open' : 'closed');
+        }
+      });
+      // Initial sync: re-adopt a studio window/token that outlived a previous
+      // mount (panel closed and reopened, or the app reloaded mid-recording).
+      if (!bridgeTokenRef.current && vsTakeStore.token) bridgeTokenRef.current = vsTakeStore.token;
+      if (!studioWinRef.current && vsTakeStore.studioWin && !vsTakeStore.studioWin.closed) {
+        studioWinRef.current = vsTakeStore.studioWin;
+        setStudioState('open');
+      }
+      syncVideosFromStore();
+      return unsub;
+    }, []);
     useEffect(function () {
       return function () {
-        setVideos(function (cur) { cur.forEach(function (v) { try { URL.revokeObjectURL(v.url); } catch (_) {} }); return cur; });
+        var map = urlMapRef.current;
+        urlMapRef.current = {};
+        Object.keys(map).forEach(function (k) { try { if (map[k]) URL.revokeObjectURL(map[k]); } catch (_) {} });
       };
     }, []);
 
@@ -3001,18 +3161,30 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var w = null;
       var bridgeToken = randomBridgeToken();
       bridgeTokenRef.current = bridgeToken;
+      vsTakeStore.setToken(bridgeToken);
       try { w = window.open(studioUrlWithBridge(bridgeToken), 'alloflow-video-studio', 'width=1320,height=860'); } catch (_) { w = null; }
       if (!w) {
         bridgeTokenRef.current = null;
+        vsTakeStore.setToken(null);
         setStudioState('blocked');
         addToast(T('video_studio.popup_blocked', 'The Studio window was blocked. Allow pop-ups for this page, then try again.'), 'error');
         return;
       }
       studioWinRef.current = w;
+      vsTakeStore.studioWin = w;
       // Watchdog: if no ready handshake, surface guidance instead of hanging.
       setTimeout(function () {
         setStudioState(function (cur) { return cur === 'opening' ? 'open' : cur; });
       }, 15000);
+    }, []);
+
+    var removeTake = useCallback(function (v) {
+      var ok = true;
+      try { ok = window.confirm(T('video_studio.remove_confirm', 'Remove this video from the gallery and this device? If you have not downloaded or bundled it, this copy is gone.')); } catch (_) {}
+      if (!ok) return;
+      vsTakeStore.removeTake(v.id);
+      addToast(T('video_studio.removed', 'Video removed.'), 'success');
+      announce(T('video_studio.removed_sr', 'Video removed from the gallery.'));
     }, []);
 
     var copyPackRef = useCallback(function (v) {
@@ -3271,6 +3443,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           ),
           // Gallery
           h('h3', { className: 'font-semibold text-slate-700 text-sm mb-2' }, T('video_studio.gallery', 'Videos from this session')),
+          videos.length > 0 && h('p', { className: 'text-xs text-slate-500 mb-2' },
+            T('video_studio.gallery_note', 'Kept on this device — they stay here (even if you close this panel) until you remove them.') +
+            ' ' + videos.length + ' · ' + fmtBytes(videos.reduce(function (s, v) { return s + (Number(v.size) || 0); }, 0))),
           videos.length === 0
             ? h('p', { className: 'text-sm text-slate-400 italic' }, T('video_studio.gallery_empty', 'No videos yet. Record one in the Studio window and press “Send to AlloFlow”.'))
             : h('ul', { className: 'space-y-3', role: 'list' }, videos.map(function (v) {
@@ -3313,7 +3488,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                         onClick: function () { copyPackRef(v); },
                         className: 'px-3 py-1.5 rounded-lg border border-indigo-300 text-indigo-700 text-xs font-semibold hover:bg-indigo-50',
                         title: T('video_studio.ref_title', 'Copies a small JSON reference (title, duration, checksum, thumbnail) — never the video bytes — for embedding in a resource pack.')
-                      }, T('video_studio.copy_ref', '📎 Copy pack reference'))
+                      }, T('video_studio.copy_ref', '📎 Copy pack reference')),
+                      h('button', {
+                        onClick: function () { removeTake(v); },
+                        className: 'px-3 py-1.5 rounded-lg border border-rose-300 text-rose-700 text-xs font-semibold hover:bg-rose-50',
+                        title: T('video_studio.remove_title', 'Removes this video from the gallery and this device. Files you already downloaded or bundled are not affected.')
+                      }, T('video_studio.remove', '🗑 Remove'))
                     )
                   )
                 );
