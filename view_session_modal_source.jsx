@@ -71,7 +71,19 @@ function SessionModal({
       try { return window.__alloBuildShareUrl(params); } catch (_) {}
     }
     try {
-      const url = new URL('https://prismflow-911fe.web.app/');
+      const url = new URL(window.location.href);
+      const protocol = String(url.protocol || '').toLowerCase();
+      const host = String(url.hostname || '').toLowerCase();
+      if (!/^https?:$/.test(protocol)
+        || host === 'localhost'
+        || host === '127.0.0.1'
+        || host.includes('gemini.google')
+        || host === 'prismflow-911fe.web.app'
+        || host === 'prismflow-911fe.firebaseapp.com') {
+        return '';
+      }
+      url.search = '';
+      url.hash = '';
       Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, String(value)));
       return url.toString();
     } catch (_) {
@@ -145,6 +157,12 @@ function SessionModal({
               Copy student join link <Copy size={12}/>
             </button>
             <p className="text-[11px] text-cyan-800 mt-2 text-center">QR students join this live session with AI generation off.</p>
+          </div>
+        )}
+        {!liveJoinUrl && (
+          <div className="mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left">
+            <p className="text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center">Student QR unavailable</p>
+            <p className="text-xs text-amber-900 text-center">This host is not configured as a student join path. Use the class code, local network link, or a district/student app URL.</p>
           </div>
         )}
         {lanJoinUrl && (

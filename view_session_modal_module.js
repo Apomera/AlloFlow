@@ -57,7 +57,14 @@ function SessionModal({
       }
     }
     try {
-      const url = new URL("https://prismflow-911fe.web.app/");
+      const url = new URL(window.location.href);
+      const protocol = String(url.protocol || "").toLowerCase();
+      const host = String(url.hostname || "").toLowerCase();
+      if (!/^https?:$/.test(protocol) || host === "localhost" || host === "127.0.0.1" || host.includes("gemini.google") || host === "prismflow-911fe.web.app" || host === "prismflow-911fe.firebaseapp.com") {
+        return "";
+      }
+      url.search = "";
+      url.hash = "";
       Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, String(value)));
       return url.toString();
     } catch (_) {
@@ -113,7 +120,7 @@ function SessionModal({
     },
     "Copy student join link ",
     /* @__PURE__ */ React.createElement(Copy, { size: 12 })
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800 mt-2 text-center" }, "QR students join this live session with AI generation off.")), lanJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1" }, "Local network join link"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800 mt-2 text-center" }, "QR students join this live session with AI generation off.")), !liveJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center" }, "Student QR unavailable"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900 text-center" }, "This host is not configured as a student join path. Use the class code, local network link, or a district/student app URL.")), lanJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1" }, "Local network join link"), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.copy"),

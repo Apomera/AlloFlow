@@ -532,10 +532,48 @@ if (typeof window !== 'undefined') {
     window.callGeminiAudio = callGeminiAudio;
 }
 const ALLO_QR_STUDENT_AI_OFF_KEY = 'alloflow_qr_student_ai_disabled';
-const ALLOFLOW_PUBLIC_STUDENT_BASE_URL = 'https://prismflow-911fe.web.app/';
+const ALLOFLOW_STUDENT_BASE_URL_KEY = 'alloflow_student_base_url';
+const ALLOFLOW_DEMO_STUDENT_HOSTS = ['prismflow-911fe.web.app', 'prismflow-911fe.firebaseapp.com'];
+const ALLO_QR_FIREBASE_CONFIG_PARAM = 'allo_fb';
 const ALLO_QR_CELL_SIZE = 5;
 const ALLO_QR_QUIET_ZONE = ALLO_QR_CELL_SIZE * 4;
 const ALLO_QR_SCRIPT_TIMEOUT_MS = 5000;
+function _alloReadEnv(name) {
+    try { return (typeof process !== 'undefined' && process.env && process.env[name]) || ''; } catch (_) { return ''; }
+}
+function _alloNormalizeShareBaseUrl(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    try {
+        const url = new URL(raw);
+        if (!/^https?:$/.test(String(url.protocol || '').toLowerCase())) return '';
+        url.search = '';
+        url.hash = '';
+        return url.toString();
+    } catch (_) {
+        return '';
+    }
+}
+function _alloGetConfiguredStudentBaseUrl() {
+    if (typeof window !== 'undefined') {
+        const explicit = _alloNormalizeShareBaseUrl(window.__ALLOFLOW_STUDENT_BASE_URL || '');
+        if (explicit) return explicit;
+        try {
+            const stored = _alloNormalizeShareBaseUrl(window.localStorage && window.localStorage.getItem(ALLOFLOW_STUDENT_BASE_URL_KEY));
+            if (stored) return stored;
+        } catch (_) {}
+    }
+    return _alloNormalizeShareBaseUrl(_alloReadEnv('REACT_APP_STUDENT_BASE_URL'));
+}
+function _alloHostIsKnownDemoHost(host) {
+    const normalized = String(host || '').trim().toLowerCase();
+    if (!normalized) return false;
+    const configured = _alloReadEnv('REACT_APP_DISALLOWED_STUDENT_HOSTS')
+        .split(',')
+        .map(item => item.trim().toLowerCase())
+        .filter(Boolean);
+    return ALLOFLOW_DEMO_STUDENT_HOSTS.includes(normalized) || configured.includes(normalized);
+}
 function _alloShareHostIsNotStudentReachable(url) {
     if (!url) return true;
     const protocol = String(url.protocol || '').toLowerCase();
@@ -546,11 +584,10 @@ function _alloShareHostIsNotStudentReachable(url) {
         || href.startsWith('about:')
         || host === 'localhost'
         || host === '127.0.0.1'
-        || host.includes('googleusercontent')
-        || host.includes('scf.usercontent')
+        || _alloHostIsKnownDemoHost(host)
         || host.includes('gemini.google')
         || host.includes('idx.google')
-        || host.includes('run.app');
+        || host.includes('code-server');
 }
 function _alloCleanFirestoreDocId(value, fallback = '') {
     const text = String(value || '').trim();
@@ -565,31 +602,101 @@ function _alloCleanQrAssignmentId(value) {
     const text = _alloCleanFirestoreDocId(value, '');
     return /^HW-[0-9a-f-]{36}$/i.test(text) ? text : '';
 }
+function _alloBase64UrlEncode(value) {
+    if (typeof btoa !== 'function') return '';
+    try {
+        const bytes = new TextEncoder().encode(String(value || ''));
+        let binary = '';
+        bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    } catch (_) {
+        return '';
+    }
+}
+function _alloBase64UrlDecode(value) {
+    if (typeof atob !== 'function') return '';
+    try {
+        let text = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
+        while (text.length % 4) text += '=';
+        const binary = atob(text);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+        return new TextDecoder().decode(bytes);
+    } catch (_) {
+        return '';
+    }
+}
+function _alloValidFirebaseConfig(config) {
+    return Boolean(config && typeof config === 'object' && config.apiKey && config.projectId && config.appId);
+}
+function _alloAttachFirebaseHandoff(url) {
+    try {
+        if (!url || typeof __firebase_config === 'undefined') return url;
+        const config = JSON.parse(String(__firebase_config || '{}'));
+        if (!_alloValidFirebaseConfig(config)) return url;
+        const encoded = _alloBase64UrlEncode(JSON.stringify(config));
+        if (!encoded) return url;
+        url.searchParams.set(ALLO_QR_FIREBASE_CONFIG_PARAM, encoded);
+        if (typeof __app_id !== 'undefined' && __app_id) {
+            const hostId = _alloCleanFirestoreDocId(__app_id, '');
+            if (hostId) {
+                url.searchParams.set('allo_app', hostId);
+                if (!url.searchParams.has('allo_host')) url.searchParams.set('allo_host', hostId);
+            }
+        }
+    } catch (_) {}
+    return url;
+}
+function _alloReadQrFirebaseHandoff() {
+    if (typeof window === 'undefined') return null;
+    try {
+        const params = new URLSearchParams(window.location.search || '');
+        const hasQrEntry = params.has('allo_join') || params.has('allo_live_join') || params.has('allo_assignment');
+        if (!hasQrEntry) return null;
+        const encoded = params.get(ALLO_QR_FIREBASE_CONFIG_PARAM) || '';
+        if (!encoded) return null;
+        const config = JSON.parse(_alloBase64UrlDecode(encoded) || '{}');
+        if (!_alloValidFirebaseConfig(config)) return null;
+        const appIdOverride = _alloCleanFirestoreDocId(params.get('allo_app') || params.get('allo_host') || params.get('hostAppId') || '', '');
+        if (!appIdOverride) return null;
+        return { firebaseConfig: config, appId: appIdOverride };
+    } catch (_) {
+        return null;
+    }
+}
+const _alloQrFirebaseHandoff = _alloReadQrFirebaseHandoff();
 function _buildAlloShareUrl(params = {}) {
-    const fallback = () => {
-        const url = new URL(ALLOFLOW_PUBLIC_STUDENT_BASE_URL);
-        Object.entries(params || {}).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
-        });
-        return url.toString();
-    };
-    if (typeof window === 'undefined') return fallback();
+    if (typeof window === 'undefined') return '';
     try {
         const current = new URL(window.location.href);
-        const url = _alloShareHostIsNotStudentReachable(current)
-            ? new URL(ALLOFLOW_PUBLIC_STUDENT_BASE_URL)
-            : current;
+        const configuredBase = _alloGetConfiguredStudentBaseUrl();
+        const usingConfiguredBase = Boolean(configuredBase);
+        const base = configuredBase || (_alloShareHostIsNotStudentReachable(current) ? '' : current.toString());
+        if (!base) return '';
+        const url = new URL(base);
+        if (_alloShareHostIsNotStudentReachable(url)) return '';
         url.search = '';
         url.hash = '';
         Object.entries(params || {}).forEach(([key, value]) => {
             if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
         });
+        if (usingConfiguredBase || typeof __firebase_config !== 'undefined') _alloAttachFirebaseHandoff(url);
         return url.toString();
     } catch (_) {
-        return fallback();
+        return '';
     }
 }
-if (typeof window !== 'undefined') window.__alloBuildShareUrl = _buildAlloShareUrl;
+if (typeof window !== 'undefined') {
+    window.__alloBuildShareUrl = _buildAlloShareUrl;
+    window.__alloSetStudentBaseUrl = (value) => {
+        const normalized = _alloNormalizeShareBaseUrl(value);
+        try {
+            if (normalized) window.localStorage?.setItem(ALLOFLOW_STUDENT_BASE_URL_KEY, normalized);
+            else window.localStorage?.removeItem(ALLOFLOW_STUDENT_BASE_URL_KEY);
+        } catch (_) {}
+        return normalized;
+    };
+}
 function _isQrStudentAiDisabled() {
     if (typeof window === 'undefined') return false;
     try {
@@ -632,12 +739,11 @@ function _loadAlloQrLibrary() {
     if (window.qrcode) return Promise.resolve(window.qrcode);
     if (window.__alloQrLibraryPromise) return window.__alloQrLibraryPromise;
     window.__alloQrLibraryPromise = new Promise((resolve, reject) => {
-        const publicQrSrc = new URL('qrcode.js', ALLOFLOW_PUBLIC_STUDENT_BASE_URL).toString();
-        let preferPublic = true;
-        try { preferPublic = _alloShareHostIsNotStudentReachable(new URL(window.location.href)); } catch (_) {}
-        const sources = Array.from(new Set(preferPublic
-            ? ['https://alloflow-cdn.pages.dev/qrcode.js', publicQrSrc, './qrcode.js']
-            : ['./qrcode.js', publicQrSrc, 'https://alloflow-cdn.pages.dev/qrcode.js']));
+        let preferLocal = true;
+        try { preferLocal = !_alloShareHostIsNotStudentReachable(new URL(window.location.href)); } catch (_) {}
+        const sources = Array.from(new Set(preferLocal
+            ? ['./qrcode.js', 'https://alloflow-cdn.pages.dev/qrcode.js']
+            : ['https://alloflow-cdn.pages.dev/qrcode.js', './qrcode.js']));
         let index = 0;
         const tryNext = () => {
             if (window.qrcode) { resolve(window.qrcode); return; }
@@ -919,17 +1025,20 @@ async function loadWordAudioBank() {
     return;
 }
 
-const firebaseConfig = typeof __firebase_config !== 'undefined'
-  ? JSON.parse(__firebase_config)
-  : {
-      apiKey: process.env.REACT_APP_API_KEY || '',
-      authDomain: process.env.REACT_APP_AUTH_DOMAIN || '',
-      projectId: process.env.REACT_APP_PROJECT_ID || '',
-      storageBucket: process.env.REACT_APP_STORAGE_BUCKET || '',
-      messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID || '',
-      appId: process.env.REACT_APP_APP_ID || '',
-      measurementId: process.env.REACT_APP_MEASUREMENT_ID || '',
-    };
+const _alloRuntimeAppId = (_alloQrFirebaseHandoff && _alloQrFirebaseHandoff.appId)
+  || (typeof __app_id !== 'undefined' ? __app_id : (process.env.REACT_APP_APP_ID || 'default-app-id'));
+const firebaseConfig = (_alloQrFirebaseHandoff && _alloQrFirebaseHandoff.firebaseConfig)
+  || (typeof __firebase_config !== 'undefined'
+    ? JSON.parse(__firebase_config)
+    : {
+        apiKey: process.env.REACT_APP_API_KEY || '',
+        authDomain: process.env.REACT_APP_AUTH_DOMAIN || '',
+        projectId: process.env.REACT_APP_PROJECT_ID || '',
+        storageBucket: process.env.REACT_APP_STORAGE_BUCKET || '',
+        messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID || '',
+        appId: process.env.REACT_APP_APP_ID || '',
+        measurementId: process.env.REACT_APP_MEASUREMENT_ID || '',
+      });
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
@@ -975,7 +1084,7 @@ const _initAlloData = async () => {
                 firebaseApp,
                 firestoreDb: db,
                 firebaseAuth: auth,
-                appId: typeof __app_id !== 'undefined' ? __app_id : (process.env?.REACT_APP_APP_ID || 'default-app-id'),
+                appId: _alloRuntimeAppId,
                 debugLog,
                 warnLog,
             });
@@ -988,8 +1097,8 @@ const _initAlloData = async () => {
     }
 };
 _initAlloData();
-const appId = typeof __app_id !== 'undefined' ? __app_id : (process.env.REACT_APP_APP_ID || 'default-app-id');
-const apiKey = typeof __firebase_config !== 'undefined'
+const appId = _alloRuntimeAppId;
+const apiKey = (typeof __firebase_config !== 'undefined' || _alloQrFirebaseHandoff)
   ? ""
   : (process.env.REACT_APP_GEMINI_API_KEY || '');
 const fisherYatesShuffle = (arr) => {
@@ -11436,6 +11545,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       try {
           const assignmentId = 'HW-' + generateUUID();
           const title = String(sourceTopic || generatedContent?.title || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
+          const shareUrl = buildAlloShareUrl({ allo_assignment: assignmentId, allo_host: appId, allo_ai: 'off' });
+          if (!shareUrl) {
+              addToast('Homework QR is unavailable from this host. Configure a student app URL or use export sharing.', 'error');
+              return null;
+          }
           const uploadedResources = await uploadSessionAssets(appId, resourcesToAssign, assignmentId);
           const prepared = prepareSessionResourcesForWrite(uploadedResources || resourcesToAssign);
           const assignmentRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', assignmentId);
@@ -11460,8 +11574,6 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               roster: {},
               version: 1,
           }));
-          const shareUrl = buildAlloShareUrl({ allo_assignment: assignmentId, allo_host: appId, allo_ai: 'off' });
-          if (!shareUrl) throw new Error('Could not build assignment URL');
           copyToClipboard(shareUrl);
           setQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length || resourcesToAssign.length });
           addToast('Homework QR ready. Students open teacher-prepared resources with AI generation off.', 'success');
@@ -22584,6 +22696,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // Holds a command the bot chat has PROPOSED (via a confirm chip) but not yet
   // run. Nothing executes until the user clicks "Do it" — see handleSendUDLMessage.
   const _pendingBotCmdRef = useRef(null);
+  // Agentic plans (2026-07-07, docs/AGENTIC_ALLOBOT_DESIGN.md): a proposed
+  // multi-step plan awaiting the teacher's confirm chip, mirroring
+  // _pendingBotCmdRef. {steps, originalText}. Never runs without confirm.
+  const _pendingBotPlanRef = useRef(null);
   const _alloCmdCtx = () => {
     const ctx = {
       t, addToast, callGemini,
@@ -22952,6 +23068,51 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       _pendingBotCmdRef.current = null;
     }
 
+    // (1.5) Resolving a pending multi-step PLAN chip (agentic plans,
+    // 2026-07-07). Same consent contract as the single-command chip: the
+    // plan proposed in the previous turn runs ONLY on an explicit confirm.
+    // Steps execute sequentially through runPlan (fresh ctx + when-guard
+    // re-check per step; destructive steps never auto-run), and each
+    // step's start/finish is narrated into the chat as it happens.
+    const _pendingPlan = _pendingBotPlanRef.current;
+    if (_pendingPlan) {
+      const _reply = String(_rawUtter).trim().toLowerCase();
+      const _isRun = _rawUtter === '__allo_plan_run' || ['yes','yeah','yep','ok','okay','do it','run it','run all','go'].indexOf(_reply) >= 0;
+      const _isSkip = _rawUtter === '__allo_plan_skip' || ['no','nope','just chat','cancel','chat','nevermind','never mind'].indexOf(_reply) >= 0;
+      if (_isRun || _isSkip) {
+        _pendingBotPlanRef.current = null;
+        setUdlInput('');
+        if (_isRun && _AC && typeof _AC.runPlan === 'function') {
+          const _steps = _pendingPlan.steps;
+          setUdlMessages(prev => [...prev, { role: 'model', text: '▶ ' + (t('chat_guide.plan_running') || 'Running the plan — I’ll report each step here.') }]);
+          try {
+            const _pr = await _AC.runPlan(() => _alloCmdCtx(), _steps, {
+              onStep: (i, phase, cmd, narr) => {
+                if (phase === 'start') { setUdlMessages(prev => [...prev, { role: 'model', text: '⏳ ' + (i + 1) + '/' + _steps.length + ' — ' + ((cmd && cmd.label) || 'working') + '…' }]); }
+                else {
+                  setUdlMessages(prev => [...prev, { role: 'model', text: '✅ ' + (i + 1) + '/' + _steps.length + ' — ' + (narr || 'Done.') }]);
+                  try { if (window.alloAnnounce) window.alloAnnounce(narr || (((cmd && cmd.label) || 'Step') + ' done.')); } catch (_) {}
+                }
+              }
+            });
+            if (_pr && _pr.ok) {
+              setUdlMessages(prev => [...prev, { role: 'model', text: '🎉 ' + (t('chat_guide.plan_done') || 'All steps finished.') }]);
+              try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_done') || 'All steps finished.'); } catch (_) {}
+            } else {
+              setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_hint') || 'The finished steps are kept — tell me to continue with the rest when you’re ready.') }]);
+            }
+          } catch (_) {
+            setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_failed') || 'The plan stopped early.') }]);
+          }
+          return;
+        }
+        // "Just chat" — answer the original message conversationally.
+        return _sendUdlToChat(_pendingPlan.originalText);
+      }
+      // Any other message cancels the pending plan and is handled below.
+      _pendingBotPlanRef.current = null;
+    }
+
     // (2) If the last bot message is an on-screen chooser (the pack-choice
     //     buttons OR our own confirm chip), the reply belongs to that chooser —
     //     hand it straight to the chat module, never the command router.
@@ -22984,6 +23145,37 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
             if (!manualText) setUdlInput('');
             try { if (window.alloAnnounce) window.alloAnnounce(_match.narration); } catch (_) {}
             return;
+          }
+          // (3.5) Multi-step PLAN preview (agentic plans, 2026-07-07). Only
+          // when the single-command router found nothing, the utterance
+          // reads as a sequence (cheap deterministic smell test — no AI
+          // call otherwise), and we're in teacher mode. planUtterance maps
+          // the ask to 2–6 registry commands; like the single-command chip,
+          // a plan only PROPOSES — nothing runs until "Run all".
+          if ((!_match || (!_match.preview && !_match.handled)) &&
+              typeof _AC.planUtterance === 'function' && typeof _AC.looksMultiStep === 'function' &&
+              _AC.looksMultiStep(_rawUtter)) {
+            const _planCtx = _alloCmdCtx();
+            if (_planCtx.isTeacherMode) {
+              const _steps = await _AC.planUtterance(_planCtx, _rawUtter);
+              if (_steps && _steps.length >= 2) {
+                _pendingBotPlanRef.current = { steps: _steps, originalText: _rawUtter };
+                if (!manualText) setUdlInput('');
+                const _planCmds = (typeof _AC.buildAlloCommands === 'function') ? _AC.buildAlloCommands(_planCtx) : [];
+                const _planLines = _steps.map((s, i) => {
+                  const c = _planCmds.find((x) => x.id === s.commandId) || {};
+                  const pKeys = s.params ? Object.keys(s.params).filter((k) => s.params[k] != null && s.params[k] !== '') : [];
+                  const p = pKeys.length ? (' — ' + pKeys.map((k) => k + ': ' + s.params[k]).join(', ')) : '';
+                  return (i + 1) + '. ' + (c.icon ? c.icon + ' ' : '') + (c.label || s.commandId) + p;
+                }).join('\n');
+                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: (t('chat_guide.plan_confirm') || 'That takes a few steps. Here’s my plan:') + '\n\n' + _planLines + '\n\n' + (t('chat_guide.plan_confirm2') || 'Run all steps? I’ll report each one as it finishes.'), choices: [
+                  { label: '▶ ' + (t('chat_guide.plan_run') || 'Run all'), value: '__allo_plan_run' },
+                  { label: '💬 ' + (t('chat_guide.plan_skip') || 'Just chat'), value: '__allo_plan_skip' }
+                ] }]);
+                try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_confirm_aria') || 'I proposed a multi-step plan. Confirm to run it, or keep chatting.'); } catch (_) {}
+                return;
+              }
+            }
           }
         }
       } catch (_) { /* the router must never break the chat */ }
