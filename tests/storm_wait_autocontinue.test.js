@@ -99,7 +99,8 @@ describe('host auto-continue wiring (AlloFlowANTI)', () => {
     expect(anti).toContain("const waitForGeminiCalm = (_docPipeline && _docPipeline.waitForGeminiCalm) ? _docPipeline.waitForGeminiCalm : async () => ({ calm: true, waitedMs: 0 });");
   });
   it('each round awaits calm BEFORE firing its calls, with a ticking status (disarms the dead-man switch)', () => {
-    const waitIdx = anti.indexOf('await waitForGeminiCalm({ maxWaitMs: 240000, onTick:');
+    // H3 (2026-07-09): the wait also carries shouldAbort so a Stop press exits it within seconds.
+    const waitIdx = anti.indexOf('await waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort:');
     expect(waitIdx).toBeGreaterThan(-1);
     const fireIdx = anti.indexOf("aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-'", waitIdx);
     expect(fireIdx).toBeGreaterThan(waitIdx); // wait precedes the round's calls

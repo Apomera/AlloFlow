@@ -18314,11 +18314,16 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // once the storm passes (bounded, then it proceeds regardless, only ever slower). The ticking
         // status ALSO keeps the dead-man switch (a frozen-step detector) from false-firing meanwhile.
         try {
-          await waitForGeminiCalm({ maxWaitMs: 240000, onTick: (w) => {
+          await waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort: () => pdfAutoContinueAbortRef.current || _genStale(), onTick: (w) => {
             const _ws = Math.max(1, Math.ceil((((w && w.cooldownRemainingMs) || 5000)) / 1000));
             setPdfFixStep(t('pdf_audit.storm_wait_round', { round: round + 1, max: maxRounds, s: _ws }) || ('Canvas is rate-limiting — pausing before round ' + (round + 1) + '/' + maxRounds + ' so calls are not wasted (rechecking in ~' + _ws + 's; nothing is skipped, the run just takes longer)'));
           } });
         } catch (_) {}
+        // H3 (deep dive 2026-07-09): the storm wait can hold this spot for up to 4 minutes — a Stop
+        // press or watchdog invalidation DURING it used to go unnoticed until AFTER the next full
+        // round had fired into the storm (and the post-round check then discarded its work anyway).
+        // Re-check before firing; shouldAbort above also exits the wait itself within seconds.
+        if (pdfAutoContinueAbortRef.current || _genStale()) break;
         const _acDetail = _vio > 0
           ? (t(_vio === 1 ? 'pdf_audit.violation_one' : 'pdf_audit.violation_other', { count: _vio }) || (_vio + ' violation' + (_vio !== 1 ? 's' : '')))
           : (t(_aiIssues.length === 1 ? 'pdf_audit.ai_issue_one' : 'pdf_audit.ai_issue_other', { count: _aiIssues.length }) || (_aiIssues.length + ' AI-flagged issue' + (_aiIssues.length !== 1 ? 's' : '')));

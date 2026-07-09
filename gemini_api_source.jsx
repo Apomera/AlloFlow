@@ -50,7 +50,10 @@ const createGeminiAPI = (deps) => {
           : perDayHint
             ? 'Gemini API daily quota reached — resolves at midnight Pacific time.'
             : 'Gemini API rate or quota limit hit. May be a per-minute burst (clears in seconds) or a daily quota (resolves at midnight Pacific) — try again in a minute first.';
-        return { kind: 'quota', userMessage, model: null };
+        // Carry the per-minute/per-day evidence on the classification so downstream retry layers
+        // can treat a per-minute burst as a throttle (retryable) without re-parsing the raw body
+        // (which _throwClassified replaces with the API_QUOTA_EXHAUSTED sentinel).
+        return { kind: 'quota', userMessage, model: null, perMinute: perMinHint, perDay: perDayHint };
       }
       // Auth: HTTP 401 + the documented Gemini codes.
       if (
@@ -65,7 +68,7 @@ const createGeminiAPI = (deps) => {
         // and permission denials. If the body actually mentions quota, treat
         // it as quota; otherwise as auth.
         if (lower.includes('quota') || lower.includes('rate')) {
-          return { kind: 'quota', userMessage: 'Gemini API rate or quota limit hit — try again in a minute first; if it persists, you may have hit the daily quota.', model: null };
+          return { kind: 'quota', userMessage: 'Gemini API rate or quota limit hit — try again in a minute first; if it persists, you may have hit the daily quota.', model: null, perMinute: false, perDay: false };
         }
         // 401 handling, in plain language. In Canvas the app auto-injects the key each session —
         // the user never manages one — so a 401 there is almost always a brief rate-limit / hiccup,

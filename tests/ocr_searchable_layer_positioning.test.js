@@ -62,15 +62,20 @@ describe('_distributeCallsToRuns — positioned words mapped onto per-leaf runs 
 describe('#H: per-leaf positioned draw wiring — source pins', () => {
   it('the per-leaf path draws POSITIONED words (real x/y) inside each run BDC/EMC when boxes exist', () => {
     expect(src).toContain('const _dist = _distributeCallsToRuns(_runs, _posCalls);');
-    expect(src).toContain('try { _drawPositionedRunWord(_txt, _c); _pageDrewAny = true; _posDrew = true; }');
+    // H1 (2026-07-09): words are pre-folded into _grps before any operator is committed
+    expect(src).toContain('try { _drawPositionedRunWord(_w.txt, _c); _pageDrewAny = true; }');
     expect(src).toContain('_PLx.setTextMatrix(a * cs, a * sn, -sn, cs, _c.x, _c.y)');
     // still one BDC(role, mcid) + EMC per run — the validated tag structure is unchanged
-    expect(src).toContain('_PLx.PDFOperatorNames.BeginMarkedContentSequence,\n                        [PDFName.of(_run.role || \'P\'), context.obj({ MCID: PDFNumber.of(_run.mcid) })]');
+    expect(src).toContain("[PDFName.of(g.run.role || 'P'), context.obj({ MCID: PDFNumber.of(g.run.mcid) })]");
   });
   it('is fail-safe: gated on _perWord, and any failure / no-boxes falls back to the block layout', () => {
     expect(src).toContain('let _posDrew = false;');
     expect(src).toContain('if (_perWord) {');
-    expect(src).toContain('} catch (_posErr) { _posDrew = false;');
+    // H1 (2026-07-09): drawability is decided BEFORE emission (_anyDrawable); once BDC/EMC are
+    // committed the catch KEEPS them — the old `_posDrew = false` reset made the block fallback
+    // re-emit the SAME MCIDs (the §14.7.4 multi-claim this per-leaf path exists to retire).
+    expect(src).toContain('const _anyDrawable = _grps.some((g) => g.words.some((w) => w.txt.trim()));');
+    expect(src).not.toContain('} catch (_posErr) { _posDrew = false;');
     expect(src).toContain('if (!_posDrew) {');
     // the block-layout fallback still uses _alloOcrBlockLayout top-down (unchanged behavior)
     expect(src).toContain("const _layout = _alloOcrBlockLayout(_runs.map(r => r.text || ' ').join('\\n')");

@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -3460,6 +3460,10 @@ var createDocPipeline = function(deps) {
   // can never hang; on timeout it returns calm:false and the caller PROCEEDS anyway — the run only
   // ever gets slower, never stopped. onTick fires on every wait step so the host can keep its status
   // line moving (its dead-man switch triggers on a FROZEN step). Exact no-op when the gate is calm.
+  // shouldAbort (H3, deep dive 2026-07-09): an optional predicate polled on every wait step — when it
+  // turns true (user pressed Stop / the run generation went stale) the wait exits IMMEDIATELY with
+  // {calm:false, aborted:true} instead of holding the caller for up to maxWaitMs. Without it a Stop
+  // pressed during the wait was invisible until the wait's own bound expired.
   var waitForGeminiCalm = async function (opts) {
     var o = opts || {};
     var maxWaitMs = (typeof o.maxWaitMs === 'number') ? Math.max(0, o.maxWaitMs) : 240000;
@@ -3467,6 +3471,10 @@ var createDocPipeline = function(deps) {
     var _sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
     var t0 = _now();
     var probed = false;
+    var _aborted = function () {
+      if (typeof o.shouldAbort !== 'function') return false;
+      try { return !!o.shouldAbort(); } catch (_) { return false; }
+    };
     var _tick = function (probing) {
       if (typeof o.onTick !== 'function') return;
       try { var ti = _geminiThrottleInfo(); ti.waitedMs = _now() - t0; ti.maxWaitMs = maxWaitMs; ti.probing = !!probing; o.onTick(ti); } catch (_) {}
@@ -3475,6 +3483,7 @@ var createDocPipeline = function(deps) {
     if (!inf0.storming) { var _c0 = { calm: true, waitedMs: 0 }; return _c0; }
     warnLog('[GeminiGate] wait-not-stop: storm active (cooldown ' + Math.round(inf0.cooldownRemainingMs / 1000) + 's, auth streak ' + inf0.authStreak + ', transient streak ' + inf0.transientStreak + ') — waiting for calm instead of firing into it (bounded at ' + Math.round(maxWaitMs / 1000) + 's; nothing is skipped)');
     while (_now() - t0 < maxWaitMs) {
+      if (_aborted()) { var _cAb = { calm: false, waitedMs: _now() - t0, aborted: true }; warnLog('[GeminiGate] wait-not-stop: caller aborted after ' + Math.round(_cAb.waitedMs / 1000) + 's — exiting the wait immediately'); return _cAb; }
       _pulsePipelineWatchdog(); // waiting IS pipeline activity — keep the idle watchdog fed
       var inf = _geminiThrottleInfo();
       if (inf.cooldownRemainingMs > 0) {
@@ -3515,11 +3524,26 @@ var createDocPipeline = function(deps) {
   var _pulsePipelineWatchdog = function () {
     try { if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('alloflow:pipeline-warn', { detail: { ts: (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0, tag: 'Throttle', msg: 'retry/cooldown — pipeline alive' } })); } catch (_) {}
   };
+  // Quota-class errors reach the pipeline REWRITTEN by gemini_api's _throwClassified: the message
+  // becomes the 'API_QUOTA_EXHAUSTED' sentinel (raw body text survives only in err.originalMessage,
+  // per-minute/per-day evidence in err.classification). A per-MINUTE 429 burst is a THROTTLE — it
+  // eases in seconds — and only an explicit per-DAY quota is genuinely permanent. Ambiguous quota
+  // errors lean throttle: the classifier's own user copy says "try again in a minute first".
+  // (deep dive 2026-07-09 H2 — the old message-regex patterns below could never match the sentinel,
+  // so 429 storms bypassed the breaker, defer-and-revisit, and the circle-back re-audit entirely.)
+  var _isBurstQuotaErr = function (e) {
+    if (!e || !e.isQuota) return false;
+    var cls = e.classification || {};
+    return !cls.perDay;
+  };
   // Was this error a Canvas THROTTLE (vs a content/config problem)? Drives defer-and-revisit: a chunk that
   // failed on a throttle is worth revisiting after a pause (the rate-limit eases over time); a content
-  // rejection is not. (2026-06-21)
+  // rejection is not. (2026-06-21; quota-burst + originalMessage coverage 2026-07-09)
   var _isThrottleErr = function (e) {
-    return !!(e && (e.canvasTransientAuth || (e.message && /API_AUTH_FAILED|RESOURCE_EXHAUSTED|throttle|rate[\s-]?limit|\b429\b|Empty response body|Timeout/i.test(e.message))));
+    if (!e) return false;
+    if (e.canvasTransientAuth || _isBurstQuotaErr(e)) return true;
+    var _re = /API_AUTH_FAILED|RESOURCE_EXHAUSTED|throttle|rate[\s-]?limit|\b429\b|Empty response body|Timeout/i;
+    return !!((e.message && _re.test(e.message)) || (e.originalMessage && _re.test(e.originalMessage)));
   };
   // Per-attempt gated call with breaker-aware retry. EACH attempt re-acquires a slot, so a tripped
   // breaker (reduced cap + cooldown) also throttles the retries. Canvas-auth (transient 401/403)
@@ -3541,14 +3565,20 @@ var createDocPipeline = function(deps) {
         // Canvas 401/403 is almost always a brief throttle, NOT a dead key — classifier flags it.
         var _canvasAuthRetry = err && err.canvasTransientAuth && !err.isQuota && !err.isConfig;
         if (isPermanent && _canvasAuthRetry) isPermanent = false;
+        // H2 (deep dive 2026-07-09): a per-minute/ambiguous 429 quota is a rate-limit that eases in
+        // seconds, not a permanent condition — give it the SAME breaker + jittered-backoff treatment
+        // as a Canvas throttle instead of zero retries. Explicit per-DAY quota stays permanent.
+        var _burstQuota = isPermanent && _isBurstQuotaErr(err);
+        if (_burstQuota) { isPermanent = false; _canvasAuthRetry = true; }
         if (isPermanent) { warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (err.message || 'permanent error') + ') — skipping retry (auth/quota/config errors do not change between calls)'); throw err; }
         if (_canvasAuthRetry) {
+          var _throttleKind = _burstQuota ? 'Rate-limit (429/quota burst)' : 'Canvas throttle';
           _geminiNoteAuthFail(); // trip/escalate the breaker so this AND subsequent calls back off
-          if (n >= _GEMINI_AUTH_RETRIES) { warnLog('[Retry] ' + (label || 'API call') + ' — Canvas throttle persisted through ' + _GEMINI_AUTH_RETRIES + ' retries; giving up this call'); throw err; }
+          if (n >= _GEMINI_AUTH_RETRIES) { warnLog('[Retry] ' + (label || 'API call') + ' — ' + _throttleKind + ' persisted through ' + _GEMINI_AUTH_RETRIES + ' retries; giving up this call'); throw err; }
           // Jittered backoff (2026-06-21): ±30% randomization so a batch of calls that all 401 at once
           // don't retry in lockstep and re-storm the proxy on the same tick.
           var _backoff = Math.round(Math.min(20000, 2500 * Math.pow(2, n)) * (0.7 + Math.random() * 0.6));
-          warnLog('[Retry] ' + (label || 'API call') + ' Canvas throttle — retry ' + (n + 1) + '/' + _GEMINI_AUTH_RETRIES + ' after ' + _backoff + 'ms');
+          warnLog('[Retry] ' + (label || 'API call') + ' ' + _throttleKind + ' — retry ' + (n + 1) + '/' + _GEMINI_AUTH_RETRIES + ' after ' + _backoff + 'ms');
           _pulsePipelineWatchdog(); // a retry is activity — keep the dead-man watchdog from clearing a throttled-but-alive run (fix A)
           return new Promise(function(r) { setTimeout(r, _backoff); }).then(function() { return _attempt(n + 1); });
         }
@@ -22238,22 +22268,51 @@ tr { page-break-inside: avoid; }
                   const _posCalls = _ocrWordsToDrawCalls(_ocrWords, sz.height, _wordDrawOpts);
                   if (_posCalls.length) {
                     const _dist = _distributeCallsToRuns(_runs, _posCalls);
-                    for (const _grp of _dist) {
-                      const _run = _grp.run;
-                      const _bdc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.BeginMarkedContentSequence,
-                        [PDFName.of(_run.role || 'P'), context.obj({ MCID: PDFNumber.of(_run.mcid) })]);
-                      const _emc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.EndMarkedContent, []);
-                      page.pushOperators(_bdc);
-                      for (const _c of _grp.calls) {
-                        const _txt = _fold ? _toWinAnsi(_c.text) : _c.text;
-                        if (!_txt.trim()) continue;
-                        try { _drawPositionedRunWord(_txt, _c); _pageDrewAny = true; _posDrew = true; }
-                        catch (_dErr) { try { const _h = await _getHelv(); if (_h) { page.drawText(_toWinAnsi(_c.text), { x: _c.x, y: _c.y, size: _c.size, font: _h, opacity: 0 }); _pageDrewAny = true; _posDrew = true; } } catch (_) {} }
+                    // H1 (deep dive 2026-07-09): decide drawability BEFORE emitting any BDC. The old
+                    // shape pushed one BDC/EMC pair per run and only then discovered every word folds
+                    // to '' (non-Latin scan whose Unicode font failed to load) — _posDrew stayed false
+                    // and the block fallback below re-emitted the SAME MCIDs, so two marked-content
+                    // sequences claimed one MCID (ISO 32000 §14.7.4 — the exact multi-claim this
+                    // per-leaf path exists to retire). Pre-folding here also moves the only fold that
+                    // used to run BETWEEN BDC and EMC out of operator-emitting code (a throw there
+                    // left an UNBALANCED BDC), and pre-building the operators means construction
+                    // failures fall back cleanly before anything is committed. Folded-away chars are
+                    // tallied into _ocrDroppedChars (was silently 0 on this DEFAULT scanned path, so
+                    // the non-Latin coverage warning never fired — honesty restore).
+                    const _grps = _dist.map((g) => ({
+                      run: g.run,
+                      bdc: _PLx.PDFOperator.of(_PLx.PDFOperatorNames.BeginMarkedContentSequence,
+                        [PDFName.of(g.run.role || 'P'), context.obj({ MCID: PDFNumber.of(g.run.mcid) })]),
+                      emc: _PLx.PDFOperator.of(_PLx.PDFOperatorNames.EndMarkedContent, []),
+                      words: g.calls.map((c) => ({ call: c, txt: _fold ? _toWinAnsi(c.text) : c.text }))
+                    }));
+                    let _foldDrops = 0;
+                    if (_fold) for (const _g of _grps) for (const _w of _g.words) _foldDrops += _countNonWinAnsi(_w.call.text);
+                    const _anyDrawable = _grps.some((g) => g.words.some((w) => w.txt.trim()));
+                    if (_anyDrawable) {
+                      // BDC/EMC are committed from here on — the block fallback must NOT re-emit them,
+                      // so _posDrew flips true up front and the outer catch no longer resets it.
+                      _posDrew = true;
+                      if (_foldDrops > 0) _ocrDroppedChars += _foldDrops;
+                      for (const _grp of _grps) {
+                        page.pushOperators(_grp.bdc);
+                        for (const _w of _grp.words) {
+                          if (!_w.txt.trim()) continue;
+                          const _c = _w.call;
+                          try { _drawPositionedRunWord(_w.txt, _c); _pageDrewAny = true; }
+                          catch (_dErr) {
+                            // Unicode-font word failed to encode → fold THIS word to Helvetica (kept
+                            // inside the open BDC; rotation preserved — the old rescue dropped it on
+                            // rotated pages). Tally the fold only when a Unicode font was in play
+                            // (_fold pages already tallied above).
+                            try { const _h = await _getHelv(); if (_h) { if (!_fold) _ocrDroppedChars += _countNonWinAnsi(_c.text); const _fbOpts = { x: _c.x, y: _c.y, size: _c.size, font: _h, opacity: 0 }; if (_c.angle && _PLx.degrees) _fbOpts.rotate = _PLx.degrees(_c.angle); page.drawText(_toWinAnsi(_c.text), _fbOpts); _pageDrewAny = true; } } catch (_) {}
+                          }
+                        }
+                        page.pushOperators(_grp.emc);
                       }
-                      page.pushOperators(_emc);
                     }
                   }
-                } catch (_posErr) { _posDrew = false; try { warnLog('[per-leaf exp] positioned draw failed p' + (pi + 1) + ' — falling back to block layout: ' + (_posErr && _posErr.message)); } catch (_) {} }
+                } catch (_posErr) { try { warnLog('[per-leaf exp] positioned draw failed p' + (pi + 1) + (_posDrew ? ' after runs were emitted — keeping emitted runs (no re-emit)' : ' — falling back to block layout') + ': ' + (_posErr && _posErr.message)); } catch (_) {} }
               }
               if (!_posDrew) {
                 // No word boxes (Vision-won / rotated / dim mismatch) OR the positioned draw produced
@@ -22261,6 +22320,8 @@ tr { page-break-inside: avoid; }
                 const _layout = _alloOcrBlockLayout(_runs.map(r => r.text || ' ').join('\n'), (sz && sz.height ? sz.height : 792));
                 let _y = (sz && sz.height ? sz.height : 792) - 40;
                 const _step = Math.max(10, (_layout && _layout.lineHeight) || 12);
+                // H1c: folded-away chars were never tallied on this branch either (same honesty gap).
+                if (_fold) for (const _r of _runs) _ocrDroppedChars += _countNonWinAnsi(_r.text || '');
                 for (const _run of _runs) {
                   try {
                     const _bdc = _PLx.PDFOperator.of(_PLx.PDFOperatorNames.BeginMarkedContentSequence,
@@ -22351,7 +22412,13 @@ tr { page-break-inside: avoid; }
           // ── Safety net: a page that has OCR text but drew NOTHING (e.g. every per-word draw
           // threw) still gets a guaranteed block layer, so no scanned page with text ships
           // without a searchable/SR text layer. (false = don't double-tally the per-word drops.)
-          if (!_pageDrewAny && !_blockTried) { if (await _drawBlockLayer(false)) _pageDrewAny = true; }
+          // H1b (deep dive 2026-07-09): SKIPPED on per-leaf planned pages — _drawBlockLayer emits
+          // BARE drawText (no BDC/EMC), which on a per-leaf page becomes real content that is
+          // neither Artifact nor tagged (veraPDF §7.1) AND flips the wrap below out of its
+          // artifact-only branch, wiring the ParentTree to MCIDs that were never emitted. A
+          // per-leaf page that truly drew nothing goes artifact-only instead (its planned leaf
+          // MCRs are stripped there).
+          if (!_pageDrewAny && !_blockTried && !(_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi))) { if (await _drawBlockLayer(false)) _pageDrewAny = true; }
           // Did this page end up with a USABLE layer? Compute analytically: with a Unicode font
           // every char is renderable; without one only WinAnsi chars survive (non-Latin → ~0).
           const _pageStripped = ocrText.replace(/\s+/g, '');
@@ -22453,6 +22520,20 @@ tr { page-break-inside: avoid; }
           // An artifact-only page has no tagged content → no StructParents (artifacts aren't in the tree).
           if (!_pageArtifactOnly) node.set(PDFName.of('StructParents'), PDFNumber.of(pi));
         } catch(wrapErr) { try { warnLog('[createTaggedPdf] BDC/EMC wrap failed p' + (pi+1) + ': ' + (wrapErr && wrapErr.message)); } catch(_) {} }
+
+        // H1b (deep dive 2026-07-09): a per-leaf page that ended ARTIFACT-ONLY still has its planned
+        // leaves carrying the plan-time /K → MCR(Pg, MCID) entries, but the marked content those MCRs
+        // point at was never emitted — an unresolvable MCR is a hard veraPDF/PAC failure. Strip the K
+        // entries: a K-less leaf is exactly the pre-unify "orphaned" state the planner already treats
+        // as the safe fallback (see the Tag-Tree Unify pass above).
+        if (_perLeafExp && _perLeafPlan && _perLeafPlan.has(pi) && _pageArtifactOnly) {
+          try {
+            for (const _run of _perLeafPlan.get(pi)) {
+              try { const _leaf = context.lookup(_run.ref); if (_leaf && typeof _leaf.delete === 'function') _leaf.delete(PDFName.of('K')); } catch (_) {}
+            }
+            try { warnLog('[per-leaf exp] p' + (pi + 1) + ' ended artifact-only — stripped ' + _perLeafPlan.get(pi).length + ' unbacked leaf MCR(s)'); } catch (_) {}
+          } catch (_) {}
+        }
 
         // Per-leaf MCIDs (default for scanned): the page's ParentTree slot maps each MCID to its
         // OWN leaf StructElem (array index = MCID) — no flat /P element exists for this page.
@@ -32188,11 +32269,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
