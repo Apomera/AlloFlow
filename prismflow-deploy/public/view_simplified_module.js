@@ -320,10 +320,12 @@ function SimplifiedView(props) {
   var ttsPrepState = ttsPrepState_state[0];
   var setTtsPrepState = ttsPrepState_state[1];
   var saveTtsAsPlayed_state = React.useState(function () {
+    // Default ON (2026-07-09): capture-as-you-play costs no extra synthesis;
+    // '0' is the explicit per-device opt-out via the checkbox below.
     try {
-      return localStorage.getItem('allo_save_karaoke_audio') === '1';
+      return localStorage.getItem('allo_save_karaoke_audio') !== '0';
     } catch (_) {
-      return false;
+      return true;
     }
   });
   var saveTtsAsPlayed = saveTtsAsPlayed_state[0];
@@ -438,7 +440,9 @@ function SimplifiedView(props) {
     if (ttsPrepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
     var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
     if (!sentences.length) return;
-    setSaveTtsAsPlayedEnabled(true);
+    // Note: prep saves every sentence regardless of the capture toggle, and
+    // capture now defaults ON — no longer force-enable it here, so a
+    // teacher's explicit opt-out survives pressing Save TTS.
     setTtsPrepState({
       busy: true,
       done: 0,

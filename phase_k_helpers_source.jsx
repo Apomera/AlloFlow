@@ -76,11 +76,13 @@ const getStoredReadAloudUrl = (storeSentence, spokenSentence) => {
 
 const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
     if (!shouldUseReadAloudStore(contentId, mode) || !sentence || !url) return false;
+    // Capture-as-you-play is ON by default (2026-07-09): the clip already
+    // exists, so saving it costs zero extra synthesis and makes every replay
+    // instant on any device. '0' is the explicit per-device opt-out (the
+    // "Save played TTS" toggle); unreadable localStorage means default-on.
     try {
-        if (localStorage.getItem('allo_save_karaoke_audio') !== '1') return false;
-    } catch (_) {
-        return false;
-    }
+        if (localStorage.getItem('allo_save_karaoke_audio') === '0') return false;
+    } catch (_) {}
     return typeof window.__alloCaptureKaraokeAudio === 'function';
 };
 

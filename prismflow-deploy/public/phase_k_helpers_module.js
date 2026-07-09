@@ -52,9 +52,8 @@ const getStoredReadAloudUrl = (storeSentence, spokenSentence) => {
 const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
   if (!shouldUseReadAloudStore(contentId, mode) || !sentence || !url) return false;
   try {
-    if (localStorage.getItem("allo_save_karaoke_audio") !== "1") return false;
+    if (localStorage.getItem("allo_save_karaoke_audio") === "0") return false;
   } catch (_) {
-    return false;
   }
   return typeof window.__alloCaptureKaraokeAudio === "function";
 };

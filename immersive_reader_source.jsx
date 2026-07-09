@@ -973,7 +973,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     // globals; the player picks up the new audio through the shared store.
     const [regenBusy, setRegenBusy] = useState(false);
     const [prepState, setPrepState] = useState(null); // { busy, done, total, bytes } | null
-    const [captureOn, setCaptureOn] = useState(() => { try { return localStorage.getItem('allo_save_karaoke_audio') === '1'; } catch (_) { return false; } });
+    const [captureOn, setCaptureOn] = useState(() => { try { return localStorage.getItem('allo_save_karaoke_audio') !== '0'; } catch (_) { return true; } });
     const [recording, setRecording] = useState(false);
     const [studentTakeTick, setStudentTakeTick] = useState(0);
     const _recRef = useRef(null);
@@ -1018,8 +1018,12 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
         : false;
 
+    // Capture is not teacher-gated: a student's played clips persist only into
+    // the student's OWN copy of the resource (sharing is teacher→student, never
+    // student→student), so capturing simply makes their replays instant. Human
+    // recordings are a separate explicit flow and are unaffected.
     const scheduleCaptureForStorage = useCallback((sentenceText, url) => {
-        if (!isTeacher || !captureOn || !sentenceText || !url) return;
+        if (!captureOn || !sentenceText || !url) return;
         if (typeof window === 'undefined' || typeof window.__alloCaptureKaraokeAudio !== 'function') return;
         const run = () => {
             try {
@@ -1036,7 +1040,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         } catch (e) {
             setTimeout(run, 250);
         }
-    }, [isTeacher, captureOn]);
+    }, [captureOn]);
 
     // Split text into sentences once (self-contained — parent's splitTextToSentences isn't exported)
     useEffect(() => {

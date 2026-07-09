@@ -788,9 +788,9 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   const [prepState, setPrepState] = useState(null);
   const [captureOn, setCaptureOn] = useState(() => {
     try {
-      return localStorage.getItem("allo_save_karaoke_audio") === "1";
+      return localStorage.getItem("allo_save_karaoke_audio") !== "0";
     } catch (_) {
-      return false;
+      return true;
     }
   });
   const [recording, setRecording] = useState(false);
@@ -822,7 +822,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   const warmedRef = useRef(/* @__PURE__ */ new Set());
   const reducedMotion = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
   const scheduleCaptureForStorage = useCallback((sentenceText, url) => {
-    if (!isTeacher || !captureOn || !sentenceText || !url) return;
+    if (!captureOn || !sentenceText || !url) return;
     if (typeof window === "undefined" || typeof window.__alloCaptureKaraokeAudio !== "function") return;
     const run = () => {
       try {
@@ -841,7 +841,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     } catch (e) {
       setTimeout(run, 250);
     }
-  }, [isTeacher, captureOn]);
+  }, [captureOn]);
   useEffect(() => {
     if (!text) {
       setSentences([]);

@@ -5592,7 +5592,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=41fb9aabd');
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=41fb9aabd');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=41fb9aabd');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=698f5b1f8');
+    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=9dadb72f1');
     loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=41fb9aabd');
     loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=41fb9aabd');
     loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=41fb9aabd');
@@ -17780,7 +17780,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // KaraokeAudioStore holds one clip per sentence. These let the karaoke overlay
   // (teacher mode) regenerate a single off sentence or prepare the whole set, and
   // persist the vetted audio into the resource so it travels to students
-  // cross-device with zero re-synth. Human-in-the-loop, opt-in (never auto).
+  // cross-device with zero re-synth. Capture-as-you-play is ON by default
+  // (2026-07-09; it reuses the already-played clip, zero extra synthesis —
+  // 'allo_save_karaoke_audio'='0' is the per-device opt-out). Synthesis-costing
+  // actions (prepare-all, regenerate) remain explicit human choices.
   const _blobToBase64 = (blob) => new Promise((resolve, reject) => {
     try {
       const r = new FileReader();
