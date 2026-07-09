@@ -5,11 +5,15 @@ users when they pick a non-English language. Each pack is a JSON object
 matching the shape of `ui_strings.js` + the `help_mode.*` keys from
 `help_strings.js`.
 
-## Current coverage (June 2026)
+## Current coverage (July 2026)
 
-**56 packs are built and maintained** (`lang/*.js`, mirrored to
+**63 pack files are present and mirrored** (`lang/*.js`,
 `prismflow-deploy/public/lang/`) — far beyond the priority tiers listed below.
-They have been heavily hand-corrected: half-translated "Spanglish" eliminated in
+The June quality logs cover the earlier 56-pack cleanup wave; newer packs and
+the PPS cluster should be checked with the current i18n tools before making the
+same quality claim.
+
+The heavily corrected wave eliminated half-translated "Spanglish" in
 safety strings, a content-module sweep, full `behavior_lens` coverage, and a
 new-key fill bringing all non-PPS packs to ~87%+ translated (honest English is
 kept only for international scientific/Latin nomenclature + brand/format tokens).
@@ -46,8 +50,8 @@ When a user selects a language, the runtime in `AlloFlowANTI.txt` (the
    `https://raw.githubusercontent.com/.../lang/<slug>.js` if Cloudflare is
    slow or down.
 
-4. **Fall back to live generation** via `translateChunk` (Gemini Flash with
-   DNT masking + domain glossary). This is what happens for every language
+4. **Fall back to live generation** via `translateChunk` (the configured Gemini
+   translation model with DNT masking + domain glossary). This is what happens for every language
    that doesn't have a pre-built pack — the UI still translates, it just
    costs an API call per chunk and isn't shared across users.
 

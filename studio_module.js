@@ -182,6 +182,31 @@
       }
     };
   }
+  function stIsKeptPlaceholder(image) {
+    return !!(image && image.type === 'image' && !image.src && image.provenance && image.provenance.placeholder === 'keep');
+  }
+  function stKeepPlaceholderPatch(image) {
+    var prior = (image && image.provenance && typeof image.provenance === 'object') ? image.provenance : {};
+    return {
+      decorative: true,
+      provenance: Object.assign({}, prior, { origin: prior.origin || 'placeholder', placeholder: 'keep' })
+    };
+  }
+  function stUploadedImagePatch(image, src) {
+    var patch = { src: String(src || ''), provenance: { origin: 'upload' } };
+    if (image && image.type === 'image' && !image.src) patch.decorative = false;
+    return patch;
+  }
+  function stImageFrameState(image) {
+    if (!image || image.type !== 'image') return { key: 'none', label: 'Not an image', message: '' };
+    if (image.src) {
+      if (image.decorative) return { key: 'decorative', label: 'Decorative image', message: 'Skipped by screen readers.' };
+      if (image.alt && String(image.alt).trim()) return { key: 'content', label: 'Content image', message: 'Alt text is present.' };
+      return { key: 'needs-alt', label: 'Image needs alt text', message: 'Add alt text or mark decorative before accessible export.' };
+    }
+    if (stIsKeptPlaceholder(image)) return { key: 'kept-placeholder', label: 'Placeholder kept', message: 'This empty frame is intentionally kept for drafting.' };
+    return { key: 'empty-placeholder', label: 'Empty image frame', message: 'Replace it, remove it, or keep it as a placeholder.' };
+  }
 
   // Plan preview: apply ops to a DETACHED scene (no ledger, no real ids) so
   // the review panel can render before/after without touching the document.
@@ -565,6 +590,7 @@
       if (p._crop) return 'Cropped an image';
       if (p.src) return (p.provenance && p.provenance.origin === 'ai-edited') ? 'AI edited an image' : (p.provenance && p.provenance.origin === 'optimized') ? 'Optimized an image' : 'Replaced an image';
       if (Object.prototype.hasOwnProperty.call(p, 'alt')) return 'Updated alt text';
+      if (p.provenance && p.provenance.placeholder === 'keep') return 'Kept image placeholder';
       if (Object.prototype.hasOwnProperty.call(p, 'decorative')) return p.decorative ? 'Marked an image decorative' : 'Marked an image as content';
       if (p.role) return 'Changed the text role';
       if (p.fill) return 'Changed a fill color';
@@ -587,7 +613,7 @@
         issues.push({ id: o.id, type: 'bounds', severity: 'warning', title: 'Object is outside the page', message: 'Move or resize this object so it sits fully on the page.' });
       }
       if (o.type === 'image') {
-        if (!o.src) issues.push({ id: o.id, type: 'empty-image', severity: 'review', title: 'Empty image frame', message: 'Add an image, remove the frame, or keep it as a placeholder while drafting.' });
+        if (!o.src && !stIsKeptPlaceholder(o)) issues.push({ id: o.id, type: 'empty-image', severity: 'review', title: 'Empty image frame', message: 'Add an image, remove the frame, or keep it as a placeholder while drafting.' });
         else if (stImageWeightInfo(o.src).large) issues.push({ id: o.id, type: 'large-image', severity: 'warning', title: 'Large image', message: 'This image may make the save file and exports heavy.' });
       } else if (o.type === 'text') {
         var run = (o.runs && o.runs[0]) || { text: '', style: {} };
@@ -862,7 +888,7 @@
     else if (issue.type === 'contrast') action.type = 'fix-contrast';
     else if (issue.type === 'heading-order') action.type = 'review-heading';
     else if (issue.type === 'reading-order') action.type = 'review-reading-order';
-    else if (issue.type === 'empty-image') action.type = 'select-image';
+    else if (issue.type === 'empty-image') action.type = 'replace-image';
     else if (issue.type === 'bounds') action.type = 'fix-bounds';
     else if (issue.type === 'large-image') action.type = 'optimize-image';
     if (action.type === 'fix-contrast' && issue.id && doc && Array.isArray(doc.objects)) {
@@ -884,18 +910,175 @@
     return action;
   }
 
-  function stBuildReadyActions(doc) {
+  function stIssueActionChoices(doc, issue) {
+    var primary = stReadyActionForIssue(doc, issue);
+    if (!primary) return [];
+    if (issue && issue.type === 'alt' && issue.id) {
+      return [
+        primary,
+        { type: 'mark-decorative', targetId: issue.id, issueType: issue.type, severity: issue.severity, title: issue.title, message: issue.message }
+      ];
+    }
+    if (issue && issue.type === 'empty-image' && issue.id) {
+      return [
+        primary,
+        { type: 'remove-placeholder', targetId: issue.id, issueType: issue.type, severity: issue.severity, title: issue.title, message: issue.message },
+        { type: 'keep-placeholder', targetId: issue.id, issueType: issue.type, severity: issue.severity, title: issue.title, message: issue.message }
+      ];
+    }
+    return [primary];
+  }
+
+  function stPreflightGuide(doc, index, filter) {
     var analysis = stAnalyzeDoc(doc);
-    var status = analysis.counts.error ? 'blocked' : ((analysis.counts.warning || analysis.counts.review) ? 'review' : 'ready');
+    var issues = stFilterPreflightIssues(analysis, filter);
+    var total = issues.length;
+    if (!total) {
+      return { total: 0, index: -1, position: 0, issue: null, actions: [], title: 'No open issues', message: 'This artifact is ready for the current checks.' };
+    }
+    var raw = Math.round(stFiniteNumber(index, 0));
+    var safe = ((raw % total) + total) % total;
+    var issue = issues[safe];
+    return {
+      total: total,
+      index: safe,
+      position: safe + 1,
+      issue: issue,
+      actions: stIssueActionChoices(doc, issue),
+      title: 'Issue ' + (safe + 1) + ' of ' + total,
+      message: issue ? issue.title + ': ' + issue.message : ''
+    };
+  }
+
+  function stFilterPreflightIssues(analysis, filter) {
+    var issues = (analysis && Array.isArray(analysis.issues)) ? analysis.issues : [];
+    var key = filter === 'fix' ? 'error' : filter;
+    if (key !== 'error' && key !== 'warning' && key !== 'review') return issues.slice();
+    return issues.filter(function (issue) { return issue && issue.severity === key; });
+  }
+
+  function stExportConfidence(doc) {
+    if (!doc || !Array.isArray(doc.objects)) {
+      return { status: 'blocked', cards: [{ key: 'file', label: 'Document', status: 'blocked', message: 'Open or create a document first.' }] };
+    }
+    var analysis = stAnalyzeDoc(doc);
+    var counts = analysis.counts || { error: 0, warning: 0, review: 0 };
+    var altCount = stAltGate(doc.objects).length;
+    var openCount = stFiniteNumber(counts.error, 0) + stFiniteNumber(counts.warning, 0) + stFiniteNumber(counts.review, 0);
+    var blocked = altCount || stFiniteNumber(counts.error, 0);
+    var review = !blocked && (stFiniteNumber(counts.warning, 0) || stFiniteNumber(counts.review, 0));
+    var accessibleStatus = blocked ? 'blocked' : review ? 'review' : 'ready';
+    var accessibleMessage = blocked
+      ? altCount + ' image(s) need alt text or a decorative mark.'
+      : review ? openCount + ' review item(s) remain before sharing.' : 'Ready for accessible sharing.';
+    var worksheet = stExportWorksheetData(doc);
+    var worksheetReady = worksheet.questions && worksheet.questions.length;
+    var cards = [
+      { key: 'tagged-pdf', label: 'Tagged PDF', status: accessibleStatus, message: accessibleMessage },
+      { key: 'html', label: 'Accessible HTML', status: accessibleStatus, message: accessibleMessage },
+      { key: 'visual', label: 'Visual copy', status: blocked ? 'blocked' : 'ready', message: blocked ? 'Resolve alt text first; the export gate is still closed.' : 'Pixels-only; pair with HTML or tagged PDF when accessibility matters.' },
+      { key: 'worksheet', label: 'Worksheet bridge', status: worksheetReady ? 'ready' : 'review', message: worksheetReady ? worksheet.questions.length + ' structured question(s) found.' : 'Use numbered Heading 2 prompts for a structured worksheet export.' }
+    ];
+    return { status: blocked ? 'blocked' : review ? 'review' : 'ready', counts: counts, openCount: openCount, altCount: altCount, cards: cards };
+  }
+
+  function stProcessStepGroups(ops) {
+    var list = Array.isArray(ops) ? ops : [];
+    var groups = [];
+    list.forEach(function (op) {
+      if (!op || typeof op !== 'object') return;
+      var label = stDescribeOpBase(op);
+      var key = [op.actor || 'user', label, op.type || '', op.target || ''].join('|');
+      var prev = groups[groups.length - 1];
+      if (prev && prev.key === key) {
+        prev.count++;
+        prev.endSeq = op.seq;
+        prev.latest = op;
+        prev.ops.push(op);
+        return;
+      }
+      groups.push({ key: key, actor: op.actor || 'user', label: label, count: 1, startSeq: op.seq, endSeq: op.seq, latest: op, ops: [op] });
+    });
+    return groups.map(function (g) {
+      return {
+        actor: g.actor,
+        label: g.label,
+        count: g.count,
+        startSeq: g.startSeq,
+        endSeq: g.endSeq,
+        latest: g.latest,
+        ops: g.ops.slice(),
+        text: g.count > 1 ? g.label + ' x' + g.count : stDescribeOp(g.latest)
+      };
+    });
+  }
+
+  function stIssueIndexForObject(analysis, objectId, filter) {
+    var issues = stFilterPreflightIssues(analysis, filter);
+    for (var i = 0; i < issues.length; i++) {
+      if (issues[i] && issues[i].id === objectId) return i;
+    }
+    return -1;
+  }
+
+  function stNextPreflightGuideIndex(beforeAnalysis, afterAnalysis, currentIndex, action, filter) {
+    var beforeIssues = stFilterPreflightIssues(beforeAnalysis, filter);
+    var afterIssues = stFilterPreflightIssues(afterAnalysis, filter);
+    if (!afterIssues.length) return 0;
+    var targetId = action && action.targetId;
+    var issueType = action && action.issueType;
+    var current = Math.max(0, Math.round(stFiniteNumber(currentIndex, 0)));
+    var actionIndex = -1;
+    if (issueType) {
+      for (var i = 0; i < beforeIssues.length; i++) {
+        if (beforeIssues[i] && beforeIssues[i].type === issueType && (!targetId || beforeIssues[i].id === targetId)) { actionIndex = i; break; }
+      }
+    }
+    if (actionIndex < 0) actionIndex = Math.min(current, Math.max(0, beforeIssues.length - 1));
+    var beforeIssue = beforeIssues[actionIndex] || null;
+    var sameType = issueType || (beforeIssue && beforeIssue.type);
+    var sameId = targetId || (beforeIssue && beforeIssue.id);
+    for (var s = 0; s < afterIssues.length; s++) {
+      var issue = afterIssues[s];
+      if (!issue) continue;
+      if (sameType && issue.type === sameType && (!sameId || issue.id === sameId)) return s;
+    }
+    if (sameId) {
+      for (var t = 0; t < afterIssues.length; t++) {
+        if (afterIssues[t] && afterIssues[t].id === sameId) return t;
+      }
+    }
+    return Math.min(Math.max(actionIndex, 0), afterIssues.length - 1);
+  }
+
+  function stFilteredProcessStepGroups(ops, actor) {
+    var groups = stProcessStepGroups(ops);
+    if (!actor || actor === 'all' || !ST_ACTORS[actor]) return groups;
+    return groups.filter(function (group) { return group.actor === actor; });
+  }
+
+  function stBuildReadyActions(doc, filter) {
+    var analysis = stAnalyzeDoc(doc);
+    var issues = stFilterPreflightIssues(analysis, filter);
+    var counts = (filter && filter !== 'all') ? { error: 0, warning: 0, review: 0 } : analysis.counts;
+    if (filter && filter !== 'all') {
+      issues.forEach(function (issue) {
+        if (issue && Object.prototype.hasOwnProperty.call(counts, issue.severity)) counts[issue.severity]++;
+      });
+    }
+    var status = counts.error ? 'blocked' : ((counts.warning || counts.review) ? 'review' : 'ready');
     var actions = [];
-    analysis.issues.forEach(function (issue) {
+    issues.forEach(function (issue) {
       if (actions.length >= 10) return;
-      var action = stReadyActionForIssue(doc, issue);
-      if (action) actions.push(action);
+      stIssueActionChoices(doc, issue).forEach(function (action) {
+        if (actions.length < 10 && action) actions.push(action);
+      });
     });
     return {
       status: status,
-      counts: analysis.counts,
+      counts: counts,
+      totalCounts: analysis.counts,
+      filter: filter || 'all',
       actions: actions,
       title: status === 'ready' ? 'Ready to share' : status === 'blocked' ? 'Exports need attention' : 'Review before sharing',
       message: status === 'ready' ? 'No accessibility issues found.' : status === 'blocked' ? 'Fix required items before accessible export.' : 'A few quality checks could improve this artifact.'
@@ -906,7 +1089,7 @@
     if (!doc || !objectId) return [];
     return stAnalyzeDoc(doc).issues
       .filter(function (issue) { return issue && issue.id === objectId; })
-      .map(function (issue) { return stReadyActionForIssue(doc, issue); })
+      .reduce(function (out, issue) { return out.concat(stIssueActionChoices(doc, issue)); }, [])
       .filter(Boolean);
   }
 
@@ -2604,8 +2787,11 @@
     var _multiSel = React.useState([]); var selectedIds = _multiSel[0], setSelectedIds = _multiSel[1];
     var _role = React.useState(props.initialRole === 'student' ? 'student' : 'teacher'); var role = _role[0], setRole = _role[1];
     var _scrub = React.useState(null); var scrubSeq = _scrub[0], setScrubSeq = _scrub[1];
+    var _processActor = React.useState('all'); var processActorFilter = _processActor[0], setProcessActorFilter = _processActor[1];
     var _exportOpen = React.useState(false); var exportOpen = _exportOpen[0], setExportOpen = _exportOpen[1];
     var _preflightOpen = React.useState(false); var preflightOpen = _preflightOpen[0], setPreflightOpen = _preflightOpen[1];
+    var _preflightGuide = React.useState(0); var preflightGuideIndex = _preflightGuide[0], setPreflightGuideIndex = _preflightGuide[1];
+    var _preflightIssueFilter = React.useState('all'); var preflightIssueFilter = _preflightIssueFilter[0], setPreflightIssueFilter = _preflightIssueFilter[1];
     var _shortcutsOpen = React.useState(false); var shortcutsOpen = _shortcutsOpen[0], setShortcutsOpen = _shortcutsOpen[1];
     // Fullscreen editing surface (Aaron request). Preference persists so it sticks
     // across opens; degrades silently if localStorage is unavailable.
@@ -2793,8 +2979,12 @@
     var agentEffectiveScope = agentScope === 'selection' && selectionIds.length ? 'selection' : 'document';
     var preflight = doc ? stAnalyzeDoc(doc) : { issues: [], counts: { error: 0, warning: 0, review: 0 } };
     var preflightTotal = preflight.counts.error + preflight.counts.warning + preflight.counts.review;
+    var visiblePreflightIssues = stFilterPreflightIssues(preflight, preflightIssueFilter);
     var accessibilityChecklist = stBuildAccessibilityChecklist(preflight);
     var ready = doc ? stBuildReadyActions(doc) : null;
+    var quickReady = preflightIssueFilter === 'all' ? ready : (doc ? stBuildReadyActions(doc, preflightIssueFilter) : null);
+    var preflightGuide = doc ? stPreflightGuide(doc, preflightGuideIndex, preflightIssueFilter) : { total: 0, index: -1, position: 0, issue: null, actions: [] };
+    var exportConfidence = doc ? stExportConfidence(doc) : { status: 'blocked', cards: [] };
     var a11yAutoFix = doc ? stBuildA11yAutoFixPlan(doc) : { ops: [], fixedTypes: [], reviewCount: 0 };
     var readingSuggestion = doc ? stReadingOrderSuggestion(doc) : { total: 0, changed: false, currentIds: [], suggestedIds: [], suggested: [], changes: [] };
     var applyReadingOrderSuggestion = function () {
@@ -2866,10 +3056,14 @@
       return action.type === 'fix-small-text' ? TT('studio.fix_small_text', 'Make text readable')
         : action.type === 'fix-contrast' ? TT('studio.fix_contrast', 'Improve contrast')
           : action.type === 'add-alt' ? TT('studio.add_alt', 'Add alt text')
-            : action.type === 'fix-bounds' ? TT('studio.fit_on_page', 'Fit on page')
+            : action.type === 'mark-decorative' ? TT('studio.mark_decorative', 'Mark decorative')
+              : action.type === 'fix-bounds' ? TT('studio.fit_on_page', 'Fit on page')
               : action.type === 'optimize-image' ? TT('studio.optimize_image', 'Optimize image')
-                : action.type === 'review-reading-order' ? TT('studio.review_order', 'Review reading order')
-                  : action.title;
+                : action.type === 'replace-image' || action.type === 'select-image' ? TT('studio.replace_image_short', 'Replace image')
+                  : action.type === 'remove-placeholder' ? TT('studio.remove_frame', 'Remove frame')
+                    : action.type === 'keep-placeholder' ? TT('studio.keep_placeholder', 'Keep placeholder')
+                      : action.type === 'review-reading-order' ? TT('studio.review_order', 'Review reading order')
+                        : action.title;
     };
     var focusAltTextFor = function (targetId) {
       setTimeout(function () {
@@ -2881,6 +3075,10 @@
         } catch (_) {}
       }, 0);
     };
+    var advancePreflightGuideAfter = function (action, beforeAnalysis) {
+      var afterAnalysis = stAnalyzeDoc(_docRef.current);
+      setPreflightGuideIndex(stNextPreflightGuideIndex(beforeAnalysis || preflight, afterAnalysis, preflightGuideIndex, action, preflightIssueFilter));
+    };
     var applyReadyAction = function (action) {
       if (!action) return;
       if (action.targetId) selectOnly(action.targetId);
@@ -2890,7 +3088,9 @@
           var runs = stClone(small.runs || [{ text: '', style: {} }]);
           if (!runs[0]) runs[0] = { text: '', style: {} };
           runs[0].style = Object.assign({}, runs[0].style, { size: Math.max(12, stFiniteNumber(runs[0].style && runs[0].style.size, 16)) });
+          var beforeSmallFix = stAnalyzeDoc(_docRef.current);
           dispatch({ type: 'object.update', target: small.id, patch: { runs: runs } }, 'user');
+          advancePreflightGuideAfter(action, beforeSmallFix);
           stAnnounce(TT('studio.a11y_text_enlarged', 'Text size increased'));
           return;
         }
@@ -2901,7 +3101,9 @@
           var cruns = stClone(contrast.runs || [{ text: '', style: {} }]);
           if (!cruns[0]) cruns[0] = { text: '', style: {} };
           cruns[0].style = Object.assign({}, cruns[0].style, { color: action.suggestedColor });
+          var beforeContrastFix = stAnalyzeDoc(_docRef.current);
           dispatch({ type: 'object.update', target: contrast.id, patch: { runs: cruns } }, 'user');
+          advancePreflightGuideAfter(action, beforeContrastFix);
           stAnnounce(TT('studio.a11y_contrast_fixed', 'Text contrast adjusted'));
           return;
         }
@@ -2910,7 +3112,9 @@
         var bounded = doc.objects.filter(function (o) { return o && o.id === action.targetId; })[0];
         var frame = action.suggestedFrame || (bounded && bounded.frame ? stClampFrame(bounded.frame, doc.canvas) : null);
         if (bounded && frame) {
+          var beforeBoundsFix = stAnalyzeDoc(_docRef.current);
           dispatch({ type: 'object.update', target: bounded.id, patch: { frame: frame } }, 'user');
+          advancePreflightGuideAfter(action, beforeBoundsFix);
           stAnnounce(TT('studio.a11y_fit_on_page', 'Object moved onto the page'));
           return;
         }
@@ -2918,6 +3122,45 @@
       if (action.type === 'add-alt' && action.targetId) {
         focusAltTextFor(action.targetId);
         stAnnounce(TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.'));
+        return;
+      }
+      if (action.type === 'mark-decorative' && action.targetId) {
+        var decorativeImage = doc.objects.filter(function (o) { return o && o.id === action.targetId; })[0];
+        if (decorativeImage && decorativeImage.type === 'image') {
+          var beforeDecorativeFix = stAnalyzeDoc(_docRef.current);
+          dispatch({ type: 'object.update', target: decorativeImage.id, patch: { decorative: true } }, 'user');
+          advancePreflightGuideAfter(action, beforeDecorativeFix);
+          stAnnounce(TT('studio.a11y_marked_decorative', 'Image marked decorative'));
+        }
+        return;
+      }
+      if ((action.type === 'replace-image' || action.type === 'select-image') && action.targetId) {
+        if (fileRef.current) {
+          fileRef.current.setAttribute('data-st-replace', action.targetId);
+          fileRef.current.click();
+          stAnnounce(TT('studio.a11y_replace_image', 'Choose an image for this frame'));
+        }
+        return;
+      }
+      if (action.type === 'remove-placeholder' && action.targetId) {
+        var removable = doc.objects.filter(function (o) { return o && o.id === action.targetId; })[0];
+        if (removable && removable.type === 'image' && !removable.src) {
+          var beforeRemovePlaceholder = stAnalyzeDoc(_docRef.current);
+          dispatch({ type: 'object.remove', target: removable.id }, 'user');
+          clearSelection();
+          advancePreflightGuideAfter(action, beforeRemovePlaceholder);
+          stAnnounce(TT('studio.a11y_placeholder_removed', 'Image frame removed'));
+        }
+        return;
+      }
+      if (action.type === 'keep-placeholder' && action.targetId) {
+        var placeholder = doc.objects.filter(function (o) { return o && o.id === action.targetId; })[0];
+        if (placeholder && placeholder.type === 'image' && !placeholder.src) {
+          var beforeKeepPlaceholder = stAnalyzeDoc(_docRef.current);
+          dispatch({ type: 'object.update', target: placeholder.id, patch: stKeepPlaceholderPatch(placeholder) }, 'user');
+          advancePreflightGuideAfter(action, beforeKeepPlaceholder);
+          stAnnounce(TT('studio.a11y_placeholder_kept', 'Placeholder kept'));
+        }
         return;
       }
       if (action.type === 'optimize-image' && action.targetId) {
@@ -2936,7 +3179,9 @@
             return;
           }
           var afterInfo = stImageWeightInfo(optimized);
+          var beforeOptimizeFix = stAnalyzeDoc(_docRef.current);
           dispatch({ type: 'object.update', target: live.id, patch: stOptimizedImagePatch(live, optimized, beforeInfo, afterInfo) }, 'user');
+          advancePreflightGuideAfter(action, beforeOptimizeFix);
           stAnnounce(TT('studio.a11y_image_optimized', 'Image optimized'));
           addToast(TT('studio.optimize_done', 'Image optimized.') + ' ' + beforeInfo.approxKb + ' KB → ' + afterInfo.approxKb + ' KB', 'success');
         }).catch(function () {
@@ -3483,6 +3728,12 @@
         if (altFailures.length) {
           addToast(TT('studio.alt_gate_toast', '♿ Export blocked: every image needs alt text or an explicit "decorative" mark. The offenders are listed in the export panel.'), 'error');
           setExportOpen(true);
+          setPreflightIssueFilter('fix');
+          setPreflightGuideIndex(0);
+          setPreflightOpen(true);
+          selectOnly(altFailures[0].id);
+          focusAltTextFor(altFailures[0].id);
+          stAnnounce(TT('studio.export_show_fixes', 'Showing required accessibility fixes'));
           return;
         }
         fn();
@@ -3759,6 +4010,8 @@
       var at = scrubSeq === null ? maxSeq : scrubSeq;
       var scene = stReplay(doc, at);
       var summary = stActorSummary(ops);
+      var allProcessGroups = stProcessStepGroups(ops);
+      var processGroups = stFilteredProcessStepGroups(ops, processActorFilter);
       var mins = Math.max(1, Math.round(summary.activeMs / 60000));
       var processScale = layout.stacked
         ? Math.max(0.34, Math.min(0.45, ((viewport.w || 920) - (layout.canvasPadding * 2) - 18) / Math.max(1, doc.canvas.w)))
@@ -3784,15 +4037,28 @@
                 summary.user + ' ' + TT('studio.ops_you', 'edits by ' + (student ? 'you' : 'the student')) + ' · ' + summary.ai + ' ' + TT('studio.ops_ai', 'AI actions') + ' · ' + summary.import + ' ' + TT('studio.ops_import', 'imported items'),
                 h('div', { style: { fontWeight: 400, marginTop: '4px', color: C.muted } }, '≈' + mins + ' ' + TT('studio.active_minutes', 'active minutes in the editor'))),
               h('p', { style: { fontSize: '11px', color: C.muted, margin: '2px 0 6px' } }, TT('studio.honesty_line', ST_HONESTY_LINE)),
+              h('div', { role: 'group', 'aria-label': TT('studio.process_filter', 'Process filter'), style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' } },
+                [
+                  ['all', TT('studio.process_all', 'All'), allProcessGroups.length],
+                  ['user', TT('studio.actor_user', 'you'), allProcessGroups.filter(function (g) { return g.actor === 'user'; }).length],
+                  ['ai', 'AI', allProcessGroups.filter(function (g) { return g.actor === 'ai'; }).length],
+                  ['import', TT('studio.actor_import', 'import'), allProcessGroups.filter(function (g) { return g.actor === 'import'; }).length]
+                ].map(function (item) {
+                  var active = processActorFilter === item[0];
+                  return h('button', { key: item[0], type: 'button', 'aria-pressed': active, style: Object.assign({}, S.tool, { textAlign: 'center', padding: '5px 4px', minHeight: '26px', fontSize: '10px' }, active ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setProcessActorFilter(item[0]); } }, item[1] + ' ' + item[2]);
+                })),
               h('div', { style: S.label }, TT('studio.recent_steps', 'Steps (latest first)')),
               h('div', { style: { overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' } },
-                ops.slice(-120).reverse().map(function (op) {
-                  var chip = op.actor === 'ai' ? { bg: '#f3e8ff', fg: '#7c2d12', label: 'AI' } : op.actor === 'import' ? { bg: '#fef3c7', fg: '#92400e', label: TT('studio.actor_import', 'import') } : { bg: '#dcfce7', fg: '#166534', label: TT('studio.actor_user', 'you') };
-                  return h('div', { key: op.seq, style: { display: 'flex', gap: '6px', alignItems: 'center', fontSize: '11px', color: C.text, padding: '2px 4px', background: op.seq === at ? C.selectedBg : 'transparent', borderRadius: '4px' } },
-                    h('button', { onClick: function () { setScrubSeq(op.seq); }, style: { border: 'none', background: 'none', cursor: 'pointer', color: C.accent, fontWeight: 700, fontSize: '11px', padding: 0 }, 'aria-label': TT('studio.jump_to_step', 'Jump to step') + ' ' + op.seq }, '#' + op.seq),
+                processGroups.length ? processGroups.slice(-80).reverse().map(function (group) {
+                  var chip = group.actor === 'ai' ? { bg: '#f3e8ff', fg: '#7c2d12', label: 'AI' } : group.actor === 'import' ? { bg: '#fef3c7', fg: '#92400e', label: TT('studio.actor_import', 'import') } : { bg: '#dcfce7', fg: '#166534', label: TT('studio.actor_user', 'you') };
+                  var active = at >= group.startSeq && at <= group.endSeq;
+                  var seqLabel = group.count > 1 ? ('#' + group.startSeq + '-' + group.endSeq) : ('#' + group.endSeq);
+                  return h('div', { key: group.startSeq + '-' + group.endSeq, style: { display: 'flex', gap: '6px', alignItems: 'center', fontSize: '11px', color: C.text, padding: '3px 4px', background: active ? C.selectedBg : 'transparent', borderRadius: '4px' } },
+                    h('button', { onClick: function () { setScrubSeq(group.endSeq); }, style: { border: 'none', background: 'none', cursor: 'pointer', color: C.accent, fontWeight: 700, fontSize: '11px', padding: 0 }, 'aria-label': TT('studio.jump_to_step', 'Jump to step') + ' ' + group.endSeq }, seqLabel),
                     h('span', { style: { background: chip.bg, color: chip.fg, borderRadius: '999px', padding: '0 7px', fontWeight: 700, fontSize: '10px' } }, chip.label),
-                    h('span', null, stDescribeOp(op)));
-                }))))));
+                    group.count > 1 ? h('span', { style: { border: '1px solid ' + C.border, borderRadius: '999px', padding: '0 6px', color: C.muted, fontSize: '9.5px', fontWeight: 800 } }, 'x' + group.count) : null,
+                    h('span', { style: { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' } }, group.text));
+                }) : h('div', { style: { fontSize: '11px', color: C.muted, padding: '6px' } }, TT('studio.process_filter_empty', 'No steps in this filter.')))))));
     }
 
     // ── editor view ──
@@ -3821,20 +4087,40 @@
       if (!summary) return null;
       return statusTone(summary.severity === 'error' ? 'error' : summary.severity === 'warning' ? 'warning' : 'review');
     };
+    var openIssueForObject = function (id, title, severity) {
+      var match = null;
+      for (var oi = 0; oi < preflight.issues.length; oi++) {
+        if (preflight.issues[oi] && preflight.issues[oi].id === id) { match = preflight.issues[oi]; break; }
+      }
+      var nextFilter = severity || (match && match.severity) || preflightIssueFilter;
+      nextFilter = nextFilter === 'error' ? 'fix' : (nextFilter === 'warning' || nextFilter === 'review' ? nextFilter : 'all');
+      var idx = stIssueIndexForObject(preflight, id, nextFilter);
+      if (idx < 0) idx = stIssueIndexForObject(preflight, id);
+      setPreflightIssueFilter(nextFilter);
+      if (idx >= 0) setPreflightGuideIndex(idx);
+      if (id) selectOnly(id);
+      setPreflightOpen(true);
+      stAnnounce(title || TT('studio.a11y_issue_selected', 'Accessibility issue selected'));
+    };
+    var resetPreflightIssueFilter = function () {
+      setPreflightIssueFilter('all');
+      setPreflightGuideIndex(0);
+    };
 
     function renderObject(o, scale, interactivity, extra, hh) {
       var f = interactivity ? liveFrameFor(o) : o.frame;
       var isSel = interactivity && (selectedId === o.id || selectionIds.indexOf(o.id) >= 0);
       var isAgentPending = interactivity && agentPendingIds.indexOf(o.id) >= 0;
       var readingIndex = doc && Array.isArray(doc.objects) ? doc.objects.findIndex(function (item) { return item && item.id === o.id; }) + 1 : 0;
-      var issueSummary = issueByObject[o.id];
-      var issueTone = issueToneFor(issueSummary);
+      var issueSummary = issueByObject && issueByObject[o.id];
+      var issueTone = (typeof issueToneFor === 'function') ? issueToneFor(issueSummary) : null;
+      var frameState = o.type === 'image' ? stImageFrameState(o) : null;
       var base = {
         position: 'absolute', left: f.x * scale + 'px', top: f.y * scale + 'px',
         width: f.w * scale + 'px', height: f.h * scale + 'px', zIndex: o.z || 1,
         boxSizing: 'border-box', cursor: interactivity ? 'move' : 'default',
         outline: isSel ? '2px solid ' + C.accent : (isAgentPending ? '2px solid ' + agentPendingColor : '1px dashed transparent'),
-        boxShadow: isAgentPending ? '0 0 0 4px rgba(245,158,11,0.22)' : undefined,
+        boxShadow: isSel ? '0 0 0 4px rgba(99,102,241,0.18)' : (isAgentPending ? '0 0 0 4px rgba(245,158,11,0.22)' : undefined),
       };
       var inner = null;
       if (o.type === 'text') {
@@ -3842,15 +4128,21 @@
         var s = run.style || {};
         inner = hh('div', { style: { fontSize: (s.size || 16) * scale + 'px', color: s.color || '#111827', fontWeight: s.bold ? 700 : 400, textAlign: s.align || 'left', whiteSpace: 'pre-wrap', lineHeight: 1.25, overflow: 'hidden', width: '100%', height: '100%', overflowWrap: 'break-word', fontFamily: stSafeFontFamily(s.font) } }, run.text);
       } else if (o.type === 'image') {
-        inner = o.src
-          ? hh('img', { src: o.src, alt: '', draggable: false, style: { width: '100%', height: '100%', objectFit: o.fit === 'contain' ? 'contain' : 'cover', pointerEvents: 'none' } })
-          : hh('div', { style: { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: C.panelAlt, border: '2px dashed ' + C.border, borderRadius: '8px', fontSize: 12 * scale + 'px', color: C.muted, pointerEvents: 'none' } }, '🖼️ ' + TT('studio.image_placeholder', 'Image frame'));
+        if (o.src) {
+          inner = hh('img', { src: o.src, alt: '', draggable: false, style: { width: '100%', height: '100%', objectFit: o.fit === 'contain' ? 'contain' : 'cover', pointerEvents: 'none' } });
+        } else {
+          var placeholderTone = frameState && frameState.key === 'kept-placeholder' ? statusTone('success') : statusTone('review');
+          inner = hh('div', { style: { width: '100%', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', textAlign: 'center', background: placeholderTone.bg, border: '2px dashed ' + placeholderTone.border, borderRadius: '8px', fontSize: Math.max(9, 12 * scale) + 'px', color: placeholderTone.fg, fontWeight: 800, pointerEvents: 'none', padding: '6px', overflow: 'hidden' } },
+            hh('span', null, frameState.label),
+            hh('span', { style: { fontSize: Math.max(8, 9 * scale) + 'px', fontWeight: 600, lineHeight: 1.2, opacity: 0.9 } }, frameState.message));
+        }
       } else if (o.type === 'shape') {
         inner = hh('div', { style: { width: '100%', height: '100%', background: o.fill || '#e2e8f0', borderRadius: o.shape === 'ellipse' ? '50%' : '8px', pointerEvents: 'none' } });
       }
       if (!interactivity) return hh('div', { key: o.id, style: base, 'aria-hidden': true }, inner);
-      var labelText = o.type === 'text' ? ((o.runs && o.runs[0] && o.runs[0].text) || 'text').slice(0, 40) : o.type === 'image' ? (o.alt || TT('studio.image_no_alt', 'image without alt text')) : (o.shape || 'shape');
+      var labelText = o.type === 'text' ? ((o.runs && o.runs[0] && o.runs[0].text) || 'text').slice(0, 40) : o.type === 'image' ? (frameState && !o.src ? frameState.label : (o.alt || TT('studio.image_no_alt', 'image without alt text'))) : (o.shape || 'shape');
       var objectA11yLabel = issueSummary ? ', ' + issueSummary.count + ' accessibility item' + (issueSummary.count === 1 ? '' : 's') : '';
+      var handleBase = { position: 'absolute', width: '9px', height: '9px', background: C.panel, border: '2px solid ' + C.accent, borderRadius: '999px', pointerEvents: 'none', zIndex: 54 };
       return hh('div', Object.assign({
         key: o.id, tabIndex: 0, role: 'group',
         'aria-label': (isSel ? TT('studio.selected', 'Selected') + ' ' : '') + o.type + ': ' + labelText + (readingIndex ? ', reading order ' + readingIndex : '') + objectA11yLabel,
@@ -3867,21 +4159,28 @@
       }, extra),
         inner,
         readingIndex ? hh('span', { 'aria-hidden': true, style: { position: 'absolute', left: '4px', top: '4px', minWidth: '20px', height: '20px', borderRadius: '999px', background: C.headerBg, color: C.headerText, border: '1px solid ' + C.hBtnBorder, fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', boxShadow: '0 1px 4px rgba(15,23,42,0.25)', zIndex: 55 } }, readingIndex) : null,
+        frameState && (frameState.key === 'kept-placeholder' || frameState.key === 'empty-placeholder') ? hh('span', { 'aria-hidden': true, style: { position: 'absolute', left: '4px', bottom: '4px', maxWidth: 'calc(100% - 8px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', border: '1px solid ' + (frameState.key === 'kept-placeholder' ? statusTone('success').border : statusTone('review').border), background: frameState.key === 'kept-placeholder' ? statusTone('success').bg : statusTone('review').bg, color: frameState.key === 'kept-placeholder' ? statusTone('success').fg : statusTone('review').fg, borderRadius: '999px', fontSize: '9px', fontWeight: 900, padding: '2px 6px', pointerEvents: 'none', zIndex: 56 } }, frameState.label) : null,
         issueSummary ? hh('button', {
           type: 'button',
           title: issueSummary.title + (issueSummary.message ? ': ' + issueSummary.message : ''),
           'aria-label': issueSummary.label + ' accessibility item for ' + labelText,
           onPointerDown: function (e) { e.stopPropagation(); },
-          onClick: function (e) { e.stopPropagation(); selectOnly(o.id); setPreflightOpen(true); stAnnounce(issueSummary.title); },
+          onClick: function (e) { e.stopPropagation(); openIssueForObject(o.id, issueSummary.title, issueSummary.severity); },
           style: { position: 'absolute', right: '4px', top: '4px', border: '1px solid ' + issueTone.border, background: issueTone.bg, color: issueTone.fg, borderRadius: '999px', fontSize: '9px', fontWeight: 900, padding: '2px 6px', cursor: 'pointer', zIndex: 65, lineHeight: 1.3, boxShadow: '0 1px 4px rgba(15,23,42,0.22)' }
         }, issueSummary.label + (issueSummary.count > 1 ? ' ' + issueSummary.count : '')) : null,
-        isSel ? hh('div', {
-          role: 'presentation',
-          onPointerDown: onObjectPointerDown(o, 'resize'),
-          onPointerMove: onCanvasPointerMove,
-          onPointerUp: onCanvasPointerUp,
-          style: { position: 'absolute', right: '-7px', bottom: '-7px', width: '14px', height: '14px', background: C.accent, border: '2px solid ' + C.panel, borderRadius: '4px', cursor: 'nwse-resize' },
-        }) : null,
+        isSel ? [
+          hh('span', { key: 'h-tl', style: Object.assign({}, handleBase, { left: '-6px', top: '-6px' }) }),
+          hh('span', { key: 'h-tr', style: Object.assign({}, handleBase, { right: '-6px', top: '-6px' }) }),
+          hh('span', { key: 'h-bl', style: Object.assign({}, handleBase, { left: '-6px', bottom: '-6px' }) }),
+          hh('div', {
+            key: 'resize',
+            role: 'presentation',
+            onPointerDown: onObjectPointerDown(o, 'resize'),
+            onPointerMove: onCanvasPointerMove,
+            onPointerUp: onCanvasPointerUp,
+            style: { position: 'absolute', right: '-7px', bottom: '-7px', width: '14px', height: '14px', background: C.accent, border: '2px solid ' + C.panel, borderRadius: '4px', cursor: 'nwse-resize', zIndex: 55 },
+          })
+        ] : null,
         // Floating contextual quick-actions (Canva-style direct manipulation):
         // a small bar hovering over the selected object with Duplicate/Delete, so
         // the two most-common edits are one tap at the object instead of a trip to
@@ -3920,6 +4219,7 @@
         return txt || TT('studio.text_block', 'Text block');
       }
       if (o.type === 'image') {
+        if (!o.src) return stImageFrameState(o).label;
         if (o.decorative) return TT('studio.decorative_image', 'Decorative image');
         var alt = stCleanText(o.alt, max);
         return alt ? TT('studio.image', 'Image') + ': ' + alt : TT('studio.image_no_alt_short', 'Image without alt');
@@ -3943,7 +4243,7 @@
       return h('div', { key: o.id, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 4px', borderRadius: '6px', background: selectionIds.indexOf(o.id) >= 0 ? C.selectedBg : C.panelAlt, border: '1px solid ' + (issueTone ? issueTone.border : C.border) } },
         h('button', { onClick: function () { selectOnly(o.id); }, style: { flex: 1, minWidth: 0, textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontSize: '11px', color: C.text, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }, 'aria-label': TT('studio.select_object', 'Select') + ' ' + o.type + ' ' + text },
           h('span', { 'aria-hidden': true }, icon + ' '), (i + 1) + '. ' + text),
-        issueSummary ? h('button', { type: 'button', onClick: function () { selectOnly(o.id); setPreflightOpen(true); stAnnounce(issueSummary.title); }, title: issueSummary.title + (issueSummary.message ? ': ' + issueSummary.message : ''), 'aria-label': issueSummary.label + ' accessibility item for ' + text, style: { border: '1px solid ' + issueTone.border, background: issueTone.bg, color: issueTone.fg, borderRadius: '999px', cursor: 'pointer', fontSize: '9px', fontWeight: 900, padding: '2px 5px', flex: '0 0 auto' } }, issueSummary.label + (issueSummary.count > 1 ? ' ' + issueSummary.count : '')) : null,
+        issueSummary ? h('button', { type: 'button', onClick: function () { openIssueForObject(o.id, issueSummary.title, issueSummary.severity); }, title: issueSummary.title + (issueSummary.message ? ': ' + issueSummary.message : ''), 'aria-label': issueSummary.label + ' accessibility item for ' + text, style: { border: '1px solid ' + issueTone.border, background: issueTone.bg, color: issueTone.fg, borderRadius: '999px', cursor: 'pointer', fontSize: '9px', fontWeight: 900, padding: '2px 5px', flex: '0 0 auto' } }, issueSummary.label + (issueSummary.count > 1 ? ' ' + issueSummary.count : '')) : null,
         h('button', { disabled: i === 0, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i - 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_earlier', 'Moved earlier in reading order')); }, title: TT('studio.reading_earlier', 'Read earlier'), 'aria-label': TT('studio.reading_earlier', 'Read earlier') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '10px', opacity: i === 0 ? 0.4 : 1 } }, '↑'),
         h('button', { disabled: i === doc.objects.length - 1, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i + 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_later', 'Moved later in reading order')); }, title: TT('studio.reading_later', 'Read later'), 'aria-label': TT('studio.reading_later', 'Read later') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === doc.objects.length - 1 ? 'default' : 'pointer', fontSize: '10px', opacity: i === doc.objects.length - 1 ? 0.4 : 1 } }, '↓'));
     });
@@ -3952,10 +4252,15 @@
       var o = doc.objects.filter(function (obj) { return obj && obj.id === item.id; })[0];
       var text = objectSummary(o, 30);
       var selectedLayer = selectionIds.indexOf(item.id) >= 0;
+      var typeLabel = o && o.type === 'text' ? (o.role === 'body' ? TT('studio.body_text', 'Body text') : o.role || 'text') : o && o.type === 'image' ? stImageFrameState(o).label : (o && o.type || 'object');
+      var chipStyle = { display: 'inline-flex', alignItems: 'center', border: '1px solid ' + C.border, borderRadius: '999px', padding: '1px 5px', fontSize: '9px', color: C.muted, background: C.inputBg, whiteSpace: 'nowrap' };
       return h('div', { key: item.id, style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px', padding: '5px', borderRadius: '8px', background: selectedLayer ? C.selectedBg : C.panelAlt, border: '1px solid ' + C.border } },
         h('button', { onClick: function () { selectOnly(item.id); }, style: { border: 'none', background: 'none', color: C.text, textAlign: 'left', cursor: 'pointer', minWidth: 0, padding: 0 }, 'aria-label': TT('studio.select_layer', 'Select layer') + ': ' + text },
           h('span', { style: { display: 'block', fontSize: '11px', fontWeight: 800, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, text),
-          h('span', { style: { display: 'block', fontSize: '9.5px', color: C.muted, marginTop: '2px' } }, TT('studio.layer_z', 'Layer') + ' ' + item.z + ' - ' + TT('studio.reading_position', 'Read') + ' ' + item.readingIndex)),
+          h('span', { style: { display: 'flex', gap: '3px', flexWrap: 'wrap', marginTop: '3px' } },
+            h('span', { style: chipStyle }, typeLabel),
+            h('span', { style: chipStyle }, TT('studio.reading_position', 'Read') + ' ' + item.readingIndex),
+            h('span', { style: chipStyle }, TT('studio.layer_z', 'Layer') + ' ' + item.z))),
         h('span', { style: { display: 'flex', gap: '3px', alignItems: 'center' } },
           h('button', { style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: 'pointer', fontSize: '10px', padding: '2px 5px' }, onClick: function () { dispatch({ type: 'object.z', target: item.id, z: item.z + 1 }, 'user'); }, title: TT('studio.bring_forward', 'Bring forward (visual stacking only - reading order is the list)') }, '+z'),
           h('button', { style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: 'pointer', fontSize: '10px', padding: '2px 5px' }, onClick: function () { dispatch({ type: 'object.z', target: item.id, z: Math.max(0, item.z - 1) }, 'user'); }, title: TT('studio.send_back', 'Send backward') }, '-z')));
@@ -4023,6 +4328,7 @@
       var selectedIssueSummary = issueByObject[selected.id];
       var selectedIssueTone = selectedIssueSummary ? issueToneFor(selectedIssueSummary) : statusTone('success');
       var selectedA11yActions = stObjectReadyActions(doc, selected.id);
+      var selectedImageState = selected.type === 'image' ? stImageFrameState(selected) : null;
       propPanel = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         h('div', { style: S.label }, TT('studio.selection', 'Selection') + ' — ' + selected.type),
         h('div', { style: { padding: '7px', border: '1px solid ' + selectedIssueTone.border, background: selectedIssueTone.bg, color: selectedIssueTone.fg, borderRadius: '8px', fontSize: '10.5px', lineHeight: 1.35 } },
@@ -4104,16 +4410,25 @@
         selected.type === 'text' ? colorField(TT('studio.text_color', 'Text color'), selectedTextStyle.color || '#111827', function (hex) { var runs = textRunsFor(selected); runs[0].style.color = hex; dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); }) : null,
         selected.type === 'shape' ? colorField(TT('studio.fill', 'Fill'), selected.fill || '#dbeafe', function (hex) { dispatch({ type: 'object.update', target: selected.id, patch: { fill: hex } }, 'user'); }) : null,
         selected.type === 'image' ? h('div', null,
+          (!selected.src && selectedImageState) ? h('div', { style: { border: '1px solid ' + (selectedImageState.key === 'kept-placeholder' ? statusTone('success').border : statusTone('review').border), background: selectedImageState.key === 'kept-placeholder' ? statusTone('success').bg : statusTone('review').bg, color: selectedImageState.key === 'kept-placeholder' ? statusTone('success').fg : statusTone('review').fg, borderRadius: '8px', padding: '7px', fontSize: '10.5px', lineHeight: 1.35, marginBottom: '6px' } },
+            h('strong', { style: { display: 'block', fontSize: '11px' } }, selectedImageState.label),
+            h('span', null, selectedImageState.message)) : null,
           h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.alt_text', 'Alt text (what a screen reader hears)'),
             // key by object id AND altNonce: switching selection OR an AI draft
             // remounts with the right defaultValue; commit-on-blur = ONE
             // object.update op per edit.
             h('textarea', { key: 'alt-' + selected.id + '-' + altNonce, defaultValue: selected.alt || '', rows: 3, style: Object.assign({}, S.input, { resize: 'vertical' }), 'data-st-alt-input': selected.id,
               onKeyDown: function (e) { e.stopPropagation(); },
-              onBlur: function (e) { if (e.target.value !== (selected.alt || '')) dispatch({ type: 'object.update', target: selected.id, patch: { alt: e.target.value } }, 'user'); } })),
+              onBlur: function (e) {
+                if (e.target.value !== (selected.alt || '')) {
+                  var beforeAltEdit = stAnalyzeDoc(_docRef.current);
+                  dispatch({ type: 'object.update', target: selected.id, patch: { alt: e.target.value } }, 'user');
+                  advancePreflightGuideAfter({ type: 'add-alt', targetId: selected.id, issueType: 'alt' }, beforeAltEdit);
+                }
+              } })),
           (canSuggestAlt && selected.src) ? h('button', { style: Object.assign({}, S.tool, { marginTop: '4px', opacity: aiBusy === 'alt' ? 0.6 : 1 }), disabled: aiBusy === 'alt', onClick: runSuggestAlt, title: TT('studio.ai_suggest_alt_hint', 'Draft alt text with AI, then review it — logged as AI in your process') }, aiBusy === 'alt' ? '… ' + TT('studio.ai_drafting', 'Drafting…') : '✨ ' + TT('studio.ai_suggest_alt', 'Suggest alt text')) : null,
           h('label', { style: { fontSize: '11px', color: C.text, display: 'flex', gap: '6px', alignItems: 'center', marginTop: '4px' } },
-            h('input', { type: 'checkbox', checked: !!selected.decorative, onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { decorative: e.target.checked } }, 'user'); } }),
+            h('input', { type: 'checkbox', checked: !!selected.decorative, onChange: function (e) { var beforeDecorativeEdit = stAnalyzeDoc(_docRef.current); dispatch({ type: 'object.update', target: selected.id, patch: { decorative: e.target.checked } }, 'user'); advancePreflightGuideAfter({ type: 'add-alt', targetId: selected.id, issueType: 'alt' }, beforeDecorativeEdit); } }),
             TT('studio.decorative', 'Decorative (skip in screen readers)')),
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '4px' } },
             h('button', { style: Object.assign({}, S.tool, selected.fit !== 'contain' ? { borderColor: C.accent } : null), onClick: function () { dispatch({ type: 'object.update', target: selected.id, patch: { fit: 'cover' } }, 'user'); }, 'aria-pressed': selected.fit !== 'contain' }, 'Fill'),
@@ -4174,6 +4489,23 @@
     };
     var errorTone = statusTone('error');
     var successTone = statusTone('success');
+    var preflightGuideTone = preflightGuide.issue ? statusTone(preflightGuide.issue.severity === 'error' ? 'error' : preflightGuide.issue.severity === 'warning' ? 'warning' : 'review') : successTone;
+    var exportToneFor = function (status) {
+      return statusTone(status === 'blocked' ? 'error' : status === 'review' ? 'warning' : 'success');
+    };
+    var exportCardIssueFilter = function (card) {
+      if (!card || (card.key !== 'tagged-pdf' && card.key !== 'html' && card.key !== 'visual')) return null;
+      if (card.status === 'blocked') return preflight.counts.error ? 'fix' : (preflight.counts.warning ? 'warning' : (preflight.counts.review ? 'review' : null));
+      if (card.status === 'review') return preflight.counts.warning ? 'warning' : (preflight.counts.review ? 'review' : null);
+      return null;
+    };
+    var openExportCardIssues = function (filter) {
+      if (!filter) return;
+      setPreflightIssueFilter(filter);
+      setPreflightGuideIndex(0);
+      setPreflightOpen(true);
+      stAnnounce(filter === 'fix' ? TT('studio.export_show_fixes', 'Showing required accessibility fixes') : TT('studio.export_show_review', 'Showing accessibility review items'));
+    };
     var modLabel = (function () { try { return /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '') ? '⌘' : 'Ctrl'; } catch (_) { return 'Ctrl'; } })();
     // Canva-style quick color picker: brand swatches + a curated palette + the
     // colors already used in this design, with the OS picker kept as "Custom".
@@ -4254,6 +4586,19 @@
             ((canAgentEdit || canBulkAlt) && preflightTotal) ? h('button', { style: Object.assign({}, S.hBtn, { marginTop: '4px', width: '100%', opacity: aiBusy ? 0.6 : 1 }), disabled: !!aiBusy, onClick: runMakeAccessible, title: TT('studio.a11y_guided_hint', 'Applies the simple rule-based fixes, drafts missing alt text for review, and prepares a structure-fix request — you approve every AI change') }, '♿ ' + TT('studio.a11y_guided', 'Fix accessibility (guided)')) : null,
             (canBulkAlt && altFailures.length) ? h('button', { style: Object.assign({}, S.hBtn, { marginTop: '4px', width: '100%', opacity: aiBusy ? 0.6 : 1 }), disabled: !!aiBusy, onClick: runDraftAllAlt, title: TT('studio.ai_alt_all_hint', 'AI drafts alt text for every unlabeled image — you review each draft before it applies, and edits are logged honestly') }, aiBusy === 'alt-all' ? '… ' + TT('studio.ai_drafting', 'Drafting…') : '✨ ' + TT('studio.ai_alt_all', 'Draft missing alt text') + ' (' + Math.min(altFailures.length, 12) + ')') : null,
             canDesignFeedback ? h('button', { style: Object.assign({}, S.hBtn, { marginTop: '4px', width: '100%', opacity: aiBusy ? 0.6 : 1 }), disabled: !!aiBusy, onClick: runDesignFeedback, title: TT('studio.feedback_hint', 'AI looks at the rendered page and suggests design improvements — advisory only, nothing is changed') }, aiBusy === 'feedback' ? '… ' + TT('studio.feedback_busy', 'Reviewing…') : '🎨 ' + TT('studio.feedback', 'Get design feedback')) : null),
+          preflightGuide.total ? h('div', { style: { flex: '1 1 250px', border: '1px solid ' + preflightGuideTone.border, background: preflightGuideTone.bg, color: preflightGuideTone.fg, borderRadius: '8px', padding: '8px', fontSize: '11px', lineHeight: 1.35 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'baseline' } },
+              h('strong', { style: { fontSize: '11.5px' } }, TT('studio.preflight_guide', 'Guided review')),
+              h('span', { style: { fontSize: '9.5px', fontWeight: 900, textTransform: 'uppercase' } }, preflightGuide.title)),
+            h('div', { style: { marginTop: '5px', fontWeight: 800 } }, preflightGuide.issue.title),
+            h('div', { style: { marginTop: '2px' } }, preflightGuide.issue.message),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '7px' } },
+              h('button', { type: 'button', style: { border: '1px solid ' + preflightGuideTone.border, background: C.panel, color: C.text, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 800 }, onClick: function () { setPreflightGuideIndex(preflightGuide.index - 1); } }, TT('studio.previous', 'Previous')),
+              h('button', { type: 'button', style: { border: '1px solid ' + preflightGuideTone.border, background: C.panel, color: C.text, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 800 }, onClick: function () { setPreflightGuideIndex(preflightGuide.index + 1); } }, TT('studio.next', 'Next')),
+              preflightGuide.issue.id ? h('button', { type: 'button', style: { border: '1px solid ' + preflightGuideTone.border, background: C.panel, color: C.text, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 800 }, onClick: function () { selectOnly(preflightGuide.issue.id); } }, TT('studio.select', 'Select')) : null,
+              preflightGuide.actions.map(function (action, idx) {
+                return h('button', { key: idx, type: 'button', style: { border: '1px solid ' + preflightGuideTone.border, background: preflightGuideTone.bg, color: preflightGuideTone.fg, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 900 }, onClick: function () { applyReadyAction(action); } }, readyActionLabel(action));
+              }))) : h('div', { style: { flex: '1 1 250px', border: '1px solid ' + successTone.border, background: successTone.bg, color: successTone.fg, borderRadius: '8px', padding: '8px', fontSize: '11px', fontWeight: 800 } }, TT('studio.guided_review_done', 'Guided review complete.')),
           h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(5, minmax(112px, 1fr))', gap: '6px', flex: '1 1 520px' } },
             accessibilityChecklist.map(function (check) {
               var tone = check.severity === 'error' ? statusTone('error') : check.severity === 'warning' ? statusTone('warning') : check.severity === 'review' ? statusTone('review') : statusTone('success');
@@ -4265,33 +4610,64 @@
                 h('div', { style: { fontSize: '10px', lineHeight: 1.25, marginTop: '5px' } }, check.message));
             })),
           h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', flex: '1 1 100%' } },
-            ready && ready.actions.length ? ready.actions.slice(0, 8).map(function (action, idx) {
+            quickReady && quickReady.actions.length ? quickReady.actions.slice(0, 8).map(function (action, idx) {
               var tone = statusTone(action.severity === 'error' ? 'error' : action.severity === 'warning' ? 'warning' : 'review');
               var label = readyActionLabel(action);
               return h('button', { key: idx, style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '5px 8px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, textAlign: 'left' },
                 onClick: function () { applyReadyAction(action); },
                 title: action.message }, label);
-            }) : h('span', { style: { fontSize: '12px', color: C.muted, fontWeight: 700 } }, TT('studio.no_a11y_issues', 'No accessibility issues found.'))),
+            }) : h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' } },
+              h('span', { style: { fontSize: '12px', color: C.muted, fontWeight: 700 } }, preflight.issues.length && preflightIssueFilter !== 'all' ? TT('studio.no_quick_actions_in_filter', 'No quick actions in this filter.') : TT('studio.no_a11y_issues', 'No accessibility issues found.')),
+              preflight.issues.length && preflightIssueFilter !== 'all' ? h('button', { type: 'button', style: Object.assign({}, S.tool, { padding: '3px 7px', minHeight: '22px', fontSize: '10px' }), onClick: resetPreflightIssueFilter }, TT('studio.show_all_issues', 'Show all issues')) : null)),
           designFeedback ? h('div', { style: { flex: '1 1 100%', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panel, padding: '8px', color: C.text } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' } },
               h('strong', { style: { fontSize: '11.5px' } }, '🎨 ' + TT('studio.feedback_title', 'Design feedback (AI)')),
               h('button', { style: Object.assign({}, S.tool, { padding: '2px 8px', minHeight: '22px', fontSize: '10px' }), onClick: function () { setDesignFeedback(null); } }, TT('studio.dismiss', 'Dismiss'))),
             h('p', { style: { margin: '6px 0 4px', fontSize: '11px', lineHeight: 1.45, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, designFeedback.text),
             h('p', { style: { margin: 0, fontSize: '9.5px', color: C.soft } }, TT('studio.feedback_note', 'Suggestions only — nothing in your document was changed.'))) : null,
+          preflight.issues.length ? h('div', { role: 'group', 'aria-label': TT('studio.issue_filter', 'Issue filter'), style: { display: 'flex', gap: '4px', flexWrap: 'wrap', flex: '1 1 100%' } },
+            [
+              ['all', TT('studio.issue_filter_all', 'All'), preflight.issues.length],
+              ['fix', TT('studio.a11y_fix', 'Fix'), preflight.counts.error],
+              ['warning', TT('studio.a11y_warning', 'Warnings'), preflight.counts.warning],
+              ['review', TT('studio.a11y_review', 'Review'), preflight.counts.review]
+            ].map(function (item) {
+              var active = preflightIssueFilter === item[0];
+              return h('button', { key: item[0], type: 'button', 'aria-pressed': active, style: Object.assign({}, S.tool, { padding: '4px 8px', minHeight: '24px', fontSize: '10px' }, active ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setPreflightIssueFilter(item[0]); setPreflightGuideIndex(0); } }, item[1] + ' ' + item[2]);
+            })) : null,
           preflight.issues.length ? h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(auto-fit, minmax(210px, 1fr))', gap: '6px', flex: '1 1 100%' } },
-            preflight.issues.slice(0, 10).map(function (issue, idx) {
+            visiblePreflightIssues.length ? visiblePreflightIssues.slice(0, 10).map(function (issue, idx) {
               var tone = statusTone(issue.severity === 'error' ? 'error' : issue.severity === 'warning' ? 'warning' : 'review');
-              var issueAction = stReadyActionForIssue(doc, issue);
-              var actionLabel = readyActionLabel(issueAction);
+              var issueActions = stIssueActionChoices(doc, issue);
+              var guideIdx = idx;
               return h('div', { key: idx, style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '7px', textAlign: 'left', fontSize: '11px' }, title: issue.message },
                 h('strong', { style: { display: 'block', marginBottom: '2px' } }, issue.title),
                 h('span', { style: { display: 'block', lineHeight: 1.25 } }, issue.message),
                 h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' } },
-                  issue.id ? h('button', { type: 'button', style: { border: '1px solid ' + tone.border, background: C.panel, color: C.text, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 800 }, onClick: function () { selectOnly(issue.id); } }, TT('studio.select', 'Select')) : null,
-                  issueAction ? h('button', { type: 'button', style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 900 }, onClick: function () { applyReadyAction(issueAction); } }, actionLabel) : null));
-            })) : null) : null,
+                  issue.id ? h('button', { type: 'button', style: { border: '1px solid ' + tone.border, background: C.panel, color: C.text, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 800 }, onClick: function () { setPreflightGuideIndex(guideIdx); selectOnly(issue.id); } }, TT('studio.select', 'Select')) : null,
+                  issueActions.map(function (issueAction, actionIdx) {
+                    return h('button', { key: actionIdx, type: 'button', style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 900 }, onClick: function () { applyReadyAction(issueAction); } }, readyActionLabel(issueAction));
+                  })));
+            }) : h('div', { style: { gridColumn: '1 / -1', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap', fontSize: '11px', color: C.muted, padding: '8px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panel } },
+              h('span', null, TT('studio.issue_filter_empty', 'No issues in this filter.')),
+              preflightIssueFilter !== 'all' ? h('button', { type: 'button', style: Object.assign({}, S.tool, { padding: '3px 7px', minHeight: '22px', fontSize: '10px' }), onClick: resetPreflightIssueFilter }, TT('studio.show_all_issues', 'Show all issues')) : null)) : null) : null,
         // export panel
         exportOpen ? h('div', { style: { padding: '10px 14px', background: C.exportBg, color: C.text, borderBottom: '1px solid ' + C.exportBorder, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(4, minmax(150px, 1fr))', gap: '6px', flex: '1 1 100%' } },
+            exportConfidence.cards.map(function (card) {
+              var tone = exportToneFor(card.status);
+              var label = card.status === 'blocked' ? TT('studio.export_blocked', 'Blocked') : card.status === 'review' ? TT('studio.export_review', 'Review') : TT('studio.export_ready', 'Ready');
+              var issueFilter = exportCardIssueFilter(card);
+              var actionLabel = issueFilter === 'fix' ? TT('studio.open_required_fixes', 'Open fixes') : issueFilter ? TT('studio.open_review_items', 'Open review') : '';
+              var cardStyle = { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '7px', minHeight: '72px', textAlign: 'left', font: 'inherit' };
+              if (issueFilter) cardStyle = Object.assign({}, cardStyle, { cursor: 'pointer', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.14)' });
+              return h(issueFilter ? 'button' : 'div', { key: card.key, type: issueFilter ? 'button' : undefined, style: cardStyle, onClick: issueFilter ? function () { openExportCardIssues(issueFilter); } : undefined, title: issueFilter ? TT('studio.export_card_open_issues', 'Open related accessibility issues') : undefined },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '6px', alignItems: 'baseline' } },
+                  h('strong', { style: { fontSize: '11px' } }, card.label),
+                  h('span', { style: { fontSize: '9px', fontWeight: 900, textTransform: 'uppercase' } }, label)),
+                h('div', { style: { fontSize: '10px', lineHeight: 1.25, marginTop: '5px' } }, card.message),
+                issueFilter ? h('div', { style: { fontSize: '9.5px', fontWeight: 900, marginTop: '7px', textTransform: 'uppercase' } }, actionLabel) : null);
+            })),
           h('button', { style: S.tool, onClick: exportTagged }, '📄 ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')),
           h('button', { style: S.tool, onClick: exportHtml }, '🌐 ' + TT('studio.export_html', 'Accessible HTML')),
           h('button', { style: S.tool, onClick: exportPng }, '🖼️ PNG'),
@@ -4305,7 +4681,7 @@
             '♿ ' + altFailures.length + ' ' + TT('studio.alt_gate_msg', 'image(s) need alt text or a decorative mark:'),
             altFailures.map(function (m) {
               return h('button', { key: m.id, style: { marginLeft: '6px', border: '1px solid ' + errorTone.border, background: errorTone.bg, color: errorTone.fg, borderRadius: '6px', fontSize: '10px', cursor: 'pointer', padding: '2px 6px' },
-                onClick: function () { selectOnly(m.id); stAnnounce(TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.')); } }, TT('studio.fix', 'Fix') + ' #' + (m.index + 1));
+                onClick: function () { openIssueForObject(m.id, TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.'), 'error'); } }, TT('studio.fix', 'Fix') + ' #' + (m.index + 1));
             })) : h('span', { style: { fontSize: '11px', color: successTone.fg, background: successTone.bg, border: '1px solid ' + successTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } }, '♿ ' + TT('studio.alt_gate_ok', 'All images have alt text or are marked decorative — exports are unblocked.'))) : null,
         // body
         h('div', { style: S.body },
@@ -4471,7 +4847,10 @@
             var r2 = new FileReader();
             r2.onload = function (e2) {
               stImportImageDataUrl(e2.target.result, 1600).then(function (src2) {
-                dispatch({ type: 'object.update', target: replaceId, patch: { src: src2, provenance: { origin: 'upload' } } }, 'import');
+                var liveReplace = _docRef.current && _docRef.current.objects ? _docRef.current.objects.filter(function (o) { return o && o.id === replaceId; })[0] : null;
+                var beforeReplaceImage = stAnalyzeDoc(_docRef.current);
+                dispatch({ type: 'object.update', target: replaceId, patch: stUploadedImagePatch(liveReplace, src2) }, 'import');
+                advancePreflightGuideAfter({ type: 'replace-image', targetId: replaceId, issueType: 'empty-image' }, beforeReplaceImage);
               });
             };
             r2.readAsDataURL(f2);
@@ -4536,6 +4915,17 @@
   AlloStudio.stBuildAccessibilityChecklist = stBuildAccessibilityChecklist;
   AlloStudio.stObjectIssueSummary = stObjectIssueSummary;
   AlloStudio.stBuildA11yAutoFixPlan = stBuildA11yAutoFixPlan;
+  AlloStudio.stIsKeptPlaceholder = stIsKeptPlaceholder;
+  AlloStudio.stKeepPlaceholderPatch = stKeepPlaceholderPatch;
+  AlloStudio.stUploadedImagePatch = stUploadedImagePatch;
+  AlloStudio.stImageFrameState = stImageFrameState;
+  AlloStudio.stPreflightGuide = stPreflightGuide;
+  AlloStudio.stFilterPreflightIssues = stFilterPreflightIssues;
+  AlloStudio.stExportConfidence = stExportConfidence;
+  AlloStudio.stProcessStepGroups = stProcessStepGroups;
+  AlloStudio.stIssueIndexForObject = stIssueIndexForObject;
+  AlloStudio.stNextPreflightGuideIndex = stNextPreflightGuideIndex;
+  AlloStudio.stFilteredProcessStepGroups = stFilteredProcessStepGroups;
   AlloStudio.stStyleKits = stStyleKits;
   AlloStudio.stStyleKitPatch = stStyleKitPatch;
   AlloStudio.stLayerItems = stLayerItems;

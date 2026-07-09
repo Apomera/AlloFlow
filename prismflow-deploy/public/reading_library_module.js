@@ -246,11 +246,157 @@
     return size + align;
   }
 
+  function cleanReadingText(value) {
+    if (value == null) return '';
+    if (Array.isArray(value)) {
+      value = value.filter(function (v) { return typeof v === 'string' || typeof v === 'number'; }).join('\n');
+    }
+    if (typeof value !== 'string' && typeof value !== 'number') return '';
+    return String(value)
+      .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
+      .replace(/!\[[^\]]*]\[[^\]]*]/g, ' ')
+      .replace(/<figure[\s\S]*?<\/figure>/gi, ' ')
+      .replace(/<figcaption[\s\S]*?<\/figcaption>/gi, ' ')
+      .replace(/<picture[\s\S]*?<\/picture>/gi, ' ')
+      .replace(/<svg[\s\S]*?<\/svg>/gi, ' ')
+      .replace(/<img\b[^>]*>/gi, ' ')
+      .replace(/data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=]+/g, ' ')
+      .replace(/\b(?:https?:\/\/|file:\/\/)\S+\.(?:png|jpe?g|gif|webp|svg|avif)(?:\?\S*)?/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(/\r\n?/g, '\n')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/[ \t]{2,}/g, ' ')
+      .trim();
+  }
+
+  function pageTextForPipeline(page) {
+    if (page == null) return '';
+    if (typeof page === 'string' || typeof page === 'number' || Array.isArray(page)) return cleanReadingText(page);
+    if (typeof page !== 'object') return '';
+    if (Object.prototype.hasOwnProperty.call(page, 'text')) return cleanReadingText(page.text);
+    return '';
+  }
+
+  function bookPlainTextFromPages(title, pages) {
+    var parts = [];
+    var cleanTitle = cleanReadingText(title);
+    if (cleanTitle) parts.push(cleanTitle);
+    (Array.isArray(pages) ? pages : []).forEach(function (p) {
+      var text = pageTextForPipeline(p);
+      if (text) parts.push(text);
+    });
+    return parts.join('\n\n').trim();
+  }
+
   function bookPlainText(book) {
     if (!book) return '';
-    var parts = [book.title || ''];
-    (book.pages || []).forEach(function (p) { if (p.text) parts.push(p.text); });
-    return parts.join('\n\n').trim();
+    return bookPlainTextFromPages(book.title, book.pages);
+  }
+
+  function countWords(text) {
+    return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+  }
+
+  function clampIndex(n, min, max) {
+    n = Number(n);
+    if (!Number.isFinite(n)) n = min;
+    return Math.max(min, Math.min(max, Math.floor(n)));
+  }
+
+  function firstSectionHeading(text) {
+    var lines = String(text || '').split(/\n/).map(function (line) {
+      return cleanReadingText(line).replace(/\s+/g, ' ').trim();
+    }).filter(Boolean).slice(0, 12);
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (line.length > 90) continue;
+      if (/^(chapter|section|part|book)\s+([ivxlcdm]+|\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b[\s\S]*$/i.test(line)) return line;
+      if (/^(preface|introduction|prologue|epilogue|appendix|contents)$/i.test(line)) return line;
+    }
+    return '';
+  }
+
+  function detectReadingSections(title, pages) {
+    pages = Array.isArray(pages) ? pages : [];
+    var starts = [];
+    pages.forEach(function (page, idx) {
+      var heading = firstSectionHeading(pageTextForPipeline(page));
+      if (!heading) return;
+      var prev = starts[starts.length - 1];
+      if (prev && prev.title.toLowerCase() === heading.toLowerCase()) return;
+      starts.push({ title: heading, start: idx });
+    });
+    if (!starts.length) return [];
+    var ranges = [];
+    if (starts[0].start > 0) ranges.push({ title: 'Opening material', start: 0, end: starts[0].start - 1 });
+    starts.forEach(function (section, idx) {
+      var next = starts[idx + 1];
+      ranges.push({
+        title: section.title,
+        start: section.start,
+        end: next ? next.start - 1 : pages.length - 1,
+      });
+    });
+    return ranges.filter(function (r) { return r.end >= r.start; });
+  }
+
+  function sectionForPage(sections, pageIdx) {
+    sections = Array.isArray(sections) ? sections : [];
+    for (var i = 0; i < sections.length; i++) {
+      if (pageIdx >= sections[i].start && pageIdx <= sections[i].end) return sections[i];
+    }
+    return null;
+  }
+
+  function isLongFormBook(book, pages) {
+    pages = Array.isArray(pages) ? pages : [];
+    var words = book && book.stats && Number(book.stats.words);
+    return !!(
+      (book && book.contentType === 'public-domain-full-text') ||
+      pages.length > 30 ||
+      (Number.isFinite(words) && words > 10000)
+    );
+  }
+
+  function pageRangeLabel(start, end) {
+    return start === end ? 'Page ' + (start + 1) : 'Pages ' + (start + 1) + '-' + (end + 1);
+  }
+
+  function bookPlainTextForScope(title, pages, scope, pageIdx, rangeStartPage, rangeEndPage, sections) {
+    pages = Array.isArray(pages) ? pages : [];
+    if (!pages.length) return { text: cleanReadingText(title), label: 'No pages', start: 0, end: 0, wordCount: 0 };
+    var max = pages.length - 1;
+    var safePage = clampIndex(pageIdx, 0, max);
+    var active = scope || 'whole';
+    var start = 0;
+    var end = max;
+    var label = 'Whole text';
+    if (active === 'page') {
+      start = safePage; end = safePage; label = pageRangeLabel(start, end);
+    } else if (active === 'chapter') {
+      var section = sectionForPage(sections, safePage);
+      if (section) {
+        start = clampIndex(section.start, 0, max);
+        end = clampIndex(section.end, start, max);
+        label = section.title + ' (' + pageRangeLabel(start, end) + ')';
+      } else {
+        start = safePage; end = safePage; label = pageRangeLabel(start, end);
+      }
+    } else if (active === 'range') {
+      start = clampIndex(Number(rangeStartPage) - 1, 0, max);
+      end = clampIndex(Number(rangeEndPage) - 1, start, max);
+      label = pageRangeLabel(start, end);
+    }
+    if (active === 'whole') {
+      var whole = bookPlainTextFromPages(title, pages);
+      return { text: whole, label: label, start: 0, end: max, wordCount: countWords(whole) };
+    }
+    var body = bookPlainTextFromPages('', pages.slice(start, end + 1));
+    var cleanTitle = cleanReadingText(title);
+    var text = [cleanTitle, 'Selection: ' + label, body].filter(Boolean).join('\n\n').trim();
+    return { text: text, label: label, start: start, end: end, wordCount: countWords(text) };
   }
 
   // ------------------------------------------------------- AI translation
@@ -482,6 +628,9 @@
     var _pop = useState(null); var popup = _pop[0]; var setPopup = _pop[1];
     var _prac = useState(false); var showPractice = _prac[0]; var setShowPractice = _prac[1];
     var _gen = useState(false); var genOpen = _gen[0]; var setGenOpen = _gen[1];
+    var _scope = useState('auto'); var sourceScope = _scope[0]; var setSourceScope = _scope[1];
+    var _rs = useState(''); var rangeStartInput = _rs[0]; var setRangeStartInput = _rs[1];
+    var _re = useState(''); var rangeEndInput = _re[0]; var setRangeEndInput = _re[1];
     // AI translation: null | {status:'loading',language} | {status:'ready',
     // language, title, pages[], isRtl, langCode}. Ephemeral — never persisted.
     var _tx = useState(null); var translation = _tx[0]; var setTranslation = _tx[1];
@@ -507,21 +656,46 @@
     var displayTitle = txReady && translation.title ? translation.title : book.title;
     var displayLanguage = txReady ? translation.language : book.language;
     var displayRtl = txReady ? translation.isRtl : book.isRtl;
-    var displayPageText = txReady ? (translation.pages[pageIdx] || '') : (page && page.text) || '';
+    var displayPageText = txReady ? cleanReadingText(translation.pages[pageIdx] || '') : pageTextForPipeline(page);
     var displayPlainText = txReady
-      ? [displayTitle].concat(translation.pages).filter(Boolean).join('\n\n').trim()
+      ? bookPlainTextFromPages(displayTitle, translation.pages)
       : bookPlainText(book);
+    var sourcePages = txReady
+      ? translation.pages.map(function (text, idx) { return { n: idx + 1, img: null, text: text }; })
+      : pages;
+    var sourceSections = useMemo(function () { return detectReadingSections(displayTitle, sourcePages); }, [displayTitle, sourcePages]);
+    var longForm = isLongFormBook(book, sourcePages);
+    var currentSection = sectionForPage(sourceSections, pageIdx);
+    var defaultScope = longForm ? 'page' : 'whole';
+    var selectedScopeName = sourceScope === 'auto' ? defaultScope : sourceScope;
+    if (selectedScopeName === 'chapter' && !currentSection) selectedScopeName = 'page';
+    if (selectedScopeName === 'range' && sourcePages.length <= 1) selectedScopeName = 'page';
+    var selectedSource = bookPlainTextForScope(
+      displayTitle,
+      sourcePages,
+      selectedScopeName,
+      pageIdx,
+      rangeStartInput || (pageIdx + 1),
+      rangeEndInput || (pageIdx + 1),
+      sourceSections
+    );
     var bookSourceName = (book.source && book.source.name) || sourceLabel(bookSourceId(book));
     var bookSourceUrl = (book.source && book.source.url) || '#';
     var bookSourceHref = bookSourceUrl && bookSourceUrl !== '#' ? bookSourceUrl : '';
 
-    useEffect(function () { setTranslation(null); setTxMenuOpen(false); }, [book.slug]);
+    useEffect(function () {
+      setTranslation(null);
+      setTxMenuOpen(false);
+      setSourceScope('auto');
+      setRangeStartInput('');
+      setRangeEndInput('');
+    }, [book.slug]);
 
     var lines = useMemo(function () {
       if (!page) return [];
       // Translated view has no cue timings — tokens render un-highlightable.
       if (txReady) return assignCues(displayPageText, null);
-      return assignCues(page.text, page.words);
+      return assignCues(displayPageText, page.words);
     }, [page, txReady, displayPageText]);
 
     var stopAll = useCallback(function () {
@@ -661,10 +835,10 @@
         // more tools from it afterward, and register the book itself as a
         // resource-pack entry (host dedupes by slug) — the generated resource
         // and its source book both live in the lesson.
-        if (typeof props.setInputText === 'function') props.setInputText(displayPlainText);
+        if (typeof props.setInputText === 'function') props.setInputText(selectedSource.text);
         if (typeof props.onSaveToLesson === 'function') props.onSaveToLesson(bookRef());
-        props.handleGenerate(type, langOverride, false, displayPlainText);
-        props.addToast && props.addToast(tr('readinglib_generating', 'Creating') + ' ' + label + ' — "' + displayTitle + '"', 'success');
+        props.handleGenerate(type, langOverride, false, selectedSource.text);
+        props.addToast && props.addToast(tr('readinglib_generating', 'Creating') + ' ' + label + ' - "' + displayTitle + '" (' + selectedSource.label + ')', 'success');
         props.onExit && props.onExit(true);
       } catch (err) {
         props.addToast && props.addToast(tr('readinglib_generate_failed', 'Could not start generation.'), 'error');
@@ -680,8 +854,8 @@
         props.addToast && props.addToast(tr('readinglib_generate_unavailable', 'Generation is not available right now.'), 'error');
         return;
       }
-      props.setInputText(displayPlainText);
-      props.addToast && props.addToast('"' + displayTitle + '" ' + tr('readinglib_loaded_doc', 'is loaded as your source text — all the create tools can use it now.'), 'success');
+      props.setInputText(selectedSource.text);
+      props.addToast && props.addToast('"' + displayTitle + '" (' + selectedSource.label + ') ' + tr('readinglib_loaded_doc', 'is loaded as your source text - all the create tools can use it now.'), 'success');
       props.onExit && props.onExit(true);
     };
 
@@ -699,7 +873,7 @@
       stopAll();
       setPopup(null);
       var slug = book.slug;
-      var texts = pages.map(function (p) { return p.text || ''; });
+      var texts = pages.map(function (p) { return pageTextForPipeline(p); });
       setTranslation({ status: 'loading', language: lang });
       var prompt = 'Translate a reading-library text (reading level ' + book.level + ') from ' + book.language + ' into ' + lang + '. ' +
         'Return ONLY minified JSON, no markdown: {"title":string,"pages":string[]} where "pages" has EXACTLY ' + texts.length + ' entries — ' +
@@ -757,6 +931,15 @@
       { type: 'simplified', label: tr('readinglib_gen_leveled', 'Leveled version') },
       { type: 'sentence-frames', label: tr('readinglib_gen_frames', 'Sentence frames') },
     ];
+
+    var onScopeChange = function (ev) {
+      var next = ev.target.value || 'whole';
+      setSourceScope(next);
+      if (next === 'range') {
+        setRangeStartInput(String(pageIdx + 1));
+        setRangeEndInput(String(Math.min(sourcePages.length || 1, pageIdx + 3)));
+      }
+    };
 
     var modeBtn = function (m, icon, label) {
       return e('button', {
@@ -853,7 +1036,44 @@
             onClick: function () { setGenOpen(!genOpen); },
             'aria-expanded': genOpen, 'aria-haspopup': 'menu',
           }, '✨ ' + tr('readinglib_create', 'Create') + ' ▾'),
-          genOpen ? e('div', { className: 'absolute right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-1 z-20 min-w-[180px]', role: 'menu' },
+          genOpen ? e('div', { className: 'absolute right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-1 z-20 min-w-[260px]', role: 'menu' },
+            sourcePages.length > 1 ? e('div', { className: 'px-3 py-2 border-b border-slate-100' },
+              e('label', { className: 'block text-[11px] font-bold uppercase text-slate-500 mb-1' },
+                tr('readinglib_source_scope', 'Source scope')),
+              e('select', {
+                className: 'w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700',
+                value: selectedScopeName,
+                onChange: onScopeChange,
+                'aria-label': tr('readinglib_source_scope', 'Source scope'),
+              }, [
+                e('option', { key: 'page', value: 'page' }, tr('readinglib_scope_page', 'Current page')),
+                currentSection ? e('option', { key: 'chapter', value: 'chapter' }, tr('readinglib_scope_chapter', 'Current chapter')) : null,
+                e('option', { key: 'range', value: 'range' }, tr('readinglib_scope_range', 'Page range')),
+                e('option', { key: 'whole', value: 'whole' }, tr('readinglib_scope_whole', longForm ? 'Whole text' : 'Whole book')),
+              ]),
+              selectedScopeName === 'range' ? e('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
+                e('label', { className: 'text-[11px] text-slate-500' },
+                  tr('readinglib_range_from', 'From'),
+                  e('input', {
+                    className: 'mt-1 w-full rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-700',
+                    type: 'number', min: 1, max: sourcePages.length,
+                    value: rangeStartInput || String(pageIdx + 1),
+                    onChange: function (ev) { setRangeStartInput(ev.target.value); },
+                  })
+                ),
+                e('label', { className: 'text-[11px] text-slate-500' },
+                  tr('readinglib_range_to', 'To'),
+                  e('input', {
+                    className: 'mt-1 w-full rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-700',
+                    type: 'number', min: 1, max: sourcePages.length,
+                    value: rangeEndInput || String(pageIdx + 1),
+                    onChange: function (ev) { setRangeEndInput(ev.target.value); },
+                  })
+                )
+              ) : null,
+              e('div', { className: 'mt-1 text-[11px] text-slate-500' },
+                selectedSource.label + ' - ' + selectedSource.wordCount + ' ' + tr('readinglib_words', 'words'))
+            ) : null,
             genTypes.map(function (g) {
               return e('button', {
                 key: g.type, role: 'menuitem',
@@ -1354,6 +1574,13 @@
   ReadingLibrary._assignCues = assignCues;
   ReadingLibrary._findActiveCue = findActiveCue;
   ReadingLibrary._pageCueRange = pageCueRange;
+  ReadingLibrary._cleanReadingText = cleanReadingText;
+  ReadingLibrary._pageTextForPipeline = pageTextForPipeline;
+  ReadingLibrary._bookPlainTextFromPages = bookPlainTextFromPages;
+  ReadingLibrary._detectReadingSections = detectReadingSections;
+  ReadingLibrary._sectionForPage = sectionForPage;
+  ReadingLibrary._isLongFormBook = isLongFormBook;
+  ReadingLibrary._bookPlainTextForScope = bookPlainTextForScope;
   ReadingLibrary._bookPlainText = bookPlainText;
   ReadingLibrary._textLayoutClass = textLayoutClass;
   ReadingLibrary._attributionLine = attributionLine;

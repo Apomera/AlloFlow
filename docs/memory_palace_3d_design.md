@@ -1,5 +1,7 @@
 # Memory Palace (Method of Loci) in 3D — design + local-compute assessment
 
+> **Design snapshot note (2026-07-09):** This July 2, 2026 assessment captures a design direction and codebase reading from that date. Verify current image/3D generation paths, popup experiments, WebLLM/local-provider support, and Desktop runtime behavior before treating the feasibility notes or source references below as current.
+
 Three questions from Aaron (2026-07-02), answered against the actual codebase:
 1. Can Imagen / Gemini / an open-source-or-homemade tool **create 3D objects** to populate a
    memory palace?

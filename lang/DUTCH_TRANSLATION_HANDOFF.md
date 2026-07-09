@@ -1,5 +1,7 @@
 # Dutch (Nederlands) — Translation Handoff / Native-Review Punchlist
 
+> **Historical native-review handoff (2026-07-09):** This records the June 2026 Dutch pack QA state and punchlist. Re-run current i18n verification and inspect `lang/dutch.js` before treating "registered and shipping" or the issue counts below as current.
+
 **Pack:** `lang/dutch.js` (11,198 keys) — built 2026-06-21 (AI translation, machine-verified).
 **Status:** Registered and shipping. 100% key parity, 0 placeholder mismatches, 0 JSON errors, arrays + DNT preserved, deep-screen 0 defects.
 

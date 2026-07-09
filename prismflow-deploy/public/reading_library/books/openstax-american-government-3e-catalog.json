@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-american-government-3e-catalog",
+  "title": "OpenStax American Government 3e",
+  "description": "A source card for the OpenStax American Government 3e textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Civics",
+    "Government",
+    "Textbooks",
+    "Political science"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/american-government-3e"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax American Government 3e explains constitutional foundations, federalism, civil rights, public opinion, campaigns, Congress, the presidency, courts, and policy."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source to pair primary-source reading with background chapters that explain institutions, vocabulary, and civic processes."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters or figures."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 56
+  }
+}

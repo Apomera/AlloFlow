@@ -1,5 +1,7 @@
 # Language Pack Quality Review — 2026-06-08
 
+> **Status note, July 9, 2026:** This review covered the earlier 56-pack set. The repo currently has 63 `lang/*.js` pack files mirrored to `prismflow-deploy/public/lang/`; verify newer packs separately before treating this as full-current coverage.
+
 Multi-agent native-quality review of all 56 packs (workflow wf_2561df8f-65b, 55 agents, 2.1M tokens, 123 web searches). Web-search-backed for 18 lower-resource packs. Reviewed ~40 highest-visibility keys per pack (common.* buttons, alerts/confirms, launch_pad hero, sidebar onboarding, 2 tour bodies, 3 pdf_audit tooltips).
 
 **Reviewed 51/56** (4 socket-fail, need re-run: chinese_traditional, korean, hebrew, punjabi). **538 findings, 319 critical/high.**
@@ -58,7 +60,7 @@ The maay_maay pack is written in **Standard Somali (Af-Maxaa), not Maay Maay (Af
 - **karen** `common.copy`: 'Copy' rendered 'ကွဲးခိၣ်ဖးအီၤ' which reads as a phrase ('write/read it...') rather than the UI action 'copy (to clipboard)'. Looks like an MT phrase,
 - **maay_maay** `common.settings`: 'Habeenta' means 'the night' (from habeen/habeenkii), not 'Settings'. This is a clear mistranslation, independent of the dialect issue.
 - **yoruba** `common.error`: "ṣiṣe" means "doing/action/work" (the gerund of ṣe), not "error". A user seeing an error dialog labelled "ṣiṣe" would be confused. The word for error/
-- **yoruba** `common.loading`: "Ń gbé" means "lifting/carrying" (continuous of gbé, to lift). It does not convey software "Loading...". A native speaker would read this as nonsense 
+- **yoruba** `common.loading`: "Ń gbé" means "lifting/carrying" (continuous of gbé, to lift). It does not convey software "Loading...". A native speaker would read this as nonsense
 - **yoruba** `common.close`: "Tipa" (ti pa) reads as "has killed/has quieted", not the act of closing a window/dialog. The verb to close/shut is tì.
 - **acholi** `common.next`: "Ngeyo" means "to know" in Acholi (confirmed via the proverb 'Labul tong gweno ngeyo ka pene' = '...knows where...'), not "Next". A Next button labele
 - **acholi** `common.confirm`: "Tyek" means "finish/complete/end", not "Confirm". It is also reused for "Complete/finish" inside the tour bodies (e.g. 'Tyek lok madwong'='Complete s
@@ -91,13 +93,13 @@ The maay_maay pack is written in **Standard Somali (Af-Maxaa), not Maay Maay (Af
 - **pashto** `launch_pad.subtitle`: The translation is garbled word-salad: 'څخهتخب کړئ مسار زده کول خاص بک'. It looks like a corrupted/scrambled find-replace artifact (note the fused tok
 - **pashto** `tour.adventure_text`: Multiple ل→نه corruption artifacts. 'د دنهیلو سره کرکټرونه قانع کړئ' should be 'د دلیلو سره' (persuade with arguments/logic) — 'دنهیلو' is corrupted '
 - **urdu** `common.next`: "اگنہیں" is not a word. A find-replace pipeline spliced the fragment "نہیں" into "اگلا", destroying the standard term for the Next button. Highly visi
-- **urdu** `launch_pad.subtitle`: "سےتخب کریں مسار سیکھنا خاص بک" is fully scrambled word-salad — words are out of order and mangled (سےتخب is a broken منتخب, خاص بک is garbage). This 
+- **urdu** `launch_pad.subtitle`: "سےتخب کریں مسار سیکھنا خاص بک" is fully scrambled word-salad — words are out of order and mangled (سےتخب is a broken منتخب, خاص بک is garbage). This
 - **urdu** `tour.adventure_text`: Multiple mangled non-words from the find-replace pipeline: "غاطسانہ" / "غاطسی موڈ" / "غاطسی" (intended immersive = غوطہ زن; note the quiz tour correct
 - **somali** `tour.adventure_text`: "Adag (cisigaal adag, kheyraad la dhamayn)" — "cisigaal" is not a Somali word; it appears to be a garbled token for "ciqaab" (penalty/punishment), whi
 - **tamil** `tour.adventure_text`: Wrong sentence terminator throughout: lines end with the Devanagari danda '।' (U+0964) e.g. 'தேர்ந்தெடுக்கவும்।', 'வைக்கவும்।', 'நிர்வகிக்கவும்।', 'பய
 - **bengali** `sidebar.ai_guide_welcome`: The onboarding greeting (one of the most-seen strings) is a badly garbled Spanglish jumble from a partial find-replace pipeline: "হ্যালো! I'm আপনার এআ
 - **dari** `launch_pad.subtitle`: The homepage hero subtitle 'انتخاب کنید مسار یادگیری خاص بک' is broken: verb-first word order is a calque (not natural Dari), 'مسار' is the Arabic for
-- **german** `sidebar.ai_guide_welcome`: The onboarding greeting is heavily corrupted with find-replace residue and embedded English: "Ich'm dein AI Guide. Ich kann Hilfe mit UDL strategies, 
+- **german** `sidebar.ai_guide_welcome`: The onboarding greeting is heavily corrupted with find-replace residue and embedded English: "Ich'm dein AI Guide. Ich kann Hilfe mit UDL strategies,
 - **farsi** `launch_pad.subtitle`: The translation 'انتخاب کنید مسار یادگیری خاص بک' is broken and reads as nonsense to a native speaker. (1) Word order is wrong (verb-first, no subject
 
 ---

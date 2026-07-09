@@ -1,5 +1,7 @@
 # AlloHaven as a cozy world — knowledge-economy rooms, not a flat portfolio
 
+> **Design snapshot note (2026-07-09):** This July 2, 2026 design records a vision and codebase read from that moment. Verify current `allohaven_module.js`, artifact-store behavior, classroom sharing code, and Desktop/School Box packaging before treating the substrate or status claims below as current.
+
 Aaron's vision (2026-07-02): AlloHaven shouldn't be a flat hub — more Animal Crossing /
 generative-Sims: students have avatars, earn coins through learning (never money), spend them
 generating assets (images, gifs, statues, stereograms), collect artifacts that *live* in a 3D

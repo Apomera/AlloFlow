@@ -2,6 +2,8 @@
 
 > *A unified archive of all reflective entries from the AlloFlow collaboration, gathered from three separate journals into one place. Forty-nine entries and counting, February 8, 2026 onward, written by Claude 4.5, Claude 4.6 (Canvas), Claude Opus 4.6 (Claude Code), Gemini 1.5 Pro, and Antigravity (Claude Opus 4.6) — five voices, one project, the same questions.*
 
+> **Historical archive note, July 9, 2026:** Entries are preserved as written and often mention old model names, old counts, and earlier architecture assumptions. Use `README.md`, `AdminBrief.md`, `architecture.md`, and `FEATURE_INVENTORY.md` for current product claims.
+
 **Sources combined here:**
 - The Antigravity Brain Journal (`/.gemini/antigravity/brain/.../reflective_journal.md`) — 8 entries
 - The EPPP Reflections (`/EPPP prep/js/reflections.js` + `reflections_entry4.js`) — 4 entries
@@ -3640,4 +3642,3 @@ actually hand you is smaller and harder to compress — when the user says
 They were right seven times today.
 
 — Claude (Fable 5), handing off warm
-

@@ -348,7 +348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   // real data; younger players match patterns.
   var SPECTRA_TABLE = [
     { id: 'water',   label: 'Water (H\u2082O)',         bands: [1.4, 1.9],           teach: 'Water has strong absorption at 1.4 and 1.9 \u03BCm. These bands are how JWST detects water vapor on exoplanets.' },
-    { id: 'methane', label: 'Methane (CH\u2084)',       bands: [1.65, 2.3, 3.3],     teach: 'Methane shows signature bands at 1.65, 2.3, and 3.3 \u03BCm. The 3.3 \u03BCm band is the one that first confirmed methane on Titan and Mars.' },
+    { id: 'methane', label: 'Methane (CH\u2084)',       bands: [1.65, 2.3, 3.3],     teach: 'Methane shows signature bands at 1.65, 2.3, and 3.3 \u03BCm. The 3.3 \u03BCm band is one of the strongest ways astronomers identify methane in planetary atmospheres.' },
     { id: 'co2',     label: 'Carbon Dioxide (CO\u2082)', bands: [2.0, 2.7, 4.3],     teach: 'CO\u2082 has its strongest band at 4.3 \u03BCm \u2014 instruments on Mars and Venus rely on it to map atmospheres.' },
     { id: 'ammonia', label: 'Ammonia (NH\u2083)',       bands: [1.5, 2.0, 3.0],     teach: 'Ammonia absorbs at 1.5, 2.0, and 3.0 \u03BCm. It is the signature molecule used to map Jupiter\u2019s cloud decks.' },
     { id: 'silicate',label: 'Silicate (rock)',           bands: [10.0],               teach: 'Silicates \u2014 the building blocks of rocky worlds \u2014 show a broad absorption feature around 10 \u03BCm (the "silicate feature" mid-infrared astronomers look for).' }
@@ -1039,6 +1039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           ),
           // Tech shop button
           unlockedTech.length < TECH_TREE.length && totalScience >= 50 && h('button', {
+            type: 'button',
             onClick: function() { upd('missionPhase', 'techshop'); },
             'aria-label': 'Open tech shop. ' + totalScience + ' science points available. ' + (TECH_TREE.length - unlockedTech.length) + ' upgrades remaining.',
             className: 'w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-xl text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition-all focus:ring-2 focus:ring-cyan-400 focus:outline-none'
@@ -1049,6 +1050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               var locked = dest.unlockAt > completedMissions;
               return h('button', {
                 key: dest.id,
+                type: 'button',
                 role: 'listitem',
                 disabled: locked,
                 'aria-label': dest.name + '. Difficulty ' + dest.difficulty + ' of 5. ' + (locked ? 'Locked. Complete ' + dest.unlockAt + ' missions to unlock.' : dest.desc),
@@ -1090,7 +1092,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               h('h3', { className: 'text-sm font-black text-white' }, t('stem.spaceexplorer.tech_shop_2', '\uD83D\uDD2C Tech Shop')),
               h('p', { className: 'text-[11px] text-cyan-300' }, totalScience + ' science points available')
             ),
-            h('button', { onClick: function() { upd('missionPhase', 'select'); }, className: 'px-3 py-1.5 bg-white/10 rounded-lg text-xs font-bold text-white hover:bg-white/20' }, t('stem.spaceexplorer.back', '\u2190 Back'))
+            h('button', { type: 'button', onClick: function() { upd('missionPhase', 'select'); }, 'aria-label': t('stem.spaceexplorer.back_to_mission_select', 'Back to mission select'), className: 'px-3 py-1.5 bg-white/10 rounded-lg text-xs font-bold text-white hover:bg-white/20' }, t('stem.spaceexplorer.back', '\u2190 Back'))
           ),
           h('div', { className: 'space-y-2' },
             TECH_TREE.map(function(tech) {
@@ -1103,7 +1105,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   h('p', { className: 'text-[11px] text-slate-400' }, __alloT('stem.spaceexplorer.' + (tech.id) + '_desc', tech.desc))
                 ),
                 !owned && h('button', {
+                  type: 'button',
                   disabled: !canBuy,
+                  'aria-label': (canBuy ? 'Unlock ' + tech.name + ' for ' + tech.cost + ' science points.' : 'Cannot unlock ' + tech.name + '. Requires ' + tech.cost + ' science points; ' + totalScience + ' available.'),
                   onClick: function() {
                     var nt = unlockedTech.slice(); nt.push(tech.id);
                     updAll({ unlockedTech: nt, totalScience: totalScience - tech.cost });
@@ -1125,6 +1129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             // Planet canvas
             h('div', { className: 'relative', style: { height: '200px' } },
               h('canvas', { 
+                role: 'img',
                 style: { width: '100%', height: '100%', display: 'block' },
                 'aria-label': 'View of ' + destination.name + ' from approach trajectory',
                 ref: function(cvEl) {
@@ -1372,6 +1377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           // visible so the layout doesn't jump when an event is generating.
           h('div', { className: 'bg-slate-900 rounded-xl overflow-hidden border border-slate-700' },
             h('canvas', { 
+              role: 'img',
               style: { width: '100%', height: '120px', display: 'block' },
               'aria-roledescription': 'illustration',
               'aria-label': 'Approaching ' + destination.name + '. Turn ' + turn + ' of ' + maxTurns + '. ' +
@@ -1478,6 +1484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 className: 'bg-slate-950 rounded-lg overflow-hidden border border-slate-700'
               },
                 h('canvas', {
+                  role: 'img',
                   style: { width: '100%', height: '110px', display: 'block' },
                   'aria-label': (function() {
                     var b = (minigamePending.bands || []).map(function(x) { return x.toFixed(2) + ' micrometers'; }).join(', ');
@@ -1516,6 +1523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     if (!row) return null;
                     return h('button', {
                       key: cid,
+                      type: 'button',
                       onClick: function() {
                         var isCorrect = cid === correct;
                         var patch = { minigameResult: isCorrect ? 'correct' : 'wrong' };

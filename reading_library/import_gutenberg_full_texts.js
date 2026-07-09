@@ -125,6 +125,291 @@ const DEFAULT_IMPORTS = [
     subjects: ['Literary criticism', 'Classical texts', 'World history'],
     description: 'A full in-app public-domain copy of Aristotle\'s Poetics for older-student humanities study.',
   },
+  {
+    id: 1674,
+    subjects: ['Abolition', 'Memoir', 'United States history'],
+    description: 'A full in-app public-domain copy of Sojourner Truth\'s narrative for older-student history and memoir study.',
+  },
+  {
+    id: 2376,
+    subjects: ['Memoir', 'Education', 'United States history'],
+    description: 'A full in-app public-domain copy of Booker T. Washington\'s Up from Slavery for older-student history study.',
+  },
+  {
+    id: 45631,
+    subjects: ['Abolition', 'Memoir', 'United States history'],
+    description: 'A full in-app public-domain copy of Twelve Years a Slave for older-student primary-source study.',
+  },
+  {
+    id: 10376,
+    subjects: ['Native American history', 'Memoir', 'Essays'],
+    description: 'A full in-app public-domain copy of Zitkala-Sa\'s American Indian Stories for older-student history and literature study.',
+  },
+  {
+    id: 2397,
+    subjects: ['Disability history', 'Memoir', 'Education'],
+    description: 'A full in-app public-domain copy of Helen Keller\'s The Story of My Life for memoir and disability-history study.',
+  },
+  {
+    id: 1228,
+    subjects: ['Biology', 'Evolution', 'History of science'],
+    description: 'A full in-app public-domain copy of Darwin\'s On the Origin of Species for older-student science and history-of-science study.',
+  },
+  {
+    id: 30155,
+    subjects: ['Physics', 'Relativity', 'History of science'],
+    description: 'A full in-app public-domain copy of Einstein\'s Relativity for older-student physics and science-history study.',
+  },
+  {
+    id: 201,
+    subjects: ['Mathematics', 'Geometry', 'Satire'],
+    description: 'A full in-app public-domain copy of Flatland for older-student geometry, perspective, and satire study.',
+  },
+  {
+    id: 815,
+    subjects: ['Civics', 'Political science', 'United States history'],
+    description: 'A full in-app public-domain copy of Democracy in America, Volume 1, for civics and political-science study.',
+  },
+  {
+    id: 34901,
+    subjects: ['Civics', 'Political philosophy', 'Liberty'],
+    description: 'A full in-app public-domain copy of On Liberty for older-student civics and philosophy study.',
+  },
+  {
+    id: 84,
+    subjects: ['Literature', 'Science ethics', 'Gothic fiction'],
+    description: 'A full in-app public-domain copy of Frankenstein for literature and science-ethics study.',
+  },
+  {
+    id: 1342,
+    subjects: ['Literature', 'Social class', 'British literature'],
+    description: 'A full in-app public-domain copy of Pride and Prejudice for older-student literature study.',
+  },
+  {
+    id: 14977,
+    subjects: ['Civil rights', 'United States history', 'Statistics'],
+    description: 'A full in-app public-domain copy of Ida B. Wells-Barnett\'s The Red Record for older-student history and data-literacy study.',
+  },
+  {
+    id: 31193,
+    subjects: ['Political philosophy', 'World history', 'Primary sources'],
+    description: 'A full in-app public-domain copy of Manifesto of the Communist Party for older-student history and political-thought study.',
+  },
+  {
+    id: 5827,
+    subjects: ['Philosophy', 'Epistemology', 'Critical thinking'],
+    description: 'A full in-app public-domain copy of Bertrand Russell\'s The Problems of Philosophy for older-student philosophy study.',
+  },
+  {
+    id: 2680,
+    subjects: ['Philosophy', 'Classical texts', 'Ethics'],
+    description: 'A full in-app public-domain copy of Marcus Aurelius\'s Meditations for older-student philosophy and ethics study.',
+  },
+  {
+    id: 1952,
+    subjects: ['Literature', 'Women\'s history', 'Mental health'],
+    description: 'A full in-app public-domain copy of The Yellow Wallpaper for older-student literature and gender-history study.',
+  },
+  {
+    id: 160,
+    subjects: ['Literature', 'Women\'s history', 'American literature'],
+    description: 'A full in-app public-domain copy of The Awakening for older-student American literature study.',
+  },
+  {
+    id: 1260,
+    subjects: ['Literature', 'British literature', 'Coming of age'],
+    description: 'A full in-app public-domain copy of Jane Eyre for older-student literature study.',
+  },
+  {
+    id: 2701,
+    subjects: ['Literature', 'Maritime history', 'American literature'],
+    description: 'A full in-app public-domain copy of Moby-Dick for older-student literature and historical-context study.',
+  },
+  {
+    id: 1400,
+    subjects: ['Literature', 'Social class', 'British literature'],
+    description: 'A full in-app public-domain copy of Great Expectations for older-student literature study.',
+  },
+  {
+    id: 35,
+    subjects: ['Science fiction', 'Evolution', 'Social criticism'],
+    description: 'A full in-app public-domain copy of The Time Machine for older-student science fiction and social-criticism study.',
+  },
+  {
+    id: 36,
+    subjects: ['Science fiction', 'Imperialism', 'British literature'],
+    description: 'A full in-app public-domain copy of The War of the Worlds for older-student science fiction study.',
+  },
+  {
+    id: 120,
+    subjects: ['Literature', 'Adventure', 'British literature'],
+    description: 'A full in-app public-domain copy of Treasure Island for upper-elementary and older-student literature study.',
+  },
+  {
+    id: 76,
+    subjects: ['Literature', 'United States history', 'American literature'],
+    description: 'A full in-app public-domain copy of Adventures of Huckleberry Finn for older-student literature study.',
+  },
+  {
+    id: 345,
+    subjects: ['Literature', 'Gothic fiction', 'British literature'],
+    description: 'A full in-app public-domain copy of Dracula for older-student literature study.',
+  },
+  {
+    id: 202,
+    subjects: ['Abolition', 'Memoir', 'United States history'],
+    description: 'A full in-app public-domain copy of Frederick Douglass\'s My Bondage and My Freedom for older-student history and memoir study.',
+  },
+  {
+    id: 57821,
+    subjects: ['Abolition', 'Biography', 'United States history'],
+    description: 'A full in-app public-domain copy of Scenes in the Life of Harriet Tubman for older-student history and biography study.',
+  },
+  {
+    id: 4367,
+    subjects: ['United States history', 'Civil War', 'Memoir'],
+    description: 'A full in-app public-domain copy of Personal Memoirs of U. S. Grant for older-student Civil War and memoir study.',
+  },
+  {
+    id: 8419,
+    subjects: ['United States history', 'Exploration', 'Primary sources'],
+    description: 'A full in-app public-domain copy of The Journals of Lewis and Clark for older-student history and primary-source study.',
+  },
+  {
+    id: 851,
+    subjects: ['Colonial America', 'Memoir', 'Primary sources'],
+    description: 'A full in-app public-domain copy of Mary Rowlandson\'s captivity narrative for older-student colonial history study.',
+  },
+  {
+    id: 3300,
+    subjects: ['Economics', 'Political economy', 'World history'],
+    description: 'A full in-app public-domain copy of The Wealth of Nations for older-student economics and history study.',
+  },
+  {
+    id: 3207,
+    subjects: ['Political philosophy', 'Government', 'Primary sources'],
+    description: 'A full in-app public-domain copy of Leviathan for older-student political philosophy and civics study.',
+  },
+  {
+    id: 1170,
+    subjects: ['Classical texts', 'Ancient history', 'Military history'],
+    description: 'A full in-app public-domain copy of Xenophon\'s Anabasis for older-student classical history study.',
+  },
+  {
+    id: 2199,
+    subjects: ['Classical texts', 'Epic poetry', 'World literature'],
+    description: 'A full in-app public-domain copy of The Iliad for older-student literature and classical studies.',
+  },
+  {
+    id: 6400,
+    subjects: ['Ancient history', 'Biography', 'Classical texts'],
+    description: 'A full in-app public-domain copy of The Lives of the Twelve Caesars for older-student ancient history study.',
+  },
+  {
+    id: 10636,
+    subjects: ['World history', 'Travel writing', 'Primary sources'],
+    description: 'A full in-app public-domain copy of The Travels of Marco Polo, Volume 1, for older-student world history study.',
+  },
+  {
+    id: 2087,
+    subjects: ['Biology', 'History of science', 'Biography'],
+    description: 'A full in-app public-domain copy of Life and Letters of Charles Darwin, Volume 1, for older-student science-history study.',
+  },
+  {
+    id: 51356,
+    subjects: ['Philosophy', 'Classical studies', 'Literary criticism'],
+    description: 'A full in-app public-domain copy of The Birth of Tragedy for older-student philosophy and humanities study.',
+  },
+  {
+    id: 98,
+    subjects: ['Literature', 'French Revolution', 'Historical fiction'],
+    description: 'A full in-app public-domain copy of A Tale of Two Cities for older-student literature and historical-context study.',
+  },
+  {
+    id: 25344,
+    subjects: ['Literature', 'Colonial America', 'American literature'],
+    description: 'A full in-app public-domain copy of The Scarlet Letter for older-student American literature study.',
+  },
+  {
+    id: 73,
+    subjects: ['Literature', 'Civil War', 'American literature'],
+    description: 'A full in-app public-domain copy of The Red Badge of Courage for older-student literature and Civil War context study.',
+  },
+  {
+    id: 45,
+    subjects: ['Literature', 'Coming of age', 'Canadian literature'],
+    description: 'A full in-app public-domain copy of Anne of Green Gables for middle-grade and older-student literature study.',
+  },
+  {
+    id: 236,
+    subjects: ['Literature', 'Adventure', 'British literature'],
+    description: 'A full in-app public-domain copy of The Jungle Book for middle-grade and older-student literature study.',
+  },
+  {
+    id: 421,
+    subjects: ['Literature', 'Adventure', 'Scottish history'],
+    description: 'A full in-app public-domain copy of Kidnapped for older-student literature and historical-context study.',
+  },
+  {
+    id: 271,
+    subjects: ['Literature', 'Animal welfare', 'Historical fiction'],
+    description: 'A full in-app public-domain copy of Black Beauty for middle-grade and older-student literature study.',
+  },
+  {
+    id: 174,
+    subjects: ['Literature', 'Aestheticism', 'British literature'],
+    description: 'A full in-app public-domain copy of The Picture of Dorian Gray for older-student literature study.',
+  },
+  {
+    id: 11,
+    subjects: ['Literature', 'Fantasy', 'British literature'],
+    description: 'A full in-app public-domain copy of Alice\'s Adventures in Wonderland for middle-grade and older-student literature study.',
+  },
+  {
+    id: 55,
+    subjects: ['Literature', 'Fantasy', 'American literature'],
+    description: 'A full in-app public-domain copy of The Wonderful Wizard of Oz for middle-grade and older-student literature study.',
+  },
+  {
+    id: 1661,
+    subjects: ['Literature', 'Mystery', 'British literature'],
+    description: 'A full in-app public-domain copy of The Adventures of Sherlock Holmes for older-student mystery and literature study.',
+  },
+  {
+    id: 2554,
+    subjects: ['Literature', 'Psychology', 'World literature'],
+    description: 'A full in-app public-domain copy of Crime and Punishment for older-student world literature study.',
+  },
+  {
+    id: 28054,
+    subjects: ['Literature', 'Ethics', 'World literature'],
+    description: 'A full in-app public-domain copy of The Brothers Karamazov for older-student world literature and ethics study.',
+  },
+  {
+    id: 4363,
+    subjects: ['Philosophy', 'Ethics', 'European literature'],
+    description: 'A full in-app public-domain copy of Beyond Good and Evil for older-student philosophy study.',
+  },
+  {
+    id: 1998,
+    subjects: ['Philosophy', 'World literature', 'Ethics'],
+    description: 'A full in-app public-domain copy of Thus Spake Zarathustra for older-student philosophy and literature study.',
+  },
+  {
+    id: 880,
+    subjects: ['Nature writing', 'Essays', 'American literature'],
+    description: 'A full in-app public-domain copy of My Garden Acquaintance for older-student nature writing and essay study.',
+  },
+  {
+    id: 1004,
+    subjects: ['Literature', 'Epic poetry', 'World literature'],
+    description: 'A full in-app public-domain copy of Divine Comedy, Longfellow\'s Translation, Complete, for older-student world literature study.',
+  },
+  {
+    id: 100,
+    subjects: ['Drama', 'Poetry', 'British literature'],
+    description: 'A full in-app public-domain copy of The Complete Works of William Shakespeare for older-student drama and literature study.',
+  },
 ];
 
 const dryRun = process.argv.includes('--dry-run');
@@ -152,7 +437,12 @@ function writeJson(file, data) {
 }
 
 function compact(s) {
-  return String(s || '').replace(/\s+/g, ' ').trim();
+  return String(s || '')
+    .replace(/\s*:\s*\$[a-z]\s*/gi, ': ')
+    .replace(/\s+\$[a-z]\s*/gi, ' ')
+    .replace(/\s+([:;,.])/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function slugify(s) {

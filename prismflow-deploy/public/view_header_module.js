@@ -47,6 +47,7 @@ function HeaderBar(props) {
   const RefreshCw = window.RefreshCw || noop;
   const School = window.School || noop;
   const Send = window.Send || noop;
+  const Share2 = window.Share2 || noop;
   const Smile = window.Smile || noop;
   const Sparkles = window.Sparkles || noop;
   const Sun = window.Sun || noop;
@@ -95,6 +96,7 @@ function HeaderBar(props) {
     appId,
     currentLevelXP,
     customExportCSS,
+    createHomeworkAssignmentLink,
     dismissHelpOnboarding,
     focusNarrationEnabled,
     generatedContent,
@@ -773,7 +775,7 @@ function HeaderBar(props) {
       onChange: (e) => setJoinCodeInput(e.target.value.toUpperCase()),
       onKeyDown: (e) => e.key === "Enter" && joinClassSession(joinCodeInput),
       placeholder: t("session.code_placeholder"),
-      maxLength: 4,
+      maxLength: 5,
       className: "w-full text-center font-mono font-bold text-lg border border-slate-400 rounded p-1 uppercase focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800"
     }
   ), /* @__PURE__ */ React.createElement(
@@ -878,7 +880,20 @@ function HeaderBar(props) {
     },
     !pptxLoaded ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(MonitorPlay, { size: 14 }),
     t("export_menu.slides")
-  ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "Student QR"), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      role: "menuitem",
+      onClick: () => {
+        if (typeof createHomeworkAssignmentLink === "function") createHomeworkAssignmentLink();
+        setShowExportMenu(false);
+      },
+      className: "flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-cyan-50 text-cyan-700 text-xs font-bold transition-colors",
+      "data-help-key": "homework_qr"
+    },
+    /* @__PURE__ */ React.createElement(Share2, { size: 14 }),
+    " Homework QR"
+  ), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, "Teacher-prepared resources open for students with AI generation off."), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       role: "menuitem",

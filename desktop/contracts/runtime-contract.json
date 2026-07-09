@@ -11,15 +11,16 @@
     "alloflowWebApp": 3000
   },
   "schoolBox": {
-    "status": "docker-foundation",
+    "status": "optional-docker-foundation",
+    "role": "Optional server/appliance stack. AlloFlow Desktop LAN classrooms, the bundled app, built-in AI engine, local keys, Kokoro voice, and offline ASR do not require Docker.",
     "defaultMode": "desktop-host",
     "defaultProjectName": "alloflow-schoolbox",
     "defaultWebUrl": "http://127.0.0.1:32174",
-    "stack": "Uses ALLOFLOW_SCHOOLBOX_ROOT when set, then packaged resources/schoolbox when installed, then the checkout root docker-compose.yml during development.",
+    "stack": "Uses ALLOFLOW_SCHOOLBOX_ROOT when set, then packaged resources/schoolbox when installed, then the checkout root docker-compose.yml during development. This stack is for optional School Box server/appliance scenarios, not ordinary Desktop LAN classroom hosting.",
     "modes": {
-      "desktop-host": "Prepare and run the local Docker-based School Box stack from AlloFlow Desktop.",
+      "desktop-host": "Prepare and run the optional local Docker-based School Box server stack from AlloFlow Desktop.",
       "district-server": "Reserved for the future district/server command center; it does not start local Docker services yet.",
-      "disabled": "Do not prepare or start School Box services."
+      "disabled": "Do not prepare or start optional School Box server services."
     },
     "services": ["frontend", "pocketbase", "ollama", "piper", "searxng"],
     "optionalServices": ["edge-tts", "flux"],
@@ -40,9 +41,9 @@
   "liveSession": {
     "defaultMode": "schoolbox-lan",
     "desktopConfigKey": "alloflow_live_session_config",
-    "behavior": "Desktop writes the selected live-session backend into the bundled app before loading /app/. The app blocks Firestore classroom session docs unless a cloud mode is explicitly selected. In schoolbox-lan mode, classroom session document reads and writes are routed to the Desktop local LAN bridge.",
+    "behavior": "Desktop writes the selected live-session backend into the bundled app before loading /app/. The app blocks Firestore classroom session docs unless a cloud mode is explicitly selected. In schoolbox-lan mode, shown to users as Desktop LAN / Local Network, classroom session document reads and writes are routed to the Desktop local LAN bridge and do not require Docker.",
     "modes": {
-      "schoolbox-lan": "Preferred classroom path. Use a local School Box host on the school network; Firestore live-session creation is blocked from Desktop.",
+      "schoolbox-lan": "Preferred classroom path. Use the teacher Desktop runtime and LAN Share listener on the local network; Firestore live-session creation is blocked from Desktop.",
       "local-preview": "Single-device preview only; students on other devices cannot join.",
       "district-server": "Reserved for a future district-controlled server command center.",
       "byo-firebase": "Explicit opt-in for a school or district-owned Firebase project.",
@@ -125,7 +126,7 @@
     { "method": "POST", "path": "/api/app/stop", "purpose": "Stop only the Desktop-managed AlloFlow web app process" },
     { "method": "GET", "path": "/api/app/logs", "purpose": "Recent managed AlloFlow app process logs" },
     { "method": "GET", "path": "/api/diagnostics", "purpose": "Redacted diagnostics bundle for copy/paste bug reports" },
-    { "method": "GET", "path": "/api/readiness", "purpose": "Redacted local-first readiness report for teacher/support review: app, selected AI provider, built-in engine, offline ASR, live sessions, School Box, and disk headroom" },
+    { "method": "GET", "path": "/api/readiness", "purpose": "Redacted local-first readiness report for teacher/support review: app, selected AI provider, built-in engine, offline ASR, live sessions, optional School Box server, and disk headroom" },
     { "method": "GET", "path": "/api/providers", "purpose": "Provider presets and availability" },
     { "method": "POST", "path": "/api/providers/test", "purpose": "Probe one provider by id/baseUrl" },
     { "method": "POST", "path": "/api/secrets/{providerId}", "purpose": "Store a provider key locally and return only redacted state" },
@@ -152,11 +153,11 @@
     { "method": "GET", "path": "/api/lan-docs/{key}", "purpose": "Read a chunked session asset doc (public LAN share: PIN-gated)" },
     { "method": "PUT", "path": "/api/lan-docs/{key}", "purpose": "Create or replace a session asset doc (private runtime only; POST accepted as alias)" },
     { "method": "DELETE", "path": "/api/lan-docs/{key}", "purpose": "Delete a session asset doc (private runtime only; TTL cleans up otherwise)" },
-    { "method": "GET", "path": "/api/schoolbox/status", "purpose": "Embedded School Box Docker stack readiness and service status" },
-    { "method": "POST", "path": "/api/schoolbox/setup", "purpose": "Create or update docker/.env for the desktop-managed School Box stack" },
-    { "method": "POST", "path": "/api/schoolbox/start", "purpose": "Start the desktop-managed School Box Docker stack" },
-    { "method": "POST", "path": "/api/schoolbox/stop", "purpose": "Stop the desktop-managed School Box Docker stack" },
-    { "method": "GET", "path": "/api/schoolbox/logs", "purpose": "Recent School Box setup/start/stop logs" }
+    { "method": "GET", "path": "/api/schoolbox/status", "purpose": "Optional School Box Docker server stack readiness and service status" },
+    { "method": "POST", "path": "/api/schoolbox/setup", "purpose": "Create or update docker/.env for the optional desktop-managed School Box server stack" },
+    { "method": "POST", "path": "/api/schoolbox/start", "purpose": "Start the optional desktop-managed School Box Docker server stack" },
+    { "method": "POST", "path": "/api/schoolbox/stop", "purpose": "Stop the optional desktop-managed School Box Docker server stack" },
+    { "method": "GET", "path": "/api/schoolbox/logs", "purpose": "Recent optional School Box server setup/start/stop logs" }
   ],
   "staticRoutes": [
     { "method": "GET", "path": "/", "purpose": "Desktop command center" },

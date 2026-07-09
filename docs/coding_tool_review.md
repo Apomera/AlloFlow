@@ -1,5 +1,7 @@
 # codingPlayground — Deep-Dive Review & Enhancement Roadmap
 
+> **Historical review snapshot, not current open-bug status (2026-07-09):** This June review is preserved for its verified line-number findings and roadmap thinking. Later code and QA work may have changed individual findings; verify against current `stem_lab/stem_tool_coding.js`, mirrors, tests, and a11y/visual reports before treating an item as open.
+
 _Generated 2026-06-14 via a 26-agent review workflow (map → 8-dimension analysis → adversarial verification → synthesis). Findings grounded in real line numbers; the adversarial pass corrected several dimension overclaims. Cross-checked by hand on the two load-bearing claims (no-eval interpreter; ungated AI)._
 
 **File:** `stem_lab/stem_tool_coding.js` (~2858 lines, hand-maintained; `build.js` mirrors root → `prismflow-deploy/public/` + `build/` at deploy). Edit the root file only.

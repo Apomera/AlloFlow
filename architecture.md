@@ -1,7 +1,7 @@
 # AlloFlow Architecture
 
-*Last meaningful update: July 3, 2026. Reflects the post-Phase-2 state where
-cross-cutting state moved to React Contexts and a much larger CDN/plugin surface
+*Last meaningful update: July 9, 2026. Reflects the July codebase review,
+Desktop/local-first clarification, and the much larger CDN/plugin surface that
 hosts the rendered UI.*
 
 > **2026-07-03 scale audit:** the live workspace contains 151 top-level
@@ -616,10 +616,23 @@ npm run build
 firebase deploy
 ```
 
-Or invoke the full `./deploy.sh` from the repo root. Firebase hosts only
-static files; no student data crosses the network.
+Or invoke the full `./deploy.sh` from the repo root. Firebase Hosting serves
+the static app; live-session and AI data flow depends on the selected backend,
+provider, and deployment mode.
 
-### 3. School Box (local Docker)
+### 3. AlloFlow Desktop (local-first app)
+
+```powershell
+npm.cmd run desktop:check
+npm.cmd run desktop:smoke
+npm.cmd run desktop
+```
+
+Desktop runs the local runtime bridge, serves the bundled app, manages local
+provider configuration and keys, supports the built-in local engine, and can
+host Desktop LAN / Local Network classroom sessions without Docker.
+
+### 4. Optional School Box Server (Docker)
 
 ```bash
 git clone https://github.com/apomera/AlloFlow.git
@@ -628,8 +641,10 @@ docker-compose up -d
 
 Services: Ollama (LLM inference), PocketBase (local DB), Piper / Edge
 TTS (offline speech), SearXNG (local search), Nginx (reverse proxy +
-SSL). Status of the School Box image as of May 2026: under active
-development, not yet operational.
+SSL), and related optional local helpers. This stack is no longer the
+default classroom path; it is the server/appliance packaging path for
+schools that need a district-owned host, persistence, TLS, or heavier
+air-gapped infrastructure.
 
 ## Canvas Mode + API Key Configuration
 
@@ -675,11 +690,11 @@ const _isCanvasEnv = (() => {
 Every interactive element (including all STEM tools and games) is keyboard
 operable (Tab / Enter / Arrow). ARIA labels are required everywhere.
 
-TTS is in-browser, never cloud:
-- **Kokoro** (English, 30+ neural voices)
-- **Piper** (40+ languages, WebAssembly)
-
-Audio never leaves the device.
+Voice output is provider-dependent:
+- **Desktop/local engines** such as Kokoro keep generation on the user's device
+  when installed and selected.
+- **Browser/system speech** can serve as a local fallback.
+- **Cloud voices** are explicit provider choices for deployments that enable them.
 
 ### STEM tool theme + contrast
 
@@ -691,7 +706,7 @@ the host theme would erase that design choice.
 
 What IS wired up across the hardcoded-palette STEM tools:
 
-- **CSS variables** at `AlloFlowANTI.txt:22016` define `--allo-stem-canvas`,
+- **CSS variables** in the STEM theme block of `AlloFlowANTI.txt` define `--allo-stem-canvas`,
   `--allo-stem-panel`, `--allo-stem-deeper`, `--allo-stem-text`,
   `--allo-stem-text-soft`, `--allo-stem-border`, `--allo-stem-button-*`.
   Three theme variants: light (`:root`/`.theme-default`), dark (`.theme-dark`),
@@ -701,7 +716,7 @@ What IS wired up across the hardcoded-palette STEM tools:
   `window.AlloStemTheme.palette([themeName])` returns plain hex strings for
   canvas / SVG / dynamic-style consumers that can't use CSS variables.
   `window.AlloStemTheme.onChange(cb)` for tools that need a repaint signal.
-- **High-contrast override stylesheet** at `AlloFlowANTI.txt:22057+` —
+- **High-contrast override stylesheet** in the same STEM theme block —
   attribute-selector CSS that catches inline `background: '#0f172a'` /
   `rgba(15,23,42,*)` / similar dark patterns and swaps them to `#000`
   when `.theme-contrast` is active. Same for common light text colors
@@ -726,7 +741,7 @@ extended rationale.
 | On-device storage | All session data in `localStorage`; no cloud writes |
 | TeacherGate | Clinical tools and answer keys gated behind educator verification |
 | Fact-Chunk pipeline | PII-scrubbing layer applied before report generation to prevent AI hallucination of sensitive data |
-| Air-gap option | School Box deployment operates with no external API calls |
+| Local-first options | AlloFlow Desktop supports same-device and same-room LAN use without Docker; optional School Box Server deployments can run selected services without external API calls |
 
 ## Development Notes
 
@@ -856,10 +871,10 @@ clinical impact.
 ├── *_module.js                   ← Other CDN modules (~50 files)
 ├── stem_lab/
 │   ├── stem_lab_module.js        ← STEM Lab host
-│   └── stem_tool_*.js            ← 95 plugin tools (May 2026)
+│   └── stem_tool_*.js            ← 111 tool files / 116 registered IDs (July 2026)
 ├── sel_hub/
 │   ├── sel_hub_module.js         ← SEL Hub host
-│   └── sel_tool_*.js             ← 49 plugin tools (May 2026)
+│   └── sel_tool_*.js             ← 70 tools (July 2026)
 ├── tests/
 │   ├── setup.js                  ← vitest fixture
 │   └── *.test.js                 ← 5 helper module test files

@@ -81,7 +81,7 @@ function StudentJoinPanel({
   const instructionsId = "student-join-panel-instructions";
   const hostInputId = "student-join-host-id";
   const codeInputId = "student-join-code";
-  const canJoin = joinCodeInput.length >= 4;
+  const canJoin = joinCodeInput.length >= 5;
   const themeContext = React.useContext(window.AlloThemeContext || StudentJoinThemeFallbackContext);
   const styles = getStudentJoinThemeStyles(themeContext);
   const handleJoinSubmit = (e) => {
@@ -126,7 +126,7 @@ function StudentJoinPanel({
         value: joinCodeInput,
         onChange: (e) => setJoinCodeInput(e.target.value.toUpperCase()),
         placeholder: t("session.code_placeholder"),
-        maxLength: 4,
+        maxLength: 5,
         autoComplete: "one-time-code",
         inputMode: "text",
         className: cx("w-full text-center font-mono font-black text-3xl tracking-[0.5em] border-2 rounded-2xl p-4 focus-visible:outline-none focus-visible:ring-4 uppercase transition-all", styles.input)

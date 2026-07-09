@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   'use strict';
 
   const state = {
@@ -37,7 +37,7 @@
   const TEXT_MODEL_HINTS = ['qwen', 'llama', 'mistral', 'gemma', 'phi', 'deepseek', 'mixtral', 'command'];
   const NON_TEXT_MODEL_HINTS = ['moondream', 'llava', 'bakllava', 'vision', 'clip', 'image', 'stable-diffusion', 'sdxl'];
   const LIVE_SESSION_LABELS = {
-    'schoolbox-lan': 'School Box / Local Network',
+    'schoolbox-lan': 'Desktop LAN / Local Network',
     'local-preview': 'Local Preview Only',
     'district-server': 'District Server',
     'byo-firebase': 'Bring Your Own Firebase',
@@ -322,15 +322,15 @@
 
   function schoolBoxStatusCopy(status) {
     const labels = {
-      disabled: 'Host disabled',
-      'missing-stack': 'Stack files missing',
-      'missing-app-build': 'App build missing',
+      disabled: 'Optional server off',
+      'missing-stack': 'Optional stack missing',
+      'missing-app-build': 'Server app build missing',
       'needs-setup': 'Ready to prepare',
-      'needs-docker': 'Docker needed',
+      'needs-docker': 'Docker optional',
       'district-planned': 'District mode planned',
-      running: 'Host running',
-      partial: 'Partially running',
-      ready: 'Ready',
+      running: 'Server running',
+      partial: 'Server partially running',
+      ready: 'Optional server ready',
     };
     return labels[status] || status || 'Checking';
   }
@@ -346,7 +346,7 @@
     });
     if (!list.children.length) {
       const item = document.createElement('li');
-      item.textContent = 'School Box is ready for the next step.';
+      item.textContent = 'Optional server controls are ready.';
       list.appendChild(item);
     }
   }
@@ -391,23 +391,23 @@
     const district = current === 'district-planned';
     const steps = [
       {
-        title: 'Choose Desktop Host',
-        detail: district ? 'District Server is planned for later; Desktop Host runs today on this computer.' : 'Use Desktop Host for the local School Box stack.',
+        title: 'Choose optional server mode',
+        detail: district ? 'District Server is planned for later; Docker Server Host is the optional local server path today.' : 'Use Docker Server Host only when this computer should run the separate School Box server stack.',
         state: district ? 'blocked' : 'done',
       },
       {
         title: 'Prepare settings',
-        detail: stackReady ? 'Create or refresh the local School Box settings file.' : 'The School Box stack files are missing from this build.',
+        detail: stackReady ? 'Create or refresh the optional server settings file.' : 'The optional server stack files are missing from this build.',
         state: !stackReady ? 'blocked' : (envReady ? 'done' : 'current'),
       },
       {
-        title: 'Start local services',
-        detail: dockerReady ? 'Start the app, database, local AI, voice, and search services.' : 'Install and start Docker Desktop first.',
+        title: 'Start Docker services',
+        detail: dockerReady ? 'Start the optional app, database, local AI, voice, and search services.' : 'Install and start Docker Desktop only if you need the optional server stack.',
         state: !envReady ? 'blocked' : (running ? 'done' : (dockerReady ? 'current' : 'blocked')),
       },
       {
-        title: 'Open School Box',
-        detail: 'Open the local classroom host once all required services are running.',
+        title: 'Open optional server',
+        detail: 'Open the local server host once its services are running.',
         state: running ? 'current' : 'blocked',
       },
     ];
@@ -437,7 +437,7 @@
     setText('#schoolbox-address', url);
     setText('#schoolbox-embedded', box.embedded ? 'yes' : 'no');
     setText('#schoolbox-state', schoolBoxStatusCopy(status.status));
-    setText('#schoolbox-docker', isDistrictMode ? 'not used' : (docker.available ? 'ready' : (docker.error || 'not found')));
+    setText('#schoolbox-docker', isDistrictMode ? 'not used' : (docker.available ? 'ready' : 'not running (optional)'));
     setText('#schoolbox-stack', stack.stackAvailable ? (stack.source || 'ready') : 'missing');
     setText('#schoolbox-env', stack.envExists ? 'ready' : 'needs prepare');
     setText('#schoolbox-status', schoolBoxStatusCopy(status.status));
@@ -475,7 +475,7 @@
     if (liveSession.mode === 'schoolbox-lan') {
       return liveSession.lanBridge?.enabled
         ? (liveSession.lanBridge.reachableFromOtherDevices ? 'LAN bridge ready' : 'Local bridge ready')
-        : 'Start School Box first';
+        : 'Start LAN Share first';
     }
     if (liveSession.mode === 'local-preview') return 'This device only';
     if (liveSession.mode === 'district-server') return 'Future district mode';
@@ -523,7 +523,7 @@
     return state.config;
   }
 
-  // ── Classroom join tools (QR / PIN / presenter / diagnostics) ──────
+  // â”€â”€ Classroom join tools (QR / PIN / presenter / diagnostics) â”€â”€â”€â”€â”€â”€
   function classroomJoinBase() {
     const diag = state.lanDiagnostics || {};
     const bases = diag.joinBaseUrls || state.liveSession?.lanBridge?.joinBaseUrls || [];
@@ -587,7 +587,7 @@
     if (!$('#join-qr')?.hidden) renderJoinQr();
   }
 
-  // ── Classroom setup wizard (local-first mode) ───────────────────────
+  // â”€â”€ Classroom setup wizard (local-first mode) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function renderClassroomWizard() {
     const node = $('#classroom-wizard');
     if (!node) return;
@@ -600,20 +600,20 @@
         done: mode === 'schoolbox-lan',
         title: 'Choose the local classroom backend',
         detail: mode === 'schoolbox-lan'
-          ? 'School Box / Local Network mode is on — class data stays on this computer.'
-          : 'Pick “School Box / Local Network” in Live Sessions and press Save. This keeps class data off the cloud.',
+          ? 'Desktop LAN / Local Network mode is on - class data stays on this computer.'
+          : 'Pick Desktop LAN / Local Network in Live Sessions and press Save. This keeps class data off the cloud.',
       },
       {
         done: shareActive,
         title: 'Start LAN Share (and set a PIN if you want one)',
         detail: shareActive
           ? 'Students on this network can reach the join page.' + (pinConfigured ? ' A join PIN is set.' : ' Tip: a join PIN keeps drop-ins out on busy networks.')
-          : 'Press Start LAN Share. Set a Join PIN first if you want one — it latches when sharing starts.',
+          : 'Press Start LAN Share. Set a Join PIN first if you want one â€” it latches when sharing starts.',
       },
       {
         done: false,
         title: 'Put the class code on the projector',
-        detail: 'Type your class code above, then open Presenter view — students scan the QR or type the link. Run “classroom check” below to confirm the network path.',
+        detail: 'Type your class code above, then open Presenter view â€” students scan the QR or type the link. Run â€œclassroom checkâ€ below to confirm the network path.',
       },
     ];
     node.innerHTML = '';
@@ -638,15 +638,15 @@
       state.lanDiagnostics = diag;
       lines.push((diag.addresses || []).length
         ? `Network: OK (${diag.addresses.join(', ')})`
-        : 'Network: NO LAN address found — connect to the school network.');
+        : 'Network: NO LAN address found â€” connect to the school network.');
       lines.push(diag.share?.active
         ? `LAN Share: ACTIVE on port ${diag.share.port}${diag.pinActive ? ' with join PIN' : ' (no PIN)'}`
-        : 'LAN Share: OFF — students cannot join from other devices yet.');
+        : 'LAN Share: OFF â€” students cannot join from other devices yet.');
       const joinUrl = classroomJoinUrl();
       if (joinUrl) {
         lines.push('Join link: ' + joinUrl);
       } else if (classroomCode()) {
-        lines.push('Join link: unavailable — start LAN Share first.');
+        lines.push('Join link: unavailable â€” start LAN Share first.');
       } else {
         lines.push('Type a class code above to get a join link and QR.');
       }
@@ -659,6 +659,73 @@
     renderClassroomWizard();
   }
 
+  async function collectClassroomReadiness() {
+    let diag = state.lanDiagnostics || null;
+    let diagnosticsError = '';
+    try {
+      diag = await api('/api/lan-share/diagnostics');
+      state.lanDiagnostics = diag;
+    } catch (error) {
+      diagnosticsError = error.message || 'LAN diagnostics unavailable.';
+    }
+
+    const liveSession = state.liveSession || {};
+    const mode = liveSession.mode || state.config?.liveSession?.mode || '';
+    const modeLabel = LIVE_SESSION_LABELS[mode] || mode || 'unknown';
+    const code = classroomCode();
+    const joinUrl = classroomJoinUrl();
+    const share = diag?.share || liveSession.lanBridge?.share || {};
+    const addresses = Array.isArray(diag?.addresses) ? diag.addresses : [];
+    const pinConfigured = Boolean(diag?.pinConfigured || state.config?.liveSession?.lan?.pin);
+    const pinActive = Boolean(diag?.pinActive);
+    const shareActive = Boolean(share.active);
+    const warnings = [...(diag?.warnings || [])];
+    const notes = [...(diag?.notes || [])];
+    const nextActions = [];
+
+    if (diagnosticsError) nextActions.push('Open the Desktop command center and refresh diagnostics: ' + diagnosticsError);
+    if (mode !== 'schoolbox-lan') nextActions.push('Switch Live Sessions to Desktop LAN / Local Network, then press Save Live Session Mode.');
+    if (!addresses.length) nextActions.push('Connect this computer to the same school Wi-Fi or ethernet network students will use.');
+    if (!shareActive) nextActions.push('Press Start LAN Share before students join from other devices.');
+    if (!code) nextActions.push('Type a class code before showing the QR or copying the join link.');
+    if (shareActive && code && joinUrl) nextActions.push('Show the QR or copy the join link for students on the same network.');
+    if (shareActive && !pinConfigured) nextActions.push('Optional: set a Join PIN, then restart LAN Share, for busy or shared networks.');
+
+    return {
+      generatedAt: new Date().toISOString(),
+      mode,
+      modeLabel,
+      classCode: code || null,
+      joinLink: joinUrl || null,
+      presenterPath: code ? '/present/' + encodeURIComponent(code) : null,
+      shareActive,
+      sharePort: share.port || null,
+      pinConfigured,
+      pinActive,
+      lanAddresses: addresses,
+      reachableFromOtherDevices: Boolean(diag?.reachableFromOtherDevices || shareActive),
+      warnings,
+      notes,
+      nextActions,
+      diagnosticsError: diagnosticsError || null,
+    };
+  }
+
+  function formatClassroomReadinessSummary(classroom) {
+    if (!classroom) return 'Classroom LAN: diagnostics unavailable.';
+    const lines = [];
+    lines.push('Classroom LAN: ' + (classroom.shareActive ? 'active' : 'not sharing') + ' - ' + classroom.modeLabel);
+    if (classroom.classCode) lines.push('Class code: ' + classroom.classCode);
+    if (classroom.joinLink) lines.push('Join link: ' + classroom.joinLink);
+    lines.push('PIN: ' + (classroom.pinConfigured ? (classroom.pinActive ? 'active for this share' : 'saved; restart LAN Share to apply') : 'not set'));
+    if (classroom.lanAddresses.length) lines.push('LAN addresses: ' + classroom.lanAddresses.join(', '));
+    if (classroom.warnings.length) classroom.warnings.forEach((warning) => lines.push('Warning: ' + warning));
+    if (classroom.nextActions.length) {
+      lines.push('Classroom next steps:');
+      classroom.nextActions.forEach((action) => lines.push('  - ' + action));
+    }
+    return lines.join('\n');
+  }
   function readBundledAppAiConfig() {
     try {
       return JSON.parse(localStorage.getItem(BUNDLED_AI_CONFIG_KEY) || 'null') || {};
@@ -899,14 +966,14 @@
     }
   }
 
-  // ── Built-in AI Engine (managed llama-server) ──────────────────────────────
+  // â”€â”€ Built-in AI Engine (managed llama-server) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let enginePollTimer = null;
   function renderEngineStatus(status) {
     if (!status) return;
     let phase = status.phase || 'stopped';
     if (status.download && status.download.totalBytes) {
       const pct = Math.round((status.download.receivedBytes / status.download.totalBytes) * 100);
-      phase += ' — ' + status.download.file + ' ' + pct + '%';
+      phase += ' â€” ' + status.download.file + ' ' + pct + '%';
     }
     setText('#engine-phase', phase);
     setText('#engine-model', status.model
@@ -950,7 +1017,7 @@
     const result = $('#engine-result');
     let modelUrl = event.target.value;
     if (modelUrl === '__custom') {
-      // window.prompt() throws in Electron renderers — use the inline row.
+      // window.prompt() throws in Electron renderers â€” use the inline row.
       const row = $('#engine-custom-row');
       if (row) { row.hidden = false; const input = $('#engine-custom-input'); if (input) input.focus(); }
       return;
@@ -960,7 +1027,7 @@
       if (result) {
         result.textContent = /^https?:\/\//i.test(modelUrl)
           ? 'Model choice saved. It downloads on the next engine start (stop + start to switch now). Earlier models stay on disk until you delete them from the engine folder.'
-          : 'Local model file saved: ' + modelUrl + ' — used in place, nothing downloads. Keep the drive connected while the engine runs.';
+          : 'Local model file saved: ' + modelUrl + ' â€” used in place, nothing downloads. Keep the drive connected while the engine runs.';
       }
       await refreshEngineStatus();
     } catch (error) {
@@ -979,7 +1046,7 @@
       if (result) {
         result.textContent = /^https?:\/\//i.test(modelUrl)
           ? 'Custom model saved. It downloads on the next engine start.'
-          : 'Local model file saved: ' + modelUrl + ' — used in place, nothing downloads. Keep the drive connected while the engine runs.';
+          : 'Local model file saved: ' + modelUrl + ' â€” used in place, nothing downloads. Keep the drive connected while the engine runs.';
       }
       await refreshEngineStatus();
     } catch (error) {
@@ -1027,7 +1094,7 @@
           clearInterval(enginePollTimer);
           enginePollTimer = null;
         }
-      } catch (_) { /* runtime briefly busy — keep polling */ }
+      } catch (_) { /* runtime briefly busy â€” keep polling */ }
     }, 2000);
   }
   async function startBuiltInEngine() {
@@ -1271,16 +1338,18 @@
     return lines.join('\n');
   }
 
-  async function copyReadinessReport() {
-    const resultNode = $('#readiness-result');
+  async function copyReadinessReport(targetSelector = '#readiness-result') {
+    if (typeof targetSelector !== 'string') targetSelector = '#readiness-result';
+    const resultNode = $(targetSelector);
     if (resultNode) resultNode.textContent = 'Collecting readiness report...';
     try {
       const report = await api('/api/readiness');
       report.browser = await collectBrowserReadiness();
+      report.classroom = await collectClassroomReadiness();
       report.update = state.update || null;
       report.copiedAt = new Date().toISOString();
       await writeClipboard(JSON.stringify(report, null, 2));
-      if (resultNode) resultNode.textContent = formatReadinessSummary(report) + '\n\nCopied readiness report to clipboard.';
+      if (resultNode) resultNode.textContent = formatReadinessSummary(report) + '\n\n' + formatClassroomReadinessSummary(report.classroom) + '\n\nCopied readiness report to clipboard.';
     } catch (error) {
       if (resultNode) resultNode.textContent = error.message || 'Could not copy readiness report.';
     }
@@ -1376,7 +1445,7 @@
     }
   }
 
-  // ── Local Images (SD-Turbo) panel — AI tab twin of the Voice panel ──
+  // â”€â”€ Local Images (SD-Turbo) panel â€” AI tab twin of the Voice panel â”€â”€
   async function _webGpuAdapterOk() {
     try {
       if (!(navigator.gpu && typeof navigator.gpu.requestAdapter === 'function')) return false;
@@ -1390,7 +1459,7 @@
     const appWindow = getBundledAppWindow();
     if (appWindow && appWindow._sdTurbo && appWindow._sdTurbo.ready) {
       setText('#sd-status', 'ready');
-      $('#sd-result').textContent = 'SD-Turbo is loaded — images generate on this device.';
+      $('#sd-result').textContent = 'SD-Turbo is loaded â€” images generate on this device.';
       return;
     }
     let entries = 0;
@@ -1413,22 +1482,22 @@
       return;
     }
     if (!(await _webGpuAdapterOk())) {
-      $('#sd-result').textContent = 'This computer has no WebGPU graphics adapter — local image generation is not available here.';
+      $('#sd-result').textContent = 'This computer has no WebGPU graphics adapter â€” local image generation is not available here.';
       return;
     }
     if (typeof appWindow.__loadSdTurbo !== 'function') {
-      $('#sd-result').textContent = 'The app view has not finished loading yet — wait a few seconds and try again.';
+      $('#sd-result').textContent = 'The app view has not finished loading yet â€” wait a few seconds and try again.';
       return;
     }
-    $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time)…';
+    $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time)â€¦';
     try {
       const done = await appWindow.__loadSdTurbo((p) => {
         const pct = p && p.pct != null ? Math.round(p.pct * 100) + '%' : '';
-        $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time)… ' + pct;
+        $('#sd-result').textContent = 'Downloading SD-Turbo (~2 GB, one time)â€¦ ' + pct;
       });
       $('#sd-result').textContent = done
-        ? 'SD-Turbo ready — images generate on this device.'
-        : 'The download did not complete — check the connection and try again.';
+        ? 'SD-Turbo ready â€” images generate on this device.'
+        : 'The download did not complete â€” check the connection and try again.';
     } catch (error) {
       $('#sd-result').textContent = 'Download failed: ' + (error && error.message ? error.message : error);
     }
@@ -1436,7 +1505,7 @@
     refreshSetupHealth().catch(() => {});
   }
 
-  // Speak a fixed sentence through the REAL local engine and play it here —
+  // Speak a fixed sentence through the REAL local engine and play it here â€”
   // separates "engine can synthesize" from "the app routed elsewhere" in one
   // click, with the router's own breadcrumb shown for the app half.
   async function testKokoroVoice() {
@@ -1451,21 +1520,21 @@
     }
     let voicePref = 'af_heart';
     try { voicePref = localStorage.getItem('allo_voice_preference') || 'af_heart'; } catch (_) {}
-    $('#voice-result').textContent = 'Synthesizing a test sentence with voice "' + voicePref + '"…';
+    $('#voice-result').textContent = 'Synthesizing a test sentence with voice "' + voicePref + '"â€¦';
     try {
       const url = await appWindow._kokoroTTS.speakStreaming('Hello! This is the local Kokoro voice speaking on this computer.', voicePref, 1);
-      if (!url) { $('#voice-result').textContent = 'Engine returned no audio — send this to the developer with the app console lines.'; return; }
+      if (!url) { $('#voice-result').textContent = 'Engine returned no audio â€” send this to the developer with the app console lines.'; return; }
       const audio = new Audio(url);
       await audio.play();
       const lastRoute = appWindow.__ttsLastRoute;
       $('#voice-result').textContent = 'You should be hearing the Kokoro voice now (engine OK). Last in-app read-aloud route: '
-        + (lastRoute ? lastRoute.route + ' (voice ' + lastRoute.voice + ', ' + (lastRoute.detail || 'no detail') + ')' : 'none recorded yet — read something aloud in the app first.');
+        + (lastRoute ? lastRoute.route + ' (voice ' + lastRoute.voice + ', ' + (lastRoute.detail || 'no detail') + ')' : 'none recorded yet â€” read something aloud in the app first.');
     } catch (error) {
       $('#voice-result').textContent = 'Playback failed: ' + (error && error.message ? error.message : error);
     }
   }
 
-  // ── Setup Health card ──────────────────────────────────────────
+  // â”€â”€ Setup Health card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // One glance = live truth for the five capabilities field testing kept
   // tripping over. Rows only show an action button when the runtime can
   // actually do something about the state from here.
@@ -1502,11 +1571,11 @@
       const eng = await api('/api/engine/status');
       if (eng.running) {
         const model = eng.model && eng.model.name ? eng.model.name.replace(/\.gguf$/i, '') : 'local model';
-        setHealthRow('#health-engine', 'ok', 'Running — ' + model);
+        setHealthRow('#health-engine', 'ok', 'Running â€” ' + model);
       } else if (eng.download && eng.download.totalBytes) {
-        setHealthRow('#health-engine', 'busy', 'Downloading model — ' + Math.round((eng.download.receivedBytes / eng.download.totalBytes) * 100) + '%');
+        setHealthRow('#health-engine', 'busy', 'Downloading model â€” ' + Math.round((eng.download.receivedBytes / eng.download.totalBytes) * 100) + '%');
       } else if (eng.phase && eng.phase !== 'stopped') {
-        setHealthRow('#health-engine', 'busy', eng.phase.replace(/-/g, ' ') + '…');
+        setHealthRow('#health-engine', 'busy', eng.phase.replace(/-/g, ' ') + 'â€¦');
       } else {
         setHealthRow('#health-engine', 'warn', 'Not running', 'Start', () => api('/api/engine/start', { method: 'POST' }));
       }
@@ -1514,13 +1583,13 @@
       setHealthRow('#health-engine', 'err', 'Runtime unreachable');
     }
 
-    // 2. Reading voice (Kokoro) — live in-app truth when the bundled app is
+    // 2. Reading voice (Kokoro) â€” live in-app truth when the bundled app is
     // loaded; otherwise the shared same-origin cache tells us if the model
     // is on disk.
     try {
       const w = getBundledAppWindow();
       if (w && w._kokoroTTS && w._kokoroTTS.ready) {
-        // Engine READY is necessary but not sufficient — show what the last
+        // Engine READY is necessary but not sufficient â€” show what the last
         // read-aloud actually did (window.__ttsLastRoute breadcrumb from the
         // TTS router) so "ready but I hear the robot voice" is diagnosable
         // at a glance instead of via DevTools.
@@ -1530,10 +1599,10 @@
         if (lastRoute && lastRoute.route && lastRoute.route !== 'kokoro' && lastRoute.route !== 'provider') {
           setHealthRow('#health-voice', 'warn', 'Ready, but last read-aloud fell back (' + lastRoute.route + (lastRoute.voice ? ', voice ' + lastRoute.voice : '') + ')');
         } else {
-          setHealthRow('#health-voice', 'ok', 'Ready — reads aloud on this device' + (voicePref ? ' (' + voicePref + ')' : ''));
+          setHealthRow('#health-voice', 'ok', 'Ready â€” reads aloud on this device' + (voicePref ? ' (' + voicePref + ')' : ''));
         }
       } else if (w && w.__kokoroTTSDownloading) {
-        setHealthRow('#health-voice', 'busy', 'Preparing voice model…');
+        setHealthRow('#health-voice', 'busy', 'Preparing voice modelâ€¦');
       } else {
         let cached = false;
         try {
@@ -1542,7 +1611,7 @@
           cached = keys.some((r) => String(r.url).includes('Kokoro-82M') && String(r.url).includes('model_quantized'));
         } catch (_) {}
         if (cached) {
-          setHealthRow('#health-voice', 'ok', 'Downloaded — loads shortly after the app opens');
+          setHealthRow('#health-voice', 'ok', 'Downloaded â€” loads shortly after the app opens');
         } else if (w && typeof w.__loadKokoroTTS === 'function') {
           setHealthRow('#health-voice', 'warn', 'Not downloaded yet (~88 MB, one time)', 'Download', () => downloadKokoroVoice());
         } else {
@@ -1553,7 +1622,7 @@
       setHealthRow('#health-voice', 'warn', 'Downloads on first app launch (~88 MB)');
     }
 
-    // 3. Local images (SD-Turbo) — needs a REAL WebGPU adapter, not just the API.
+    // 3. Local images (SD-Turbo) â€” needs a REAL WebGPU adapter, not just the API.
     try {
       let adapter = null;
       if (navigator.gpu && typeof navigator.gpu.requestAdapter === 'function') {
@@ -1568,31 +1637,31 @@
           entries = (await cache.keys()).length;
         } catch (_) {}
         if (entries > 0) {
-          setHealthRow('#health-images', 'ok', 'Downloaded — images generate on this device');
+          setHealthRow('#health-images', 'ok', 'Downloaded â€” images generate on this device');
         } else {
-          setHealthRow('#health-images', 'warn', 'Available — enable in the app’s AI Settings (~2 GB once)');
+          setHealthRow('#health-images', 'warn', 'Available â€” enable in the appâ€™s AI Settings (~2 GB once)');
         }
       }
     } catch (_) {
       setHealthRow('#health-images', 'warn', 'Could not check');
     }
 
-    // 4. Speech-to-text (whisper.cpp) — the one-click opt-in lives HERE.
+    // 4. Speech-to-text (whisper.cpp) â€” the one-click opt-in lives HERE.
     try {
       const asr = await api('/api/asr/status');
       if (asr.running) {
-        setHealthRow('#health-asr', 'ok', 'On — student audio stays on this device', 'Turn off', () => api('/api/asr/stop', { method: 'POST' }));
+        setHealthRow('#health-asr', 'ok', 'On â€” student audio stays on this device', 'Turn off', () => api('/api/asr/stop', { method: 'POST' }));
       } else if (asr.phase && /download|starting|extract/i.test(asr.phase)) {
         const pct = asr.download && asr.download.totalBytes
-          ? ' — ' + Math.round((asr.download.receivedBytes / asr.download.totalBytes) * 100) + '%'
-          : '…';
+          ? ' â€” ' + Math.round((asr.download.receivedBytes / asr.download.totalBytes) * 100) + '%'
+          : 'â€¦';
         setHealthRow('#health-asr', 'busy', asr.phase.replace(/-/g, ' ') + pct);
       } else if (asr.lastError) {
         setHealthRow('#health-asr', 'err', String(asr.lastError).slice(0, 80), 'Retry', () => api('/api/asr/start', { method: 'POST' }));
       } else if (asr.model && asr.model.present) {
         setHealthRow('#health-asr', 'warn', 'Downloaded but off', 'Start', () => api('/api/asr/start', { method: 'POST' }));
       } else {
-        setHealthRow('#health-asr', 'warn', 'Off — reading practice uses the cloud', 'Enable (~148 MB once)', () => api('/api/asr/start', { method: 'POST' }));
+        setHealthRow('#health-asr', 'warn', 'Off â€” reading practice uses the cloud', 'Enable (~148 MB once)', () => api('/api/asr/start', { method: 'POST' }));
       }
     } catch (_) {
       setHealthRow('#health-asr', 'err', 'Runtime unreachable');
@@ -1603,7 +1672,7 @@
       if (navigator.permissions && navigator.permissions.query) {
         const st = await navigator.permissions.query({ name: 'microphone' });
         if (st.state === 'granted') setHealthRow('#health-mic', 'ok', 'Allowed');
-        else if (st.state === 'denied') setHealthRow('#health-mic', 'err', 'Blocked — allow the app in Windows microphone settings');
+        else if (st.state === 'denied') setHealthRow('#health-mic', 'err', 'Blocked â€” allow the app in Windows microphone settings');
         else setHealthRow('#health-mic', 'warn', 'Will ask the first time a lesson records');
       } else {
         setHealthRow('#health-mic', 'warn', 'Will ask the first time a lesson records');
@@ -1698,7 +1767,8 @@
       runUpdateAction('installUpdate', 'Installing update...');
     });
     $('#save-update-channel').addEventListener('click', saveUpdateChannel);
-    $('#copy-readiness').addEventListener('click', copyReadinessReport);
+    $('#copy-readiness').addEventListener('click', () => copyReadinessReport());
+    $('#copy-classroom-readiness')?.addEventListener('click', () => copyReadinessReport('#classroom-check-result'));
     $('#copy-diagnostics').addEventListener('click', copyDiagnostics);
     $('#toggle-app-focus').addEventListener('click', () => {
       setAppFocusMode(!state.appFocusMode);
@@ -1744,7 +1814,7 @@
       const hint = $('#lan-pin-hint');
       if (hint) {
         hint.textContent = pin
-          ? 'PIN saved. It applies when LAN sharing (re)starts — stop and start sharing to use it now.'
+          ? 'PIN saved. It applies when LAN sharing (re)starts â€” stop and start sharing to use it now.'
           : 'PIN cleared. Restart LAN sharing to open the join page without a PIN.';
       }
       await refresh();
@@ -1892,7 +1962,7 @@
     });
 
     $('#setup-schoolbox').addEventListener('click', async () => {
-      $('#schoolbox-result').textContent = 'Preparing School Box...';
+      $('#schoolbox-result').textContent = 'Preparing optional server...';
       try {
         const result = await api('/api/schoolbox/setup', { method: 'POST', body: '{}' });
         state.schoolBox = result.status || state.schoolBox;
@@ -1904,7 +1974,7 @@
     });
 
     $('#start-schoolbox').addEventListener('click', async () => {
-      $('#schoolbox-result').textContent = 'Starting School Box...';
+      $('#schoolbox-result').textContent = 'Starting optional server...';
       try {
         const result = await api('/api/schoolbox/start', { method: 'POST', body: '{}' });
         state.schoolBox = result.status || state.schoolBox;
@@ -1916,7 +1986,7 @@
     });
 
     $('#stop-schoolbox').addEventListener('click', async () => {
-      $('#schoolbox-result').textContent = 'Stopping School Box...';
+      $('#schoolbox-result').textContent = 'Stopping optional server...';
       try {
         const result = await api('/api/schoolbox/stop', { method: 'POST', body: '{}' });
         state.schoolBox = result.status || state.schoolBox;

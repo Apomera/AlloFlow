@@ -13,7 +13,15 @@ const DESKTOP_ROOT = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(DESKTOP_ROOT, '..');
 const COMMAND_CENTER_DIR = path.join(DESKTOP_ROOT, 'command-center');
 const STATIC_APP_DIR = path.join(DESKTOP_ROOT, 'app-build');
-const VERSION = '0.1.0-foundation';
+function readDesktopRuntimeVersion() {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(DESKTOP_ROOT, 'package.json'), 'utf8'));
+    return pkg && pkg.version ? String(pkg.version) : '0.0.0-local';
+  } catch (_) {
+    return '0.0.0-local';
+  }
+}
+const VERSION = readDesktopRuntimeVersion();
 const MAX_REQUEST_BODY_BYTES = 8 * 1024 * 1024;
 const SCHOOLBOX_PROJECT_NAME = 'alloflow-schoolbox';
 const SCHOOLBOX_CORE_SERVICES = ['frontend', 'pocketbase', 'ollama', 'piper', 'searxng'];
@@ -112,8 +120,8 @@ const PROVIDER_PRESETS = [
 
 const LIVE_SESSION_MODES = {
   'schoolbox-lan': {
-    label: 'School Box / Local Network',
-    dataLocation: 'Local School Box host on the school network',
+    label: 'Desktop LAN / Local Network',
+    dataLocation: 'This desktop computer and the local school network',
     cloudSession: false,
     recommended: true,
   },
@@ -970,7 +978,7 @@ function getLanShareStatus(config = readConfig(), origin = getDefaultRuntimeOrig
 async function startLanShare(config = readConfig()) {
   const live = getLiveSessionConfig(config);
   if (live.mode !== 'schoolbox-lan') {
-    throw new Error('LAN sharing is only available in School Box / Local Network mode.');
+    throw new Error('LAN sharing is only available in Desktop LAN / Local Network mode.');
   }
   if (managedLanShare.server) {
     return getLanShareStatus(config);
@@ -1243,7 +1251,7 @@ function serveLanJoinPage(res, code, origin, requestUrl) {
   }
   const config = {
     mode: 'schoolbox-lan',
-    label: 'School Box / Local Network',
+    label: 'Desktop LAN / Local Network',
     firestoreAllowed: false,
     cloudSessionAllowed: false,
     lanApiBase: origin,
@@ -1381,7 +1389,7 @@ async function getLiveSessionStatus(config = readConfig(), origin = getDefaultRu
 
   if (live.mode === 'alloflow-demo-cloud') {
     warnings.push('Demo cloud mode is not intended for real student data.');
-    nextActions.push('Use this only for demos, or switch to School Box / Local Network for classrooms.');
+    nextActions.push('Use this only for demos, or switch to Desktop LAN / Local Network for classrooms.');
   } else if (live.mode === 'byo-firebase') {
     if (!hasByoFirebaseMetadata) {
       warnings.push('BYO Firebase is selected, but no school-owned project metadata is recorded in Desktop settings.');
@@ -1391,18 +1399,17 @@ async function getLiveSessionStatus(config = readConfig(), origin = getDefaultRu
     }
   } else if (live.mode === 'district-server') {
     warnings.push('District Server mode is planned but not connected yet.');
-    nextActions.push('Use School Box / Local Network until a district server URL is configured.');
+    nextActions.push('Use Desktop LAN / Local Network until a district server URL is configured.');
   } else if (live.mode === 'schoolbox-lan') {
     if (lanBridge.enabled) {
       nextActions.push('Class sessions will use the Desktop local session bridge instead of Firestore.');
     }
-    if (!lanBridge.reachableFromOtherDevices) {
-      nextActions.push('The bridge is local-only right now; student-device LAN sharing needs a public LAN listener or explicit network sharing toggle next.');
-    }
-    if (schoolBoxStatus.status === 'running') {
-      nextActions.push('School Box is running for local classroom services.');
+    if (lanBridge.share?.active) {
+      nextActions.push('LAN Share is active for student devices on this network.');
+    } else if (!lanBridge.reachableFromOtherDevices) {
+      nextActions.push('Start LAN Share before students join from other devices.');
     } else {
-      nextActions.push('Prepare and start School Box before using cross-device local classroom sessions.');
+      nextActions.push('Students can join from the LAN URLs shown in the command center.');
     }
   } else {
     nextActions.push('Desktop will create local preview sessions only. Students on other devices cannot join.');
@@ -1770,40 +1777,40 @@ function getSchoolBoxNextActions(status, context = {}) {
   const staticApp = context.staticApp || {};
 
   if (status === 'disabled') {
-    return ['Choose Desktop Host when you want this computer to host a local School Box.'];
+    return ['Optional School Box server hosting is disabled. Desktop LAN classrooms still work without Docker.'];
   }
   if (status === 'district-planned') {
     return [
       'District Server mode is reserved for the future shared/server command center.',
-      'Choose Desktop Host to run the current local School Box stack from this desktop app.',
+      'Use Desktop LAN for today, or choose Docker Server Host only when testing the optional Docker server stack.',
     ];
   }
   if (status === 'missing-stack') {
-    return ['The School Box stack files are not available in this build. Rebuild the desktop package with desktop/schoolbox included.'];
+    return ['The optional School Box server stack files are not available in this build. Desktop LAN does not need them.'];
   }
   if (status === 'missing-app-build') {
-    return ['Build the bundled desktop web app so School Box can serve it locally.'];
+    return ['Build the bundled desktop web app before testing the optional School Box server.'];
   }
   if (status === 'needs-setup') {
-    return ['Press Prepare to create the local School Box settings file.'];
+    return ['Press Prepare only if you want this machine to run the optional Docker School Box server.'];
   }
   if (status === 'needs-docker') {
     const detail = docker.error ? ` Docker detail: ${docker.error}` : '';
-    return [`Install and start Docker Desktop, then press Refresh.${detail}`];
+    return [`Docker Desktop is needed only for the optional School Box server stack.${detail}`];
   }
   if (status === 'partial') {
-    return ['Some School Box services are running. Press Start Host again or check the logs for the service that did not come up.'];
+    return ['Some optional School Box server services are running. Press Start Server again or check the logs for the service that did not come up.'];
   }
   if (status === 'running') {
-    return ['School Box is running. Press Open to view it in your browser.'];
+    return ['Optional School Box server is running. Press Open Server to view it in your browser.'];
   }
   if (!envInfo.envExists) {
-    return ['Press Prepare to create the local School Box settings file.'];
+    return ['Press Prepare only if you want this machine to run the optional Docker School Box server.'];
   }
   if (staticApp.required && !staticApp.available) {
-    return ['Build the bundled app before starting School Box.'];
+    return ['Build the bundled app before starting the optional School Box server.'];
   }
-  return ['Press Start Host to run the local School Box services.'];
+  return ['Press Start Host only when testing or deploying the optional Docker School Box server.'];
 }
 
 function schoolBoxComposeArgs(action, config) {
@@ -1841,7 +1848,7 @@ async function runSchoolBoxCompose(action, config) {
   }
   const staticApp = getSchoolBoxStaticAppStatus(envInfo.paths);
   if (action === 'up' && !staticApp.available) {
-    throw new Error('The packaged School Box web app build is missing. Build the desktop web app before starting School Box.');
+    throw new Error('The packaged School Box web app build is missing. Build the desktop web app before starting the optional server.');
   }
   if (!envInfo.envExists) {
     throw new Error('School Box is not prepared yet.');
@@ -3191,7 +3198,7 @@ async function buildReadinessReport(config = readConfig(), origin = getDefaultRu
       : (liveSession.lanBridge?.share?.active ? 'LAN sharing is active.' : 'Cloud session docs are blocked; LAN sharing is not active.'),
     liveSession.lanBridge?.share?.active
       ? ''
-      : (liveSession.mode === 'schoolbox-lan' ? 'Start LAN Share before students join from other devices.' : 'Use School Box / Local Network for local classroom sessions.'),
+      : (liveSession.mode === 'schoolbox-lan' ? 'Start LAN Share before students join from other devices.' : 'Use Desktop LAN / Local Network for local classroom sessions.'),
     {
       mode: liveSession.mode,
       dataLocation: liveSession.dataLocation,
@@ -3201,14 +3208,17 @@ async function buildReadinessReport(config = readConfig(), origin = getDefaultRu
     }
   ));
 
-  const schoolBoxOk = schoolBox.status === 'running' || schoolBox.status === 'ready';
-  const schoolBoxWarn = ['needs-setup', 'needs-docker', 'partial', 'missing-app-build'].includes(schoolBox.status);
+  const schoolBoxOk = schoolBox.status !== 'partial';
   sections.push(readinessItem(
     'schoolbox',
-    'School Box',
-    schoolBoxOk ? 'ok' : (schoolBoxWarn ? 'warn' : 'err'),
-    'School Box status: ' + (schoolBox.status || 'unknown') + '.',
-    schoolBoxOk ? '' : ((schoolBox.nextActions && schoolBox.nextActions[0]) || 'Prepare and start School Box when local classroom services are needed.'),
+    'Optional School Box server',
+    schoolBoxOk ? 'ok' : 'warn',
+    schoolBox.status === 'running'
+      ? 'Optional Docker School Box server is running.'
+      : 'Optional Docker School Box server is not required for Desktop LAN classrooms.',
+    schoolBox.status === 'partial'
+      ? ((schoolBox.nextActions && schoolBox.nextActions[0]) || 'Stop or restart the optional School Box server stack.')
+      : '',
     {
       status: schoolBox.status,
       url: schoolBox.url,
@@ -3670,7 +3680,7 @@ async function handleApi(req, res, url) {
   if (req.method === 'POST' && url.pathname === '/api/schoolbox/setup') {
     const box = getSchoolBoxConfig(config);
     if (box.mode === 'district-server') {
-      jsonResponse(res, 409, { error: 'District Server mode is a future command-center target. Choose Desktop Host to prepare a local School Box.' });
+      jsonResponse(res, 409, { error: 'District Server mode is a future command-center target. Choose Docker Server Host to prepare the optional local School Box server.' });
       return;
     }
     const prepared = prepareSchoolBoxEnv(config);
@@ -3684,11 +3694,11 @@ async function handleApi(req, res, url) {
   if (req.method === 'POST' && url.pathname === '/api/schoolbox/start') {
     const box = getSchoolBoxConfig(config);
     if (box.mode === 'disabled') {
-      jsonResponse(res, 409, { error: 'School Box is disabled. Choose Desktop Host, then start again.' });
+      jsonResponse(res, 409, { error: 'School Box server hosting is disabled. Choose Docker Server Host, then start again.' });
       return;
     }
     if (box.mode === 'district-server') {
-      jsonResponse(res, 409, { error: 'District Server mode is a future command-center target. Choose Desktop Host to start the local School Box stack.' });
+      jsonResponse(res, 409, { error: 'District Server mode is a future command-center target. Choose Docker Server Host to start the optional local School Box server stack.' });
       return;
     }
     const prepared = box.autoPrepare ? prepareSchoolBoxEnv(config) : null;

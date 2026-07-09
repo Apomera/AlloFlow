@@ -18,7 +18,7 @@
     "source for the African-language gaps."
   ],
   "plan": [
-    { "language": "English", "code": "en", "perLevel": { "1": 90, "2": 90, "3": 72, "4": 56 }, "audioPerLevel": { "1": 55, "2": 55, "3": 38, "4": 24 } },
+    { "language": "English", "code": "en", "perLevel": { "1": 141, "2": 145, "3": 122, "4": 106 }, "audioPerLevel": { "1": 55, "2": 55, "3": 38, "4": 24 } },
     { "language": "Spanish", "code": "es", "perLevel": { "1": 24, "2": 24, "3": 18, "4": 14 } },
     { "language": "French", "code": "fr", "perLevel": { "1": 18, "2": 18, "3": 14, "4": 12 } },
     { "language": "Arabic", "code": "ar", "perLevel": { "1": 10, "2": 10, "3": 8, "4": 6 }, "audioPerLevel": { "1": 10, "2": 10, "3": 6, "4": 4 } },

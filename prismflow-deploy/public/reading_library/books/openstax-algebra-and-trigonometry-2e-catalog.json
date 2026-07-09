@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-algebra-and-trigonometry-2e-catalog",
+  "title": "OpenStax Algebra and Trigonometry 2e",
+  "description": "A source card for the OpenStax Algebra and Trigonometry 2e textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Mathematics",
+    "Algebra",
+    "Trigonometry",
+    "Textbooks"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/algebra-and-trigonometry-2e"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax Algebra and Trigonometry 2e covers functions, equations, polynomials, exponentials, logarithms, trigonometry, systems, sequences, and analytic geometry."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for worked examples, vocabulary, review reading, and extra practice when students need math text that can feed the adaptation pipeline."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters or figures."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  }
+}

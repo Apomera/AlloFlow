@@ -25,14 +25,14 @@ function LearningHubModal(props) {
     t,
   } = props;
   return (
-        <div className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4" onClick={() => setShowLearningHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowLearningHub(false); }}>
+        <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} onClick={() => setShowLearningHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowLearningHub(false); }}>
           {/* allo-docsuite: this modal is a portal rendered OUTSIDE the main .allo-docsuite
               content wrapper, so the theme-dark gradient/text remaps (which are scoped to
               .allo-docsuite) never reached the pastel tool cards — they stayed light-pastel in
               dark mode. Adding the scope class opts the modal into the existing, tested dark
               remap (from-*-50 gradients -> dark tints, text-*-800/600 -> light). No-op in light
               mode: every .allo-docsuite rule is prefixed .theme-dark / .theme-contrast. */}
-          <div className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8" role="dialog" aria-modal="true" aria-label={t('learning_hub.title') || 'Learning Tools'} onClick={(e) => e.stopPropagation()}>
+          <div className="allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8" style={{ maxHeight: '90vh' }} role="dialog" aria-modal="true" aria-label={t('learning_hub.title') || 'Learning Tools'} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">{'\uD83E\uDDE9'} {t('learning_hub.title') || 'Learning Tools'}</h2>

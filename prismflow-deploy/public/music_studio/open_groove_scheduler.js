@@ -131,6 +131,7 @@
         padEngine: pad && pad.engine || null,
         assetId: event.assetId || pad && pad.assetId || null,
         sampleRegion: pad && pad.sampleRegion ? JSON.parse(JSON.stringify(pad.sampleRegion)) : null,
+        drumVoice: pad && pad.proceduralVoice ? JSON.parse(JSON.stringify(pad.proceduralVoice)) : null,
         instrument: event.type === 'note' && track && track.instrument ? JSON.parse(JSON.stringify(track.instrument)) : null,
         pitch: event.pitch || null,
         midi: event.midi == null ? null : event.midi,

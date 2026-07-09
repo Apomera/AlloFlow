@@ -19,6 +19,14 @@
 > For file-level unique-code size review, see
 > [docs/code_size_inventory_2026-07-03.csv](docs/code_size_inventory_2026-07-03.csv).
 
+> **Deployment/privacy addendum - July 9, 2026:** the current local-first
+> product framing is AlloFlow Desktop first, with Desktop LAN / Local Network
+> for same-room classroom sessions and the Docker School Box stack as optional
+> server/appliance infrastructure. Treat older "Docker air-gap" and
+> "School Box" entries below as historical unless they are explicitly marked
+> current. Public privacy wording should say "FERPA-aligned/supports" rather
+> than "guaranteed compliant."
+
 **Generated:** 2026-05-09 (headline counts last reconciled June 20, 2026 — see §13.12 for the running delta table; the dated entries in §3–§12 are point-in-time snapshots)
 **Codebase scale:** July 3, 2026 local review found ~5.69M physical code lines including generated/deploy mirrors, ~4.07M exact-hash unique code lines, and ~2.70M canonical-ish source lines after excluding deploy mirrors and generated root module pairs. See the current audit note above for caveats.
 **Monolith size:** ~31K deployed lines (`prismflow-deploy/src/App.jsx`, ~1.7 MB) with `AlloFlowANTI.txt` remaining the Gemini Canvas orchestration source.
@@ -27,7 +35,7 @@
 - **111 STEM Lab tool files / 116 registered STEM plugin IDs** across math, science, engineering, ecology, life skills, creative, strategy, technology, speech/music, and applied simulation domains. The registered-ID count is higher than the file count because some files preserve aliases or export paired IDs.
 - **July 2026 additions surfaced by code review:** AlloStudio (`studio_module.js` / `studio_core.js`) is the born-accessible flyer, worksheet, and digital-art object editor with explicit reading order, alt/decorative image gates, and process/provenance history. Open Groove Studio (`music_studio/open_groove_core.js`, `open_groove_scheduler.js`, `open_groove_audio.js`, `open_groove_module.js`) is a browser-based groovebox/composition studio covering pads, rhythm, synthesis, samples, notation concepts, timing math, and license-aware audio assets.
 - **70 SEL Hub tools** (+ 2 infrastructure files: `sel_hub_module.js` registry shell + `sel_safety_layer.js` shared safety infrastructure) mapped to CASEL competencies + Civic & Hope. See §5.8 for the cross-cutting safety pipeline (defense-in-depth pre-flight regex gate layered on top of the assessSafety LLM checks).
-- **New June 2026 subsystems** (built after the bulk of §3–§12 was written): Cinematic Studio (`cinematic_studio_module.js` — agentic document→video, client-side WebCodecs/Remotion), in-app Professional Development (`pd_core_module.js` + `catalog/pd/`), Research Hub + 3 Research Lanes (`research_lane_*_module.js`), Lumen, Dynamic Assessment, Live Polling, Translation Feedback (`translation_feedback_module.js`), Generate-Unit/Throughline (`mind_map_module.js`), footnotes + APA/MLA/Chicago `DOC_MODES`, PDF redaction + fillable AcroForm worksheets, and native tagged-PDF + veraPDF/PDF-UA validation in the doc pipeline.
+- **New June 2026 subsystems** (built after the bulk of §3–§12 was written): Cinematic Studio (`cinematic_studio_module.js` — agentic document→video, client-side WebCodecs/Remotion), in-app Professional Development (`pd_core_module.js` + `catalog/pd/`), Research Hub + 3 Research Lanes (`research_lane_*_module.js`), Lumen, Dynamic Assessment, Live Polling, Translation Feedback (`translation_feedback_module.js`), Generate-Unit/Throughline (`mind_map_module.js`), footnotes + APA/MLA/Chicago `DOC_MODES`, PDF redaction + fillable AcroForm worksheets, native tagged-PDF output, in-app structural checks, and local veraPDF/PDF-UA QA workflows in the doc pipeline.
 - ~290 deep-feature enumerations inside major subsystems (Doc Pipeline 35+ exports, Behavior Lens 15+, Symbol Studio 10+, AlloHaven 4+18, AlloBot Sage 19+5+3, Quiz subsystem 4 modes + AI grader + live aggregator, Adventure 7 components + handlers, Voice + TTS multi-provider, Adaptive Controller gamepad layer, 28 view modules, 20 infrastructure modules, **5 SEL Hub Rehearse tabs with multi-turn role-play + scene generation + break-character coach + end-reflect**, etc.)
 **Inventory completeness:** ~99% — remaining gaps are translation-string libraries, individual quest content, and per-tool internal sub-modes that are largely cosmetic. Every major subsystem and every CDN module is now documented with discoverability.
 **Bugs fixed during this audit:** 6 net new (Report Writer never loaded, Immersive Reader null overwrites, Teacher Dashboard 10 components unregistered, WordSoundsReviewPanel duplicate registration, view_misc_modals null registrations, GeminiBridgeView deleted-but-consumed) + additional May 11-15 fixes (ExportPreviewView missing `history` prop, doc_pipeline missing `setError`/`pdfBatchSummary`, teacher `LearnerProgressView` missing `isTeacherMode`, word_sounds probe-mode `probeActivity` crash, Space Colony minimap `ctx` typo, Crisis Companion exit-button silent no-op, misleading "monitored for your safety" copy in 5 tools, **launch pad Learning Tools modal showed only after second click** (setTimeout race), **Physics target-destruction mode stale closure** (first-target-disappears + projectile-passes-through-targets, 2-in-1), **Skylab takeoff bleached ground + jolt + missing motion cue**, **Tier 1 bug-fix pass (May 15) on annotation-suite drag**: Rules-of-Hooks violation in NoteBubble/VoiceNoteBubble, drag flooding undo stack with intermediate positions, missing right/bottom drag clamp) — see §7
@@ -1216,8 +1224,8 @@ Five latent bugs surfaced by extraction work and fixed:
 | [examples/lesson_briefs.md](examples/lesson_briefs.md) | Sample lesson briefs / use cases |
 
 ### Memory references for context
-- `project_alloflow_scope.md` — ~650K lines, 80+ tools, hub-and-spoke architecture
-- `project_school_box.md` — Docker air-gap deployment status (Tyler Despain collaborating)
+- `project_alloflow_scope.md` — historical scope memory (~650K lines, 80+ tools, hub-and-spoke architecture); use the July 2026 audit note at the top of this file for current counts
+- `project_school_box.md` — historical Docker School Box deployment notes; current framing is Desktop-first with optional School Box Server stack
 - `project_el_conference_king_pitch.md` — King Middle pilot pitch context
 - `project_sel_hub_howl_mapping.md` — SEL Hub ↔ EL Education HOWLs mapping
 - `feedback_dep_enumerator_must_be_scope_aware.md` — Lessons from May 2026 extraction work
@@ -1266,9 +1274,9 @@ Export toolbar (in the Reading Tools strip): theme switcher (4 themes) + annotat
 - **Import**: `_m.importAnnotations(existing, payload, { forceAuthor: 'student' })` — accepts either bare array or wrapped `{annotations: [...]}`; dedupes by id; tracks provenance via `importedFrom + importedAt`.
 - **Migration**: `migrateLegacyShape(annotations)` stamps `kind: 'sticker'` on pre-Phase-3 saves that lack the field.
 
-### 10.6 Voice note privacy guarantees
+### 10.6 Voice note privacy guardrails
 
-Zero network calls in the voice path. `MediaRecorder` → `Blob` → `FileReader.readAsDataURL` → base64 → React state → project JSON / localStorage. MediaStream tracks explicitly released on stop or cancel. 60s recording cap (`VOICE_MAX_SECONDS`); 500 KB base64 size cap (`VOICE_MAX_BYTES`). Refuses to attach over-size clips with a clear warning.
+The voice-note path is designed to stay local: `MediaRecorder` → `Blob` → `FileReader.readAsDataURL` → base64 → React state → project JSON / localStorage. MediaStream tracks explicitly released on stop or cancel. 60s recording cap (`VOICE_MAX_SECONDS`); 500 KB base64 size cap (`VOICE_MAX_BYTES`). Refuses to attach over-size clips with a clear warning.
 
 ### 10.7 Drag-to-reposition (May 15 2026)
 
@@ -1536,8 +1544,8 @@ Frayer Sort, See-Think-Wonder Sort, Story Map Sort.
   constraints: only inside `className="..."` contexts (not CSS rule strings),
   only `color:` property, excludes print stylesheets + SVG fill/stroke.
 
-**Final state:** ~270+ files now WCAG-compliant. ~391 long-tail findings
-remain for per-instance review.
+**Final state for that pass:** ~270+ files had targeted WCAG fixes applied. ~391 long-tail findings
+remained for per-instance review.
 
 ### 13.12 Updated totals (May 17 historical snapshot)
 

@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════
-// stem_tool_lifeskills.js — Life Skills Lab  v5.17
-// Enhanced STEM Lab tool — 32 sub-tools
+// stem_tool_lifeskills.js — Life Skills Lab  v5.22
+// Enhanced STEM Lab tool — 33 sub-tools
 // Start Here · Paycheck · Data Literacy · Decisions · Contracts
-// Records · Transportation · Job Readiness · Resume Builder · Proof Locker · Communication · Time Management · Insurance · Applied Science · Car Care · Home Repair
+// Records · Transportation · Job Readiness · Resume Builder · Proof Locker · Interview Studio · Communication · Time Management · Insurance · Applied Science · Car Care · Home Repair
 // Home Systems · Budget · Credit · Cooking · Laundry Lab
 // Dental Care · Challenge · Battle · Learn
 // ═══════════════════════════════════════════════════════
@@ -78,6 +78,7 @@ window.StemLab = window.StemLab || {
     { id: 'workreadiness', icon: '\uD83D\uDCBC', label: 'Job Readiness' },
     { id: 'resumebuilder', icon: '\uD83D\uDCC4', label: 'Resume Builder' },
     { id: 'prooflocker', icon: '\uD83D\uDDC2\uFE0F', label: 'Proof Locker' },
+    { id: 'interviewstudio', icon: '\uD83C\uDFA4', label: 'Interview Studio' },
     { id: 'communication', icon: '\uD83D\uDCAC', label: 'Communication' },
     { id: 'timemanagement', icon: '\u23F3', label: 'Time Management' },
     { id: 'insurance',  icon: '\uD83C\uDFE5', label: 'Insurance' },
@@ -103,8 +104,8 @@ window.StemLab = window.StemLab || {
   ];
 
   var LIFE_SKILL_PATHS = [
-    { id: 'money', icon: '\uD83D\uDCB0', title: 'Money basics', desc: 'Take-home pay, job readiness, resume building, proof organization, budgets, credit, insurance, and smart borrowing.', start: 'paycheck', accent: '#059669', steps: ['Paycheck', 'Job Readiness', 'Resume Builder', 'Proof Locker', 'Budget', 'Credit', 'Insurance'] },
-    { id: 'choices', icon: '\uD83E\uDDE0', title: 'Better decisions', desc: 'Use evidence, spot misleading data, compare options, read fine print, organize records, plan transportation, prepare for work, build resumes, gather proof, manage time, communicate clearly, and stay safer online.', start: 'data', accent: '#2563eb', steps: ['Data', 'Decisions', 'Contracts', 'Records', 'Transportation', 'Job Readiness', 'Resume Builder', 'Proof Locker', 'Time Management', 'Communication', 'Digital Safety'] },
+    { id: 'money', icon: '\uD83D\uDCB0', title: 'Money basics', desc: 'Take-home pay, job readiness, resume building, proof organization, interview practice, budgets, credit, insurance, and smart borrowing.', start: 'paycheck', accent: '#059669', steps: ['Paycheck', 'Job Readiness', 'Resume Builder', 'Proof Locker', 'Interview Studio', 'Budget', 'Credit', 'Insurance'] },
+    { id: 'choices', icon: '\uD83E\uDDE0', title: 'Better decisions', desc: 'Use evidence, spot misleading data, compare options, read fine print, organize records, plan transportation, prepare for work, build resumes, gather proof, practice interviews, manage time, communicate clearly, and stay safer online.', start: 'data', accent: '#2563eb', steps: ['Data', 'Decisions', 'Contracts', 'Records', 'Transportation', 'Job Readiness', 'Resume Builder', 'Proof Locker', 'Interview Studio', 'Time Management', 'Communication', 'Digital Safety'] },
     { id: 'care', icon: '\uD83E\uDDCD', title: 'Health routines', desc: 'Practice body care, appointments, time planning, communication, transportation, sleep, medication labels, home safety, dental care, food confidence, and everyday prevention habits.', start: 'bodycare', accent: '#0f766e', steps: ['Body Care', 'Appointments', 'Time Management', 'Communication', 'Transportation', 'Sleep', 'Meds', 'Home Safety', 'Dental', 'Food Confidence', 'Cooking', 'Insurance'] },
     { id: 'home', icon: '\uD83C\uDFE0', title: 'Home confidence', desc: 'Understand repairs, home systems, car care, laundry, and applied science.', start: 'homerepair', accent: '#d97706', steps: ['Home Repair', 'Home Systems', 'Car Care', 'Laundry'] },
     { id: 'practice', icon: '\uD83C\uDFAF', title: 'Practice mode', desc: 'Build fluency with challenge questions and the Adulting Defense battle.', start: 'challenge', accent: '#7c3aed', steps: ['Challenge', 'Battle', 'Learn'] }
@@ -126,6 +127,12 @@ window.StemLab = window.StemLab || {
     { id: 'bulletBuilder', icon: '\uD83C\uDFAF', name: 'Evidence Bullet Builder', desc: 'Practice 3 resume decisions or save an evidence bullet' },
     { id: 'proofLockerReady', icon: '\uD83D\uDDC2\uFE0F', name: 'Proof Locker Ready', desc: 'Build a portfolio proof checklist' },
     { id: 'portfolioCurator', icon: '\uD83D\uDDBC\uFE0F', name: 'Portfolio Curator', desc: 'Practice 3 proof or sharing decisions' },
+    { id: 'interviewReady', icon: '\uD83C\uDFA4', name: 'Interview Ready', desc: 'Build an interview preparation checklist' },
+    { id: 'mockInterviewPro', icon: '\uD83E\uDD1D', name: 'Mock Interview Pro', desc: 'Practice 3 interview decisions or save a STAR answer' },
+    { id: 'interviewPracticePlan', icon: '\uD83D\uDCC5', name: 'Practice Planner', desc: 'Save an interview practice plan' },
+    { id: 'interviewPacketBuilder', icon: '\uD83D\uDCE6', name: 'Interview Packet', desc: 'Build an interview prep packet' },
+    { id: 'interviewRehearsalReady', icon: '\u23F1\uFE0F', name: 'Rehearsal Ready', desc: 'Save a calm interview rehearsal note' },
+    { id: 'interviewEvidenceMatcher', icon: '\uD83D\uDCCD', name: 'Evidence Matcher', desc: 'Save a question-to-proof interview cue' },
     { id: 'communicationReady', icon: '\uD83D\uDCAC', name: 'Communication Ready', desc: 'Build a clear communication checklist' },
     { id: 'conflictNavigator', icon: '\uD83E\uDD1D', name: 'Conflict Navigator', desc: 'Practice 3 communication or conflict decisions' },
     { id: 'timePlanner', icon: '\u23F3', name: 'Time Planner', desc: 'Build a realistic time-management checklist' },
@@ -254,6 +261,7 @@ window.StemLab = window.StemLab || {
     { tier: 1, q: 'What short document lists your skills, experience, and contact information for a job?', a: 'resume', h: 'It helps employers understand what you can do.' },
     { tier: 1, q: 'What short document summarizes skills, experience, and education for a job?', a: 'resume', h: 'It is usually shared with applications or interviews.' },
     { tier: 1, q: 'What do you collect to support a resume claim: proof or guesses?', a: 'proof', h: 'Examples make claims easier to trust.' },
+    { tier: 1, q: 'What practice conversation helps you prepare for job questions?', a: 'mock interview', h: 'It is a rehearsal before the real interview.' },
     { tier: 1, q: 'What should you do before replying when a message makes you upset?', a: 'pause', h: 'A short pause can prevent a bigger conflict.' },
     { tier: 1, q: 'What do you call extra time added before a deadline or appointment?', a: 'buffer', h: 'It helps when something takes longer than expected.' },
     { tier: 1, q: 'Why should you empty pockets before washing clothes?', a: 'damage', h: 'Pens, coins, and tissues can damage clothing or the washer.' },
@@ -272,6 +280,7 @@ window.StemLab = window.StemLab || {
     { tier: 2, q: 'If a work schedule is unclear, what should you do before assuming?', a: 'clarify', h: 'Ask a supervisor, manager, or trusted work contact.' },
     { tier: 2, q: 'What should a resume bullet usually connect: action, skill, and what?', a: 'result', h: 'Show what happened because of the action.' },
     { tier: 2, q: 'Before sharing a portfolio item with someone else in it, what should you check?', a: 'permission', h: 'Consent and privacy matter.' },
+    { tier: 2, q: 'In interview answers, STAR stands for situation, task, action, and what?', a: 'result', h: 'End with what happened or what you learned.' },
     { tier: 2, q: 'What kind of statement starts with your own feeling or need instead of blaming?', a: 'i statement', h: 'Example: I feel confused when...' },
     { tier: 2, q: 'What planning method sorts tasks into do now, schedule, delegate or ask help, and drop?', a: 'priority matrix', h: 'It separates urgency and importance.' },
     { tier: 2, q: 'A recipe makes 24 cookies. You want 36. What is the scaling factor?', a: '1.5', h: '36 / 24 = ?' },
@@ -291,6 +300,7 @@ window.StemLab = window.StemLab || {
     { tier: 3, q: 'What interview method describes a situation, task, action, and result?', a: 'star', h: 'It helps answer behavior questions clearly.' },
     { tier: 3, q: 'What public occupational database can help identify job tasks and skills?', a: 'o*net', h: 'It is run by the U.S. Department of Labor.' },
     { tier: 3, q: 'What is the safest portfolio share setting for private documents: public or limited?', a: 'limited', h: 'Share only what the audience needs.' },
+    { tier: 3, q: 'At the end of an interview, should you usually have at least one prepared question for the interviewer?', a: 'yes', h: 'Questions can show interest and help you understand the role.' },
     { tier: 3, q: 'What repair step means recognizing your part and saying what you will do differently?', a: 'apology', h: 'A useful apology includes responsibility and a next step.' },
     { tier: 3, q: 'If a task takes 25 minutes and you add a 10-minute buffer, how many minutes should you block?', a: '35', h: 'Task time plus buffer time.' },
     { tier: 3, q: 'Why can too much laundry detergent make clothes feel stiff or itchy?', a: 'residue', h: 'Extra detergent can stay in fabric when the rinse cannot remove it all.' },
@@ -311,6 +321,8 @@ window.StemLab = window.StemLab || {
     { q: 'What should resume claims be based on: proof or made-up keywords?', a: 'proof', h: 'Truthful evidence is stronger and safer than keyword stuffing.' },
     { q: 'What collection can hold projects, certificates, work samples, and links?', a: 'portfolio', h: 'It supports resume and interview claims.' },
     { q: 'Should private IDs or personal records go in a public portfolio?', a: 'no', h: 'Keep private documents protected.' },
+    { q: 'What interview answer structure means situation, task, action, result?', a: 'star', h: 'It helps turn proof into a clear story.' },
+    { q: 'What should you do if an interview question is confusing?', a: 'clarify', h: 'A short clarifying question is professional.' },
     { q: 'What should you do if workplace instructions are unclear?', a: 'ask', h: 'Clarifying early prevents mistakes.' },
     { q: 'What should you do before sending an angry reply?', a: 'pause', h: 'A pause helps you choose the next words.' },
     { q: 'What kind of statement says your own feeling or need clearly?', a: 'i statement', h: 'It avoids starting with blame.' },
@@ -403,6 +415,12 @@ window.StemLab = window.StemLab || {
       '3-5': 'Portfolio practice means saving examples you are allowed to share: a project, certificate, thank-you note, photo of work, or short reflection. Good proof says what happened, what skill it shows, and who can see it.',
       '6-8': 'Proof literacy connects resume claims to artifacts. Learners choose relevant samples, describe the skill shown, check permission and privacy, and decide whether an item is public, limited, or private.',
       '9-12': 'Portfolio curation turns scattered evidence into a share-ready packet for resumes, interviews, scholarships, internships, jobs, and accommodations. Strong proof is truthful, current, relevant, accessible, permission-aware, and organized by audience.'
+    }},
+    { title: 'Interview Practice Studio', icon: '\uD83C\uDFA4', tryIt: 'interviewstudio', content: {
+      'K-2': 'Interview practice is a safe rehearsal. Learners can practice saying their name, naming a strength, listening to a question, and asking for help when they do not understand.',
+      '3-5': 'Interview skills include greeting, listening, answering with examples, asking one question, and saying thank you. A practice interview can feel easier when learners use sentence starters and kind feedback.',
+      '6-8': 'Interview literacy connects resume bullets and proof items to spoken answers. Students can use STAR stories, clarifying questions, prepared questions for the interviewer, and a short practice plan for nerves.',
+      '9-12': 'Interview practice includes role targeting, accessible preparation, response mode choice, read-aloud support, mock interviewer turns, calm rehearsal, question-to-proof matching, bite-size practice plans, evidence-backed STAR answers, prep packets, follow-up questions, reflection, and respectful accommodation or support scripts when needed.'
     }},
     { title: 'Communication & Conflict Basics', icon: '\uD83D\uDCAC', tryIt: 'communication', content: {
       'K-2': 'Communication means sharing ideas, listening, asking for help, and using words or tools that make needs clear. It is okay to pause and ask a trusted grown-up when a problem feels too big.',
@@ -1281,6 +1299,114 @@ window.StemLab = window.StemLab || {
     'One person who can review my portfolio is...'
   ];
 
+  var INTERVIEW_CHECKS = [
+    { id: 'role', icon: '\uD83C\uDFAF', title: 'Know the role', action: 'Name the job, program, internship, volunteer role, or opportunity you are practicing for.', why: 'A target role helps answers stay relevant.' },
+    { id: 'evidence', icon: '\uD83D\uDCC4', title: 'Bring evidence', action: 'Pick 2-3 resume bullets or proof locker items that show real skills.', why: 'Strong answers are easier when examples are ready.' },
+    { id: 'star', icon: '\u2B50', title: 'Practice STAR', action: 'Prepare one story with situation, task, action, and result.', why: 'STAR keeps answers organized without memorizing a script.' },
+    { id: 'access', icon: '\u267F', title: 'Plan access needs', action: 'Decide whether you need notes, extra processing time, captions, an interpreter, a support person, or another accommodation.', why: 'Access supports can make interviews more fair and less stressful.' },
+    { id: 'questions', icon: '\u2753', title: 'Prepare questions', action: 'Write at least one question about training, schedule, expectations, support, or next steps.', why: 'Questions help you decide if the opportunity fits you too.' },
+    { id: 'followup', icon: '\uD83D\uDCE8', title: 'Follow up', action: 'Plan a short thank-you or check-in message after the interview.', why: 'Follow-up keeps communication clear and professional.' }
+  ];
+
+  var INTERVIEW_ACTIONS = [
+    { id: 'clarify', label: 'Ask to clarify', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'evidence', label: 'Use a real example', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'pause', label: 'Pause and organize', tone: 'bg-amber-50 text-amber-900 border-amber-200' },
+    { id: 'support', label: 'Name support or accommodation', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var INTERVIEW_SCENARIOS = [
+    { prompt: 'The interviewer asks a long question and you lose track of the last part.', best: 'clarify', explain: 'It is okay to ask them to repeat or break the question into parts before answering.' },
+    { prompt: 'They ask about teamwork and you have a group project in your proof locker.', best: 'evidence', explain: 'Use the project as proof: explain the situation, your role, what you did, and the result.' },
+    { prompt: 'You feel nervous and start talking too fast.', best: 'pause', explain: 'Take one breath, use your notes if allowed, and answer one part at a time.' },
+    { prompt: 'You need captions, written instructions, or time to process questions during an interview.', best: 'support', explain: 'A respectful accommodation request can focus on what helps you communicate your skills.' },
+    { prompt: 'They ask, "What is a weakness?" and you want to say something harsh about yourself.', best: 'pause', explain: 'Choose a real growth area plus a strategy you are using to improve.' },
+    { prompt: 'They ask why you want the role, but you only remember the company name.', best: 'evidence', explain: 'Connect the role to one real interest, skill, proof item, or learning goal.' }
+  ];
+
+  var INTERVIEW_ROLES = [
+    { id: 'firstjob', icon: '\uD83D\uDED2', title: 'First job', interviewer: 'Hiring manager', tone: 'warm, direct, and practical', focus: 'availability, reliability, customer service, learning routines, and asking for help', opening: 'Thanks for meeting with me. To start, tell me about yourself and one strength you would bring to this role.' },
+    { id: 'internship', icon: '\uD83D\uDCBB', title: 'Internship or program', interviewer: 'Program interviewer', tone: 'curious, structured, and encouraging', focus: 'projects, learning goals, teamwork, problem solving, and growth mindset', opening: 'I would like to learn how your experiences connect to this opportunity. What project or proof item are you proud of?' },
+    { id: 'volunteer', icon: '\uD83E\uDD1D', title: 'Volunteer role', interviewer: 'Volunteer coordinator', tone: 'friendly, mission-focused, and supportive', focus: 'dependability, communication, safety, helping others, and boundaries', opening: 'We appreciate volunteers who are reliable and kind. What kind of helping task have you done before?' },
+    { id: 'school', icon: '\uD83C\uDF93', title: 'School, scholarship, or club', interviewer: 'Selection committee member', tone: 'thoughtful, reflective, and student-centered', focus: 'goals, strengths, challenges, participation, and evidence of effort', opening: 'Tell me about a goal you are working toward and one example that shows your effort.' },
+    { id: 'access', icon: '\u267F', title: 'Accessible interview practice', interviewer: 'Accessible hiring partner', tone: 'clear, patient, and accommodation-aware', focus: 'communication preferences, supports, strengths, examples, and fair ways to show skills', opening: 'We want this interview to work for you. What helps you communicate clearly, and what strength would you like us to notice?' }
+  ];
+
+  var INTERVIEW_QUESTIONS = [
+    { id: 'tellme', type: 'Opening', q: 'Tell me about yourself.', purpose: 'A short, role-focused introduction.', frame: 'I am interested in this role because... One strength I bring is... For example...', proof: 'Use one resume bullet or proof item as a quick example.' },
+    { id: 'whyrole', type: 'Motivation', q: 'Why do you want this role or program?', purpose: 'Connect interest to the opportunity.', frame: 'I am interested because... This connects to my experience with... I hope to learn or contribute...', proof: 'Point to a project, class, volunteer task, or responsibility.' },
+    { id: 'strength', type: 'Strength', q: 'What is one strength you would bring?', purpose: 'Name a skill and show evidence.', frame: 'One strength is... I showed this when... The result was...', proof: 'Choose a proof locker item that clearly shows the skill.' },
+    { id: 'problem', type: 'STAR', q: 'Tell me about a time you solved a problem.', purpose: 'Show problem solving with a clear story.', frame: 'Situation... Task... Action... Result...', proof: 'Use a real challenge from school, work, volunteering, home, or a project.' },
+    { id: 'teamwork', type: 'Collaboration', q: 'Tell me about a time you worked with others.', purpose: 'Show communication and shared responsibility.', frame: 'Our goal was... My role was... I helped by... We finished by...', proof: 'Use a group project, team, event, shift, or family responsibility.' },
+    { id: 'weakness', type: 'Growth', q: 'What is an area you are working to improve?', purpose: 'Show self-awareness without oversharing.', frame: 'I am working on... A strategy I use is... I am improving by...', proof: 'Use a safe, role-appropriate growth example.' },
+    { id: 'availability', type: 'Logistics', q: 'What is your availability or schedule like?', purpose: 'Set honest expectations.', frame: 'I am available... I have commitments... I can communicate changes by...', proof: 'Use your schedule, transportation, or first-day plan.' },
+    { id: 'questions', type: 'Your question', q: 'What question do you have for us?', purpose: 'Show interest and gather information.', frame: 'Could you tell me about training, expectations, schedule, support, or next steps?', proof: 'Pick one question that helps you decide if the role fits.' }
+  ];
+
+  var INTERVIEW_SUGGESTIONS = [
+    'Could you repeat or rephrase the question?',
+    'One example from my resume is...',
+    'A proof item I can connect to this is...',
+    'I would like a moment to think before I answer.',
+    'One question I have is about training and expectations.',
+    'A support that helps me communicate clearly is...'
+  ];
+
+  var INTERVIEW_RUBRIC_CARDS = [
+    { id: 'star', icon: '\u2B50', title: 'STAR structure', check: 'Does the answer include situation, task, action, and result?', coach: 'Add the missing part instead of making the answer longer.' },
+    { id: 'evidence', icon: '\uD83D\uDCC4', title: 'Evidence match', check: 'Does the answer connect to a resume bullet or proof item?', coach: 'Name the real example and what skill it shows.' },
+    { id: 'clear', icon: '\uD83D\uDCAC', title: 'Clear communication', check: 'Can someone understand the main point in one listen?', coach: 'Use shorter sentences and signpost the example.' },
+    { id: 'access', icon: '\u267F', title: 'Access and self-advocacy', check: 'Does the learner know how to ask for a support if needed?', coach: 'Practice one respectful script for notes, captions, processing time, or written instructions.' },
+    { id: 'question', icon: '\u2753', title: 'Question for interviewer', check: 'Does the learner have one question ready?', coach: 'Ask about training, first week expectations, schedule, supports, or next steps.' }
+  ];
+
+  var INTERVIEW_REFLECTION_PROMPTS = [
+    'One answer that felt strong was...',
+    'One answer I want to improve is...',
+    'One proof item I should mention next time is...',
+    'One support or accommodation I may ask for is...',
+    'One follow-up question or thank-you message I can send is...'
+  ];
+
+  var INTERVIEW_PLAN_TEMPLATES = [
+    { id: 'starter', title: 'Starter confidence plan', minutes: 5, focus: 'Answer one opening question out loud, then save one next step.', goal: 'This week I will practice a short "tell me about yourself" answer three times.' },
+    { id: 'star', title: 'STAR story plan', minutes: 8, focus: 'Build one situation, task, action, result story and use it in chat.', goal: 'This week I will prepare one STAR story connected to a resume bullet or proof item.' },
+    { id: 'rolefit', title: 'Role-fit plan', minutes: 10, focus: 'Connect one strength, one proof item, and one question for the interviewer.', goal: 'This week I will explain why this role fits my interests and skills.' },
+    { id: 'access', title: 'Access support plan', minutes: 7, focus: 'Practice a respectful script for notes, captions, processing time, or written instructions.', goal: 'This week I will prepare one access support request that helps me communicate clearly.' },
+    { id: 'followup', title: 'Follow-up plan', minutes: 6, focus: 'Draft one thank-you or check-in message after practice.', goal: 'This week I will prepare a follow-up message and one question about next steps.' }
+  ];
+
+  var INTERVIEW_PLAN_STEPS = [
+    { id: 'warmup', label: 'Warm up', detail: 'Read the current interview question and take one slow breath before answering.' },
+    { id: 'answer', label: 'Practice one answer', detail: 'Say or write one answer using a suggested stem, STAR story, or proof item.' },
+    { id: 'coach', label: 'Use feedback', detail: 'Pick one coach move from the feedback, rubric, or reflection prompt.' },
+    { id: 'repeat', label: 'Repeat once', detail: 'Try the answer again with one clearer detail or result.' },
+    { id: 'next', label: 'Save next step', detail: 'Save one goal for tomorrow, this week, or the next interview practice.' }
+  ];
+
+  var INTERVIEW_REHEARSAL_TARGETS = [
+    { id: '30', label: '30 seconds', cue: 'One clear point plus one example.' },
+    { id: '60', label: '60 seconds', cue: 'A short STAR answer with one result.' },
+    { id: '90', label: '90 seconds', cue: 'A fuller answer with context, action, result, and fit.' }
+  ];
+
+  var INTERVIEW_REHEARSAL_SCRIPTS = [
+    { id: 'pause', title: 'Pause script', script: 'I would like a moment to think so I can answer clearly.' },
+    { id: 'clarify', title: 'Clarify script', script: 'Could you repeat or rephrase the question?' },
+    { id: 'notes', title: 'Notes script', script: 'I use brief notes to stay organized. Is it okay if I refer to them?' },
+    { id: 'access', title: 'Access support script', script: 'Written instructions, captions, or a little processing time help me communicate my skills clearly.' },
+    { id: 'repair', title: 'Repair script', script: 'I want to answer that more clearly. The main point I want to share is...' }
+  ];
+
+  var INTERVIEW_PROOF_MATCHERS = [
+    { id: 'teamwork', title: 'Teamwork', question: 'Tell me about a time you worked with others.', skill: 'collaboration and communication', proofPrompt: 'A group project, team activity, shift, event, or helping role.', answerStem: 'One teamwork example I can share is...', safeShare: 'Name your role and the outcome without sharing private details about other people.' },
+    { id: 'problem', title: 'Problem solving', question: 'Tell me about a time you solved a problem.', skill: 'problem solving and follow-through', proofPrompt: 'A class task, home responsibility, repair, schedule problem, or project challenge.', answerStem: 'A problem I helped solve was...', safeShare: 'Keep the story truthful and focus on what you did, not blaming someone else.' },
+    { id: 'dependable', title: 'Dependability', question: 'How do you show reliability?', skill: 'responsibility and consistency', proofPrompt: 'Attendance, chores, caregiving, volunteering, deadlines, transportation planning, or routines.', answerStem: 'One way I show reliability is...', safeShare: 'Use a specific routine or responsibility that is okay to talk about.' },
+    { id: 'learning', title: 'Learning quickly', question: 'Tell me about a time you learned something new.', skill: 'learning mindset and asking for help', proofPrompt: 'A new tool, class skill, job task, recipe, route, app, or workplace routine.', answerStem: 'A time I learned something new was...', safeShare: 'It is okay to mention support or practice without oversharing personal information.' },
+    { id: 'service', title: 'Customer or community care', question: 'How would you help someone who needs support?', skill: 'kind communication and service', proofPrompt: 'Helping a classmate, family member, customer, neighbor, visitor, or teammate.', answerStem: 'When someone needs support, I try to...', safeShare: 'Use respectful language and protect the other person\'s privacy.' },
+    { id: 'access', title: 'Self-advocacy', question: 'What helps you do your best work?', skill: 'self-advocacy and clear communication', proofPrompt: 'Notes, written instructions, captions, a checklist, extra processing time, or a quiet reset.', answerStem: 'A support that helps me do my best work is...', safeShare: 'Focus on the support and how it helps performance, not private medical details.' }
+  ];
+
   var COMMUNICATION_CHECKS = [
     { id: 'pause', icon: '\u23F8\uFE0F', title: 'Pause before reacting', action: 'Take a breath, wait, or draft first when emotions are high.', why: 'A pause makes it easier to choose words instead of escalating.' },
     { id: 'listen', icon: '\uD83D\uDC42', title: 'Listen and reflect', action: 'Repeat the main idea you heard before responding when the topic matters.', why: 'Reflection reduces misunderstandings and shows the other person was heard.' },
@@ -1463,7 +1589,7 @@ window.StemLab = window.StemLab || {
   window.StemLab.registerTool('lifeSkills', {
     title: 'Life Skills Lab',
     icon: '\uD83E\uDDED',
-    description: 'Essential knowledge for adulting \u2014 taxes, data literacy, contracts, records, transportation, job readiness, resume building, portfolio proof organization, communication, time management, dental care, body care, sleep routines, medication labels, appointments, home safety, digital safety, food confidence, car care, laundry science, home systems, and critical thinking.',
+    description: 'Essential knowledge for adulting \u2014 taxes, data literacy, contracts, records, transportation, job readiness, resume building, portfolio proof organization, interview practice, communication, time management, dental care, body care, sleep routines, medication labels, appointments, home safety, digital safety, food confidence, car care, laundry science, home systems, and critical thinking.',
     category: 'Life Skills',
     gradeRange: 'K-12',
     render: function(ctx) {
@@ -2289,6 +2415,461 @@ window.StemLab = window.StemLab || {
         if (correct && proofScenarioScore + 1 >= 3) checkBadge('portfolioCurator');
       }
 
+      // INTERVIEW PRACTICE STUDIO STATE
+      var interviewChecklist = d.interviewChecklist || {};
+      var interviewDone = INTERVIEW_CHECKS.filter(function(step) { return !!interviewChecklist[step.id]; }).length;
+      var interviewScenarioIdx = d.interviewScenarioIdx || 0;
+      var interviewScenarioChoice = d.interviewScenarioChoice || '';
+      var interviewScenarioFb = d.interviewScenarioFb || '';
+      var interviewScenarioScore = d.interviewScenarioScore || 0;
+      var interviewCurrentScenario = INTERVIEW_SCENARIOS[interviewScenarioIdx % INTERVIEW_SCENARIOS.length];
+      var interviewRoleIdx = d.interviewRoleIdx || 0;
+      var interviewRole = INTERVIEW_ROLES[interviewRoleIdx % INTERVIEW_ROLES.length];
+      var interviewQuestionIdx = d.interviewQuestionIdx || 0;
+      var interviewQuestion = INTERVIEW_QUESTIONS[interviewQuestionIdx % INTERVIEW_QUESTIONS.length];
+      var interviewRubricIdx = d.interviewRubricIdx || 0;
+      var interviewRubricCard = INTERVIEW_RUBRIC_CARDS[interviewRubricIdx % INTERVIEW_RUBRIC_CARDS.length];
+      var interviewReflectionIdx = d.interviewReflectionIdx || 0;
+      var interviewReflectionPrompt = INTERVIEW_REFLECTION_PROMPTS[interviewReflectionIdx % INTERVIEW_REFLECTION_PROMPTS.length];
+      var interviewReflectionNote = d.interviewReflectionNote || '';
+      var interviewReflectionMsg = d.interviewReflectionMsg || '';
+      var interviewMode = d.interviewMode || 'guided';
+      var interviewHintsOn = d.interviewHintsOn !== false;
+      var interviewAutoRead = !!d.interviewAutoRead;
+      var interviewInput = d.interviewInput || '';
+      var interviewChatHistory = Array.isArray(d.interviewChatHistory) ? d.interviewChatHistory : [];
+      var interviewDisplayHistory = interviewChatHistory.length ? interviewChatHistory : [{ role: 'interviewer', speaker: interviewRole.interviewer, text: interviewRole.opening }];
+      var interviewSuggestions = Array.isArray(d.interviewSuggestions) && d.interviewSuggestions.length ? d.interviewSuggestions : INTERVIEW_SUGGESTIONS.slice(0, 4);
+      var interviewLoading = !!d.interviewLoading;
+      var interviewFeedback = d.interviewFeedback || '';
+      var interviewScore = d.interviewScore || 0;
+      var interviewSparkMsg = d.interviewSparkMsg || '';
+      var interviewTranscriptMsg = d.interviewTranscriptMsg || '';
+      var interviewStarSituation = d.interviewStarSituation || '';
+      var interviewStarTask = d.interviewStarTask || '';
+      var interviewStarAction = d.interviewStarAction || '';
+      var interviewStarResult = d.interviewStarResult || '';
+      var interviewStarMsg = d.interviewStarMsg || '';
+      var interviewStarPreview = 'Situation: ' + (interviewStarSituation.trim() || 'the context') + ' Task: ' + (interviewStarTask.trim() || 'what needed to happen') + ' Action: ' + (interviewStarAction.trim() || 'what I did') + ' Result: ' + (interviewStarResult.trim() || 'what changed or what I learned') + '.';
+      var interviewPlanIdx = d.interviewPlanIdx || 0;
+      var interviewPracticePlan = INTERVIEW_PLAN_TEMPLATES[interviewPlanIdx % INTERVIEW_PLAN_TEMPLATES.length];
+      var interviewPlanMinutes = Number(d.interviewPlanMinutes || interviewPracticePlan.minutes || 5);
+      var interviewPlanGoal = d.interviewPlanGoal || interviewPracticePlan.goal;
+      var interviewPlanChecklist = d.interviewPlanChecklist || {};
+      var interviewPlanDone = INTERVIEW_PLAN_STEPS.filter(function(step) { return !!interviewPlanChecklist[step.id]; }).length;
+      var interviewPlanNote = d.interviewPlanNote || '';
+      var interviewPlanMsg = d.interviewPlanMsg || '';
+      var interviewPlanSavedAt = d.interviewPlanSavedAt || 0;
+      var interviewPlanLog = Array.isArray(d.interviewPlanLog) ? d.interviewPlanLog : [];
+      var interviewPlanProgress = Math.round(interviewPlanDone / INTERVIEW_PLAN_STEPS.length * 100);
+      var interviewSavedTranscript = d.interviewSavedTranscript || '';
+      var interviewSavedStarAnswer = d.interviewSavedStarAnswer || '';
+      var interviewFollowUpMessage = d.interviewFollowUpMessage || 'Thank you for meeting with me. I appreciated learning about the role. I am especially interested in... Please let me know if you need anything else from me.';
+      var interviewPacketMsg = d.interviewPacketMsg || '';
+      var interviewPacketSavedAt = d.interviewPacketSavedAt || 0;
+      var interviewRehearsalConfidence = Number(d.interviewRehearsalConfidence || 3);
+      var interviewRehearsalTargetId = d.interviewRehearsalTargetId || '60';
+      var interviewRehearsalTarget = INTERVIEW_REHEARSAL_TARGETS.find(function(target) { return target.id === interviewRehearsalTargetId; }) || INTERVIEW_REHEARSAL_TARGETS[1];
+      var interviewRehearsalScriptIdx = d.interviewRehearsalScriptIdx || 0;
+      var interviewRehearsalScript = INTERVIEW_REHEARSAL_SCRIPTS[interviewRehearsalScriptIdx % INTERVIEW_REHEARSAL_SCRIPTS.length];
+      var interviewRehearsalNote = d.interviewRehearsalNote || '';
+      var interviewRehearsalMsg = d.interviewRehearsalMsg || '';
+      var interviewRehearsalSavedAt = d.interviewRehearsalSavedAt || 0;
+      var interviewProofMatcherIdx = d.interviewProofMatcherIdx || 0;
+      var interviewProofMatcher = INTERVIEW_PROOF_MATCHERS[interviewProofMatcherIdx % INTERVIEW_PROOF_MATCHERS.length];
+      var interviewProofNote = d.interviewProofNote || '';
+      var interviewSavedProofCue = d.interviewSavedProofCue || '';
+      var interviewProofCueMsg = d.interviewProofCueMsg || '';
+      var interviewProofCueSavedAt = d.interviewProofCueSavedAt || 0;
+      var interviewProofCuePreview = interviewProofMatcher.answerStem + ' Proof I can use: ' + (interviewProofNote.trim() || interviewProofMatcher.proofPrompt);
+      var interviewPacketPreview = buildInterviewPrepPacket();
+
+      function setInterviewCheck(id, checked) {
+        var next = Object.assign({}, interviewChecklist);
+        next[id] = checked;
+        upd('interviewChecklist', next);
+        if (INTERVIEW_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('interviewReady');
+      }
+
+      function answerInterviewScenario(choice) {
+        var correct = choice === interviewCurrentScenario.best;
+        var action = INTERVIEW_ACTIONS.find(function(a) { return a.id === interviewCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          interviewScenarioChoice: choice,
+          interviewScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : interviewCurrentScenario.best) + '. ') + interviewCurrentScenario.explain,
+          interviewScenarioScore: interviewScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && interviewScenarioScore + 1 >= 3) checkBadge('mockInterviewPro');
+      }
+
+      function speakInterviewText(text) {
+        if (!text) return;
+        announceToSR('Reading interview text');
+        if (callTTS && typeof callTTS === 'function') {
+          try { callTTS(text, { voice: 'Kore', source: 'lifeSkillsInterviewStudio' }); return; } catch(e) {}
+        }
+        try {
+          if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
+            window.speechSynthesis.cancel();
+            var utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 0.95;
+            utter.volume = 0.85;
+            window.speechSynthesis.speak(utter);
+          }
+        } catch(e2) {}
+      }
+
+      function localInterviewCoachReply(studentText) {
+        var trimmed = (studentText || '').trim();
+        var mentionsEvidence = /example|project|proof|resume|volunteer|worked|helped|organized|created|learned|result/i.test(trimmed);
+        var reply = mentionsEvidence
+          ? 'Thank you. I heard a real example in that answer. Can you add one result or lesson learned so I understand the impact?'
+          : 'Thank you. Can you connect that answer to one resume bullet or proof locker item so I can see the evidence behind it?';
+        var feedback = mentionsEvidence
+          ? 'Good start: you used evidence. Next step: add the result, number, outcome, or learning.'
+          : 'Try adding one concrete example. A STAR answer is easier to follow when it includes action and result.';
+        return { reply: reply, feedback: feedback, score: mentionsEvidence ? 3 : 2, suggestions: ['The result was...', 'One example is...', 'I learned that...'] };
+      }
+
+      function parseInterviewAIResponse(res, fallback) {
+        var raw = typeof res === 'object' && res && res.text ? res.text : String(res || '');
+        raw = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+        try { return Object.assign({}, fallback, JSON.parse(raw)); } catch(e) {}
+        var start = raw.indexOf('{');
+        var end = raw.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+          try { return Object.assign({}, fallback, JSON.parse(raw.slice(start, end + 1))); } catch(e2) {}
+        }
+        return Object.assign({}, fallback, { reply: raw || fallback.reply });
+      }
+
+      function sendInterviewMessage(overrideText) {
+        var textToSend = (overrideText || interviewInput || '').trim();
+        if (!textToSend || interviewLoading) return;
+        var studentMsg = { role: 'student', speaker: 'You', text: textToSend };
+        var nextHistory = interviewChatHistory.concat([studentMsg]);
+        var fallback = localInterviewCoachReply(textToSend);
+        updMulti({
+          interviewChatHistory: nextHistory,
+          interviewInput: '',
+          interviewLoading: !!callGemini,
+          interviewFeedback: '',
+          interviewSparkMsg: ''
+        });
+        if (!callGemini) {
+          var localMsg = { role: 'interviewer', speaker: interviewRole.interviewer, text: fallback.reply, feedback: fallback.feedback };
+          updMulti({
+            interviewChatHistory: nextHistory.concat([localMsg]),
+            interviewFeedback: fallback.feedback,
+            interviewScore: Math.max(interviewScore, fallback.score || 0),
+            interviewSuggestions: fallback.suggestions,
+            interviewLoading: false
+          });
+          if (interviewAutoRead) speakInterviewText(fallback.reply);
+          if (nextHistory.length >= 5) checkBadge('mockInterviewPro');
+          return;
+        }
+        var historyStr = nextHistory.slice(-8).map(function(m) { return (m.role === 'student' ? 'Student' : interviewRole.interviewer) + ': ' + m.text; }).join('\n');
+        var prompt = [
+          'You are a supportive mock job interviewer modeled after the app persona interview pattern.',
+          'Interview role: ' + interviewRole.title + '. Interviewer: ' + interviewRole.interviewer + '. Tone: ' + interviewRole.tone + '.',
+          'Focus areas: ' + interviewRole.focus + '.',
+          'Current interview question: ' + interviewQuestion.q,
+          'Recent transcript:',
+          historyStr,
+          'Respond as the interviewer with one concise follow-up question or comment, then give coaching feedback.',
+          'Be accessible: allow pauses, clarifying questions, notes, and accommodation scripts. Do not shame the student.',
+          'Return JSON only: {"reply":"interviewer response","feedback":"one praise plus one next step","score":0-4,"suggestions":["short response stem 1","short response stem 2","short response stem 3"]}.'
+        ].join('\n');
+        callGemini(prompt).then(function(res) {
+          var parsed = parseInterviewAIResponse(res, fallback);
+          var replyText = String(parsed.reply || fallback.reply);
+          var feedbackText = String(parsed.feedback || fallback.feedback);
+          var suggestionList = Array.isArray(parsed.suggestions) && parsed.suggestions.length ? parsed.suggestions.slice(0, 4) : fallback.suggestions;
+          var interviewerMsg = { role: 'interviewer', speaker: interviewRole.interviewer, text: replyText, feedback: feedbackText };
+          updMulti({
+            interviewChatHistory: nextHistory.concat([interviewerMsg]),
+            interviewFeedback: feedbackText,
+            interviewScore: Math.max(interviewScore, Number(parsed.score) || fallback.score || 0),
+            interviewSuggestions: suggestionList,
+            interviewLoading: false
+          });
+          if (interviewAutoRead) speakInterviewText(replyText);
+          if (nextHistory.length >= 5) checkBadge('mockInterviewPro');
+        }).catch(function() {
+          var fallbackMsg = { role: 'interviewer', speaker: interviewRole.interviewer, text: fallback.reply, feedback: fallback.feedback };
+          updMulti({
+            interviewChatHistory: nextHistory.concat([fallbackMsg]),
+            interviewFeedback: fallback.feedback,
+            interviewSuggestions: fallback.suggestions,
+            interviewLoading: false
+          });
+        });
+      }
+
+      function sparkInterviewTopic() {
+        var spark = 'Try answering "' + interviewQuestion.q + '" with this frame: ' + interviewQuestion.frame;
+        upd('interviewSparkMsg', spark);
+        announceToSR('Interview coaching spark ready');
+      }
+
+      function saveInterviewTranscript() {
+        var lines = interviewDisplayHistory.map(function(m) { return (m.role === 'student' ? 'Student' : (m.speaker || interviewRole.interviewer)) + ': ' + m.text; });
+        updMulti({ interviewTranscriptMsg: 'Transcript saved with ' + lines.length + ' turns.', interviewSavedTranscript: lines.join('\n\n'), interviewTranscriptSaved: Date.now() });
+        checkBadge('interviewReady');
+        announceToSR('Interview transcript saved');
+      }
+
+      function resetInterviewChat() {
+        updMulti({ interviewChatHistory: [], interviewInput: '', interviewFeedback: '', interviewSparkMsg: '', interviewTranscriptMsg: '', interviewSuggestions: INTERVIEW_SUGGESTIONS.slice(0, 4), interviewLoading: false });
+        announceToSR('Interview chat reset');
+      }
+
+      function saveInterviewStarAnswer() {
+        if (!interviewStarAction.trim() || !interviewStarResult.trim()) {
+          upd('interviewStarMsg', 'Add at least an action and result before saving the STAR answer.');
+          return;
+        }
+        updMulti({ interviewStarMsg: 'STAR answer saved: ' + interviewStarPreview, interviewSavedStarAnswer: interviewStarPreview, interviewStarSaved: Date.now() });
+        checkBadge('mockInterviewPro');
+        announceToSR('STAR answer saved');
+      }
+
+      function selectInterviewPracticePlan(idx) {
+        var plan = INTERVIEW_PLAN_TEMPLATES[idx % INTERVIEW_PLAN_TEMPLATES.length];
+        updMulti({
+          interviewPlanIdx: idx,
+          interviewPlanMinutes: plan.minutes,
+          interviewPlanGoal: plan.goal,
+          interviewPlanMsg: '',
+          interviewPlanNote: ''
+        });
+        announceToSR('Interview practice plan selected');
+      }
+
+      function setInterviewPlanStep(id, checked) {
+        var next = Object.assign({}, interviewPlanChecklist);
+        next[id] = checked;
+        upd('interviewPlanChecklist', next);
+        if (INTERVIEW_PLAN_STEPS.every(function(step) { return !!next[step.id]; })) checkBadge('interviewPracticePlan');
+      }
+
+      function buildInterviewPlanFromFeedback() {
+        var goal = interviewFeedback || interviewRubricCard.coach || interviewReflectionPrompt || interviewPracticePlan.goal;
+        updMulti({
+          interviewPlanGoal: 'This week I will practice: ' + goal.replace(/^Coach feedback:\s*/i, ''),
+          interviewPlanNote: 'Use one saved transcript, STAR answer, or proof item during the next practice.',
+          interviewPlanMsg: 'Practice plan updated from the current coaching feedback.'
+        });
+        announceToSR('Interview practice plan updated from coaching feedback');
+      }
+
+      function saveInterviewPracticePlan() {
+        var goal = (interviewPlanGoal || '').trim();
+        if (!goal) {
+          upd('interviewPlanMsg', 'Write one practice goal before saving the plan.');
+          return;
+        }
+        var entry = {
+          at: Date.now(),
+          title: interviewPracticePlan.title,
+          minutes: interviewPlanMinutes,
+          goal: goal,
+          done: interviewPlanDone,
+          total: INTERVIEW_PLAN_STEPS.length
+        };
+        updMulti({
+          interviewPlanMsg: 'Practice plan saved: ' + interviewPracticePlan.title + ' for ' + interviewPlanMinutes + ' minutes.',
+          interviewPlanSavedAt: entry.at,
+          interviewPlanLog: [entry].concat(interviewPlanLog).slice(0, 5)
+        });
+        checkBadge('interviewPracticePlan');
+        announceToSR('Interview practice plan saved');
+      }
+
+      function resetInterviewPracticePlan() {
+        updMulti({
+          interviewPlanChecklist: {},
+          interviewPlanNote: '',
+          interviewPlanMsg: 'Practice progress reset. The saved goal is still available.'
+        });
+        announceToSR('Interview practice plan progress reset');
+      }
+
+      function saveInterviewRehearsalNote() {
+        if (!interviewRehearsalNote.trim()) {
+          upd('interviewRehearsalMsg', 'Write one rehearsal note, reset idea, or support reminder first.');
+          return;
+        }
+        updMulti({ interviewRehearsalMsg: 'Rehearsal note saved: ' + interviewRehearsalNote.trim(), interviewRehearsalSavedAt: Date.now() });
+        checkBadge('interviewRehearsalReady');
+        announceToSR('Interview rehearsal note saved');
+      }
+
+      function useInterviewRehearsalScript() {
+        upd('interviewInput', interviewRehearsalScript.script);
+        announceToSR('Interview rehearsal script added to chat answer');
+      }
+
+      function buildInterviewProofCueText() {
+        return [
+          interviewProofMatcher.title + ' proof cue',
+          'Question: ' + interviewProofMatcher.question,
+          'Skill: ' + interviewProofMatcher.skill,
+          'Proof: ' + (interviewProofNote.trim() || interviewProofMatcher.proofPrompt),
+          'Answer stem: ' + interviewProofMatcher.answerStem,
+          'Safe share reminder: ' + interviewProofMatcher.safeShare
+        ].join('\n');
+      }
+
+      function saveInterviewProofCue() {
+        if (!interviewProofNote.trim()) {
+          upd('interviewProofCueMsg', 'Write one real proof item or example first.');
+          return;
+        }
+        var cue = buildInterviewProofCueText();
+        updMulti({ interviewSavedProofCue: cue, interviewProofCueMsg: 'Proof cue saved for ' + interviewProofMatcher.title + '.', interviewProofCueSavedAt: Date.now() });
+        checkBadge('interviewEvidenceMatcher');
+        announceToSR('Interview proof cue saved');
+      }
+
+      function useInterviewProofCueInChat() {
+        upd('interviewInput', interviewProofCuePreview);
+        announceToSR('Interview proof cue added to chat answer');
+      }
+
+      function escapeInterviewPacketHtml(text) {
+        return String(text || '').replace(/[&<>"']/g, function(ch) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+        });
+      }
+
+      function buildInterviewPrepPacket() {
+        var checkedPrep = INTERVIEW_CHECKS.filter(function(step) { return !!interviewChecklist[step.id]; }).map(function(step) { return '- ' + step.title + ': ' + step.action; });
+        var checkedPractice = INTERVIEW_PLAN_STEPS.filter(function(step) { return !!interviewPlanChecklist[step.id]; }).map(function(step) { return '- ' + step.label + ': ' + step.detail; });
+        var latestPlan = interviewPlanLog.length ? interviewPlanLog[0] : null;
+        var planTitle = latestPlan ? latestPlan.title : interviewPracticePlan.title;
+        var planGoal = latestPlan ? latestPlan.goal : interviewPlanGoal;
+        var planMinutes = latestPlan ? latestPlan.minutes : interviewPlanMinutes;
+        var starAnswer = (interviewSavedStarAnswer || ((interviewStarAction.trim() || interviewStarResult.trim()) ? interviewStarPreview : '')).trim();
+        var transcript = (interviewSavedTranscript || interviewDisplayHistory.map(function(m) { return (m.role === 'student' ? 'Student' : (m.speaker || interviewRole.interviewer)) + ': ' + m.text; }).join('\n\n')).trim();
+        var reflection = (interviewReflectionNote || interviewReflectionPrompt || '').trim();
+        var followUp = (interviewFollowUpMessage || '').trim();
+        return [
+          'Interview Prep Packet',
+          '',
+          'Role target',
+          'Role: ' + interviewRole.title,
+          'Interviewer style: ' + interviewRole.interviewer + ' - ' + interviewRole.tone,
+          'Current practice question: ' + interviewQuestion.q,
+          'Proof cue: ' + interviewQuestion.proof,
+          '',
+          'Weekly practice plan',
+          'Plan: ' + planTitle,
+          'Minutes: ' + planMinutes,
+          'Goal: ' + (planGoal || 'Choose one small interview practice goal.'),
+          'Note: ' + (interviewPlanNote || 'No extra note yet.'),
+          '',
+          'Checked prep habits',
+          checkedPrep.length ? checkedPrep.join('\n') : '- No prep habits checked yet.',
+          '',
+          'Daily practice steps completed',
+          checkedPractice.length ? checkedPractice.join('\n') : '- No daily practice steps checked yet.',
+          '',
+          'Question-to-proof cue',
+          interviewSavedProofCue || (interviewProofNote.trim() ? buildInterviewProofCueText() : 'No proof cue saved yet.'),
+          '',
+          'Calm rehearsal plan',
+          'Confidence: ' + interviewRehearsalConfidence + '/5',
+          'Answer target: ' + interviewRehearsalTarget.label + ' - ' + interviewRehearsalTarget.cue,
+          'Support script: ' + interviewRehearsalScript.title + ': ' + interviewRehearsalScript.script,
+          'Rehearsal note: ' + (interviewRehearsalNote || 'No rehearsal note saved yet.'),
+          '',
+          'STAR answer',
+          starAnswer || 'No STAR answer saved yet. Add at least an action and result in the STAR builder.',
+          '',
+          'Coach feedback',
+          interviewFeedback || interviewRubricCard.coach || 'Use the rubric cards to choose one next improvement.',
+          '',
+          'Reflection',
+          reflection || 'No reflection saved yet.',
+          '',
+          'Follow-up message',
+          followUp || 'Write one thank-you or check-in message.',
+          '',
+          'Transcript',
+          transcript || 'No transcript saved yet.',
+          '',
+          'Practice note',
+          'This packet is for rehearsal and self-advocacy. Bring truthful examples, ask clarifying questions when needed, and use appropriate access supports.'
+        ].join('\n');
+      }
+
+      function saveInterviewPrepPacket() {
+        var packet = buildInterviewPrepPacket();
+        updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Interview prep packet saved.', interviewPacketSavedAt: Date.now() });
+        checkBadge('interviewPacketBuilder');
+        announceToSR('Interview prep packet saved');
+      }
+
+      function copyInterviewPrepPacket() {
+        var packet = buildInterviewPrepPacket();
+        updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Interview prep packet ready to copy.', interviewPacketSavedAt: Date.now() });
+        checkBadge('interviewPacketBuilder');
+        try {
+          if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
+            window.navigator.clipboard.writeText(packet).then(function() {
+              updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Interview prep packet copied to clipboard.', interviewPacketSavedAt: Date.now() });
+              announceToSR('Interview prep packet copied');
+            }).catch(function() {
+              updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Clipboard was blocked. Select the packet preview text to copy it.', interviewPacketSavedAt: Date.now() });
+              announceToSR('Clipboard blocked');
+            });
+            return;
+          }
+        } catch(e) {}
+        updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Clipboard unavailable. Select the packet preview text to copy it.', interviewPacketSavedAt: Date.now() });
+        announceToSR('Clipboard unavailable');
+      }
+
+      function downloadInterviewPrepPacket() {
+        var packet = buildInterviewPrepPacket();
+        try {
+          var blob = new Blob([packet], { type: 'text/plain;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'interview-prep-packet.txt';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function() { URL.revokeObjectURL(url); }, 500);
+          updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Interview prep packet downloaded as a text file.', interviewPacketSavedAt: Date.now() });
+          checkBadge('interviewPacketBuilder');
+          announceToSR('Interview prep packet downloaded');
+        } catch(e) {
+          updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Download was blocked. Use Copy packet or the preview text instead.', interviewPacketSavedAt: Date.now() });
+          announceToSR('Download blocked');
+        }
+      }
+
+      function openInterviewPacketPrintView() {
+        var packet = buildInterviewPrepPacket();
+        try {
+          var printWin = window.open('', '_blank');
+          if (!printWin || !printWin.document) throw new Error('print window blocked');
+          printWin.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Interview Prep Packet</title><style>body{font-family:Arial,sans-serif;line-height:1.5;color:#0f172a;margin:32px;}pre{white-space:pre-wrap;font:14px/1.5 Arial,sans-serif;}button{padding:10px 14px;border:1px solid #334155;border-radius:8px;background:#0f172a;color:white;font-weight:700;}@media print{button{display:none}}</style></head><body><button onclick="window.print()">Print packet</button><pre>' + escapeInterviewPacketHtml(packet) + '</pre></body></html>');
+          printWin.document.close();
+          updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Print-friendly packet opened.', interviewPacketSavedAt: Date.now() });
+          checkBadge('interviewPacketBuilder');
+          announceToSR('Print-friendly interview packet opened');
+        } catch(e) {
+          updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Print view was blocked. Download or copy the packet instead.', interviewPacketSavedAt: Date.now() });
+          announceToSR('Print view blocked');
+        }
+      }
+
       // COMMUNICATION & CONFLICT STATE
       var communicationChecklist = d.communicationChecklist || {};
       var communicationDone = COMMUNICATION_CHECKS.filter(function(step) { return !!communicationChecklist[step.id]; }).length;
@@ -2460,7 +3041,7 @@ window.StemLab = window.StemLab || {
         updMulti({ battleActive: true, battleRound: 0, battlePlayerHP: 100, battleEnemyHP: 100, battleAnswer: '', battleFeedback: '', battleOver: false, battleWon: false, battleUseAI: !!useAI, battleOrder: order, battleAIQ: null, battleAILoading: false });
         if (useAI && callGemini) {
           upd('battleAILoading', true);
-          callGemini('Generate one life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, resume building and evidence bullets, portfolio proof organization and privacy, communication and conflict, time management and planning, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+          callGemini('Generate one life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, resume building and evidence bullets, portfolio proof organization and privacy, interview practice and STAR answers, communication and conflict, time management and planning, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
             try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ battleAIQ: { q: p.q, a: p.a, h: p.h || 'Think practically!' }, battleAILoading: false }); } catch(e) { upd('battleAILoading', false); }
           }).catch(function() { upd('battleAILoading', false); });
         }
@@ -2563,6 +3144,7 @@ window.StemLab = window.StemLab || {
             workreadiness: { accent: '#4338ca', soft: 'rgba(67,56,202,0.10)', icon: '\uD83D\uDCBC', title: __alloT('stem.lifeskills.job_readiness', 'Job readiness + workplace basics'), hint: __alloT('stem.lifeskills.job_readiness_hint', 'Applications, resumes, availability, interviews, first-day plans, workplace communication, feedback, pay records, safety, respect, and asking clear questions.') },
             resumebuilder: { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83D\uDCC4', title: __alloT('stem.lifeskills.resume_builder', 'Resume builder + evidence review'), hint: __alloT('stem.lifeskills.resume_builder_hint', 'Role matching, truthful evidence bullets, clean sections, O*NET vocabulary, NACE career-readiness skills, privacy checks, and cautious AI/ATS review.') },
             prooflocker: { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\uD83D\uDDC2\uFE0F', title: __alloT('stem.lifeskills.proof_locker', 'Portfolio + proof locker'), hint: __alloT('stem.lifeskills.proof_locker_hint', 'Collect projects, certificates, work samples, volunteer proof, references, links, privacy checks, captions, and share-ready packets that support resume and interview claims.') },
+            interviewstudio: { accent: '#6d28d9', soft: 'rgba(109,40,217,0.10)', icon: '\uD83C\uDFA4', title: __alloT('stem.lifeskills.interview_studio', 'Interview practice studio'), hint: __alloT('stem.lifeskills.interview_studio_hint', 'Persona-style mock interview chat with guided/free response, suggested stems, read-aloud, calm rehearsal, question-to-proof matching, topic spark coaching, bite-size practice plans, STAR answers, prep packets, transcript save, reflection, and accessibility scripts.') },
             communication: { accent: '#7c2d12', soft: 'rgba(124,45,18,0.10)', icon: '\uD83D\uDCAC', title: __alloT('stem.lifeskills.communication_conflict', 'Communication + conflict'), hint: __alloT('stem.lifeskills.communication_conflict_hint', 'Pausing, listening, clarifying, I-statements, boundaries, message tone, repair attempts, apologies, and getting trusted support when conflict is unsafe or too big.') },
             timemanagement: { accent: '#854d0e', soft: 'rgba(133,77,14,0.10)', icon: '\u23F3', title: __alloT('stem.lifeskills.time_management', 'Time management + planning'), hint: __alloT('stem.lifeskills.time_management_hint', 'Task capture, priorities, realistic estimates, buffers, reminders, calendars, checklists, focus tools, and recovery plans when the day changes.') },
             insurance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFE5', title: __alloT('stem.lifeskills.insurance_basics', 'Insurance basics'),        hint: __alloT('stem.lifeskills.premium_deductible_out_of_pocket_max_n', 'Premium / deductible / out-of-pocket max / network. Insurance protects against catastrophic loss \u2014 not against everyday cost. High-deductible plans + HSA can beat low-deductible for healthy people.') },
@@ -2644,6 +3226,7 @@ window.StemLab = window.StemLab || {
               { title: 'Job readiness check', icon: '\uD83D\uDCBC', body: 'Practice applications, interviews, schedules, first-day plans, and workplace questions.', tab: 'workreadiness' },
               { title: 'Resume builder check', icon: '\uD83D\uDCC4', body: 'Turn real experiences into truthful, role-matched evidence bullets.', tab: 'resumebuilder' },
               { title: 'Proof locker check', icon: '\uD83D\uDDC2\uFE0F', body: 'Collect projects, certificates, work samples, and safe share notes behind resume claims.', tab: 'prooflocker' },
+              { title: 'Interview practice check', icon: '\uD83C\uDFA4', body: 'Practice persona-style interview answers with STAR stories, read-aloud, and reflection.', tab: 'interviewstudio' },
               { title: 'Communication reset', icon: '\uD83D\uDCAC', body: 'Practice pausing, clarifying, boundaries, repair, and trusted support.', tab: 'communication' },
               { title: 'Time plan reset', icon: '\u23F3', body: 'Capture tasks, choose priorities, add buffers, reminders, and recovery steps.', tab: 'timemanagement' },
               { title: 'Body comfort reset', icon: '\uD83E\uDDCD', body: 'Check posture, setup, movement breaks, and access needs.', tab: 'bodycare' },
@@ -3697,6 +4280,431 @@ window.StemLab = window.StemLab || {
                 announceToSR('Proof locker plan saved');
               }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save proof plan'),
               proofPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.proofPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, proofPlanMsg)
+            )
+          )
+        ),
+
+        tab === 'interviewstudio' && h('div', { className: 'space-y-4', 'data-lifeskills-interview-studio': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.interview_studio_lab', '\uD83C\uDFA4 Interview Practice Studio')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice listening, answering one question, and asking for help when a question is confusing.',
+                  'Rehearse common interview questions with sentence starters, kind coaching, and a simple reflection.',
+                  'Practice guided or free-response interview answers using resume bullets, proof locker items, STAR structure, and prepared questions.',
+                  'Use a persona-style mock interview chat with read-aloud, suggested stems, topic spark coaching, transcript save, STAR answer building, reflection, and accommodation-aware scripts.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-violet-50 border border-violet-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-violet-800' }, 'Interview readiness'),
+                h('p', { className: 'text-2xl font-black text-violet-900 leading-none' }, Math.round(interviewDone / INTERVIEW_CHECKS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-700 bg-violet-50 border border-violet-200 rounded-xl p-2 leading-relaxed' }, 'Practice only. This studio reuses the persona interview pattern for career practice: conversation history, guided/free response, read-aloud support, coaching sparks, transcript save, and reflection. Real interviews vary, and learners can ask for appropriate access supports.')
+          ),
+          h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-interview-practice-plan': 'true' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Interview practice plan'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, '5-10 minute routine: ' + interviewPracticePlan.title),
+                h('p', { className: 'text-xs text-slate-700 leading-relaxed max-w-2xl' }, interviewPracticePlan.focus)
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-emerald-800' }, 'Practice plan progress'),
+                h('p', { className: 'text-2xl font-black text-emerald-900 leading-none' }, interviewPlanProgress + '%')
+              )
+            ),
+            h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-5 gap-2' },
+              INTERVIEW_PLAN_TEMPLATES.map(function(plan, i) {
+                var active = i === interviewPlanIdx % INTERVIEW_PLAN_TEMPLATES.length;
+                return h('button', { key: plan.id, onClick: function() { selectInterviewPracticePlan(i); }, className: 'text-left px-3 py-2 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-violet-700 ' + (active ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-slate-700 border-slate-300 hover:border-violet-300') },
+                  h('span', { className: 'block' }, plan.title),
+                  h('span', { className: 'block text-[10px] font-black ' + (active ? 'text-violet-100' : 'text-violet-800') }, plan.minutes + ' min')
+                );
+              })
+            ),
+            h('div', { className: 'grid lg:grid-cols-[1fr_0.9fr] gap-3' },
+              h('div', { className: 'space-y-3' },
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'This week I will...',
+                  h('textarea', { value: interviewPlanGoal, onChange: function(e) { upd('interviewPlanGoal', e.target.value); }, rows: 3, placeholder: 'Write one interview practice goal for this week.', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview weekly practice goal' })
+                ),
+                h('label', { className: 'block text-[11px] font-bold text-slate-700' }, 'Practice minutes: ' + interviewPlanMinutes,
+                  h('input', { type: 'range', min: 5, max: 15, step: 1, value: interviewPlanMinutes, onChange: function(e) { upd('interviewPlanMinutes', Number(e.target.value)); }, className: 'mt-2 w-full accent-violet-700', 'aria-label': 'Interview practice minutes' })
+                ),
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Plan note',
+                  h('input', { type: 'text', value: interviewPlanNote, onChange: function(e) { upd('interviewPlanNote', e.target.value); }, placeholder: 'Optional note, support, proof item, or reminder.', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Interview practice plan note' })
+                ),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', { onClick: buildInterviewPlanFromFeedback, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-700' }, 'Use coaching feedback'),
+                  h('button', { onClick: saveInterviewPracticePlan, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save practice plan'),
+                  h('button', { onClick: resetInterviewPracticePlan, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Reset progress')
+                ),
+                interviewPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewPlanSavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewPlanMsg)
+              ),
+              h('div', { className: 'space-y-2' },
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Daily practice steps'),
+                INTERVIEW_PLAN_STEPS.map(function(step) {
+                  var checked = !!interviewPlanChecklist[step.id];
+                  return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-violet-300') },
+                    h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setInterviewPlanStep(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.label }),
+                    h('span', { className: 'min-w-0' },
+                      h('span', { className: 'block text-xs font-black text-slate-800' }, step.label),
+                      h('span', { className: 'block text-[11px] text-slate-700 leading-relaxed' }, step.detail)
+                    )
+                  );
+                })
+              )
+            ),
+            h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2', role: 'log', 'aria-live': 'polite', 'aria-label': 'Interview practice plan progress' },
+              h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Saved practice plans'),
+              interviewPlanLog.length
+                ? interviewPlanLog.map(function(entry, i) {
+                    return h('div', { key: entry.at || i, className: 'rounded-lg bg-emerald-50 border border-emerald-200 p-2' },
+                      h('p', { className: 'text-xs font-black text-emerald-900' }, entry.title + ' - ' + entry.minutes + ' minutes'),
+                      h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, entry.goal),
+                      h('p', { className: 'text-[10px] font-bold text-emerald-800 mt-1' }, (entry.done || 0) + '/' + (entry.total || INTERVIEW_PLAN_STEPS.length) + ' steps checked')
+                    );
+                  })
+                : h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, 'No saved practice plans yet. Save one after choosing a goal and checking any practice steps.')
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-interview-rehearsal': 'true' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Calm rehearsal coach'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, 'Practice pace, confidence, and support scripts'),
+                h('p', { className: 'text-xs text-slate-700 leading-relaxed max-w-2xl' }, 'Choose an answer length, name a confidence level, and keep one pause or access script ready before practice.')
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-blue-50 border border-blue-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Confidence check'),
+                h('p', { className: 'text-2xl font-black text-blue-900 leading-none' }, interviewRehearsalConfidence + '/5')
+              )
+            ),
+            h('div', { className: 'grid lg:grid-cols-[0.8fr_1.2fr] gap-3' },
+              h('div', { className: 'space-y-3' },
+                h('label', { className: 'block text-[11px] font-bold text-slate-700' }, 'Confidence before practice: ' + interviewRehearsalConfidence,
+                  h('input', { type: 'range', min: 1, max: 5, step: 1, value: interviewRehearsalConfidence, onChange: function(e) { upd('interviewRehearsalConfidence', Number(e.target.value)); }, className: 'mt-2 w-full accent-blue-700', 'aria-label': 'Interview rehearsal confidence' })
+                ),
+                h('div', { className: 'space-y-2' },
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Answer length target'),
+                  h('div', { className: 'flex flex-wrap gap-2' },
+                    INTERVIEW_REHEARSAL_TARGETS.map(function(target) {
+                      var active = target.id === interviewRehearsalTargetId;
+                      return h('button', { key: target.id, onClick: function() { upd('interviewRehearsalTargetId', target.id); }, className: 'px-3 py-2 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-blue-700 ' + (active ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-slate-700 border-slate-300 hover:border-blue-300') }, target.label);
+                    })
+                  ),
+                  h('p', { className: 'text-[11px] text-blue-800 bg-blue-50 border border-blue-200 rounded-xl p-2 leading-relaxed' }, interviewRehearsalTarget.cue)
+                )
+              ),
+              h('div', { className: 'space-y-3' },
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  INTERVIEW_REHEARSAL_SCRIPTS.map(function(script, i) {
+                    var active = i === interviewRehearsalScriptIdx % INTERVIEW_REHEARSAL_SCRIPTS.length;
+                    return h('button', { key: script.id, onClick: function() { upd('interviewRehearsalScriptIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-violet-700 ' + (active ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-violet-800 border-violet-200 hover:border-violet-400') }, script.title);
+                  })
+                ),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Support script'),
+                  h('p', { className: 'text-xs text-slate-800 leading-relaxed font-medium' }, interviewRehearsalScript.script)
+                ),
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Rehearsal note',
+                  h('textarea', { value: interviewRehearsalNote, onChange: function(e) { upd('interviewRehearsalNote', e.target.value); }, rows: 3, placeholder: 'One reset idea, confidence cue, or support reminder...', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview rehearsal note' })
+                ),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', { onClick: saveInterviewRehearsalNote, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save rehearsal note'),
+                  h('button', { onClick: useInterviewRehearsalScript, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-700' }, 'Use script in chat')
+                ),
+                interviewRehearsalMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewRehearsalSavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewRehearsalMsg)
+              )
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-interview-proof-matcher': 'true' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Question-to-proof matcher'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, 'Pick the evidence before answering'),
+                h('p', { className: 'text-xs text-slate-700 leading-relaxed max-w-2xl' }, 'Match a common interview question to a truthful proof item, then save the cue, use it in chat, or include it in the prep packet.')
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-amber-900' }, 'Current skill'),
+                h('p', { className: 'text-xs font-black text-amber-950 leading-tight' }, interviewProofMatcher.title)
+              )
+            ),
+            h('div', { className: 'grid lg:grid-cols-[0.8fr_1.2fr] gap-3' },
+              h('div', { className: 'space-y-2' },
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Question types'),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  INTERVIEW_PROOF_MATCHERS.map(function(match, i) {
+                    var active = i === interviewProofMatcherIdx % INTERVIEW_PROOF_MATCHERS.length;
+                    return h('button', { key: match.id, onClick: function() { updMulti({ interviewProofMatcherIdx: i, interviewProofCueMsg: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-amber-700 ' + (active ? 'bg-amber-500 text-slate-950 border-amber-500' : 'bg-white text-slate-700 border-slate-300 hover:border-amber-300') }, match.title);
+                  })
+                ),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                  h('p', { className: 'text-xs font-black text-slate-800' }, interviewProofMatcher.question),
+                  h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, 'Skill: ' + interviewProofMatcher.skill),
+                  h('p', { className: 'text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-2 leading-relaxed' }, interviewProofMatcher.safeShare)
+                )
+              ),
+              h('div', { className: 'space-y-3' },
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Proof item or real example',
+                  h('textarea', { value: interviewProofNote, onChange: function(e) { upd('interviewProofNote', e.target.value); }, rows: 3, placeholder: interviewProofMatcher.proofPrompt, className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview proof item or example' })
+                ),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Answer cue'),
+                  h('p', { className: 'text-xs text-slate-800 leading-relaxed font-medium' }, interviewProofCuePreview)
+                ),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', { onClick: saveInterviewProofCue, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save proof cue'),
+                  h('button', { onClick: useInterviewProofCueInChat, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-700' }, 'Use cue in chat')
+                ),
+                interviewProofCueMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewProofCueSavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewProofCueMsg)
+              )
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Interview prep checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, interviewDone + '/' + INTERVIEW_CHECKS.length + ' prep habits checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-violet-50 text-violet-800 text-[11px] font-bold border border-violet-200' }, 'Role, proof, STAR')
+              ),
+              INTERVIEW_CHECKS.map(function(step) {
+                var checked = !!interviewChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-violet-300') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setInterviewCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-700 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-violet-800 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Interview decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200' }, 'Score ' + interviewScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, interviewCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                INTERVIEW_ACTIONS.map(function(action) {
+                  var chosen = interviewScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerInterviewScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all focus:outline-none focus:ring-2 focus:ring-violet-700 ' + (chosen ? action.tone + ' ring-2 ring-offset-1 ring-violet-700' : 'bg-white border-slate-300 text-slate-700 hover:border-violet-300') }, action.label);
+                })
+              ),
+              interviewScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, interviewScenarioFb),
+              h('button', { onClick: function() { updMulti({ interviewScenarioIdx: interviewScenarioIdx + 1, interviewScenarioChoice: '', interviewScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-violet-700 text-white hover:bg-violet-800 focus:outline-none focus:ring-2 focus:ring-violet-700' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Persona-style practice chat'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, interviewRole.icon + ' ' + interviewRole.title + ' with ' + interviewRole.interviewer)
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                h('button', { onClick: function() { upd('interviewAutoRead', !interviewAutoRead); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-violet-700 ' + (interviewAutoRead ? 'bg-yellow-400 text-slate-900 border-yellow-500' : 'bg-white text-slate-700 border-slate-300') }, interviewAutoRead ? 'Auto-read on' : 'Auto-read off'),
+                h('button', { onClick: function() { upd('interviewMode', interviewMode === 'guided' ? 'free' : 'guided'); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-violet-700 ' + (interviewMode === 'guided' ? 'bg-purple-100 text-purple-900 border-purple-300' : 'bg-white text-slate-700 border-slate-300') }, interviewMode === 'guided' ? 'Guided mode' : 'Free response'),
+                h('button', { onClick: function() { upd('interviewHintsOn', !interviewHintsOn); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-violet-700 ' + (interviewHintsOn ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-white text-slate-700 border-slate-300') }, interviewHintsOn ? 'Hints on' : 'Hints off')
+              )
+            ),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              INTERVIEW_ROLES.map(function(role, i) {
+                var active = i === interviewRoleIdx % INTERVIEW_ROLES.length;
+                return h('button', { key: role.id, onClick: function() { updMulti({ interviewRoleIdx: i, interviewChatHistory: [], interviewFeedback: '', interviewSparkMsg: '', interviewSuggestions: INTERVIEW_SUGGESTIONS.slice(0, 4) }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-violet-700 ' + (active ? 'bg-violet-700 text-white border-violet-700' : 'bg-white border-slate-300 text-slate-700 hover:border-violet-300') }, role.icon + ' ' + role.title);
+              })
+            ),
+            h('div', { className: 'rounded-2xl bg-slate-50 border border-slate-200 p-3 max-h-80 overflow-y-auto space-y-3', role: 'log', 'aria-live': 'polite', 'aria-atomic': 'false', 'aria-label': 'Mock interview conversation' },
+              interviewDisplayHistory.map(function(msg, idx) {
+                var isStudent = msg.role === 'student';
+                return h('div', { key: idx, className: 'flex ' + (isStudent ? 'justify-end' : 'justify-start') },
+                  h('div', { className: 'max-w-[88%] rounded-2xl border p-3 shadow-sm ' + (isStudent ? 'bg-violet-100 text-violet-950 border-violet-200 rounded-br-sm' : 'bg-white text-slate-800 border-slate-200 rounded-bl-sm') },
+                    h('div', { className: 'flex items-center justify-between gap-2 mb-1' },
+                      h('span', { className: 'text-[10px] uppercase font-black ' + (isStudent ? 'text-violet-800' : 'text-slate-600') }, isStudent ? 'You' : (msg.speaker || interviewRole.interviewer)),
+                      !isStudent && h('button', { onClick: function() { speakInterviewText(msg.text); }, className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold border border-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-700', 'aria-label': 'Read interviewer message aloud' }, 'Read')
+                    ),
+                    h('p', { className: 'text-xs leading-relaxed whitespace-pre-wrap' }, msg.text),
+                    msg.feedback && h('p', { className: 'mt-2 text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2 font-medium' }, msg.feedback)
+                  )
+                );
+              }),
+              interviewLoading && h('p', { className: 'text-xs font-bold text-violet-800 bg-violet-50 border border-violet-200 rounded-xl p-2' }, 'Interviewer is thinking...')
+            ),
+            h('div', { className: 'grid lg:grid-cols-[1fr_0.85fr] gap-3' },
+              h('div', { className: 'space-y-2' },
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Your answer',
+                  h('textarea', { value: interviewInput, onChange: function(e) { upd('interviewInput', e.target.value); }, rows: 4, placeholder: interviewMode === 'guided' ? 'Use a suggested response or write your own STAR answer...' : 'Write your answer freely...', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview answer input' })
+                ),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', { onClick: function() { sendInterviewMessage(); }, disabled: !interviewInput.trim() || interviewLoading, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-700 text-white hover:bg-violet-800 disabled:bg-slate-200 disabled:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-700', 'aria-busy': interviewLoading ? 'true' : 'false' }, interviewLoading ? 'Sending...' : 'Send answer'),
+                  h('button', { onClick: sparkInterviewTopic, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-700' }, 'Topic spark'),
+                  h('button', { onClick: saveInterviewTranscript, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-700' }, 'Save transcript'),
+                  h('button', { onClick: resetInterviewChat, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Reset chat')
+                ),
+                interviewFeedback && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200' }, 'Coach feedback: ' + interviewFeedback),
+                interviewSparkMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg bg-amber-50 text-amber-900 border border-amber-200' }, interviewSparkMsg),
+                interviewTranscriptMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200' }, interviewTranscriptMsg)
+              ),
+              h('div', { className: 'space-y-2' },
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Suggested responses'),
+                interviewHintsOn && h('p', { className: 'text-[11px] text-slate-700 bg-white border border-slate-200 rounded-xl p-2 leading-relaxed' }, interviewQuestion.frame),
+                h('div', { className: 'grid gap-2' },
+                  interviewSuggestions.map(function(suggestion) {
+                    return h('button', { key: suggestion, onClick: function() { upd('interviewInput', suggestion); }, className: 'text-left px-3 py-2 rounded-xl text-[11px] font-bold bg-white text-violet-800 border border-violet-200 hover:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-700' }, suggestion);
+                  })
+                ),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3' },
+                  h('p', { className: 'text-[10px] uppercase font-black text-slate-600' }, 'Score guide'),
+                  h('p', { className: 'text-xs font-black text-violet-900' }, interviewScore + '/4 current coaching score'),
+                  h('p', { className: 'text-[11px] text-slate-700 leading-relaxed mt-1' }, 'A strong answer is truthful, specific, connected to the role, and supported by a resume bullet or proof locker item.')
+                )
+              )
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Interview question bank'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, interviewQuestion.type + ': ' + interviewQuestion.q)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-violet-50 text-violet-800 text-[11px] font-bold border border-violet-200' }, 'Resume to proof to answer')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                INTERVIEW_QUESTIONS.map(function(q, i) {
+                  var active = i === interviewQuestionIdx % INTERVIEW_QUESTIONS.length;
+                  return h('button', { key: q.id, onClick: function() { updMulti({ interviewQuestionIdx: i, interviewInput: q.frame, interviewSparkMsg: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-violet-700 ' + (active ? 'bg-violet-700 text-white border-violet-700' : 'bg-white border-slate-300 text-slate-700 hover:border-violet-300') }, q.type);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Purpose'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, interviewQuestion.purpose),
+                h('p', { className: 'text-xs font-black text-violet-800 pt-2 border-t border-slate-100' }, 'Answer frame'),
+                h('p', { className: 'text-[11px] text-violet-800 leading-relaxed' }, interviewQuestion.frame),
+                h('p', { className: 'text-xs font-black text-emerald-800 pt-2 border-t border-slate-100' }, 'Proof cue'),
+                h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, interviewQuestion.proof)
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Interview rubric cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, interviewRubricCard.icon + ' ' + interviewRubricCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Coach yourself')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                INTERVIEW_RUBRIC_CARDS.map(function(card, i) {
+                  var active = i === interviewRubricIdx % INTERVIEW_RUBRIC_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('interviewRubricIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-violet-700 ' + (active ? 'bg-violet-700 text-white border-violet-700' : 'bg-white border-slate-300 text-slate-700 hover:border-violet-300') }, card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Check'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, interviewRubricCard.check),
+                h('p', { className: 'text-xs font-black text-emerald-800 pt-2 border-t border-slate-100' }, 'Coach move'),
+                h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, interviewRubricCard.coach)
+              )
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'STAR answer builder'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Turn proof into a spoken answer')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-amber-50 text-amber-900 text-[11px] font-bold border border-amber-200' }, 'Situation, task, action, result')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 gap-3' },
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Situation',
+                  h('input', { type: 'text', value: interviewStarSituation, onChange: function(e) { upd('interviewStarSituation', e.target.value); }, placeholder: 'At a volunteer event...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'STAR situation' })
+                ),
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Task',
+                  h('input', { type: 'text', value: interviewStarTask, onChange: function(e) { upd('interviewStarTask', e.target.value); }, placeholder: 'We needed to...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'STAR task' })
+                ),
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Action',
+                  h('input', { type: 'text', value: interviewStarAction, onChange: function(e) { upd('interviewStarAction', e.target.value); }, placeholder: 'I organized, asked, built...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'STAR action' })
+                ),
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Result',
+                  h('input', { type: 'text', value: interviewStarResult, onChange: function(e) { upd('interviewStarResult', e.target.value); }, placeholder: 'The result was...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'STAR result' })
+                )
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Practice answer'),
+                h('p', { className: 'text-xs text-slate-800 leading-relaxed font-medium' }, interviewStarPreview)
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                h('button', { onClick: saveInterviewStarAnswer, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save STAR answer'),
+                h('button', { onClick: function() { upd('interviewInput', interviewStarPreview); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-700' }, 'Use in chat')
+              ),
+              interviewStarMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.interviewStarSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, interviewStarMsg)
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Interview reflection'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, interviewReflectionPrompt)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-violet-50 text-violet-800 text-[11px] font-bold border border-violet-200' }, 'Conclude and improve')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                INTERVIEW_REFLECTION_PROMPTS.map(function(prompt, i) {
+                  var active = i === interviewReflectionIdx % INTERVIEW_REFLECTION_PROMPTS.length;
+                  return h('button', { key: prompt, onClick: function() { updMulti({ interviewReflectionIdx: i, interviewReflectionNote: prompt, interviewReflectionMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-violet-800 border-violet-200 hover:border-violet-400') }, 'Reflect ' + (i + 1));
+                })
+              ),
+              h('textarea', { value: interviewReflectionNote, onChange: function(e) { upd('interviewReflectionNote', e.target.value); }, rows: 4, placeholder: 'Write one interview reflection, follow-up question, or support plan.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview reflection note' }),
+              h('button', { onClick: function() {
+                if (!interviewReflectionNote.trim()) { upd('interviewReflectionMsg', 'Write one reflection step first.'); return; }
+                updMulti({ interviewReflectionMsg: 'Reflection saved: ' + interviewReflectionNote.trim(), interviewReflectionSaved: Date.now() });
+                checkBadge('interviewReady');
+                announceToSR('Interview reflection saved');
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save reflection'),
+              interviewReflectionMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.interviewReflectionSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, interviewReflectionMsg),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Follow-up message frame'),
+                h('textarea', { value: interviewFollowUpMessage, onChange: function(e) { upd('interviewFollowUpMessage', e.target.value); }, rows: 3, className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 bg-white resize-y', 'aria-label': 'Interview follow-up message' })
+              )
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-interview-prep-packet': 'true' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Interview prep packet'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, 'Printable/exportable interview sheet'),
+                h('p', { className: 'text-xs text-slate-700 leading-relaxed max-w-2xl' }, 'Role target, practice plan, STAR answer, transcript, reflection, and follow-up message in one plain-language packet.')
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-sky-50 border border-sky-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-sky-800' }, 'Packet sections'),
+                h('p', { className: 'text-2xl font-black text-sky-900 leading-none' }, '8')
+              )
+            ),
+            h('div', { className: 'grid lg:grid-cols-[0.8fr_1.2fr] gap-3' },
+              h('div', { className: 'space-y-3' },
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Packet includes'),
+                  ['Role target', 'Weekly practice plan', 'Checked prep habits', 'Daily practice steps', 'STAR answer', 'Coach feedback', 'Reflection', 'Follow-up and transcript'].map(function(item) {
+                    return h('p', { key: item, className: 'text-[11px] text-slate-700 leading-relaxed' }, '\u2713 ' + item);
+                  })
+                ),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', { onClick: saveInterviewPrepPacket, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save packet'),
+                  h('button', { onClick: copyInterviewPrepPacket, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-700' }, 'Copy packet'),
+                  h('button', { onClick: downloadInterviewPrepPacket, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-700' }, 'Download .txt'),
+                  h('button', { onClick: openInterviewPacketPrintView, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-700' }, 'Open print view')
+                ),
+                interviewPacketMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewPacketSavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewPacketMsg)
+              ),
+              h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Packet preview',
+                h('textarea', { readOnly: true, value: interviewPacketPreview, rows: 16, className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 bg-white resize-y font-mono leading-relaxed', 'aria-label': 'Interview prep packet preview' })
+              )
             )
           )
         ),
@@ -5790,7 +6798,7 @@ window.StemLab = window.StemLab || {
               callGemini && h('button', { onClick: function() {
                 upd('chalAILoading', true);
                 var tierLabel = chalTier === 1 ? 'easy' : chalTier === 2 ? 'medium' : 'hard';
-                callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, resume building and evidence bullets, portfolio proof organization and privacy, communication and conflict, time management and planning, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+                callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, resume building and evidence bullets, portfolio proof organization and privacy, interview practice and STAR answers, communication and conflict, time management and planning, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
                   try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ chalAILoading: false, chalFeedback: '', chalAnswer: '', chalAIQ: p }); } catch(e) { updMulti({ chalAILoading: false }); }
                 }).catch(function() { upd('chalAILoading', false); });
               }, disabled: d.chalAILoading, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl disabled:opacity-50' }, d.chalAILoading ? '\uD83E\uDDE0...' : '\u2728 AI Next')
@@ -5889,5 +6897,5 @@ window.StemLab = window.StemLab || {
     }
   });
 
-  console.log('[StemLab] stem_tool_lifeskills.js v5.17 loaded');
+  console.log('[StemLab] stem_tool_lifeskills.js v5.22 loaded');
 })();

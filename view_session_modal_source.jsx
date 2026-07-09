@@ -9,7 +9,7 @@
  *
  * Required props:
  *   activeSessionAppId               — alternate session host app ID
- *   activeSessionCode                — 4-6 digit live session code
+ *   activeSessionCode                — 5-character live session code
  *   addToast                         — toast helper
  *   appId                            — current app ID
  *   copyToClipboard                  — clipboard helper (also fires a toast)
@@ -57,10 +57,75 @@ function SessionModal({
   const ChevronRight = window.ChevronRight || noop;
   const XCircle = window.XCircle || noop;
   const lanJoinUrl = Array.isArray(sessionData?.joinUrls) ? sessionData.joinUrls[0] : '';
+  const [liveQrSvg, setLiveQrSvg] = React.useState('');
+
+  const liveJoinUrl = React.useMemo(() => {
+    if (!activeSessionCode || typeof window === 'undefined') return '';
+    try {
+      const url = new URL(window.location.href);
+      url.search = '';
+      url.hash = '';
+      url.searchParams.set('allo_join', activeSessionCode);
+      url.searchParams.set('allo_host', activeSessionAppId || appId);
+      url.searchParams.set('allo_ai', 'off');
+      return url.toString();
+    } catch (_) {
+      return '';
+    }
+  }, [activeSessionAppId, activeSessionCode, appId]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const loadQrScript = () => {
+      if (window.qrcode) return Promise.resolve(window.qrcode);
+      if (window.__alloQrLibraryPromise) return window.__alloQrLibraryPromise;
+      window.__alloQrLibraryPromise = new Promise((resolve, reject) => {
+        const sources = ['https://alloflow-cdn.pages.dev/qrcode.js', './qrcode.js'];
+        let index = 0;
+        const tryNext = () => {
+          if (window.qrcode) {
+            resolve(window.qrcode);
+            return;
+          }
+          if (index >= sources.length) {
+            window.__alloQrLibraryPromise = null;
+            reject(new Error('QR library unavailable'));
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = sources[index++];
+          script.async = true;
+          script.dataset.alloQrcode = 'true';
+          script.onload = () => window.qrcode ? resolve(window.qrcode) : tryNext();
+          script.onerror = tryNext;
+          document.head.appendChild(script);
+        };
+        tryNext();
+      });
+      return window.__alloQrLibraryPromise;
+    };
+
+    if (!liveJoinUrl || typeof window === 'undefined') {
+      setLiveQrSvg('');
+      return undefined;
+    }
+    loadQrScript()
+      .then(() => {
+        if (cancelled || !window.qrcode) return;
+        const qr = window.qrcode(0, 'M');
+        qr.addData(liveJoinUrl);
+        qr.make();
+        setLiveQrSvg(qr.createSvgTag({ cellSize: 5, margin: 2, scalable: true, title: 'AlloFlow student join QR' }));
+      })
+      .catch(() => {
+        if (!cancelled) setLiveQrSvg('');
+      });
+    return () => { cancelled = true; };
+  }, [liveJoinUrl]);
 
   return (
     <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowSessionModalToFalse}>
-      <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full relative animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('session.live_title')}>
+      <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('session.live_title')}>
         <button onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24}/></button>
         <div className="flex justify-center mb-4">
           <div className="bg-green-100 p-4 rounded-full shadow-inner">
@@ -81,6 +146,26 @@ function SessionModal({
             <Copy size={10}/> {t('session.click_to_copy')}
           </div>
         </div>
+        {liveJoinUrl && (
+          <div className="mb-6 bg-cyan-50 p-4 rounded-xl border border-cyan-200 text-left">
+            <p className="text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center">Student QR join</p>
+            <div className="flex justify-center mb-3">
+              <div className="bg-white border border-cyan-200 rounded-lg p-2 w-40 h-40 flex items-center justify-center shadow-sm">
+                {liveQrSvg
+                  ? <div className="w-full h-full [&_svg]:w-full [&_svg]:h-full" dangerouslySetInnerHTML={{ __html: liveQrSvg }} />
+                  : <span className="text-xs font-bold text-cyan-700 text-center">QR loading</span>}
+              </div>
+            </div>
+            <button
+              aria-label={t('common.copy')}
+              onClick={() => copyToClipboard(liveJoinUrl)}
+              className="w-full flex items-center justify-center gap-2 text-xs font-bold text-cyan-800 hover:text-cyan-900 bg-white border border-cyan-300 hover:border-cyan-400 rounded-lg p-2 transition-all break-all"
+            >
+              Copy student join link <Copy size={12}/>
+            </button>
+            <p className="text-[11px] text-cyan-800 mt-2 text-center">QR students join this live session with AI generation off.</p>
+          </div>
+        )}
         {lanJoinUrl && (
           <div className="mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200">
             <p className="text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1">Local network join link</p>

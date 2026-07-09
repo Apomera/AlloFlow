@@ -101,7 +101,12 @@ function slugify(s) {
 }
 
 function compact(s) {
-  return String(s || '').replace(/\s+/g, ' ').trim();
+  return String(s || '')
+    .replace(/\s*:\s*\$[a-z]\s*/gi, ': ')
+    .replace(/\s+\$[a-z]\s*/gi, ' ')
+    .replace(/\s+([:;,.])/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function words(s) {
@@ -263,8 +268,18 @@ async function collectBooks(existingIds, need) {
   const seen = new Set(existingIds);
   const passes = TOPICS.concat(['']);
   for (const topic of passes) {
+    let consecutiveFailures = 0;
     for (let page = 1; page <= 40 && picked.length < need; page++) {
-      const data = await getJson(urlFor(topic, page));
+      let data;
+      try {
+        data = await getJson(urlFor(topic, page));
+        consecutiveFailures = 0;
+      } catch (err) {
+        consecutiveFailures += 1;
+        console.warn('WARN skipping Gutendex page for topic "' + (topic || 'general') + '" page ' + page + ': ' + err.message);
+        if (consecutiveFailures >= 2) break;
+        continue;
+      }
       const results = data.results || [];
       if (!results.length) break;
       for (const book of results) {
@@ -273,6 +288,9 @@ async function collectBooks(existingIds, need) {
         if (!looksUsefulForOlderStudents(book)) continue;
         seen.add(book.id);
         picked.push(book);
+        if (picked.length % 25 === 0 || picked.length === need) {
+          console.log('Selected ' + picked.length + '/' + need + ' Gutenberg records...');
+        }
       }
       if (!data.next) break;
       await sleep(125);

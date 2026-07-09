@@ -23,18 +23,18 @@ If a colleague treats Hub activity as data for a high-stakes decision, gently pu
 
 ## 2. How student data works
 
-The Hub is designed for the **Canvas runtime** — meaning the app lives inside a chat-style canvas while the student is using it, and **vanishes when the canvas closes**. Read that sentence twice. It is the most important fact on this page.
+The Hub is designed for local-first use. In the **Canvas runtime**, the app lives inside a chat-style canvas while the student is using it, and the default session **vanishes when the canvas closes**. In Desktop or school-owned deployments, saved files, exports, or live-session settings can change what persists, so treat those paths according to district policy.
 
 **Ephemeral by default:**
 - While a student is using the Hub, their answers, reflections, and progress live in the browser tab's memory.
-- When they close the tab, refresh, or end the session, **everything is gone**. There is no server-side database storing student work. There is no account, no login, no profile tied to a real identity.
-- You, as the educator, **cannot retrieve** a student's session after the fact. Neither can IT. Neither can the vendor. It doesn't exist anywhere to retrieve.
+- In the default Canvas-style session, when they close the tab, refresh, or end the session, **everything is gone**. There is no AlloFlow-operated server-side database storing student work. There is no account, no login, no profile tied to a real identity.
+- You, as the educator, **cannot retrieve** a default unsaved session after the fact. If a student exported a file or joined a school-controlled live session, handle that artifact under your district records policies.
 
 **The sneakernet save/load pattern:**
 - If a student wants to keep their work, they click **Export** (or **Save Progress**). The Hub generates a **JSON file** and downloads it to the student's own device.
 - That file lives in their Downloads folder — or wherever they save it — on their personal or school-issued device. It does not get uploaded anywhere.
 - To resume later, the student opens the Hub fresh and clicks **Import**, then selects the JSON file from their device. The Hub reads it back into memory and they pick up where they left off.
-- This is called "sneakernet" because the data moves only when a human physically carries it (on a USB stick, a Drive folder they choose, an email attachment, etc.). The Hub itself never transports it.
+- This is called "sneakernet" because the data moves only when a human physically carries it (on a USB stick, a Drive folder they choose, an email attachment, etc.). The default Hub save/load path does not upload it to an AlloFlow-operated database.
 
 **What gets saved into the JSON:**
 - Reflections the student typed.

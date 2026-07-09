@@ -1,6 +1,8 @@
 # School Box District/Server Architecture
 
-Status: DESIGN (handoff step 7). Author: Claude (Fable), 2026-07-05. Implements the
+Status: DESIGN (handoff step 7). Author: Claude (Fable), 2026-07-05. Clarified
+2026-07-09: AlloFlow Desktop LAN is now the everyday no-Docker path; School Box
+is the optional server/appliance path. Implements the
 vision in `ALLOFLOW_DESKTOP_LOCAL_FIRST_VISION_2026-07-04.md`; extends the running
 foundation in `desktop/runtime/alloflow-desktop-runtime.cjs` + `desktop/schoolbox/`.
 
@@ -9,8 +11,10 @@ The school owns the data boundary. Aaron is never the vendor of record. Cloud us
 explicit, school-owned, never a hidden default for student data.
 
 ## The three tiers (already contracted in runtime-contract.json liveSession.modes)
-1. **schoolbox-lan** (SHIPPED): teacher desktop hosts; students join over LAN;
-   PIN-latched share listener; in-memory sessions with TTL. Same-room only.
+1. **schoolbox-lan** (SHIPPED, shown to users as Desktop LAN / Local Network):
+   teacher desktop hosts; students join over LAN; PIN-latched share listener;
+   in-memory sessions with TTL. Same-room only. This tier does not require
+   Docker or the School Box server stack.
 2. **district-server** (THIS DOC): a school/district-hosted School Box server that
    is a *superset of the LAN bridge contract* — same session document API
    (`/api/lan-sessions/{code}` GET/PATCH/events + join pages + PIN gate), served
@@ -24,6 +28,10 @@ a headless node service (`schoolbox-server`) deployable via the docker stack alr
 seeded in `desktop/schoolbox/` (compose + nginx + pocketbase). Rationale: the
 student-safe allowlist and PIN gate are already validated by `--smoke`; parity by
 construction, one contract to maintain.
+
+The Docker stack is therefore not the default classroom path anymore. It is the
+future shared/server packaging of the Desktop LAN contract for schools that need
+a district-owned host, persistence, TLS, or remote/multi-room access.
 
 - **Persistence**: swap the in-memory `lanSessions` Map behind a tiny store
   interface: `memory` (default, TTL 8h, nothing survives restart) or `pocketbase`
@@ -43,8 +51,9 @@ construction, one contract to maintain.
   nginx `log_format` must strip args; app logs already avoid PII.
 - **App side**: `alloflow_live_session_config.lanApiBase` simply points at the
   district server URL instead of the teacher laptop — the SAME config seed the
-  join page already writes. The pending in-app LAN adapter (the known gap) is the
-  shared prerequisite for both tiers and should be built FIRST.
+  join page already writes. The in-app LAN adapter is now applied in the
+  canonical app source, so the remaining district-server work can reuse that
+  bridge instead of inventing a second client path.
 
 ## What a school must configure (the whole checklist)
 1. A host (any docker-capable box) + DNS name + TLS cert.
@@ -53,10 +62,11 @@ construction, one contract to maintain.
 4. Firewall: 443 in from school network(s) only. No internet exposure required.
 
 ## Build order (next sessions)
-1. **In-app LAN adapter** — **runtime half SHIPPED 2026-07-05** (incl. new
-   `/api/lan-docs/{key}` asset bridge); app half validated (18-assert harness)
-   and staged at `desktop/app-adapter/` awaiting a free `AlloFlowANTI.txt`
-   (two-anchor insert, instructions in that folder's README).
+1. **In-app LAN adapter** — **SHIPPED/APPLIED**. Runtime half shipped
+   2026-07-05 (including the `/api/lan-docs/{key}` asset bridge); app half is
+   applied in `AlloFlowANTI.txt`, `prismflow-deploy/src/AlloFlowANTI.txt`, and
+   `prismflow-deploy/src/App.jsx`. `desktop/app-adapter/` is now the reference
+   snippet, harness, and recovery guide.
 2. Extract `schoolbox-server` from the runtime (share-listener code path + store
    interface); smoke test = existing `--smoke` asserts run against the container.
 3. Compose profile + nginx redaction config + teacher-token gate.

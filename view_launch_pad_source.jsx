@@ -20,6 +20,19 @@ function LaunchPadView(props) {
   var setPendingRole = props.setPendingRole;
   var setIsGateOpen = props.setIsGateOpen;
   var setShowAIBackendModal = props.setShowAIBackendModal;
+  var copy = function(key, fallback) {
+    var value = t ? t(key) : '';
+    return value && value !== key ? value : fallback;
+  };
+  var fullTitle = copy('launch_pad.full_title', 'Full AlloFlow');
+  var fullDesc = copy('launch_pad.full_desc', 'Use the complete workspace with every tool available.');
+  var guidedTitle = copy('launch_pad.guided_title', 'Guided Mode');
+  var guidedDesc = copy('launch_pad.guided_desc', 'Follow a recommended path with step-by-step support.');
+  var learningToolsTitle = copy('launch_pad.learning_tools_title', 'Learning Tools');
+  var learningToolsDesc = copy('launch_pad.learning_tools_desc', 'STEM Lab, StoryForge, SEL Hub, Research Hub & more - explore, create, investigate, and grow.');
+  var educatorToolsTitle = copy('launch_pad.educator_tools_title', 'Educator Tools');
+  var educatorToolsDesc = copy('launch_pad.educator_tools_desc_open', 'BehaviorLens, Report Writer, and other professional educator tools.');
+  var switchHint = copy('launch_pad.switch_hint', 'You can switch modes later.');
   // Compact language switcher state (LanguageContext is mirrored to window.AlloLanguageContext at AlloFlowANTI.txt:1583)
   var _langCtx = useContext(window.AlloLanguageContext) || {};
   var currentUiLanguage = _langCtx.currentUiLanguage || 'English';
@@ -64,27 +77,59 @@ function LaunchPadView(props) {
     })();
     return function() { cancelled = true; };
   }, []);
+  React.useEffect(function() {
+    if (typeof document === 'undefined') return;
+    var body = document.body;
+    var html = document.documentElement;
+    if (!body || !html) return;
+    var previousBodyOverflow = body.style.overflow;
+    var previousHtmlOverflow = html.style.overflow;
+    body.classList.add('alloflow-launchpad-active');
+    body.style.overflow = 'hidden';
+    html.style.overflow = 'hidden';
+    return function() {
+      body.classList.remove('alloflow-launchpad-active');
+      body.style.overflow = previousBodyOverflow;
+      html.style.overflow = previousHtmlOverflow;
+    };
+  }, []);
   return (
-        <div role="region" aria-label="Choose how to use AlloFlow" style={{
-          position: 'fixed', inset: 0, zIndex: 99998,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        <div className="lp-root" data-alloflow-launch-pad="true" role="region" aria-label="Choose how to use AlloFlow" style={{
+          position: 'fixed', inset: 0, zIndex: 2147483000,
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
           background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 30%, #312e81 60%, #1e3a5f 100%)',
           animation: 'fadeIn 0.6s ease-out',
+          overflowY: 'auto', overflowX: 'hidden', boxSizing: 'border-box',
         }}>
           <style>{`
             @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
             @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
             @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
             @keyframes cardPop { from { opacity: 0; transform: scale(0.85) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+            body.alloflow-launchpad-active #allo-err-badge { display: none !important; }
+            .lp-root { justify-content: center; padding: 32px 0 40px; }
             .lp-card { backdrop-filter: blur(20px); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 32px 28px; cursor: pointer; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; animation: cardPop 0.5s ease-out both; }
             .lp-card:hover { transform: translateY(-6px) scale(1.03); background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); box-shadow: 0 20px 60px rgba(99,102,241,0.3); }
-            @media (max-width: 600px) { .lp-grid { grid-template-columns: 1fr !important; } }
+            @media (max-width: 600px), (max-height: 820px) { .lp-root { justify-content: flex-start !important; } }
+            @media (max-width: 600px) {
+              .lp-root { padding: 16px 0 28px !important; }
+              .lp-lang-switcher { position: static !important; align-self: flex-end; margin: 0 20px 18px 0; }
+              .lp-logo-block { margin-bottom: 28px !important; }
+              .lp-mic-shell { padding: 0 24px !important; margin-bottom: 24px !important; }
+              .lp-mic-panel { align-items: stretch !important; padding: 18px 20px !important; }
+              .lp-mic-title-row { justify-content: flex-start !important; }
+              .lp-mic-actions { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+              .lp-mic-actions button { width: 100% !important; }
+              .lp-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+              .lp-card { min-height: 128px; padding: 28px !important; }
+              .lp-ai-settings { margin-top: 24px !important; }
+            }
             .lp-card::before { content: ''; position: absolute; inset: 0; border-radius: 24px; padding: 1px; background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent, rgba(99,102,241,0.3)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
             .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #818cf8, #6366f1); color: white; font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.5px; animation: shimmer 3s infinite linear; background-size: 200% auto; }
             .lp-lang-item:hover:not([disabled]) { background: rgba(99,102,241,0.2) !important; }
           `}</style>
           {/* ── Compact Language Switcher (top-right) ── */}
-          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 100000 }}>
+          <div className="lp-lang-switcher" style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 2147483001 }}>
             <button
               type="button"
               onClick={() => setLangMenuOpen(!langMenuOpen)}
@@ -147,18 +192,18 @@ function LaunchPadView(props) {
               </>
             )}
           </div>
-          <div style={{ textAlign: 'center', marginBottom: '48px', animation: 'fadeIn 0.6s ease-out' }}>
-            <img src="https://raw.githubusercontent.com/Apomera/AlloFlow/main/rainbow-book.jpg" alt="AlloFlow" style={{ width: '80px', height: '80px', margin: '0 auto 16px', display: 'block', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '16px', objectFit: 'cover', animation: 'float 3s ease-in-out infinite' }} />
+          <div className="lp-logo-block" style={{ textAlign: 'center', marginBottom: '48px', animation: 'fadeIn 0.6s ease-out' }}>
+            <img src="rainbow-book.jpg" alt="" aria-hidden="true" onError={(e) => { e.currentTarget.style.display = 'none'; }} style={{ width: '80px', height: '80px', margin: '0 auto 16px', display: 'block', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '16px', objectFit: 'cover', animation: 'float 3s ease-in-out infinite' }} />
             <h1 style={{ fontSize: '32px', fontWeight: 900, background: 'linear-gradient(90deg,#fcd34d,#fdba74,#fb923c)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', margin: '0 0 8px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
-            <p style={{ fontSize: '12px', color: '#c7d2fe', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>{t('launch_pad.subtitle')}</p>
+            <p style={{ fontSize: '12px', color: '#c7d2fe', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>{copy('launch_pad.subtitle', 'Adaptive Levels, Layers, & Outputs')}</p>
           </div>
           {/* ── Mic Permission Banner ── */}
           {!micBannerDismissed && (
-            <div style={{
+            <div className="lp-mic-shell" style={{
               maxWidth: '620px', width: '100%', padding: '0 24px', marginBottom: '24px',
               animation: 'fadeIn 0.5s ease-out',
             }}>
-              <div style={{
+              <div className="lp-mic-panel" style={{
                 backdropFilter: 'blur(20px)',
                 background: 'rgba(255,255,255,0.08)',
                 border: '1px solid rgba(129,140,248,0.3)',
@@ -166,23 +211,23 @@ function LaunchPadView(props) {
                 padding: '20px 24px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="lp-mic-title-row" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '24px' }}>🎤</span>
                   <div>
                     <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: '0 0 2px' }}>
-                      {t('launch_pad.mic_title') || 'Microphone Setup'}
+                      {copy('launch_pad.mic_title', 'Microphone Setup')}
                     </p>
                     <p style={{ fontSize: '11px', color: '#c7d2fe', margin: 0, lineHeight: '1.5' }}>
-                      {t('launch_pad.mic_desc') || 'Some tools use your microphone for dictation, recording, and voice input.'}
+                      {copy('launch_pad.mic_desc', 'Some tools use your microphone for dictation, recording, and voice input.')}
                     </p>
                   </div>
                 </div>
                 {_isCanvasEnv && (
                   <p style={{ fontSize: '10px', color: '#fbbf24', margin: 0, textAlign: 'center', lineHeight: '1.5', fontWeight: 600 }}>
-                    ⚠️ {t('launch_pad.mic_canvas_warning') || 'In this environment, enabling the microphone will briefly reload the app. It\'s best to do it now before you start working.'}
+                    ⚠️ {copy('launch_pad.mic_canvas_warning', 'In this environment, enabling the microphone will briefly reload the app. It\'s best to do it now before you start working.')}
                   </p>
                 )}
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <div className="lp-mic-actions" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
                   <button
                     onClick={requestMicPermission}
                     disabled={micPermissionStatus === 'requesting'}
@@ -221,34 +266,35 @@ function LaunchPadView(props) {
             </div>
           )}
           <div className="lp-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', maxWidth: '620px', width: '100%', padding: '0 24px' }}>
-            <div className="lp-card" style={{ animationDelay: '0.1s' }} role="button" tabIndex={0} aria-label={t('launch_pad.full_title') + '. ' + t('launch_pad.full_desc')} onClick={() => { setHasSelectedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
+            <div className="lp-card" style={{ animationDelay: '0.1s' }} role="button" tabIndex={0} aria-label={fullTitle + '. ' + fullDesc} onClick={() => { setHasSelectedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
               <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite' }} aria-hidden="true">🚀</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.full_title')}</h2>
-              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.full_desc')}</p>
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{fullTitle}</h2>
+              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{fullDesc}</p>
             </div>
-            <div className="lp-card" style={{ animationDelay: '0.2s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.guided_title') || 'Guided Mode') + ' (recommended). ' + t('launch_pad.guided_desc')} onClick={() => { setHasSelectedMode(true); setGuidedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
-              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge">{t('launch_pad.badge_recommended')}</span></div>
+            <div className="lp-card" style={{ animationDelay: '0.2s' }} role="button" tabIndex={0} aria-label={guidedTitle + ' (recommended). ' + guidedDesc} onClick={() => { setHasSelectedMode(true); setGuidedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
+              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge">{copy('launch_pad.badge_recommended', 'Recommended')}</span></div>
               <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '0.5s' }} aria-hidden="true">🧭</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.guided_title') || 'Guided Mode'}</h2>
-              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.guided_desc')}</p>
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{guidedTitle}</h2>
+              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{guidedDesc}</p>
             </div>
-            <div className="lp-card" style={{ animationDelay: '0.3s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.learning_tools_title') || 'Learning Tools') + '. ' + (t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge, SEL Hub, Research Hub & more')} onClick={() => { setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false); setHasSelectedRole(true); setHasSelectedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
-              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #34d399, #059669)' }}>{t('launch_pad.badge_3_tools') || '8 Tools'}</span></div>
+            <div className="lp-card" style={{ animationDelay: '0.3s' }} role="button" tabIndex={0} aria-label={learningToolsTitle + '. ' + learningToolsDesc} onClick={() => { setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false); setHasSelectedRole(true); setHasSelectedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
+              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #34d399, #059669)' }}>{copy('launch_pad.badge_3_tools', '8 Tools')}</span></div>
               <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1s' }} aria-hidden="true">{'\uD83E\uDDE9'}</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.learning_tools_title') || 'Learning Tools'}</h2>
-              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge, SEL Hub, Research Hub & more \u2014 explore, create, investigate, and grow'}</p>
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{learningToolsTitle}</h2>
+              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{learningToolsDesc}</p>
             </div>
-            <div className="lp-card" style={{ animationDelay: '0.4s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.educator_tools_title') || 'Educator Tools') + '. ' + (t('launch_pad.educator_tools_desc_open') || 'BehaviorLens, Report Writer, and other professional educator tools.')} onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if (APP_CONFIG._cfg_validation_key) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
-              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)' }}>{APP_CONFIG._cfg_validation_key ? (t('launch_pad.badge_educator') || '🔒 Educator') : (t('launch_pad.badge_educator_open') || '🛠️ Educator')}</span></div>
+            <div className="lp-card" style={{ animationDelay: '0.4s' }} role="button" tabIndex={0} aria-label={educatorToolsTitle + '. ' + educatorToolsDesc} onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if (APP_CONFIG._cfg_validation_key) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
+              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)' }}>{APP_CONFIG._cfg_validation_key ? copy('launch_pad.badge_educator', 'Educator') : copy('launch_pad.badge_educator_open', 'Educator')}</span></div>
               <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1.5s' }} aria-hidden="true">🛠️</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.educator_tools_title') || 'Educator Tools'}</h2>
-              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.educator_tools_desc_open') || 'BehaviorLens, Report Writer, and other professional educator tools.'}</p>
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{educatorToolsTitle}</h2>
+              <p style={{ fontSize: '12px', color: '#c7d2fe', lineHeight: '1.6', margin: 0 }}>{educatorToolsDesc}</p>
             </div>
           </div>
-          <p style={{ marginTop: '48px', fontSize: '11px', color: 'rgba(199,210,254,0.85)', fontWeight: 500 }}>{t('launch_pad.switch_hint')}</p>
+          <p style={{ marginTop: '48px', fontSize: '11px', color: 'rgba(199,210,254,0.85)', fontWeight: 500 }}>{switchHint}</p>
           {!_isCanvasEnv && (
             <button
               onClick={(e) => { e.stopPropagation(); setShowAIBackendModal(true); }}
+              className="lp-ai-settings"
               style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#312e81', border: '1px solid rgba(165,180,252,0.4)', borderRadius: '16px', padding: '10px 20px', color: '#e0e7ff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s', backdropFilter: 'blur(10px)' }}
               onMouseOver={(e) => { e.currentTarget.style.background = '#4338ca'; e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.borderColor = 'rgba(165,180,252,0.7)'; }}
               onMouseOut={(e) => { e.currentTarget.style.background = '#312e81'; e.currentTarget.style.color = '#e0e7ff'; e.currentTarget.style.borderColor = 'rgba(165,180,252,0.4)'; }}

@@ -1,5 +1,7 @@
 # AlloFlow Live Session Protocol
 
+> **Protocol snapshot note (2026-07-09):** This spec was verified against the 2026-07-01 live-session implementation. Treat it as a high-value reference, but re-check the current session modules, Firestore rules, and Desktop LAN adapter before changing live-session behavior or quoting a transport/security guarantee.
+
 **Status:** v1.0 — 2026-07-01. Written from a verified read of the code (not aspirational).
 Sections marked **[SHIPPED 2026-07-01]** were implemented alongside this spec; sections marked
 **[ROADMAP]** are recommended and not yet built.

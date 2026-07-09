@@ -1,5 +1,7 @@
 # Punnett / Genetics Lab — deep-dive review (2026-06-20)
 
+> **Historical review snapshot, not current open-bug status (2026-07-09):** This June deep dive is preserved for its analysis of the tool at that time. Later STEM refinements and QA reports may have changed individual findings; verify against current source/mirrors/tests before treating an item as open.
+
 Tool: `stem_lab/stem_tool_punnett.js` (`punnett`, ~3,400 lines). A proper React component
 (`PunnettLab`) — hooks live inside it, no Loading-gate early-return, so no throwlab-style
 risk. Sub-tools: Punnett Cross (4 inheritance modes), Dihybrid, Pedigree, Codon/translation,

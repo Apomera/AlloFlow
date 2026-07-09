@@ -3,16 +3,16 @@
 
 > **Canonical architecture reference.** This is the authoritative document for the remediation pipeline. `PDF_Pipeline_Architecture.md` is a deprecated historical snapshot and should not be used for new work.
 
-**Author:** Aaron Pomeranz, PsyD  
-**Version:** June 2026 (adds the native tagged-PDF emit, independent PDF/UA-1 / veraPDF validation, font-embedding tier, dual-engine OCR, and autonomous retry to the April baseline)  
-**Status:** Canonical  
+**Author:** Aaron Pomeranz, PsyD
+**Version:** July 2026 status refresh (covers native tagged-PDF emit, PDF/UA structural self-checks, optional veraPDF QA paths, font-embedding tier, dual-engine OCR, and autonomous retry)
+**Status:** Canonical
 **Purpose:** This document explains how the remediation pipeline works in plain language so that accessibility experts, learning designers, and institutional partners can understand, evaluate, and help improve the system.
 
 ---
 
 ## What the Pipeline Does
 
-The pipeline takes an inaccessible PDF (or DOCX/PPTX) and produces a fully accessible document — both semantic HTML (WCAG 2.1 AA) and a **native tagged PDF** (PDF/UA-1) — through a 7-phase process that combines deterministic rule-based fixes, AI-powered remediation, automated verification, and independent PDF/UA validation.
+The pipeline takes an inaccessible PDF (or DOCX/PPTX) and produces a more accessible document package: semantic HTML, an audit report, and a **native tagged PDF** with structural PDF/UA-oriented checks. It uses a 7-phase process that combines deterministic rule-based fixes, AI-powered remediation, automated verification, and optional veraPDF/PAC-style QA for institution-facing review.
 
 **In simple terms:** Upload an inaccessible document, get back an accessible one with a detailed audit report showing what was fixed and what remains.
 
@@ -169,7 +169,7 @@ The headline score is **`min(AI Rubric Score, deterministic engine score)`** —
 1. **AI Rubric Score** — Gemini evaluates the HTML against the WCAG rubric (chunked for long documents, deduplicated), recomputed from the issue deductions
 2. **Deterministic engines** — axe-core, plus IBM Equal Access when available (the more conservative of the two governs); local, zero API cost, no AI variance
 
-Averaging was abandoned (2026-06-21) because the two engines measure different things — the midpoint described neither, and an inflated automated half could mask a failing content half. Both layer scores are shown separately in the UI, and the independent PDF/UA verdict is veraPDF's own badge.
+Averaging was abandoned (2026-06-21) because the two engines measure different things — the midpoint described neither, and an inflated automated half could mask a failing content half. Both layer scores are shown separately in the UI, and PDF/UA status is kept separate from HTML/WCAG scoring: the in-app structural self-check is a preflight, while veraPDF/PAC-style review is the institution-facing QA path.
 
 ### Multi-Auditor Triangulation
 
@@ -232,7 +232,7 @@ For each pass (up to 8 by default):
 - Skip-to-content link, proper lang attribute, descriptive title
 - Images with alt text, tables with headers and captions
 - Styled via a unified **Style Seed** system (Professional, Academic, Kid-Friendly, Minimalist, High Contrast/AAA, Nature, Print, Dark Mode, Magazine, Match Original) — AI prompt instructions during remediation + deterministic CSS fallback for preview/offline
-- All styling paths run through `sanitizeStyleForWCAG()` — a deterministic WCAG validator that guarantees contrast ratios, minimum font sizes, and accessibility compliance regardless of AI output
+- All styling paths run through `sanitizeStyleForWCAG()` — a deterministic style validator that enforces measurable contrast and font-size constraints where it can. It reduces risk from AI output, theme settings, and preview edits, but does not by itself certify full WCAG conformance.
 
 ### Accessibility Audit Report
 A professional PDF-ready report containing:
@@ -321,19 +321,19 @@ The pipeline uses HTML as its working format internally because HTML provides fu
 
 ## PDF/UA-1 Validation (ISO 14289-1)
 
-Beyond the HTML-level axe-core + AI scoring, the pipeline includes two client-side PDF/UA validators — the independent check institutional partners can re-run themselves:
+Beyond the HTML-level axe-core + AI scoring, the pipeline keeps PDF-level status separate from the content score:
 
-1. **Automatic post-export self-check.** `view_pdf_validator_module.js` re-parses the produced PDF bytes (via `window.PDFLib`) on every export and surfaces a structural Conformance Report.
-2. **Independent veraPDF (on-demand).** The real Java **veraPDF** validator runs entirely in-browser via **CheerpJ** (one-time ~25 MB JVM download) in a companion window, reporting clause-level ISO 14289-1 failures (e.g. "§7.21.4.1 test 1"). Bytes never leave the browser.
-3. **veraPDF closed-loop auto-fix.** An optional "Auto-fix remaining issues" flow validates → repairs → re-validates up to 5 iterations, then re-downloads the corrected PDF.
+1. **Automatic post-export self-check.** `view_pdf_validator_module.js` re-parses the produced PDF bytes (via `window.PDFLib`) on export and surfaces a structural Conformance Report. This is an AlloFlow preflight, not certification.
+2. **Optional browser veraPDF companion.** Current builds include a CheerpJ-based companion validator that can run Java veraPDF in a popup or hidden iframe when browser policy allows it. It is useful for immediate feedback, can be blocked by popup/CSP/runtime constraints, and should not be treated as the only review artifact.
+3. **Reproducible local/institutional QA.** For handoff to a district, university accessibility team, or external reviewer, use the local veraPDF/PAC-style workflow documented in `docs/verapdf_install.md` so reviewers can rerun the check on the exact exported file.
 
-This is the independent, third-party-standard validation layer (not AlloFlow's own scoring) — important for institutions that need to verify conformance with a tool they trust.
+The practical rule: AlloFlow can provide structural self-checks and optional veraPDF evidence, but final PDF/UA reliance should include external validator review and human checks for reading order, alt-text quality, and document intent.
 
 ---
 
 ## Current Limitations
 
-1. **Guarantee 100% compliance** — No automated tool can guarantee full WCAG compliance. The pipeline typically achieves 80-95% of the way there, with remaining issues clearly documented in the audit report for expert review. This is why the Knowbility referral exists for high-stakes documents.
+1. **Promise 100% compliance** — No automated tool can promise full WCAG compliance. The pipeline typically gets much of the remediation work done, with remaining issues clearly documented in the audit report for expert review. This is why the Knowbility referral exists for high-stakes documents.
 
 2. **Complex interactive content** — Forms with complex validation logic, embedded multimedia players, and JavaScript-dependent widgets may need manual remediation.
 
@@ -376,7 +376,7 @@ Input: PDF/DOCX/PPTX
       ├── createTaggedPdf (pdf-lib): /StructTreeRoot, MarkInfo, /Lang, /Alt, /Scope
       ├── Font embedding (fontkit, ISO 14289-1 §7.21.4.1)
       ├── Post-export self-check (view_pdf_validator_module.js)
-      └── Optional independent veraPDF (CheerpJ) + closed-loop auto-fix
+      └── PDF/UA self-check + optional browser/local veraPDF QA
   │
 Output: Native tagged PDF + Accessible HTML + Audit Report + ePub3/DAISY/ODT
 ```
@@ -389,7 +389,7 @@ Output: Native tagged PDF + Accessible HTML + Audit Report + ePub3/DAISY/ODT
 |------|------|---------|
 | `doc_pipeline_source.jsx` | ~29,900 lines | Core pipeline logic — auditing, fixes, scoring, native tagged-PDF emit, font embedding, OCR, reports, exports |
 | `doc_pipeline_module.js` | compiled | Browser-ready version loaded via CDN |
-| `view_pdf_audit_source.jsx` | ~14,700 lines | Audit/remediation UI, tagging export, veraPDF (CheerpJ) integration + closed-loop auto-fix, format exports |
+| `view_pdf_audit_source.jsx` | ~14,700 lines | Audit/remediation UI, tagging export, optional browser veraPDF QA, format exports |
 | `view_pdf_validator_module.js` | module | In-browser post-export PDF/UA structural self-check (Conformance Report) |
 | `AlloFlowANTI.txt` (pipeline UI sections) | ~3,500 lines | Score display, audit panels, preview, style seed picker, AI restyle, settings |
 
@@ -419,22 +419,22 @@ The pipeline uses a **Style Seed** model that unifies pre-remediation AI styling
 
 ### WCAG Style Sanitizer (`sanitizeStyleForWCAG`)
 
-A deterministic function that runs **after every styling change** — whether from AI-generated CSS, theme/seed application, or user edits in the preview. It guarantees WCAG compliance using mathematical checks:
+A deterministic function that runs **after every styling change** — whether from AI-generated CSS, theme/seed application, or user edits in the preview. It enforces measurable style checks:
 
 1. **Background detection** — Parses the document's actual `<body>` background color instead of assuming white
 2. **Contrast enforcement** — Adjusts any text color below the target ratio (4.5:1 for AA, 7:1 for AAA)
 3. **Font size floor** — Clamps any `font-size` below 12px up to 12px
 4. **Safety-net CSS** — Injects override rules for common utility classes that fail contrast
 
-**Key guarantee:** No AI hallucination, theme misconfiguration, or user edit can bypass this sanitizer. It is the final gate before any styled content is displayed or exported.
+**Key safety claim:** AI output, theme settings, and user edits all pass through this sanitizer before styled content is displayed or exported. That makes contrast regressions much less likely, but it is still a style preflight rather than a complete accessibility certification.
 
 ---
 
-## Standards Compliance
+## Standards Alignment
 
-The pipeline is designed to meet:
+The pipeline is designed to support alignment with:
 - **WCAG 2.1 Level AA** — Web Content Accessibility Guidelines
-- **ADA Title II** (28 CFR Part 35 Subpart H) — Americans with Disabilities Act, effective April 24, 2026
+- **ADA Title II** (28 CFR Part 35 Subpart H) — Americans with Disabilities Act web/mobile accessibility rule, with DOJ-extended compliance dates of April 26, 2027 for state/local entities with populations of 50,000 or more and April 26, 2028 for smaller entities and special district governments ([ADA.gov fact sheet](https://www.ada.gov/resources/2024-03-08-web-rule/)); verify entity-specific obligations with counsel.
 - **Section 508** — Federal accessibility requirements
 - **EN 301 549** — European accessibility standard
 

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-principles-economics-3e-catalog",
+  "title": "OpenStax Principles of Economics 3e",
+  "description": "A source card for the OpenStax Principles of Economics 3e textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Economics",
+    "Textbooks",
+    "Data literacy",
+    "Markets"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/principles-economics-3e"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax Principles of Economics 3e introduces scarcity, supply and demand, markets, labor, macroeconomic indicators, inflation, unemployment, trade, and policy."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for older students practicing evidence-based explanations about prices, incentives, tradeoffs, and economic data."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters or figures."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 55
+  }
+}

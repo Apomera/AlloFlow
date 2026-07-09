@@ -1,5 +1,7 @@
 # Plan: Table & Reading-Order Quality — Golden-Master Benchmark + Inline TEDS Audit
 
+> **Plan snapshot note (2026-07-09):** This June 2026 benchmark plan predates the current table/reading-order fixture work. Verify `tests/fixtures/table_ro/`, current PDF pipeline tests, and any committed baselines before treating "no code written" or "no test" below as current.
+
 **Status:** Proposed (plan only — no code written)
 **Author:** Claude (2026-06-14)
 **For:** The agent working on the remediation pipeline

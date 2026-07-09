@@ -1,5 +1,7 @@
 # UnitWeave — Spatial Unit Builder Design Doc
 
+> **Design snapshot note (2026-07-09):** This Throughline/UnitWeave design reflects the host and unit-system state at the time it was drafted. Verify current `mind_map_module.js`, unit tagging/import behavior, and live-session broadcast behavior before treating "today's unmodified app" or host file references below as current.
+
 > Re-envisioning the `mind_map_module.js` Learning Hub tool from a student knowledge-graph into a teacher-facing spatial unit builder. **Status: design only — not approved to build. See Timing (§6) and Decisions for Aaron.**
 
 ---

@@ -1,5 +1,7 @@
 # Deploying the Firestore Rules (step-by-step)
 
+> **Deployment snapshot note (2026-07-09):** This checklist was written against the 2026-07-01 live-session paths. Before using it, compare `firestore.rules`, `docs/LIVE_SESSION_PROTOCOL.md`, and the current Firebase project settings; do not assume the "today" statements below still describe the live demo project without checking the console.
+
 For Aaron. The rules file is [`firestore.rules`](../firestore.rules) at the repo root.
 Written 2026-07-01 against the live-session write paths verified the same day.
 Background/threat model: `docs/LIVE_SESSION_HARDENING_PROPOSAL.md`.

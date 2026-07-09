@@ -26,6 +26,9 @@ const index = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'index.json'), 'utf8
 const rtlEntry = index.books.find((b) => b.language === 'Arabic');
 const rtlBook = JSON.parse(fs.readFileSync(path.join(LIB_DIR, rtlEntry.file), 'utf8'));
 const frontiersEntry = index.books.find((b) => b.sourceId === 'frontiers');
+const longTextEntry = index.books.find((b) => b.sourceId === 'gutenberg' && b.contentType === 'public-domain-full-text' && /Pride and Prejudice/i.test(b.title)) ||
+  index.books.find((b) => b.sourceId === 'gutenberg' && b.contentType === 'public-domain-full-text');
+const longTextBook = JSON.parse(fs.readFileSync(path.join(LIB_DIR, longTextEntry.file), 'utf8'));
 
 beforeAll(() => {
   React = require(resolve(MODULES_DIR, 'react'));
@@ -71,6 +74,14 @@ function clickByText(container, tag, needle) {
   if (!el) throw new Error(`no <${tag}> containing "${needle}"`);
   act(() => { el.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
   return el;
+}
+
+function setInputValue(input, value) {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+  act(() => {
+    setter.call(input, value);
+    input.dispatchEvent(new window.Event('input', { bubbles: true }));
+  });
 }
 
 // The browse grid now defaults to the English language filter; tests that need
@@ -255,6 +266,66 @@ describe('reader view (RTL original)', () => {
     expect(calls.saved[0]).toHaveProperty('hasAudio');
   });
 });
+
+describe('reader view (long source scope)', () => {
+  async function mountLongReader() {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    const calls = { generate: [], inputText: [], saved: [], closed: 0, toasts: [] };
+    await act(async () => {
+      root.render(React.createElement(ReadingLibrary.BookReader, {
+        book: longTextBook,
+        onExit: () => { calls.closed++; },
+        addToast: (m, t) => calls.toasts.push([m, t]),
+        handleGenerate: (...a) => calls.generate.push(a),
+        setInputText: (t) => calls.inputText.push(t),
+        onSaveToLesson: (ref) => calls.saved.push(ref),
+        isTeacherMode: true,
+      }));
+    });
+    await flush();
+    return calls;
+  }
+
+  it('defaults full novels to the current page instead of the whole book', async () => {
+    const calls = await mountLongReader();
+    clickByText(host, 'button', 'Create');
+    await flush();
+    const scope = host.querySelector('select[aria-label="Source scope"]');
+    expect(scope).toBeTruthy();
+    expect(scope.value).toBe('page');
+    clickByText(host, 'button', 'Quiz');
+    await flush();
+    const [, , , text] = calls.generate[0];
+    expect(text).toContain(longTextBook.title);
+    expect(text).toContain('Selection: Page 1');
+    expect(text.length).toBeLessThan(RLBookTextLength(longTextBook) / 4);
+  });
+
+  it('can send a custom page range to the source box', async () => {
+    const calls = await mountLongReader();
+    clickByText(host, 'button', 'Create');
+    await flush();
+    const scope = host.querySelector('select[aria-label="Source scope"]');
+    act(() => { scope.value = 'range'; scope.dispatchEvent(new window.Event('change', { bubbles: true })); });
+    await flush();
+    const nums = Array.from(host.querySelectorAll('input[type="number"]'));
+    setInputValue(nums[0], '2');
+    setInputValue(nums[1], '3');
+    await flush();
+    clickByText(host, 'button', 'Use as source text');
+    await flush();
+    expect(calls.inputText[0]).toContain('Selection: Pages 2-3');
+    expect(calls.inputText[0]).toContain(longTextBook.pages[1].text.slice(0, 40));
+    expect(calls.inputText[0]).toContain(longTextBook.pages[2].text.slice(0, 40));
+    expect(calls.inputText[0]).not.toContain(longTextBook.pages[4].text.slice(0, 40));
+  });
+});
+
+function RLBookTextLength(book) {
+  return [book.title].concat((book.pages || []).map((p) => p.text || '')).join('\n\n').length;
+}
 
 describe('AI translation', () => {
   it('translates via 🌐, shows the caveat, and exports the translation', async () => {

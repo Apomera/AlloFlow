@@ -6,6 +6,13 @@ read of the code (every storage write site enumerated), not from marketing inten
 this document is not legal advice, and the final FERPA determination always belongs to the
 district and its counsel.
 
+**2026-07-09 scope note:** this memo describes the browser/cloud live-session design as
+verified on 2026-07-01. AlloFlow Desktop now also supports a no-Docker Desktop LAN /
+Local Network mode that routes session documents and session assets through the teacher's
+Desktop runtime and student-safe LAN Share listener instead of Firestore. See
+`docs/SCHOOL_SERVER_ARCHITECTURE.md` and `desktop/README.md` for the newer Desktop LAN
+and optional School Box Server split.
+
 ## 1. The core design claim (verified)
 
 Student-generated **content** never reaches any server. Poll answers (including free text),
@@ -35,7 +42,13 @@ Never stored, by architecture: free-text responses, drawings/strokes, guesses, a
 (explicitly stripped by sanitizers before any cloud write), real names, emails, or accounts —
 students authenticate anonymously and create no account.
 
-## 3. The two-backend reality
+## 3. The deployment/back-end reality
+
+- **AlloFlow Desktop LAN (local classroom path):** teacher Desktop runtime hosts the
+  private command bridge and the student-safe LAN Share listener. Students join from
+  the same local network with a class code and optional PIN. This path is the current
+  no-Docker local-first classroom mode; it does not use Firestore for classroom session
+  docs unless the teacher explicitly selects a cloud mode.
 
 - **Gemini Canvas surface (demos/authoring):** Firebase project is injected and operated by
   Google's Canvas platform; AlloFlow cannot configure it. **Correction 2026-07-01 (verified):**

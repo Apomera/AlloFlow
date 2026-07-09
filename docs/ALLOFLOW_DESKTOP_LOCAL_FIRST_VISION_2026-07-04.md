@@ -2,6 +2,15 @@
 
 Prepared for Fable and future AlloFlow collaborators on July 4, 2026.
 
+Status refresh, July 9, 2026: this document remains the strategic vision, but
+several "next" items from July 4 are now shipped. AlloFlow Desktop is the
+everyday no-Docker path; Desktop LAN / Local Network is the same-room classroom
+path; the Docker School Box stack is optional server/appliance infrastructure.
+The built-in local engine, local ASR, Kokoro fixes, LAN adapter, QR/join
+link/PIN controls, and LAN Share smoke coverage have all advanced since the
+original handoff. A fresh installer is still needed whenever those source and
+app-build changes need to reach the installed desktop app.
+
 ## Executive Summary
 
 AlloFlow Desktop changes the strategic shape of the project. It moves AlloFlow from "a powerful app that can run inside Gemini Canvas" toward "school-controllable educational infrastructure." That matters because the core promise of AlloFlow is not just more AI tools. The promise is accessible, adaptive, teacher-shaped learning technology that can respect student privacy, work in constrained environments, and avoid locking classrooms into vendor-controlled SaaS systems.
@@ -38,7 +47,7 @@ Desktop expands AlloFlow in ways the Canvas delivery path cannot fully provide.
 6. It makes School Box concrete.
    School Box can become a guided setup surface inside Desktop instead of a separate product. Desktop can be the command center for classroom mode, district/server mode, model configuration, diagnostics, and privacy posture.
 
-## Current State As Of July 4, 2026
+## Current State As Of July 4, 2026, With July 9 Refresh
 
 Working foundation:
 
@@ -48,21 +57,24 @@ Working foundation:
 - The app now has stronger diagnostic visibility, including copyable diagnostic output.
 - API key storage has been moved toward OS keychain behavior.
 - Local AI provider setup exists for cloud and local providers, including Gemini, Ollama, LM Studio/OpenAI-compatible endpoints, and LocalAI-style flows.
-- Kokoro local TTS work is underway, including local loader/assets and desktop default voice behavior.
+- The AlloFlow Built-in Engine now exists as an opt-in managed local llama.cpp path, with LM Studio and Ollama kept as compatibility presets.
+- Kokoro local TTS and local ASR have moved from foundation work into the desktop local stack, though installed apps still need fresh builds to receive the newest fixes.
 - AI backend settings can be surfaced from the starting pathway screen.
-- School Box has a guided setup foundation.
+- School Box has a guided setup foundation and is now framed as optional Docker server/appliance infrastructure.
 - A local-first live-session mode exists, with Desktop guarding against accidental Firestore usage.
 - A local LAN session bridge exists for teacher-hosted sessions.
 - A separate public LAN Share listener exists so students can join from other devices on the same network without exposing private Desktop APIs.
-- The public LAN Share listener is intended to expose only student-safe session/join endpoints.
+- The in-app LAN adapter is applied in the canonical app source, so session documents and session assets can ride the LAN bridge.
+- The public LAN Share listener is intended to expose only student-safe session/join endpoints and now has smoke coverage for private-endpoint isolation.
+- QR codes, copyable join links, optional PIN/passphrase protection, presenter view, and clearer network diagnostics have been added to the Desktop LAN flow.
 
 Known caveats:
 
 - The installer needs to be rebuilt after the latest desktop/app-build changes.
 - The project is not code-signed yet. Windows SmartScreen friction should be expected until signing is solved or reputation accumulates.
-- `npm run desktop:web:build` timed out after roughly 184 seconds during the latest attempt. Fable should rerun it with a longer timeout and verify the compiled desktop app includes the new LAN auto-join source behavior.
+- The July 4 desktop web-build timeout caveat is superseded. The desktop build and smoke paths have since passed, but packaging should still run a fresh `web:build` from the `desktop/` folder before producing installers.
 - Public LAN Share needs real classroom network testing. School Wi-Fi client isolation may block peer-to-peer LAN access.
-- LAN sessions need QR codes, optional PIN/passphrase protection, better join diagnostics, and clear teacher controls.
+- LAN sessions now have QR/join link/PIN/presenter/diagnostic controls; the remaining question is real school-network behavior.
 - There is no production-ready remote district/server mode yet.
 - FERPA-aligned deployment support is a product and institutional process, not a single code switch.
 
@@ -181,8 +193,8 @@ Open-source collaborators:
 1. Preserve the dirty workspace.
    Run a status check first. Do not revert uncommitted changes unless Aaron explicitly asks.
 
-2. Finish the fresh desktop build.
-   Rerun `npm run desktop:web:build` with a longer timeout. Then verify the compiled Desktop app contains the `?allo_lan_join=CODE` behavior from `prismflow-deploy/src/App.jsx`.
+2. Keep builds fresh before installer work.
+   Run `cd desktop` and then `npm run web:build` before packaging. Verify the compiled Desktop app contains the LAN adapter and `?allo_lan_join=CODE` behavior.
 
 3. Re-run desktop smoke coverage.
    Confirm runtime startup, bundled app serving, local AI settings, Kokoro availability, diagnostics copy, School Box panel rendering, LAN session creation, and public LAN Share isolation.
@@ -190,8 +202,8 @@ Open-source collaborators:
 4. Package the next installer.
    Start with Windows ARM64 for Aaron's machine. Then consider Windows x64 and macOS builds.
 
-5. Improve LAN classroom usability.
-   Add a QR code, join link copy button, optional PIN/passphrase, clearer "students must be on the same network" language, and firewall diagnostics.
+5. Test LAN classroom usability on real school networks.
+   QR code, join link copy, optional PIN/passphrase, presenter view, and firewall diagnostics now exist. The next risk is school Wi-Fi client isolation and managed-device behavior.
 
 6. Continue School Box wizard design.
    First mode: local classroom. Second mode: school-owned district/server. Third mode: BYO cloud tenant. Keep the default privacy-preserving.

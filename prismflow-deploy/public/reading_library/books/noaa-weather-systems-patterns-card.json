@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "noaa-weather-systems-patterns-card",
+  "title": "NOAA Weather Systems and Patterns",
+  "description": "A NOAA source card about weather systems, atmospheric patterns, and forecasting concepts.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "noaa",
+  "contentType": "source-card",
+  "subjects": [
+    "Weather",
+    "Atmosphere",
+    "Forecasting",
+    "Earth science"
+  ],
+  "authors": [
+    "NOAA Education"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "license": "U.S. Government Work / item-level rights vary",
+  "licenseUrl": "https://www.noaa.gov/education/resource-collections/weather-atmosphere/weather-systems-patterns",
+  "source": {
+    "id": "noaa",
+    "name": "NOAA Education",
+    "url": "https://www.noaa.gov/education/resource-collections/weather-atmosphere/weather-systems-patterns"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NOAA weather systems resources explain pressure, air masses, fronts, storms, atmospheric circulation, and forecasting patterns."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source to support students reading weather maps, explaining cause and effect, and connecting local weather to larger atmospheric systems."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NOAA materials are generally U.S. government work, but resource collections may link to partners or offsite materials. Check item-level rights before mirroring linked resources."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  }
+}

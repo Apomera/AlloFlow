@@ -162,6 +162,16 @@
   @media (max-width: 760px) { .scene-row { grid-template-columns: auto 1fr; } .scene-row .row { grid-column: 1 / -1; } }
   .status { min-height: 20px; font-size: 13px; color: var(--dim); margin-top: 8px; }
   .status.ok { color: var(--ok); } .status.bad { color: var(--bad); } .status.warn { color: var(--warn); }
+  .restore-summary { display: grid; gap: 8px; margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: rgba(15,23,42,0.26); }
+  .restore-summary[hidden] { display: none; }
+  .restore-summary h3 { margin: 0; font-size: 13px; color: var(--text); }
+  .restore-summary p { margin: 0; color: var(--dim); font-size: 12px; line-height: 1.35; }
+  .restore-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .restore-chip { display: inline-flex; align-items: center; min-height: 26px; border: 1px solid var(--line); border-radius: 999px; padding: 4px 8px; background: var(--panel2); color: var(--text); font-size: 12px; line-height: 1.2; }
+  .restore-chip.review { border-color: #60a5fa; background: rgba(96,165,250,0.14); }
+  .restore-chip.warn { border-color: var(--warn); background: rgba(251,191,36,0.14); color: #fde68a; }
+  .restore-action-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .restore-action-row button { min-height: 28px; padding: 5px 10px; font-size: 12px; }
   .export-plan { border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; margin: 10px 0; background: var(--panel2); }
   .export-plan strong { display: block; color: var(--text); font-size: 13px; margin-bottom: 4px; }
   .export-plan span { display: block; color: var(--dim); font-size: 13px; line-height: 1.35; }
@@ -307,6 +317,7 @@
         <input type="file" id="importInput" accept="video/*,.mp4,.webm,.mov,.m4v,.mkv,.allopack" hidden>
         <span class="status" id="importStatus" style="margin-top:0">Or drop a video file anywhere on this page. Imported videos get the same trim, caption, and export tools as recordings.</span>
       </div>
+      <div id="importSummaryBox" class="restore-summary import-summary-box" hidden aria-live="polite"></div>
     </div>
     <div class="stage" id="stage">
       <div class="placeholder" id="stagePlaceholder">Press <strong>Start recording</strong> — you’ll pick what to share, then a 3-second countdown runs.</div>
@@ -327,6 +338,7 @@
 
   <!-- ─── EDIT ─── -->
   <section id="panelEdit" role="tabpanel" aria-labelledby="tabEdit" hidden>
+    <div id="editImportSummaryBox" class="restore-summary import-summary-box" hidden aria-live="polite"></div>
     <div class="card edit-focus-card">
       <div>
         <h2>Editor focus</h2>
@@ -703,6 +715,9 @@
             <button class="quiet" id="transcriptSelectMatchesBtn">Select matches</button>
             <button class="quiet" id="mergeCuesBtn">Merge tight caption splits</button>
             <button class="quiet" id="downloadTranscriptBtn">Download transcript (.txt)</button>
+            <button class="quiet" id="importWordTimingsBtn">Import word timings (.json)</button>
+            <input type="file" id="importWordTimingsInput" accept=".json,application/json" hidden>
+            <button class="quiet" id="downloadWordTimingsBtn">Download word timings (.json)</button>
             <button class="quiet" id="sendTranscriptBtn">Send transcript to AlloFlow</button>
           </div>
           <div class="row" style="margin-bottom:8px">
@@ -726,9 +741,23 @@
             <div class="status" id="wordRippleStatus">Select transcript lines above, then choose words to remove from a ripple-cut scene.</div>
             <div id="wordRippleList" class="word-ripple-list"></div>
             <div class="row" style="margin-top:8px">
+              <button class="quiet" id="wordRippleFillersBtn">Select fillers</button>
+              <button class="quiet" id="wordRippleRepeatsBtn">Select repeats</button>
               <button class="quiet" id="wordRippleCutBtn">Build ripple cut scene</button>
               <button class="quiet" id="wordRippleClearBtn">Clear words</button>
             </div>
+          </div>
+          <div id="wordCleanupPanel" class="word-ripple-panel" aria-live="polite">
+            <strong>Global cleanup queue</strong>
+            <div class="status" id="wordCleanupStatus">Scan the whole transcript for filler words and quick repeats, then approve what should become one ripple-cut scene.</div>
+            <div class="row" style="margin-top:8px">
+              <button class="quiet" id="wordCleanupScanBtn">Scan fillers/repeats</button>
+              <button class="quiet" id="wordCleanupApproveAllBtn">Approve all</button>
+              <button class="quiet" id="wordCleanupClearBtn">Clear queue</button>
+              <button class="quiet" id="wordCleanupMuteBtn">Add approved silences</button>
+              <button class="quiet" id="wordCleanupBuildBtn">Build cleanup scene</button>
+            </div>
+            <div id="wordCleanupList" class="transcript-decision-list"></div>
           </div>
           <div id="privacyFlags" style="margin-top:6px"></div>
           <div id="transcriptList" class="transcript-list"></div>
@@ -1218,6 +1247,9 @@
       hasLocalizations: !!m.hasLocalizations,
       localizationCount: Math.max(0, Math.min(99, Math.round(Number(m.localizationCount) || 0))),
       hasVisualOverlays: !!m.hasVisualOverlays,
+      hasAudioEdits: !!m.hasAudioEdits,
+      audioEditsApplyToSource: m.audioEditsApplyToSource === true,
+      muteSpanCount: Math.max(0, Math.min(999, Math.round(Number(m.muteSpanCount) || 0))),
       hasMusicBed: !!m.hasMusicBed,
       hasMediaCredits: !!m.hasMediaCredits,
       mediaCreditCount: Math.max(0, Math.min(999, Math.round(Number(m.mediaCreditCount) || 0))),
@@ -1497,12 +1529,65 @@
   // [{start,end}] are silenced ranges (order-tolerant, end-exclusive); volume
   // is a 0..2 master gain (200% can distort — the UI says so). "Remove audio
   // entirely" is the caller's job: it omits the audio track, not a gain of 0.
+  function vsNormalizeMuteSpans(muteSpans, duration, gap) {
+    var dur = Number(duration);
+    var hasDur = isFinite(dur) && dur > 0;
+    var mergeGap = Number(gap);
+    if (!isFinite(mergeGap)) mergeGap = 0.05;
+    mergeGap = Math.max(0, Math.min(1, mergeGap));
+    var cleanText = function (v, max) {
+      return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+    };
+    var rounded = function (v) { return Math.round(v * 1000) / 1000; };
+    var spans = [];
+    (Array.isArray(muteSpans) ? muteSpans : []).forEach(function (raw) {
+      if (!raw) return;
+      var a = Number(raw.start), b = Number(raw.end);
+      if (!isFinite(a) || !isFinite(b)) return;
+      var start = Math.min(a, b), end = Math.max(a, b);
+      if (hasDur) {
+        start = Math.max(0, Math.min(dur, start));
+        end = Math.max(0, Math.min(dur, end));
+      } else {
+        start = Math.max(0, start);
+        end = Math.max(0, end);
+      }
+      if (end - start < 0.02) return;
+      var span = { start: rounded(start), end: rounded(end) };
+      var source = cleanText(raw.source, 40);
+      var note = cleanText(raw.note, 180);
+      if (source) span.source = source;
+      if (note) span.note = note;
+      spans.push(span);
+    });
+    spans.sort(function (a, b) { return a.start - b.start || a.end - b.end; });
+    var merged = [];
+    var appendNote = function (base, note) {
+      if (!note) return base || '';
+      if (!base) return note;
+      if (base === note || base.indexOf(note) !== -1) return base;
+      return (base + '; ' + note).slice(0, 180);
+    };
+    spans.forEach(function (span) {
+      var last = merged[merged.length - 1];
+      if (!last || span.start > last.end + mergeGap) {
+        merged.push(Object.assign({}, span));
+        return;
+      }
+      last.end = rounded(Math.max(last.end, span.end));
+      if (span.source) last.source = last.source && last.source !== span.source ? 'mixed' : span.source;
+      last.note = appendNote(last.note || '', span.note || '');
+      if (!last.note) delete last.note;
+    });
+    return merged.slice(0, 600);
+  }
+
   function vsGainAt(muteSpans, volume, tSec) {
     var vol = Number(volume);
     if (!isFinite(vol)) vol = 1;
     vol = Math.max(0, Math.min(2, vol));
     var t = Number(tSec) || 0;
-    var spans = Array.isArray(muteSpans) ? muteSpans : [];
+    var spans = vsNormalizeMuteSpans(muteSpans, 0, 0);
     for (var i = 0; i < spans.length; i++) {
       var s = spans[i];
       if (!s) continue;
@@ -1568,6 +1653,10 @@
     var s = state || {};
     var preset = vsAudioPolishPreset(key);
     var audio = Object.assign({ volume: 1, removeAll: false, muteSpans: [] }, s.audio || {});
+    var existingVol = Number(audio.volume);
+    audio.volume = isFinite(existingVol) ? Math.max(0, Math.min(2, existingVol)) : 1;
+    audio.removeAll = !!audio.removeAll;
+    audio.muteSpans = vsNormalizeMuteSpans(audio.muteSpans, s.duration || 0);
     if (preset.audio) {
       if (preset.audio.volume != null) audio.volume = Math.max(0, Math.min(2, Number(preset.audio.volume) || 1));
       if (preset.audio.removeAll != null) audio.removeAll = !!preset.audio.removeAll;
@@ -1578,6 +1667,180 @@
       musicBed = vsSanitizeMusicBed(musicBed, s.duration || musicBed.end || 0);
     }
     return { preset: preset, audio: audio, musicBed: musicBed };
+  }
+
+  function vsBuildAudioEditManifest(state) {
+    var s = state || {};
+    var dur = Math.max(0, Number(s.duration) || 0);
+    var clean = function (v, limit) {
+      return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit || 120);
+    };
+    var rawAudio = s.audio || s.sourceAudio || {};
+    var volume = Number(rawAudio.volume);
+    var sourceAudio = {
+      volume: isFinite(volume) ? Math.max(0, Math.min(2, volume)) : 1,
+      removeAll: !!rawAudio.removeAll,
+      muteSpans: vsNormalizeMuteSpans(rawAudio.muteSpans || [], dur)
+    };
+    var hasSourceAudioChanges = !!(sourceAudio.removeAll || Math.abs(sourceAudio.volume - 1) > 0.001 || sourceAudio.muteSpans.length);
+    var musicBed = s.musicBed ? vsSanitizeMusicBed(s.musicBed, dur || s.musicBed.end || 0) : null;
+    if (musicBed) { musicBed = Object.assign({}, musicBed); delete musicBed.blob; }
+    var mediaEmbedded = s.mediaEmbedded === true;
+    var preserveEmbedded = s.mediaEmbedded !== false;
+    var narration = s.narration ? {
+      present: true,
+      volume: Math.max(0, Math.min(2, Number(s.narration.volume) || 1)),
+      fileName: clean(s.narration.fileName || s.narration.name || 'narration', 120),
+      mimeType: clean(s.narration.mimeType || s.narration.type || (s.narration.blob && s.narration.blob.type) || 'audio/webm', 80),
+      embedded: !!((mediaEmbedded && s.narration.blob) || (preserveEmbedded && s.narration.embedded))
+    } : null;
+    var clips = (Array.isArray(s.audioClips) ? s.audioClips : []).filter(function (c) {
+      return c && (c.blob || c.fileName || c.name || isFinite(Number(c.t != null ? c.t : c.start)));
+    }).slice(0, 120).map(function (c, idx) {
+      var at = Number(c.t != null ? c.t : c.start);
+      if (!isFinite(at)) at = 0;
+      var clipDur = Number(c.dur != null ? c.dur : c.duration);
+      return {
+        id: clean(c.id || ('clip-' + idx), 60),
+        name: clean(c.name || c.fileName || ('Audio clip ' + (idx + 1)), 120),
+        start: Math.max(0, Math.min(dur || Math.max(0, at), at)),
+        duration: isFinite(clipDur) ? Math.max(0, Math.min(7200, clipDur)) : null,
+        volume: Math.max(0, Math.min(2, Number(c.volume) || 1)),
+        fileName: clean(c.fileName || c.name || '', 120),
+        mimeType: clean(c.mimeType || c.type || (c.blob && c.blob.type) || 'audio/webm', 80),
+        embedded: !!((mediaEmbedded && c.blob) || (preserveEmbedded && c.embedded))
+      };
+    });
+    return {
+      type: 'alloflow_audio_edits',
+      version: 1,
+      duration: dur,
+      applyToSource: s.applyToSource === true,
+      bakedIntoVideo: s.bakedIntoVideo === true || s.rendered === true,
+      hasAudioEdits: !!(hasSourceAudioChanges || musicBed || narration || clips.length),
+      hasSourceAudioChanges: hasSourceAudioChanges,
+      sourceAudio: sourceAudio,
+      muteSpanCount: sourceAudio.muteSpans.length,
+      hasMusicBed: !!musicBed,
+      musicBed: musicBed,
+      narration: narration,
+      audioClipCount: clips.length,
+      audioClips: clips
+    };
+  }
+
+  function vsBuildProjectBundleReadme(state) {
+    var s = state || {};
+    var clean = function (v, limit) {
+      return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit || 160);
+    };
+    var title = clean(s.title || 'Teacher video', 160) || 'Teacher video';
+    var audio = s.audioManifest ? vsBuildAudioEditManifest(s.audioManifest) : vsBuildAudioEditManifest({
+      duration: s.duration || 0,
+      audio: s.audio || null,
+      musicBed: s.musicBed || null,
+      narration: s.narration || null,
+      audioClips: s.audioClips || [],
+      applyToSource: s.editableSource === true,
+      bakedIntoVideo: s.editableSource !== true
+    });
+    var names = (Array.isArray(s.entries) ? s.entries : []).map(function (entry) {
+      return clean(typeof entry === 'string' ? entry : (entry && entry.name), 200);
+    }).filter(Boolean).slice(0, 200);
+    var hasFile = function (pattern) { return names.some(function (name) { return pattern.test(name); }); };
+    var embeddedClipCount = audio.audioClips.filter(function (clip) { return clip && clip.embedded; }).length;
+    var lines = [
+      'AlloFlow Video Studio project bundle',
+      '',
+      'Title: ' + title,
+      'Generated locally: ' + clean(s.generatedAt || new Date().toISOString(), 80),
+      'Bundle role: ' + (audio.applyToSource ? 'Editable source project. Drop this .allopack into Video Studio to continue editing.' : 'Rendered export bundle. Video/audio edits are already baked into the video; metadata is included for review.'),
+      '',
+      'Restores on reopen:'
+    ];
+    lines.push('- Video file');
+    if (hasFile(/\.vtt$/i) || s.hasCaptions) lines.push('- Captions');
+    if (hasFile(/transcript_edits\.json$/i)) lines.push('- Transcript edit decisions');
+    if (hasFile(/transcript_words\.json$/i)) lines.push('- Word-level transcript timings');
+    if (hasFile(/scene_plan\.json$/i)) lines.push('- Scene plan');
+    if (hasFile(/music_bed\.(json|mp3|wav|ogg|m4a|webm)$/i)) lines.push('- Music bed metadata' + (hasFile(/music_bed\.(mp3|wav|ogg|m4a|webm)$/i) ? ' and audio' : ''));
+    if (audio.applyToSource && audio.hasSourceAudioChanges) lines.push('- Source audio volume/mute edits');
+    if (audio.applyToSource && audio.narration && audio.narration.embedded) lines.push('- Narration audio');
+    if (audio.applyToSource && embeddedClipCount) lines.push('- Added audio clips (' + embeddedClipCount + ')');
+    lines.push('');
+    lines.push('Stored for review:');
+    if (audio.hasAudioEdits) lines.push('- audio_edits.json (' + (audio.applyToSource ? 'restorable source edits' : 'audit only for rendered audio') + ')');
+    if (hasFile(/media_credits\.json$/i)) lines.push('- media_credits.json / media_credits.txt');
+    if (hasFile(/visual_descriptions\.json$/i)) lines.push('- Visual descriptions');
+    if (hasFile(/teaching_inserts\.json$/i)) lines.push('- Teaching inserts and overlays');
+    if (hasFile(/visual_prompts\.json$/i)) lines.push('- Visual prompts');
+    if (hasFile(/localizations\.json$/i)) lines.push('- Localization drafts');
+    if (!audio.hasAudioEdits && !hasFile(/media_credits\.json$/i) && !hasFile(/visual_descriptions\.json$/i) && !hasFile(/teaching_inserts\.json$/i) && !hasFile(/localizations\.json$/i)) lines.push('- Basic video metadata in meta.json');
+    lines.push('');
+    lines.push('Licensing and attribution:');
+    lines.push('- AlloFlow app code is AGPL-3.0. Media inside this bundle keeps its own license and attribution requirements.');
+    lines.push('- Review media_credits.json or media_credits.txt before sharing or reusing stock/open media.');
+    lines.push('- Free stock media is not automatically open source; keep source URLs and license notes with the project.');
+    if (names.length) {
+      lines.push('');
+      lines.push('Files in this bundle:');
+      names.forEach(function (name) { lines.push('- ' + name); });
+    }
+    return lines.join('\n').replace(/\n+$/, '\n') + '\n';
+  }
+
+  function vsBuildProjectImportSummary(state) {
+    var s = state || {};
+    var clean = function (v, limit) {
+      return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit || 120);
+    };
+    var count = function (v) { return Math.max(0, Math.min(9999, Math.round(Number(v) || 0))); };
+    var plural = function (n, one, many) { return n + ' ' + (n === 1 ? one : (many || one + 's')); };
+    var restored = [];
+    var review = [];
+    var warnings = [];
+    var audio = s.audioManifest ? vsBuildAudioEditManifest(s.audioManifest) : null;
+    var captionCount = count(s.captionCount);
+    var transcriptEditCount = count(s.transcriptEditCount);
+    var transcriptWordCount = count(s.transcriptWordCount);
+    var visualDescriptionCount = count(s.visualDescriptionCount);
+    var chapterCount = count(s.chapterCount);
+    var insertCount = count(s.insertCount);
+    var promptCount = count(s.visualPromptCount);
+    var localizationCount = count(s.localizationCount);
+    var mediaCreditCount = count(s.mediaCreditCount);
+    var clipCount = count(s.audioClipCount);
+    if (captionCount) restored.push(plural(captionCount, 'caption'));
+    if (transcriptEditCount) restored.push('transcript edit decisions');
+    if (transcriptWordCount) restored.push('word timings');
+    if (visualDescriptionCount) restored.push('visual descriptions');
+    if (chapterCount) restored.push(plural(chapterCount, 'chapter'));
+    if (insertCount) restored.push(plural(insertCount, 'teaching insert'));
+    if (promptCount) restored.push('visual prompts');
+    if (localizationCount) restored.push(plural(localizationCount, 'localization draft'));
+    if (mediaCreditCount) restored.push(plural(mediaCreditCount, 'media credit'));
+    if (s.hasMusicBed) restored.push('music bed');
+    if (audio && audio.applyToSource) {
+      if (audio.hasSourceAudioChanges) restored.push('source audio edits');
+      if (s.narrationRestored || (audio.narration && audio.narration.embedded)) restored.push('narration audio');
+      if (clipCount) restored.push(plural(clipCount, 'audio clip'));
+    } else if (audio && audio.hasAudioEdits) {
+      review.push('audio edit manifest is audit-only');
+    }
+    (Array.isArray(s.missingAudioFiles) ? s.missingAudioFiles : []).slice(0, 6).forEach(function (name) {
+      var n = clean(name, 120);
+      if (n) warnings.push(n);
+    });
+    var text = restored.length ? ('Restored ' + restored.join(', ') + '.') : 'No extra project metadata was restored.';
+    if (review.length) text += ' Review: ' + review.join(', ') + '.';
+    if (warnings.length) text += ' Missing bundled audio: ' + warnings.join(', ') + (warnings.length < (s.missingAudioFiles || []).length ? ', ...' : '') + '.';
+    return {
+      restored: restored,
+      review: review,
+      warnings: warnings,
+      status: warnings.length ? 'warn' : 'ok',
+      text: text
+    };
   }
 
   function vsOverlayFrameState(overlay, tSec) {
@@ -1637,6 +1900,75 @@
       else merged.push({ start: cur.start, end: cur.end, text: cur.text });
     }
     return merged;
+  }
+
+  function vsTranscriptWordAutoSelect(words, mode) {
+    var list = Array.isArray(words) ? words : [];
+    var key = String(mode || 'fillers_and_repeats').toLowerCase();
+    var includeFillers = key !== 'repeats';
+    var includeRepeats = key !== 'fillers';
+    var FILLER = /^(u+m+|u+h+|e+r+m*|h+m+m*|m+h?m+|a+h+e?m*)$/;
+    var norm = function (w) { return String(w || '').toLowerCase().replace(/[^a-z']/g, ''); };
+    var seen = {};
+    var out = [];
+    var prev = null;
+    list.forEach(function (raw, fallbackIndex) {
+      var w = raw || {};
+      var text = String(w.word != null ? w.word : w.text || '').trim();
+      var word = norm(text);
+      var start = Number(w.start), end = Number(w.end);
+      var index = Math.round(Number(w.index));
+      if (!isFinite(index) || index < 0) index = fallbackIndex;
+      if (!word || !isFinite(start) || !isFinite(end) || end <= start) { prev = null; return; }
+      if (includeFillers && FILLER.test(word)) {
+        if (!seen[index]) { seen[index] = true; out.push(index); }
+      } else if (includeRepeats && prev && word === prev.word && word.length >= 2 && !FILLER.test(prev.word) && (start - prev.end) < 0.4) {
+        if (!seen[prev.index]) { seen[prev.index] = true; out.push(prev.index); }
+      }
+      prev = { word: word, start: start, end: end, index: index };
+    });
+    return out.sort(function (a, b) { return a - b; });
+  }
+
+  function vsBuildTranscriptCleanupQueue(words, mode) {
+    var list = Array.isArray(words) ? words : [];
+    var fillSet = {}, repeatSet = {}, byIndex = {};
+    vsTranscriptWordAutoSelect(list, 'fillers').forEach(function (idx) { fillSet[idx] = true; });
+    vsTranscriptWordAutoSelect(list, 'repeats').forEach(function (idx) { repeatSet[idx] = true; });
+    list.forEach(function (raw, fallbackIndex) {
+      var w = raw || {};
+      var idx = Math.round(Number(w.index));
+      if (!isFinite(idx) || idx < 0) idx = fallbackIndex;
+      byIndex[idx] = w;
+    });
+    var key = String(mode || 'fillers_and_repeats').toLowerCase();
+    var indices = Object.keys(byIndex).map(function (k) { return Number(k); }).filter(function (idx) {
+      if (!isFinite(idx) || idx < 0) return false;
+      if (key === 'fillers') return !!fillSet[idx];
+      if (key === 'repeats') return !!repeatSet[idx];
+      return !!(fillSet[idx] || repeatSet[idx]);
+    }).sort(function (a, b) { return a - b; });
+    var out = [];
+    indices.forEach(function (idx) {
+      if (out.length >= 240) return;
+      var w = byIndex[idx] || {};
+      var start = Number(w.start), end = Number(w.end);
+      if (!isFinite(start) || !isFinite(end) || end <= start) return;
+      var text = String(w.text != null ? w.text : w.word || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+      if (!text) return;
+      var reason = fillSet[idx] && repeatSet[idx] ? 'filler/repeat' : (fillSet[idx] ? 'filler' : 'repeat');
+      out.push({
+        id: 'cleanup-' + idx + '-' + Math.round(start * 1000),
+        wordIndex: idx,
+        start: start,
+        end: end,
+        text: text,
+        reason: reason,
+        checked: true,
+        source: 'transcript_cleanup'
+      });
+    });
+    return out;
   }
 
   // Transcript-line selection -> one safe time range. This powers text-based
@@ -1818,7 +2150,31 @@
 
   function vsSanitizeTranscriptWords(raw, duration) {
     var dur = Math.max(0, Number(duration) || 0);
-    var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.words) ? raw.words : (raw && Array.isArray(raw.chunks) ? raw.chunks : []));
+    var list = [];
+    var pushItems = function (items, cueIndex) {
+      (Array.isArray(items) ? items : []).forEach(function (item) {
+        if (!item) return;
+        if (cueIndex != null && item.cueIndex == null && item.cue_index == null) list.push(Object.assign({}, item, { cueIndex: cueIndex }));
+        else list.push(item);
+      });
+    };
+    if (Array.isArray(raw)) pushItems(raw, null);
+    else if (raw) {
+      if (Array.isArray(raw.words)) pushItems(raw.words, null);
+      else if (Array.isArray(raw.chunks)) pushItems(raw.chunks, null);
+      else if (Array.isArray(raw.segments)) {
+        raw.segments.forEach(function (seg, idx) {
+          if (seg && Array.isArray(seg.words)) pushItems(seg.words, idx);
+          else pushItems([seg], idx);
+        });
+      } else if (Array.isArray(raw.results)) {
+        raw.results.forEach(function (res, idx) {
+          if (res && Array.isArray(res.words)) pushItems(res.words, idx);
+          else if (res && Array.isArray(res.chunks)) pushItems(res.chunks, idx);
+          else pushItems([res], idx);
+        });
+      }
+    }
     var out = [];
     var clean = function (v) { return String(v == null ? '' : v).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim(); };
     var firstNumber = function () {
@@ -4196,7 +4552,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: 'Take ' + (takes.length + 1) + ' · ' + fmtClock(dur),
         blob: blob, url: URL.createObjectURL(blob), type: blob.type || rawType,
-        duration: dur, captions: cuesLive.slice(), transcriptEdits: [], transcriptWords: [], visualDescriptions: [], chapters: [], inserts: [], visualPrompts: [], localizations: [], mediaCredits: [], finishReview: {}, zooms: [], musicBed: null, createdAt: new Date().toISOString()
+        duration: dur, captions: cuesLive.slice(), transcriptEdits: [], transcriptWords: [], transcriptCleanupQueue: [], visualDescriptions: [], chapters: [], inserts: [], visualPrompts: [], localizations: [], mediaCredits: [], finishReview: {}, zooms: [], musicBed: null, createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
@@ -4235,12 +4591,89 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
 
-  function addImportedTake(blob, displayName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits, transcriptEdits, transcriptWords) {
+  function importSummaryPanelBoxes() {
+    return ['importSummaryBox', 'editImportSummaryBox'].map(function (id) { return $(id); }).filter(Boolean);
+  }
+
+  function clearImportSummaryPanel() {
+    importSummaryPanelBoxes().forEach(function (box) {
+      box.hidden = true;
+      box.innerHTML = '';
+    });
+  }
+
+  function renderImportSummaryPanel(summary) {
+    var boxes = importSummaryPanelBoxes();
+    if (!boxes.length) return;
+    var restored = Array.isArray(summary && summary.restored) ? summary.restored : [];
+    var review = Array.isArray(summary && summary.review) ? summary.review : [];
+    var warnings = Array.isArray(summary && summary.warnings) ? summary.warnings : [];
+    if (!summary || (!restored.length && !review.length && !warnings.length)) { clearImportSummaryPanel(); return; }
+    var signals = (restored.concat(review, warnings).join(' ') + ' ' + (summary.text || '')).toLowerCase();
+    var actions = [];
+    var seenActions = {};
+    var addAction = function (label, tab, target, focusMode, showAll) {
+      if (seenActions[label]) return;
+      seenActions[label] = true;
+      actions.push({ label: label, tab: tab, target: target, focusMode: focusMode || '', showAll: !!showAll });
+    };
+    addAction('Continue editing', 'tabEdit', 'editVideo', 'record');
+    if (/caption|transcript|word timing/.test(signals)) addAction('Review transcript', 'tabEdit', 'transcriptSearch', 'caption');
+    if (/audio|music|narration|sound/.test(signals) || warnings.length) addAction('Review audio', 'tabEdit', 'volSlider', 'narrate');
+    if (/media credit|license|attribution/.test(signals)) addAction('Review credits', 'tabEdit', 'mediaCreditTitle', '', true);
+    if (/visual description|visual prompt|chapter|teaching insert|localization/.test(signals)) addAction('Review assets', 'tabEdit', 'editMapCard', 'describe');
+    addAction('Finish checklist', 'tabExport', 'finishChecklistStatus', '');
+    var renderBox = function (box) {
+      box.innerHTML = '';
+      box.hidden = false;
+      var title = document.createElement('h3');
+      title.textContent = summary.status === 'warn' ? 'Bundle reopened - review needed' : 'Bundle reopened';
+      box.appendChild(title);
+      var detail = document.createElement('p');
+      detail.textContent = summary.status === 'warn' ? 'Most editable project data was restored. Review the highlighted items before exporting.' : 'Editable project data was restored and is ready to keep working.';
+      box.appendChild(detail);
+      var row = document.createElement('div');
+      row.className = 'restore-chip-row';
+      var addChip = function (text, kind) {
+        var clean = String(text || '').replace(/\s+/g, ' ').trim();
+        if (!clean) return;
+        var chip = document.createElement('span');
+        chip.className = 'restore-chip' + (kind ? ' ' + kind : '');
+        chip.textContent = clean;
+        row.appendChild(chip);
+      };
+      restored.forEach(function (item) { addChip(item, ''); });
+      review.forEach(function (item) { addChip(item, 'review'); });
+      warnings.forEach(function (item) { addChip('Missing: ' + item, 'warn'); });
+      box.appendChild(row);
+      var actionRow = document.createElement('div');
+      actionRow.className = 'restore-action-row';
+      actions.forEach(function (action, idx) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = idx === 0 ? 'action' : 'quiet';
+        btn.textContent = action.label;
+        btn.setAttribute('data-import-action', action.label);
+        btn.addEventListener('click', function () {
+          if (action.focusMode) setEditorFocusMode(action.focusMode, action.showAll);
+          else if (action.showAll) setEditorFocusMode(EDITOR_FOCUS_DEFAULT, true);
+          focusStudioTarget(action.tab, action.target);
+          setStatus($('importStatus'), 'Opening ' + action.label.toLowerCase() + '.', 'ok');
+        });
+        actionRow.appendChild(btn);
+      });
+      box.appendChild(actionRow);
+    };
+    boxes.forEach(renderBox);
+  }
+  function addImportedTake(blob, displayName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits, transcriptEdits, transcriptWords, audioState, narration, audioClips, importSummary) {
+    clearImportSummaryPanel();
     setStatus($('importStatus'), 'Reading ' + displayName + '…');
     var url = URL.createObjectURL(blob);
     probeDuration(url).then(function (probe) {
       if (probe.error && !probe.duration) {
         URL.revokeObjectURL(url);
+        clearImportSummaryPanel();
         setStatus($('importStatus'), 'This browser can’t decode “' + displayName + '” — MP4 (H.264) and WebM work best. Try re-exporting it from its source app.', 'bad');
         return;
       }
@@ -4248,13 +4681,15 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         id: 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: '📁 ' + String(displayName || 'Imported video').slice(0, 60) + ' · ' + fmtClock(probe.duration),
         blob: blob, url: url, type: type || blob.type || 'video/webm',
-        duration: probe.duration, captions: captions || [], transcriptEdits: vsSanitizeTranscriptEdits(transcriptEdits || [], probe.duration || 0), transcriptWords: vsSanitizeTranscriptWords(transcriptWords || [], probe.duration || 0), visualDescriptions: visualDescriptions || [], chapters: chapters || [], inserts: inserts || [], visualPrompts: visualPrompts || [], localizations: (localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, probe.duration || 0); }), scenePlan: scenePlan || null, mediaCredits: vsSanitizeMediaCredits(mediaCredits || []), finishReview: {}, zooms: [], musicBed: musicBed ? vsSanitizeMusicBed(musicBed, probe.duration || 0) : null, imported: true, createdAt: new Date().toISOString()
+        duration: probe.duration, captions: captions || [], transcriptEdits: vsSanitizeTranscriptEdits(transcriptEdits || [], probe.duration || 0), transcriptWords: vsSanitizeTranscriptWords(transcriptWords || [], probe.duration || 0), transcriptCleanupQueue: [], visualDescriptions: visualDescriptions || [], chapters: chapters || [], inserts: inserts || [], visualPrompts: visualPrompts || [], localizations: (localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, probe.duration || 0); }), scenePlan: scenePlan || null, mediaCredits: vsSanitizeMediaCredits(mediaCredits || []), finishReview: {}, zooms: [], audio: cleanAudioState(audioState, probe.duration || 0), musicBed: musicBed ? vsSanitizeMusicBed(musicBed, probe.duration || 0) : null, narration: narration || null, audioClips: Array.isArray(audioClips) ? audioClips : [], imported: true, createdAt: new Date().toISOString()
       };
       takes.push(take);
       saveDraft(take);
       selectTake(take.id);
       renderTakes();
-      setStatus($('importStatus'), 'Imported (' + fmtBytes(blob.size) + (take.captions.length ? ', ' + take.captions.length + ' captions' : '') + '). Opening the editor…', 'ok');
+      var summary = importSummary && importSummary.text ? (' ' + importSummary.text) : '';
+      setStatus($('importStatus'), 'Imported (' + fmtBytes(blob.size) + (take.captions.length ? ', ' + take.captions.length + ' captions' : '') + ').' + summary + ' Opening the editor…', (importSummary && importSummary.status) || 'ok');
+      renderImportSummaryPanel(importSummary);
       announce('Video imported');
       showTab('tabEdit');
     });
@@ -4264,7 +4699,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!file) return;
     if (/\.allopack$/i.test(file.name || '')) { importBundleFile(file); return; }
     var looksVideo = /^video\//.test(file.type || '') || /\.(mp4|webm|mov|m4v|mkv)$/i.test(file.name || '');
-    if (!looksVideo) { setStatus($('importStatus'), 'That doesn’t look like a video file (' + (file.type || file.name) + ').', 'warn'); return; }
+    if (!looksVideo) { clearImportSummaryPanel(); setStatus($('importStatus'), 'That doesn’t look like a video file (' + (file.type || file.name) + ').', 'warn'); return; }
     addImportedTake(file, file.name, file.type);
   }
 
@@ -4274,7 +4709,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function importBundleFile(file) {
     file.arrayBuffer().then(function (buf) {
       var entries = vsReadZip(new Uint8Array(buf));
-      var meta = null, video = null, videoName = '', vttText = null, transcriptEditText = null, transcriptWordText = null, visualText = null, chapterText = null, insertText = null, promptText = null, localText = null, scenePlanText = null, mediaCreditText = null, musicText = null, musicData = null, musicName = '';
+      var meta = null, video = null, videoName = '', vttText = null, transcriptEditText = null, transcriptWordText = null, audioEditText = null, visualText = null, chapterText = null, insertText = null, promptText = null, localText = null, scenePlanText = null, mediaCreditText = null, musicText = null, musicData = null, musicName = '', audioMedia = {};
       entries.forEach(function (e) {
         if (/(^|\/)meta\.json$/i.test(e.name)) { try { meta = JSON.parse(new TextDecoder().decode(e.data)); } catch (_) {} }
         else if (/\.(vtt|srt)$/i.test(e.name)) { vttText = new TextDecoder().decode(e.data); }
@@ -4284,14 +4719,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         else if (/(^|\/)visual_prompts\.json$/i.test(e.name)) { promptText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)transcript_edits\.json$/i.test(e.name)) { transcriptEditText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)transcript_words\.json$/i.test(e.name)) { transcriptWordText = new TextDecoder().decode(e.data); }
+        else if (/(^|\/)audio_edits\.json$/i.test(e.name)) { audioEditText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)localizations\.json$/i.test(e.name)) { localText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)scene_plan\.json$/i.test(e.name)) { scenePlanText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)media_credits\.json$/i.test(e.name)) { mediaCreditText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)music_bed\.json$/i.test(e.name)) { musicText = new TextDecoder().decode(e.data); }
         else if (/(^|\/)music_bed\./i.test(e.name) && /\.(mp3|wav|ogg|m4a|webm)$/i.test(e.name)) { musicData = e.data; musicName = e.name; }
+        else if (/^audio\//i.test(e.name) && /\.(mp3|wav|ogg|m4a|webm)$/i.test(e.name)) { audioMedia[e.name] = e.data; }
         else if (/\.(mp4|webm|mov|m4v|mkv)$/i.test(e.name)) { video = e.data; videoName = e.name; }
       });
-      if (!video) { setStatus($('importStatus'), 'No video found inside “' + file.name + '” — is it a real .allopack bundle?', 'bad'); return; }
+      if (!video) { clearImportSummaryPanel(); setStatus($('importStatus'), 'No video found inside “' + file.name + '” — is it a real .allopack bundle?', 'bad'); return; }
       var type = /\.mp4$|\.m4v$/i.test(videoName) ? 'video/mp4' : /\.mov$/i.test(videoName) ? 'video/quicktime' : /\.mkv$/i.test(videoName) ? 'video/x-matroska' : 'video/webm';
       var captions = vttText ? vsParseVtt(vttText) : [];
       var visualDescriptions = [];
@@ -4312,6 +4749,30 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (transcriptEditText) { try { transcriptEdits = vsSanitizeTranscriptEdits(JSON.parse(transcriptEditText), (meta && meta.duration) || 0); } catch (_) {} }
       var transcriptWords = [];
       if (transcriptWordText) { try { transcriptWords = vsSanitizeTranscriptWords(JSON.parse(transcriptWordText), (meta && meta.duration) || 0); } catch (_) {} }
+      var audioState = null;
+      var narration = null;
+      var audioClips = [];
+      var bundleAudioManifest = null;
+      var missingAudioFiles = [];
+      if (audioEditText) {
+        try {
+          var audioManifest = vsBuildAudioEditManifest(Object.assign({}, JSON.parse(audioEditText), { duration: (meta && meta.duration) || 0 }));
+          bundleAudioManifest = audioManifest;
+          if (audioManifest.applyToSource) {
+            audioState = audioManifest.sourceAudio;
+            if (audioManifest.narration && audioManifest.narration.embedded && audioManifest.narration.fileName && audioMedia[audioManifest.narration.fileName]) {
+              narration = { blob: new Blob([audioMedia[audioManifest.narration.fileName]], { type: audioManifest.narration.mimeType || 'audio/webm' }), volume: audioManifest.narration.volume, fileName: audioManifest.narration.fileName, mimeType: audioManifest.narration.mimeType || 'audio/webm' };
+            } else if (audioManifest.narration && audioManifest.narration.embedded && audioManifest.narration.fileName) {
+              missingAudioFiles.push(audioManifest.narration.fileName);
+            }
+            (audioManifest.audioClips || []).forEach(function (c) {
+              if (!c || !c.embedded || !c.fileName) return;
+              if (!audioMedia[c.fileName]) { missingAudioFiles.push(c.fileName); return; }
+              audioClips.push({ id: c.id, name: c.name || c.fileName.replace(/^.*\//, ''), blob: new Blob([audioMedia[c.fileName]], { type: c.mimeType || 'audio/webm' }), t: c.start || 0, dur: c.duration || null, volume: c.volume, fileName: c.fileName, mimeType: c.mimeType || 'audio/webm' });
+            });
+          }
+        } catch (_) {}
+      }
       var musicBed = null;
       if (musicText && musicData) {
         try {
@@ -4323,7 +4784,23 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           musicBed = rawMusic;
         } catch (_) {}
       }
-      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits, transcriptEdits, transcriptWords);
+      var importSummary = vsBuildProjectImportSummary({
+        captionCount: captions.length,
+        transcriptEditCount: transcriptEdits.length,
+        transcriptWordCount: transcriptWords.length,
+        visualDescriptionCount: visualDescriptions.length,
+        chapterCount: chapters.length,
+        insertCount: inserts.length,
+        visualPromptCount: visualPrompts.length,
+        localizationCount: localizations.length,
+        mediaCreditCount: mediaCredits.length,
+        hasMusicBed: !!musicBed,
+        audioManifest: bundleAudioManifest,
+        narrationRestored: !!narration,
+        audioClipCount: audioClips.length,
+        missingAudioFiles: missingAudioFiles
+      });
+      addImportedTake(new Blob([video], { type: type }), (meta && meta.title) || videoName, type, captions, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits, transcriptEdits, transcriptWords, audioState, narration, audioClips, importSummary);
     });
   }
   $('importBtn').addEventListener('click', function () { $('importInput').click(); });
@@ -4334,6 +4811,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
     if (!f) return;
     if (/\.(vtt|srt)$/i.test(f.name || '')) importCaptionFile(f);
+    else if (/\.json$/i.test(f.name || '')) importTranscriptWordsFile(f);
     else importVideoFile(f); // routes .allopack bundles too
   });
 
@@ -4346,13 +4824,36 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     document.body.appendChild(a); a.click();
     setTimeout(function () { try { URL.revokeObjectURL(a.href); } catch (_) {} a.remove(); }, 3000);
   }
-  function projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits, transcriptEdits, transcriptWords) {
+  function audioExtFor(name, type) {
+    var n = String(name || '').toLowerCase();
+    var t = String(type || '').toLowerCase();
+    if (/\.mp3$/i.test(n) || t.indexOf('mpeg') !== -1 || t.indexOf('mp3') !== -1) return '.mp3';
+    if (/\.wav$/i.test(n) || t.indexOf('wav') !== -1) return '.wav';
+    if (/\.ogg$/i.test(n) || t.indexOf('ogg') !== -1) return '.ogg';
+    if (/\.m4a$/i.test(n) || t.indexOf('mp4') !== -1 || t.indexOf('aac') !== -1) return '.m4a';
+    return '.webm';
+  }
+  function bundleAudioFileName(kind, idx, item) {
+    var raw = String((item && (item.fileName || item.name)) || kind || 'audio').replace(/^.*[\\/]/, '');
+    var ext = audioExtFor(raw, item && (item.mimeType || item.type || (item.blob && item.blob.type)));
+    var stem = safeName(raw.replace(/\.[a-z0-9]+$/i, '')) || kind || 'audio';
+    var prefix = kind === 'narration' ? 'narration' : ('audio_clip_' + String((idx || 0) + 1).padStart(3, '0'));
+    return 'audio/' + (prefix + '_' + stem).slice(0, 90) + ext;
+  }
+  function projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits, transcriptEdits, transcriptWords, audioState, audioAppliesToSource, narration, audioClips) {
     var base = safeName(title || 'teacher_video');
     var ext = extFor(blob && blob.type);
     var safeMusic = musicBed ? vsSanitizeMusicBed(musicBed, duration || 0) : null;
     var safeCredits = vsSanitizeMediaCredits(mediaCredits || []);
     var safeTranscriptEdits = vsSanitizeTranscriptEdits(transcriptEdits || [], duration || 0);
     var safeTranscriptWords = vsSanitizeTranscriptWords(transcriptWords || [], duration || 0);
+    var shouldEmbedAudioMedia = audioAppliesToSource === true;
+    var bundledNarration = shouldEmbedAudioMedia && narration && narration.blob ? Object.assign({}, narration, { fileName: bundleAudioFileName('narration', 0, narration), mimeType: narration.mimeType || narration.type || (narration.blob && narration.blob.type) || 'audio/webm' }) : narration;
+    var bundledClips = (Array.isArray(audioClips) ? audioClips : []).map(function (clip, idx) {
+      if (!shouldEmbedAudioMedia || !clip || !clip.blob) return clip;
+      return Object.assign({}, clip, { fileName: bundleAudioFileName('audio_clip', idx, clip), mimeType: clip.mimeType || clip.type || (clip.blob && clip.blob.type) || 'audio/webm' });
+    });
+    var audioManifest = vsBuildAudioEditManifest({ duration: duration || 0, audio: audioState || null, musicBed: musicBed || null, narration: bundledNarration || null, audioClips: bundledClips || [], mediaEmbedded: shouldEmbedAudioMedia, applyToSource: audioAppliesToSource === true, bakedIntoVideo: audioAppliesToSource !== true });
     var overlayCount = (inserts || []).filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length;
     var resourceCueCount = (inserts || []).filter(function (ins) { return ins && ins.source === 'resource'; }).length;
     var ref = vsMakePackReference({
@@ -4370,6 +4871,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       hasTeachingInserts: !!(inserts && inserts.length),
       hasVisualPrompts: !!(visualPrompts && visualPrompts.length),
       hasVisualOverlays: overlayCount > 0,
+      hasAudioEdits: !!audioManifest.hasAudioEdits,
+      audioEditsApplyToSource: audioManifest.applyToSource,
+      muteSpanCount: audioManifest.muteSpanCount,
       hasMusicBed: !!(safeMusic && safeMusic.blob),
       hasMediaCredits: !!safeCredits.length,
       mediaCreditCount: safeCredits.length,
@@ -4390,6 +4894,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       entries.push({ name: 'transcript_edits.txt', data: new TextEncoder().encode(vsBuildTranscriptEditText(safeTranscriptEdits, title || 'Teacher video')) });
     }
     if (safeTranscriptWords.length) entries.push({ name: 'transcript_words.json', data: new TextEncoder().encode(JSON.stringify(safeTranscriptWords, null, 2)) });
+    if (audioManifest.hasAudioEdits) entries.push({ name: 'audio_edits.json', data: new TextEncoder().encode(JSON.stringify(audioManifest, null, 2)) });
     if (visualDescriptions && visualDescriptions.length) entries.push({ name: 'visual_descriptions.json', data: new TextEncoder().encode(JSON.stringify(visualDescriptions, null, 2)) });
     if (chapters && chapters.length) entries.push({ name: 'chapters.json', data: new TextEncoder().encode(JSON.stringify(chapters, null, 2)) });
     if (inserts && inserts.length) entries.push({ name: 'teaching_inserts.json', data: new TextEncoder().encode(JSON.stringify(inserts, null, 2)) });
@@ -4405,11 +4910,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       entries.push({ name: 'music_bed.json', data: new TextEncoder().encode(JSON.stringify(Object.assign({}, safeMusic, { blob: undefined }), null, 2)) });
       entries.push({ name: 'music_bed' + musicExt, data: null, _blob: safeMusic.blob });
     }
+    if (shouldEmbedAudioMedia && bundledNarration && bundledNarration.blob && audioManifest.narration && audioManifest.narration.fileName) {
+      entries.push({ name: audioManifest.narration.fileName, data: null, _blob: bundledNarration.blob });
+    }
+    bundledClips.forEach(function (clip) {
+      if (!shouldEmbedAudioMedia || !clip || !clip.blob || !clip.fileName) return;
+      entries.push({ name: clip.fileName, data: null, _blob: clip.blob });
+    });
+    entries.splice(1, 0, { name: 'project_readme.txt', data: new TextEncoder().encode(vsBuildProjectBundleReadme({ title: title || 'Teacher video', duration: duration || 0, entries: entries.map(function (entry) { return entry.name; }), audioManifest: audioManifest, editableSource: shouldEmbedAudioMedia, hasCaptions: !!vtt, generatedAt: ref.createdAt })) });
     return { base: base, entries: entries };
   }
-  function downloadProjectFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits, transcriptEdits, transcriptWords) {
+  function downloadProjectFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits, transcriptEdits, transcriptWords, audioState, audioAppliesToSource, narration, audioClips) {
     if (!blob) return Promise.resolve(false);
-    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits, transcriptEdits, transcriptWords);
+    var built = projectEntriesFromBlob(blob, title, duration, vtt, thumb, visualDescriptions, chapters, inserts, visualPrompts, musicBed, localizations, scenePlan, mediaCredits, transcriptEdits, transcriptWords, audioState, audioAppliesToSource, narration, audioClips);
     return Promise.all(built.entries.map(function (entry, idx) {
       if (idx === 1) return blob.arrayBuffer().then(function (buf) { entry.data = new Uint8Array(buf); });
       if (entry._blob) return entry._blob.arrayBuffer().then(function (buf) { entry.data = new Uint8Array(buf); delete entry._blob; });
@@ -4423,12 +4936,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!t) { setStatus($('projectStatus'), 'Select a take before saving a project bundle.', 'warn'); return; }
     var title = ($('titleInput') && $('titleInput').value.trim()) || t.name || 'Teacher video';
     var vtt = t.captions && t.captions.length ? vsBuildVtt(t.captions) : null;
-    downloadProjectFromBlob(t.blob, title, t.duration, vtt, null, t.visualDescriptions || [], t.chapters || [], t.inserts || [], t.visualPrompts || [], t.musicBed || null, t.localizations || [], null, t.mediaCredits || [], t.transcriptEdits || [], t.transcriptWords || []).then(function () {
+    downloadProjectFromBlob(t.blob, title, t.duration, vtt, null, t.visualDescriptions || [], t.chapters || [], t.inserts || [], t.visualPrompts || [], t.musicBed || null, t.localizations || [], null, t.mediaCredits || [], t.transcriptEdits || [], t.transcriptWords || [], t.audio || null, true, t.narration || null, t.audioClips || []).then(function () {
       setStatus($('projectStatus'), 'Project bundle saved. Drop that .allopack here later to reopen the video and captions.', 'ok');
     });
   }
   function inflateDraft(r) {
-    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], transcriptEdits: vsSanitizeTranscriptEdits(r.transcriptEdits || [], r.duration || 0), transcriptWords: vsSanitizeTranscriptWords(r.transcriptWords || [], r.duration || 0), visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), scenePlan: r.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(r.mediaCredits || []), finishReview: r.finishReview || {}, zooms: r.zooms || [], audio: r.audio || null, musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
+    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], transcriptEdits: vsSanitizeTranscriptEdits(r.transcriptEdits || [], r.duration || 0), transcriptWords: vsSanitizeTranscriptWords(r.transcriptWords || [], r.duration || 0), transcriptCleanupQueue: Array.isArray(r.transcriptCleanupQueue) ? r.transcriptCleanupQueue.slice(0, 240) : [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), scenePlan: r.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(r.mediaCredits || []), finishReview: r.finishReview || {}, zooms: r.zooms || [], audio: cleanAudioState(r.audio, r.duration || 0), musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
   }
   function openDraftRow(r) {
     var existing = takes.find(function (t) { return t.id === r.id; });
@@ -4468,7 +4981,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             actions.className = 'row';
             actions.style.justifyContent = 'flex-end';
             var open = document.createElement('button'); open.className = 'quiet'; open.textContent = 'Open'; open.addEventListener('click', function () { openDraftRow(r); });
-            var save = document.createElement('button'); save.className = 'quiet'; save.textContent = 'Save .allopack'; save.addEventListener('click', function () { downloadProjectFromBlob(r.blob, r.name, r.duration, (r.captions || []).length ? vsBuildVtt(r.captions) : null, null, r.visualDescriptions || [], r.chapters || [], r.inserts || [], r.visualPrompts || [], r.musicBed || null, r.localizations || [], null, r.mediaCredits || [], r.transcriptEdits || [], r.transcriptWords || []); });
+            var save = document.createElement('button'); save.className = 'quiet'; save.textContent = 'Save .allopack'; save.addEventListener('click', function () { downloadProjectFromBlob(r.blob, r.name, r.duration, (r.captions || []).length ? vsBuildVtt(r.captions) : null, null, r.visualDescriptions || [], r.chapters || [], r.inserts || [], r.visualPrompts || [], r.musicBed || null, r.localizations || [], null, r.mediaCredits || [], r.transcriptEdits || [], r.transcriptWords || [], r.audio || null, true, r.narration || null, r.audioClips || []); });
             var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Delete'; del.addEventListener('click', function () { deleteDraft(r.id); refreshProjectShelfSoon(); });
             actions.appendChild(open); actions.appendChild(save); actions.appendChild(del);
             row.appendChild(info); row.appendChild(actions); shelf.appendChild(row);
@@ -5455,9 +5968,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     btn.disabled = false;
   });
 
+  function cleanAudioState(raw, duration) {
+    if (!raw) return null;
+    var volume = Number(raw.volume);
+    return {
+      volume: isFinite(volume) ? Math.max(0, Math.min(2, volume)) : 1,
+      removeAll: !!raw.removeAll,
+      muteSpans: vsNormalizeMuteSpans(raw.muteSpans || [], duration || 0)
+    };
+  }
   function ensureAudio(t) {
-    if (!t.audio) t.audio = { volume: 1, removeAll: false, muteSpans: [] };
-    if (!Array.isArray(t.audio.muteSpans)) t.audio.muteSpans = [];
+    t.audio = cleanAudioState(t.audio || { volume: 1, removeAll: false, muteSpans: [] }, t.duration || 0) || { volume: 1, removeAll: false, muteSpans: [] };
     return t.audio;
   }
   function audioIsDefault(a) {
@@ -5482,14 +6003,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         inp.type = 'number'; inp.step = '0.1'; inp.min = '0'; inp.style.width = '76px';
         inp.value = (Math.round((s[field] || 0) * 10) / 10).toFixed(1);
         inp.setAttribute('aria-label', label + ' of silence ' + (idx + 1) + ' in seconds');
-        inp.addEventListener('change', function () { s[field] = Number(inp.value) || 0; saveDraft(t); });
+        inp.addEventListener('change', function () { s[field] = Number(inp.value) || 0; a.muteSpans = vsNormalizeMuteSpans(a.muteSpans, t.duration || 0); saveDraft(t); renderAudio(); });
         l.appendChild(inp); return l;
       };
       row.appendChild(mk('Silence from (s)', 'start'));
       row.appendChild(mk('to (s)', 'end'));
       var toHere = document.createElement('button'); toHere.className = 'quiet'; toHere.textContent = '⏱ End at playhead';
       toHere.setAttribute('aria-label', 'Set end of silence ' + (idx + 1) + ' to the current playhead');
-      toHere.addEventListener('click', function () { s.end = $('editVideo').currentTime || s.end; saveDraft(t); renderAudio(); });
+      toHere.addEventListener('click', function () { s.end = $('editVideo').currentTime || s.end; a.muteSpans = vsNormalizeMuteSpans(a.muteSpans, t.duration || 0); saveDraft(t); renderAudio(); });
       row.appendChild(toHere);
       var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
       del.setAttribute('aria-label', 'Delete silence ' + (idx + 1));
@@ -5535,6 +6056,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var a = ensureAudio(t);
     var cur = $('editVideo').currentTime || 0;
     a.muteSpans.push({ start: cur, end: Math.min(t.duration || cur + 2, cur + 2) });
+    a.muteSpans = vsNormalizeMuteSpans(a.muteSpans, t.duration || 0);
     saveDraft(t);
     renderAudio();
     announce('Silence added — adjust its end time or press End-at-playhead');
@@ -5864,13 +6386,15 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('applySuggestBtn').addEventListener('click', function () {
     var t = currentTake(); if (!t) return;
     var applied = 0;
+    var touchedAudio = false;
     pendingSuggestions.filter(function (s) { return s.checked; }).forEach(function (s) {
-      if (s.type === 'mute_span') { ensureAudio(t).muteSpans.push({ start: s.start, end: s.end }); applied++; }
+      if (s.type === 'mute_span') { ensureAudio(t).muteSpans.push({ start: s.start, end: s.end, source: 'ai_suggestion' }); touchedAudio = true; applied++; }
       else if (s.type === 'trim_start') { $('trimStart').value = String(Math.max(Number($('trimStart').value) || 0, s.seconds)); applied++; }
       else if (s.type === 'trim_end') { $('trimEnd').value = String(Math.max(Number($('trimEnd').value) || 0, s.seconds)); applied++; }
       else if (s.type === 'zoom') { (t.zooms = t.zooms || []).push({ id: 'z' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), t: s.t, x: s.x, y: s.y, scale: s.scale, dur: s.dur }); applied++; }
       else if (s.type === 'title') { $('titleInput').value = s.text; applied++; }
     });
+    if (touchedAudio && t.audio) t.audio.muteSpans = vsNormalizeMuteSpans(t.audio.muteSpans, t.duration || 0);
     pendingSuggestions = pendingSuggestions.filter(function (s) { return !s.checked; });
     saveDraft(t);
     renderAudio(); renderZooms(); renderSuggestions();
@@ -7106,8 +7630,59 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       showTab('tabEdit');
     });
   }
+  function importTranscriptWordsFile(file) {
+    var t = currentTake();
+    if (!t) { setStatus($('transcriptStatus'), 'Import or record a video first, then add word timings.', 'warn'); return; }
+    file.text().then(function (text) {
+      var parsed = null;
+      try { parsed = JSON.parse(text); } catch (_) {
+        setStatus($('transcriptStatus'), 'That word timing file is not valid JSON.', 'bad');
+        return;
+      }
+      var words = vsSanitizeTranscriptWords(parsed, t.duration || 0);
+      if (!words.length) {
+        setStatus($('transcriptStatus'), 'No usable word timings found. Try JSON with words, chunks, segments[].words, or start/end fields.', 'warn');
+        return;
+      }
+      t.transcriptWords = words;
+      var builtCues = [];
+      if (!(t.captions || []).length) {
+        builtCues = vsCaptionCuesFromTranscriptWords(words, t.duration || 0);
+        if (builtCues.length) t.captions = builtCues;
+      }
+      saveDraft(t);
+      renderCues();
+      renderWordRipplePanel();
+      setStatus($('transcriptStatus'), 'Imported ' + words.length + ' word timestamp' + (words.length === 1 ? '' : 's') + (builtCues.length ? (' and built ' + builtCues.length + ' caption cue' + (builtCues.length === 1 ? '' : 's')) : '') + '.', 'ok');
+      announce('Word timings imported');
+      showTab('tabEdit');
+    }).catch(function () {
+      setStatus($('transcriptStatus'), 'Could not read that word timing file.', 'bad');
+    });
+  }
+  function downloadTranscriptWordsFile() {
+    var t = currentTake();
+    if (!t) { setStatus($('transcriptStatus'), 'Select a take before downloading word timings.', 'warn'); return; }
+    var words = vsTranscriptWordsForTake(t.captions || [], t.transcriptWords || [], t.duration || 0);
+    if (!words.length) { setStatus($('transcriptStatus'), 'Add captions or import word timings before downloading word timing JSON.', 'warn'); return; }
+    var title = ($('titleInput').value.trim() || t.name || 'Teacher video');
+    var payload = {
+      type: 'alloflow_transcript_words',
+      version: 1,
+      title: title,
+      duration: t.duration || 0,
+      source: words.some(function (w) { return w && w.source === 'true'; }) ? 'true_word_timestamps' : 'estimated_from_captions',
+      generatedAt: new Date().toISOString(),
+      words: words
+    };
+    downloadBlobFile(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' }), safeName(title) + '_transcript_words.json');
+    setStatus($('transcriptStatus'), 'Word timing JSON downloaded.', 'ok');
+  }
   $('importCapBtn').addEventListener('click', function () { $('importCapInput').click(); });
   $('importCapInput').addEventListener('change', function () { if ($('importCapInput').files[0]) importCaptionFile($('importCapInput').files[0]); $('importCapInput').value = ''; });
+  $('importWordTimingsBtn').addEventListener('click', function () { $('importWordTimingsInput').click(); });
+  $('importWordTimingsInput').addEventListener('change', function () { if ($('importWordTimingsInput').files[0]) importTranscriptWordsFile($('importWordTimingsInput').files[0]); $('importWordTimingsInput').value = ''; });
+  $('downloadWordTimingsBtn').addEventListener('click', downloadTranscriptWordsFile);
 
   // ── Takes / editor ──
   function currentTake() { return (Array.isArray(takes) ? takes : []).find(function (t) { return t.id === selectedTakeId; }) || null; }
@@ -8564,6 +9139,31 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   var transcriptSelection = {};
   var wordRippleSelection = {};
+  function wordCleanupWords(t) {
+    return t ? vsTranscriptWordsForTake(t.captions || [], t.transcriptWords || [], t.duration || 0) : [];
+  }
+  function normalizeWordCleanupQueue(t, words) {
+    if (!t) return [];
+    var byIndex = {};
+    (Array.isArray(words) ? words : wordCleanupWords(t)).forEach(function (w) { if (w) byIndex[Math.round(Number(w.index))] = w; });
+    var clean = [];
+    var seen = {};
+    (Array.isArray(t.transcriptCleanupQueue) ? t.transcriptCleanupQueue : []).forEach(function (raw) {
+      if (!raw) return;
+      var idx = Math.round(Number(raw.wordIndex));
+      var w = byIndex[idx];
+      if (!w || seen[idx]) return;
+      var start = Number(raw.start), end = Number(raw.end);
+      if (!isFinite(start) || !isFinite(end) || end <= start) { start = Number(w.start); end = Number(w.end); }
+      if (!isFinite(start) || !isFinite(end) || end <= start) return;
+      var text = String(raw.text || w.text || w.word || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+      if (!text) return;
+      seen[idx] = true;
+      clean.push({ id: String(raw.id || ('cleanup-' + idx + '-' + Math.round(start * 1000))).slice(0, 80), wordIndex: idx, start: start, end: end, text: text, reason: String(raw.reason || 'cleanup').slice(0, 40), checked: raw.checked !== false, source: 'transcript_cleanup' });
+    });
+    t.transcriptCleanupQueue = clean;
+    return clean;
+  }
   function transcriptSelectedIndices(cues) {
     var max = Array.isArray(cues) ? cues.length : 0;
     return Object.keys(transcriptSelection).map(function (k) { return Number(k); }).filter(function (idx) {
@@ -8660,7 +9260,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return { take: t, words: words, allWords: allWords, hasTrueWords: hasTrueWords, selectedLineIndices: selectedLineIndices, selectedWordIndices: selectedWordIndices };
   }
   function renderWordRipplePanel() {
-    var status = $('wordRippleStatus'), list = $('wordRippleList'), cutBtn = $('wordRippleCutBtn'), clearBtn = $('wordRippleClearBtn');
+    var status = $('wordRippleStatus'), list = $('wordRippleList'), cutBtn = $('wordRippleCutBtn'), clearBtn = $('wordRippleClearBtn'), fillersBtn = $('wordRippleFillersBtn'), repeatsBtn = $('wordRippleRepeatsBtn');
     if (!status || !list) return;
     var ctx = wordRippleContext();
     list.innerHTML = '';
@@ -8668,6 +9268,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var hasSelected = !!ctx.selectedWordIndices.length;
     if (cutBtn) cutBtn.disabled = !hasSelected;
     if (clearBtn) clearBtn.disabled = !hasSelected;
+    if (fillersBtn) fillersBtn.disabled = !hasWords;
+    if (repeatsBtn) repeatsBtn.disabled = !hasWords;
     if (!ctx.take || !(ctx.take.captions || []).length) {
       status.textContent = 'Add captions before using word-level ripple editing.';
       return;
@@ -8702,6 +9304,163 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function clearWordRippleSelection() {
     wordRippleSelection = {};
     renderWordRipplePanel();
+  }
+  function selectWordRippleAuto(mode) {
+    var ctx = wordRippleContext();
+    if (!ctx.take || !ctx.selectedLineIndices.length) { setStatus($('transcriptStatus'), 'Select transcript lines before using smart word selection.', 'warn'); return; }
+    var picked = vsTranscriptWordAutoSelect(ctx.words, mode);
+    if (!picked.length) {
+      setStatus($('transcriptStatus'), mode === 'repeats' ? 'No quick repeated words found in the selected transcript lines.' : 'No filler words found in the selected transcript lines.', 'warn');
+      return;
+    }
+    picked.forEach(function (idx) { wordRippleSelection[idx] = true; });
+    renderWordRipplePanel();
+    setStatus($('transcriptStatus'), 'Selected ' + picked.length + ' word' + (picked.length === 1 ? '' : 's') + ' for review before building a ripple cut scene.', 'ok');
+  }
+  function renderWordCleanupPanel() {
+    var status = $('wordCleanupStatus'), list = $('wordCleanupList'), scanBtn = $('wordCleanupScanBtn'), approveBtn = $('wordCleanupApproveAllBtn'), clearBtn = $('wordCleanupClearBtn'), muteBtn = $('wordCleanupMuteBtn'), buildBtn = $('wordCleanupBuildBtn');
+    if (!status || !list) return;
+    var t = currentTake();
+    var words = wordCleanupWords(t);
+    var queue = normalizeWordCleanupQueue(t, words);
+    var approved = queue.filter(function (item) { return item.checked !== false; });
+    list.innerHTML = '';
+    if (scanBtn) scanBtn.disabled = !t || !words.length;
+    if (approveBtn) approveBtn.disabled = !queue.length;
+    if (clearBtn) clearBtn.disabled = !queue.length;
+    if (muteBtn) muteBtn.disabled = !approved.length;
+    if (buildBtn) buildBtn.disabled = !approved.length;
+    if (!t) {
+      status.textContent = 'Select a take before scanning the transcript cleanup queue.';
+      return;
+    }
+    if (!words.length) {
+      status.textContent = 'Add captions or import word timings before scanning for cleanup candidates.';
+      return;
+    }
+    status.textContent = queue.length ? (approved.length + ' of ' + queue.length + ' cleanup candidate' + (queue.length === 1 ? '' : 's') + ' approved for a ripple-cut scene.') : 'Scan the whole transcript for filler words and quick repeats.';
+    queue.slice(0, 120).forEach(function (item, idx) {
+      var row = document.createElement('div');
+      row.className = 'transcript-decision';
+      row.style.display = 'grid';
+      row.style.gridTemplateColumns = 'auto 72px 1fr auto';
+      row.style.gap = '8px';
+      row.style.alignItems = 'center';
+      var chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.checked = item.checked !== false;
+      chk.setAttribute('aria-label', 'Approve cleanup candidate ' + (idx + 1));
+      chk.addEventListener('change', function () {
+        item.checked = chk.checked;
+        normalizeWordCleanupQueue(t, words);
+        saveDraft(t);
+        renderWordCleanupPanel();
+      });
+      var time = document.createElement('button');
+      time.type = 'button';
+      time.className = 'quiet';
+      time.textContent = fmtClock(item.start);
+      time.setAttribute('aria-label', 'Jump to cleanup candidate near ' + fmtClock(item.start));
+      time.addEventListener('click', function () { try { $('editVideo').currentTime = Math.max(0, Number(item.start) || 0); $('editVideo').focus(); } catch (_) {} });
+      var detail = document.createElement('span');
+      detail.textContent = item.text + ' - ' + item.reason;
+      var dismiss = document.createElement('button');
+      dismiss.type = 'button';
+      dismiss.className = 'quiet';
+      dismiss.textContent = 'Dismiss';
+      dismiss.addEventListener('click', function () {
+        item.checked = false;
+        saveDraft(t);
+        renderWordCleanupPanel();
+      });
+      row.appendChild(chk);
+      row.appendChild(time);
+      row.appendChild(detail);
+      row.appendChild(dismiss);
+      list.appendChild(row);
+    });
+    if (queue.length > 120) {
+      var more = document.createElement('span');
+      more.className = 'status';
+      more.textContent = 'Showing the first 120 cleanup candidates.';
+      list.appendChild(more);
+    }
+  }
+  function scanWordCleanupQueue() {
+    var t = currentTake();
+    var words = wordCleanupWords(t);
+    if (!t || !words.length) { setStatus($('transcriptStatus'), 'Add captions or import word timings before scanning cleanup candidates.', 'warn'); return; }
+    var queue = vsBuildTranscriptCleanupQueue(words, 'fillers_and_repeats');
+    t.transcriptCleanupQueue = queue;
+    saveDraft(t);
+    renderWordCleanupPanel();
+    setStatus($('transcriptStatus'), queue.length ? ('Found ' + queue.length + ' cleanup candidate' + (queue.length === 1 ? '' : 's') + ' for review.') : 'No filler words or quick repeats found in the transcript.', queue.length ? 'ok' : 'warn');
+  }
+  function approveWordCleanupQueue() {
+    var t = currentTake();
+    if (!t) return;
+    var queue = normalizeWordCleanupQueue(t);
+    queue.forEach(function (item) { item.checked = true; });
+    saveDraft(t);
+    renderWordCleanupPanel();
+    setStatus($('transcriptStatus'), 'Approved all cleanup candidates for review.', 'ok');
+  }
+  function clearWordCleanupQueue() {
+    var t = currentTake();
+    if (!t) return;
+    t.transcriptCleanupQueue = [];
+    saveDraft(t);
+    renderWordCleanupPanel();
+    setStatus($('transcriptStatus'), 'Cleanup queue cleared.');
+  }
+  function buildWordCleanupScene() {
+    var t = currentTake();
+    var words = wordCleanupWords(t);
+    var queue = normalizeWordCleanupQueue(t, words);
+    var approved = queue.filter(function (item) { return item.checked !== false; });
+    if (!t || !approved.length) { setStatus($('transcriptStatus'), 'Approve at least one cleanup candidate before building a cleanup scene.', 'warn'); return; }
+    var selection = vsTranscriptWordSelectionRanges(words, approved.map(function (item) { return item.wordIndex; }), t.duration || 0, 0.04);
+    if (!selection || !selection.ranges.length) { setStatus($('transcriptStatus'), 'The approved cleanup words do not have usable timing.', 'warn'); return; }
+    var keep = vsBuildRippleKeepSegments(t.duration || 0, selection.ranges, 0.18);
+    if (!keep.length) { setStatus($('transcriptStatus'), 'That cleanup would remove the whole take. Approve fewer candidates.', 'warn'); return; }
+    sceneItems = keep.slice(0, 120).map(function (seg) {
+      return { id: sceneNewId('clip'), type: 'clip', takeId: t.id, start: seg.start, end: seg.end, source: 'word_cleanup', removedText: selection.text.slice(0, 180), transition: 'cut' };
+    });
+    recordTranscriptDecision(t, 'ripple_cut', { start: selection.start, end: selection.end, lineCount: selection.wordCount, indices: selection.indices, text: 'Cleanup queue: ' + selection.text });
+    t.transcriptCleanupQueue = queue.filter(function (item) { return item.checked === false; });
+    saveDraft(t);
+    saveSceneDraftSoon();
+    renderSceneBuilder();
+    renderTranscriptDecisionPanel();
+    renderWordCleanupPanel();
+    if ($('sceneStatus')) setStatus($('sceneStatus'), 'Cleanup scene built from approved transcript words. Prepare scene export to render it.', 'ok');
+    setStatus($('transcriptStatus'), 'Built a cleanup scene with ' + keep.length + ' kept clip' + (keep.length === 1 ? '' : 's') + '. Open Scene builder to preview or export it.', 'ok');
+    announce('Cleanup scene built');
+  }
+  function muteWordCleanupQueue() {
+    var t = currentTake();
+    var words = wordCleanupWords(t);
+    var queue = normalizeWordCleanupQueue(t, words);
+    var approved = queue.filter(function (item) { return item.checked !== false; });
+    if (!t || !approved.length) { setStatus($('transcriptStatus'), 'Approve at least one cleanup candidate before adding audio silences.', 'warn'); return; }
+    var selection = vsTranscriptWordSelectionRanges(words, approved.map(function (item) { return item.wordIndex; }), t.duration || 0, 0.04);
+    if (!selection || !selection.ranges.length) { setStatus($('transcriptStatus'), 'The approved cleanup words do not have usable timing for audio silences.', 'warn'); return; }
+    var audio = ensureAudio(t);
+    selection.ranges.forEach(function (r) {
+      audio.muteSpans.push({ start: r.start, end: r.end, source: 'transcript_cleanup', note: String(r.text || selection.text || '').slice(0, 120) });
+    });
+    audio.muteSpans = vsNormalizeMuteSpans(audio.muteSpans, t.duration || 0);
+    recordTranscriptDecision(t, 'silence', { start: selection.start, end: selection.end, lineCount: selection.wordCount, indices: selection.indices, text: 'Cleanup audio silences: ' + selection.text });
+    t.transcriptCleanupQueue = queue.filter(function (item) { return item.checked === false; });
+    saveDraft(t);
+    renderAudio();
+    renderEditMap();
+    renderFinishChecklist();
+    renderTranscriptDecisionPanel();
+    renderWordCleanupPanel();
+    if ($('audioPolishStatus')) setStatus($('audioPolishStatus'), 'Added ' + selection.ranges.length + ' cleanup silence span' + (selection.ranges.length === 1 ? '' : 's') + ' to the Audio panel.', 'ok');
+    setStatus($('transcriptStatus'), 'Added ' + selection.ranges.length + ' approved cleanup silence span' + (selection.ranges.length === 1 ? '' : 's') + ' without changing video timing.', 'ok');
+    announce('Cleanup silences added');
   }
   function buildWordRippleCutScene() {
     var ctx = wordRippleContext();
@@ -8749,6 +9508,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     renderTranscriptDecisionPanel();
     renderWordRipplePanel();
+    renderWordCleanupPanel();
   }
   function clearTranscriptSelection() {
     transcriptSelection = {};
@@ -8792,7 +9552,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var t = currentTake();
     var range = currentTranscriptSelectionRange(0.08);
     if (!t || !range) { updateTranscriptEditStatus(); return; }
-    ensureAudio(t).muteSpans.push({ start: range.start, end: range.end, source: 'transcript', note: range.text.slice(0, 120) });
+    var audio = ensureAudio(t);
+    audio.muteSpans.push({ start: range.start, end: range.end, source: 'transcript', note: range.text.slice(0, 120) });
+    audio.muteSpans = vsNormalizeMuteSpans(audio.muteSpans, t.duration || 0);
     recordTranscriptDecision(t, 'silence', range);
     saveDraft(t);
     renderAudio();
@@ -8996,8 +9758,15 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('transcriptChapterBtn').addEventListener('click', addChapterFromTranscriptSelection);
   $('transcriptClearBtn').addEventListener('click', clearTranscriptSelection);
   $('transcriptCopyPlanBtn').addEventListener('click', copyTranscriptEditPlan);
+  $('wordRippleFillersBtn').addEventListener('click', function () { selectWordRippleAuto('fillers'); });
+  $('wordRippleRepeatsBtn').addEventListener('click', function () { selectWordRippleAuto('repeats'); });
   $('wordRippleCutBtn').addEventListener('click', buildWordRippleCutScene);
   $('wordRippleClearBtn').addEventListener('click', clearWordRippleSelection);
+  $('wordCleanupScanBtn').addEventListener('click', scanWordCleanupQueue);
+  $('wordCleanupApproveAllBtn').addEventListener('click', approveWordCleanupQueue);
+  $('wordCleanupClearBtn').addEventListener('click', clearWordCleanupQueue);
+  $('wordCleanupMuteBtn').addEventListener('click', muteWordCleanupQueue);
+  $('wordCleanupBuildBtn').addEventListener('click', buildWordCleanupScene);
   $('cleanCaptionBtn').addEventListener('click', function () {
     var t = currentTake();
     if (!t || !t.captions.length) { setStatus($('autoCapStatus'), 'Add captions before cleaning them.', 'warn'); return; }
@@ -9684,6 +10453,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var mediaCredits = vsSanitizeMediaCredits((take && take.mediaCredits) || []);
     var transcriptEdits = vsSanitizeTranscriptEdits((take && take.transcriptEdits) || [], (take && take.duration) || 0);
     var transcriptWords = vsSanitizeTranscriptWords((take && take.transcriptWords) || [], (take && take.duration) || 0);
+    var audioManifest = vsBuildAudioEditManifest({ duration: (take && take.duration) || (exported && exported.duration) || 0, audio: take && take.audio, musicBed: musicBed, narration: take && take.narration, audioClips: take && take.audioClips, applyToSource: false, bakedIntoVideo: !!exported });
     var overlayCount = inserts.filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length;
     var resourceCueCount = inserts.filter(function (ins) { return ins && ins.source === 'resource'; }).length;
     var flags = privacyFlagsForCues(cues);
@@ -9696,6 +10466,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       transcriptEditCount: transcriptEdits.length,
       hasTranscriptWords: !!transcriptWords.length,
       transcriptWordCount: transcriptWords.length,
+      hasAudioEdits: !!audioManifest.hasAudioEdits,
+      audioEditsApplyToSource: audioManifest.applyToSource,
+      muteSpanCount: audioManifest.muteSpanCount,
       hasVisualDescriptions: !!descriptions.length,
       visualDescriptionCount: descriptions.length,
       chapterCount: chapters.length,
@@ -9722,7 +10495,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       '',
       'Video title: ' + title,
       'Generated locally: ' + meta.generatedAt,
-      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + (transcriptEdits.length ? ', transcript edit decisions' : '') + (transcriptWords.length ? ', word-level transcript timestamps' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (overlayCount ? ', visual overlays' : '') + (musicBed ? ', music bed metadata' : '') + (mediaCredits.length ? ', media credits' : '') + (visualPrompts.length ? ', visual prompts' : '') + (localizations.length ? ', localization drafts' : '') + ', and metadata.',
+      'Includes transcript' + (vtt ? ', WebVTT captions' : '') + (transcriptEdits.length ? ', transcript edit decisions' : '') + (transcriptWords.length ? ', word-level transcript timestamps' : '') + (audioManifest.hasAudioEdits ? ', audio edit manifest' : '') + (descriptions.length ? ', visual descriptions' : '') + (chapters.length ? ', chapters' : '') + (inserts.length ? ', teaching inserts' : '') + (overlayCount ? ', visual overlays' : '') + (musicBed ? ', music bed metadata' : '') + (mediaCredits.length ? ', media credits' : '') + (visualPrompts.length ? ', visual prompts' : '') + (localizations.length ? ', localization drafts' : '') + ', and metadata.',
       'Video bytes are not included in this packet. Download the video file or project bundle separately.',
       '',
       flags.length ? ('Teacher review: ' + flags.length + ' possible private detail(s) were flagged. Review transcript and captions before sharing.') : 'Teacher review: no obvious private details were flagged. Please still review before sharing.'
@@ -9739,6 +10512,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       entries.push({ name: 'transcript_edits.json', data: new TextEncoder().encode(JSON.stringify(transcriptEdits, null, 2)) });
     }
     if (transcriptWords.length) entries.push({ name: 'transcript_words.json', data: new TextEncoder().encode(JSON.stringify(transcriptWords, null, 2)) });
+    if (audioManifest.hasAudioEdits) entries.push({ name: 'audio_edits.json', data: new TextEncoder().encode(JSON.stringify(audioManifest, null, 2)) });
     if (descriptions.length) {
       entries.push({ name: 'visual_descriptions.txt', data: new TextEncoder().encode(visualDescriptionsText(descriptions, title)) });
       entries.push({ name: 'visual_descriptions.json', data: new TextEncoder().encode(JSON.stringify(descriptions, null, 2)) });
@@ -9854,7 +10628,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (!lastExport) { setStatus($('resultStatus'), 'Export the video first, then save a project bundle.', 'warn'); return; }
     var take = sceneTakeForExport(lastExport);
     var bundleVtt = lastExport.vtt || (take && take.captions && take.captions.length ? vsBuildVtt(take.captions) : null);
-    downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, bundleVtt, lastExport.thumb || null, take ? (take.visualDescriptions || []) : [], take ? (take.chapters || []) : [], take ? (take.inserts || []) : [], take ? (take.visualPrompts || []) : [], take ? (take.musicBed || null) : null, take ? (take.localizations || []) : [], lastExport.isScene ? (lastExport.scenePlan || scenePlanSnapshot()) : null, take ? (take.mediaCredits || []) : [], take ? (take.transcriptEdits || []) : [], take ? (take.transcriptWords || []) : []).then(function () {
+    downloadProjectFromBlob(lastExport.blob, lastExport.title, lastExport.duration, bundleVtt, lastExport.thumb || null, take ? (take.visualDescriptions || []) : [], take ? (take.chapters || []) : [], take ? (take.inserts || []) : [], take ? (take.visualPrompts || []) : [], take ? (take.musicBed || null) : null, take ? (take.localizations || []) : [], lastExport.isScene ? (lastExport.scenePlan || scenePlanSnapshot()) : null, take ? (take.mediaCredits || []) : [], take ? (take.transcriptEdits || []) : [], take ? (take.transcriptWords || []) : [], take ? (take.audio || null) : null, false, take ? (take.narration || null) : null, take ? (take.audioClips || []) : []).then(function () {
       setStatus($('resultStatus'), lastExport.isScene ? 'Project bundle downloaded. It will reopen the assembled scene as one editable take.' : 'Project bundle downloaded. Drop the .allopack into Video Studio later to reopen it.', 'ok');
     });
   });
@@ -9882,7 +10656,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var take = sceneTakeForExport(lastExport);
       var safeMusic = take && take.musicBed ? vsSanitizeMusicBed(take.musicBed, take.duration || 0) : null;
       var sendVtt = lastExport.vtt || (take && take.captions && take.captions.length ? vsBuildVtt(take.captions) : null);
-      if (!postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, outputFormat: lastExport.outputFormat || null, outputFraming: lastExport.outputFraming || null, outputContainer: lastExport.outputContainer || null, transcriptEdits: take ? vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0) : [], transcriptWords: take ? vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0) : [], visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], mediaCredits: take ? vsSanitizeMediaCredits(take.mediaCredits || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } })) {
+      var sendAudioEdits = take ? vsBuildAudioEditManifest({ duration: take.duration || lastExport.duration || 0, audio: take.audio || null, musicBed: safeMusic, narration: take.narration || null, audioClips: take.audioClips || [], applyToSource: false, bakedIntoVideo: true }) : null;
+      if (!postToOpener({ type: 'allostudio-video', payload: { blob: lastExport.blob, vtt: sendVtt, title: lastExport.title, duration: lastExport.duration, thumb: thumb, outputFormat: lastExport.outputFormat || null, outputFraming: lastExport.outputFraming || null, outputContainer: lastExport.outputContainer || null, transcriptEdits: take ? vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0) : [], transcriptWords: take ? vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0) : [], audioEdits: sendAudioEdits && sendAudioEdits.hasAudioEdits ? sendAudioEdits : null, visualDescriptions: take ? (take.visualDescriptions || []) : [], chapters: take ? (take.chapters || []) : [], inserts: take ? (take.inserts || []) : [], visualPrompts: take ? (take.visualPrompts || []) : [], localizations: take ? (take.localizations || []) : [], mediaCredits: take ? vsSanitizeMediaCredits(take.mediaCredits || []) : [], musicBed: safeMusic ? Object.assign({}, safeMusic, { blob: null }) : null } })) {
         window.removeEventListener('message', onAck);
         setStatus($('resultStatus'), 'AlloFlow bridge is not connected - use Download, or reopen Video Studio from AlloFlow and press Send again.', 'warn');
         return;
@@ -9998,7 +10773,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     withDb(function (db) {
       try {
         var tx = db.transaction(STORE, 'readwrite');
-        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, transcriptEdits: vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0), transcriptWords: vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0), visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(take.mediaCredits || []), finishReview: take.finishReview || {}, zooms: take.zooms || [], audio: take.audio || null, musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
+        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, transcriptEdits: vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0), transcriptWords: vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0), transcriptCleanupQueue: normalizeWordCleanupQueue(take, wordCleanupWords(take)), visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(take.mediaCredits || []), finishReview: take.finishReview || {}, zooms: take.zooms || [], audio: cleanAudioState(take.audio, take.duration || 0), musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
         tx.oncomplete = refreshProjectShelfSoon;
       } catch (_) {}
     });

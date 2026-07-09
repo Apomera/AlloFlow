@@ -99,17 +99,17 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, setFlashcardDic
   var body = [];
   if (verifiedDef) body.push(React.createElement('p', {
     key: 'def',
-    className: 'text-sm text-blue-50 leading-relaxed'
+    className: 'text-sm text-white leading-relaxed'
   }, pos ? React.createElement('span', {
-    className: 'font-semibold text-blue-200 mr-1'
+    className: 'font-semibold text-white mr-1'
   }, pos) : null, verifiedDef));
   if (example) body.push(React.createElement('p', {
     key: 'ex',
-    className: 'text-xs text-blue-100/90 leading-relaxed italic'
+    className: 'text-xs text-blue-50 leading-relaxed italic'
   }, '"' + example + '"'));
   if (syns.length) body.push(React.createElement('p', {
     key: 'sy',
-    className: 'text-xs text-blue-100 mt-1'
+    className: 'text-xs text-blue-50 mt-1'
   }, (t('glossary.popups.similar') || 'Similar') + ': ' + syns.join(', ')));
   if (audio) body.push(React.createElement('button', {
     key: 'au',
@@ -137,12 +137,16 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, setFlashcardDic
     },
     onMouseDown: stopCardControlEvent,
     onKeyDown: stopCardControlEvent,
-    className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-900 bg-blue-50 hover:bg-white border border-blue-200 rounded-full px-2.5 py-1' + (isAudioPlaying ? ' ring-2 ring-white bg-white' : ''),
+    className: 'mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-900 bg-blue-50 hover:bg-white border border-blue-200 rounded-full px-2.5 py-1 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-600' + (isAudioPlaying ? ' ring-2 ring-white bg-white shadow-lg shadow-blue-950/20' : ''),
     'aria-label': t('glossary.popups.hear_real') || 'Hear a real recording'
-  }, isAudioPlaying ? 'Playing...' : t('glossary.popups.real_audio') || 'Recording'));
+  }, React.createElement(Volume2, {
+    size: 12,
+    className: isAudioPlaying ? 'animate-pulse motion-reduce:animate-none' : '',
+    'aria-hidden': 'true'
+  }), React.createElement('span', null, isAudioPlaying ? 'Playing...' : t('glossary.popups.real_audio') || 'Recording')));
   body.push(React.createElement('details', {
     key: 'src',
-    className: 'pt-2 mt-2 border-t border-blue-300/40 text-[11px] leading-snug text-blue-100/90',
+    className: 'pt-2 mt-2 border-t border-blue-300/40 text-[11px] leading-snug text-blue-50',
     onClick: stopCardControlEvent,
     onMouseDown: stopCardControlEvent,
     onKeyDown: stopCardControlEvent
@@ -159,17 +163,17 @@ function renderFlashcardDictBack(item, t, flashcardDictAudioKey, setFlashcardDic
     },
     onMouseDown: stopCardControlEvent,
     onKeyDown: stopCardControlEvent,
-    className: 'inline-flex mt-1 font-bold text-white underline decoration-blue-200 underline-offset-2 hover:text-blue-100',
+    className: 'inline-flex mt-1 font-bold text-white underline decoration-blue-200 underline-offset-2 hover:text-blue-50',
     'aria-label': 'Open dictionary source for ' + sourceWord
   }, 'Open source') : null));
   return React.createElement('details', {
     open: true,
-    className: 'mt-3 rounded-xl bg-white/10 border border-blue-300/40 px-4 py-3 w-full text-left shadow-inner',
+    className: 'mt-3 rounded-xl bg-white/10 border border-blue-300/40 px-4 py-3 w-full text-left shadow-inner ring-1 ring-white/10',
     onClick: stopCardControlEvent,
     onMouseDown: stopCardControlEvent,
     onKeyDown: stopCardControlEvent
   }, React.createElement('summary', {
-    className: 'text-xs font-bold text-blue-100 uppercase cursor-pointer select-none tracking-wide'
+    className: 'text-xs font-bold text-white uppercase cursor-pointer select-none tracking-wide'
   }, 'Verified dictionary'), React.createElement('div', {
     className: 'mt-2 space-y-1.5'
   }, body));
@@ -365,7 +369,7 @@ function GlossaryView(props) {
   var nextFlashcard = props.nextFlashcard;
   var stopPlayback = props.stopPlayback;
   var launchInteractiveFlashcards = props.launchInteractiveFlashcards;
-  var closeInteractiveFlashcards = props.closeInteractiveFlashcards;
+  var closeInteractiveFlashcardsProp = props.closeInteractiveFlashcards;
   var closeMemory = props.closeMemory;
   var closeCrossword = props.closeCrossword;
   var closeMatching = props.closeMatching;
@@ -408,22 +412,50 @@ function GlossaryView(props) {
   var flashcardRetryQueueState = React.useState([]);
   var flashcardRetryQueue = flashcardRetryQueueState[0];
   var setFlashcardRetryQueue = flashcardRetryQueueState[1];
-  var currentFlashcardItem = Array.isArray(generatedContent?.data) ? generatedContent.data[flashcardIndex] : null;
-  var currentFlashcardKey = currentFlashcardItem ? String(currentFlashcardItem.term || flashcardIndex) : '';
+  var flashcardEditDrawerState = React.useState(false);
+  var isFlashcardEditDrawerOpen = flashcardEditDrawerState[0];
+  var setIsFlashcardEditDrawerOpen = flashcardEditDrawerState[1];
+  var flashcardEditButtonRef = React.useRef(null);
+  var flashcardEditDrawerRef = React.useRef(null);
+  var flashcardEditFirstFieldRef = React.useRef(null);
+  var flashcardDeck = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+  function getFlashcardReviewKey(item, idx) {
+    return String(item && item.term ? item.term : idx);
+  }
+  var currentFlashcardItem = flashcardDeck[flashcardIndex] || null;
+  var currentFlashcardKey = currentFlashcardItem ? getFlashcardReviewKey(currentFlashcardItem, flashcardIndex) : '';
+  var flashcardTransitionKey = String(flashcardMode || 'deck') + '-' + String(flashcardIndex);
   var currentFlashcardConfidence = currentFlashcardKey ? flashcardReviewState[currentFlashcardKey] : '';
-  var reviewKeys = Object.keys(flashcardReviewState || {});
+  var reviewKeys = flashcardDeck.map(function (item, idx) {
+    return getFlashcardReviewKey(item, idx);
+  });
   var knownCount = reviewKeys.filter(function (key) {
     return flashcardReviewState[key] === 'known';
   }).length;
   var learningCount = reviewKeys.filter(function (key) {
     return flashcardReviewState[key] === 'learning';
   }).length;
+  var flashcardStatusText = currentFlashcardItem ? 'Card ' + (flashcardIndex + 1) + ' of ' + flashcardDeck.length + ': ' + (currentFlashcardItem.term || 'flashcard') + '. ' + (isFlashcardFlipped ? 'Definition side.' : 'Term side.') + ' ' + (currentFlashcardConfidence === 'known' ? 'Marked known.' : currentFlashcardConfidence === 'learning' ? 'Marked still learning.' : 'Not reviewed yet.') : '';
+  React.useEffect(function () {
+    if (!isFlashcardEditDrawerOpen) return;
+    var timer = setTimeout(function () {
+      try {
+        if (flashcardEditFirstFieldRef.current && typeof flashcardEditFirstFieldRef.current.focus === 'function') {
+          flashcardEditFirstFieldRef.current.focus();
+        }
+      } catch (_e) {}
+    }, 0);
+    return function () {
+      clearTimeout(timer);
+    };
+  }, [isFlashcardEditDrawerOpen, currentFlashcardKey]);
   function stopFlashcardControl(e) {
     if (!e) return;
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
   }
   function moveToFlashcardIndex(idx) {
+    setIsFlashcardEditDrawerOpen(false);
     setIsFlashcardFlipped(false);
     setFlashcardFeedback(null);
     setTimeout(function () {
@@ -484,7 +516,7 @@ function GlossaryView(props) {
   }
   function goToNextReviewCard(e, queueOverride) {
     stopFlashcardControl(e);
-    var total = Array.isArray(generatedContent?.data) ? generatedContent.data.length : 0;
+    var total = flashcardDeck.length;
     if (!total) return;
     var picked = chooseNextFlashcard(queueOverride || flashcardRetryQueue, total);
     setFlashcardRetryQueue(picked.queue);
@@ -493,7 +525,7 @@ function GlossaryView(props) {
   function markFlashcardConfidence(status, e) {
     stopFlashcardControl(e);
     if (!currentFlashcardKey) return;
-    var total = Array.isArray(generatedContent?.data) ? generatedContent.data.length : 0;
+    var total = flashcardDeck.length;
     setFlashcardReviewState(function (prev) {
       var next = Object.assign({}, prev);
       next[currentFlashcardKey] = status;
@@ -504,11 +536,11 @@ function GlossaryView(props) {
     });
     if (status === 'learning' && total > 1) queue.push({
       index: flashcardIndex,
-      dueAfter: Math.min(2, total - 1)
+      dueAfter: flashcardIndex < total - 1 ? Math.min(2, total - 1) : 0
     });
     var picked = chooseNextFlashcard(queue, total);
     setFlashcardRetryQueue(picked.queue);
-    if (picked.nextIndex !== flashcardIndex) moveToFlashcardIndex(picked.nextIndex);
+    if (picked.nextIndex !== flashcardIndex || picked.reset) moveToFlashcardIndex(picked.nextIndex);
   }
   function handleFlashcardFlipButton(e) {
     stopFlashcardControl(e);
@@ -517,9 +549,281 @@ function GlossaryView(props) {
   function handleEditCurrentFlashcard(e) {
     stopFlashcardControl(e);
     if (!currentFlashcardItem) return;
+    setIsFlashcardEditDrawerOpen(true);
+  }
+  function handleCloseFlashcardEditDrawer(e) {
+    stopFlashcardControl(e);
+    setIsFlashcardEditDrawerOpen(false);
+    setTimeout(function () {
+      try {
+        if (flashcardEditButtonRef.current && typeof flashcardEditButtonRef.current.focus === 'function') {
+          flashcardEditButtonRef.current.focus();
+        }
+      } catch (_e) {}
+    }, 0);
+  }
+  function handleFlashcardEditDrawerKeyDown(e) {
+    if (!e) return;
+    if (e.key === 'Escape') {
+      handleCloseFlashcardEditDrawer(e);
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    var drawer = flashcardEditDrawerRef.current;
+    if (!drawer || typeof drawer.querySelectorAll !== 'function') return;
+    var focusable = Array.prototype.slice.call(drawer.querySelectorAll('button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+      return el && el.offsetParent !== null;
+    });
+    if (!focusable.length) return;
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+  function handleOpenCurrentFlashcardInGlossary(e) {
+    stopFlashcardControl(e);
+    setIsFlashcardEditDrawerOpen(false);
     setIsInteractiveFlashcards(false);
     if (!isEditingGlossary) setIsEditingGlossary(true);
     if (currentFlashcardItem.term && typeof setGlossarySearchTerm === 'function') setGlossarySearchTerm(currentFlashcardItem.term);
+  }
+  function closeInteractiveFlashcards(e) {
+    handleCloseInteractiveFlashcards(e);
+  }
+  function handleCloseInteractiveFlashcards(e) {
+    stopFlashcardControl(e);
+    setIsFlashcardEditDrawerOpen(false);
+    if (typeof closeInteractiveFlashcardsProp === 'function') closeInteractiveFlashcardsProp();
+  }
+  function handleProgressDotClick(idx, e) {
+    stopFlashcardControl(e);
+    if (idx === flashcardIndex) return;
+    moveToFlashcardIndex(idx);
+  }
+  function renderFlashcardProgressDots() {
+    if (!flashcardDeck.length) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 pr-1",
+      "aria-label": "Flashcard progress"
+    }, flashcardDeck.map(function (item, idx) {
+      var key = getFlashcardReviewKey(item, idx);
+      var status = flashcardReviewState[key];
+      var isCurrent = idx === flashcardIndex;
+      var statusLabel = status === 'known' ? 'known' : status === 'learning' ? 'still learning' : 'not reviewed';
+      var fillClass = status === 'known' ? 'bg-emerald-400 text-emerald-950' : status === 'learning' ? 'bg-amber-400 text-amber-950' : 'bg-white/35 text-white';
+      return /*#__PURE__*/React.createElement("button", {
+        key: key + '-' + idx,
+        type: "button",
+        onClick: function (e) {
+          handleProgressDotClick(idx, e);
+        },
+        className: `h-9 w-9 rounded-full shrink-0 flex items-center justify-center transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isCurrent ? 'bg-white/15 ring-2 ring-white shadow-lg' : 'hover:bg-white/15'}`,
+        "aria-current": isCurrent ? 'step' : undefined,
+        "aria-label": `Go to flashcard ${idx + 1}: ${item?.term || 'card'}, ${statusLabel}`,
+        title: `${item?.term || `Card ${idx + 1}`} - ${statusLabel}`
+      }, /*#__PURE__*/React.createElement("span", {
+        className: `h-4 w-4 rounded-full flex items-center justify-center ${fillClass}`
+      }, status === 'known' ? /*#__PURE__*/React.createElement(CheckCircle2, {
+        size: 11,
+        "aria-hidden": "true"
+      }) : status === 'learning' ? /*#__PURE__*/React.createElement(RefreshCw, {
+        size: 10,
+        "aria-hidden": "true"
+      }) : null));
+    }));
+  }
+  function renderFlashcardActionBar() {
+    var audioActive = isPlaying && playingContentId === 'flashcard-sequence';
+    var nextDisabled = flashcardIndex === flashcardDeck.length - 1 && flashcardRetryQueue.length === 0;
+    var focusClass = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950';
+    return /*#__PURE__*/React.createElement("div", {
+      className: "sticky bottom-0 z-40 -mx-4 mt-5 border-t border-white/10 bg-slate-950/90 backdrop-blur-xl px-3 py-3 shadow-2xl pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mx-auto max-w-4xl space-y-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap items-center justify-center gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-pressed": currentFlashcardConfidence === 'known',
+      onClick: e => markFlashcardConfidence('known', e),
+      className: `min-h-[44px] inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border transition-all motion-reduce:transition-none ${focusClass} ${currentFlashcardConfidence === 'known' ? 'bg-emerald-300 text-emerald-950 border-emerald-100 shadow-lg' : 'bg-white/10 text-emerald-100 border-emerald-400/40 hover:bg-emerald-500/20'}`
+    }, /*#__PURE__*/React.createElement(CheckCircle2, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " I know it"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-pressed": currentFlashcardConfidence === 'learning',
+      onClick: e => markFlashcardConfidence('learning', e),
+      className: `min-h-[44px] inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border transition-all motion-reduce:transition-none ${focusClass} ${currentFlashcardConfidence === 'learning' ? 'bg-amber-400 text-slate-900 border-amber-200 shadow-lg' : 'bg-white/10 text-amber-100 border-amber-400/40 hover:bg-amber-500/20'}`
+    }, /*#__PURE__*/React.createElement(RefreshCw, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " Still learning"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-pressed": isFlashcardFlipped,
+      onClick: handleFlashcardFlipButton,
+      className: `min-h-[44px] inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all motion-reduce:transition-none ${focusClass}`
+    }, /*#__PURE__*/React.createElement(RefreshCw, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " ", isFlashcardFlipped ? 'Show term' : 'Show definition'), isTeacherMode && flashcardMode === 'standard' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      ref: flashcardEditButtonRef,
+      "aria-expanded": isFlashcardEditDrawerOpen,
+      "aria-controls": "flashcard-edit-drawer",
+      onClick: handleEditCurrentFlashcard,
+      className: `min-h-[44px] inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold bg-blue-50 text-blue-900 border border-blue-200 hover:bg-white transition-all motion-reduce:transition-none ${focusClass}`
+    }, /*#__PURE__*/React.createElement(Pencil, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " Edit term")), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: prevFlashcard,
+      disabled: flashcardIndex === 0,
+      className: `min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed ${focusClass}`,
+      "aria-label": t('common.prev_flashcard'),
+      "data-help-key": "flashcard_prev"
+    }, /*#__PURE__*/React.createElement(ArrowDown, {
+      className: "rotate-90",
+      size: 20,
+      "aria-hidden": "true"
+    }), " ", /*#__PURE__*/React.createElement("span", {
+      className: "hidden sm:inline"
+    }, t('flashcards.previous'))), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: handleCardAudioSequence,
+      className: `min-h-[52px] px-6 sm:px-8 py-3 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.35)] hover:scale-105 motion-reduce:hover:scale-100 transition-all motion-reduce:transition-none flex items-center gap-3 font-bold text-base sm:text-lg ${focusClass} ${audioActive ? 'bg-red-600 hover:bg-red-500 text-white ring-4 ring-red-300/30' : 'bg-yellow-500 hover:bg-yellow-400 text-slate-900'}`,
+      title: t('common.play_audio_sequence'),
+      "aria-label": audioActive ? t('flashcards.stop') : t('flashcards.play_card'),
+      "data-help-key": "flashcard_play_sequence"
+    }, audioActive ? /*#__PURE__*/React.createElement(StopCircle, {
+      size: 24,
+      className: "fill-current animate-pulse motion-reduce:animate-none",
+      "aria-hidden": "true"
+    }) : /*#__PURE__*/React.createElement(Volume2, {
+      size: 24,
+      className: "fill-current",
+      "aria-hidden": "true"
+    }), audioActive ? t('flashcards.stop') : t('flashcards.play_card')), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: e => goToNextReviewCard(e),
+      disabled: nextDisabled,
+      className: `min-h-[44px] flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed ${focusClass}`,
+      "aria-label": t('common.next_flashcard'),
+      "data-help-key": "flashcard_next"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "hidden sm:inline"
+    }, t('flashcards.next')), " ", /*#__PURE__*/React.createElement(ArrowDown, {
+      className: "-rotate-90",
+      size: 20,
+      "aria-hidden": "true"
+    })))));
+  }
+  function renderFlashcardEditDrawer() {
+    if (!isTeacherMode || !isFlashcardEditDrawerOpen || !currentFlashcardItem) return null;
+    var fieldClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 resize-y';
+    var drawerButtonFocus = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2';
+    return /*#__PURE__*/React.createElement("div", {
+      className: "fixed inset-0 z-[130] pointer-events-none"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      tabIndex: -1,
+      className: "absolute inset-0 bg-slate-950/40 pointer-events-auto",
+      onClick: handleCloseFlashcardEditDrawer,
+      "aria-label": "Close flashcard editor"
+    }), /*#__PURE__*/React.createElement("aside", {
+      id: "flashcard-edit-drawer",
+      ref: flashcardEditDrawerRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "flashcard-edit-title",
+      onKeyDown: handleFlashcardEditDrawerKeyDown,
+      className: "absolute right-0 top-0 h-full w-full max-w-md bg-white text-slate-800 shadow-2xl pointer-events-auto p-5 overflow-y-auto animate-in slide-in-from-right-8 duration-200 motion-reduce:animate-none motion-reduce:transition-none",
+      onClick: e => e.stopPropagation(),
+      onMouseDown: e => e.stopPropagation()
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start justify-between gap-3 mb-5"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+      className: "text-xs font-black uppercase tracking-widest text-blue-700"
+    }, "Teacher edit"), /*#__PURE__*/React.createElement("h3", {
+      id: "flashcard-edit-title",
+      className: "text-xl font-black text-slate-900"
+    }, "Edit flashcard")), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: handleCloseFlashcardEditDrawer,
+      className: `p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 ${drawerButtonFocus}`,
+      "aria-label": t('common.close')
+    }, /*#__PURE__*/React.createElement(X, {
+      size: 20,
+      "aria-hidden": "true"
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "block"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "block text-xs font-black uppercase tracking-widest text-slate-600 mb-1"
+    }, "Term"), /*#__PURE__*/React.createElement("textarea", {
+      ref: flashcardEditFirstFieldRef,
+      value: currentFlashcardItem.term || '',
+      onChange: e => handleGlossaryChange(flashcardIndex, 'term', e.target.value),
+      rows: getRows(currentFlashcardItem.term, 24),
+      className: `${fieldClass} text-base font-bold`
+    })), /*#__PURE__*/React.createElement("label", {
+      className: "block"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "block text-xs font-black uppercase tracking-widest text-slate-600 mb-1"
+    }, "Definition"), /*#__PURE__*/React.createElement("textarea", {
+      value: currentFlashcardItem.def || '',
+      onChange: e => handleGlossaryChange(flashcardIndex, 'def', e.target.value),
+      rows: getRows(currentFlashcardItem.def, 42),
+      className: `${fieldClass} text-sm leading-relaxed`
+    })), /*#__PURE__*/React.createElement("label", {
+      className: "block"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "block text-xs font-black uppercase tracking-widest text-slate-600 mb-1"
+    }, "Tier"), /*#__PURE__*/React.createElement("select", {
+      value: currentFlashcardItem.tier || '',
+      onChange: e => handleGlossaryChange(flashcardIndex, 'tier', e.target.value),
+      className: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 bg-white"
+    }, /*#__PURE__*/React.createElement("option", {
+      value: ""
+    }, "No tier"), /*#__PURE__*/React.createElement("option", {
+      value: "Academic"
+    }, t('glossary.edit_tier_academic')), /*#__PURE__*/React.createElement("option", {
+      value: "Domain-Specific"
+    }, t('glossary.edit_tier_domain')))), /*#__PURE__*/React.createElement("label", {
+      className: "block"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "block text-xs font-black uppercase tracking-widest text-slate-600 mb-1"
+    }, "Word roots"), /*#__PURE__*/React.createElement("textarea", {
+      value: currentFlashcardItem.etymology || '',
+      onChange: e => handleGlossaryChange(flashcardIndex, 'etymology', e.target.value),
+      rows: getRows(currentFlashcardItem.etymology, 42),
+      className: `${fieldClass} text-sm leading-relaxed`
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 flex flex-col sm:flex-row gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: handleCloseFlashcardEditDrawer,
+      className: `min-h-[44px] flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-blue-700 text-white px-4 py-2.5 text-sm font-bold hover:bg-blue-800 ${drawerButtonFocus}`
+    }, /*#__PURE__*/React.createElement(CheckCircle2, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " Done"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: handleOpenCurrentFlashcardInGlossary,
+      className: `min-h-[44px] flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 text-slate-800 px-4 py-2.5 text-sm font-bold hover:bg-slate-200 ${drawerButtonFocus}`
+    }, /*#__PURE__*/React.createElement(Search, {
+      size: 16,
+      "aria-hidden": "true"
+    }), " Full table"))));
   }
   // Wrapped in a Fragment so the phonics popup can render as a sibling of
   // the main content. The popup state (phonicsData) lives at the host level
@@ -720,23 +1024,35 @@ function GlossaryView(props) {
     size: 14,
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement("span", null, "📊"), isRunningHealthCheck ? 'Analyzing...' : glossaryHealthCheck ? 'Re-run Health Check' : 'Health Check')))), isInteractiveFlashcards && Array.isArray(generatedContent?.data) && generatedContent.data.length > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start pt-20 sm:pt-24 p-4 animate-in fade-in duration-300 overflow-auto"
+    className: "fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-start pt-20 sm:pt-24 p-4 animate-in fade-in duration-300 motion-reduce:animate-none motion-reduce:transition-none overflow-auto"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: closeInteractiveFlashcards,
-    className: "absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50",
+    className: "absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
-    size: 32
+    size: 32,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("div", {
+    id: "flashcard-live-status",
+    className: "sr-only",
+    "aria-live": "polite",
+    "aria-atomic": "true"
+  }, flashcardStatusText), /*#__PURE__*/React.createElement("div", {
     className: "absolute top-6 left-6 z-50 hidden sm:flex flex-col gap-2"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-pressed": showFlashcardImages,
     onClick: handleToggleShowFlashcardImages,
-    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border ${showFlashcardImages ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`,
+    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${showFlashcardImages ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`,
     title: t('flashcards.tooltip_toggle_images'),
     "aria-label": showFlashcardImages ? t('flashcards.hide_images') : t('flashcards.show_images')
   }, /*#__PURE__*/React.createElement(ImageIcon, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   }), " ", showFlashcardImages ? t('flashcards.hide_images') : t('flashcards.show_images')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-pressed": isFlashcardQuizMode,
     onClick: () => {
       setIsFlashcardQuizMode(!isFlashcardQuizMode);
       setFlashcardScore(0);
@@ -745,13 +1061,15 @@ function GlossaryView(props) {
       setFlashcardOptions([]);
       setFlashcardFeedback(null);
     },
-    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border ${isFlashcardQuizMode ? 'bg-yellow-500 text-indigo-900 border-yellow-400' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`,
+    className: `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isFlashcardQuizMode ? 'bg-yellow-500 text-indigo-900 border-yellow-400' : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'}`,
     title: t('flashcards.tooltip_toggle_quiz'),
     "aria-label": isFlashcardQuizMode ? "Disable Quiz Mode" : "Enable Quiz Mode"
   }, isFlashcardQuizMode ? /*#__PURE__*/React.createElement(CheckCircle2, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Brain, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   }), isFlashcardQuizMode ? t('flashcards.quiz_active') : t('flashcards.practice_mode'))), flashcardMode === 'standard' && selectedLanguages.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "absolute top-6 left-1/2 -translate-x-1/2 z-50"
   }, /*#__PURE__*/React.createElement("select", {
@@ -793,40 +1111,39 @@ function GlossaryView(props) {
   }, "Known ", knownCount), /*#__PURE__*/React.createElement("span", {
     className: "rounded-full bg-amber-500/15 text-amber-100 border border-amber-400/40 px-2 py-0.5"
   }, "Learning ", learningCount), (isPlaying || flashcardDictAudioKey) && /*#__PURE__*/React.createElement("span", {
-    className: "rounded-full bg-yellow-400 text-slate-900 px-2 py-0.5 animate-pulse"
+    className: "rounded-full bg-yellow-400 text-slate-900 px-2 py-0.5 animate-pulse motion-reduce:animate-none"
   }, "Audio playing")), isFlashcardQuizMode && /*#__PURE__*/React.createElement("div", {
-    className: "bg-yellow-500 text-indigo-900 px-3 py-0.5 rounded-full text-sm font-black shadow-sm animate-in zoom-in"
+    className: "bg-yellow-500 text-indigo-900 px-3 py-0.5 rounded-full text-sm font-black shadow-sm animate-in zoom-in motion-reduce:animate-none"
   }, t('flashcards.score_label'), " ", flashcardScore), /*#__PURE__*/React.createElement("div", {
-    className: "sm:hidden flex gap-1"
+    className: "sm:hidden flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.toggle_images'),
+    type: "button",
+    "aria-pressed": showFlashcardImages,
+    "aria-label": showFlashcardImages ? t('flashcards.hide_images') : t('flashcards.show_images'),
     onClick: handleToggleShowFlashcardImages,
-    className: `p-1.5 rounded border ${showFlashcardImages ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`
+    className: `min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${showFlashcardImages ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`
   }, /*#__PURE__*/React.createElement(ImageIcon, {
-    size: 14
+    size: 16,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-pressed": isFlashcardQuizMode,
+    "aria-label": isFlashcardQuizMode ? "Disable Quiz Mode" : "Enable Quiz Mode",
     onClick: () => {
       setIsFlashcardQuizMode(!isFlashcardQuizMode);
       setFlashcardOptions([]);
       setFlashcardFeedback(null);
     },
-    className: `p-1.5 rounded border ${isFlashcardQuizMode ? 'bg-yellow-500 border-yellow-400 text-indigo-900' : 'bg-slate-800 border-slate-700 text-slate-300'}`
+    className: `min-h-[40px] min-w-[40px] inline-flex items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 ${isFlashcardQuizMode ? 'bg-yellow-500 border-yellow-400 text-indigo-900' : 'bg-slate-800 border-slate-700 text-slate-300'}`
   }, /*#__PURE__*/React.createElement(Brain, {
-    size: 14
-  }))))), /*#__PURE__*/React.createElement("div", {
+    size: 16,
+    "aria-hidden": "true"
+  })))), renderFlashcardProgressDots()), /*#__PURE__*/React.createElement("div", {
     className: "relative w-full aspect-[3/2] cursor-pointer group",
-    onClick: handleToggleIsFlashcardFlipped,
-    onKeyDown: e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        setIsFlashcardFlipped(!isFlashcardFlipped);
-      }
-    },
-    tabIndex: 0,
-    role: "button",
-    "aria-label": isFlashcardFlipped ? "Flashcard Back (Click to flip)" : "Flashcard Front (Click to flip)"
+    onClick: handleToggleIsFlashcardFlipped
   }, /*#__PURE__*/React.createElement("div", {
-    className: `w-full h-full transition-all duration-500 transform-style-3d shadow-2xl rounded-3xl ${isFlashcardFlipped ? 'rotate-y-180' : 'rotate-y-0'}`
+    key: flashcardTransitionKey,
+    className: `w-full h-full animate-in fade-in zoom-in-95 motion-reduce:animate-none transition-all motion-reduce:transition-none duration-500 transform-style-3d shadow-2xl rounded-3xl ${isFlashcardFlipped ? 'rotate-y-180' : 'rotate-y-0'}`
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute inset-0 backface-hidden bg-white rounded-3xl p-8 flex flex-col items-center justify-center text-center border-4 border-blue-100 shadow-inner"
   }, flashcardMode === 'standard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
@@ -857,7 +1174,7 @@ function GlossaryView(props) {
     "aria-label": `Read term: ${generatedContent?.data[flashcardIndex].term}`,
     title: t('flashcards.tooltip_audio')
   }, generatedContent?.data[flashcardIndex].term), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 pt-4 border-t border-slate-100 w-2/3 animate-in fade-in slide-in-from-bottom-2"
+    className: "mt-4 pt-4 border-t border-slate-100 w-2/3 animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-indigo-600 uppercase mb-1"
   }, standardDeckLang), /*#__PURE__*/React.createElement("h3", {
@@ -931,13 +1248,13 @@ function GlossaryView(props) {
     role: "button",
     "aria-label": t('common.click_read_aloud')
   }, generatedContent?.data[flashcardIndex].def)), /*#__PURE__*/React.createElement("div", {
-    className: "absolute bottom-6 text-slate-600 text-xs font-bold uppercase tracking-widest flex items-center gap-1 animate-pulse"
+    className: "absolute bottom-6 text-slate-600 text-xs font-bold uppercase tracking-widest flex items-center gap-1 animate-pulse motion-reduce:animate-none"
   }, t('flashcards.flip_hint'), " ", /*#__PURE__*/React.createElement(RefreshCw, {
     size: 10
   }))), /*#__PURE__*/React.createElement("div", {
     className: `absolute inset-0 backface-hidden rounded-3xl p-8 flex flex-col items-center justify-center text-center rotate-y-180 border-4 shadow-inner text-white ${flashcardMode === 'standard' ? 'bg-blue-600 border-blue-400' : 'bg-indigo-600 border-indigo-400'}`
   }, isFlashcardQuizMode ? /*#__PURE__*/React.createElement("div", {
-    className: "w-full h-full flex flex-col items-center justify-center animate-in fade-in duration-300"
+    className: "w-full h-full flex flex-col items-center justify-center animate-in fade-in duration-300 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "text-2xl md:text-4xl font-black text-white mb-2 drop-shadow-md"
   }, (() => {
@@ -986,15 +1303,15 @@ function GlossaryView(props) {
       className: "line-clamp-2"
     }, opt));
   }))) : flashcardMode === 'standard' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "absolute top-6 left-6 text-xs font-bold text-blue-200 uppercase tracking-widest"
+    className: "absolute top-6 left-6 text-xs font-bold text-white uppercase tracking-widest"
   }, t('flashcards.back_label_def')), /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-3xl max-h-[82%] overflow-y-auto custom-scrollbar px-1 space-y-3 text-left"
   }, /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-white/10 border border-blue-300/40 px-4 py-3 shadow-inner"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] font-black text-blue-100 uppercase tracking-widest mb-1"
+    className: "text-[10px] font-black text-white uppercase tracking-widest mb-1"
   }, "Lesson definition"), /*#__PURE__*/React.createElement("p", {
-    className: "text-xl md:text-3xl font-medium leading-relaxed hover:text-blue-100 transition-colors cursor-pointer",
+    className: "text-xl md:text-3xl font-medium leading-relaxed hover:text-blue-50 transition-colors cursor-pointer",
     onClick: e => {
       e.stopPropagation();
       handleSpeak(generatedContent?.data[flashcardIndex].def, 'fc-back-def');
@@ -1011,11 +1328,11 @@ function GlossaryView(props) {
     "aria-label": t('common.read_translated_definition'),
     title: t('flashcards.tooltip_audio')
   }, generatedContent?.data[flashcardIndex].def), /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[11px] leading-snug text-blue-100/90"
+    className: "mt-2 text-[11px] leading-snug text-blue-50"
   }, "Provenance: generated from this lesson's source text and selected grade level.")), standardDeckLang !== 'English Only' && /*#__PURE__*/React.createElement("div", {
-    className: "rounded-xl bg-white/10 border border-blue-300/30 px-4 py-3 w-full animate-in fade-in slide-in-from-bottom-2"
+    className: "rounded-xl bg-white/10 border border-blue-300/30 px-4 py-3 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-blue-200 uppercase mb-2"
+    className: "text-xs font-bold text-white uppercase mb-2"
   }, standardDeckLang), /*#__PURE__*/React.createElement("p", {
     className: "text-lg md:text-xl font-medium leading-relaxed italic text-blue-50 hover:text-white cursor-pointer",
     onClick: e => {
@@ -1043,9 +1360,9 @@ function GlossaryView(props) {
     }
     return fullTrans;
   })())), generatedContent?.data[flashcardIndex]?.etymology && /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 pt-3 border-t border-blue-400/50 w-full animate-in fade-in slide-in-from-bottom-2"
+    className: "mt-4 pt-3 border-t border-blue-400/50 w-full animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-blue-200 uppercase mb-1"
+    className: "text-xs font-bold text-white uppercase mb-1"
   }, "📜 ", t('glossary.etymology_label') || 'Word roots'), /*#__PURE__*/React.createElement("p", {
     className: "text-sm md:text-base text-blue-50 italic leading-relaxed hover:text-white cursor-pointer",
     onClick: e => {
@@ -1108,67 +1425,7 @@ function GlossaryView(props) {
       role: "button",
       "aria-label": `Read ${flashcardLang} definition`
     }, transDef));
-  })()))), /*#__PURE__*/React.createElement("div", {
-    className: "mt-5 flex flex-wrap items-center justify-center gap-2 px-4"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: e => markFlashcardConfidence('known', e),
-    className: `inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border transition-all ${currentFlashcardConfidence === 'known' ? 'bg-emerald-500 text-white border-emerald-300 shadow-lg' : 'bg-white/10 text-emerald-100 border-emerald-400/40 hover:bg-emerald-500/20'}`
-  }, /*#__PURE__*/React.createElement(CheckCircle2, {
-    size: 16
-  }), " I know it"), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: e => markFlashcardConfidence('learning', e),
-    className: `inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border transition-all ${currentFlashcardConfidence === 'learning' ? 'bg-amber-400 text-slate-900 border-amber-200 shadow-lg' : 'bg-white/10 text-amber-100 border-amber-400/40 hover:bg-amber-500/20'}`
-  }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 16
-  }), " Still learning"), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: handleFlashcardFlipButton,
-    className: "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-all"
-  }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 16
-  }), " ", isFlashcardFlipped ? 'Show term' : 'Show definition'), isTeacherMode && flashcardMode === 'standard' && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: handleEditCurrentFlashcard,
-    className: "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold bg-blue-50 text-blue-900 border border-blue-200 hover:bg-white transition-all"
-  }, /*#__PURE__*/React.createElement(Pencil, {
-    size: 16
-  }), " Edit term")), /*#__PURE__*/React.createElement("div", {
-    className: "mt-6 pb-8 flex justify-between items-center px-4"
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: prevFlashcard,
-    disabled: flashcardIndex === 0,
-    className: "flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed",
-    "aria-label": t('common.prev_flashcard'),
-    "data-help-key": "flashcard_prev"
-  }, /*#__PURE__*/React.createElement(ArrowDown, {
-    className: "rotate-90",
-    size: 20
-  }), " ", t('flashcards.previous')), /*#__PURE__*/React.createElement("button", {
-    onClick: handleCardAudioSequence,
-    className: "px-8 py-4 rounded-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 shadow-[0_0_20px_rgba(234,179,8,0.4)] hover:scale-105 transition-all flex items-center gap-3 font-bold text-lg",
-    title: t('common.play_audio_sequence'),
-    "aria-label": isPlaying && playingContentId === 'flashcard-sequence' ? t('flashcards.stop') : t('flashcards.play_card'),
-    "data-help-key": "flashcard_play_sequence"
-  }, isPlaying && playingContentId === 'flashcard-sequence' ? /*#__PURE__*/React.createElement(StopCircle, {
-    size: 24,
-    className: "fill-current"
-  }) : /*#__PURE__*/React.createElement(Volume2, {
-    size: 24,
-    className: "fill-current"
-  }), isPlaying && playingContentId === 'flashcard-sequence' ? t('flashcards.stop') : t('flashcards.play_card')), /*#__PURE__*/React.createElement("button", {
-    onClick: e => goToNextReviewCard(e),
-    disabled: flashcardIndex === generatedContent?.data.length - 1 && flashcardRetryQueue.length === 0,
-    className: "flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed",
-    "aria-label": t('common.next_flashcard'),
-    "data-help-key": "flashcard_next"
-  }, t('flashcards.next'), " ", /*#__PURE__*/React.createElement(ArrowDown, {
-    className: "-rotate-90",
-    size: 20
-  }))), /*#__PURE__*/React.createElement("p", {
-    className: "text-center text-white/40 text-xs mt-6 font-medium"
-  }, t('flashcards.pro_tip_audio')))), isMemoryGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
+  })()))), renderFlashcardActionBar(), renderFlashcardEditDrawer())), isMemoryGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Memory Game encountered an error."
   }, /*#__PURE__*/React.createElement(MemoryGame, {
     data: generatedContent?.data,

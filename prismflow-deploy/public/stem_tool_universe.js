@@ -103,7 +103,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
       // â”€â”€ Tool body (universe) â”€â”€
       return (function() {
-var d = labToolData.universe || {};
+      var d = labToolData.universe || {};
+      var UNIVERSE_PRESENT_GYR = 13.8;
+      var UNIVERSE_FUTURE_PREVIEW_GYR = 13.81;
+      function formatCosmicTimeLabel(value) {
+        if (value >= UNIVERSE_FUTURE_PREVIEW_GYR) return 'Future fate preview';
+        if (value <= 0) return 'Big Bang';
+        if (value < 0.001) return Math.max(1, Math.round(value * 1000000)) + ' thousand years';
+        if (value < 1) return (value * 1000).toFixed(value < 0.01 ? 1 : 0) + ' Myr';
+        return value.toFixed(1) + ' Gyr';
+      }
+      function formatCosmicTimeSentence(value) {
+        if (value >= UNIVERSE_FUTURE_PREVIEW_GYR) return 'future fate preview beyond the present day';
+        if (value <= 0) return 'Big Bang moment';
+        if (value < 0.001) return Math.max(1, Math.round(value * 1000000)) + ' thousand years after the Big Bang';
+        if (value < 1) return (value * 1000).toFixed(value < 0.01 ? 1 : 0) + ' million years after the Big Bang';
+        return value.toFixed(1) + ' billion years after the Big Bang';
+      }
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -129,14 +145,15 @@ var d = labToolData.universe || {};
             { id: 'visit_all', name: 'Cosmic Tourist', desc: 'Visit all 9 epochs', icon: '\uD83C\uDFC6', rp: 100, check: function() { return epochsVisited.length >= 9; } },
             { id: 'play_timelapse', name: 'Time Lord', desc: 'Play the time-lapse animation', icon: '\u25B6', rp: 15, check: function() { return isPlaying; } },
             { id: 'big_bang', name: 'Witness Creation', desc: 'Visit the Big Bang (t=0)', icon: '\uD83D\uDCA5', rp: 20, check: function() { return cosmicTime < 0.01; } },
-            { id: 'present_day', name: 'Here and Now', desc: 'Reach the present day', icon: '\uD83C\uDF0D', rp: 15, check: function() { return cosmicTime >= 13.0 && cosmicTime < 13.8; } },
-            { id: 'far_future', name: 'Heat Death', desc: 'Peer into the far future', icon: '\uD83D\uDD2E', rp: 20, check: function() { return cosmicTime >= 13.8; } },
+            { id: 'present_day', name: 'Here and Now', desc: 'Reach the present day', icon: '\uD83C\uDF0D', rp: 15, check: function() { return cosmicTime >= 13.0 && cosmicTime <= UNIVERSE_PRESENT_GYR; } },
+            { id: 'far_future', name: 'Heat Death', desc: 'Peer into the far future', icon: '\uD83D\uDD2E', rp: 20, check: function() { return cosmicTime >= UNIVERSE_FUTURE_PREVIEW_GYR; } },
             { id: 'star_lifecycle', name: 'Stellar Scholar', desc: 'Explore the star lifecycle', icon: '\u2B50', rp: 20, check: function() { return d.showStarLife; } },
             { id: 'hr_diagram', name: 'Astronomer', desc: 'Study the HR Diagram', icon: '\uD83D\uDCCA', rp: 20, check: function() { return d.showHR; } },
             { id: 'distance_ladder', name: 'Cosmic Surveyor', desc: 'Explore the distance ladder', icon: '\uD83D\uDCCF', rp: 15, check: function() { return d.showDistance; } },
             { id: 'dark_energy', name: 'Dark Researcher', desc: 'Learn about dark energy & dark matter', icon: '\uD83D\uDD73', rp: 20, check: function() { return d.showDark; } },
             { id: 'evidence_lab', name: 'Evidence Builder', desc: 'Complete 3 cosmic evidence notes', icon: '\uD83D\uDCCA', rp: 25, check: function() { return ((d.evidenceThreadsMastered || []).length >= 3); } },
             { id: 'guided_cosmic_mission', name: 'Mission Navigator', desc: 'Complete a guided cosmic mission', icon: '\uD83D\uDE80', rp: 25, check: function() { return ((d.cosmicMissionsCompleted || []).length >= 1); } },
+            { id: 'evidence_notebook', name: 'Evidence Archivist', desc: 'Save 3 evidence notebook entries', icon: '\uD83D\uDCDD', rp: 20, check: function() { return ((d.cosmicEvidenceNotebook || []).length >= 3); } },
             { id: 'ai_question', name: 'Curious Mind', desc: 'Ask the AI Cosmos Tutor', icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', rp: 20, check: function() { return !!d.aiAnswer; } },
             { id: 'what_if', name: 'Thought Experimenter', desc: 'Explore a What If scenario', icon: '\uD83E\uDD14', rp: 15, check: function() { return d.showWhatIf; } },
             { id: 'elements', name: 'Alchemist', desc: 'Learn where elements come from', icon: '\u2697', rp: 15, check: function() { return d.showElements; } },
@@ -155,7 +172,7 @@ var d = labToolData.universe || {};
             { id: 'grav_lensing', name: 'Light Bender', desc: 'Learn gravitational lensing', icon: '\uD83D\uDD2E', rp: 15, check: function() { return d.showLensing; } },
             { id: 'mysteries', name: 'Deep Thinker', desc: 'Explore unsolved cosmic mysteries', icon: '\u2753', rp: 15, check: function() { return d.showMysteries; } },
             { id: 'multiverse', name: 'Reality Explorer', desc: 'Study multiverse theories', icon: '\uD83C\uDF10', rp: 20, check: function() { return d.showMultiverse; } },
-            { id: 'redshift', name: 'Doppler Detective', desc: 'Learn redshift & blueshift', icon: '\uD83D\uDD34', rp: 20, check: function() { return d.showRedshift; } },
+            { id: 'redshift', name: 'Redshift Detective', desc: 'Compare motion shift and cosmic expansion', icon: '\uD83D\uDD34', rp: 20, check: function() { return d.showRedshift; } },
             { id: 'nurseries', name: 'Star Nursery', desc: 'Explore stellar nurseries', icon: '\uD83C\uDF1F', rp: 10, check: function() { return d.showNurseries; } },
             { id: 'pn_gallery', name: 'Nebula Artist', desc: 'View planetary nebulae', icon: '\uD83C\uDF00', rp: 10, check: function() { return d.showPNebulae; } },
             { id: 'catastrophes', name: 'Doomsday Scholar', desc: 'Study cosmic catastrophes', icon: '\u2604', rp: 15, check: function() { return d.showCatastrophes; } },
@@ -322,7 +339,7 @@ var d = labToolData.universe || {};
             { year: '2015', name: 'LIGO Detection', agency: 'LIGO/Caltech/MIT', desc: 'First direct detection of gravitational waves from merging black holes. Confirmed Einstein\'s 1915 prediction.', icon: '\uD83C\uDF0A' },
             { year: '2019', name: 'EHT Black Hole Image', agency: 'EHT Collaboration', desc: 'First image of a black hole shadow (M87*). Used 8 radio telescopes across 4 continents as one Earth-sized dish.', icon: '\uD83D\uDD73' },
             { year: '2021', name: 'Perseverance + Ingenuity', agency: 'NASA', desc: 'Mars rover collecting samples for Earth return. Ingenuity helicopter achieved first powered flight on another planet.', icon: '\uD83D\uDE81' },
-            { year: '2022', name: 'James Webb Space Telescope', agency: 'NASA/ESA/CSA', desc: 'Largest space telescope ever. Infrared vision sees the earliest galaxies (13.4+ Gyr old) and exoplanet atmospheres.', icon: '\uD83C\uDF1F' },
+            { year: '2022', name: 'James Webb Space Telescope', agency: 'NASA/ESA/CSA', desc: 'Largest space telescope ever launched. Infrared vision studies early galaxies whose light has traveled for over 13 billion years, plus exoplanet atmospheres.', icon: '\uD83C\uDF1F' },
             { year: '2023', name: 'OSIRIS-REx Return', agency: 'NASA', desc: 'Returned samples from asteroid Bennu to Earth. First US asteroid sample return. Studying origins of the solar system.', icon: '\u2604' }
           ];
 
@@ -370,11 +387,11 @@ var d = labToolData.universe || {};
 
           // Redshift / Blueshift data
           var REDSHIFT_EXAMPLES = [
-            { name: 'Andromeda Galaxy (M31)', z: -0.001, vel: '-300 km/s', type: 'blueshift', desc: 'One of the few galaxies moving toward us! Will collide with the Milky Way in ~4.5 billion years.', icon: '\uD83C\uDF0C' },
-            { name: 'Virgo Cluster', z: 0.004, vel: '~1,200 km/s', type: 'redshift', desc: 'Nearest large galaxy cluster. Receding due to cosmic expansion.', icon: '\uD83D\uDD2D' },
-            { name: 'Quasar 3C 273', z: 0.158, vel: '~47,000 km/s', type: 'redshift', desc: 'First quasar identified (1963). So luminous it outshines its entire host galaxy. 2.4 billion light-years away.', icon: '\u2B50' },
-            { name: 'GN-z11 (most distant galaxy)', z: 10.6, vel: '~99.7% c', type: 'redshift', desc: 'Seen as it was 13.4 billion years ago, just 400 million years after the Big Bang. Detected by JWST.', icon: '\uD83C\uDF20' },
-            { name: 'Cosmic Microwave Background', z: 1089, vel: 'N/A (cosmological)', type: 'redshift', desc: 'The oldest light in the universe. Originally ~3,000 K visible light, now stretched to 2.725 K microwaves by 13.8 billion years of expansion.', icon: '\uD83C\uDF21' }
+            { name: 'Andromeda Galaxy (M31)', z: -0.001, signal: 'Local radial motion: about -300 km/s', type: 'blueshift', source: 'motion', desc: 'Local gravity wins over expansion here, so Andromeda is moving toward the Milky Way and its light is slightly blueshifted.', icon: '\uD83C\uDF0C' },
+            { name: 'Virgo Cluster', z: 0.004, signal: 'Low-z recession: about 1,200 km/s', type: 'redshift', source: 'mixed', desc: 'Nearby enough that astronomers often translate redshift into an approximate recession speed, while local galaxy motions still add scatter.', icon: '\uD83D\uDD2D' },
+            { name: 'Quasar 3C 273', z: 0.158, signal: 'Cosmological redshift; speed analogy is approximate', type: 'redshift', source: 'expansion', desc: 'First quasar identified (1963). Its light has been stretched by expanding space during a journey of billions of years.', icon: '\u2B50' },
+            { name: 'GN-z11 (high-redshift galaxy)', z: 10.6, signal: 'Cosmological redshift; not an ordinary through-space velocity', type: 'redshift', source: 'expansion', desc: 'Seen as it was about 13.4 billion years ago, roughly 400 million years after the Big Bang. Hubble found it; JWST later studied it in detail.', icon: '\uD83C\uDF20' },
+            { name: 'Cosmic Microwave Background', z: 1089, signal: 'Expansion stretch of the oldest light', type: 'redshift', source: 'expansion', desc: 'The oldest light in the universe. Originally ~3,000 K visible/infrared light, now stretched to 2.725 K microwaves by 13.8 billion years of expansion.', icon: '\uD83C\uDF21' }
           ];
 
           // Stellar nurseries
@@ -427,11 +444,11 @@ var d = labToolData.universe || {};
             { name: 'Human', size: '~1.7 m', power: 0, desc: 'You are here. Made of atoms forged in stars, organized by 3.8 billion years of evolution.', icon: '\uD83E\uDDD1' },
             { name: 'Earth', size: '1.27 \u00D7 10\u2077 m', power: 7, desc: 'Our home planet. Thin atmosphere, liquid water, magnetic field \u2014 the conditions for life.', icon: '\uD83C\uDF0D' },
             { name: 'Sun', size: '1.39 \u00D7 10\u2079 m', power: 9, desc: '109 Earths fit across. A G2V main-sequence star, 4.6 billion years old, halfway through its life.', icon: '\u2600\uFE0F' },
-            { name: 'Solar System', size: '~9 \u00D7 10\u00B9\u00B2 m', power: 12, desc: 'From the Sun to the Oort Cloud. Light takes ~1.5 years to cross. 8 planets, 200+ moons.', icon: '\uD83E\uDE90' },
+            { name: 'Solar System', size: '~9 \u00D7 10\u00B9\u00B2 m', power: 12, desc: 'From the Sun to the Oort Cloud. Light takes ~1.5 years to cross. 8 planets and hundreds of known moons.', icon: '\uD83E\uDE90' },
             { name: 'Light-Year', size: '9.46 \u00D7 10\u00B9\u2075 m', power: 15, desc: 'The distance light travels in one year. Nearest star (Proxima Centauri): 4.24 light-years away.', icon: '\u2B50' },
             { name: 'Milky Way', size: '~10\u00B2\u2070 m (100,000 ly)', power: 20, desc: '200-400 billion stars. Our solar system orbits the center every 230 million years (one "galactic year").', icon: '\uD83C\uDF00' },
             { name: 'Galaxy Supercluster', size: '~5 \u00D7 10\u00B2\u2074 m (500 Mly)', power: 24, desc: 'Laniakea, our home supercluster, contains 100,000+ galaxies gravitationally connected.', icon: '\uD83C\uDF0C' },
-            { name: 'Observable Universe', size: '8.8 \u00D7 10\u00B2\u2076 m (93 Gly)', power: 26, desc: '~2 trillion galaxies. Everything we can ever observe. Beyond this, light has not had time to reach us.', icon: '\uD83C\uDF20' }
+            { name: 'Observable Universe', size: '8.8 \u00D7 10\u00B2\u2076 m (93 Gly)', power: 26, desc: 'Hundreds of billions to trillions of galaxies. Everything we can observe; beyond this, light has not had time to reach us.', icon: '\uD83C\uDF20' }
           ];
 
           // Spectral classification (OBAFGKM)
@@ -463,7 +480,7 @@ var d = labToolData.universe || {};
           var FAMOUS_IMAGES = [
             { name: 'Earthrise (1968)', mission: 'Apollo 8', desc: 'Taken by astronaut Bill Anders during the first crewed orbit of the Moon. Seeing Earth as a fragile blue marble floating in the void of space catalyzed the modern environmental movement.', impact: 'Inspired Earth Day and the environmental movement', icon: '\uD83C\uDF0D' },
             { name: 'Pale Blue Dot (1990)', mission: 'Voyager 1', desc: 'Carl Sagan convinced NASA to turn Voyager 1 around at 6 billion km to photograph Earth. Our planet appears as a tiny blue speck in a sunbeam. "Look again at that dot. That\'s here. That\'s home. That\'s us."', impact: 'Humbled humanity with cosmic perspective', icon: '\uD83D\uDD35' },
-            { name: 'Hubble Deep Field (1995)', mission: 'HST', desc: 'Hubble stared at a "blank" patch of sky (1/13-millionth of the sky) for 10 days. Result: ~3,000 galaxies, some 12+ billion years old. Proved galaxies fill the entire universe in every direction.', impact: 'Revealed the universe contains ~2 trillion galaxies', icon: '\uD83C\uDF0C' },
+            { name: 'Hubble Deep Field (1995)', mission: 'HST', desc: 'Hubble stared at a "blank" patch of sky (1/13-millionth of the sky) for 10 days. Result: ~3,000 galaxies, some 12+ billion years old. Proved galaxies fill the universe in every direction.', impact: 'Transformed estimates of how many galaxies fill the observable universe', icon: '\uD83C\uDF0C' },
             { name: 'Pillars of Creation (1995/2022)', mission: 'HST / JWST', desc: 'Towering columns of gas and dust in the Eagle Nebula where new stars are being born. Hubble\'s 1995 image became the most famous space photo ever. JWST re-imaged it in infrared, revealing hidden stars.', impact: 'Most iconic nebula image in history', icon: '\u2728' },
             { name: 'First Black Hole Image (2019)', mission: 'EHT', desc: 'The Event Horizon Telescope combined 8 radio telescopes across 4 continents to create an Earth-sized virtual dish. Result: the shadow of the supermassive black hole in galaxy M87, 6.5 billion solar masses.', impact: 'Confirmed black holes look exactly as Einstein predicted', icon: '\uD83D\uDD73' },
             { name: 'JWST Deep Field (2022)', mission: 'JWST', desc: 'The deepest, sharpest infrared image of the distant universe ever taken. Shows galaxy cluster SMACS 0723 as it appeared 4.6 billion years ago, with gravitational lensing revealing galaxies 13+ billion years old.', impact: 'New era of infrared astronomy began', icon: '\uD83C\uDF1F' },
@@ -620,13 +637,13 @@ var d = labToolData.universe || {};
             { name: 'Galaxy Group', example: 'Local Group', size: '~10 million light-years', icon: '\uD83C\uDF0C', desc: '~80 galaxies gravitationally bound together' },
             { name: 'Galaxy Cluster', example: 'Virgo Cluster', size: '~15 million light-years', icon: '\uD83D\uDD2D', desc: '1,000-10,000 galaxies, hot intracluster gas' },
             { name: 'Supercluster', example: 'Laniakea', size: '~500 million light-years', icon: '\uD83E\uDDE8', desc: 'Thousands of galaxy clusters connected by filaments' },
-            { name: 'Observable Universe', example: '\u2014', size: '93 billion light-years', icon: '\uD83C\uDF20', desc: '~2 trillion galaxies. Beyond this, light hasn\'t reached us yet.' }
+            { name: 'Observable Universe', example: '\u2014', size: '93 billion light-years', icon: '\uD83C\uDF20', desc: 'Hundreds of billions to trillions of galaxies. Beyond this, light hasn\'t reached us yet.' }
           ];
 
           // Famous telescopes
           var TELESCOPES = [
             { name: 'Hubble Space Telescope', year: '1990+', type: 'Optical/UV/IR', achievement: 'Deep Field images revealed thousands of galaxies in a pinpoint of sky. Measured universe expansion rate.', icon: '\uD83D\uDD2D' },
-            { name: 'James Webb Space Telescope', year: '2022+', type: 'Infrared', achievement: 'Sees the most distant galaxies ever observed (13.4+ billion years old). Studying exoplanet atmospheres.', icon: '\uD83C\uDF1F' },
+            { name: 'James Webb Space Telescope', year: '2022+', type: 'Infrared', achievement: 'Studies early galaxies and exoplanet atmospheres in infrared light; new distance records continue to evolve.', icon: '\uD83C\uDF1F' },
             { name: 'LIGO/Virgo', year: '2015+', type: 'Gravitational waves', achievement: 'First direct detection of gravitational waves from merging black holes (Nobel Prize 2017).', icon: '\uD83C\uDF0A' },
             { name: 'Event Horizon Telescope', year: '2019+', type: 'Radio (Earth-sized)', achievement: 'First image of a black hole shadow (M87*, then Sgr A*). Planet-spanning interferometer.', icon: '\uD83D\uDD73' },
             { name: 'Planck Satellite', year: '2009-2013', type: 'Microwave', achievement: 'Most precise map of the CMB. Determined universe age: 13.799 \u00B1 0.021 billion years.', icon: '\uD83C\uDF21' },
@@ -681,6 +698,12 @@ var d = labToolData.universe || {};
           var cosmicMissionsCompleted = d.cosmicMissionsCompleted || [];
           var activeMissionLaunched = cosmicMissionsLaunched.indexOf(activeCosmicMission.id) !== -1;
           var activeMissionCompleted = cosmicMissionsCompleted.indexOf(activeCosmicMission.id) !== -1;
+          var cosmicEvidenceNotebook = d.cosmicEvidenceNotebook || [];
+          var activeEvidenceNotebookKey = 'evidence:' + activeCosmicEvidence.id;
+          var activeMissionNotebookKey = 'mission:' + activeCosmicMission.id;
+          var activeEvidenceInNotebook = cosmicEvidenceNotebook.some(function (note) { return note.key === activeEvidenceNotebookKey; });
+          var activeMissionInNotebook = cosmicEvidenceNotebook.some(function (note) { return note.key === activeMissionNotebookKey; });
+          var recentCosmicNotebook = cosmicEvidenceNotebook.slice(-4).reverse();
 
           var renderCosmicEvidenceSignal = function (thread) {
             var commonProps = { viewBox: "0 0 560 150", className: "w-full mt-3 rounded-xl border", style: { borderColor: 'rgba(125,211,252,0.2)', background: 'rgba(2,6,23,0.48)' }, role: "img", "aria-label": thread.title + " visual evidence signal" };
@@ -787,14 +810,14 @@ var d = labToolData.universe || {};
           // Cosmic numbers
           var COSMIC_NUMBERS = [
             { label: 'Stars in the Milky Way', value: '200-400 billion', icon: '\u2B50' },
-            { label: 'Galaxies in observable universe', value: '~2 trillion', icon: '\uD83C\uDF0C' },
-            { label: 'Age of the universe', value: '13.799 billion years', icon: '\u23F3' },
+            { label: 'Galaxies in observable universe', value: '100B+ to trillions', icon: '\uD83C\uDF0C' },
+            { label: 'Age of the universe', value: '13.8 billion years', icon: '\u23F3' },
             { label: 'Size of observable universe', value: '93 billion light-years', icon: '\uD83D\uDCCF' },
             { label: 'Temperature of CMB', value: '2.725 K (-270.4\u00B0C)', icon: '\uD83C\uDF21' },
             { label: 'Speed of light', value: '299,792,458 m/s', icon: '\u26A1' },
             { label: 'Mass of the Sun', value: '1.989 \u00D7 10\u00B3\u2070 kg', icon: '\u2600\uFE0F' },
-            { label: 'Confirmed exoplanets', value: '5,700+', icon: '\uD83C\uDF0D' },
-            { label: 'Farthest human-made object', value: 'Voyager 1: 24+ billion km', icon: '\uD83D\uDEF0' },
+            { label: 'Confirmed exoplanets', value: '6,300+', icon: '\uD83C\uDF0D' },
+            { label: 'Farthest human-made object', value: 'Voyager 1: 160+ AU', icon: '\uD83D\uDEF0' },
             { label: 'Atoms in a human body', value: '~7 \u00D7 10\u00B2\u2077', icon: '\uD83E\uDDEC' }
           ];
 
@@ -809,7 +832,7 @@ var d = labToolData.universe || {};
             { q: 'What will happen to the Sun in ~5 billion years?', options: ['Explode as supernova', 'Become a black hole', 'Become a red giant', 'Burn out suddenly'], correct: 2 },
             { q: 'What is the fastest speed possible?', options: ['Warp speed', 'Speed of light', 'Speed of sound', 'Infinite'], correct: 1 },
             { q: 'What was the first element created after the Big Bang?', options: ['Carbon', 'Iron', 'Hydrogen', 'Helium'], correct: 2 },
-            { q: 'How many galaxies are in the observable universe?', options: ['~200 billion', '~2 trillion', '~100 million', '~10 billion'], correct: 1 }
+            { q: 'About how many galaxies are in the observable universe?', options: ['~100 million', 'hundreds of billions to trillions', '~10 billion', 'only the Milky Way'], correct: 1 }
           ];
 
 
@@ -934,13 +957,13 @@ var d = labToolData.universe || {};
 
               desc: 'The universe is 13.8 billion years old. Humans have walked on the Moon, landed rovers on Mars, sent Voyager beyond the Solar System, detected gravitational waves from colliding black holes, and photographed a black hole\'s shadow. The James Webb Space Telescope peers back to the first galaxies. Meanwhile, dark energy is accelerating the expansion of the universe \u2014 galaxies beyond our Local Group are receding ever faster.',
 
-              facts: ['The observable universe contains roughly 2 trillion galaxies', 'Dark energy (68%), dark matter (27%), and ordinary matter (5%) make up the cosmic budget', 'JWST observes galaxies from 13.4+ billion years ago in infrared light', 'Gravitational waves were first detected in 2015 by LIGO (Nobel Prize 2017)', 'We have discovered 5,500+ confirmed exoplanets, including potentially habitable ones', 'Voyager 1, launched in 1977, is over 24 billion km from Earth \u2014 in interstellar space']
+              facts: ['The observable universe contains hundreds of billions to trillions of galaxies', 'Dark energy (68%), dark matter (27%), and ordinary matter (5%) make up the cosmic budget', 'JWST observes early galaxies in infrared light, including objects whose light has traveled for over 13 billion years', 'Gravitational waves were first detected in 2015 by LIGO (Nobel Prize 2017)', 'We have discovered 6,300+ confirmed exoplanets, including potentially habitable ones', 'Voyager 1, launched in 1977, is the farthest human-made object and is traveling through interstellar space']
 
             },
 
             {
 
-              t: 13.8, name: t('stem.universe.the_far_future'), emoji: '\uD83D\uDD2E', color: '#060610', border: '#6366f1', sky: '#050510',
+              t: UNIVERSE_FUTURE_PREVIEW_GYR, name: t('stem.universe.the_far_future'), emoji: '\uD83D\uDD2E', color: '#060610', border: '#6366f1', sky: '#050510',
 
               temp: 'Approaching absolute zero', scale: 'Expanding toward infinity',
 
@@ -1979,7 +2002,7 @@ var d = labToolData.universe || {};
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border shadow-lg", style: { height: '55vh', minHeight: '360px', maxHeight: '700px', background: 'radial-gradient(circle at 50% 46%, rgba(30,41,59,0.55), #03040d 74%)', borderColor: 'rgba(167,139,250,0.46)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -54px 110px rgba(2,6,23,0.84), 0 22px 52px rgba(15,23,42,0.25)' } },
 
-              React.createElement("canvas", { tabIndex: 0, "data-universe-canvas": "true", ref: canvasRefCb, "data-time": String(cosmicTime), role: 'img', 'aria-label': 'Universe time-lapse visualization showing 13.8 billion years of cosmic history from the Big Bang to the present day', style: { width: '100%', height: '100%', display: 'block' } }),
+              React.createElement("canvas", { tabIndex: 0, "data-universe-canvas": "true", ref: canvasRefCb, "data-time": String(cosmicTime), role: 'img', 'aria-label': 'Universe time-lapse visualization showing cosmic history from the Big Bang through the present day, with a future fate preview at the end of the timeline', style: { width: '100%', height: '100%', display: 'block' } }),
               React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(circle at 50% 48%, transparent 34%, rgba(2,6,23,0.58) 100%), linear-gradient(rgba(167,139,250,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(125,211,252,0.035) 1px, transparent 1px)', backgroundSize: '100% 100%, 42px 42px, 42px 42px', mixBlendMode: 'screen', opacity: 0.62 } }),
               React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(to bottom, rgba(2,6,23,0.72) 0%, rgba(2,6,23,0.14) 10%, rgba(2,6,23,0) 22%, rgba(2,6,23,0) 78%, rgba(2,6,23,0.18) 90%, rgba(2,6,23,0.78) 100%)' } }),
               React.createElement("div", { "aria-hidden": "true", style: { position: 'absolute', inset: '14px', pointerEvents: 'none', border: '1px solid rgba(226,232,240,0.07)', backgroundImage: 'linear-gradient(90deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(180deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(90deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(270deg, rgba(226,232,240,0.52), rgba(226,232,240,0)), linear-gradient(0deg, rgba(226,232,240,0.52), rgba(226,232,240,0))', backgroundPosition: 'top left, top left, top right, top right, bottom left, bottom left, bottom right, bottom right', backgroundSize: '88px 1px, 1px 54px, 88px 1px, 1px 54px, 88px 1px, 1px 54px, 88px 1px, 1px 54px', backgroundRepeat: 'no-repeat', opacity: 0.7 } })
@@ -1994,7 +2017,7 @@ var d = labToolData.universe || {};
 
                 React.createElement("span", { className: "text-xs font-bold text-violet-700" }, "\u23F3 Cosmic Timeline"),
 
-                React.createElement("span", { className: "ml-auto text-[11px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full" }, cosmicTime < 1 ? (cosmicTime * 1000).toFixed(0) + ' Myr' : cosmicTime.toFixed(1) + ' Gyr')
+                React.createElement("span", { className: "ml-auto text-[11px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full" }, formatCosmicTimeLabel(cosmicTime))
 
               ),
 
@@ -2004,7 +2027,7 @@ var d = labToolData.universe || {};
 
                 React.createElement("input", {
 
-                  type: "range", min: 0, max: 13.8, step: 0.01, value: cosmicTime,
+                  type: "range", min: 0, max: UNIVERSE_FUTURE_PREVIEW_GYR, step: 0.01, value: cosmicTime,
 
                   'aria-label': 'Cosmic time in billion years',
 
@@ -2014,7 +2037,7 @@ var d = labToolData.universe || {};
 
                 }),
 
-                React.createElement("span", { className: "text-[11px] text-violet-400" }, "Now")
+                React.createElement("span", { className: "text-[11px] text-violet-400" }, "Future")
 
               ),
 
@@ -2036,7 +2059,7 @@ var d = labToolData.universe || {};
 
                       t += 0.02 * speed;
 
-                      if (t > 13.8) { t = 0; }
+                      if (t > UNIVERSE_FUTURE_PREVIEW_GYR) { t = 0; }
 
                       upd("cosmicTime", parseFloat(t.toFixed(2)));
 
@@ -2358,6 +2381,63 @@ var d = labToolData.universe || {};
               )
             ),
 
+            React.createElement("div", { className: "mt-3 rounded-xl border bg-slate-950 p-3 shadow-lg", style: { borderColor: 'rgba(52,211,153,0.28)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.035), 0 18px 42px rgba(15,23,42,0.2)' } },
+              React.createElement("div", { className: "flex flex-wrap items-start gap-3" },
+                React.createElement("div", { className: "min-w-[220px] flex-1" },
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, "\uD83D\uDCDD"),
+                    React.createElement("p", { className: "text-xs font-black text-emerald-100" }, "Evidence Notebook"),
+                    React.createElement("span", { className: "rounded-full border px-2 py-0.5 text-[10px] font-bold text-emerald-100", style: { borderColor: 'rgba(52,211,153,0.34)', background: 'rgba(16,185,129,0.12)' } }, cosmicEvidenceNotebook.length + " saved")
+                  ),
+                  React.createElement("p", { className: "mt-1 text-[11px] text-slate-300 leading-relaxed" }, "Save structured notes from the active mission and evidence thread. Each note keeps the claim, evidence, reasoning, and next investigation together.")
+                ),
+                React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
+                  React.createElement("button", { type: "button", onClick: function () {
+                    var note = { key: activeEvidenceNotebookKey, kind: 'Evidence', title: activeCosmicEvidence.title, source: activeCosmicEvidence.bridge, claim: activeCosmicEvidence.claim, evidence: activeCosmicEvidence.evidence, reasoning: activeCosmicEvidence.reasoning, next: activeCosmicEvidence.move };
+                    var nextNotebook = cosmicEvidenceNotebook.filter(function (item) { return item.key !== activeEvidenceNotebookKey; }).concat([note]).slice(-10);
+                    var mastered = evidenceThreadsMastered.indexOf(activeCosmicEvidence.id) === -1 ? evidenceThreadsMastered.concat([activeCosmicEvidence.id]) : evidenceThreadsMastered;
+                    updMulti({ cosmicEvidenceNotebook: nextNotebook, evidenceThreadsMastered: mastered });
+                    if (typeof awardStemXP === 'function') awardStemXP('universe_notebook_evidence', 2, 'Saved evidence note: ' + activeCosmicEvidence.title);
+                  }, className: "rounded-lg border px-3 py-2 text-[11px] font-black " + (activeEvidenceInNotebook ? "border-emerald-200/30 bg-emerald-400/10 text-emerald-100" : "border-emerald-200/40 bg-emerald-400/15 text-emerald-50 hover:bg-emerald-400/25") }, activeEvidenceInNotebook ? "Update evidence" : "Save evidence"),
+                  React.createElement("button", { type: "button", onClick: function () {
+                    var note = { key: activeMissionNotebookKey, kind: 'Mission', title: activeCosmicMission.title, source: activeCosmicMission.bridgeLabel, claim: activeCosmicEvidence.claim, evidence: activeCosmicEvidence.evidence, reasoning: activeCosmicEvidence.reasoning, next: activeCosmicMission.checkpoints.join(' ') };
+                    var nextNotebook = cosmicEvidenceNotebook.filter(function (item) { return item.key !== activeMissionNotebookKey; }).concat([note]).slice(-10);
+                    var launched = activeMissionLaunched ? cosmicMissionsLaunched : cosmicMissionsLaunched.concat([activeCosmicMission.id]);
+                    updMulti({ cosmicEvidenceNotebook: nextNotebook, cosmicMissionsLaunched: launched });
+                    if (typeof awardStemXP === 'function') awardStemXP('universe_notebook_mission', 2, 'Saved mission note: ' + activeCosmicMission.title);
+                  }, className: "rounded-lg border px-3 py-2 text-[11px] font-black " + (activeMissionInNotebook ? "border-sky-200/30 bg-sky-400/10 text-sky-100" : "border-sky-200/40 bg-sky-400/15 text-sky-50 hover:bg-sky-400/25") }, activeMissionInNotebook ? "Update mission" : "Save mission")
+                )
+              ),
+              React.createElement("div", { className: "mt-3 grid grid-cols-1 lg:grid-cols-[1fr_230px] gap-3" },
+                React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2" },
+                  (recentCosmicNotebook.length ? recentCosmicNotebook : [{ key: 'empty', kind: 'Notebook', title: 'No saved notes yet', source: 'Start with Save evidence', claim: 'Choose a mission or evidence thread.', evidence: 'Use the visual data signal and CER cards.', reasoning: 'Saved notes will appear here for review.' }]).map(function (note) {
+                    return React.createElement("div", { key: note.key, className: "rounded-lg border p-2", style: { borderColor: 'rgba(226,232,240,0.12)', background: 'rgba(2,6,23,0.38)' } },
+                      React.createElement("div", { className: "flex items-center gap-2 mb-1" },
+                        React.createElement("span", { className: "rounded-full px-1.5 py-0.5 text-[9px] font-black text-emerald-100", style: { background: 'rgba(16,185,129,0.16)' } }, note.kind),
+                        React.createElement("p", { className: "min-w-0 flex-1 truncate text-[11px] font-black text-white" }, note.title)
+                      ),
+                      React.createElement("p", { className: "text-[10px] font-bold text-cyan-200 mb-1" }, note.source),
+                      React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, note.claim),
+                      React.createElement("p", { className: "mt-1 text-[10px] text-slate-400 leading-relaxed" }, note.evidence)
+                    );
+                  })
+                ),
+                React.createElement("div", { className: "rounded-xl border p-3", style: { borderColor: 'rgba(52,211,153,0.22)', background: 'rgba(6,78,59,0.16)' } },
+                  React.createElement("p", { className: "text-[11px] font-black text-emerald-100 mb-2" }, "Notebook Review"),
+                  [
+                    'Can the claim be tested against an observation?',
+                    'Does the evidence name a real signal or measurement?',
+                    'Does the reasoning connect the signal to the model?'
+                  ].map(function (prompt, idx) {
+                    return React.createElement("div", { key: prompt, className: "flex gap-2 text-[11px] text-slate-200 leading-relaxed mb-2 last:mb-0" },
+                      React.createElement("span", { className: "shrink-0 rounded-full bg-emerald-300/15 px-1.5 py-0.5 text-[10px] font-black text-emerald-100" }, idx + 1),
+                      React.createElement("span", null, prompt)
+                    );
+                  })
+                )
+              )
+            ),
+
             React.createElement("div", { className: "mt-3 rounded-xl border bg-slate-950 p-3 shadow-lg", style: { borderColor: 'rgba(125,211,252,0.24)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03), 0 14px 34px rgba(15,23,42,0.18)' } },
               React.createElement("div", { className: "flex flex-wrap items-start gap-2 mb-2" },
                 React.createElement("span", { className: "text-lg", "aria-hidden": "true" }, "\uD83D\uDD2D"),
@@ -2400,7 +2480,7 @@ var d = labToolData.universe || {};
 
                   React.createElement("h4", { className: "text-base font-black tracking-wide", style: { color: epoch.border } }, epoch.name),
 
-                  React.createElement("p", { className: "text-[11px] font-medium", style: { color: 'rgba(200,210,230,0.8)' } }, cosmicTime < 1 ? (cosmicTime * 1000).toFixed(0) + ' million years after the Big Bang' : cosmicTime.toFixed(1) + ' billion years after the Big Bang')
+                  React.createElement("p", { className: "text-[11px] font-medium", style: { color: 'rgba(200,210,230,0.8)' } }, formatCosmicTimeSentence(cosmicTime))
 
                 )
 
@@ -3376,7 +3456,7 @@ var d = labToolData.universe || {};
                 }, d.showExoplanets ? 'Hide' : 'Explore \u2192')
               ),
               d.showExoplanets && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "We have discovered 5,700+ exoplanets. They come in dazzling variety \u2014 many unlike anything in our Solar System."),
+                React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " italic mb-2" }, "We have discovered 6,300+ confirmed exoplanets. They come in dazzling variety \u2014 many unlike anything in our Solar System."),
                 React.createElement("div", { className: "grid grid-cols-1 gap-2" },
                   EXOPLANET_TYPES.map(function(ep2, epi) {
                     return React.createElement("div", { key: epi, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-emerald-100') + " rounded-lg p-2.5 border" },
@@ -3661,7 +3741,7 @@ var d = labToolData.universe || {};
             // === REDSHIFT & BLUESHIFT ===
             React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-900 border-slate-700' : 'bg-slate-900') + " rounded-xl p-3 border border-red-700" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("span", { className: "text-xs font-bold text-red-400" }, "\uD83D\uDD34 Redshift & Blueshift \u2014 The Doppler Effect of Light"),
+                React.createElement("span", { className: "text-xs font-bold text-red-400" }, "\uD83D\uDD34 Redshift & Blueshift \u2014 Motion vs Expanding Space"),
                 React.createElement("button", { "aria-label": "Toggle redshift and blueshift section",
                   onClick: function() { upd('showRedshift', !d.showRedshift); setTimeout(checkChallenges, 50); },
                   className: "transition-colors text-[11px] text-red-400 hover:text-red-300"
@@ -3671,7 +3751,7 @@ var d = labToolData.universe || {};
                 // Animated Doppler canvas
                 React.createElement("canvas", { tabIndex: 0,
                   role: 'img',
-                  'aria-label': 'Animated redshift and blueshift Doppler effect demonstration: top half shows a galaxy approaching with light waves compressed to blue, bottom half shows a galaxy receding with light waves stretched to red',
+                  'aria-label': 'Animated ordinary Doppler demonstration for light: top half shows a galaxy approaching with light waves compressed toward blue, bottom half shows a galaxy receding with light waves stretched toward red. A note below distinguishes this from cosmological redshift.',
                   style: { width: '100%', height: '260px', display: 'block', borderRadius: '8px' },
                   ref: function(rsEl) {
                     if (!rsEl || rsEl._rsInit) return;
@@ -3803,14 +3883,24 @@ var d = labToolData.universe || {};
                 }),
                 // Explanation text
                 React.createElement("div", { className: "space-y-1.5 text-[11px] text-slate-300" },
-                  React.createElement("div", null, "\uD83D\uDD34 **Redshift**: When an object moves away from us, its light waves get stretched to longer (redder) wavelengths. The faster it recedes, the greater the redshift. Edwin Hubble discovered that distant galaxies are all redshifted \u2014 proving the universe is expanding."),
-                  React.createElement("div", null, "\uD83D\uDD35 **Blueshift**: When an object approaches us, its light waves are compressed to shorter (bluer) wavelengths. Andromeda is one of the few blueshifted galaxies \u2014 it's heading toward us at 300 km/s!"),
-                  React.createElement("div", null, "\uD83C\uDF20 **Cosmological Redshift**: Not a Doppler effect! Space itself is expanding, stretching the wavelength of photons traveling through it. The CMB has been redshifted by a factor of 1,089.")
+                  React.createElement("div", null, "\uD83D\uDD34 **Motion redshift**: For nearby objects, light from something moving away is stretched to longer, redder wavelengths. Light from something moving toward us is compressed toward blue."),
+                  React.createElement("div", null, "\uD83D\uDD35 **Blueshift**: Andromeda is slightly blueshifted because local gravity pulls it toward the Milky Way. This is a local motion effect, not a contradiction of cosmic expansion."),
+                  React.createElement("div", null, "\uD83C\uDF20 **Cosmological redshift**: For distant galaxies, the main effect is expanding space stretching photons while they travel. Hubble's law revealed a distance-redshift pattern: farther galaxies usually have larger redshifts.")
+                ),
+                React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
+                  React.createElement("div", { className: "rounded-lg border border-blue-500/30 bg-blue-500/10 p-2" },
+                    React.createElement("div", { className: "text-[11px] font-bold text-blue-200" }, "Ordinary Doppler"),
+                    React.createElement("div", { className: "text-[11px] text-slate-300" }, "Best for nearby stars and galaxies where motion through space is small compared with light speed.")
+                  ),
+                  React.createElement("div", { className: "rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/10 p-2" },
+                    React.createElement("div", { className: "text-[11px] font-bold text-fuchsia-200" }, "Cosmic Expansion"),
+                    React.createElement("div", { className: "text-[11px] text-slate-300" }, "Best for distant galaxies and the CMB. The wavelength grows because the scale of space grows.")
+                  )
                 ),
                 // z-value formula
                 React.createElement("div", { className: "bg-slate-800 rounded-lg p-2 text-center border border-slate-700 mt-1" },
                   React.createElement("div", { className: "text-[11px] font-mono text-indigo-300" }, "z = (\u03BB_observed - \u03BB_emitted) / \u03BB_emitted"),
-                  React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, "z > 0 = redshift (receding) \u2022 z < 0 = blueshift (approaching) \u2022 z = 1 means wavelength doubled")
+                  React.createElement("div", { className: "text-[11px] text-slate-400 mt-0.5" }, "z > 0 means wavelength grew; z < 0 means wavelength shrank; z = 1 means the wavelength doubled.")
                 ),
                 // \u2500\u2500 Hubble's Law interactive: v = H\u2080 \u00D7 d \u2500\u2500
                 // Empirical foundation of expanding universe. Slider sets distance in Mpc;
@@ -3843,7 +3933,7 @@ var d = labToolData.universe || {};
                     React.createElement("div", { className: "text-[11px] font-mono text-slate-200 mb-1.5 text-center" },
                       "v = 70 \u00D7 ", React.createElement("span", { className: "text-amber-300 font-bold" }, distMpc),
                       " = ", React.createElement("span", { className: "text-rose-300 font-bold" }, velKms.toLocaleString()),
-                      " km/s",
+                      " km/s equivalent",
                       velKms > 299792 && React.createElement("span", { className: "text-fuchsia-400 ml-2 font-bold" }, "(> c \u2014 superluminal recession!)")
                     ),
                     // Mini Hubble diagram
@@ -3861,28 +3951,31 @@ var d = labToolData.universe || {};
                       React.createElement("text", { x: hW - hPad, y: hH - 1, fontSize: 5, fill: '#94a3b8', textAnchor: 'end' }, 'd (Mpc)')
                     ),
                     React.createElement("div", { className: "text-[10px] text-slate-400 mt-1 italic text-center" },
-                      'Linear relation: every doubling of distance doubles recession velocity. The slope IS the expansion rate of the universe.')
+                      'For nearby galaxies this linear model works well. At large distances, redshift needs the full expansion history of the universe, not a simple speed.')
                   );
                 })(),
                 // Real examples
                 React.createElement("div", { className: "text-[11px] font-bold text-white mt-2 mb-1" }, "Real Examples:"),
                 React.createElement("div", { className: "space-y-1.5" },
                   REDSHIFT_EXAMPLES.map(function(re, rei) {
+                    var sourceLabel = re.source === 'motion' ? 'ordinary motion' : re.source === 'mixed' ? 'nearby mix' : 'expanding space';
+                    var sourceColor = re.source === 'motion' ? '#60a5fa' : re.source === 'mixed' ? '#fbbf24' : '#d946ef';
                     return React.createElement("div", { key: rei, className: "flex items-start gap-2 bg-slate-800 rounded-lg p-2 border border-slate-700" },
                       React.createElement("span", { className: "text-sm mt-0.5" }, re.icon),
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("div", { className: "flex items-center gap-1.5" },
                           React.createElement("span", { className: "text-[11px] font-bold text-white" }, re.name),
-                          React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full font-bold " + (re.type === 'blueshift' ? 'bg-blue-900 text-blue-300' : 'bg-red-900 text-red-300') }, re.type + " z=" + re.z)
+                          React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full font-bold " + (re.type === 'blueshift' ? 'bg-blue-900 text-blue-300' : 'bg-red-900 text-red-300') }, re.type + " z=" + re.z),
+                          React.createElement("span", { className: "text-[10px] px-1.5 py-0.5 rounded-full font-bold border", style: { color: sourceColor, borderColor: sourceColor + '66', background: sourceColor + '18' } }, sourceLabel)
                         ),
-                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "Velocity: " + re.vel),
+                        React.createElement("div", { className: "text-[11px] text-slate-200" }, "Signal: " + re.signal),
                         React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, re.desc)
                       )
                     );
                   })
                 ),
                 React.createElement("button", { "aria-label": "Listen to explanation",
-                  onClick: function() { speakText('Redshift happens when an object moves away from us, stretching its light to longer, redder wavelengths. Blueshift happens when an object approaches, compressing light to shorter, bluer wavelengths. Edwin Hubble discovered that almost all galaxies are redshifted, proving the universe is expanding.'); },
+                  onClick: function() { speakText('Redshift means light is shifted to longer wavelengths. Nearby redshift can come from ordinary motion away from us, while blueshift can come from motion toward us. For distant galaxies, cosmological redshift is usually the bigger idea: expanding space stretches the light while it travels. Hubble found that farther galaxies tend to have larger redshifts, which is evidence that the universe is expanding.'); },
                   className: "transition-colors mt-1 text-[11px] text-red-400 hover:text-red-300"
                 }, "\uD83D\uDD0A Listen to explanation")
               )

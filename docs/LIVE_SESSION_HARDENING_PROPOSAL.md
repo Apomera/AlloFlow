@@ -3,6 +3,8 @@
 **Status:** Proposal v1.0 — 2026-07-01. Written for review by an IT/security professional before
 the classroom phase. Companion to `docs/LIVE_SESSION_PROTOCOL.md` (the as-built protocol spec).
 
+> **Proposal snapshot note (2026-07-09):** This July 1, 2026 proposal reflects the live-session security model known at that time. Verify current `firestore.rules`, `docs/LIVE_SESSION_PROTOCOL.md`, Desktop/School Box session behavior, and Firebase/App Check/TURN configuration before treating backend, mitigation, or gap statements below as current.
+
 **What this covers:** the four infrastructure-level gaps that in-app code cannot close on its own —
 Firestore security rules, request attestation (App Check), TURN relay for school networks, and
 session-code entropy — plus the client-side mitigations already shipped and their honest limits.

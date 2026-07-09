@@ -5,7 +5,7 @@
   **Adaptive Levels, Layers, & Outputs ➔ Flexible Learning Options for Whole-Student Education**
 
   [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
-  [![Local-First Architecture](https://img.shields.io/badge/Architecture-Local--First-brightgreen.svg)](#-local-first-the-school-box)
+  [![Local-First Architecture](https://img.shields.io/badge/Architecture-Local--First-brightgreen.svg)](#-local-first-desktop-and-school-box)
   [![Privacy: FERPA & COPPA](https://img.shields.io/badge/Privacy-FERPA_Compatible-red.svg)](#-privacy--ferpa-compliance)
   [![Accessibility: WCAG 2.1 AA](https://img.shields.io/badge/Accessibility-WCAG_2.1_AA-blue.svg)](#-accessibility)
   [![UDL Aligned](https://img.shields.io/badge/UDL-Aligned-purple.svg)](#-udl-alignment)
@@ -30,7 +30,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 3. **Click Fullpack** — leveled text, glossary, quizzes, and scaffolds generated in one click
 4. **Start a Live Session** to push resources to student devices in real-time
 
-> 💡 For self-hosted deployment on district hardware, see [School Box](#-local-first-the-school-box) below.
+> 💡 For local-first use on a teacher laptop, see [desktop/README.md](../desktop/README.md). For school-owned server/appliance experiments, see [School Box](#-local-first-desktop-and-school-box) below.
 
 ---
 
@@ -38,7 +38,7 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 
 | Main Interface | Live Session | STEM Lab |
 |:-:|:-:|:-:|
-| ![Main interface showing source text input and generated leveled reading](docs/screenshots/main-interface.png) | ![Live Session mode with Boss Battle active on student devices](docs/screenshots/live-session.png) | ![STEM Lab grid showing 108 interactive simulation tiles](docs/screenshots/stem-lab.png) |
+| ![Main interface showing source text input and generated leveled reading](docs/screenshots/main-interface.png) | ![Live Session mode with Boss Battle active on student devices](docs/screenshots/live-session.png) | ![STEM Lab grid showing current interactive simulation tiles](docs/screenshots/stem-lab.png) |
 
 | Adventure Mode | BehaviorLens | Word Sounds |
 |:-:|:-:|:-:|
@@ -97,13 +97,13 @@ AlloFlow is an **open-source, privacy-first AI differentiation engine** built fo
 | **17 Assessment Presets** | WISC-V, WIAT-4, BASC-3 (Parent & Teacher), Vineland-3, BRIEF-2, Conners-4, WJ-IV COG & ACH, KABC-II, DAS-II, CELF-5, KTEA-3, SRS-2, GARS-3, BOT-2 |
 | **Student Analytics (RTI)** | Automated Tier 1/2/3 classification with aimline monitoring (4-week warning, 6-week critical alerts); ORF, Math Fluency, and Literacy CBM probes; Pearson correlation analysis; anomaly flagging; CSV export |
 | **Math Fluency Probes** | K–8 grade-normed DCPM arithmetic drills (addition, subtraction, multiplication, division) with error analysis and frustration detection |
-| **PDF Accessibility Pipeline** | Upload any PDF → 5-auditor triangulated AI audit with statistical analysis (ICC, Cronbach's alpha) → one-click WCAG remediation via Vision API → axe-core verification → self-healing auto-fix loop → preview/edit with themes, brand matching, and AI image tools → export as accessible PDF, HTML, or audio |
+| **PDF Accessibility Pipeline** | Upload any PDF → multi-auditor AI audit → one-click WCAG remediation via Vision API + OCR fallbacks → axe-core verification → self-healing auto-fix loop → native tagged-PDF output with in-app structural checks and optional veraPDF/PAC-style QA → preview/edit with themes, brand matching, and AI image tools → export as accessible PDF, HTML, or audio |
 
 ---
 
-## 🧮 STEM Lab (108 Interactive Simulations)
+## 🧮 STEM Lab (111 Tool Files / 116 Registered Plugin IDs)
 
-The STEM Lab is a dynamically-loaded suite of **108 browser-based interactive tools** spanning:
+The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. As of the July 2026 codebase review, the workspace contains **111 `stem_tool_*.js` files** and **116 unique registered plugin IDs** because a few tools preserve aliases or paired tool IDs.
 
 | Domain | Tools |
 |--------|-------|
@@ -137,56 +137,57 @@ Highlights include the **Growth Mindset Workshop** (Brain Science, Reframe Engin
 
 ---
 
-## 🔐 Privacy & FERPA Compliance
+## 🔐 Privacy & FERPA-Aligned Deployment
 
-**No student data leaves your school.**
+AlloFlow is designed so schools can keep student data inside the browser, teacher device, or school-controlled infrastructure. Cloud use is explicit and deployment-dependent.
 
 | Principle | Implementation |
 |-----------|----------------|
-| **Zero PII Required** | The tool never requires names, IDs, or identifying information |
-| **On-Device Storage** | All student data persists in the browser's local storage — never written to cloud databases |
+| **No PII Required** | The tool does not require names, IDs, or identifying information |
+| **On-Device Storage** | Most ordinary work persists in browser local storage or downloaded project files; live-session cloud paths are designed to avoid durable student records |
 | **TeacherGate** | Clinical tools, grading rubrics, and answer keys are isolated behind educator verification |
-| **Dual-Engine Offline TTS** | Both Kokoro (English) and Piper (40+ languages) run entirely inside the browser — audio never hits cloud APIs |
-| **Air-Gap Option** | School Box deployment physically disconnects from all external APIs |
+| **Local Voice/ASR Options** | Desktop can run local voice and transcription paths; web deployments can fall back to browser/local options when available |
+| **Local-First Options** | AlloFlow Desktop supports no-Docker local use and same-room LAN sessions; the Docker School Box stack is optional server/appliance infrastructure |
 
-> For districts using **Google Workspace for Education**: Firebase Hosting (the cloud deployment path) uses only static file delivery — no student data is written to Google's servers. Your existing Google Workspace agreement covers this.
+> For districts using **Google Workspace for Education**: Canvas/Firebase coverage and student-privacy obligations depend on the district's account, contracts, retention settings, and actual use. AlloFlow is built to support FERPA-aligned deployments, but final compliance is a district/legal determination.
 
 ---
 
-## 🏫 Local-First: The "School Box"
+## 🏫 Local-First: Desktop and School Box
 
-> **Status: In Development.** The School Box air-gapped deployment is being actively developed in collaboration with **[Tyler Despain of Physher](https://physher.com)**. The architecture is designed and the Docker configuration exists, but the full local stack is not yet operational. The Firebase Hosting cloud deployment (see [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md)) is the current production path.
+> **Status as of July 9, 2026:** AlloFlow Desktop is the recommended local-first path for a teacher laptop or personal workstation. It serves the bundled app locally, manages keys and local AI settings, supports the built-in local engine, and can run same-room Desktop LAN sessions without Docker. The Docker School Box stack remains an optional server/appliance path for school-owned boxes, district/server experiments, and heavier air-gapped infrastructure.
 
-For districts that need **complete data sovereignty and zero ongoing API costs**, AlloFlow is designed to run entirely on local intranet hardware via Docker.
+For everyday local use:
 
-```bash
-# Clone the repository
-git clone https://github.com/apomera/AlloFlow.git
-
-# Start all services (Ollama LLM + TTS + local database + search)
-docker-compose up -d
-
-# Access at http://localhost:3000
+```powershell
+npm.cmd run desktop:check
+npm.cmd run desktop:smoke
+npm.cmd run desktop
 ```
 
-**What will run locally:**
-- **Ollama** — LLM inference (Llama 3.1, Phi-3.5) on your own GPU
-- **PocketBase** — local database replacing Firebase
-- **Piper / Edge TTS** — offline text-to-speech
-- **SearXNG** — local web search for fact verification
-- **Nginx** — reverse proxy and SSL
+For optional School Box server/appliance testing:
 
-Recommended hardware: 32GB RAM + NVIDIA RTX 3090/4090. See [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) for the full Firebase cloud deployment guide.
+```bash
+docker compose up -d
+```
+
+**What can run locally:**
+- **AlloFlow Desktop** — bundled app hosting, local keys, diagnostics, built-in local engine, local ASR/TTS settings, and Desktop LAN sessions
+- **Optional Docker School Box stack** — server/appliance services such as PocketBase, Ollama, Piper, SearXNG, Flux, and Nginx when a school wants managed local infrastructure
+- **LM Studio / Ollama / LocalAI** — compatibility paths for users who already run those local providers
+- **PocketBase** — local database replacing Firebase
+
+Hardware needs depend on the local model and service profile. See [desktop/README.md](../desktop/README.md), [docker/README.md](../docker/README.md), and [DEPLOY_YOUR_OWN.md](../DEPLOY_YOUR_OWN.md).
 
 ---
 
 ## ♿ Accessibility
 
-AlloFlow is **WCAG 2.1 AA compliant**. All interactive elements — including games — are fully operable without a mouse.
+AlloFlow is built toward **WCAG 2.1 AA** with keyboard-first interaction patterns, automated audits, and per-tool accessibility gates. Compliance-sensitive deployments should still verify the exact workflow and exported artifacts they use.
 
 - **Dyslexia Fonts** — OpenDyslexic, Lexend, Atkinson Hyperlegible
 - **Bionic Reading** — bolds initial letters to guide decoding
-- **Offline TTS** — word-for-word tracking in 40+ languages (Kokoro + Piper)
+- **Voice options** — word-for-word tracking through configured browser, cloud, Desktop, or optional local voice engines
 - **Color Overlays** — Peach, Blue, Yellow tints for Irlen syndrome support
 - **Reading Ruler** — mouse-following line isolation bar
 - **High Contrast & Dark Mode**
@@ -203,7 +204,8 @@ AlloFlow is **WCAG 2.1 AA compliant**. All interactive elements — including ga
 |------|------|---------------|
 | **Gemini Canvas** | Free | A Google account (uses your free daily Gemini quota) |
 | **Firebase Hosting** | Free tier available | A Firebase project; see [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md) |
-| **School Box (Docker)** | Hardware cost only | Local server; no recurring API fees ever |
+| **AlloFlow Desktop** | Free | Teacher laptop/workstation; no Docker required |
+| **School Box Server (optional Docker)** | Hardware cost only | School-owned server/appliance stack |
 
 ---
 
@@ -214,7 +216,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 | UDL Principle | AlloFlow Tools |
 |---------------|----------------|
 | **Engagement** | Adventure Mode, Boss Battle, Escape Room, Democracy Mode, Symbol Quest, Symbol Search, StoryForge, Growth Mindset Workshop, Gamification Engine |
-| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (108 tools), SEL Hub (70 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
+| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (111 tool files / 116 registered IDs), SEL Hub (70 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
 | **Action & Expression** | Writing Scaffolds, StoryForge, Auto-Grader, Rubrics, Oral Fluency Coach, Dictation, QTI Export, Symbol Studio, Report Writer, PDF Pipeline |
 
 ---
@@ -235,7 +237,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 
 ## 🔧 For Developers
 
-AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`, ~29K lines) dynamically loads ~250 spoke modules on demand: STEM Lab (108 tools), SEL Hub (70 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), Professional Development, Doc Pipeline, Games, AI Backend, and more. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and [architecture.md](./architecture.md) for a full technical overview.
+AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`, ~31K lines in the current deploy copy) dynamically loads 151 top-level build modules plus large plugin families on demand: STEM Lab (111 tool files / 116 registered IDs), SEL Hub (70 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), Professional Development, Doc Pipeline, Games, AI Backend, and more. See [CONTRIBUTING.md](../CONTRIBUTING.md) for architecture rules and [architecture.md](../architecture.md) for a full technical overview.
 
 ```bash
 # Cloud deployment (Firebase)
@@ -280,7 +282,7 @@ Contributions are welcome — especially new STEM/SEL tools, accessibility impro
 
 ## 📄 License & Credits
 
-**AGPL v3** — free and open source forever, ensuring educational technology remains a public good.
+**AGPL v3** — free and open source under a strong copyleft license, supporting educational technology as a public good.
 
 © 2026 Aaron Pomeranz, PsyD
 

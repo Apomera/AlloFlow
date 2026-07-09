@@ -1,5 +1,7 @@
 # Gujarati (ગુજરાતી) — Translation Handoff / Native-Review Punchlist
 
+> **Historical native-review handoff (2026-07-09):** This records the June 2026 Gujarati pack QA state and punchlist. Re-run current i18n verification and inspect `lang/gujarati.js` before treating the issue counts below as current.
+
 **Pack:** `lang/gujarati.js` (11,198 keys) — built 2026-06-20 (AI translation, machine-verified).
 **Status:** Registered and shipping. Structurally complete: 100% key parity with the reference pack, 0 placeholder mismatches, 0 JSON errors, arrays + DNT terms preserved, deep-screen 0 defects. A 64-key stratified native-fluency review scored **52 good / 12 minor / 0 bad**.
 

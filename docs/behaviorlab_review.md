@@ -2,6 +2,8 @@ _Generated 2026-06-15 via a 27-agent review workflow (map -> 8-dimension analysi
 
 # behaviorLab — Decision-Ready Deep-Dive
 
+> **Historical review snapshot, not current open-bug status (2026-07-09):** This June review is preserved for its evidence trail and ethical analysis. Later code and QA work may have changed individual findings; verify against current `stem_lab/stem_tool_behaviorlab.js`, mirrors, tests, and a11y/visual reports before treating an item as open.
+
 **Target:** `stem_lab/stem_tool_behaviorlab.js` (~6,095 lines, hand-maintained; build.js mirrors root → `prismflow-deploy/public/` at deploy)
 **Audience:** Aaron (school psychologist; FBA + behavior intervention daily practice; navigates the ABA/neurodiversity tension professionally)
 **Status:** Deploy HELD. This is analysis only. Every line ref below was re-verified against working-tree bytes.

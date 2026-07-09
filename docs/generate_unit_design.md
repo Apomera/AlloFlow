@@ -1,8 +1,6 @@
-This is a synthesis-and-finalization task: fold the critique into the design doc and produce the final markdown. The grounding facts, design, and critique are all provided in the prompt. I don't need to re-read files — the critique already verified the load-bearing claims against real bytes, and my job is to write the final doc that honestly incorporates those corrections.
-
-Here is the final design doc.
-
 # Generate Unit — Throughline Multi-Lesson Builder (v2.0 Design)
+
+> **Historical design snapshot, not approved current build scope (2026-07-09):** This design was finalized from a critique workflow and intentionally recommends shelving the feature until the PDF reliability gate clears. Verify current Throughline/Generate Unit source and project priorities before treating any implementation detail below as active.
 
 ## TL;DR
 

@@ -49,9 +49,9 @@
     return fn ? fn.apply(this, arguments) : false;
   };
 
-// ── Storybook picker (Quick Start ↔ Reading Library bridge) ──────────────
-// Compact picker over the same mirrored StoryWeaver data the Reading Library
-// serves (allo-reading-library-index@1). Deliberately dependency-free (plain
+// Reading Catalog picker (Quick Start to Reading Library bridge).
+// Compact picker over the same mirrored Reading Library catalog data
+// (allo-reading-library-index@1). Deliberately dependency-free (plain
 // createElement, own fetch chain) so the wizard works even when the
 // ReadingLibrary module has not loaded. Kept byte-identical in
 // quickstart_source.jsx and quickstart_module.js (hand-synced pair).
@@ -60,20 +60,73 @@ var STORYBOOK_BASES = [
   'https://raw.githubusercontent.com/Apomera/AlloFlow/main/reading_library/',
   './reading_library/',
 ];
-// Reading levels ≈ grade bands (StoryWeaver's own leveling). Used to label and
+// Reading levels are approximate grade bands. Used to label and
 // pre-select the picker's level filter from the grade chosen in wizard step 1.
 var STORYBOOK_LEVELS = {
-  '1': 'First words (≈ K–1)',
-  '2': 'First sentences (≈ Gr 1–2)',
-  '3': 'Reading alone (≈ Gr 2–3)',
-  '4': 'Longer stories (≈ Gr 3–5)',
+  '1': 'Level 1 - First words (K-1)',
+  '2': 'Level 2 - First sentences (Gr 1-2)',
+  '3': 'Level 3 - Reading on my own (Gr 2-3)',
+  '4': 'Level 4 - Longer stories (Gr 3-5)',
+  '5': 'Level 5 - Middle-grade nonfiction (Gr 6-8)',
+  '6': 'Level 6 - Upper-grade source text (Gr 9-12)',
 };
+var CATALOG_SOURCE_LABELS = {
+  storyweaver: 'StoryWeaver',
+  frontiers: 'Frontiers for Young Minds',
+  nasa: 'NASA',
+  noaa: 'NOAA',
+  usgs: 'USGS',
+  wikisource: 'Wikisource',
+  loc: 'Library of Congress',
+  gutenberg: 'Project Gutenberg',
+  openstax: 'OpenStax',
+  libretexts: 'LibreTexts',
+  ck12: 'CK-12',
+  unknown: 'Other source',
+};
+function catalogSourceLabel(id) {
+  return CATALOG_SOURCE_LABELS[id] || id || CATALOG_SOURCE_LABELS.unknown;
+}
+function catalogSourceId(book) {
+  if (book && book.sourceId) return String(book.sourceId).toLowerCase();
+  if (book && book.source && book.source.id) return String(book.source.id).toLowerCase();
+  var raw = [
+    book && book.source && book.source.name,
+    book && book.source && book.source.url,
+    book && book.publisher,
+  ].join(' ').toLowerCase();
+  if (raw.indexOf('storyweaver') !== -1 || raw.indexOf('pratham') !== -1) return 'storyweaver';
+  if (raw.indexOf('frontiers') !== -1) return 'frontiers';
+  if (raw.indexOf('nasa') !== -1) return 'nasa';
+  if (raw.indexOf('noaa') !== -1) return 'noaa';
+  if (raw.indexOf('usgs') !== -1) return 'usgs';
+  if (raw.indexOf('wikisource') !== -1) return 'wikisource';
+  if (raw.indexOf('loc.gov') !== -1 || raw.indexOf('library of congress') !== -1) return 'loc';
+  if (raw.indexOf('gutenberg') !== -1) return 'gutenberg';
+  if (raw.indexOf('openstax') !== -1) return 'openstax';
+  if (raw.indexOf('libretexts') !== -1) return 'libretexts';
+  if (raw.indexOf('ck-12') !== -1 || raw.indexOf('ck12') !== -1) return 'ck12';
+  return 'unknown';
+}
+function catalogAttributionLine(book) {
+  var sourceId = catalogSourceId(book);
+  var sourceName = (book && book.source && book.source.name) || (book && book.publisher) || catalogSourceLabel(sourceId);
+  var license = book && book.license ? book.license : (sourceId === 'storyweaver' ? 'CC BY 4.0' : '');
+  return [sourceName, license].filter(Boolean).join(' - ');
+}
+function catalogCover(book) {
+  if (!book || !book.cover) return null;
+  if (typeof book.cover === 'string') return book.cover;
+  return book.cover.card || book.cover.url || book.cover.full || null;
+}
 function storybookGradeToLevel(grade) {
   var g = String(grade || '').toLowerCase();
   if (g.indexOf('kinder') !== -1 || /\b(pre-?k|1st)\b/.test(g)) return '1';
   if (/\b2nd\b/.test(g)) return '2';
   if (/\b3rd\b/.test(g)) return '3';
-  if (/\b([4-9]|1[0-2])th\b/.test(g) || g.indexOf('college') !== -1) return '4';
+  if (/\b(4th|5th)\b/.test(g)) return '4';
+  if (/\b(6th|7th|8th)\b/.test(g)) return '5';
+  if (/\b(9th|10th|11th|12th)\b/.test(g) || g.indexOf('college') !== -1) return '6';
   return '';
 }
 function StorybookPicker(props) {
@@ -112,10 +165,14 @@ function StorybookPicker(props) {
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (book) {
         setBusy(null);
+        var pages = Array.isArray(book.pages) ? book.pages : [];
         var parts = [book.title || ''];
-        (book.pages || []).forEach(function (p) { if (p.text) parts.push(p.text); });
-        var credits = (book.authors || []).join(', ');
-        var attribution = (credits ? credits + ' · ' : '') + 'StoryWeaver, Pratham Books · CC BY 4.0';
+        pages.forEach(function (p) {
+          if (typeof p === 'string' && p.trim()) parts.push(p);
+          else if (p && p.text) parts.push(p.text);
+        });
+        var attribution = catalogAttributionLine(book);
+        var sourceId = catalogSourceId(book);
         // 3rd arg = compact book ref, shape-matched to the reader's
         // save-to-lesson item so the host can add it to the resource pack.
         props.onPicked(parts.join('\n\n').trim(), {
@@ -127,30 +184,44 @@ function StorybookPicker(props) {
           language: book.language,
           langCode: book.langCode,
           level: book.level,
-          cover: entry.cover || (book.cover && book.cover.card) || null,
+          cover: entry.cover || catalogCover(book),
           hasAudio: !!book.audio,
+          pageCount: pages.length,
           description: book.description || '',
           attribution: attribution,
+          sourceId: sourceId,
+          sourceName: catalogSourceLabel(sourceId),
+          license: book.license || '',
         });
       })
       .catch(function () {
         setBusy(null);
-        if (props.addToast) props.addToast(wt('wizard.storybook_failed', 'Could not open that book right now.'), 'error');
+        if (props.addToast) props.addToast(wt('wizard.storybook_failed', 'Could not open that resource right now.'), 'error');
       });
   };
   if (err) return e('p', { className: 'text-sm text-red-600' }, wt('wizard.storybook_unavailable', 'The book library is not reachable right now — try another source option.'));
   if (!idx) return e('p', { className: 'text-sm text-slate-500 italic' }, wt('wizard.storybook_loading', 'Loading the library…'));
+  var levels = Array.from(new Set((idx.books || []).map(function (b) { return String(b.level || ''); }).filter(Boolean))).sort(function (a, b) {
+    return (Number(a) - Number(b)) || String(a).localeCompare(String(b));
+  });
   var matches = idx.books.filter(function (b) {
     if (lang && b.language !== lang) return false;
     if (level && String(b.level) !== level) return false;
     if (q) {
-      var hay = (b.title + ' ' + (b.authors || []).join(' ')).toLowerCase();
+      var hay = [
+        b.title,
+        (b.authors || []).join(' '),
+        b.description,
+        b.sourceId,
+        b.source && b.source.name,
+        (b.subjects || []).join(' '),
+      ].join(' ').toLowerCase();
       if (hay.indexOf(q.toLowerCase()) === -1) return false;
     }
     return true;
   }).sort(function (a, b) {
-    // Predictable browse order: easiest reading level first, then A–Z.
-    return (Number(a.level) - Number(b.level)) || String(a.title).localeCompare(String(b.title));
+    // Predictable browse order: easiest reading level first, then A-Z.
+    return (Number(a.level || 99) - Number(b.level || 99)) || String(a.title).localeCompare(String(b.title));
   });
   return e('div', null,
     e('div', { className: 'flex flex-wrap gap-2 mb-2' },
@@ -160,7 +231,7 @@ function StorybookPicker(props) {
         'aria-label': wt('wizard.storybook_level', 'Reading level'),
       },
         e('option', { value: '' }, wt('wizard.storybook_all_levels', 'All levels')),
-        ['1', '2', '3', '4'].map(function (lv) { return e('option', { key: lv, value: lv }, 'L' + lv + ' · ' + (STORYBOOK_LEVELS[lv] || '')); })
+        levels.map(function (lv) { return e('option', { key: lv, value: lv }, STORYBOOK_LEVELS[lv] || ('Level ' + lv)); })
       ),
       e('select', {
         className: 'p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
@@ -173,16 +244,16 @@ function StorybookPicker(props) {
       e('input', {
         dir: 'auto',
         className: 'flex-grow min-w-0 p-2 border-2 border-slate-200 rounded-xl text-sm',
-        placeholder: wt('wizard.storybook_search', 'Search titles…'),
+        placeholder: wt('wizard.storybook_search', 'Search titles, sources, subjects...'),
         value: q, onChange: function (ev) { setQ(ev.target.value); },
-        'aria-label': wt('wizard.storybook_search', 'Search titles…'),
+        'aria-label': wt('wizard.storybook_search', 'Search titles, sources, subjects...'),
       })
     ),
     level && level === storybookGradeToLevel(props.grade) ? e('p', { className: 'text-[11px] text-amber-700 mb-2' },
-      wt('wizard.storybook_grade_note', 'Showing books matched to your grade — choose “All levels” to see everything.')) : null,
+      wt('wizard.storybook_grade_note', 'Showing resources matched to your grade - choose All levels to see everything.')) : null,
     e('p', { className: 'text-[11px] font-semibold text-slate-500 mb-1' },
-      matches.length + ' ' + (matches.length === 1 ? wt('wizard.storybook_one', 'book') : wt('wizard.storybook_many', 'books'))),
-    matches.length === 0 ? e('p', { className: 'text-sm text-slate-500 italic' }, wt('wizard.storybook_none', 'No books match — try different filters.')) : null,
+      matches.length + ' ' + (matches.length === 1 ? wt('wizard.storybook_one', 'resource') : wt('wizard.storybook_many', 'resources'))),
+    matches.length === 0 ? e('p', { className: 'text-sm text-slate-500 italic' }, wt('wizard.storybook_none', 'No resources match - try different filters.')) : null,
     e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[46vh] overflow-y-auto pr-1' },
       matches.map(function (b) {
         return e('button', {
@@ -194,14 +265,14 @@ function StorybookPicker(props) {
           b.cover ? e('img', { src: b.cover, alt: '', loading: 'lazy', className: 'w-14 h-14 rounded-lg object-cover bg-slate-100 flex-shrink-0' }) : e('span', { className: 'w-14 h-14 rounded-lg bg-amber-50 flex items-center justify-center text-2xl flex-shrink-0', 'aria-hidden': 'true' }, '📖'),
           e('span', { className: 'min-w-0' },
             e('span', { className: 'block font-bold text-slate-700 text-sm leading-snug', dir: 'auto' }, (busy === b.slug ? '⏳ ' : '') + b.title),
-            e('span', { className: 'block text-[11px] text-slate-500 mb-0.5' }, b.language + ' · L' + b.level + (b.hasAudio ? ' · 🔊' : '')),
+            e('span', { className: 'block text-[11px] text-slate-500 mb-0.5' }, catalogSourceLabel(catalogSourceId(b)) + ' - ' + b.language + (b.level ? ' - L' + b.level : '') + (b.hasAudio ? ' - audio' : '')),
             b.description ? e('span', { className: 'block text-[11px] text-slate-500 line-clamp-2', dir: 'auto' }, b.description) : null
           )
         );
       })
     ),
     e('p', { className: 'text-[11px] text-slate-500 mt-2' },
-      wt('wizard.storybook_credit', 'Books from StoryWeaver, an open library by Pratham Books (CC BY 4.0).'))
+      wt('wizard.storybook_credit', 'Reading Catalog resources come from StoryWeaver and other open/public educational sources. Check each item for its license.'))
   );
 }
 
@@ -834,9 +905,9 @@ const QuickStartWizard = React.memo(({
     "aria-hidden": "true"
   }, "📖")), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-amber-700 text-lg"
-  }, wt('wizard.storybooks', 'Story Books')), /*#__PURE__*/React.createElement("span", {
+  }, wt('wizard.storybooks', 'Reading Catalog')), /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-600 mt-1"
-  }, wt('wizard.storybooks_desc', 'Real picture books in 38 languages'))), /*#__PURE__*/React.createElement("button", {
+  }, wt('wizard.storybooks_desc', 'Books, articles, and primary sources'))), /*#__PURE__*/React.createElement("button", {
     "data-help-key": "wizard_generate_source",
     "aria-label": t('common.generate'),
     onClick: () => {
@@ -1015,9 +1086,9 @@ const QuickStartWizard = React.memo(({
     size: 18
   }))))), localData.sourceMode === 'storybook' && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "block text-lg font-bold text-slate-700 mb-2"
-  }, "📖 ", wt('wizard.storybooks_title', 'Pick a story book')), /*#__PURE__*/React.createElement("p", {
+  }, "📖 ", wt('wizard.storybooks_title', 'Pick from the reading catalog')), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 mb-4 text-sm"
-  }, wt('wizard.storybooks_helper', 'Open picture books from StoryWeaver in 38 languages — the book text becomes your source material for every tool.')), !(typeof localData.fetchedContent === 'string' && localData.fetchedContent) && /*#__PURE__*/React.createElement(StorybookPicker, {
+  }, wt('wizard.storybooks_helper', 'Open books, articles, primary sources, and picture books from the Reading Catalog. The selected text becomes your source material for every tool.')), !(typeof localData.fetchedContent === 'string' && localData.fetchedContent) && /*#__PURE__*/React.createElement(StorybookPicker, {
     t: t,
     grade: localData.grade,
     addToast: addToast,
@@ -1055,7 +1126,7 @@ const QuickStartWizard = React.memo(({
       resourceMeta: null
     })),
     className: "px-4 py-3 text-xs font-bold text-slate-600 hover:text-slate-700 bg-white border border-slate-400 rounded-xl"
-  }, wt('wizard.back_to_books', 'Choose another book')), /*#__PURE__*/React.createElement("button", {
+  }, wt('wizard.back_to_books', 'Choose another resource')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.continue'),
     onClick: () => setStep(4),
     className: "flex-grow bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-md"

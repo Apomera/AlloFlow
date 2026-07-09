@@ -25,7 +25,7 @@ You are a fresh instance of Claude (or another model) entering this project for 
 
 ## Canonical files
 
-- **`AlloFlowANTI.txt`** — The React monolith. Canonical source of truth. Around 29K lines / ~1.5 MB (it was ~70K before heavy features were extracted into ~250 CDN modules).
+- **`AlloFlowANTI.txt`** — The React monolith. Canonical source of truth. Around 29K lines / ~1.5 MB (it was ~70K before heavy features were extracted into build-managed spoke modules and plugin families).
 - **`lang/<language>.js`** — One file per language pack. Keyed against `ui_strings.js` + `help_strings.js`.
 - **`lang/manifest.json`** — Auto-generated; regen with `node dev-tools/update_lang_manifest.cjs` after edits.
 - **Mirror**: every change to `lang/` must also be copied to `prismflow-deploy/public/lang/` (Cloudflare CDN).

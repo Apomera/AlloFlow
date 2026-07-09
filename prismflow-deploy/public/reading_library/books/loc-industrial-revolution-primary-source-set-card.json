@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-industrial-revolution-primary-source-set-card",
+  "title": "Library of Congress Industrial Revolution Primary Sources",
+  "description": "A LOC source card for Industrial Revolution primary sources in the United States.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": [
+    "Industrialization",
+    "Primary sources",
+    "Labor history",
+    "U.S. history"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Library of Congress / item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/primary-source-sets/industrial-revolution-in-the-united-states/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The Library of Congress Industrial Revolution source set includes materials about factories, labor, transportation, immigration, cities, and economic change."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for analyzing cause and effect, continuity and change, and the lived experience behind industrial growth."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Library of Congress source sets include public-domain and rights-unknown primary sources. Use the item pages to confirm rights before mirroring individual documents."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

@@ -38,6 +38,7 @@ const BOOKS_DIR = path.join(ROOT, 'books');
 const CURATION_PATH = path.join(ROOT, 'curation.json');
 const INDEX_PATH = path.join(ROOT, 'index.json');
 const OPEN_CATALOG_PATH = path.join(ROOT, 'open_catalog.json');
+const CLI_ARGS = process.argv.slice(2);
 
 const API = 'https://storyweaver.org.in/api/v1';
 // StoryWeaver fronts with Cloudflare; a browser UA is required or every call 403s.
@@ -52,6 +53,11 @@ const LANGUAGES_PATH = path.join(ROOT, 'languages.json');
 const PLAN = JSON.parse(fs.readFileSync(LANGUAGES_PATH, 'utf8')).plan;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function valueAfterArg(flag) {
+  const idx = CLI_ARGS.indexOf(flag);
+  return idx === -1 ? null : CLI_ARGS[idx + 1];
+}
 
 // Slugs to never curate/fetch: the search API surfaces them but their read
 // endpoint is broken server-side (permanent 500), so --plan would otherwise
@@ -171,6 +177,7 @@ async function plan() {
   // target beyond ~24-minus-already added nothing; pagination lets a single
   // --plan pull a large batch. MAX_PAGES caps a runaway (24*40 = 960 scanned).
   const MAX_PAGES = 40;
+  const onlyLanguage = valueAfterArg('--plan-language') || valueAfterArg('--language');
   async function collectLevel(langPlan, level, want, audioOnly) {
     const extra = audioOnly ? '&story_type%5B%5D=audio' : '';
     for (let page = 1; page <= MAX_PAGES; page++) {
@@ -194,6 +201,7 @@ async function plan() {
     }
   }
   for (const langPlan of PLAN) {
+    if (onlyLanguage && langPlan.language !== onlyLanguage) continue;
     for (const [level, want] of Object.entries(langPlan.perLevel)) {
       await collectLevel(langPlan, level, want, false);
     }
@@ -202,7 +210,7 @@ async function plan() {
     // books: the word-by-word karaoke is the library's highest-value feature.
     // story_type=audio filters to titles that ship narration + VTT cues;
     // audioPerLevel is the TARGET narrated count per level.
-    if (langPlan.audioPerLevel) {
+    if (langPlan.audioPerLevel && !CLI_ARGS.includes('--skip-audio-topup')) {
       for (const [level, want] of Object.entries(langPlan.audioPerLevel)) {
         await collectLevel(langPlan, level, want, true);
       }
@@ -384,6 +392,14 @@ function indexEntryFromBook(book, file) {
   };
 }
 
+function storyWeaverFileName(slug) {
+  const clean = String(slug || 'storyweaver-book');
+  if (clean.length <= 120) return clean + '.json';
+  const id = /^(\d+)/.exec(clean);
+  const fallback = clean.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32);
+  return (id ? id[1] : fallback || 'storyweaver-book') + '-storyweaver.json';
+}
+
 function readOpenCatalogEntries() {
   if (!fs.existsSync(OPEN_CATALOG_PATH)) return [];
   const catalog = JSON.parse(fs.readFileSync(OPEN_CATALOG_PATH, 'utf8'));
@@ -410,7 +426,8 @@ async function fetchAll(onlySlug) {
     if (onlySlug && pick.slug !== onlySlug) continue;
     if (SKIP_SLUGS.has(pick.slug)) continue;
     try {
-      const bookPath = path.join(BOOKS_DIR, pick.slug + '.json');
+      const fileName = storyWeaverFileName(pick.slug);
+      const bookPath = path.join(BOOKS_DIR, fileName);
       let book;
       // Incremental by default: already-mirrored books index from disk with no
       // network fetch. --force (or --only <slug>) re-fetches.
@@ -421,7 +438,7 @@ async function fetchAll(onlySlug) {
         await sleep(700);
       }
       fs.writeFileSync(bookPath, JSON.stringify(book));
-      indexBooks.push(indexEntryFromBook(book, 'books/' + book.slug + '.json'));
+      indexBooks.push(indexEntryFromBook(book, 'books/' + fileName));
       console.log('OK', book.language, 'L' + book.level, book.title, '(' + book.stats.pages + 'p,', book.stats.words + 'w' + (book.audio ? ', audio' : '') + ')');
     } catch (err) {
       failures.push({ slug: pick.slug, error: err.message });
@@ -460,7 +477,7 @@ async function fetchAll(onlySlug) {
   if (failures.length) console.log('Failures:', JSON.stringify(failures, null, 2));
 }
 
-const args = process.argv.slice(2);
+const args = CLI_ARGS;
 if (args.includes('--probe')) probe(args[args.indexOf('--probe') + 1] || '');
 else if (args.includes('--plan')) plan();
 else if (args.includes('--fetch')) fetchAll(args[args.indexOf('--only') + 1] && args.includes('--only') ? args[args.indexOf('--only') + 1] : null);

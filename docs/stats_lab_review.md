@@ -1,5 +1,7 @@
 # Statistics Lab — deep-dive review (2026-06-21)
 
+> **Historical review snapshot, not current open-bug status (2026-07-09):** This June deep dive is preserved for its analysis of the tool at that time. Later STEM refinements and QA reports may have changed individual findings; verify against current source/mirrors/tests before treating an item as open.
+
 Tool: `stem_lab/stem_tool_statslab.js` (`statsLab`, ~5,540 lines). A genuine inferential
 statistics package (AP Psych / AP Bio focus): descriptives, t-tests, ANOVA + Tukey,
 correlation, linear & multiple regression, chi-square, repeated-measures ANOVA, Mann-Whitney,

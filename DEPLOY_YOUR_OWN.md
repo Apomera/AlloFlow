@@ -3,6 +3,8 @@
 > **Deploy your own AlloFlow instance in ~15 minutes.**
 > Your data stays in YOUR Firebase project. The AlloFlow team never touches it.
 
+> Looking for the no-Docker local app? Start with [desktop/README.md](./desktop/README.md). This guide is for schools that want their own Firebase-hosted web deployment.
+
 ---
 
 ## Prerequisites
@@ -75,9 +77,9 @@ ESLINT_NO_DEV_ERRORS=true
 DISABLE_ESLINT_PLUGIN=true
 ```
 
-> **Note**: If you plan to use local AI models (Ollama) instead of Gemini,
-> you can leave `REACT_APP_GEMINI_API_KEY` blank. Students/teachers
-> configure the AI backend in the app settings.
+> **Note**: If you plan to use a local provider instead of Gemini,
+> you can leave `REACT_APP_GEMINI_API_KEY` blank. Teachers configure
+> the AI backend in the app settings or in AlloFlow Desktop.
 
 ---
 
@@ -116,12 +118,12 @@ https://your-project-id.web.app
 
 ## Step 6: Optional — Enable Local AI
 
-To run AI processing on school hardware instead of cloud:
+To run AI processing on school hardware instead of a cloud provider:
 
-1. Install [Ollama](https://ollama.com) on a school computer
-2. Run: `ollama pull phi3.5` (or any preferred model)
-3. In AlloFlow → **AI Backend Settings** → select **Ollama (Local)**
-4. AI now runs entirely on-premises — no student data leaves the building
+1. For the installed app, use AlloFlow Desktop's built-in local engine or another local provider from the command center.
+2. For the web deployment, install a local provider such as Ollama, LM Studio, or LocalAI on school hardware.
+3. In AlloFlow → **AI Backend Settings**, select the matching local provider.
+4. Confirm the connection test passes before using student material. Local provider choices can keep inference on school-controlled hardware; compliance still depends on configuration and policy.
 
 ---
 
@@ -133,7 +135,7 @@ To run AI processing on school hardware instead of cloud:
 | Who has access to student data? | **Only your staff.** Firebase project access is controlled by you. |
 | Does AlloFlow send data to its developers? | **No.** The app runs in your Firebase project. We have zero access. |
 | What data is stored? | Anonymous session IDs, lesson content, quiz responses. No PII by default. |
-| FERPA compliant? | **Yes.** Data stays in your Firebase project, under your control. |
+| FERPA posture? | **Designed to support FERPA-aligned use.** Your district still controls the Firebase project, policies, contracts, retention, and access controls. |
 
 ---
 
@@ -143,15 +145,16 @@ The Gemini API free tier (available on Firebase Spark plan, no billing required)
 
 | Feature | Spark (Free) | Blaze (Pay-as-you-go) |
 |---------|:---:|:---:|
-| Text generation (Gemini Flash) | ✅ ~1,500 req/day | ✅ Higher limits |
-| Image generation (Gemini Flash Image) | ✅ Limited | ✅ Higher limits |
+| Text generation (Gemini text models) | ✅ ~1,500 req/day | ✅ Higher limits |
+| Image generation (Gemini/Imagen image models) | ✅ Limited | ✅ Higher limits |
 | Text-to-Speech (Gemini TTS) | ✅ Limited | ✅ Higher limits |
 | Standalone Imagen API | ⚠️ May require Blaze | ✅ Full access |
 | Rate limit | 100 RPM/user | Configurable |
 
 > **Tip**: For schools with heavy usage or needing image generation at scale,
-> consider either upgrading to Blaze (pay-as-you-go, still very affordable)
-> or using **local AI models** (Ollama) which have no rate limits at all.
+> consider either upgrading to Blaze (pay-as-you-go) or using a
+> school-controlled local provider such as AlloFlow Desktop's built-in
+> engine, Ollama, LM Studio, or LocalAI.
 
 ---
 
@@ -189,8 +192,8 @@ semester: **~$10–$60**.
 > sizing a billing alert.
 
 **To keep PDF remediation cost-free in deploy mode:** stay on the Spark tier and
-batch-process under ~50 PDFs/month, OR use the air-gapped School Box deployment
-with a local LLM (no API costs at all, requires hardware up-front).
+batch-process under ~50 PDFs/month, or use a local-first path such as AlloFlow
+Desktop or the optional School Box Server stack with suitable local models.
 
 **In-app cost visibility (Canvas vs deploy):**
 
@@ -226,7 +229,7 @@ Your `.env` and `.firebaserc` are gitignored — they won't be overwritten.
 | "Firebase project not found" | Run `firebase use --add your-project-id` |
 | Build fails | Ensure Node.js 18+: `node --version` |
 | Blank page after deploy | Check `.env` values match your Firebase project |
-| AI not working | Verify Gemini API key or Ollama is running locally |
+| AI not working | Verify the Gemini API key or confirm the selected local provider is running |
 
 ---
 

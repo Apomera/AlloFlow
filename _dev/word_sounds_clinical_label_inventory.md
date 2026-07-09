@@ -1,5 +1,7 @@
 # Word Sounds — Clinical-Label Relabeling Inventory
 
+> **Historical inventory snapshot (2026-07-09):** This May 2026 inventory records the clinical-label relabeling pass and line references from that moment. Verify current Word Sounds source/module files and i18n strings before treating the hit counts, line numbers, or proposed mappings below as current work.
+
 **Target file:** [`word_sounds_module.js`](../word_sounds_module.js) (25,299 lines, 95+ clinical-tone hits)
 **Setup files:** [`word_sounds_setup_module.js`](../word_sounds_setup_module.js), [`word_sounds_setup_source.jsx`](../word_sounds_setup_source.jsx) — **clean, no clinical labels**
 

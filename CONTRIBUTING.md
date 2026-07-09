@@ -15,14 +15,14 @@ AlloFlowANTI.txt / App.jsx          ← Core orchestrator (~29K lines)
 │   ├── stem_tool_dna.js             ← STEM plugin
 │   ├── stem_tool_physics.js         ← STEM plugin
 │   ├── stem_tool_cyberdefense.js    ← STEM plugin
-│   └── stem_tool_*.js               ← 108 STEM plugins total
+│   └── stem_tool_*.js               ← 111 STEM tool files / 116 registered plugin IDs
 ├── sel_hub/sel_tool_*.js            ← 70 SEL plugins
 ├── behavior_lens_module.js          ← Clinical FBA/BIP suite
 ├── report_writer_module.js          ← Psychoeducational report wizard
 ├── symbol_studio_module.js          ← AAC & visual communication
 ├── student_analytics_module.js      ← RTI probes & dashboards
 ├── math_fluency_module.js           ← CBM math fluency probes
-├── (~250 other *_module.js spokes)  ← cinematic_studio, pd_core, doc_pipeline, etc.
+├── 151 build-managed module entries ← cinematic_studio, pd_core, doc_pipeline, etc.
 ├── help_strings.js                  ← Contextual help content
 ├── ui_strings.js                    ← English i18n master (56 lang packs in lang/)
 └── audio_bank.json                  ← Pre-recorded phoneme audio
@@ -32,7 +32,7 @@ AlloFlowANTI.txt / App.jsx          ← Core orchestrator (~29K lines)
 
 ## 1. The Core Orchestrator (`AlloFlowANTI.txt` / `App.jsx`)
 
-The core UI, state management, and primary interaction tools live in the single ~29K-line `AlloFlowANTI.txt` file (which compiles to `App.jsx`). It used to be ~67K lines; it shrank as heavy features were extracted into ~250 CDN modules.
+The core UI, state management, and primary interaction tools live in the single ~29K-line `AlloFlowANTI.txt` file (which compiles to `App.jsx`). It used to be ~67K lines; it shrank as heavy features were extracted into build-managed spoke modules and plugin families.
 
 **Rules:**
 - **Do NOT split** the core file into standard React components (e.g., `Button.jsx`). AlloFlow must remain deployable as a single unified bundle for offline School Box instances.
@@ -54,7 +54,7 @@ Heavy modules load dynamically at runtime. Each spoke is a self-contained JS fil
 | Module File | Purpose | Access |
 |-------------|---------|--------|
 | `word_sounds_module.js` | Phonemic awareness, 8 activity types, ORF | All users |
-| `stem_lab/stem_lab_module.js` | STEM Lab host (108 plugin tools) | All users |
+| `stem_lab/stem_lab_module.js` | STEM Lab host (111 tool files / 116 registered IDs) | All users |
 | `behavior_lens_module.js` | FBA/BIP clinical suite, ABC data, IOA | TeacherGate |
 | `report_writer_module.js` | Psychoeducational report wizard | TeacherGate |
 | `symbol_studio_module.js` | AAC boards, visual schedules, social stories | TeacherGate |
@@ -156,9 +156,9 @@ In Canvas mode, `apiKey` is intentionally empty (`""`). Canvas's proxy intercept
 
 1. **Fork & clone** the repository.
 2. **Deploy:** the canonical one-shot is `./deploy.sh "message"` from the repo root (it runs the pre-flight render-crash gate, commits/pushes, builds, deploys to Firebase, and verifies against the Cloudflare CDN). For a manual Firebase build, `cd prismflow-deploy && npm install && npm run build && firebase deploy`.
-3. For School Box local testing, `docker-compose up -d` from the repo root.
+3. For Desktop local testing, use `npm.cmd run desktop:check`, `npm.cmd run desktop:smoke`, and `npm.cmd run desktop` from the repo root. Use `docker-compose up -d` only when testing the optional School Box Server stack.
 4. If testing service worker cache changes in Chrome, disable QUIC: `chrome://flags/#enable-quic` → Disabled → Relaunch.
-5. For AI backend changes, verify Ollama endpoints (`http://localhost:11434`) parse prompts correctly.
+5. For AI backend changes, verify the selected provider path: built-in Desktop engine, LM Studio, Ollama (`http://localhost:11434`), LocalAI, Gemini, or custom endpoint as appropriate.
 6. Open a descriptive pull request explaining which UDL checkpoint or clinical workflow your change enhances.
 
 ### Testing
@@ -176,7 +176,7 @@ In Canvas mode, `apiKey` is intentionally empty (`""`). Canvas's proxy intercept
 - **Zero PII logging** — No `console.log` of student names, IDs, scores, or clinical data.
 - **Don't hand-edit CDN URLs** — `build.js` resolves modules to the Cloudflare base + a `?v=` cache-buster automatically (see §4).
 - **Restorative language** — Clinical tools must use person-first, affirming language throughout.
-- **FERPA by design** — Never add features that transmit student data to third-party services.
+- **FERPA-aligned by design** — Do not add hidden student-data flows. Any cloud or third-party data path must be explicit, minimized, and school-controlled wherever possible.
 
 ---
 

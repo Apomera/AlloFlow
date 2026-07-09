@@ -1,5 +1,7 @@
 # AlloStudio — Design Doc (v0.5, 2026-07-05)
 
+> **Design/status snapshot note (2026-07-09):** This records the July 5 AlloStudio build/design state. Verify `studio_module.js`, tests, deploy status, and current language-pack inventory before using milestone, test-count, or pack-count statements below as live release status.
+
 **v0.5 (2026-07-05, same day) — Polish + flagship batch:**
 - **Compose-from-prompt** ("Start with AI" card in the template picker,
   teacher-only): blank canvas + one agent request → the SAME review panel.
@@ -28,7 +30,9 @@
   the schema, but no UI exposes it and no render/export honors it. Implement
   end-to-end or keep ignoring — do not partially wire it.
 - Tests: 94. Deferred to their own sessions: worksheet→Document Hub handoff
-  (builder model is concurrently owned), studio i18n wave (57+ packs).
+  (builder model is concurrently owned), Studio i18n wave. The repo-wide language
+  inventory is now 63 mirrored pack files; re-check current i18n reports before
+  planning Studio translation work.
 
 ---
 
@@ -110,10 +114,11 @@ see what a student did themselves vs. what AI did.
 frequency separation. The competitor is **Canva for Education**, and the moat is
 the one thing Canva and Adobe Express structurally don't do:
 
-> **Every export is born accessible.** The scene graph carries required alt text,
-> explicit reading order, and real text (never text-as-pixels), and exports run
-> through AlloFlow's existing tagged-PDF/HTML pipeline. "Make the flyer and it's
-> already Title II-compliant" is the pitch.
+> **Every export starts with accessibility-first structure.** The scene graph carries
+> required alt text, explicit reading order, and real text (never text-as-pixels),
+> and exports run through AlloFlow's existing tagged-PDF/HTML pipeline. Final
+> Title II/WCAG conformance still depends on the exact workflow, content, export,
+> and review.
 
 Secondary moats, both inherited from AlloFlow's posture:
 - **FERPA-clean**: everything client-side, documents live in local save files.

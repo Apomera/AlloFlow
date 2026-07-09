@@ -211,48 +211,155 @@
     return buffer;
   }
 
-  function ogPlayDrum(engine, type, when, velocity, effects) {
+  function playNoiseLayer(ctx, destination, start, seconds, peak, options) {
+    options = options || {};
+    var source = ctx.createBufferSource();
+    var filter = ctx.createBiquadFilter();
+    var duration = Math.max(0.01, Number(seconds) || 0.1);
+    source.buffer = noiseBuffer(ctx, duration);
+    filter.type = options.filterType || 'bandpass';
+    filter.frequency.setValueAtTime(Math.max(20, Number(options.frequency) || 1200), start);
+    if (options.endFrequency) {
+      filter.frequency.exponentialRampToValueAtTime(Math.max(20, Number(options.endFrequency) || Number(options.frequency) || 1200), start + duration);
+    }
+    filter.Q.value = Math.max(0.1, Math.min(30, Number(options.q) || 0.8));
+    var env = connectEnvelope(ctx, destination, start, duration, Math.max(0, Math.min(1, Number(peak) || 0)), options.envelope || {
+      attack: 0.001,
+      decay: duration * 0.35,
+      sustain: 0.12,
+      release: duration * 0.3
+    });
+    source.connect(filter);
+    filter.connect(env);
+    source.start(start);
+    source.stop(start + duration + 0.08);
+  }
+
+  function playToneLayer(ctx, destination, start, seconds, peak, options) {
+    options = options || {};
+    var osc = ctx.createOscillator();
+    var duration = Math.max(0.01, Number(seconds) || 0.12);
+    var env = connectEnvelope(ctx, destination, start, duration, Math.max(0, Math.min(1, Number(peak) || 0)), options.envelope || {
+      attack: 0.001,
+      decay: duration * 0.35,
+      sustain: 0.18,
+      release: duration * 0.25
+    });
+    osc.type = options.type || 'sine';
+    osc.frequency.setValueAtTime(Math.max(20, Number(options.frequency) || 440), start);
+    if (options.endFrequency) {
+      osc.frequency.exponentialRampToValueAtTime(Math.max(20, Number(options.endFrequency) || 440), start + duration);
+    }
+    if (options.detune != null) osc.detune.value = Number(options.detune) || 0;
+    osc.connect(env);
+    osc.start(start);
+    osc.stop(start + duration + 0.08);
+  }
+
+  function ogPlayDrum(engine, type, when, velocity, effects, voiceProfile) {
     if (!engine || !engine.available) return false;
     var ctx = engine.ctx;
     var start = Math.max(ctx.currentTime, Number(when) || ctx.currentTime);
     var vel = Math.max(0, Math.min(1, Number(velocity) || 0.8));
     var out = createEffectOutput(engine, effects, start, 1.5);
     var kind = String(type || 'kick');
+    var voice = voiceProfile || {};
+    var pitchScale = Math.max(0.5, Math.min(2, Number(voice.pitch) || 1));
+    var brightnessScale = Math.max(0.35, Math.min(2.4, Number(voice.brightness) || 1));
+    var decayScale = Math.max(0.25, Math.min(2.5, Number(voice.decay) || 1));
+    var noiseScale = Math.max(0, Math.min(2, Number(voice.noise) || 1));
+    var clickScale = Math.max(0, Math.min(2, Number(voice.click) || 1));
+    var bodyScale = Math.max(0, Math.min(2, Number(voice.body) || 1));
+    function vFreq(value) { return Math.max(20, Math.min(18000, value * pitchScale)); }
+    function vBright(value) { return Math.max(20, Math.min(18000, value * brightnessScale)); }
+    function vDur(value) { return Math.max(0.01, value * decayScale); }
 
     if (kind === 'kick' || kind === 'sub') {
-      var osc = ctx.createOscillator();
-      var gain = connectEnvelope(ctx, out, start, 0.22, vel, { attack: 0.002, decay: 0.08, sustain: 0.18, release: 0.08 });
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(kind === 'sub' ? 72 : 120, start);
-      osc.frequency.exponentialRampToValueAtTime(kind === 'sub' ? 42 : 45, start + 0.18);
-      osc.connect(gain);
-      osc.start(start);
-      osc.stop(start + 0.35);
+      playToneLayer(ctx, out, start, vDur(kind === 'sub' ? 0.38 : 0.24), vel * bodyScale, {
+        type: 'sine',
+        frequency: vFreq(kind === 'sub' ? 76 : 128),
+        endFrequency: vFreq(kind === 'sub' ? 38 : 44),
+        envelope: { attack: 0.001, decay: vDur(0.09), sustain: 0.16, release: vDur(kind === 'sub' ? 0.16 : 0.08) }
+      });
+      playNoiseLayer(ctx, out, start, 0.018, vel * clickScale * (kind === 'sub' ? 0.08 : 0.18), {
+        filterType: 'highpass',
+        frequency: vBright(5200),
+        q: 0.7,
+        envelope: { attack: 0.001, decay: 0.008, sustain: 0.01, release: 0.01 }
+      });
       return true;
     }
 
-    if (kind === 'snare' || kind === 'clap' || kind === 'shaker' || kind === 'hihat' || kind === 'openhat' || kind === 'crash' || kind === 'ride') {
-      var source = ctx.createBufferSource();
-      source.buffer = noiseBuffer(ctx, kind === 'openhat' || kind === 'crash' || kind === 'ride' ? 0.45 : 0.14);
-      var filter = ctx.createBiquadFilter();
-      filter.type = kind === 'snare' || kind === 'clap' ? 'bandpass' : 'highpass';
-      filter.frequency.value = kind === 'snare' ? 1800 : kind === 'clap' ? 1200 : 6000;
-      var duration = kind === 'openhat' ? 0.32 : kind === 'crash' || kind === 'ride' ? 0.7 : kind === 'shaker' ? 0.08 : 0.11;
-      var env = connectEnvelope(ctx, out, start, duration, vel * (kind === 'hihat' ? 0.55 : 0.75), { attack: 0.001, decay: 0.04, sustain: 0.16, release: duration * 0.35 });
-      source.connect(filter);
-      filter.connect(env);
-      source.start(start);
-      source.stop(start + duration + 0.2);
+    if (kind === 'snare') {
+      playNoiseLayer(ctx, out, start, vDur(0.17), vel * 0.72 * noiseScale, { filterType: 'bandpass', frequency: vBright(1850), q: 1.3, envelope: { attack: 0.001, decay: vDur(0.05), sustain: 0.12, release: vDur(0.08) } });
+      playToneLayer(ctx, out, start, vDur(0.18), vel * 0.22 * bodyScale, { type: 'triangle', frequency: vFreq(188), endFrequency: vFreq(142), envelope: { attack: 0.001, decay: vDur(0.06), sustain: 0.1, release: vDur(0.05) } });
+      playNoiseLayer(ctx, out, start, 0.032, vel * 0.18 * clickScale, { filterType: 'highpass', frequency: vBright(4800), q: 0.7 });
       return true;
     }
 
-    var perc = ctx.createOscillator();
-    var percGain = connectEnvelope(ctx, out, start, 0.11, vel * 0.7, { attack: 0.001, decay: 0.04, sustain: 0.2, release: 0.04 });
-    perc.type = kind === 'rim' ? 'square' : 'triangle';
-    perc.frequency.value = kind === 'tomLow' ? 140 : kind === 'tomHigh' ? 240 : 720;
-    perc.connect(percGain);
-    perc.start(start);
-    perc.stop(start + 0.18);
+    if (kind === 'clap') {
+      [0, 0.017, 0.034].forEach(function (offset, index) {
+        playNoiseLayer(ctx, out, start + offset, vDur(0.052), vel * noiseScale * (0.28 - index * 0.035), { filterType: 'bandpass', frequency: vBright(1300), q: 1.1 });
+      });
+      playNoiseLayer(ctx, out, start + 0.04, vDur(0.18), vel * 0.24 * noiseScale, { filterType: 'highpass', frequency: vBright(2400), q: 0.8, envelope: { attack: 0.001, decay: vDur(0.05), sustain: 0.08, release: vDur(0.1) } });
+      return true;
+    }
+
+    if (kind === 'shaker' || kind === 'hihat' || kind === 'openhat' || kind === 'crash' || kind === 'ride') {
+      var cymbalDuration = vDur(kind === 'hihat' ? 0.07 : kind === 'shaker' ? 0.09 : kind === 'openhat' ? 0.34 : kind === 'ride' ? 0.62 : 0.82);
+      playNoiseLayer(ctx, out, start, cymbalDuration, vel * noiseScale * (kind === 'hihat' ? 0.42 : kind === 'shaker' ? 0.35 : 0.58), {
+        filterType: 'highpass',
+        frequency: vBright(kind === 'ride' ? 5200 : 6400),
+        q: 0.55,
+        envelope: { attack: 0.001, decay: 0.04, sustain: kind === 'hihat' ? 0.06 : 0.18, release: cymbalDuration * 0.42 }
+      });
+      [vBright(4210), vBright(5570), vBright(7830)].forEach(function (freq, index) {
+        playToneLayer(ctx, out, start, cymbalDuration * 0.72, vel * clickScale * (kind === 'ride' ? 0.035 : 0.026), {
+          type: index % 2 ? 'square' : 'sawtooth',
+          frequency: freq,
+          detune: index * 6,
+          envelope: { attack: 0.001, decay: 0.035, sustain: 0.08, release: cymbalDuration * 0.36 }
+        });
+      });
+      if (kind === 'ride') {
+        playToneLayer(ctx, out, start, vDur(0.16), vel * 0.11 * bodyScale, { type: 'triangle', frequency: vBright(1420), envelope: { attack: 0.001, decay: vDur(0.04), sustain: 0.1, release: vDur(0.08) } });
+      }
+      return true;
+    }
+
+    if (kind === 'tomLow' || kind === 'tomHigh' || kind === 'rim' || kind === 'perc') {
+      var base = vFreq(kind === 'tomLow' ? 154 : kind === 'tomHigh' ? 246 : kind === 'rim' ? 860 : 620);
+      playToneLayer(ctx, out, start, vDur(kind === 'tomLow' || kind === 'tomHigh' ? 0.24 : 0.12), vel * 0.68 * bodyScale, {
+        type: kind === 'rim' ? 'square' : 'triangle',
+        frequency: base,
+        endFrequency: kind === 'rim' ? base : base * 0.66,
+        envelope: { attack: 0.001, decay: 0.05, sustain: 0.16, release: 0.06 }
+      });
+      playNoiseLayer(ctx, out, start, 0.025, vel * 0.12 * clickScale, { filterType: 'highpass', frequency: vBright(kind === 'rim' ? 3200 : 1800), q: 0.8 });
+      return true;
+    }
+
+    if (kind === 'chord') {
+      [vFreq(261.63), vFreq(311.13), vFreq(392)].forEach(function (freq) {
+        playToneLayer(ctx, out, start, 0.44, vel * 0.2, { type: 'triangle', frequency: freq, envelope: { attack: 0.004, decay: 0.12, sustain: 0.28, release: 0.2 } });
+      });
+      return true;
+    }
+
+    if (kind === 'vocal') {
+      playToneLayer(ctx, out, start, vDur(0.2), vel * 0.18 * bodyScale, { type: 'sawtooth', frequency: vFreq(220), endFrequency: vFreq(185), envelope: { attack: 0.006, decay: vDur(0.08), sustain: 0.24, release: vDur(0.08) } });
+      playNoiseLayer(ctx, out, start, vDur(0.22), vel * 0.24 * noiseScale, { filterType: 'bandpass', frequency: vBright(980), q: 5.2, envelope: { attack: 0.004, decay: vDur(0.06), sustain: 0.18, release: vDur(0.1) } });
+      playNoiseLayer(ctx, out, start, vDur(0.18), vel * 0.12 * noiseScale, { filterType: 'bandpass', frequency: vBright(2350), q: 6.4, envelope: { attack: 0.004, decay: vDur(0.05), sustain: 0.12, release: vDur(0.08) } });
+      return true;
+    }
+
+    if (kind === 'fx') {
+      playNoiseLayer(ctx, out, start, vDur(0.5), vel * 0.46 * noiseScale, { filterType: 'bandpass', frequency: vBright(520), endFrequency: vBright(7200), q: 1.8, envelope: { attack: 0.01, decay: vDur(0.16), sustain: 0.22, release: vDur(0.22) } });
+      playToneLayer(ctx, out, start, vDur(0.42), vel * 0.16 * bodyScale, { type: 'sine', frequency: vFreq(880), endFrequency: vFreq(176), envelope: { attack: 0.004, decay: vDur(0.14), sustain: 0.18, release: vDur(0.18) } });
+      return true;
+    }
+
+    playToneLayer(ctx, out, start, vDur(0.12), vel * 0.65 * bodyScale, { type: 'triangle', frequency: vFreq(720), envelope: { attack: 0.001, decay: vDur(0.04), sustain: 0.2, release: vDur(0.04) } });
     return true;
   }
 
@@ -271,22 +378,37 @@
     var output = createEffectOutput(engine, event && event.effects, start, dur + Math.max(0.18, Number(envelopePatch.release) || 0.18) + 1.5);
     var env = connectEnvelope(ctx, output, start, dur, event && event.velocity, envelopePatch);
     var partials = patch.partials && patch.partials.length ? patch.partials : [{ ratio: 1, type: patch.oscillator || 'sawtooth', gain: 1, detune: 0 }];
+    var unison = patch.unison || {};
+    var requestedVoices = Math.max(1, Math.min(7, Math.round(Number(unison.voices) || 1)));
+    var voices = Math.max(1, Math.min(requestedVoices, Math.floor(24 / Math.max(1, partials.length))));
+    var unisonDetune = Math.max(0, Math.min(80, Number(unison.detune) || 0));
+    var unisonSpread = Math.max(0, Math.min(1, Number(unison.spread) || 0));
     var stopAt = start + dur + Math.max(0.18, Number(envelopePatch.release) || 0.18) + 0.05;
     filter.type = filterPatch.type || 'lowpass';
     filter.frequency.setValueAtTime(Math.max(80, Math.min(18000, Number(filterPatch.cutoff) || 4200)), start);
     filter.Q.value = Math.max(0.1, Math.min(20, Number(filterPatch.q) || 0.8));
     filter.connect(env);
     partials.forEach(function (partial) {
-      var osc = ctx.createOscillator();
-      var partialGain = ctx.createGain();
-      osc.type = partial.type || patch.oscillator || 'sawtooth';
-      osc.frequency.setValueAtTime(freq * Math.max(0.125, Number(partial.ratio) || 1), start);
-      osc.detune.value = Number(partial.detune) || 0;
-      partialGain.gain.value = Math.max(0, Math.min(1, Number(partial.gain) || 0));
-      osc.connect(partialGain);
-      partialGain.connect(filter);
-      osc.start(start);
-      osc.stop(stopAt);
+      for (var voice = 0; voice < voices; voice++) {
+        var position = voices === 1 ? 0 : (voice / (voices - 1)) * 2 - 1;
+        var osc = ctx.createOscillator();
+        var partialGain = ctx.createGain();
+        var panner = ctx.createStereoPanner && voices > 1 && unisonSpread > 0 ? ctx.createStereoPanner() : null;
+        osc.type = partial.type || patch.oscillator || 'sawtooth';
+        osc.frequency.setValueAtTime(freq * Math.max(0.125, Number(partial.ratio) || 1), start);
+        osc.detune.value = (Number(partial.detune) || 0) + position * unisonDetune;
+        partialGain.gain.value = Math.max(0, Math.min(1, Number(partial.gain) || 0)) / Math.sqrt(voices);
+        osc.connect(partialGain);
+        if (panner) {
+          panner.pan.value = position * unisonSpread;
+          partialGain.connect(panner);
+          panner.connect(filter);
+        } else {
+          partialGain.connect(filter);
+        }
+        osc.start(start);
+        osc.stop(stopAt);
+      }
     });
     if (patch.transient && patch.transient.gain > 0) {
       var source = ctx.createBufferSource();
@@ -428,7 +550,7 @@
         var padType = item.padEngine || item.event && (item.event.engine || item.event.padEngine) || item.padId || 'kick';
         var padMap = { pad_1: 'kick', pad_2: 'snare', pad_3: 'hihat', pad_4: 'openhat', pad_5: 'clap', pad_6: 'rim', pad_7: 'tomLow', pad_8: 'tomHigh', pad_9: 'crash', pad_10: 'ride', pad_11: 'shaker', pad_13: 'sub' };
         if (padMap[padType]) padType = padMap[padType];
-        scheduled += ogPlayDrum(engine, padType, when, item.velocity, item.effects) ? 1 : 0;
+        scheduled += ogPlayDrum(engine, padType, when, item.velocity, item.effects, item.drumVoice) ? 1 : 0;
       } else if (item.type === 'note') {
         scheduled += ogPlayNote(engine, item, when, item.durationSec) ? 1 : 0;
       }

@@ -1,5 +1,7 @@
 # Tier 3 Engineering Design Lane — Constraint Forge
 
+> **Design snapshot note (2026-07-09):** This is a June 2026 canonical design draft, not proof of current implementation. Verify Research Hub constants, journal migration behavior, and any file:line references against the live source before using this as build or QA guidance.
+
 Canonical design spec for the Engineering Design lane of the AlloFlow Research Hub. Authored 2026-06-02 as a synthesis of three architect proposals (ngss-engineering, design-thinking, constraints-tradeoffs) and nine judge verdicts. NGSS-engineering won the spine (avg 8.17, zero fatal flaws); grafts from design-thinking (StakeholderCard persistence, accessNote epistemic honesty, stakeholderAccountabilityStatement) and constraints-tradeoffs (constraintsPunted anti-magical-solution gate, TradeOffSliderBlock relational construction, tradeoff_inverter AI antagonist, epistemicStatus carry-through) are baked in. All CONDITIONAL_PASS required fixes are treated as correctness baselines, not scope cuts.
 
 ---

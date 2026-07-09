@@ -2,6 +2,8 @@ _Generated 2026-06-15 via a 32-agent review workflow (map -> 8-dimension analysi
 
 # brainAtlas — Decision-Ready Deep-Dive
 
+> **Historical review snapshot, not current open-bug status (2026-07-09):** This June review is preserved for its evidence trail and neuroscience/accuracy concerns. Later code and QA work may have changed individual findings; verify against current `stem_lab/stem_tool_brainatlas.js`, mirrors, tests, and a11y/visual reports before treating an item as open.
+
 **Target:** `stem_lab/stem_tool_brainatlas.js` (~4663 lines, hand-maintained; `build.js` mirrors root → `prismflow-deploy/public/` at deploy). Deploy is HELD — this is analysis only.
 
 **Bottom line:** This is the most scientifically careful tool in the STEM Lab. The clinical neuroanatomy is, view after view, *correct at USMLE depth* — and verified as such. There is **one hard factual error** (cerebellum neuron fraction), **a small cluster of localizationism/overclaim string-edits** (dopamine, insula, angular/supramarginal, ACC, gamma, callosum maturation, alpha-wave pop-neuro, plus two pharm/timeline nits), and **three structural problems that matter more than any single fact**: an **ungated AI tutor** (house-norm violation), **two dead quest hooks** that can never complete, and **no golden-master test** for a 4663-line file. Do **not** manufacture an accuracy crisis here — the accuracy fixes are a tidy, low-risk string batch. The real work is governance + safety net + audience fit.

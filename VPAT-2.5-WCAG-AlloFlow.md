@@ -13,7 +13,7 @@
 | **Platform** | Web application (React SPA, Firebase Hosting + Cloudflare Pages CDN) |
 | **Supported Browsers** | Chrome 90+, Firefox 90+, Safari 15+, Edge 90+ |
 
-> **⚠️ Evaluation currency.** This VPAT reflects a static + runtime accessibility evaluation performed **May 17, 2026** against product version **0.9.4**, covering the source tree as it existed then (470 files, including **104 STEM Lab tools**, 70 SEL Hub items, and 98 CDN modules). The product has since grown to **v1.1** — now **108 STEM Lab tools** and **~250 CDN modules**, plus new subsystems that postdate this evaluation: native tagged-PDF output with independent veraPDF/PDF-UA-1 validation, Cinematic Studio, and in-app Professional Development. **Tools and features added after May 17, 2026 are *Not Evaluated*; conformance must not be inferred for them** until this VPAT is regenerated against the current build. All findings below describe the evaluated snapshot.
+> **Evaluation currency (updated July 9, 2026).** This VPAT reflects a static + runtime accessibility evaluation performed **May 17, 2026** against product version **0.9.4**, covering the source tree as it existed then (470 files, including **104 STEM Lab tools**, 70 SEL Hub items, and 98 CDN modules). The product has since grown to **v1.1** -- now **111 STEM Lab tool files / 116 registered STEM plugin IDs** and **151 build-managed top-level module definitions**, plus new subsystems that postdate this evaluation: native tagged-PDF output with in-app structural PDF/UA self-checks, optional browser/local veraPDF QA paths, Cinematic Studio, and in-app Professional Development. **Tools and features added after May 17, 2026 are *Not Evaluated*; conformance must not be inferred for them** until this VPAT is regenerated against the current build. All findings below describe the evaluated snapshot.
 
 ### Conformance Level Key
 
@@ -73,7 +73,7 @@
 | **1.2.4 Captions (Live)** | Not Applicable | No live audio/video content. |
 | **1.2.5 Audio Description (Prerecorded)** | Not Applicable | No prerecorded video content. |
 | **1.3.6 Identify Purpose** | Supports | UI components use standard HTML elements and ARIA roles that convey purpose. Icons paired with text labels. Navigation landmarks labeled with `aria-label`. |
-| **1.4.3 Contrast (Minimum)** | Supports | Systematic contrast audit completed across all 80+ modules. `text-slate-300` on light backgrounds upgraded to `text-slate-500` (contrast ratio 5.6:1). `text-slate-400` on small text (<14px) upgraded to `text-slate-500`. Dark-on-dark and light-on-dark combinations verified as passing. Remaining `text-slate-400` instances are 14px+ text (4.5:1 ratio, passes AA). Primary text uses `text-slate-700` or `text-slate-800` (contrast >7:1). |
+| **1.4.3 Contrast (Minimum)** | Supports | Systematic contrast audit completed across the evaluated May 2026 module set. `text-slate-300` on light backgrounds upgraded to `text-slate-500` (contrast ratio 5.6:1). `text-slate-400` on small text (<14px) upgraded to `text-slate-500`. Dark-on-dark and light-on-dark combinations verified as passing. Remaining `text-slate-400` instances are 14px+ text (4.5:1 ratio, passes AA). Primary text uses `text-slate-700` or `text-slate-800` (contrast >7:1). |
 | **1.4.4 Resize Text** | Supports | All text sized in relative units (Tailwind's rem-based scale). No fixed-pixel font sizes used. Text scales to 200% browser zoom without clipping because containers use `min-h-*` (minimum) rather than fixed `h-*` heights for text content, and grid layouts wrap content rather than overflow. Reading themes (sepia, dyslexia, OpenDyslexic) all use scalable em/rem-based typography. May 2026: global `.allo-reflow` CSS class added to App.jsx for multi-panel STEM tools — stacks columns and removes min-widths at ≤640 px viewport (works in concert with browser zoom). |
 | **1.4.5 Images of Text** | Supports | No images of text used. All text is rendered as HTML text, including headings, buttons, labels, and instructional content. AI-generated images (Imagen) are illustrations, not text images. |
 | **1.4.10 Reflow** | Supports | Content reflows at 320 px viewport width for all views. Tailwind responsive utilities (`sm:`, `md:`, `lg:`) handle most breakpoints. May 2026: global `.allo-reflow` CSS class added to App.jsx applies a `@media (max-width: 640px)` rule that forces `flex-direction: column` and `grid-template-columns: 1fr` on any container that opts in via the class. Wide `<pre>`, `<table>`, `<code>` elements inside `.allo-reflow` get `overflow-x: auto` instead of forcing horizontal page scroll. Multi-panel STEM tools (BehaviorLens, App Lab, etc.) can adopt `.allo-reflow` for compliant reflow without per-tool media-query work. |
@@ -125,8 +125,9 @@ A comprehensive polish + WCAG 2.1 AA audit pass ran in May 2026, producing both
 - Scope: 470 source files (104 STEM Lab tools + 70 SEL Hub items + 98
   monolith CDN modules + the AlloFlowANTI.txt monolith + all `_source.jsx`
   + `_module.js` pairs) — **as of the May 2026 evaluation**. The codebase has
-  since grown to 108 STEM Lab tools and ~250 CDN modules; the net-new tools are
-  Not Evaluated (see the Evaluation currency note at the top).
+  since grown to 111 STEM Lab tool files / 116 registered STEM plugin IDs and
+  151 build-managed top-level module definitions; the net-new tools and modules
+  are Not Evaluated (see the Evaluation currency note at the top).
 - Baseline found 466 distinct flagged issues; ~60% were heuristic false
   positives (code examples in App Lab teaching content, regex strings in
   doc_pipeline, AI prompt strings explaining bad patterns, modal backdrops
@@ -219,7 +220,7 @@ A separate **codebase-wide WCAG 1.4.11 Non-text Contrast sweep** replaced four e
 
 A follow-up sweep then bumped themed-color soft borders (`border-{family}-{100|200}`, applied to interactive controls across STEM Lab tools and shared modules) to the `-600` tier of the same Tailwind family — preserving each tool's design language while clearing 1.4.11's 3:1 minimum (typically landing at 4–5:1).
 
-1.4.11 is now systematically AA-compliant across every form input, textarea, select, and outlined-button border throughout the codebase.
+1.4.11 was systematically remediated across the evaluated May 2026 form input, textarea, select, and outlined-button border set.
 
 The writing-craft trio (StoryForge / PoetTree / LitLab), the SEL Hub Stations builder, and the new in-app Error Reporter module have each been individually WCAG-audited as recent feature additions, with focused fixes for tab-pattern completeness (WAI-ARIA tabs APG: `aria-controls` + `tabpanel` role + roving tabindex + arrow-key navigation), modal landmarks (`role="dialog"` + `aria-modal` + ESC handler), input target sizes (24×24 minimum on per-word click targets), and explicit `:focus-visible` outlines.
 

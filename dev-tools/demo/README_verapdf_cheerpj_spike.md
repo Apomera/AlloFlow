@@ -1,8 +1,10 @@
 # veraPDF-in-the-browser via CheerpJ — feasibility spike (2026-06-19)
 
+> **Prototype note, not current product documentation (2026-07-09):** This spike proved a browser-based veraPDF path could work, but it remains gated by hosting, Canvas/runtime testing, size limits, and user opt-in. Current public guidance lives in `docs/verapdf_install.md`, `docs/wcag_sc_coverage.md`, and `PIPELINE_ARCHITECTURE.md`.
+
 **Question:** can veraPDF (the reference open-source ISO 14289-1 / PDF/UA validator, written
 in Java) run **entirely in the browser** via CheerpJ (a WASM JVM), so AlloFlow can give an
-**independent** PDF/UA verdict on the user's actual exported PDF — no server, no data egress?
+**independent** PDF/UA validation signal on the user's actual exported PDF — no AlloFlow server upload, with the caveats below?
 
 ## Verdict: feasible, proven end-to-end — not yet production-ready
 
@@ -59,4 +61,4 @@ result = validator.validate(parser)                       // .isCompliant(), .ge
 
 1. Host `cli-1.30.2.jar` + this page on AlloFlow's CDN; set `JAR_URL`; service-worker cache the ~25 MB.
 2. **Canvas-gate test:** open `verapdf_validator.html` from a Canvas-launched companion window — confirm CheerpJ boots there.
-3. Wire in: a **pre-remediation opt-in toggle** (default OFF; *"downloads ~25 MB once, runs privately — nothing uploaded"*) that starts the background warm-up during remediation, validates the export, and shows *"Independently validated by veraPDF: N/M rules pass."* Size-gate big docs (background + progress, or a self-hosted veraPDF service). Add a cold-run watchdog (timeout → reload window → retry).
+3. Wire in: a **pre-remediation opt-in toggle** (default OFF; *"downloads ~25 MB once, runs locally in your browser; no document is uploaded to an AlloFlow server"*) that starts the background warm-up during remediation, validates the export, and shows *"veraPDF check: N/M rules pass."* Size-gate big docs (background + progress, or a self-hosted veraPDF service). Add a cold-run watchdog (timeout → reload window → retry).

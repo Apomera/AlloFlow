@@ -274,6 +274,25 @@ describe('actor summary (Process tab)', () => {
     expect(ST.stDescribeOp({ type: 'doc.template', template: 'worksheet' })).toBe('Started from the worksheet template');
     expect(ST.stDescribeOp({ type: 'object.update', patch: { src: 'data:x', _crop: true } })).toBe('Cropped an image');
   });
+  it('groups repeated process steps for a calmer timeline', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Grouped process', T0);
+    const text = addText(d, 'Move me').object.id;
+    ST.stAppend(d, { type: 'object.move', target: text, x: 20, y: 20 }, 'user', T0 + 1);
+    ST.stAppend(d, { type: 'object.move', target: text, x: 30, y: 30 }, 'user', T0 + 2);
+    ST.stAppend(d, { type: 'object.resize', target: text, w: 220, h: 50 }, 'user', T0 + 3);
+    const groups = ST.stProcessStepGroups(d.ledger.ops);
+    expect(groups.map(g => [g.label, g.count])).toEqual([
+      ['Added text', 1],
+      ['Moved an object', 2],
+      ['Resized an object', 1]
+    ]);
+    expect(groups[1].text).toBe('Moved an object x2');
+    expect(groups[1].startSeq).toBe(2);
+    expect(groups[1].endSeq).toBe(3);
+    expect(ST.stFilteredProcessStepGroups(d.ledger.ops, 'user').length).toBe(groups.length);
+    expect(ST.stFilteredProcessStepGroups(d.ledger.ops, 'ai')).toEqual([]);
+    expect(ST.stFilteredProcessStepGroups(d.ledger.ops, 'all').length).toBe(groups.length);
+  });
 });
 
 describe('accessibility preflight + workflow helpers', () => {
@@ -327,8 +346,100 @@ describe('accessibility preflight + workflow helpers', () => {
     expect(textActions.map(a => a.type)).toEqual(expect.arrayContaining(['fix-small-text', 'fix-contrast']));
     expect(textActions.every(a => a.targetId === text)).toBe(true);
     expect(textActions.find(a => a.type === 'fix-contrast').suggestedColor).toMatch(/^#/);
-    expect(ST.stObjectReadyActions(d, image).map(a => a.type)).toEqual(['add-alt']);
+    const imageActions = ST.stObjectReadyActions(d, image);
+    expect(imageActions.map(a => a.type)).toEqual(['add-alt', 'mark-decorative']);
+    expect(imageActions.find(a => a.type === 'mark-decorative')).toMatchObject({ targetId: image, issueType: 'alt', severity: 'error' });
     expect(ST.stObjectReadyActions(d, 'missing')).toEqual([]);
+  });
+  it('offers replace, remove, and keep actions for empty image frames', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Empty image actions', T0);
+    const image = addImage(d, '', '').object.id;
+    expect(ST.stAnalyzeDoc(d).issues.map(i => i.type)).toContain('empty-image');
+    expect(ST.stImageFrameState(d.objects[0]).key).toBe('empty-placeholder');
+    expect(ST.stBuildReadyActions(d).actions.map(a => a.type)).toContain('replace-image');
+    expect(ST.stObjectReadyActions(d, image).map(a => a.type)).toEqual(['replace-image', 'remove-placeholder', 'keep-placeholder']);
+
+    const keepPatch = ST.stKeepPlaceholderPatch(d.objects[0]);
+    expect(keepPatch).toMatchObject({ decorative: true, provenance: { origin: 'upload', placeholder: 'keep' } });
+    ST.stAppend(d, { type: 'object.update', target: image, patch: keepPatch }, 'user', T0 + 1);
+    expect(ST.stIsKeptPlaceholder(d.objects[0])).toBe(true);
+    expect(ST.stImageFrameState(d.objects[0]).key).toBe('kept-placeholder');
+    expect(ST.stAnalyzeDoc(d).issues.map(i => i.type)).not.toContain('empty-image');
+    expect(ST.stDescribeOp({ type: 'object.update', patch: keepPatch })).toBe('Kept image placeholder');
+
+    const replacePatch = ST.stUploadedImagePatch(d.objects[0], 'data:image/png;base64,x');
+    expect(replacePatch).toMatchObject({ src: 'data:image/png;base64,x', decorative: false, provenance: { origin: 'upload' } });
+    ST.stAppend(d, { type: 'object.update', target: image, patch: replacePatch }, 'import', T0 + 2);
+    expect(ST.stImageFrameState(d.objects[0]).key).toBe('needs-alt');
+    expect(ST.stAnalyzeDoc(d).issues.map(i => i.type)).toContain('alt');
+  });
+  it('builds guided preflight and export confidence summaries', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Guided review', T0);
+    const image = addImage(d, 'data:image/png;base64,x', '').object.id;
+    const smallText = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 20, y: 120, w: 200, h: 24 }, z: 2, runs: [{ text: 'tiny note', style: { size: 10, color: '#111827' } }] } }, 'user', T0 + 1).object.id;
+    const guide = ST.stPreflightGuide(d, 99);
+    expect(guide.total).toBeGreaterThan(0);
+    expect(guide.position).toBeGreaterThanOrEqual(1);
+    expect(guide.actions.map(a => a.type)).toContain('add-alt');
+    expect(guide.actions.map(a => a.type)).toContain('mark-decorative');
+    expect(guide.issue.id).toBe(image);
+    const warningGuide = ST.stPreflightGuide(d, 0, 'warning');
+    expect(warningGuide.total).toBe(1);
+    expect(warningGuide.issue.id).toBe(smallText);
+    expect(warningGuide.actions.map(a => a.type)).toContain('fix-small-text');
+    expect(ST.stPreflightGuide(d, 99, 'fix').issue.id).toBe(image);
+    const analysis = ST.stAnalyzeDoc(d);
+    expect(ST.stIssueIndexForObject(analysis, image)).toBe(0);
+    expect(ST.stIssueIndexForObject(analysis, image, 'fix')).toBe(0);
+    expect(ST.stIssueIndexForObject(analysis, smallText, 'warning')).toBe(0);
+    expect(ST.stIssueIndexForObject(analysis, smallText, 'fix')).toBe(-1);
+    expect(ST.stIssueIndexForObject(analysis, 'missing')).toBe(-1);
+    expect(ST.stFilterPreflightIssues(analysis, 'fix').map(i => i.type)).toEqual(['alt']);
+    expect(ST.stFilterPreflightIssues(analysis, 'warning').map(i => i.type)).toContain('small-text');
+    expect(ST.stFilterPreflightIssues(analysis, 'review').map(i => i.type)).toContain('reading-order');
+    expect(ST.stFilterPreflightIssues(analysis, 'all').length).toBe(analysis.issues.length);
+    const fixReady = ST.stBuildReadyActions(d, 'fix');
+    expect(fixReady.filter).toBe('fix');
+    expect(fixReady.counts).toEqual({ error: 1, warning: 0, review: 0 });
+    expect(fixReady.totalCounts).toEqual(analysis.counts);
+    expect(fixReady.actions.map(a => a.type)).toEqual(['add-alt', 'mark-decorative']);
+    const warningReady = ST.stBuildReadyActions(d, 'warning');
+    expect(warningReady.counts.error).toBe(0);
+    expect(warningReady.actions.map(a => a.type)).toContain('fix-small-text');
+    const reviewReady = ST.stBuildReadyActions(d, 'review');
+    expect(reviewReady.counts.error).toBe(0);
+    expect(reviewReady.actions.map(a => a.type)).toContain('review-reading-order');
+
+    const blocked = ST.stExportConfidence(d);
+    expect(blocked.status).toBe('blocked');
+    expect(blocked.altCount).toBe(1);
+    expect(blocked.cards.find(c => c.key === 'tagged-pdf').status).toBe('blocked');
+    expect(blocked.cards.find(c => c.key === 'visual').status).toBe('blocked');
+
+    ST.stAppend(d, { type: 'object.update', target: image, patch: { alt: 'Small diagram' } }, 'user', T0 + 2);
+    const afterAlt = ST.stAnalyzeDoc(d);
+    expect(ST.stNextPreflightGuideIndex(analysis, afterAlt, 0, { targetId: image, issueType: 'alt' })).toBe(0);
+    expect(ST.stNextPreflightGuideIndex(analysis, afterAlt, 0, { targetId: image, issueType: 'alt' }, 'fix')).toBe(0);
+    expect(ST.stFilterPreflightIssues(afterAlt, 'fix')).toEqual([]);
+    expect(afterAlt.issues[0].type).not.toBe('alt');
+
+    const unchanged = ST.stNextPreflightGuideIndex(afterAlt, afterAlt, 0, { targetId: afterAlt.issues[0].id, issueType: afterAlt.issues[0].type });
+    expect(unchanged).toBe(0);
+
+    const empty = ST.stCreateDoc('letter-portrait', 'Frame flow', T0);
+    const frame = addImage(empty, '', '').object.id;
+    const beforeFrame = ST.stAnalyzeDoc(empty);
+    ST.stAppend(empty, { type: 'object.update', target: frame, patch: ST.stUploadedImagePatch(empty.objects[0], 'data:image/png;base64,x') }, 'import', T0 + 1);
+    const afterFrame = ST.stAnalyzeDoc(empty);
+    expect(ST.stNextPreflightGuideIndex(beforeFrame, afterFrame, 0, { targetId: frame, issueType: 'empty-image' })).toBe(0);
+    expect(afterFrame.issues[0].type).toBe('alt');
+
+    const w = ST.stCreateDoc('letter-portrait', 'Worksheet confidence', T0);
+    addText(w, 'Lab Reflection', 'heading1');
+    addText(w, '1. What did you notice?', 'heading2');
+    const worksheet = ST.stExportConfidence(w).cards.find(c => c.key === 'worksheet');
+    expect(worksheet.status).toBe('ready');
+    expect(worksheet.message).toContain('1 structured question');
   });
   it('builds optimize-image actions for large embedded images without changing alt or fit', () => {
     const d = ST.stCreateDoc('letter-portrait', 'Large image', T0);

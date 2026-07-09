@@ -1,3 +1,7 @@
+# Refugee-language pack audit snapshot (2026-06-04)
+
+> **Historical audit note (2026-07-09):** This reviewed seven Behavior Lens language packs as they existed on 2026-06-04. Treat the scores and defects as a snapshot for triage; re-run the i18n gap, staleness, and Spanglish checks against current `lang/*.js` files before deciding whether any pack is pilot-ready.
+
 ## Headline
 
 Across all seven refugee-language behavior_lens packs audited, **none are ship-ready as-is**. The least-bad pack (chin_falam, 72/100) has a localized ~10-tile cluster of pure-English hub descriptions and at least one possibly-religious mistranslation in a privacy string; the rest (lao 52, marshallese 38, acholi 38, maay_maay 28, chin_hakha 28, karen 22) range from "heavy Spanglish" to "substantively English with translated function words." Two packs ship visible character corruption in tile titles (marshallese "maroñ't Do", maay_maay "wuu kara't Do"). One pack (maay_maay) appears to actually be Somali, not Af-Maay. **All seven require native-speaker review before any refugee-family pilot.**

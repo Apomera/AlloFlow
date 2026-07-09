@@ -139,7 +139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       id: 'school_bus', name: 'School Bus', icon: '🚌', type: 'diesel',
       mass: 11000, cd: 0.7, area: 7.5, powerKW: 200, fuelCap: 380,
       cityMPG: 7, hwyMPG: 9, tank: 'diesel',
-      desc: 'Class C bus. Requires CDL in most states. Teaches bus protocol — when YOU must stop for a stopped bus.',
+      desc: 'Class C bus. Commercial operation requires the proper bus/CDL credential. Teaches bus protocol — when YOU must stop for a stopped bus.',
       tip: 'Red flashing lights + extended stop arm = ALL traffic must stop (both directions on undivided roads).'
     }
   ];
@@ -159,10 +159,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     nightHours: 10,
     passengers: 'No passengers except immediate family during the 270-day intermediate restriction period unless accompanied by a qualifying licensed operator',
     curfew: 'Midnight to 5 AM during the 270-day intermediate restriction period',
-    phoneBan: 'ALL handheld use banned statewide (2019). First offense: $50.',
+    phoneBan: 'ALL handheld use banned statewide (2019). First offense: $50; hands-free only for drivers 18+ who are not on a learner\'s permit or intermediate license.',
     textingBan: 'Total ban, primary enforcement. $250 first offense.',
-    moveOver: 'Must move over or slow down for stopped emergency, utility, and roadside assistance vehicles with lights flashing.',
-    headlights: 'Required when wipers are on (2005 law). Sunset to sunrise. During low visibility.',
+    moveOver: 'When safely possible, move to a non-adjacent lane for stationary disabled or flashing-light vehicles; otherwise pass at a careful and prudent speed.',
+    headlights: 'Required sunset to sunrise; when rain, fog, snow, or other conditions make people/vehicles not discernible 1,000 ft ahead; and when windshield wipers are in constant use.',
     studSnowTires: 'Legal Oct 1 – May 1. Studded tires help on ice but wear pavement in summer.',
     winterRules: [
       'Take reasonable measures to prevent snow/ice from falling off your vehicle. Safest practice: clear roof, windows, lights, and hood before driving.',
@@ -174,20 +174,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     mooseWarning: 'Maine has 70,000+ moose. Strike risk highest at dawn/dusk May–Oct. Moose ≈ 1,000 lbs at windshield height — deadly. Scan road edges. Do NOT swerve — brake straight.',
     deerWarning: 'Deer crossings peak Oct–Dec (rut). If one crosses, expect another behind it.',
     coastalFog: 'Coastal fog common spring/summer. Use LOW beams (high beams reflect back). Fog lights if equipped. Reduce speed.',
-    seatbelt: 'Primary enforcement. All occupants. $50 first offense. Child seat required under 8 OR under 80 lbs.',
-    bac: '0.08 adult / 0.02 under 21 / 0.04 CDL. Maine has an implied consent law — refusing BAC test = automatic suspension.',
+    seatbelt: 'Primary enforcement. Seat belts required for occupants; driver must ensure minors are properly restrained. Maine §2081: under 2 rear-facing unless seat limits are exceeded; age 2+ under 55 lb in an internal-harness child restraint; under 8, under 80 lb, and under 57 in in a belt-positioning seat or child restraint; under 12 in the rear seat if possible. First offense: $50.',
+    bac: '0.08 adult / 0.00 under 21/provisional / 0.04 CDL. Maine has an implied consent law — refusing a chemical test triggers license suspension.',
     rightTurnRed: 'Permitted after full stop unless posted otherwise.',
-    schoolBus: 'Stop for stopped bus with flashing red lights on undivided roads (both directions). On divided highway, only traffic behind must stop.',
-    railroad: 'All school buses, large trucks with hazmat must stop at all railroad crossings.',
-    pedestrian: 'Must yield to pedestrians in marked AND unmarked crosswalks at intersections.',
-    bicycleDistance: 'Must give cyclists at least 3 feet when passing (2015 law).',
+    schoolBus: 'Stop for stopped buses with flashing red lights when meeting or overtaking from either direction. Opposite-direction traffic is excepted only when separated by curbing or another physical barrier, or under the limited-access/loading-zone exception in §2308.',
+    railroad: 'Maine §§2076/2306: school buses, buses carrying passengers, and specified chlorine/placarded/cargo-tank hazardous-material vehicles stop 15-50 ft from railroad tracks unless an exempt/abandoned crossing or official/flagger direction applies.',
+    pedestrian: 'Maine §2056: yield to pedestrians crossing in marked crosswalks or showing visible intent to enter one; yield on sidewalks and always use due care.',
+    bicycleDistance: 'Maine §2070: give bicycles and roller skiers at least 3 feet when passing; in a no-passing zone, pass only when it can be done safely.',
   };
 
   // ─────────────────────────────────────────────────────────
-  // SECTION 2b: UNIVERSAL RULES OF THE ROAD (apply in all 50 states)
+  // SECTION 2b: CORE RULES OF THE ROAD (U.S. baseline patterns)
   // ─────────────────────────────────────────────────────────
   // MAINE_RULES layers state-specific overrides on top of this baseline.
-  // These are the universal patterns every US driver is expected to know, grouped
+  // These are broad baseline patterns every US driver is expected to know, grouped
   // into pedagogical categories so a learner can study them one pillar at a time.
   var UNIVERSAL_RULES = {
     rightOfWay: {
@@ -196,10 +196,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       summary: 'Who goes first when paths conflict. Follow the ladder top to bottom.',
       ladder: [
         { rank: 1, who: 'Emergency vehicles with lights/siren', rule: 'Pull to the RIGHT and stop. Clear the lane completely. Do not follow within 500 ft.' },
-        { rank: 2, who: 'Funeral processions (lead vehicle has cleared intersection)', rule: 'Yield until the entire procession passes, even on green. Do not cut between cars in the procession.' },
-        { rank: 3, who: 'Pedestrians in crosswalks (marked or unmarked at intersections)', rule: 'Full stop. Never pass a vehicle already stopped at a crosswalk.' },
-        { rank: 4, who: 'Pedestrians using a white cane or guide dog', rule: 'Mandatory full stop in all 50 states, anywhere in the roadway.' },
-        { rank: 5, who: 'School buses with red flashers + stop-arm extended', rule: 'BOTH directions stop on undivided roads. Only following traffic stops on divided highways (physical median).' },
+        { rank: 2, who: 'Lawfully directed processions and traffic control', rule: 'Obey officers, escorts, and traffic-control devices. Do not cut into a procession already moving through your path.' },
+        { rank: 3, who: 'Pedestrians in marked crosswalks or showing visible intent to enter one', rule: 'Yield and stop as needed. Never pass a vehicle already stopped at a crosswalk.' },
+        { rank: 4, who: 'Pedestrians using a white or metallic cane or guide dog', rule: 'In Maine, yield to visually impaired pedestrians; stop as needed and give them room.' },
+        { rank: 5, who: 'School buses with red flashers + stop-arm extended', rule: 'BOTH directions stop on undivided roads. Opposite traffic is excepted only with curbing or another physical barrier.' },
         { rank: 6, who: 'Traffic already in the intersection / roundabout', rule: 'Those already committed have priority. New arrivals yield.' },
         { rank: 7, who: 'Through traffic (vs. turning traffic)', rule: 'Left-turners yield to oncoming through traffic. Right-turners yield to through traffic and pedestrians.' },
         { rank: 8, who: 'First to arrive at a stop/yield', rule: 'First-arrived, first-go. When simultaneous, the vehicle on the RIGHT goes first.' },
@@ -211,10 +211,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       icon: '🛣️',
       summary: 'Where to drive, when to change lanes, and why.',
       rules: [
-        'Keep-right: stay in the rightmost lane except to pass, turn left, or avoid a hazard. "Left lane for passing" is law in most states.',
+        'Keep-right: stay in the rightmost lane except to pass, turn left, or avoid a hazard. Treat the left lane as a passing lane unless signs or lane markings say otherwise.',
         'Slower-traffic-keep-right: if 5+ vehicles are stacked behind you and a passing lane exists, move right.',
-        'HOV/Carpool lanes: minimum occupancy posted on the sign (usually 2+ or 3+). Motorcycles and buses always qualify. Crossing a double white line into/out of HOV = $$$$ fine.',
-        'Solid white line = lane change discouraged (not illegal in most states, but risky). Dashed white = change allowed when clear.',
+        'HOV/Carpool lanes: the posted sign controls occupancy and allowed vehicle types. Many HOV lanes allow motorcycles or buses, but never assume; read the sign before entering.',
+        'Solid white line = lane change discouraged; stay in lane unless a safe, necessary move is allowed. Dashed white = change allowed when clear.',
         'Check mirrors + blind spot before every lane change. The mirror alone misses a car in the adjacent lane at highway speed.',
         'Signal BEFORE you move — at least 3 seconds or 100 ft. Signaling during the move is too late.',
         'Never straddle a lane line. Commit to one lane at a time.'
@@ -237,10 +237,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       icon: '⬅️',
       summary: 'Rules for getting around a slower vehicle safely.',
       rules: [
-        'Pass on the LEFT only (the "fast lane"). Passing on the right is illegal except on multi-lane roads where the right lane is moving faster, or when the vehicle ahead is making a left turn.',
+        'Maine §2070: pass on the left as the default. Pass on the right only when the vehicle ahead is turning left, on a multi-lane road with enough unobstructed pavement, or on a one-way roadway — and only when safe; never drive off pavement to pass.',
         'Solid yellow on YOUR side of the centerline = NO passing. Broken yellow = passing allowed when safe.',
-        'Never pass on hills, curves, within 100 ft of an intersection, railroad crossing, bridge, or tunnel.',
-        'No passing in school zones when children are present or within 100 ft of a school crossing.',
+        'Maine §2070: do not drive left of center to pass near a crest or curve when your view is obstructed enough to create a hazard.',
+        'Do not pass left of center within 100 ft of or through an intersection or railroad grade crossing, or where your view is obstructed within 100 ft of a bridge, viaduct, or tunnel.',
         'Never pass a school bus with red flashers flashing (see Right-of-Way ladder).',
         'When being passed: stay in your lane, hold your speed (do NOT speed up), and give the passer room to return.',
         'Total passing maneuver at highway speed takes ~10 seconds and covers ~1500 ft. You need that much clear road AHEAD before you start.'
@@ -262,11 +262,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     pedestrian: {
       title: 'Pedestrian Protocol',
       icon: '🚶',
-      summary: 'Pedestrians always have the legal and practical right-of-way.',
+      summary: 'Pedestrians are vulnerable; crosswalks and special-right-of-way cases demand full attention.',
       rules: [
-        'Marked crosswalk OR unmarked crosswalk at any intersection: vehicles must yield to pedestrians.',
-        'Pedestrian with a WHITE CANE or GUIDE DOG: mandatory full stop in all 50 states, anywhere on the roadway.',
-        'School zones: reduced speed when children are present or signs are flashing. Expect children to dart unpredictably.',
+        'Marked crosswalk: Maine §2056 requires drivers to yield to pedestrians crossing or showing visible intent to enter.',
+        'Outside marked crosswalks, pedestrians generally yield, but drivers must still exercise due care and avoid collisions.',
+        'Pedestrian with a WHITE or METALLIC CANE or GUIDE DOG: Maine §2056 requires drivers to yield. Stop as needed, give room, and avoid honking unless necessary to prevent an immediate collision.',
+        'School zones: Maine §2074 sets 15 mph during active periods: recess, school opening/closing windows, flashing signs during opening/closing hours, or locally designated times. Expect children to dart unpredictably.',
         'Never pass a vehicle stopped at a crosswalk — there may be a pedestrian you can\'t see.',
         'Turn-on-red: you may turn right on red only after a FULL stop and yielding to pedestrians and cross traffic.',
         'Backing up: you are responsible for anyone behind you, including small children. Walk around the car first.'
@@ -278,10 +279,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       summary: 'What to do when you see lights, hear sirens, or encounter a scene.',
       rules: [
         'Lights + siren approaching from any direction: pull to the RIGHT curb and stop. Stay stopped until it passes (and any others behind it).',
-        'On a divided highway with a physical median: opposing traffic does NOT need to stop — only same-direction traffic yields.',
+        'Maine §2054 does not list a divided-highway exception for approaching emergency vehicles: move right when safe, stay clear of intersections, and stop until it passes.',
         'Do NOT follow an emergency vehicle closer than 500 ft (or "one city block").',
-        '"Move Over" laws (all 50 states): when passing a stopped emergency, tow, utility, or roadside assistance vehicle with flashers, move one lane away OR slow to a careful, prudent speed.',
-        'Funeral procession: yield to the entire procession, even through a green light. Never break up the line.',
+        'Move Over / stationary-vehicle rules: when passing a stopped emergency, tow, utility, roadside assistance, or disabled vehicle, move one lane away if safe OR slow to a careful, prudent speed.',
+        'Funeral procession: do not cut into a procession. If an officer, escort, or traffic-control device directs you to yield, wait until the procession passes.',
         'Disabled vehicle on the shoulder: move over one lane if possible; otherwise slow down substantially.'
       ]
     },
@@ -294,7 +295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         'Passive controls (crossbuck only, no gates): you must LOOK and LISTEN. Reduce speed and be prepared to stop.',
         'Never stop ON the tracks. If traffic is backed up, wait BEFORE the crossing until you have room to clear it completely.',
         'Stuck on tracks: GET OUT immediately. Walk toward the train at a 45° angle (debris flies forward). Call 911 and the emergency number on the nearby crossing post.',
-        'School buses and hazmat trucks MUST stop at all railroad crossings, even without active controls.',
+        'Maine §§2076/2306: school buses, buses carrying passengers, and specified chlorine/placarded/cargo-tank hazardous-material vehicles must stop 15-50 ft from the nearest rail, look/listen, and proceed only when no train is approaching; exempt/abandoned crossings and official/flagger directions can change that stop requirement.',
         'Multi-track warning signs ("2 TRACKS" or similar): wait for the first train to pass completely, then check for a second train coming the other way before proceeding.',
         'A freight train at 55 mph takes over a mile to stop. It is PHYSICALLY impossible for the engineer to stop in time if you\'re on the tracks.'
       ]
@@ -305,12 +306,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       summary: 'Speed is never "fixed" — it\'s conditional on everything around you.',
       rules: [
         'Posted limit is a MAXIMUM under ideal conditions. Rain, fog, snow, night, traffic, and road damage all require reducing from that maximum.',
-        '"Basic speed law" (all 50 states): you must drive at a speed that is reasonable and prudent for current conditions, regardless of the posted limit.',
+        'Basic speed law: drive at a speed that is reasonable and prudent for current conditions, regardless of the posted limit.',
         '3-second following rule: pick a fixed point ahead; after the car ahead passes it, you should reach it in 3+ seconds. 4+ in rain. 6+ in snow/ice.',
         'Double your speed = quadruple your braking distance (v² physics). 60→120 mph = 4× the stopping distance, not 2×.',
         'Reaction distance alone: ~1.5 seconds × speed. At 60 mph that\'s 132 ft before your brake even engages.',
         'Uphill: gravity helps you slow. Downhill: gravity adds to your stopping distance. Use engine braking (lower gear) on long descents.',
-        'Speed limits in work zones, school zones, and residential areas are often ENFORCED with double fines. Always posted.'
+        'Posted special speed zones are enforced aggressively. Work-zone penalties may be doubled where signs or state law say so.'
       ]
     }
   };
@@ -327,7 +328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       color: 'var(--allo-stem-text, var(--allo-stem-text, #ffffff))',
       colorName: 'White background, black text',
       meaning: 'MUST do. Speed limits, stops, yields, lane use.',
-      examples: ['Stop (red octagon)', 'Yield (red triangle)', 'Speed Limit 55', 'No U-Turn', 'Do Not Enter (red circle)']
+      examples: ['Stop (red octagon)', 'Yield (red triangle)', 'Speed Limit 55', 'No U-Turn', 'Do Not Enter (red R5-1 square)']
     },
     {
       category: 'Warning',
@@ -340,14 +341,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       category: 'Construction',
       color: '#f97316',
       colorName: 'Orange diamond',
-      meaning: 'Temporary — work zone. Fines double in work zones in most states.',
+      meaning: 'Temporary — work zone. Posted construction-speed violations can carry doubled fines.',
       examples: ['Road work ahead', 'Flagger ahead', 'Lane closed', 'Detour', 'Workers present']
     },
     {
       category: 'School Zone',
-      color: '#facc15',
+      color: '#ccff00',
       colorName: 'Fluorescent yellow-green pentagon',
-      meaning: 'Children present. Reduced speed, school crossings.',
+      meaning: 'School area or crossing. Obey posted/active school-zone speed and watch for children.',
       examples: ['School crossing', 'School zone ahead', 'School bus stop ahead']
     },
     {
@@ -375,7 +376,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       category: 'Railroad',
       color: '#fef3c7',
       colorName: 'Yellow circle (advance) + white X (at crossing)',
-      meaning: 'Tracks ahead or at crossing. STOP when lights flash.',
+      meaning: 'Tracks ahead or at crossing. Maine §2076: slow and look both ways; stop when signals, gates, a flagger, a train, or law requires.',
       examples: ['RR Crossing advance', 'Crossbuck X at tracks', 'Multi-track warning']
     }
   ];
@@ -411,10 +412,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'A solid yellow line on your side of the centerline means:', a: ['You may pass if safe', 'No passing', 'Lane ends', 'Bike lane'], correct: 1, exp: 'Solid yellow = NO passing from your side. Broken yellow = passing allowed when safe.', category: 'general' },
     { q: 'What does a flashing red traffic light mean?', a: ['Slow down', 'Stop, then proceed when safe (same as a stop sign)', 'Caution — proceed without stopping', 'Signal is broken, keep going'], correct: 1, exp: 'A flashing red light has the same meaning as a stop sign: come to a complete stop, then proceed when safe.', category: 'general' },
     { q: 'What does a flashing yellow traffic light mean?', a: ['Stop and wait', 'Slow down and proceed with caution', 'Same as a stop sign', 'Prepare to stop for a red light'], correct: 1, exp: 'Flashing yellow means slow down and proceed with caution — you have the right-of-way but watch for cross traffic.', category: 'general' },
-    { q: 'The speed limit in a Maine school zone when children are present is typically:', a: ['15 mph', '25 mph unless otherwise posted', '35 mph', '45 mph'], correct: 0, exp: 'Maine school-zone speed is 15 mph during active school-zone times: recess, school opening/closing windows, flashing school-zone signs, or locally designated times. Otherwise posted speeds apply.', category: 'pedestrian' },
+    { q: 'The speed limit in a Maine school zone during active school-zone times is typically:', a: ['15 mph', '25 mph unless otherwise posted', '35 mph', '45 mph'], correct: 0, exp: 'Maine §2074 sets 15 mph in a school zone during recess, school opening/closing windows, flashing school-zone signs during opening/closing hours, or locally designated active times. Otherwise posted speeds apply.', category: 'pedestrian' },
     { q: 'When approaching a school bus with flashing red lights and extended stop arm on a two-lane road, you must:', a: ['Slow down and pass carefully', 'Stop only if on the same side as the bus', 'Stop — traffic from both directions must stop', 'Honk to warn the driver'], correct: 2, exp: 'On undivided roads, ALL traffic must stop for a school bus with flashing red lights, regardless of direction.', category: 'pedestrian' },
-    { q: 'In Maine, the legal BAC limit for drivers 21 and older is:', a: ['0.05%', '0.08%', '0.10%', '0.02%'], correct: 1, exp: 'Maine follows the federal standard: 0.08% BAC for adults 21+. Under 21 is 0.02% (zero tolerance). CDL is 0.04%.', category: 'dui' },
-    { q: 'Maine law requires headlights to be on:', a: ['Only at night', 'When windshield wipers are in use', 'Only in fog', 'Only on highways'], correct: 1, exp: 'Maine requires headlights whenever wipers are in use (2005 law) — plus sunset to sunrise and in low visibility.', category: 'general' },
+    { q: 'In Maine, the legal BAC limit for drivers 21 and older is:', a: ['0.05%', '0.08%', '0.10%', '0.02%'], correct: 1, exp: 'Maine follows the federal standard: 0.08% BAC for adults 21+. Under 21/provisional: no alcohol level over 0.00. CDL is 0.04%.', category: 'dui' },
+    { q: 'Maine law requires headlights to be on:', a: ['Only at night', 'When windshield wipers are in constant use', 'Only in fog', 'Only on highways'], correct: 1, exp: 'Maine §2067 requires headlights from sunset to sunrise, whenever visibility is under 1,000 ft due to unfavorable conditions such as rain/fog/snow, and whenever windshield wipers are in constant use.', category: 'general' },
     { q: 'You are approaching a yield sign. You should:', a: ['Come to a full stop', 'Slow down and give right-of-way to cross traffic', 'Maintain speed', 'Honk to warn others'], correct: 1, exp: 'Yield = slow down, give right-of-way, stop ONLY if needed. Different from a stop sign (always stop).', category: 'signs' },
     { q: 'You are in a roundabout. A car enters from an incoming road. You should:', a: ['Stop to let them in', 'Speed up to avoid them', 'Continue — you have the right-of-way', 'Honk and brake'], correct: 2, exp: 'Vehicles already in the roundabout have the right-of-way. Entering vehicles must yield.', category: 'general' },
 
@@ -436,12 +437,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // ── Signs ──
     { q: 'An eight-sided (octagonal) red sign always means:', a: ['Yield', 'Stop', 'Do not enter', 'One way'], correct: 1, exp: 'Octagon = STOP. The shape is recognizable even in fog or when lettering is obscured. It is the only octagonal sign.', category: 'signs' },
     { q: 'A diamond-shaped yellow sign means:', a: ['Regulatory — must obey', 'Warning of possible hazard ahead', 'Construction zone', 'Guide / direction'], correct: 1, exp: 'Yellow diamond = WARNING. Tells you what MIGHT happen ahead (curve, pedestrian, animal crossing, etc.).', category: 'signs' },
-    { q: 'An orange diamond sign means:', a: ['Construction or work zone', 'Scenic route', 'Hospital ahead', 'Railroad'], correct: 0, exp: 'Orange = temporary construction/work zone warning. Fines are typically DOUBLED in work zones.', category: 'signs' },
+    { q: 'An orange diamond sign means:', a: ['Construction or work zone', 'Scenic route', 'Hospital ahead', 'Railroad'], correct: 0, exp: 'Orange = temporary construction/work zone warning. If a temporary construction speed is posted, speeding fines can be doubled.', category: 'signs' },
     { q: 'A fluorescent yellow-green pentagon sign indicates:', a: ['Hospital', 'School zone or school crossing', 'Rest area', 'Weather warning'], correct: 1, exp: 'Yellow-green pentagon = school zone / school crossing. High-visibility color chosen specifically for child safety.', category: 'signs' },
     { q: 'A green rectangular sign typically shows:', a: ['Warnings', 'Regulations', 'Directions, exits, and destinations', 'Services'], correct: 2, exp: 'Green = guide signs — exits, destinations, mileage. Blue = services (gas, food, lodging, hospital).', category: 'signs' },
 
     // ── Distracted / impaired ──
-    { q: 'Texting while driving is:', a: ['Legal in Maine on rural roads', 'Illegal everywhere in Maine (primary enforcement)', 'Only illegal for under-21 drivers', 'Legal when stopped at a red light'], correct: 1, exp: 'Maine bans ALL handheld phone use and texting. Primary enforcement means police can pull you over just for this. Even at a red light.', category: 'dui' },
+    { q: 'Texting while driving is:', a: ['Legal in Maine on rural roads', 'Illegal everywhere in Maine (primary enforcement)', 'Only illegal for under-21 drivers', 'Legal when stopped at a red light'], correct: 1, exp: 'Maine §2119 bans text messaging while operating on a public way, including when temporarily stopped for traffic, a traffic light, or a stop sign. First offense is at least $250. Pull safely off the public way before texting.', category: 'dui' },
     { q: 'Reaction time is typically increased by how much at legally drunk levels?', a: ['Not at all', 'By 0-10%', 'By 30-50% or more', 'It improves'], correct: 2, exp: 'Alcohol slows reaction time dramatically — 0.08% BAC can double your reaction distance. Drugs, fatigue, and phones all do the same.', category: 'dui' },
     { q: 'You are fatigued on a long drive. The safest option is:', a: ['Drink more coffee and continue', 'Roll the window down and turn up music', 'Pull over at a rest area and nap 15-20 minutes', 'Drive faster to get home sooner'], correct: 2, exp: 'Caffeine and music only mask fatigue. A short nap at a rest area is proven to restore alertness. Drowsy driving is as dangerous as drunk driving.', category: 'dui' },
 
@@ -455,17 +456,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // ── Maine teen licensing ──
     { q: 'A Maine learner\'s permit requires you to be at least:', a: ['14', '15', '16', '18'], correct: 1, exp: 'Maine allows learner permits starting at age 15 with driver\'s ed enrollment.', category: 'gdl' },
     { q: 'Maine teen drivers (under 18) must log how many supervised hours before getting an intermediate license?', a: ['10', '35', '70', '100'], correct: 2, exp: 'Maine requires 70 hours of supervised driving, including 10 at night, before you can take the road test.', category: 'gdl' },
-    { q: 'A Maine intermediate driver during the 270-day restriction period may NOT:', a: ['Drive at any time of day', 'Carry passengers other than immediate family unless accompanied by a qualifying licensed operator', 'Drive on interstates', 'Drive alone'], correct: 1, exp: 'During Maine\'s 270-day intermediate restriction period: no driving midnight-5 AM, no handheld/mobile device use while driving, and no passengers other than immediate family unless a qualifying licensed operator is present.', category: 'gdl' },
+    { q: 'A Maine intermediate driver during the 270-day restriction period may NOT:', a: ['Drive at any time of day', 'Carry passengers other than immediate family unless accompanied by a qualifying licensed operator', 'Drive on interstates', 'Drive alone'], correct: 1, exp: 'During Maine\'s 270-day intermediate restriction period: no driving midnight-5 AM, no mobile-device use while driving, including hands-free or GPS input, and no passengers other than immediate family unless a qualifying licensed operator is present.', category: 'gdl' },
 
     // ── General safety and mechanical ──
     { q: 'The 3-second rule is used to determine:', a: ['Maximum legal speed', 'Minimum safe following distance', 'Reaction time after braking', 'Turn signal duration'], correct: 1, exp: '3-second rule: pick a fixed landmark. When the car ahead passes it, count "1-Mississippi, 2-Mississippi, 3-Mississippi." You should reach it no sooner. Increase to 4+ in rain/snow.', category: 'general' },
     { q: 'Your right front tire drops off the pavement edge. You should:', a: ['Jerk the wheel left immediately', 'Hold the wheel firmly, ease off the gas, and gradually return when safe', 'Slam the brakes', 'Speed up to climb back up'], correct: 1, exp: 'Jerking left can cause you to cross oncoming traffic. Grip firmly, ease off gas, wait until the road edge is safe to re-enter, then steer gently back.', category: 'general' },
-    { q: 'In Maine, you must give cyclists at least how much space when passing?', a: ['1 foot', '2 feet', '3 feet', '6 feet'], correct: 2, exp: 'Maine law (2015) requires a minimum 3 feet of space when passing a cyclist. Crossing a double yellow to do so is legal if safe.', category: 'general' },
+    { q: 'In Maine, you must give cyclists at least how much space when passing?', a: ['1 foot', '2 feet', '3 feet', '6 feet'], correct: 2, exp: 'Maine §2070 requires at least 3 feet when passing a bicycle or roller skier. It allows passing in a no-passing zone only when it can be done safely: clear view, no oncoming conflict, and enough room to complete the pass.', category: 'general' },
     { q: 'When making a lane change, you should signal:', a: ['While changing lanes', 'At least 100 feet before the change', 'Only if other cars are close', 'Never on empty roads'], correct: 1, exp: 'Signal at least 100 feet before any lane change. This gives following drivers time to react. Check mirrors AND blind spots before moving.', category: 'general' },
     { q: 'What is the correct procedure for a 3-point turn?', a: ['Turn left, reverse right, drive forward', 'Make a U-turn across all lanes', 'Back up in a straight line', 'Turn right, reverse left, drive forward'], correct: 0, exp: 'A 3-point turn (K-turn): (1) Turn wheel left, drive forward to far curb. (2) Turn wheel right, reverse to near curb. (3) Straighten, drive forward in new direction.', category: 'general' },
     { q: 'The friction circle concept teaches you to:', a: ['Always brake and turn at the same time', 'Use grip for braking OR steering, but not both at full', 'Drive only in circles', 'Ignore ABS warnings'], correct: 1, exp: 'Your tires have a total grip budget (the friction circle). If you use 100% for braking, 0% is left for steering — and vice versa. This is why you brake BEFORE a turn, not during.', category: 'general' },
     { q: 'When backing up, you should primarily look:', a: ['In the rearview mirror only', 'Over your right shoulder through the rear window', 'Straight ahead', 'At the side mirrors only'], correct: 1, exp: 'Turn your body and look over your right shoulder through the rear window. Mirrors have blind spots. Your head gives you the widest view.', category: 'general' },
-    { q: 'An emergency vehicle with lights and siren is approaching from behind. On a 2-lane road you should:', a: ['Speed up to get out of the way', 'Move left to give them room', 'Pull to the RIGHT shoulder and stop until it passes', 'Keep driving but slow down'], correct: 2, exp: 'Pull RIGHT and STOP completely until the emergency vehicle passes. This is law in all 50 states. Do not slam your brakes in traffic — signal, move right smoothly, then stop.', category: 'emergency' },
+    { q: 'An emergency vehicle with lights and siren is approaching from behind. On a 2-lane road you should:', a: ['Speed up to get out of the way', 'Move left to give them room', 'Pull to the RIGHT shoulder and stop until it passes', 'Keep driving but slow down'], correct: 2, exp: 'Maine law: draw as near as practicable to the right-hand curb, clear of any intersection, and stop until the emergency vehicle passes. Signal, move right smoothly, then stop.', category: 'emergency' },
     { q: 'After an emergency vehicle passes you with lights on, you should:', a: ['Follow it closely to get through traffic', 'Wait a moment, then resume driving carefully', 'Immediately speed up to normal', 'Flash your lights to acknowledge'], correct: 1, exp: 'Wait until the emergency vehicle is well past, then check for additional emergency vehicles before resuming. Following an emergency vehicle too closely (tailgating) is illegal.', category: 'emergency' },
     { q: 'Going from 15 MPG to 20 MPG saves MORE fuel than going from 35 to 50 MPG for the same distance. True or false?', a: ['True — MPG is non-linear', 'False — higher MPG always saves more', 'They save the same', 'It depends on the vehicle weight'], correct: 0, exp: 'TRUE. Over 10,000 miles: 15→20 MPG saves 167 gallons. 35→50 MPG saves only 86 gallons. This is the "MPG illusion" — switching from a gas-guzzler to mediocre saves more than mediocre to excellent.', category: 'general' },
     { q: 'Idling your car for more than about how long wastes more fuel than restarting?', a: ['5 minutes', '2 minutes', '30 seconds', '10 minutes'], correct: 2, exp: 'Modern fuel-injected engines use so little fuel to restart that idling for more than ~30 seconds wastes more. The "warm up for 5 minutes" advice is from the carburetor era and no longer applies.', category: 'general' },
@@ -478,13 +479,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'Your check engine light is FLASHING (not steady). This means:', a: ['Normal operation', 'Minor issue, schedule service when convenient', 'Active engine misfire — pull over immediately', 'The gas cap is loose'], correct: 2, exp: 'A FLASHING check engine light means active misfire. Unburned fuel is being sent to the catalytic converter, which can overheat and catch fire. Pull over and turn off the engine.', category: 'maintenance' },
     { q: 'You are stopped at a red light when an ambulance with sirens approaches from behind. You should:', a: ['Drive into the intersection against the red light', 'Move right only if you can do so safely while staying clear of the intersection; otherwise wait', 'Reverse to make room', 'Ignore it until the light changes'], correct: 1, exp: 'Yield by moving as near as practicable to the right curb and stopping clear of intersections until the emergency vehicle passes. Do not enter cross traffic against a red light to make room.', category: 'emergency' },
     { q: 'After pulling over for an emergency vehicle, how long should you wait before re-entering traffic?', a: ['Immediately after it passes', 'Wait for any additional emergency vehicles, then merge carefully', '60 seconds exactly', 'Until all traffic resumes normal speed'], correct: 1, exp: 'Emergency vehicles often travel in groups (ambulance + fire truck, multiple police). Wait until you are sure no more are coming, then signal left and merge carefully.', category: 'emergency' },
-    { q: 'An emergency vehicle is approaching on a divided highway from the OPPOSITE direction. You must:', a: ['Stop completely', 'Slow down and proceed with caution', 'Move to the right shoulder', 'Speed up to clear the area'], correct: 1, exp: 'On a divided highway (with a median), only traffic on the SAME side as the emergency vehicle must pull over. Opposite side should slow down and proceed with caution.', category: 'emergency' },
+    { q: 'An emergency vehicle is approaching on a divided highway from the OPPOSITE direction. You must:', a: ['Stop in the travel lane immediately', 'Stay at normal speed because the median separates you', 'Move right and stop until it passes, staying clear of intersections', 'Speed up to clear the area'], correct: 2, exp: 'Maine §2054 does not list a divided-highway exception for an authorized emergency vehicle using lights and siren. Move as near as practicable to the right-hand curb or edge, stay clear of intersections, and stop until it passes. On high-speed roads, do this smoothly and only where safe.', category: 'emergency' },
     { q: 'When driving, you should look:', a: ['Only at the car directly in front', '12-15 seconds ahead down the road', 'Only at the speedometer', 'Only in the mirrors'], correct: 1, exp: 'Scan 12-15 seconds ahead (about 1/4 mile at highway speed). This is called "high visual horizon" — it gives you maximum time to react to hazards, stops, and lane changes.', category: 'general' },
     { q: 'A white car is in your blind spot. The safest way to check before changing lanes is:', a: ['Just use mirrors', 'Briefly turn your head to look over your shoulder', 'Sound the horn', 'Speed up past them'], correct: 1, exp: 'Mirrors have blind spots where entire vehicles hide. A brief head turn (shoulder check) covers the blind spot. Signal → mirror → shoulder check → move. In that order, every time.', category: 'general' },
-    { q: 'You are driving 55 mph and it starts raining. You should:', a: ['Maintain speed — your car has good tires', 'Slow down by at least 10 mph and increase following distance', 'Pull over immediately', 'Turn on hazard flashers and continue'], correct: 1, exp: 'Rain reduces friction by 30-50%. Slow down, increase following to 4+ seconds, and turn on headlights (Maine law: wipers on = headlights on). The first 10 minutes of rain are worst — oil lifts off the road.', category: 'winter' },
+    { q: 'You are driving 55 mph and it starts raining. You should:', a: ['Maintain speed — your car has good tires', 'Slow down by at least 10 mph and increase following distance', 'Pull over immediately', 'Turn on hazard flashers and continue'], correct: 1, exp: 'Rain reduces friction by 30-50%. Slow down, increase following to 4+ seconds, and turn on headlights when wipers are in constant use or visibility is reduced. The first 10 minutes of rain are worst — oil lifts off the road.', category: 'winter' },
     { q: 'You approach a railroad crossing and the gates begin to lower as you arrive. You should:', a: ['Go around the gates quickly', 'Stop and wait — never drive around lowered gates', 'Speed up to beat the train', 'Honk and proceed'], correct: 1, exp: 'NEVER go around lowered gates. Trains can take a mile to stop. A stuck gate means call the number on the crossbuck or 911.', category: 'emergency' },
     { q: 'The primary purpose of antilock brakes (ABS) is to:', a: ['Stop the car faster on all surfaces', 'Allow you to steer while braking hard', 'Replace the handbrake', 'Prevent tire wear'], correct: 1, exp: 'ABS pulses the brakes so wheels do not lock. Locked wheels cannot steer. ABS may not always stop you faster, but it keeps the steering alive.', category: 'general' },
-    { q: 'When driving in heavy fog, you should use:', a: ['High beams', 'Low beams and/or fog lights', 'Hazard lights while moving', 'Parking lights only'], correct: 1, exp: 'High beams reflect off fog and reduce visibility. Use LOW beams and fog lights. Hazards while driving are illegal in most states — reserved for actual hazards.', category: 'winter' },
+    { q: 'When driving in heavy fog, you should use:', a: ['High beams', 'Low beams and/or fog lights', 'Hazard lights while moving', 'Parking lights only'], correct: 1, exp: 'High beams reflect off fog and reduce visibility. Use LOW beams and fog lights. Hazard flashers can confuse other drivers while moving; save them for an actual hazard or when stopped/disabled.', category: 'winter' },
     { q: 'You are parking uphill next to a curb. You should turn the front wheels:', a: ['Toward the curb', 'Away from the curb', 'Straight', 'It does not matter'], correct: 1, exp: 'UPHILL with curb: wheels AWAY (if brakes fail, car rolls INTO curb). DOWNHILL: wheels TOWARD curb. No curb: wheels toward the road edge.', category: 'general' },
     { q: 'The safest way to enter a highway from an on-ramp is to:', a: ['Stop at the end of the ramp and merge slowly', 'Match the speed of traffic and merge on a gap', 'Force your way in at any speed', 'Use the shoulder to accelerate'], correct: 1, exp: 'Accelerate on the ramp to match highway speed, find a gap, and merge smoothly. Stopping on a ramp is dangerous and often illegal.', category: 'general' },
     // ── Additional questions ──
@@ -495,17 +496,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'When parking on a downhill grade with a curb, your front wheels should point:', a: ['Toward the curb', 'Away from the curb', 'Straight ahead', 'It does not matter'], correct: 0, exp: 'DOWNHILL with curb: turn wheels TOWARD curb. If brakes fail, the curb stops the car. UPHILL with curb: turn wheels AWAY from curb.', category: 'general' },
     { q: 'Two-second rule, three-second rule, four-second rule. The number is the minimum:', a: ['Distance in car lengths', 'Time gap to the car ahead', 'Brake-pad reaction time', 'Time to wait at a stop sign'], correct: 1, exp: 'These rules count SECONDS of following distance to the car ahead. Three seconds is the minimum on dry roads, four+ in rain, six+ in snow or fog.', category: 'general' },
     { q: 'A driver in front of you stops suddenly for a deer. The best way to avoid hitting them is:', a: ['Swerve into the next lane immediately', 'Have already been following at 3+ seconds and brake firmly', 'Slam on the horn', 'Speed up and pass'], correct: 1, exp: 'Crashes are avoided BEFORE they happen — by following far enough behind that you have time and room to brake. Reaction distance is half the equation; following distance is the other half.', category: 'general' },
-    { q: 'When you see flashing blue or red lights of an emergency vehicle behind you, you must:', a: ['Speed up to clear the road', 'Brake immediately', 'Pull to the right and stop until it passes', 'Continue at the same speed'], correct: 2, exp: 'Pull RIGHT and STOP. Even if the emergency vehicle is going the other way on a divided highway, on undivided roads you stop. This is law in all 50 states.', category: 'emergency' },
-    { q: 'You approach a school bus on a highway with a PHYSICAL MEDIAN (grass, guardrail, or concrete barrier separating the directions). The bus is on the OTHER side with red flashing lights. You must:', a: ['Stop completely', 'Slow down but proceed', 'Continue at normal speed (you do not need to stop)', 'Speed up'], correct: 2, exp: 'On a divided highway with a physical median (not a painted center stripe), only traffic on the SAME side as the bus must stop. On undivided roads — including 4-lane roads with only paint separating the directions — both directions stop.', category: 'pedestrian' },
+    { q: 'When you see flashing blue or red lights of an emergency vehicle behind you, you must:', a: ['Speed up to clear the road', 'Brake immediately', 'Pull to the right and stop until it passes', 'Continue at the same speed'], correct: 2, exp: 'Pull right, stay clear of intersections, and stop until the emergency vehicle passes. Do not enter an intersection or block the lane it needs.', category: 'emergency' },
+    { q: 'You approach a school bus on the opposite side of a roadway separated by curbing, a guardrail, a concrete barrier, or another physical barrier. The bus has red flashing lights. You must:', a: ['Stop completely', 'Slow down but proceed', 'Continue with normal caution (you do not need to stop)', 'Speed up'], correct: 2, exp: 'Maine §2308 says opposite-direction traffic need not stop only when separated from the bus lane by curbing or another physical barrier, or under the limited-access/loading-zone exception. Paint-only lanes are undivided — both directions stop.', category: 'pedestrian' },
     { q: 'In an emergency stop with ABS brakes, you should:', a: ['Pump the brake pedal rapidly', 'Press and HOLD the brake pedal firmly while steering', 'Apply gentle pressure', 'Use the parking brake'], correct: 1, exp: 'ABS does the pumping for you. Press and HOLD firmly. You will feel pulsing in the pedal — that is normal. The pulsing means it is working. Steer through the stop.', category: 'emergency' },
     { q: 'A "no zone" refers to:', a: ['A speed-limit-free area', 'The blind spots around large trucks', 'A no-passing zone', 'A school zone at night'], correct: 1, exp: 'Large trucks have huge blind spots called "no zones" — directly behind, directly in front, and along both sides. If you can\'t see the driver\'s mirrors, they can\'t see you.', category: 'general' },
     { q: 'You can be charged with OUI (Operating Under Influence) in Maine for driving while impaired by:', a: ['Alcohol only', 'Alcohol and illegal drugs only', 'Alcohol, illegal drugs, AND prescription/over-the-counter medications that impair', 'Only if BAC is over 0.08'], correct: 2, exp: 'Maine OUI law covers ANY substance that impairs you — including legal prescription medications and OTC drugs (like some allergy meds). Read your medication labels.', category: 'dui' },
-    { q: 'Cell phone use while driving in Maine is:', a: ['Always legal', 'Banned for handheld; hands-free is OK for adults', 'Banned only for teens', 'Banned only at school zones'], correct: 1, exp: 'Maine bans ALL handheld phone use. Hands-free is legal for adults but banned for drivers under 18 with intermediate licenses. Texting is fully banned for everyone.', category: 'dui' },
+    { q: 'Cell phone use while driving in Maine is:', a: ['Always legal', 'Banned for handheld; hands-free only if 18+ and not permit/intermediate', 'Banned only for teens', 'Banned only at school zones'], correct: 1, exp: 'Maine §2121 bans handheld phone/device interaction while operating, including when temporarily stopped in traffic or at a light/stop sign. Hands-free is allowed only for drivers 18+ who are not using a learner\'s permit or intermediate license; texting remains banned under §2119.', category: 'dui' },
     { q: 'When approaching a stopped emergency vehicle, tow truck, or roadside worker with lights flashing, Maine law says you must:', a: ['Continue at posted speed', 'Honk and pass quickly', 'Move to a non-adjacent lane if safe, or slow to a careful and prudent speed', 'Stop completely'], correct: 2, exp: 'Maine\'s stationary-vehicle passing law requires drivers to move to a non-adjacent lane if possible, or slow to a careful and prudent speed. Roadside workers die every year from drivers passing too close.', category: 'emergency' },
     // ── Accident aftermath + advanced ──
-    { q: 'You are involved in a minor fender bender with no injuries. Your first step should be:', a: ['Leave the scene', 'Move vehicles to a safe location out of traffic', 'Call 911 immediately', 'Exchange insurance only'], correct: 1, exp: 'Move vehicles to safety first (if drivable). Then exchange info, take photos, call police if required by state law. In Maine, file a report if damage > $1,000.', category: 'emergency' },
+    { q: 'You are involved in a minor fender bender with no injuries. Your first step should be:', a: ['Leave the scene', 'Move vehicles to a safe location out of traffic', 'Call 911 immediately', 'Exchange insurance only'], correct: 1, exp: 'Move vehicles to safety first (if drivable). Then exchange info, take photos, and report the crash when required. Maine §2251 defines a reportable accident as one with injury, death, or apparent property damage of $2,000 or more.', category: 'emergency' },
     { q: 'After a crash, what information should you exchange with the other driver?', a: ['Just phone numbers', 'Name, insurance company, policy number, driver\'s license, license plate, phone', 'Nothing — let insurance handle it', 'Only if police are present'], correct: 1, exp: 'Always exchange: name, phone, insurance company + policy number, driver\'s license number, license plate, vehicle make/model. Take photos of everything.', category: 'emergency' },
-    { q: 'You hit a parked car and the owner is nowhere around. You should:', a: ['Leave — no one saw it', 'Leave a note with your name and contact info on the car', 'Only report it if the damage is severe', 'Move your car and pretend it didn\'t happen'], correct: 1, exp: 'Leaving without a note is a hit-and-run in all 50 states — a criminal offense. Leave your name, phone, and insurance info. Take a photo of both cars.', category: 'emergency' },
+    { q: 'You hit a parked car and the owner is nowhere around. You should:', a: ['Leave — no one saw it', 'Stop and leave a conspicuous note with your name, address, vehicle registration number, and what happened', 'Only report it if the damage is severe', 'Move your car and pretend it didn\'t happen'], correct: 1, exp: 'Maine §2254: stop and notify the owner if possible. If not, leave a conspicuous note with your name, address, vehicle registration number, and the circumstances. Provide insurance evidence if the owner requests it. Take photos.', category: 'emergency' },
     { q: 'What is the purpose of the vehicle\'s VIN (Vehicle Identification Number)?', a: ['It shows the fuel type', 'It uniquely identifies your specific vehicle for registration, insurance, and recall tracking', 'It measures engine power', 'It is the same as the license plate'], correct: 1, exp: 'The VIN is a 17-character code unique to every vehicle manufactured. It encodes the make, model, year, factory, and serial number. Found on the dashboard and door frame.', category: 'maintenance' },
     { q: 'Tailgating (following too closely) is dangerous because:', a: ['It saves fuel from drafting', 'It leaves no room for reaction if the car ahead stops suddenly', 'It makes the other driver go faster', 'It only matters on highways'], correct: 1, exp: 'Tailgating eliminates your reaction buffer. At 60 mph with a 1-second following distance, you need 132 ft to react + 180 ft to brake = 312 ft. A 1-second gap at 60 mph is only 88 ft.', category: 'general' },
     { q: 'When driving through a deep puddle, what should you do after crossing it?', a: ['Speed up to dry the brakes', 'Gently tap the brakes a few times to dry them', 'Nothing — modern brakes are waterproof', 'Pull over and wait 10 minutes'], correct: 1, exp: 'Water on brake rotors reduces braking power. Lightly tapping brakes creates friction heat that evaporates the water. This restores full braking within seconds.', category: 'general' },
@@ -514,11 +515,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'You are driving and smell gasoline inside the car. You should:', a: ['Ignore it — cars always smell like gas', 'Open windows, do NOT smoke, pull over when safe, and check for leaks', 'Speed up to blow the fumes out', 'Turn on the AC to recirculate air'], correct: 1, exp: 'A gasoline smell indicates a potential fuel leak — fire hazard. Ventilate immediately (open windows, NOT recirculate), pull over safely, and check under the hood and underneath.', category: 'emergency' },
     { q: 'What does it mean when your steering wheel vibrates at highway speed?', a: ['Normal road vibration', 'Likely wheel balance issue, alignment problem, or tire damage — have it inspected', 'The engine is overheating', 'You need new brakes'], correct: 1, exp: 'Steering vibration typically means: unbalanced wheels (most common, cheap fix), worn tie rod ends, or tire damage. If vibration is only when braking, it\'s warped rotors.', category: 'maintenance' },
     { q: 'In Maine, what is the penalty for a first-offense OUI (Operating Under Influence)?', a: ['$100 fine', 'Warning only', 'Minimum 150-day license suspension, $500+ fine, possible jail time', 'Loss of car registration only'], correct: 2, exp: 'Maine first-offense OUI: at least a $500 fine and 150-day license suspension. Jail becomes mandatory in aggravating cases such as 0.15+ BAC, 30+ mph over the limit, eluding, a passenger under 21, or refusing a test. Maine uses "OUI" rather than the "DUI" / "DWI" terms used in other states.', category: 'dui' },
+    { q: 'In Maine, which child passenger must use a belt-positioning seat or child restraint unless a stricter child-restraint rule applies?', a: ['Any child under 12', 'A child under 8 who is under 80 lb and under 57 inches tall', 'Any child under 100 lb', 'Only children under 2'], correct: 1, exp: 'Maine §2081 uses age, weight, and height. Under 2: rear-facing unless seat limits are exceeded. Age 2+ and under 55 lb: internal-harness child restraint. Under 8, under 80 lb, and under 57 in: belt-positioning seat or child restraint. Under 12: rear seat if possible.', category: 'general' },
     { q: 'You are approaching a green light that has been green for a long time (stale green). You should:', a: ['Speed up to make it through', 'Cover the brake and be ready for it to change', 'Honk to warn cross traffic', 'Stop and wait for the next green'], correct: 1, exp: 'A "stale green" is likely to turn yellow soon. Cover your brake pedal (hover your foot over it) so you can react instantly. This reduces reaction time by ~0.5 seconds.', category: 'general' },
     { q: 'The "Dutch reach" is a technique for:', a: ['Parallel parking', 'Opening your car door safely by reaching with the far hand to check for cyclists', 'Merging onto a highway', 'Adjusting mirrors'], correct: 1, exp: 'Open your door with the hand farthest from the door (right hand for driver side). This naturally turns your body to look over your shoulder, checking for cyclists. Prevents "dooring" — a leading cause of cyclist injury.', category: 'general' },
     { q: 'Your car starts to hydroplane. The correct response is:', a: ['Brake hard', 'Turn the steering wheel sharply', 'Ease off the gas, do not brake or steer sharply, and let the tires regain contact', 'Accelerate to push through'], correct: 2, exp: 'Hydroplaning = tires riding on a film of water, not the road. Braking or sharp steering = loss of control. Ease off gas smoothly and wait for tires to contact pavement again.', category: 'emergency' },
     { q: 'What is the "Smith System" of driving?', a: ['A car manufacturing technique', 'Five principles: aim high, keep eyes moving, get the big picture, leave yourself an out, make sure they see you', 'A parallel parking method', 'An insurance discount program'], correct: 1, exp: 'The Smith System is a professional defensive driving method: (1) Aim High — look 15 sec ahead, (2) Keep Eyes Moving — scan constantly, (3) Get the Big Picture — awareness of all surroundings, (4) Leave Yourself an Out — always have an escape route, (5) Make Sure They See You — use signals, lights, horn.', category: 'general' },
-    { q: 'What percentage of all traffic deaths in the US involve alcohol?', a: ['About 5%', 'About 15%', 'About 30%', 'About 50%'], correct: 2, exp: 'Approximately 30% of all US traffic fatalities involve a drunk driver. That is roughly 10,000 deaths per year. Every single one is preventable.', category: 'dui' },
+    { q: 'What percentage of all traffic deaths in the US involve alcohol?', a: ['About 5%', 'About 15%', 'About 30%', 'About 50%'], correct: 2, exp: 'NHTSA reports that about 30% of U.S. traffic crash fatalities involve drunk drivers (BAC .08+). In 2024, 11,904 people died in alcohol-impaired-driving crashes, and the 2015-2024 average was over 11,500 per year.', category: 'dui' },
     { q: 'Regenerative braking in electric and hybrid vehicles:', a: ['Uses the brakes harder', 'Converts the car\'s kinetic energy back into battery charge when decelerating', 'Only works at high speed', 'Wears out brake pads faster'], correct: 1, exp: 'Regen braking runs the electric motor backwards as a generator, converting motion → electricity → battery charge. This is why hybrids get BETTER city MPG — every stop recaptures energy.', category: 'general' },
     { q: 'The safest position for your hands on the steering wheel is:', a: ['10 and 2 o\'clock', '9 and 3 o\'clock', '12 o\'clock with one hand', 'Bottom of the wheel'], correct: 1, exp: '9 and 3 is now recommended over 10 and 2. It gives better control, reduces fatigue, and keeps your arms below the airbag deployment zone. 10-and-2 can cause arm injuries from airbag.', category: 'general' },
     { q: 'What is the first thing to check when you get into an unfamiliar vehicle?', a: ['The radio presets', 'Seat position, mirrors, and the location of all controls (lights, wipers, signals, hazards)', 'The GPS', 'The gas level'], correct: 1, exp: 'Before driving ANY unfamiliar vehicle: adjust seat, adjust all 3 mirrors, locate headlights, wipers, signals, hazards, and horn. Find the parking brake. Then check gas level and tire pressure.', category: 'general' },
@@ -532,7 +534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'You see a sign that says "WRONG WAY." You should:', a: ['Continue slowly — it might be outdated', 'STOP immediately, then carefully reverse or turn around without entering the road further', 'Ignore it if you don\'t see oncoming traffic', 'Speed up to get through quickly'], correct: 1, exp: 'WRONG WAY means you are driving against traffic on a one-way road or highway ramp. This is immediately life-threatening. Stop. Do NOT continue. Carefully reverse or turn around. Check for oncoming traffic.', category: 'emergency' },
     { q: 'When parallel parking during the road test, your car must end up:', a: ['Roughly near the curb', 'Within 12 inches of the curb, parallel to it, and fully within the space', 'Touching the curb', 'Anywhere between the two cars'], correct: 1, exp: 'Maine road test standard: within 12 inches of curb, reasonably parallel, without hitting either boundary car. You get 3 attempts. Examiners also watch for proper signaling and mirror checks.', category: 'general' },
     { q: 'What is the "2-second rule" for following distance based on?', a: ['Distance in feet', 'Time gap — pick a fixed point, count seconds after the car ahead passes it', 'Speed in mph', 'The length of two cars'], correct: 1, exp: 'The time-based rule auto-adjusts for speed. At 30 mph, 2 seconds = 88 ft. At 60 mph, 2 seconds = 176 ft. The distance doubles but the gap in seconds stays the same. That is why seconds are better than feet or car lengths.', category: 'general' },
-    { q: 'Drowsy driving is comparable in danger to:', a: ['Mild speeding', 'Drunk driving — reaction times and judgment are similarly impaired', 'Driving without glasses', 'Driving with one hand'], correct: 1, exp: 'Being awake 17+ hours impairs you as much as a 0.05% BAC. 24 hours awake ≈ 0.10% BAC (legally drunk). Drowsy driving causes ~100,000 crashes/year in the US. The only cure is sleep, not coffee.', category: 'dui' },
+    { q: 'Drowsy driving is comparable in danger to:', a: ['Mild speeding', 'Drunk driving — reaction times and judgment are similarly impaired', 'Driving without glasses', 'Driving with one hand'], correct: 1, exp: 'Drowsy driving can impair reaction time, judgment, and lane control like alcohol or drugs. NHTSA warns that alcohol makes sleepiness worse, coffee alone is not enough, and a safe stop plus a short 20-minute nap is the practical short-term fix.', category: 'dui' },
     { q: 'If your car has a manual transmission and you are stopped on a steep uphill, you should:', a: ['Use the parking brake while starting to prevent rolling backward', 'Rev the engine and release the clutch quickly', 'Roll backward and try again', 'Shift to neutral'], correct: 0, exp: 'Hill start technique: hold the parking brake while you find the clutch engagement point and apply gas. Release the parking brake as you feel the car pull forward. This prevents the dangerous roll-back.', category: 'general' },
     { q: 'Right-of-way at a T-intersection (no signs or signals):', a: ['The car on the through road always goes first', 'The car on the stem road goes first', 'The larger vehicle goes first', 'Whoever arrives first'], correct: 0, exp: 'At a T-intersection without signs, the through road (top of the T) has the right-of-way. The car on the terminating road (stem) must yield. This is because they are essentially entering a new road.', category: 'general' },
     { q: 'The purpose of rumble strips on the highway shoulder is to:', a: ['Mark the edge for snow plows', 'Alert drowsy or distracted drivers that they are leaving the travel lane', 'Slow down traffic', 'Guide cyclists'], correct: 1, exp: 'Rumble strips create noise and vibration when you drive over them. They are specifically designed to wake up drowsy drivers or alert distracted ones before they leave the road. They reduce run-off-road crashes by 15-70%.', category: 'general' },
@@ -541,8 +543,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     // ── Expanded category coverage (DUI / Winter / Pedestrian / Emergency / Maintenance / GDL / Signs) ──
     // ── DUI / impaired ──
-    { q: 'In Maine, the BAC limit for drivers UNDER 21 is:', a: ['0.08%', '0.05%', '0.02% (zero tolerance)', 'No limit'], correct: 2, exp: 'Maine has zero tolerance: ANY measurable alcohol (0.02% or higher) for under-21 drivers triggers a license suspension. The 0.08% limit only applies to adults 21+.', category: 'dui' },
-    { q: 'How long does an OUI (Operating Under Influence) conviction stay on your Maine driving record?', a: ['1 year', '5 years', '10 years', 'Forever'], correct: 2, exp: 'In Maine, OUI convictions stay on your driving record for 10 years. They affect insurance rates, employment background checks, and any subsequent OUI charges (which carry escalating penalties).', category: 'dui' },
+    { q: 'In Maine, the BAC limit for drivers UNDER 21 is:', a: ['0.08%', '0.05%', 'No alcohol level over 0.00', 'No limit'], correct: 2, exp: 'Maine §2472 sets zero tolerance for under-21/provisional drivers: do not operate with an alcohol level over 0.00. Unless a longer period applies, the first suspension is one year; refusal is 18 months for a first refusal.', category: 'dui' },
+    { q: 'For Maine OUI penalty escalation, prior OUI offenses are counted within what lookback period?', a: ['1 year', '5 years', '10 years', 'Forever'], correct: 2, exp: 'Maine §2411 escalates penalties for previous OUI offenses within a 10-year period. Record retention, insurance, and employment effects can last longer and vary by context.', category: 'dui' },
     { q: 'Maine\'s "implied consent" law means that refusing a breath test after a traffic stop:', a: ['Has no consequences', 'Triggers an automatic license suspension', 'Is always smart legal advice', 'Only matters if you fail it'], correct: 1, exp: 'By driving in Maine you have already consented to chemical testing if police suspect impairment. Refusing triggers an automatic 275-day suspension (longer for repeat offenses), separate from any OUI charges.', category: 'dui' },
     { q: 'You went out for drinks and feel "okay to drive." The safest choice is:', a: ['Drive carefully and slowly', 'Wait 30 minutes and reassess', 'Use a rideshare, taxi, or designated driver', 'Drink coffee for 15 minutes first'], correct: 2, exp: 'You cannot reliably self-assess your impairment — alcohol affects judgment FIRST. The only safe choice is not driving. Coffee speeds nothing; only TIME (about 1 hour per standard drink) lowers BAC.', category: 'dui' },
     { q: 'Approximately how long does it take your body to metabolize ONE standard drink (12 oz beer, 5 oz wine, 1.5 oz liquor)?', a: ['10 minutes', '1 hour', '4 hours', '24 hours'], correct: 1, exp: 'About 1 hour per drink for a typical adult. There is no shortcut — coffee, food, cold air, and exercise do not speed metabolism. Plan drinks-and-driving math BEFORE you start.', category: 'dui' },
@@ -567,14 +569,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'In a near-whiteout snow squall on a highway, the safest action is:', a: ['Stop in the travel lane and turn on hazards', 'Slow down, increase following distance, turn on low beams (not high beams), exit at the next safe pull-off', 'Speed up to get out of it', 'Pull onto the shoulder and stop with no lights'], correct: 1, exp: 'Stopping in the lane = rear-end crash risk. The shoulder is unsafe (others may also leave the road). Slow, increase distance, low beams, and exit at a rest area, gas station, or wide pull-off. Hazards on the shoulder, NOT in the lane.', category: 'winter' },
 
     // ── Pedestrian / school zone ──
-    { q: 'A pedestrian is at an UNMARKED crosswalk (intersection without painted lines). They have:', a: ['No right-of-way without a marked crosswalk', 'The same right-of-way as if it were marked — every intersection is a legal crosswalk in Maine', 'Right-of-way only during daylight', 'Right-of-way only on residential streets'], correct: 1, exp: 'Every intersection in Maine is a legal crosswalk whether painted or not. Pedestrians have right-of-way at any intersection, and drivers must yield when turning.', category: 'pedestrian' },
-    { q: 'You are turning right at an intersection. A pedestrian is on the sidewalk waiting to cross. You should:', a: ['Turn quickly before they step off the curb', 'Yield: stop and let them cross before completing your turn', 'Honk so they wait for you', 'Continue if you have a green light'], correct: 1, exp: 'A green light is permission to PROCEED, not to ignore pedestrians. Stop, yield, let them cross, then turn. Right-on-red turns demand the same yielding behavior.', category: 'pedestrian' },
-    { q: 'Pedestrian right-of-way in Maine extends to:', a: ['Crosswalks only', 'Crosswalks AND any time a pedestrian is in the travel lane (jaywalking does not strip right-of-way once they are exposed to traffic)', 'Children only', 'School zones only'], correct: 1, exp: 'Even when a pedestrian is jaywalking, drivers must take reasonable care to avoid hitting them. You cannot "claim right-of-way" against a vulnerable road user. Slow, signal, and pass safely.', category: 'pedestrian' },
+    { q: 'At a marked crosswalk in Maine, when must a driver yield to a pedestrian?', a: ['Only after the pedestrian is fully in your lane', 'When the pedestrian is crossing or shows visible intent to enter the marked crosswalk', 'Only if a crossing guard is present', 'Only during school hours'], correct: 1, exp: 'Maine §2056 requires drivers to yield to a pedestrian crossing within a marked crosswalk or showing visible intent to enter it. Outside marked crosswalks, pedestrians generally yield, but drivers still owe due care.', category: 'pedestrian' },
+    { q: 'You are turning right at an intersection. A pedestrian is at the marked crosswalk showing visible intent to cross. You should:', a: ['Turn quickly before they step off the curb', 'Yield: stop and let them cross before completing your turn', 'Honk so they wait for you', 'Continue if you have a green light'], correct: 1, exp: 'A green light is permission to PROCEED, not to ignore pedestrians. Yield to pedestrians in a marked crosswalk or showing visible intent to enter it, then turn when clear.', category: 'pedestrian' },
+    { q: 'If a pedestrian is crossing outside a marked crosswalk in Maine, a driver should:', a: ['Accelerate because the pedestrian must yield', 'Use due care: slow or stop as needed to avoid a collision, even though the pedestrian generally yields outside marked crosswalks', 'Honk continuously and continue', 'Pass within 1 foot'], correct: 1, exp: 'Maine §2056 says pedestrians crossing outside a marked crosswalk generally yield to vehicles, but drivers must exercise due care to avoid colliding with any pedestrian.', category: 'pedestrian' },
     { q: 'When backing out of a driveway, the highest-risk pedestrian is:', a: ['An adult on the sidewalk', 'A child on a bike, scooter, or playing — small, fast, and below your rearview mirror sightline', 'A dog walker', 'No one — backup cameras eliminate the risk'], correct: 1, exp: 'Children move unpredictably and are below mirror sightlines. Walk around the car before backing up if children may be around. Backup cameras help but do not show every angle.', category: 'pedestrian' },
     { q: 'On a residential street with children playing nearby (no posted limit change), Maine law expects you to:', a: ['Drive the posted limit — that is what is legal', 'Reduce speed below the posted limit to a safe speed for the conditions', 'Honk to alert the children', 'Continue normally'], correct: 1, exp: '"Reasonable and prudent" speed is the legal standard. The posted limit is a maximum, not a target. Children + cars = drop your speed. Maine uses "basic speed law" to ticket drivers for "speeding" even at the posted limit when conditions warrant slowing.', category: 'pedestrian' },
-    { q: 'Approaching a school crossing where a crossing guard holds up a stop paddle, you must:', a: ['Slow down', 'Come to a complete stop until the guard signals you may proceed', 'Drive around them carefully', 'Honk before passing'], correct: 1, exp: 'A school crossing guard\'s stop paddle has the legal authority of a stop sign. Stop completely. Wait until they signal you may go. Children may continue stepping into the crosswalk after the first one.', category: 'pedestrian' },
-    { q: 'A flashing yellow light at a school zone means:', a: ['Stop and wait', 'Slow down — children may be present and the school-zone speed limit (typically 15 mph in Maine) is in effect', 'School is closed', 'Same as a regular yellow light'], correct: 1, exp: 'Flashing yellow at a school zone activates the school-zone speed limit and warns of children. In Maine, school zone speed is typically 15 mph when flashing. Standard speed applies otherwise.', category: 'pedestrian' },
-    { q: 'A pedestrian carrying a white cane (sometimes with a red tip) is signaling:', a: ['Crosswalk volunteer', 'Visual impairment — they have absolute right-of-way and you must come to a complete stop', 'Construction worker', 'Tour guide'], correct: 1, exp: 'A white cane (often with red tip) indicates blindness or low vision. Maine law: drivers MUST stop fully and wait until the person is across. Do not honk — the sound disorients them.', category: 'pedestrian' },
+    { q: 'Approaching a school crossing where a crossing guard holds up a stop paddle, you must:', a: ['Slow down', 'Come to a complete stop until the guard signals you may proceed', 'Drive around them carefully', 'Honk before passing'], correct: 1, exp: 'Maine §2091-A requires drivers to obey a qualified school crossing guard\'s hand signal or handheld traffic-control device at a marked crosswalk. The guard may not contradict or override a lighted traffic or pedestrian signal. Stop until the guard signals you may proceed, and keep scanning for children.', category: 'pedestrian' },
+    { q: 'A flashing yellow light at a school zone means:', a: ['Stop and wait', 'Slow down — the active school-zone speed limit (15 mph in Maine) is in effect', 'School is closed', 'Same as a regular yellow light'], correct: 1, exp: 'Flashing yellow at a school zone indicates an active school-zone period. Maine §2074 sets the school-zone speed at 15 mph during active periods such as recess, opening/closing windows, flashing signs, or locally designated times. Standard speed applies otherwise.', category: 'pedestrian' },
+    { q: 'A pedestrian carrying a white cane (sometimes with a red tip) is signaling:', a: ['Crosswalk volunteer', 'Visual impairment — yield, stop as needed, and give room', 'Construction worker', 'Tour guide'], correct: 1, exp: 'A white or metallic cane, with or without a red tip, or a guide/personal care dog indicates a visually impaired pedestrian. Maine §2056 requires drivers to yield; failure is a traffic infraction with a $50-$1,000 fine. Stop as needed and avoid honking unless necessary to prevent an immediate collision.', category: 'pedestrian' },
     { q: 'A car ahead of you stops at a marked crosswalk for a pedestrian. You should:', a: ['Pass them in the next lane to keep traffic moving', 'STOP — never pass a vehicle stopped at a crosswalk; the pedestrian may be hidden by the stopped vehicle', 'Honk to encourage the front car to move', 'Pass on the right'], correct: 1, exp: 'A stopped car at a crosswalk is the most dangerous moment — the pedestrian is hidden from your view. Stop and wait. Pass-through-pedestrian crashes are often fatal.', category: 'pedestrian' },
     { q: 'A school bus stop on a 2-lane neighborhood street: where do children most often appear from?', a: ['The front of the bus only', 'BOTH the front (crossing the street) AND the rear (running to catch the bus)', 'Only after the bus moves', 'Only from designated zones'], correct: 1, exp: 'Children dart from in front (crossing) and behind (running for bus). Stay stopped and scan in all directions. Never resume driving until the bus retracts the stop arm AND lights stop flashing.', category: 'pedestrian' },
 
@@ -616,7 +618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     // ── Signs (extra coverage) ──
     { q: 'A pennant-shaped (sideways triangle) yellow sign on the LEFT side of the road means:', a: ['No parking', 'Beginning of a no-passing zone', 'School ahead', 'Construction'], correct: 1, exp: 'The pennant is the only sign placed on the LEFT side of the road. It marks the start of a no-passing zone. Solid yellow line on your side of the centerline confirms it.', category: 'signs' },
-    { q: 'A round yellow sign with a black "X" and the letters "RR" warns of:', a: ['A railroad crossing ahead', 'Road end', 'Roundabout', 'Recreation area'], correct: 0, exp: 'Round yellow + RR + X = railroad crossing ahead. Slow down, look, listen. Stop at the white line if a train is approaching, and never stop ON the tracks.', category: 'signs' },
+    { q: 'A round yellow sign with a black "X" and the letters "RR" warns of:', a: ['A railroad crossing ahead', 'Road end', 'Roundabout', 'Recreation area'], correct: 0, exp: 'Round yellow + RR + X = railroad crossing ahead. Maine §2076: by 100 ft from the nearest rail, slow to a reasonable/proper speed, look both ways, and be ready to stop. Stop 15-50 ft from the nearest rail when signals, gates, a flagger, a train, or law requires; never stop ON the tracks.', category: 'signs' },
     { q: 'A blue rectangular sign typically indicates:', a: ['Warnings', 'Services available (gas, food, lodging, hospital, rest area)', 'Construction', 'Speed limit'], correct: 1, exp: 'Blue = motorist services. Includes gas, food, lodging, hospital, rest area, EV charging. Different from green (directions) and brown (recreational/scenic).', category: 'signs' },
     { q: 'A brown rectangular sign typically indicates:', a: ['Speed limit', 'Recreational, scenic, or cultural information (parks, historic sites, hiking)', 'Construction', 'Hospital'], correct: 1, exp: 'Brown = parks, recreation, historic sites. Often used for state parks, national monuments, lighthouses, museums. In Maine: Acadia, Baxter, lighthouses, lobster pounds, etc.', category: 'signs' },
 
@@ -730,7 +732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ? { title: 'Skid on ICE', advice: 'Ease off the gas, do NOT brake hard, and steer gently in the direction you want the front to go. On ice, every input must be smaller and slower. If equipped, switch to engine braking instead of pedal braking.' }
           : { title: 'Skid', advice: 'Lost grip means you exceeded what the tires could give. Smaller inputs, more anticipation. Friction circle: 100% braking + steering = exceeding 100% grip = skid.' };
       case 'cyclistClose':
-        return { title: 'Passed cyclist too closely', advice: 'Maine law requires a minimum 3 ft (1 m) when passing a cyclist. Crossing a double-yellow centerline to provide that space is legal if it\'s safe to do so. Wait for an opening if the road is narrow.' };
+        return { title: 'Passed cyclist too closely', advice: 'Maine §2070 requires at least 3 ft when passing a bicycle or roller skier. You may pass in a no-passing zone only when it is safe: clear view, no oncoming conflict, and enough room to complete the pass. Wait for an opening if the road is narrow.' };
       default:
         return { title: ev.type, advice: 'Review your form for next time.' };
     }
@@ -861,7 +863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     night: {
       title: 'Night Driving: Why Speed Must Drop',
       icon: '🌙',
-      content: "At night your headlights illuminate about 350 feet with low beams, ~500 feet with high beams. Your braking distance at 60 mph is ~240 ft. Add reaction distance — you are already using your ENTIRE headlight range just to stop in time. At 75 mph, you physically cannot stop within your headlight range with low beams. This is called 'overdriving your headlights' and it is how single-vehicle-at-night crashes happen. Rule: drive slow enough that you could stop within the distance you can see. Use high beams whenever there is no oncoming traffic within ~500 ft. Dim for oncoming cars (glare can blind the other driver for 2+ seconds — covering 176 ft at 60 mph).",
+      content: "At night your headlights illuminate about 350 feet with low beams, ~500 feet with high beams. Your braking distance at 60 mph is ~240 ft. Add reaction distance — you are already using your ENTIRE headlight range just to stop in time. At 75 mph, you physically cannot stop within your headlight range with low beams. This is called 'overdriving your headlights' and it is how single-vehicle-at-night crashes happen. Rule: drive slow enough that you could stop within the distance you can see. Use high beams only when clear; Maine §2067 requires dimming within 500 ft of oncoming traffic and within 300 ft when following another vehicle.",
       formula: 'safe_night_speed: where d_stop(v) ≤ headlight_range',
       variables: 'headlight_range ≈ 350 ft (low) / 500 ft (high), d_stop(60 mph) ≈ 240 ft on dry',
       practice: 'Switch the sim to Night scenario. Feel how much shorter your "world" becomes. Try high vs low beams.'
@@ -889,13 +891,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'parking', name: 'Parallel Parking', icon: '🅿️', speedLimit: 10, weather: 'clear', time: 'day', traffic: 'light', difficulty: 3, desc: '2D top-down view. The dreaded road-test maneuver. Step-by-step guidance.' },
     { id: 'night', name: 'Night Driving', icon: '🌙', speedLimit: 40, weather: 'clear', time: 'night', traffic: 'light', difficulty: 3, desc: 'Suburban roads after dark. Headlights reach ~350 ft with lows, 500 ft with highs. Do not overdrive them.' },
     { id: 'fog', name: 'Coastal Fog', icon: '🌫️', speedLimit: 30, weather: 'fog', time: 'day', traffic: 'light', difficulty: 4, desc: 'Maine coastal fog — thick, wet, visibility 100 ft. Low beams only. Slow WAY down.' },
-    { id: 'rain', name: 'Rain', icon: '🌧️', speedLimit: 45, weather: 'rain', time: 'day', traffic: 'medium', difficulty: 3, desc: 'Wet pavement. Friction drops ~40%. Hydroplaning risk above 45 mph. Wipers on = headlights on (Maine law).' },
+    { id: 'rain', name: 'Rain', icon: '🌧️', speedLimit: 45, weather: 'rain', time: 'day', traffic: 'medium', difficulty: 3, desc: 'Wet pavement. Friction drops ~40%. Hydroplaning risk above 45 mph. Headlights on when wipers are in constant use or visibility is reduced.' },
     { id: 'snow', name: 'Maine Snow', icon: '❄️', speedLimit: 35, weather: 'snow', time: 'day', traffic: 'light', difficulty: 5, desc: 'Snow-covered road. Friction drops to ~0.2. Gentle inputs only. Moose warning active. The test.' },
-    { id: 'construction', name: 'Work Zone', icon: '🚧', speedLimit: 35, weather: 'clear', time: 'day', traffic: 'medium', difficulty: 3, desc: 'Lane closure with flagger and cones. Fines double. Workers present — treat like school zone.' },
-    { id: 'school_zone', name: 'School Zone', icon: '🏫', speedLimit: 15, weather: 'clear', time: 'day', traffic: 'light', difficulty: 2, desc: 'Active school zone. Crosswalks, crossing guard, buses. 15 mph limit when children present.' },
+    { id: 'construction', name: 'Work Zone', icon: '🚧', speedLimit: 35, weather: 'clear', time: 'day', traffic: 'medium', difficulty: 3, desc: 'Lane closure with flagger and cones. Posted construction-speed fines can double. Workers present — slow down early.' },
+    { id: 'school_zone', name: 'School Zone', icon: '🏫', speedLimit: 15, weather: 'clear', time: 'day', traffic: 'light', difficulty: 2, desc: 'Active school zone. Crosswalks, crossing guard, buses. Maine §2074: 15 mph during recess, opening/closing windows, flashing signs, or local active times.' },
     { id: 'downtown', name: 'Downtown', icon: '🏙️', speedLimit: 30, weather: 'clear', time: 'day', traffic: 'heavy', difficulty: 4, desc: 'Dense urban grid. One-way streets, heavy pedestrians, tight turns, taxis. Portland Old Port feel.' },
     { id: 'dawn', name: 'Dawn / Dusk', icon: '🌅', speedLimit: 45, weather: 'clear', time: 'night', traffic: 'medium', difficulty: 3, desc: 'Low-angle sun glare. The most dangerous time for moose + deer. Visibility is tricky.' }
   ];
+
+  // Maine §2074 defaults for unposted/open-world zones. Named scenarios may
+  // still use posted practice limits, but biome-generated signs and enforcement
+  // should not drift from current Maine default speed law.
+  var BIOME_SPEED_LIMIT_MPH = { residential: 25, suburban: 25, commercial: 25, industrial: 25, rural: 45 };
+  function getBiomeSpeedLimitMph(biome, fallbackMph) {
+    return Object.prototype.hasOwnProperty.call(BIOME_SPEED_LIMIT_MPH, biome) ? BIOME_SPEED_LIMIT_MPH[biome] : fallbackMph;
+  }
 
   // ─────────────────────────────────────────────────────────
   // SECTION 7: PHYSICS HELPERS
@@ -1048,7 +1058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   // ─────────────────────────────────────────────────────────
   // SECTION 8b: PROCEDURAL INFINITE WORLD (Free Explore)
-  // ────────────────────────────────────���────────────────────
+  // ─────────────────────────────────────────────────────────
   // Seeded PRNG for deterministic procedural generation.
   // Same seed → same world every time. Different seed → different world.
   function seededRandom(seed) {
@@ -4245,7 +4255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         else if (scn.id === 'snow') introMsg = '❄️ SNOW: μ ≈ 0.2. Gentle inputs only. Watch for moose. Brake BEFORE turns.';
         else if (scn.id === 'fog') introMsg = '🌫️ FOG: Low beams only — highs reflect back. Slow to ~half posted speed.';
         else if (scn.id === 'school_zone') introMsg = '🏫 SCHOOL ZONE: 15 mph. Stop for buses with red flashers on both directions.';
-        else if (scn.id === 'construction') introMsg = '🚧 WORK ZONE: Fines double. Watch for flaggers. Slow, smooth, patient.';
+        else if (scn.id === 'construction') introMsg = '🚧 WORK ZONE: Posted speed fines can double. Watch for flaggers. Slow, smooth, patient.';
         else if (scn.id === 'downtown') introMsg = '🏙️ DOWNTOWN: Dense traffic, many signals, pedestrians everywhere. Patience is the skill here.';
         else if (scn.id === 'dawn') introMsg = '🌅 DAWN/DUSK: Low sun glare, reduced visibility. Peak moose/deer danger. Scan tree lines.';
         // Clear infinite-world state from any prior Free Explore session — without this,
@@ -5451,8 +5461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Update currentScenario.speedLimit to match the biome the player is in,
                 // so the HUD speedometer color-zones and the enforcement match the signs.
                 if (currentBiome) {
-                  var biomeSpeedMap = { residential: 25, suburban: 35, commercial: 30, industrial: 35, rural: 50 };
-                  var newLimit = biomeSpeedMap[currentBiome] || 30;
+                  var newLimit = getBiomeSpeedLimitMph(currentBiome, 25);
                   if (currentScenario.speedLimit !== newLimit) {
                     Object.assign(currentScenario, { speedLimit: newLimit });
                   }
@@ -6299,7 +6308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       if (Math.random() < 0.5) {
                         evt = { kind: 'ball', icon: '⚽', warn: 'CHILD chasing ball into road!', color: '#ef4444' };
                       } else {
-                        // School bus with extended stop arm — Maine + all 50 states require FULL STOP
+                        // School bus with extended stop arm — Maine law requires a full stop
                         // even from the opposite direction on undivided roads
                         evt = { kind: 'schoolbus_arm', icon: '🚌', warn: 'SCHOOL BUS stopped with RED FLASHING lights! STOP — illegal to pass!', color: '#fbbf24' };
                       }
@@ -6588,8 +6597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var ci = Math.floor(worldY / CHUNK_SIZE);
               var ch = infiniteWorldRef.current.chunks[ci];
               if (ch && ch.biome) {
-                var biomeLimit = { residential: 25, suburban: 35, commercial: 30, industrial: 35, rural: 50 };
-                return biomeLimit[ch.biome] || 30;
+                return getBiomeSpeedLimitMph(ch.biome, 25);
               }
             }
             if (scn && scn.id === 'school_zone') return 15;
@@ -7791,7 +7799,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 statsRef.current.crashes++;
                 addToast('🚨 ILLEGAL PASS! You passed a stopped school bus. -30 safety');
                 eventToastRef.current = { msg: '🚨 PASSING A STOPPED SCHOOL BUS is a serious violation — this endangers children.', until: timeRef.current + 6 };
-                speak('Illegal pass of a stopped school bus. This is a serious violation in all 50 states.');
+                speak('Illegal pass of a stopped school bus. This is a serious violation under Maine law.');
               }
               if (!w.credited && busDist < 5 && Math.abs(car.speed) < 1) {
                 w.credited = true;
@@ -8066,7 +8074,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             } else {
               statsRef.current.safetyScore -= 20;
               addToast('🚨 Failed to yield to emergency vehicle! -20');
-              eventToastRef.current = { msg: '🚨 FAILURE TO YIELD. All 50 states require you to pull right and stop for emergency vehicles.', until: timeRef.current + 5 };
+              eventToastRef.current = { msg: '🚨 FAILURE TO YIELD. Pull right, stay clear of intersections, and stop for emergency vehicles.', until: timeRef.current + 5 };
             }
           }
           // Remove when done
@@ -8204,7 +8212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               bus._busCompLogged = timeRef.current;
               statsRef.current.safetyScore -= 25;
               addToast('🚨 ILLEGAL PASS of school bus with red flashers! -25');
-              eventToastRef.current = { msg: '🚨 Passing a stopped school bus with red flashers violates Maine law. $250+ fine in Maine.', until: timeRef.current + 6 };
+              eventToastRef.current = { msg: '🚨 Passing a stopped school bus with red flashers violates Maine §2308. First offense: Class E crime with a $250 minimum fine.', until: timeRef.current + 6 };
               speak('You passed a stopped school bus. That violates Maine law.');
             }
           }
@@ -8247,7 +8255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               py._yieldLogged = timeRef.current;
               statsRef.current.safetyScore -= 20;
               addToast('🚨 Failed to yield to pedestrian! -20');
-              eventToastRef.current = { msg: '🚨 Pedestrians always have right-of-way in crosswalks. This is negligent driving.', until: timeRef.current + 5 };
+              eventToastRef.current = { msg: '🚨 Yield to pedestrians in crosswalks. This is negligent driving.', until: timeRef.current + 5 };
               speak('You failed to yield to a pedestrian in a crosswalk.');
             }
           }
@@ -11436,7 +11444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
 
-          // ── Snow drifts on road edges ─��
+          // Snow drifts on road edges
           if (isSnow) {
             var driftMat = new T.MeshLambertMaterial({ color: 0xe8eef4 });
             for (var sdi = -MAP_SIZE; sdi < MAP_SIZE; sdi += 5) {
@@ -14112,8 +14120,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var bPole = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 3.0, 6), new T.MeshLambertMaterial({ color: 0x888888 }));
                       bPole.position.set(bPoleX, bHt + 1.5, beaconZ);
                       chunkGroup.add(bPole);
-                      // Sign panel (yellow diamond — school zone warning)
-                      var schoolSignMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+                      // Sign panel (fluorescent yellow-green diamond — school zone warning)
+                      var schoolSignMat = new T.MeshBasicMaterial({ color: 0xccff00 });
                       var schoolSign = new T.Mesh(new T.BoxGeometry(0.85, 0.85, 0.04), schoolSignMat);
                       schoolSign.rotation.z = Math.PI / 4; // 45° diamond
                       schoolSign.position.set(bPoleX, bHt + 2.6, beaconZ);
@@ -14885,7 +14893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // ─── BIOME SPEED LIMIT SIGN at start of each chunk ───
               // Teaches students to match their speed to the zone they're in.
               if (ci % 2 === 0 || (chunk.biome === 'rural' && ci % 3 === 0)) {
-                var biomeLimit = chunk.biome === 'residential' ? 25 : chunk.biome === 'suburban' ? 35 : chunk.biome === 'commercial' ? 30 : chunk.biome === 'industrial' ? 35 : chunk.biome === 'rural' ? 50 : 30;
+                var biomeLimit = getBiomeSpeedLimitMph(chunk.biome, 25);
                 var speedZ = chunkWorldZ + 3;
                 var speedSide = ci % 4 < 2 ? 1 : -1;
                 var spPost = new T.Mesh(new T.CylinderGeometry(0.05, 0.05, 2.4, 6), new T.MeshLambertMaterial({ color: 0xd1d5db }));
@@ -15430,8 +15438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Speed limit sign — one per chunk on alternating sides. The
                 // posted speed matches the biome so the player can self-check.
                 // White rectangle with black text, on a metal post.
-                var slBiomeMph = chunk.biome === 'rural' ? 45 : chunk.biome === 'residential' ? 25
-                  : chunk.biome === 'suburban' ? 35 : chunk.biome === 'commercial' ? 30 : 35;
+                var slBiomeMph = getBiomeSpeedLimitMph(chunk.biome, 25);
                 (function() {
                   var slZ = chunkWorldZ + 6;
                   var slSide = (chunk.index % 2 === 0) ? 1 : -1;
@@ -16117,11 +16124,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var periodicRepaint = (ci % 3 === 0);
               if (scn.weather !== 'snow' && (biomeChanged || periodicRepaint)) {
                 try {
-                  var paintLimit = chunk.biome === 'residential' ? 25
-                    : chunk.biome === 'suburban' ? 35
-                    : chunk.biome === 'commercial' ? 30
-                    : chunk.biome === 'industrial' ? 35
-                    : chunk.biome === 'rural' ? 50 : 30;
+                  var paintLimit = getBiomeSpeedLimitMph(chunk.biome, 25);
                   // Cache the texture per limit value (3–4 unique textures total per session)
                   if (!iw._roadNumCache) iw._roadNumCache = {};
                   var cacheKey = 'n_' + paintLimit;
@@ -19999,7 +20002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #f59e0b', background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '↔️'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, 'Right-of-Way'),
-              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, __alloT('stem.roadready.18_who_goes_first_scenarios', '18 "who goes first?" scenarios'))
+              h('div', { style: { fontSize: '10px', color: '#fed7aa', marginTop: '2px' } }, __alloT('stem.roadready.18_who_goes_first_scenarios', '20 "who goes first?" scenarios'))
             ),
             h('button', { onClick: function() { updMulti({ view: 'rulesFoundations', rulesPillar: 'rightOfWay' }); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #818cf8', background: 'linear-gradient(135deg, #312e81, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -20037,7 +20040,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #22d3ee', background: 'linear-gradient(135deg, #083344, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '⚡'),
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.reaction_test', 'Reaction Test')),
-              h('div', { style: { fontSize: '10px', color: '#a5f3fc', marginTop: '2px' } }, __alloT('stem.roadready.your_baseline_vs_0_08_bac', 'Your baseline vs 0.08 BAC'))
+              h('div', { style: { fontSize: '10px', color: '#a5f3fc', marginTop: '2px' } }, __alloT('stem.roadready.your_baseline_vs_0_08_bac', 'Your baseline vs modeled impairment'))
             ),
             h('button', { onClick: function() { upd('view', 'cheatSheet'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #e5e7eb', background: 'linear-gradient(135deg, #475569, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
@@ -20241,7 +20244,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', null, __alloT('stem.roadready.bac_limit_21', '• BAC limit (21+): '), h('b', null, '0.08%')),
               h('div', null, __alloT('stem.roadready.phone_use', '• Phone use: '), h('b', null, __alloT('stem.roadready.banned_all_handheld', 'BANNED (all handheld)'))),
               h('div', null, __alloT('stem.roadready.studded_tires', '• Studded tires: '), h('b', null, __alloT('stem.roadready.oct_1_may_1', 'Oct 1–May 1'))),
-              h('div', null, __alloT('stem.roadready.headlights', '• Headlights: '), h('b', null, __alloT('stem.roadready.on_when_wipers_on', 'ON when wipers on')))
+              h('div', null, __alloT('stem.roadready.headlights', '• Headlights: '), h('b', null, __alloT('stem.roadready.on_when_wipers_on', 'ON when wipers are in constant use'))),
+              h('div', null, __alloT('stem.roadready.child_passengers', '• Child passengers: '), h('b', null, __alloT('stem.roadready.maine_2081_age_weight_height', '§2081 age/weight/height rules')))
             )
           ),
           // ── Progress Dashboard (compact summary) ──
@@ -20660,7 +20664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Build a virtual scenario from the user's choices
             var feScenario = {
               id: feMap, name: __alloT('stem.roadready.free_explore_3', 'Free Explore'), icon: '🌎',
-              speedLimit: feMap === 'highway' ? 65 : feMap === 'rural' ? 50 : feMap === 'residential' ? 25 : feMap === 'roundabout' ? 25 : 40,
+              speedLimit: feMap === 'highway' ? 65 : feMap === 'roundabout' ? 25 : getBiomeSpeedLimitMph(feMap, 25),
               weather: feWeather, time: feTime, traffic: feTraffic, difficulty: 0,
               desc: __alloT('stem.roadready.free_explore_no_objectives_full_sandbo', 'Free Explore — no objectives, full sandbox.')
             };
@@ -21235,7 +21239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { cat: 'regulatory', name: __alloT('stem.roadready.yield', 'Yield'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'10,20 90,20 50,90',fill:'#fff',stroke:'#dc2626',strokeWidth:5}),h('text',{x:50,y:50,textAnchor:'middle',fontSize:13,fontWeight:900,fill:'#dc2626'},'YIELD'));}, meaning: 'Slow down. Give way to any cross traffic or pedestrians.', when: 'Entry to a highway, roundabout, or merge lane.' },
           { cat: 'regulatory', name: __alloT('stem.roadready.speed_limit', 'Speed Limit'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('rect',{x:10,y:10,width:80,height:80,fill:'#fff',stroke:'#000',strokeWidth:3,rx:4}),h('text',{x:50,y:30,textAnchor:'middle',fontSize:9,fontWeight:700,fill:'#000'},'SPEED'),h('text',{x:50,y:44,textAnchor:'middle',fontSize:9,fontWeight:700,fill:'#000'},'LIMIT'),h('text',{x:50,y:75,textAnchor:'middle',fontSize:24,fontWeight:900,fill:'#000'},'55'));}, meaning: 'Maximum legal speed in ideal conditions. Slower if weather, traffic, or visibility dictate.', when: 'Posted along any highway.' },
           { cat: 'regulatory', name: __alloT('stem.roadready.no_u_turn', 'No U-Turn'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('rect',{x:10,y:10,width:80,height:80,fill:'#fff',stroke:'#000',strokeWidth:3,rx:4}),h('path',{d:'M 30 70 L 30 45 Q 30 25 50 25 Q 70 25 70 45 L 70 60 L 80 60 L 65 75 L 50 60 L 60 60 L 60 45 Q 60 35 50 35 Q 40 35 40 45 L 40 70 Z',fill:'#000'}),h('line',{x1:15,y1:85,x2:85,y2:15,stroke:'#dc2626',strokeWidth:6}));}, meaning: 'You may not reverse direction at this point.', when: 'Busy intersections where U-turns would cause crashes.' },
-          { cat: 'regulatory', name: __alloT('stem.roadready.do_not_enter', 'Do Not Enter'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('rect',{x:10,y:10,width:80,height:80,fill:'#fff',stroke:'#000',strokeWidth:3,rx:4}),h('circle',{cx:50,cy:50,r:30,fill:'#dc2626'}),h('rect',{x:30,y:45,width:40,height:10,fill:'#fff'}));}, meaning: 'Wrong way. You are facing oncoming traffic. TURN AROUND.', when: 'One-way street facing the wrong way, or highway exit ramp.' },
+          { cat: 'regulatory', name: __alloT('stem.roadready.do_not_enter', 'Do Not Enter'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('rect',{x:8,y:8,width:84,height:84,fill:'#dc2626',stroke:'#fff',strokeWidth:3,rx:2}),h('circle',{cx:50,cy:50,r:29,fill:'#dc2626',stroke:'#fff',strokeWidth:2}),h('rect',{x:26,y:44,width:48,height:12,fill:'#fff',rx:1}),h('text',{x:50,y:31,textAnchor:'middle',fontSize:12,fontWeight:900,fill:'#fff'},'DO NOT'),h('text',{x:50,y:75,textAnchor:'middle',fontSize:14,fontWeight:900,fill:'#fff'},'ENTER'));}, meaning: 'R5-1: traffic may not enter this roadway, ramp, or one-way street from your direction. TURN AROUND before entering.', when: 'One-way street facing the wrong way, or highway exit ramp.' },
           { cat: 'regulatory', name: __alloT('stem.roadready.one_way', 'One Way'), svg: function(){return h('svg',{viewBox:'0 0 140 60',width:70,height:30},h('rect',{x:2,y:2,width:136,height:56,fill:'#000',stroke:'#fff',strokeWidth:2}),h('path',{d:'M 18 30 L 100 30 M 90 20 L 100 30 L 90 40',stroke:'#fff',strokeWidth:4,fill:'none'}),h('text',{x:115,y:36,fontSize:11,fontWeight:900,fill:'#fff'},'ONE'),h('text',{x:115,y:48,fontSize:11,fontWeight:900,fill:'#fff'},'WAY'));}, meaning: 'All traffic flows in the arrow direction only.', when: 'Downtown grid streets.' },
           { cat: 'warning', name: __alloT('stem.roadready.curve_ahead', 'Curve Ahead'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('path',{d:'M 30 70 Q 30 40 50 40 Q 70 40 70 25',stroke:'#000',strokeWidth:4,fill:'none'}),h('polygon',{points:'70,25 65,30 75,30',fill:'#000'}));}, meaning: 'Road curves ahead. Slow to the advisory speed.', when: 'Before every curve sharp enough to need warning.' },
           { cat: 'warning', name: __alloT('stem.roadready.pedestrian_crossing', 'Pedestrian Crossing'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('circle',{cx:50,cy:35,r:6,fill:'#000'}),h('path',{d:'M 50 42 L 50 62 M 50 50 L 40 60 M 50 50 L 60 60 M 50 62 L 42 75 M 50 62 L 58 75',stroke:'#000',strokeWidth:3,fill:'none'}));}, meaning: 'Pedestrians may cross here. Watch and slow.', when: 'Mid-block crosswalks, near schools, parks, shopping.' },
@@ -21243,11 +21247,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { cat: 'warning', name: __alloT('stem.roadready.slippery_when_wet', 'Slippery When Wet'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('path',{d:'M 30 30 Q 50 50 30 70 M 70 30 Q 50 50 70 70',stroke:'#000',strokeWidth:5,fill:'none'}),h('rect',{x:25,y:72,width:50,height:3,fill:'#000'}));}, meaning: 'Road surface loses grip in rain. Extend following distance 4+ seconds.', when: 'Bridges, painted markings, railroad crossings, shaded curves.' },
           { cat: 'warning', name: __alloT('stem.roadready.two_way_traffic', 'Two-Way Traffic'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('path',{d:'M 40 20 L 40 70 M 60 80 L 60 30 M 35 30 L 40 20 L 45 30 M 55 70 L 60 80 L 65 70',stroke:'#000',strokeWidth:3,fill:'none'}));}, meaning: 'Divided road ends. Opposing traffic begins.', when: 'End of a highway, when exiting a one-way.' },
           { cat: 'warning', name: __alloT('stem.roadready.merge', 'Merge'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#fde047',stroke:'#000',strokeWidth:3}),h('path',{d:'M 30 80 Q 30 50 50 30 L 70 50',stroke:'#000',strokeWidth:4,fill:'none'}),h('polygon',{points:'50,30 45,40 55,40',fill:'#000'}));}, meaning: 'Another lane is about to join yours. Adjust speed to let them in.', when: 'Highway on-ramps, lane drops.' },
-          { cat: 'warning', name: __alloT('stem.roadready.railroad_crossing', 'Railroad Crossing'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('circle',{cx:50,cy:50,r:45,fill:'#fde047',stroke:'#000',strokeWidth:3}),h('text',{x:50,y:45,textAnchor:'middle',fontSize:38,fontWeight:900,fill:'#000',fontFamily:'serif'},'R'),h('text',{x:50,y:75,textAnchor:'middle',fontSize:22,fontWeight:900,fill:'#000',fontFamily:'serif'},'R'),h('line',{x1:20,y1:60,x2:80,y2:40,stroke:'#000',strokeWidth:4}));}, meaning: 'Train tracks ahead. Look, listen, stop if the crossarm is down.', when: '15-50 ft before any railroad crossing.' },
-          { cat: 'construction', name: __alloT('stem.roadready.road_work_ahead', 'Road Work Ahead'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#f97316',stroke:'#000',strokeWidth:3}),h('path',{d:'M 40 70 L 40 45 L 50 40 L 60 45 L 60 70 Z',fill:'#000'}),h('path',{d:'M 30 80 L 70 80',stroke:'#000',strokeWidth:4}));}, meaning: 'Work zone ahead. Fines doubled. Watch for workers.', when: 'Before any active construction.' },
+          { cat: 'warning', name: __alloT('stem.roadready.railroad_crossing', 'Railroad Crossing'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('circle',{cx:50,cy:50,r:45,fill:'#fde047',stroke:'#000',strokeWidth:3}),h('text',{x:50,y:45,textAnchor:'middle',fontSize:38,fontWeight:900,fill:'#000',fontFamily:'serif'},'R'),h('text',{x:50,y:75,textAnchor:'middle',fontSize:22,fontWeight:900,fill:'#000',fontFamily:'serif'},'R'),h('line',{x1:20,y1:60,x2:80,y2:40,stroke:'#000',strokeWidth:4}));}, meaning: 'Round yellow W10-1 advance warning: train tracks ahead. Maine §2076 says slow by 100 ft from the nearest rail, look both ways, and be ready to stop.', when: 'MUTCD W10-1 advance warning before a grade crossing; the crossbuck marks the actual crossing.' },
+          { cat: 'construction', name: __alloT('stem.roadready.road_work_ahead', 'Road Work Ahead'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#f97316',stroke:'#000',strokeWidth:3}),h('path',{d:'M 40 70 L 40 45 L 50 40 L 60 45 L 60 70 Z',fill:'#000'}),h('path',{d:'M 30 80 L 70 80',stroke:'#000',strokeWidth:4}));}, meaning: 'Work zone ahead. Posted construction-speed fines may be doubled. Watch for workers.', when: 'Before any active construction.' },
           { cat: 'construction', name: __alloT('stem.roadready.flagger_ahead', 'Flagger Ahead'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,5 95,50 50,95 5,50',fill:'#f97316',stroke:'#000',strokeWidth:3}),h('circle',{cx:50,cy:35,r:6,fill:'#000'}),h('path',{d:'M 50 42 L 50 70 M 50 48 L 70 55 M 70 55 L 75 40',stroke:'#000',strokeWidth:3,fill:'none'}),h('rect',{x:72,y:35,width:12,height:12,fill:'#dc2626'}));}, meaning: 'Person directing traffic ahead. Obey them even over signals.', when: 'Construction zones with a worker controlling flow.' },
-          { cat: 'school', name: __alloT('stem.roadready.school_zone', 'School Zone'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,8 88,30 88,70 50,92 12,70 12,30',fill:'#ca8a04',stroke:'#000',strokeWidth:3}),h('path',{d:'M 30 55 L 50 40 L 70 55 L 70 70 L 30 70 Z',fill:'#000'}),h('rect',{x:42,y:55,width:16,height:15,fill:'#ca8a04'}));}, meaning: 'Active school zone. Reduced speed when flashing or children present.', when: 'Within 1000 ft of any elementary school.' },
-          { cat: 'school', name: __alloT('stem.roadready.school_crossing', 'School Crossing'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,8 88,30 88,70 50,92 12,70 12,30',fill:'#ca8a04',stroke:'#000',strokeWidth:3}),h('circle',{cx:38,cy:35,r:5,fill:'#000'}),h('path',{d:'M 38 40 L 38 60 M 38 45 L 30 52 M 38 45 L 45 50 M 38 60 L 32 72 M 38 60 L 45 72',stroke:'#000',strokeWidth:3,fill:'none'}),h('circle',{cx:62,cy:42,r:4,fill:'#000'}));}, meaning: 'School children cross here. Always stop for crossing guard.', when: 'Any marked school crosswalk.' },
+          { cat: 'school', name: __alloT('stem.roadready.school_zone', 'School Zone'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,8 88,30 88,70 50,92 12,70 12,30',fill:'#ccff00',stroke:'#000',strokeWidth:3}),h('path',{d:'M 30 55 L 50 40 L 70 55 L 70 70 L 30 70 Z',fill:'#000'}),h('rect',{x:42,y:55,width:16,height:15,fill:'#ccff00'}));}, meaning: 'Active school zone. Maine §2074 sets 15 mph during recess, school opening/closing windows, flashing signs, or locally designated active times.', when: 'Posted school-zone approaches, school driveways, and school-area crossings.' },
+          { cat: 'school', name: __alloT('stem.roadready.school_crossing', 'School Crossing'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('polygon',{points:'50,8 88,30 88,70 50,92 12,70 12,30',fill:'#ccff00',stroke:'#000',strokeWidth:3}),h('circle',{cx:38,cy:35,r:5,fill:'#000'}),h('path',{d:'M 38 40 L 38 60 M 38 45 L 30 52 M 38 45 L 45 50 M 38 60 L 32 72 M 38 60 L 45 72',stroke:'#000',strokeWidth:3,fill:'none'}),h('circle',{cx:62,cy:42,r:4,fill:'#000'}));}, meaning: 'School children may cross here. Obey a qualified crossing guard\'s hand signal or handheld traffic-control device; the guard may not override a lighted traffic or pedestrian signal.', when: 'Marked school crosswalks where a qualified guard is directing traffic.' },
           { cat: 'guide', name: __alloT('stem.roadready.interstate_shield', 'Interstate Shield'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('path',{d:'M 50 5 L 95 25 L 95 55 Q 95 85 50 95 Q 5 85 5 55 L 5 25 Z',fill:'#1e3a8a',stroke:'#fff',strokeWidth:2}),h('text',{x:50,y:35,textAnchor:'middle',fontSize:10,fontWeight:900,fill:'#fff'},'INTERSTATE'),h('text',{x:50,y:70,textAnchor:'middle',fontSize:28,fontWeight:900,fill:'#fff'},'95'));}, meaning: 'Interstate highway. Limited access, 65-70 mph in Maine.', when: 'Every freeway entrance.' },
           { cat: 'guide', name: __alloT('stem.roadready.us_route', 'US Route'), svg: function(){return h('svg',{viewBox:'0 0 100 100',width:60,height:60},h('path',{d:'M 10 15 L 90 15 L 90 70 Q 90 85 50 95 Q 10 85 10 70 Z',fill:'#fff',stroke:'#000',strokeWidth:3}),h('text',{x:50,y:35,textAnchor:'middle',fontSize:10,fontWeight:900,fill:'#000'},'US'),h('text',{x:50,y:70,textAnchor:'middle',fontSize:26,fontWeight:900,fill:'#000'},'1'));}, meaning: 'US numbered route — mix of surface + highway.', when: 'Main cross-state routes like US 1 along the coast.' }
         ];
@@ -21258,7 +21262,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { id: 'regulatory', label: __alloT('stem.roadready.regulatory', 'Regulatory'), color: '#fff' },
           { id: 'warning', label: __alloT('stem.roadready.warning', 'Warning'), color: 'var(--allo-stem-text, #fde047)' },
           { id: 'construction', label: __alloT('stem.roadready.construction', 'Construction'), color: '#f97316' },
-          { id: 'school', label: __alloT('stem.roadready.school', 'School'), color: '#ca8a04' },
+          { id: 'school', label: __alloT('stem.roadready.school', 'School'), color: '#ccff00' },
           { id: 'guide', label: __alloT('stem.roadready.guide', 'Guide'), color: '#1e3a8a' }
         ];
         // Quiz mode state
@@ -22008,7 +22012,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 drivingStats.crashes === 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, __alloT('stem.roadready.zero_crashes_that_is_the_baseline_real', '✅ Zero crashes! That is the baseline real drivers are measured against.')) : null,
                 drivingStats.aiCausedCrashes > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #60a5fa' } }, 'ℹ️ ' + drivingStats.aiCausedCrashes + ' of your ' + drivingStats.crashes + ' crashes were caused by other drivers (mostly tailgating). In real life you\'d file an insurance claim — your safety score was only lightly penalized.') : null,
                 drivingStats.skidSeconds > 1 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #ef4444' } }, '🛞 You skidded for ' + drivingStats.skidSeconds + 's. Remember: brake BEFORE turns, not during. The friction circle has a fixed budget — use it for braking OR steering, not both.') : null,
-                drivingStats.cyclistClose > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, '🚴 ' + drivingStats.cyclistClose + ' close pass(es) to cyclists. Maine requires 3 feet minimum. Cross the centerline to pass if the oncoming lane is clear.') : null,
+                drivingStats.cyclistClose > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #fbbf24' } }, '🚴 ' + drivingStats.cyclistClose + ' close pass(es) to cyclists. Maine requires 3 feet minimum. Use a no-passing-zone pass only with clear visibility, no oncoming conflict, and enough room to complete it safely.') : null,
                 drivingStats.unsignaledLaneChanges > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #f59e0b' } }, '⚠️ ' + drivingStats.unsignaledLaneChanges + ' unsignaled lane change(s). Use E=left, V=right to signal before changing lanes. Signal at least 100 ft before the change.') : null,
                 drivingStats.busStopCompliance > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚌 ' + drivingStats.busStopCompliance + ' correct stop(s) for school bus with red flashers. Maine law — you nailed it.') : null,
                 drivingStats.pedYields > 0 ? h('div', { style: { paddingLeft: '8px', borderLeft: '2px solid #4ade80' } }, '🚶 ' + drivingStats.pedYields + ' pedestrian yield(s) at crosswalks. This is the single most important habit for urban driving.') : null,
@@ -22978,12 +22982,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               q: 'You\'re exiting a roundabout. A pedestrian steps onto the crosswalk at your exit — right as you\'re about to leave.',
               choices: [
                 'Keep going — they started late',
-                'Yield. Pedestrians at roundabout crosswalks always have right-of-way',
+                'Yield. Pedestrians at the exit crosswalk have right-of-way',
                 'Honk to warn them',
                 'Swerve around them'
               ],
               correct: 1,
-              exp: 'Pedestrians always have right-of-way at roundabout crosswalks. "They started late" is never an excuse. Slow enough to yield AT the crosswalk, even if the circle is pressuring you from behind. Hitting a pedestrian in a roundabout is 100% on you.' },
+              exp: 'At a roundabout exit, yield to pedestrians in the crosswalk or showing visible intent to enter. Slow enough to yield AT the crosswalk, even if the circle is pressuring you from behind.' },
             { id: 'signal_correctly', icon: '🚦', title: __alloT('stem.roadready.how_do_you_signal', 'How do you signal?'),
               q: 'Which is correct for signaling in a roundabout?',
               choices: [
@@ -23010,10 +23014,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           stateKey: 'duiState', badgeId: 'sober_smart', badgeName: 'Sober-Smart',
           winMessage: 'You know the law. More important — never drive impaired.',
           facts: [
-            { icon: '⚖️', title: __alloT('stem.roadready.legal_limits', 'Legal limits'), body: __alloT('stem.roadready.maine_0_08_bac_for_21_zero_tolerance_0', 'Maine: 0.08 BAC for 21+. Zero tolerance — 0.02 BAC — for under 21. For commercial drivers, 0.04. Any measurable alcohol under 21 can trigger a charge.') },
-            { icon: '🧪', title: __alloT('stem.roadready.implied_consent', 'Implied consent'), body: __alloT('stem.roadready.driving_on_a_maine_road_is_legal_conse', 'Driving on a Maine road is legal consent to breath/blood testing when an officer has probable cause. Refusing the test = automatic 275-day license suspension — often LONGER than a first-offense conviction penalty.') },
+            { icon: '⚖️', title: __alloT('stem.roadready.legal_limits', 'Legal limits'), body: __alloT('stem.roadready.maine_0_08_bac_for_21_zero_tolerance_0', 'Maine: 0.08 BAC for 21+. Zero tolerance — no alcohol level over 0.00 — for under-21/provisional drivers. For commercial drivers, 0.04. Any measurable alcohol under 21 can trigger suspension.') },
+            { icon: '🧪', title: __alloT('stem.roadready.implied_consent', 'Implied consent'), body: __alloT('stem.roadready.driving_on_a_maine_road_is_legal_conse', 'Driving on a Maine road is legal consent to breath/blood testing when an officer has probable cause. First refusal triggers a 275-day license suspension; repeat refusals are longer and refusal can be used in court.') },
             { icon: '💊', title: __alloT('stem.roadready.drugs_count_too', 'Drugs count too'), body: __alloT('stem.roadready.prescription_medical_marijuana_otc_col', 'Prescription, medical marijuana, OTC cold medicine, even "legal" recreational cannabis — if it impairs you, driving on it is OUI (Operating Under the Influence). "The doctor prescribed it" is not a defense.') },
-            { icon: '🍺', title: __alloT('stem.roadready.one_drink_math', 'One-drink math'), body: __alloT('stem.roadready.a_130_lb_teenager_drops_below_maine_s_', 'A 130-lb teenager drops below Maine\'s 0.02 limit about 90 minutes after ONE 12-oz beer. Food, fatigue, and body composition shift that — you can\'t reliably "feel" your BAC.') }
+            { icon: '🍺', title: __alloT('stem.roadready.one_drink_math', 'One-drink math'), body: __alloT('stem.roadready.a_130_lb_teenager_drops_below_maine_s_', 'One 12-oz beer can leave a teen above Maine\'s under-21 0.00 standard for hours. Food, fatigue, and body composition shift the curve — you can\'t reliably "feel" your BAC.') }
           ],
           scenarios: [
             { id: 'just_one_mile', icon: '🚗', title: __alloT('stem.roadready.just_one_mile_pressure', '"Just one mile" pressure'),
@@ -23050,12 +23054,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               q: 'You\'re 20, had a single light beer ~2 hours ago at a family dinner. BAC tests at 0.03. Legal to drive in Maine?',
               choices: [
                 'Yes — under 0.08',
-                'No — Maine zero-tolerance is 0.02 BAC for drivers under 21',
+                'No — Maine under-21/provisional zero tolerance means no alcohol level over 0.00',
                 'Yes if the beer was consumed during a family meal',
                 'Only until midnight'
               ],
               correct: 1,
-              exp: 'Under 21 in Maine: 0.02 BAC is the limit. That\'s essentially any measurable alcohol in your system. Penalties are close to a full adult OUI: license suspension, fine, DEEP program. The law is strict because crashes per mile driven are highest in the under-21 age group and alcohol makes it exponentially worse.' },
+              exp: 'Under 21/provisional in Maine: no alcohol level over 0.00. A 0.03 test is not legal, and §2472 sets a one-year first suspension unless a longer suspension applies. Refusal is 18 months for a first refusal.' },
             { id: 'weed_legal', icon: '🍃', title: __alloT('stem.roadready.recreational_marijuana_driving', 'Recreational marijuana + driving'),
               q: 'Maine legalized recreational marijuana for adults 21+. You\'re 22, used it 90 minutes ago, still feel relaxed. Can you drive?',
               choices: [
@@ -23070,12 +23074,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               q: 'A first-time adult Maine OUI conviction (no accident, no minors in car) typically includes which of these?',
               choices: [
                 'Only a fine and a warning',
-                'License suspension (typically 150 days), fine (starts at $500), mandatory DEEP program, possible jail, SR-22 insurance',
+                'License suspension (typically 150 days), fine starts at $500, DEEP/restoration steps, possible jail in aggravating cases, and insurance consequences',
                 'Automatic felony charge',
                 'Nothing — first offenses are sealed'
               ],
               correct: 1,
-              exp: 'First-offense Maine OUI is a misdemeanor but carries: ~150-day license suspension, $500+ fine, mandatory Driver Education Evaluation Program (DEEP) (~$500 more), possible 48 hours to 1-year jail, SR-22 high-risk insurance filing for 3 years (often triples rates). Second offense is mandatory jail time. Third is a felony.' }
+              exp: 'First-offense Maine OUI is a misdemeanor but carries at least a $500 fine and 150-day license suspension. Jail becomes mandatory for aggravating facts such as 0.15+ BAC, 30+ mph over the limit, eluding, a passenger under 21, or refusing a test. DEEP/restoration steps and insurance consequences can add major cost.' }
           ]
         });
       }
@@ -23086,8 +23090,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             choices: ['Slam on the brakes and stop mid-intersection', 'Accelerate and swerve right', 'Brake hard AND steer right toward the shoulder', 'Honk and hold course'],
             correct: 2, exp: 'Brake + steer right — most T-bones are on the driver\'s side. Moving right and slowing takes you out of the impact zone. Never stop in the intersection — you\'re a target.' },
           { id: 'bike_swerve', icon: '🚴', title: __alloT('stem.roadready.cyclist_swerve', 'Cyclist Swerve'), q: 'You\'re passing a cyclist with 3 ft of clearance. They suddenly swerve left to avoid a pothole.',
-            choices: ['Brake hard', 'Swerve further left across the double-yellow', 'Brake AND steer slightly left within your lane', 'Honk'],
-            correct: 2, exp: 'Brake + slight left adjustment in your lane. Never cross the yellow line to avoid a cyclist — oncoming traffic is a worse crash. Maine law requires 3 ft clearance, which is why you already had it.' },
+            choices: ['Brake hard', 'Swerve further left into the oncoming lane', 'Brake AND steer slightly left within your lane', 'Honk'],
+            correct: 2, exp: 'Brake + slight left adjustment within your lane. Maine §2070 allows passing a bicycle in a no-passing zone only when safe; in a sudden swerve, oncoming traffic may not be clear. Brake first, preserve space, and cross the centerline only if you have clear visibility and no oncoming conflict.' },
           { id: 'tailgater', icon: '🚗', title: __alloT('stem.roadready.rain_tailgater', 'Rain Tailgater'), q: 'It\'s raining. Someone is 1 car length behind you in heavy rain. You should:',
             choices: ['Brake-check them', 'Speed up to escape', 'Move right when safe and let them pass', 'Ignore and keep driving'],
             correct: 2, exp: 'Move right and let them pass. Speed-up encourages them; brake-check invites a rear-end that\'s legally your fault even if they\'re wrong. In rain, YOU need 4+ seconds of following distance; they need to be someone else\'s problem.' },
@@ -23265,7 +23269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'Hazard lights + normal speed so cars behind you can see'
             ],
             correct: 1,
-            exp: 'Low beams + "drive within your sight distance." High beams reflect off fog and blind YOU. The rule is: you must be able to stop in the distance you can see, because a moose can appear inside that distance. At 100 ft visibility, safe speed is roughly 20–25 mph. Never drive with hazards ON the move in Maine (it\'s for stopped vehicles).'
+            exp: 'Low beams + "drive within your sight distance." High beams reflect off fog and blind YOU. The rule is: you must be able to stop in the distance you can see, because a moose can appear inside that distance. At 100 ft visibility, safe speed is roughly 20–25 mph. Hazard flashers can confuse other drivers while moving; save them for an actual hazard or when stopped/disabled.'
           }
         ];
         var mooseState = d.mooseState || {}; // { id: { answered: idx, correct: bool } }
@@ -23395,13 +23399,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             title: __alloT('stem.roadready.oncoming_on_a_divided_highway', 'Oncoming on a divided highway'),
             q: 'You\'re northbound on I-95 (divided median). An ambulance with siren is southbound in the opposite lanes.',
             choices: [
-              'Pull to the right shoulder and stop',
+              'Move right as near as practicable, stay clear of intersections, and stop until it passes',
               'Stay in your lane at normal speed — the median separates you',
               'Move left toward the median',
               'Stop immediately'
             ],
-            correct: 1,
-            exp: 'On a divided highway with a physical median, you don\'t need to stop for oncoming emergency vehicles — the median keeps you out of their path. Stopping on the interstate creates a new hazard. (If the median is just paint, treat it like any 2-way road and pull right.)'
+            correct: 0,
+            exp: 'Maine §2054 does not list a divided-highway exception for an authorized emergency vehicle using lights and siren. Move as near as practicable to the right-hand curb or edge, stay clear of intersections, and stop until it passes. On high-speed roads, do this smoothly and only where safe.'
           },
           {
             id: 'oncoming_undivided',
@@ -23528,10 +23532,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ══════════════════════════════════════════════════════════
       if (view === 'schoolBus') {
         var BUS_FACTS = [
-          { icon: '📜', title: __alloT('stem.roadready.the_maine_rule', 'The Maine rule'), body: __alloT('stem.roadready.title_29_a_2308_when_a_school_bus_is_s', 'Title 29-A §2308: when a school bus is stopped with red lights flashing and stop arm extended, all traffic in both directions must stop — UNLESS you\'re separated by a physical median on a divided highway.') },
+          { icon: '📜', title: __alloT('stem.roadready.the_maine_rule', 'The Maine rule'), body: __alloT('stem.roadready.title_29_a_2308_when_a_school_bus_is_s', 'Title 29-A §2308: when a school bus is stopped with red lights flashing, traffic meeting or overtaking from either direction must stop. Opposite-direction traffic is excepted only when separated by curbing or another physical barrier, or under the limited-access/loading-zone exception.') },
           { icon: '🟡', title: __alloT('stem.roadready.yellow_vs_red', 'Yellow vs red'), body: __alloT('stem.roadready.yellow_flashers_bus_is_about_to_stop_r', 'Yellow flashers = bus is about to stop. Red flashers + stop arm = you must stop. The transition is your cue to slow down, not to speed past.') },
           { icon: '📏', title: __alloT('stem.roadready.how_far_back', 'How far back'), body: __alloT('stem.roadready.stop_far_enough_back_that_the_bus_driv', 'Stop far enough back that the bus driver can see you (rule of thumb: at least 20 ft). Children cross from BOTH sides unpredictably — tight stopping is dangerous.') },
-          { icon: '⚖️', title: __alloT('stem.roadready.penalties', 'Penalties'), body: __alloT('stem.roadready.passing_a_stopped_school_bus_in_maine_', 'Passing a stopped school bus in Maine: fine of $250+, plus license points. Multiple violations can lead to suspension. Worse: you\'re the reason a kid doesn\'t come home.') }
+          { icon: '⚖️', title: __alloT('stem.roadready.penalties', 'Penalties'), body: __alloT('stem.roadready.passing_a_stopped_school_bus_in_maine_', 'Passing a stopped school bus in Maine is a Class E crime. First offense: $250 minimum fine. A 2nd offense within 3 years carries a mandatory 30-day license suspension.') }
         ];
         var BUS_SCENARIOS = [
           {
@@ -23560,21 +23564,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'Stop only if a child is visible'
             ],
             correct: 1,
-            exp: 'Stop. On any undivided road (no physical median), both directions of traffic must stop. Children often cross the road to reach the bus. Maine treats this like an absolute rule because the consequences are catastrophic.'
+            exp: 'Stop. On any undivided road with no curbing or physical barrier separating your lane from the bus lane, both directions of traffic must stop. Children often cross the road to reach the bus. Maine treats this like an absolute rule because the consequences are catastrophic.'
           },
           {
             id: 'opposite_divided',
             icon: '🛣️',
             title: __alloT('stem.roadready.bus_stopped_in_opposite_direction_on_a', 'Bus stopped in opposite direction on a divided highway'),
-            q: 'You\'re northbound on I-295 (physical median divides the directions). A school bus is stopped southbound with red lights flashing.',
+            q: 'You\'re on a roadway separated from the opposite direction by a concrete barrier. A school bus is stopped across that barrier with red lights flashing.',
             choices: [
               'Stop immediately',
               'Slow to 20 mph',
-              'Continue at normal speed — the median separates you',
+              'Continue with normal caution — the barrier separates the roadways',
               'Merge right onto the shoulder and stop'
             ],
             correct: 2,
-            exp: 'Continue at normal speed. The divided-highway exception applies: a physical median (grass, guardrail, concrete barrier) means kids can\'t cross to/from your direction, so you don\'t need to stop. A painted center stripe is NOT a median — that still counts as undivided.'
+            exp: 'Continue with normal caution. Maine §2308 excepts opposite-direction traffic only when separated by curbing or another physical barrier, or in the limited-access/loading-zone case. Paint-only lanes are NOT separated roadways — both directions still stop.'
           },
           {
             id: 'yellow_flashers',
@@ -23602,7 +23606,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'Pass slowly on the left'
             ],
             correct: 1,
-            exp: 'The rule applies everywhere a school bus stops with red lights and stop arm extended — public roads, neighborhood streets, commercial parking lots. The only exemptions are (1) a divided highway in the opposite direction, and (2) when a traffic officer signals otherwise.'
+            exp: 'The rule applies on a way, in a parking area, or on school property when the bus stops with red lights flashing. Do not proceed until the bus moves again or the bus operator signals you to proceed, unless a separated-roadway exception in Maine §2308 applies.'
           }
         ];
         var busState = d.busState || {};
@@ -23687,7 +23691,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ══════════════════════════════════════════════════════════
       if (view === 'railroadCrossing') {
         var RR_FACTS = [
-          { icon: '📜', title: __alloT('stem.roadready.the_law', 'The law'),            body: __alloT('stem.roadready.flashing_red_lights_at_a_crossing_mean', 'Flashing red lights at a crossing mean STOP — treat them like a red traffic light. Driving around a lowered gate is a federal violation (49 CFR §234.11) and a felony in many states.') },
+          { icon: '📜', title: __alloT('stem.roadready.the_law', 'The law'),            body: __alloT('stem.roadready.flashing_red_lights_at_a_crossing_mean', 'Flashing red lights at a crossing mean STOP — treat them like a red traffic light. Never drive around lowered gates. If a gate appears stuck or a vehicle is trapped, call the posted crossing number or 911.') },
           { icon: '📏', title: __alloT('stem.roadready.train_physics', 'Train physics'),      body: __alloT('stem.roadready.at_55_mph_a_freight_train_needs_over_1', 'At 55 mph a freight train needs over 1 mile (≈ 6,000 ft) to stop. A 100-car train weighs roughly 18,000 tons — the equivalent of ~3,000 cars.') },
           { icon: '👁️', title: __alloT('stem.roadready.the_speed_illusion', 'The speed illusion'), body: __alloT('stem.roadready.large_objects_appear_to_move_slower_th', 'Large objects appear to move slower than they are. A train you judge "distant and slow" is usually moving 45–80 mph and covering 80+ feet per second.') },
           { icon: '🏃', title: __alloT('stem.roadready.if_you_stall_on_the_tracks', 'If you stall on the tracks'), body: __alloT('stem.roadready.everyone_out_run_at_a_45_angle_toward_', 'Everyone OUT. Run AT A 45° ANGLE TOWARD the oncoming train. Debris from an impact launches FORWARD in the train\'s direction of travel — running toward the train puts you behind the debris field.') }
@@ -23705,7 +23709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'Ease through the gap between gates'
             ],
             correct: 1,
-            exp: 'Full stop, full wait. Flashing reds mean a train is coming OR already on the crossing OR a second train is on a parallel track. Driving around a lowered gate is federally illegal and a leading cause of crossing fatalities. The gates raise themselves when the sensors say it\'s safe.'
+            exp: 'Full stop, full wait. Flashing reds mean a train is coming OR already on the crossing OR a second train is on a parallel track. Never drive around lowered gates; if a gate appears stuck, call the posted crossing number or 911. The gates raise themselves when the sensors say it\'s safe.'
           },
           {
             id: 'could_make_it',
@@ -23761,7 +23765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'Sound your horn to warn any train'
             ],
             correct: 2,
-            exp: 'A crossbuck is a YIELD sign, not a stop sign — but it requires you to look and listen. Slow to a speed where you could stop. Train horns are audible about 1/4 mile out — cracking your window catches them. If your line of sight is blocked by brush or buildings, treat it as a stop. School buses and hazmat trucks always stop at every crossing.'
+            exp: 'A crossbuck is a YIELD sign, not a stop sign — but it requires you to look and listen. Slow to a speed where you could stop. Train horns are audible about 1/4 mile out — cracking your window catches them. If your line of sight is blocked by brush or buildings, treat it as a stop. Maine §§2076/2306 require school buses, buses carrying passengers, and specified chlorine/placarded/cargo-tank hazardous-material vehicles to stop 15-50 ft from the nearest rail, except at exempt/abandoned crossings or when directed by an officer or crossing flagger.'
           },
           {
             id: 'humped_crossing',
@@ -23865,7 +23869,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { icon: '🌀', title: __alloT('stem.roadready.two_kinds_of_skid', 'Two kinds of skid'),         body: __alloT('stem.roadready.rear_wheel_skid_oversteer_tail_swings_', 'Rear-wheel skid (oversteer): tail swings out — steer INTO the skid, toward where the front of the car is pointed. Front-wheel skid (understeer): car plows straight — ease off the throttle, don\'t add more steering.') },
           { icon: '🚙', title: __alloT('stem.roadready.4wd_doesn_t_help_you_stop', '4WD doesn\'t help you stop'), body: __alloT('stem.roadready.four_wheel_drive_and_awd_help_with_tra', 'Four-wheel drive and AWD help with traction for ACCELERATION. Braking is identical to a 2WD car — same four brakes, same tires. A false sense of security in 4WD kills people every Maine winter.') },
           { icon: '🚜', title: __alloT('stem.roadready.snowplows', 'Snowplows'),                 body: __alloT('stem.roadready.never_pass_a_plow_on_the_right_the_bla', 'Never pass a plow on the right — the blade throws snow and debris that direction. Stay 4+ truck lengths back. Plows often travel 30–40 mph even on highways; that slow-moving orange light is your safest speed too.') },
-          { icon: '🏔️', title: __alloT('stem.roadready.windshield_roof', 'Windshield + roof'),          body: __alloT('stem.roadready.maine_2396_b_requires_a_clear_view_thr', 'Maine §2396-B requires a clear view through ALL windows. Clearing just the "driver porthole" is a $119 ticket. Snow on the roof can slide onto the windshield or fly onto the car behind you — clear it off.') }
+          { icon: '🏔️', title: __alloT('stem.roadready.windshield_roof', 'Windshield + roof'),          body: __alloT('stem.roadready.maine_2396_b_requires_a_clear_view_thr', 'Maine §2093 requires reasonable measures to prevent snow or ice from falling off vehicles under 10,000 lb. Safest practice: clear the roof, windows, lights, and hood before driving.') }
         ];
         var WINTER_SCENARIOS = [
           {
@@ -24035,7 +24039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ══════════════════════════════════════════════════════════
       if (view === 'constructionZone') {
         var CONSTR_FACTS = [
-          { icon: '📜', title: __alloT('stem.roadready.fines_are_doubled', 'Fines are doubled'),        body: __alloT('stem.roadready.maine_law_fines_are_doubled_in_posted_', 'Maine law: fines are doubled in posted work zones, and workers don\'t have to be present. The zone starts at the first warning sign and ends at the "END ROAD WORK" sign.') },
+          { icon: '📜', title: __alloT('stem.roadready.fines_are_doubled', 'Construction speed fines'), body: __alloT('stem.roadready.maine_law_fines_are_doubled_in_posted_', 'Maine law doubles fines for violations of restricted construction or maintenance speed limits posted with black-and-white speed-limit signs. Treat the restriction as active while those signs are displayed.') },
           { icon: '🦺', title: __alloT('stem.roadready.flaggers_are_the_law', 'Flaggers are the law'),      body: __alloT('stem.roadready.inside_a_work_zone_a_flagger_s_instruc', 'Inside a work zone, a flagger\'s instructions override every other traffic control device — including traffic lights. Flagger STOP paddle means stop even if your light is green.') },
           { icon: '🔶', title: __alloT('stem.roadready.orange_temporary', 'Orange = temporary'),        body: __alloT('stem.roadready.orange_signs_and_barrels_always_mean_a', 'Orange signs and barrels always mean a temporary traffic pattern. Pay extra attention: lanes shift, speed limits drop, and your GPS map may be wrong.') },
           { icon: '🚙', title: __alloT('stem.roadready.pilot_cars_one_way_zones', 'Pilot cars & one-way zones'), body: __alloT('stem.roadready.a_follow_me_pilot_car_leads_traffic_th', 'A "FOLLOW ME" pilot car leads traffic through a single-lane section where traffic alternates direction. Passing the pilot puts you head-on with opposing traffic waiting their turn.') }
@@ -24067,7 +24071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'Wait for an explicit "GO" paddle signal'
             ],
             correct: 1,
-            exp: 'SLOW paddle = proceed at the advisory speed posted at the zone entrance (typically 15–25 mph). Workers are active. Fines are doubled. Maintain that speed until you pass the "END ROAD WORK" sign — not until you leave sight of the flagger.'
+            exp: 'SLOW paddle = proceed only as directed and at the temporary posted or advisory speed. Workers are active. Posted construction-speed violations can be doubled; maintain control until the normal traffic pattern resumes.'
           },
           {
             id: 'merge_choice',
@@ -25094,7 +25098,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             q: 'You approach a crosswalk. A pedestrian has stepped off the curb. You have no stop sign. What do you do?',
             choices: ['Honk and drive through — you have the road', 'Stop and let them cross', 'Swerve around them'],
             correct: 1,
-            exp: 'Pedestrians always have right-of-way in crosswalks, marked or unmarked. Full stop. Never pass another car stopped at a crosswalk.'
+            exp: 'Drivers must yield to pedestrians in marked crosswalks and to pedestrians showing visible intent to enter a marked crosswalk. Stop when needed. Never pass another car stopped at a crosswalk.'
           },
           {
             id: 'ambulance_behind', title: __alloT('stem.roadready.emergency_vehicle_approaching', 'Emergency Vehicle Approaching'),
@@ -25129,7 +25133,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             q: 'You approach an intersection. A funeral procession is moving through on a cross street, with their headlights on.',
             choices: ['Drive through — you have the green', 'Yield until the entire procession has passed', 'Honk to let them know you\'re coming'],
             correct: 1,
-            exp: 'Funeral processions have right-of-way even through red lights (lead vehicle clears it). Do not break up a procession. Wait until it\'s passed.'
+            exp: 'Do not cut into a funeral procession already moving through your path. If an officer, escort, or traffic-control device is controlling the procession, obey that direction and wait until it has passed.'
           },
           {
             id: 'hill_narrow', title: __alloT('stem.roadready.narrow_road_on_a_hill', 'Narrow Road on a Hill'),
@@ -25171,7 +25175,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             q: 'A car is pulled onto the right shoulder with its hazard lights flashing. You\'re in the right lane on a 2-lane highway.',
             choices: ['Maintain speed — you have the right-of-way', 'Move one lane left if possible; otherwise slow substantially', 'Stop to help in your lane'],
             correct: 1,
-            exp: '"Move Over" laws exist in all 50 states. If a lane change is safe, move left. Otherwise slow to a careful, prudent speed and leave extra space around emergency, utility, tow, or disabled vehicles.'
+            exp: 'Maine law requires a non-adjacent lane if possible when passing qualifying stationary vehicles. If that is impossible or unsafe, pass at a careful and prudent speed and leave extra space.'
           },
           {
             id: 'construction_flagger', title: __alloT('stem.roadready.construction_zone_flagger', 'Construction Zone Flagger'),
@@ -25182,17 +25186,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
           {
             id: 'school_bus_divided', title: __alloT('stem.roadready.school_bus_on_divided_highway', 'School Bus on Divided Highway'),
-            q: 'A school bus stops with red lights flashing on the OPPOSITE side of a divided highway (physical median between directions). You\'re on the other side.',
+            q: 'A school bus stops with red lights flashing on the OPPOSITE side of a divided roadway separated by curbing or another physical barrier. You\'re on the other side.',
             choices: ['STOP — always stop for a school bus with red lights', 'Continue — only same-direction traffic must stop on divided roads', 'Slow down but don\'t stop'],
             correct: 1,
-            exp: 'On a DIVIDED highway with a curb or other physical barrier, opposite-direction traffic does not have to stop. On undivided roads (no physical barrier, even 4 lanes), BOTH directions stop under Maine law.'
+            exp: 'Under Maine §2308, opposite-direction traffic does not have to stop only when separated from the bus lane by curbing or another physical barrier, or under the limited-access/loading-zone exception. Paint-only separation is still undivided; both directions stop.'
           },
           {
             id: 'white_cane_ped', title: __alloT('stem.roadready.pedestrian_with_white_cane', 'Pedestrian with White Cane'),
             q: 'A pedestrian with a WHITE CANE is about to step off the curb — NOT at a marked crosswalk or intersection.',
             choices: ['Continue — they\'re not in a crosswalk', 'Full stop and yield — mandatory', 'Honk to alert them'],
             correct: 1,
-            exp: 'A pedestrian with a white cane or guide dog has MANDATORY right-of-way ANYWHERE on the roadway in all 50 states — crosswalk or not. Never honk; it can disorient them.'
+            exp: 'In Maine, drivers must yield to a visually impaired pedestrian carrying a predominantly white or metallic cane, with or without a red tip, or using a guide or personal care dog. Stop as needed, give room, and avoid honking unless necessary to prevent an immediate collision.'
           },
           {
             id: 'roundabout_emergency', title: __alloT('stem.roadready.emergency_vehicle_at_roundabout', 'Emergency Vehicle at Roundabout'),
@@ -25630,9 +25634,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             urgent: true
           },
           {
-            time: '30s - 2 min', icon: '📞', title: __alloT('stem.roadready.call_911_2', 'Call 911'),
+            time: '30s - 2 min', icon: '📞', title: __alloT('stem.roadready.call_911_2', 'Report / Call 911'),
             steps: [
-              'Dial 911 even for "minor" crashes. Maine law requires police for any crash with injury or over $1000 damage.',
+              'Call 911 or the nearest law-enforcement agency for injury, death, a traffic hazard, or apparent property damage of $2,000 or more; Maine §2251 says reportable crashes must be reported immediately by the quickest means.',
               'State LOCATION first: "I-295 northbound, mile 32, rest area side."',
               'Then state: "Two-car crash. My car and one other. I think we\'re okay."',
               'Stay on the line. Do not hang up first.'
@@ -25665,7 +25669,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               'Get FROM the other driver: name, phone, address, driver\'s license #, insurance company + policy #, license plate #, car make/model.',
               'Give them the same from you — but NOT your home address unless they\'re your parent\'s insurance holder.',
               'Witnesses? Get their name + phone. Their statement might be crucial later.',
-              'Police will issue a report number — write it down. You\'ll need it for insurance.'
+              'If police respond or take the report, write down the report number; your insurer may ask for it.'
             ],
             urgent: false
           },
@@ -25684,7 +25688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             time: 'After you leave', icon: '🏥', title: __alloT('stem.roadready.next_24_hours', 'Next 24 Hours'),
             steps: [
               'Get medically checked even if you feel fine. Concussion, whiplash, soft tissue damage: 24-48 hour delay is normal.',
-              'Call YOUR insurance within 24 hours. Give them the police report number. Do NOT give recorded statements to the OTHER driver\'s insurance without your agent present.',
+              'Call YOUR insurance within 24 hours. Give them the police report number if one was issued. Do NOT give recorded statements to the OTHER driver\'s insurance without your agent present.',
               'Do NOT post about it on social media. Insurance adjusters screenshot these. "Cool, I\'m totally fine!" can void your injury claim.',
               'Keep every receipt: tow, rental, medical co-pays, lost work. All reimbursable.',
               'Journal your pain and limitations daily. Memory fades; notes don\'t.'
@@ -25753,9 +25757,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#bbf7d0', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' } }, __alloT('stem.roadready.maine_law_29_a_m_r_s_2070', '⚖️ Maine Law: 29-A M.R.S. §2070')),
             h('h3', { style: { fontSize: '18px', fontWeight: 900, color: '#fff', margin: '0 0 8px 0' } }, __alloT('stem.roadready.3_foot_passing_law', '3-Foot Passing Law')),
             h('div', { style: { fontSize: '12px', color: '#d1fae5', lineHeight: '1.6' } },
-              __alloT('stem.roadready.when_passing_a_bicyclist_maine_law_req', 'When passing a bicyclist, Maine law requires you give AT LEAST 3 FEET of clearance between your vehicle and the cyclist. '),
-              h('b', null, __alloT('stem.roadready.you_may_cross_the_double_yellow_line', 'You may cross the double yellow line')), __alloT('stem.roadready.to_do_it_safely_as_long_as_the_oncomin', ' to do it safely, as long as the oncoming lane is clear. '),
-              __alloT('stem.roadready.violation_75_fine_plus_any_crash_liabi', 'Violation = $75 fine plus any crash liability.')
+              __alloT('stem.roadready.when_passing_a_bicyclist_maine_law_req', 'When passing a bicyclist or roller skier, Maine law requires AT LEAST 3 FEET of clearance. '),
+              h('b', null, __alloT('stem.roadready.you_may_cross_the_double_yellow_line', 'No-passing-zone pass only when safe')), __alloT('stem.roadready.to_do_it_safely_as_long_as_the_oncomin', ': clear view, no oncoming conflict, and enough room to complete the pass. Wait if not. '),
+              __alloT('stem.roadready.violation_75_fine_plus_any_crash_liabi', 'A collision with a bicycle or roller skier is prima facie evidence of a §2070 violation.')
             ),
             // Visual
             h('svg', { viewBox: '0 0 400 120', width: '100%', height: 120, style: { marginTop: '12px' } },
@@ -25950,27 +25954,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'permitFlashcards', goal: 'permit', icon: '🗂️', name: __alloT('stem.roadready.permit_flashcards_3', 'Permit Flashcards'), desc: 'Spaced-repetition study mode for all ' + PERMIT_BANK.length + ' permit questions.' },
           { view: 'cheatSheet', goal: 'permit', icon: '📄', name: __alloT('stem.roadready.study_cheat_sheet_2', 'Study Cheat Sheet'), desc: __alloT('stem.roadready.printable_one_page_summary_of_all_key_', 'Printable one-page summary of all key rules.') },
           { view: 'signsView', goal: 'permit', icon: '🪧', name: __alloT('stem.roadready.road_signs_reference_2', 'Road Signs Reference'), desc: __alloT('stem.roadready.19_common_signs_with_svg_illustrations', '19 common signs with SVG illustrations + quiz mode.') },
-          { view: 'rightOfWay', goal: 'permit', icon: '↔️', name: __alloT('stem.roadready.right_of_way_scenarios_2', 'Right-of-Way Scenarios'), desc: __alloT('stem.roadready.10_who_goes_first_intersection_puzzles', '10 "who goes first?" intersection puzzles.') },
+          { view: 'rightOfWay', goal: 'permit', icon: '↔️', name: __alloT('stem.roadready.right_of_way_scenarios_2', 'Right-of-Way Scenarios'), desc: __alloT('stem.roadready.10_who_goes_first_intersection_puzzles', '20 right-of-way and intersection puzzles.') },
           { view: 'scenarioSelect', goal: 'practice', icon: '🚗', name: 'Drive Simulator (' + SCENARIOS.length + ' scenarios)', desc: __alloT('stem.roadready.residential_highway_snow_fog_night_dow', 'Residential, highway, snow, fog, night, downtown, and more.') },
           { view: 'freeExploreSetup', goal: 'practice', icon: '🌎', name: __alloT('stem.roadready.free_explore_5', 'Free Explore'), desc: __alloT('stem.roadready.open_sandbox_with_landmarks_challenges', 'Open sandbox with landmarks, challenges, road trips, dynamic weather.') },
           { view: 'lessonPath', goal: 'practice', icon: '🎓', name: __alloT('stem.roadready.lesson_path_3', 'Lesson Path'), desc: __alloT('stem.roadready.guided_10_lesson_progression_from_begi', 'Guided 10-lesson progression from beginner to winter expert.') },
           { view: 'roadTestIntro', goal: 'practice', icon: '🪪', name: __alloT('stem.roadready.road_test_simulator_3', 'Road Test Simulator'), desc: __alloT('stem.roadready.full_maine_bmv_style_scored_exam_pre_t', 'Full Maine BMV-style scored exam (pre-trip + 4min drive).') },
-          { view: 'parkingMenu', goal: 'practice', icon: '🅿️', name: __alloT('stem.roadready.parking_practice_7_scenarios', 'Parking Practice (7 Scenarios)'), desc: __alloT('stem.roadready.parallel_tight_parallel_3_point_backin', 'Parallel, tight parallel, 3-point, backing, angle-back, obstacle, U-turn. Personal-best scores save.') },
+          { view: 'parkingMenu', goal: 'practice', icon: '🅿️', name: __alloT('stem.roadready.parking_practice_7_scenarios', 'Parking Practice (9 Scenarios)'), desc: __alloT('stem.roadready.parallel_tight_parallel_3_point_backin', 'Parallel, tight parallel, 3-point, backing, angle-back, obstacle, U-turn, hydrant, and hill parking. Personal-best scores save.') },
           { view: 'nightVisionIntro', goal: 'practice', icon: '🌃', name: __alloT('stem.roadready.night_vision_training_3', 'Night Vision Training'), desc: __alloT('stem.roadready.focused_night_drive_drill_with_coach_p', 'Focused night-drive drill with coach prompts.') },
           { view: 'parentRideCheck', goal: 'practice', icon: '👨‍👧', name: __alloT('stem.roadready.parent_ride_check_3', 'Parent Ride Check'), desc: __alloT('stem.roadready.2_min_structured_eval_parent_taps_to_m', '2-min structured eval — parent taps to mark errors.') },
           { view: 'defensiveList', goal: 'safety', icon: '🛡️', name: __alloT('stem.roadready.defensive_drills_2', 'Defensive Drills'), desc: __alloT('stem.roadready.8_hazard_response_scenarios_with_corre', '8 hazard-response scenarios with correct-answer reveals.') },
           { view: 'mooseSafety', goal: 'safety', icon: '🫎', name: __alloT('stem.roadready.moose_encounter_drill_2', 'Moose Encounter Drill'), desc: __alloT('stem.roadready.maine_specific_what_to_do_when_a_moose', 'Maine-specific: what to do when a moose is in the road.') },
-          { view: 'emergencyVehicle', goal: 'safety', icon: '🚨', name: __alloT('stem.roadready.emergency_vehicle_drill_2', 'Emergency Vehicle Drill'), desc: __alloT('stem.roadready.maine_move_over_law_pull_to_right_rule', 'Maine Move Over law, pull-to-right rule, stopped responders.') },
+          { view: 'emergencyVehicle', goal: 'safety', icon: '🚨', name: __alloT('stem.roadready.emergency_vehicle_drill_2', 'Emergency Vehicle Drill'), desc: __alloT('stem.roadready.maine_move_over_law_pull_to_right_rule', 'Maine Move Over law, pull-to-right rule, stationary vehicles.') },
           { view: 'schoolBus', goal: 'safety', icon: '🚌', name: __alloT('stem.roadready.school_bus_stop_drill_2', 'School Bus Stop Drill'), desc: __alloT('stem.roadready.when_to_stop_for_a_stopped_school_bus_', 'When to stop for a stopped school bus (Maine §2308).') },
-          { view: 'railroadCrossing', goal: 'safety', icon: '🚂', name: __alloT('stem.roadready.railroad_crossing_drill_2', 'Railroad Crossing Drill'), desc: __alloT('stem.roadready.federal_maine_crossing_rules_and_the_4', 'Federal + Maine crossing rules — and the 45° escape if you stall.') },
+          { view: 'railroadCrossing', goal: 'safety', icon: '🚂', name: __alloT('stem.roadready.railroad_crossing_drill_2', 'Railroad Crossing Drill'), desc: __alloT('stem.roadready.federal_maine_crossing_rules_and_the_4', 'Railroad crossing rules — and the 45° escape if you stall.') },
           { view: 'winterDriving', goal: 'safety', icon: '❄️', name: __alloT('stem.roadready.winter_driving_drill_2', 'Winter Driving Drill'), desc: __alloT('stem.roadready.black_ice_skid_recovery_plow_etiquette', 'Black ice, skid recovery, plow etiquette, and the 4WD myth.') },
-          { view: 'constructionZone', goal: 'safety', icon: '🚧', name: __alloT('stem.roadready.construction_zone_drill_2', 'Construction Zone Drill'), desc: __alloT('stem.roadready.flaggers_zipper_merges_barrels_pilot_c', 'Flaggers, zipper merges, barrels, pilot cars — fines doubled.') },
+          { view: 'constructionZone', goal: 'safety', icon: '🚧', name: __alloT('stem.roadready.construction_zone_drill_2', 'Construction Zone Drill'), desc: __alloT('stem.roadready.flaggers_zipper_merges_barrels_pilot_c', 'Flaggers, zipper merges, barrels, pilot cars, and posted construction-speed penalties.') },
           { view: 'roundaboutDrill', goal: 'safety', icon: '🔄', name: __alloT('stem.roadready.roundabout_drill_2', 'Roundabout Drill'), desc: __alloT('stem.roadready.yield_signal_timing_multi_lane_trucks_', 'Yield, signal timing, multi-lane trucks, pedestrians — Maine is adding these fast.') },
-          { view: 'duiDrill', goal: 'safety', icon: '⚖️', name: __alloT('stem.roadready.oui_impaired_driving_drill_2', 'OUI / Impaired-Driving Drill'), desc: __alloT('stem.roadready.maine_0_02_bac_zero_tolerance_implied_', 'Maine 0.02 BAC zero-tolerance, implied consent, Rx + marijuana rules.') },
+          { view: 'duiDrill', goal: 'safety', icon: '⚖️', name: __alloT('stem.roadready.oui_impaired_driving_drill_2', 'OUI / Impaired-Driving Drill'), desc: __alloT('stem.roadready.maine_0_02_bac_zero_tolerance_implied_', 'Maine under-21 0.00 zero-tolerance, implied consent, Rx + marijuana rules.') },
           { view: 'peerPressure', goal: 'safety', icon: '🙅', name: __alloT('stem.roadready.peer_pressure_practice', 'Peer Pressure Practice'), desc: __alloT('stem.roadready.8_real_teen_situations_say_no_like_you', '8 real teen situations: say no like you mean it.') },
           { view: 'distractedLab', goal: 'safety', icon: '📱', name: __alloT('stem.roadready.distracted_driving_lab_2', 'Distracted Driving Lab'), desc: __alloT('stem.roadready.visualize_the_cost_of_a_3_second_phone', 'Visualize the cost of a 3-second phone glance.') },
-          { view: 'reactionTest', goal: 'safety', icon: '⚡', name: __alloT('stem.roadready.reaction_time_test_2', 'Reaction Time Test'), desc: __alloT('stem.roadready.your_baseline_vs_simulated_0_08_bac', 'Your baseline vs simulated 0.08 BAC.') },
-          { view: 'emergencyHandbook', goal: 'safety', icon: '🚨', name: __alloT('stem.roadready.emergency_handbook_3', 'Emergency Handbook'), desc: __alloT('stem.roadready.tire_blowout_brake_failure_hydroplane_', 'Tire blowout, brake failure, hydroplane — 8 critical responses.') },
+          { view: 'reactionTest', goal: 'safety', icon: '⚡', name: __alloT('stem.roadready.reaction_time_test_2', 'Reaction Time Test'), desc: __alloT('stem.roadready.your_baseline_vs_simulated_0_08_bac', 'Your baseline vs modeled impairment lag.') },
+          { view: 'emergencyHandbook', goal: 'safety', icon: '🚨', name: __alloT('stem.roadready.emergency_handbook_3', 'Emergency Handbook'), desc: __alloT('stem.roadready.tire_blowout_brake_failure_hydroplane_', 'Tire blowout, brake failure, hydroplane — 9 critical responses.') },
           { view: 'postCrash', goal: 'safety', icon: '📞', name: __alloT('stem.roadready.post_crash_protocol_3', 'Post-Crash Protocol'), desc: __alloT('stem.roadready.first_10_minutes_after_a_crash_2', 'First 10 minutes after a crash.') },
           { view: 'bikeAware', goal: 'safety', icon: '🚴', name: __alloT('stem.roadready.cyclist_moto_awareness_2', 'Cyclist & Moto Awareness'), desc: __alloT('stem.roadready.3_ft_law_shared_blind_spots_right_hook', '3-ft law, shared blind spots, right-hook avoidance.') },
           { view: 'crashLab', goal: 'science', icon: '🔬', name: __alloT('stem.roadready.crash_reconstruction_lab_2', 'Crash Reconstruction Lab'), desc: __alloT('stem.roadready.physics_of_real_crashes_rear_end_t_bon', 'Physics of real crashes: rear-end, T-bone, rollover, hydroplane.') },
@@ -26056,17 +26060,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Results count
           h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '10px' } }, filtered.length + ' feature' + (filtered.length === 1 ? '' : 's')),
           // Results
-          filtered.length === 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '28px', textAlign: 'center', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '12px' } },
+          filtered.length === 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '8px', padding: '28px', textAlign: 'center', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '12px' } },
             __alloT('stem.roadready.no_matches_try_different_keywords_or_s', 'No matches. Try different keywords or switch to "All".')
           ) : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '10px' } },
             filtered.map(function(f) {
               return h('button', { key: f.view, onClick: function() { upd('view', f.view); },
-                style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', gap: '10px', alignItems: 'flex-start' }
+                style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '8px', padding: '12px', minHeight: '104px', boxSizing: 'border-box', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', gap: '10px', alignItems: 'flex-start' }
               },
-                h('span', { style: { fontSize: '26px', flexShrink: 0 } }, f.icon),
-                h('div', null,
-                  h('div', { style: { fontSize: '12px', fontWeight: 800, marginBottom: '3px' } }, f.name),
-                  h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.5' } }, f.desc)
+                h('span', { style: { width: '32px', height: '32px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', lineHeight: 1, flexShrink: 0 } }, f.icon),
+                h('div', { style: { flex: 1, minWidth: 0 } },
+                  h('div', { style: { fontSize: '12px', fontWeight: 800, marginBottom: '3px', lineHeight: '1.25', overflowWrap: 'anywhere' } }, f.name),
+                  h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.5', overflowWrap: 'anywhere' } }, f.desc)
                 )
               );
             })
@@ -26230,10 +26234,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { background: 'linear-gradient(135deg, #083344, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '1px solid #22d3ee' } },
               h('div', { style: { fontSize: '56px' } }, '⚡'),
               h('h2', { style: { fontSize: '22px', fontWeight: 900, margin: '6px 0' } }, __alloT('stem.roadready.reaction_time_test_3', 'Reaction Time Test')),
-              h('div', { style: { fontSize: '12px', color: '#a5f3fc', marginBottom: '16px', lineHeight: '1.6' } }, __alloT('stem.roadready.tap_the_colored_circle_as_fast_as_you_', 'Tap the colored circle as fast as you can when it appears. 5 trials baseline, then 5 with simulated 0.08 BAC lag. See the difference yourself.')),
+              h('div', { style: { fontSize: '12px', color: '#a5f3fc', marginBottom: '16px', lineHeight: '1.6' } }, __alloT('stem.roadready.tap_the_colored_circle_as_fast_as_you_', 'Tap the colored circle as fast as you can when it appears. 5 trials baseline, then 5 with a teaching-model impairment lag. See how seconds change stopping distance.')),
               h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', textAlign: 'left', marginBottom: '16px', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.7' } },
                 h('b', { style: { color: '#22d3ee' } }, __alloT('stem.roadready.why_this_matters', 'Why this matters: ')),
-                __alloT('stem.roadready.a_0_08_bac_legal_limit_for_adults_adds', 'A 0.08 BAC (legal limit for adults) adds ~250-300ms to your reaction time. At 55 mph, that\'s 22 ft of extra stopping distance — often the difference between a close call and a crash.')
+                __alloT('stem.roadready.a_0_08_bac_legal_limit_for_adults_adds', 'This simulator adds ~280 ms as a teaching model for impaired reaction. NHTSA lists reaction-time impairment at .08 BAC; at 55 mph, even a few tenths of a second can add car lengths before braking starts.')
               ),
               h('button', { onClick: function() { updMulti({ rtPhase: 'waiting', rtMode: 'baseline', rtTrials: [], rtWaitUntil: Date.now() + 1500 + Math.random() * 2500, rtTargetColor: Object.keys(colors)[Math.floor(Math.random() * 4)] }); },
                 style: { padding: '12px 28px', borderRadius: '10px', border: 'none', background: '#22d3ee', color: '#0f172a', fontSize: '14px', fontWeight: 900, cursor: 'pointer' }
@@ -26257,7 +26261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '12px', color: '#a5f3fc', marginBottom: '8px' } },
               (isBaseline ? '🧠 BASELINE TEST' : '🍺 SIMULATED IMPAIRED') + ' · Trial ' + (trialsDone + 1) + ' / 5'
             ),
-            h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '20px' } }, isBaseline ? 'Sober reaction' : 'With 0.08 BAC (~280ms added lag)'),
+            h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '20px' } }, isBaseline ? 'Sober reaction' : 'Teaching model: +280ms lag'),
             h('div', { style: { background: '#0a1628', borderRadius: '16px', padding: '40px 20px', border: '1px solid #1e3a5f', minHeight: '280px', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
               rtPhase === 'waiting' ? h('div', { style: { fontSize: '18px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.wait_for_the_colored_circle', 'Wait for the colored circle...')) :
               rtPhase === 'react' ? h('button', {
@@ -26288,9 +26292,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('button', { onClick: function() { updMulti({ view: 'menu', rtPhase: 'intro' }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_44', '← Menu')),
             h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', textAlign: 'center', border: '1px solid #f59e0b' } },
               h('div', { style: { fontSize: '48px' } }, '🍺'),
-              h('h2', { style: { fontSize: '20px', fontWeight: 900, margin: '8px 0' } }, __alloT('stem.roadready.now_simulated_0_08_bac', 'Now: Simulated 0.08 BAC')),
+              h('h2', { style: { fontSize: '20px', fontWeight: 900, margin: '8px 0' } }, __alloT('stem.roadready.now_simulated_0_08_bac', 'Now: Modeled Impairment')),
               h('div', { style: { fontSize: '13px', color: '#fde68a', marginBottom: '6px', fontWeight: 700 } }, 'Your baseline average: ' + avgOf(d.rtBaselineTrials || []) + 'ms'),
-              h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '16px', lineHeight: '1.6' } }, __alloT('stem.roadready.same_test_the_simulator_will_add_280ms', 'Same test. The simulator will add ~280ms to each response to show what your reaction would be if you\'d had 4 standard drinks.')),
+              h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', marginBottom: '16px', lineHeight: '1.6' } }, __alloT('stem.roadready.same_test_the_simulator_will_add_280ms', 'Same test. The simulator adds ~280 ms as a teaching model for slowed reaction after drinking; real impairment varies by person, fatigue, food, and other drugs.')),
               h('button', { onClick: function() { updMulti({ rtPhase: 'waiting', rtMode: 'impaired', rtTrials: [], rtWaitUntil: Date.now() + 1500 + Math.random() * 2500, rtTargetColor: Object.keys(colors)[Math.floor(Math.random() * 4)] }); },
                 style: { padding: '12px 28px', borderRadius: '10px', border: 'none', background: '#f59e0b', color: '#78350f', fontSize: '14px', fontWeight: 900, cursor: 'pointer' }
               }, __alloT('stem.roadready.start_impaired_test', 'Start Impaired Test →'))
@@ -26318,7 +26322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ),
               h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '12px', padding: '18px', textAlign: 'center', border: '2px solid #f59e0b' } },
                 h('div', { style: { fontSize: '28px' } }, '🍺'),
-                h('div', { style: { fontSize: '10px', color: '#fde68a', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' } }, __alloT('stem.roadready.impaired_0_08_bac', 'Impaired (0.08 BAC)')),
+                h('div', { style: { fontSize: '10px', color: '#fde68a', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' } }, __alloT('stem.roadready.impaired_0_08_bac', 'Modeled impairment')),
                 h('div', { style: { fontSize: '36px', fontWeight: 900, color: '#f59e0b' } }, impaired + 'ms')
               )
             ),
@@ -26329,9 +26333,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.7' } },
               h('div', { style: { fontWeight: 800, color: '#22d3ee', marginBottom: '6px' } }, __alloT('stem.roadready.what_you_just_felt', '🎯 What you just felt:')),
-              __alloT('stem.roadready.0_08_bac_four_standard_drinks_for_an_a', '0.08 BAC = four standard drinks for an average-size man, three for an average-size woman. It\'s the LEGAL limit for adults. Teens under 21 in Maine have ZERO tolerance — any amount.'),
+              __alloT('stem.roadready.0_08_bac_four_standard_drinks_for_an_a', '0.08 BAC is the adult legal limit in most states, including Maine for drivers 21+. Under-21/provisional drivers in Maine have a 0.00 alcohol standard.'),
               h('br'), h('br'),
-              'That ' + extraFt + ' feet of extra stopping distance is not theoretical. It\'s how far YOU would go before reacting. That\'s the pedestrian you hit. That\'s the rear-end collision. That\'s the "I didn\'t see them in time."'
+              'In this model, that ' + extraFt + ' feet illustrates how much farther a car can travel before delayed braking starts. That can be the difference between stopping in time and reaching a pedestrian, a stopped car, or a conflict you noticed too late.'
             ),
             h('button', { onClick: function() { updMulti({ rtPhase: 'intro', rtTrials: [], rtBaselineTrials: null, rtImpairedTrials: null }); },
               style: { width: '100%', marginTop: '14px', padding: '12px', borderRadius: '10px', border: '1px solid #22d3ee', background: 'rgba(34,211,238,0.15)', color: '#a5f3fc', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
@@ -26381,7 +26385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('li', null, __alloT('stem.roadready.4_way_stop_simultaneous_car_on', '4-way stop simultaneous: car on '), h('b', null, 'RIGHT'), __alloT('stem.roadready.goes_first', ' goes first')),
                   h('li', null, __alloT('stem.roadready.left_turn', 'Left turn: '), h('b', null, __alloT('stem.roadready.yield_to_oncoming', 'yield to oncoming'))),
                   h('li', null, 'T-intersection: ', h('b', null, 'through-road'), __alloT('stem.roadready.has_row', ' has ROW')),
-                  h('li', null, __alloT('stem.roadready.pedestrians_always_have_row_in_crosswa', 'Pedestrians ALWAYS have ROW in crosswalks')),
+                  h('li', null, __alloT('stem.roadready.pedestrians_always_have_row_in_crosswa', 'Yield at marked crosswalks')),
                   h('li', null, __alloT('stem.roadready.emergency_vehicles_pull', 'Emergency vehicles: pull '), h('b', null, 'RIGHT'), __alloT('stem.roadready.stop_2', ', stop')),
                   h('li', null, __alloT('stem.roadready.roundabout_yield_to_cars_already_in', 'Roundabout: yield to cars already in')),
                   h('li', null, __alloT('stem.roadready.school_bus_red_lights_both_directions_', 'School bus red lights: BOTH directions stop (2-lane)')),
@@ -26419,10 +26423,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('li', null, h('b', null, 'Intermediate:'), __alloT('stem.roadready.age_16_70_hr_supervised_10_night', ' age 16, 70 hr supervised (10 night)')),
                   h('li', null, h('b', null, __alloT('stem.roadready.curfew_intermediate', 'Curfew (intermediate):')), __alloT('stem.roadready.12_am_5_am_first_9_months', ' 12 AM - 5 AM during the 270-day restriction period')),
                   h('li', null, h('b', null, 'Passengers:'), __alloT('stem.roadready.none_under_20_except_family_first_9_mo', ' immediate family only unless a qualifying licensed operator is beside you')),
-                  h('li', null, h('b', null, 'Phone:'), __alloT('stem.roadready.all_handheld_use_banned_texting_250', ' handheld first offense $50; texting starts at $250.')),
-                  h('li', null, h('b', null, 'BAC:'), __alloT('stem.roadready.zero_tolerance_under_21_0_08_adult', ' zero tolerance under 21; 0.08 adult')),
-                  h('li', null, h('b', null, 'Headlights:'), __alloT('stem.roadready.required_when_wipers_on', ' required when wipers on')),
-                  h('li', null, h('b', null, __alloT('stem.roadready.move_over', 'Move over:')), __alloT('stem.roadready.for_stopped_emergency_utility_vehicles', ' for stopped emergency/utility vehicles')),
+                  h('li', null, h('b', null, 'Phone:'), __alloT('stem.roadready.all_handheld_use_banned_texting_250', ' handheld first offense $50; texting starts at $250; hands-free only 18+ and not permit/intermediate.')),
+                  h('li', null, h('b', null, 'BAC:'), __alloT('stem.roadready.zero_tolerance_under_21_0_08_adult', ' 0.00 under 21/provisional; 0.08 adult')),
+                  h('li', null, h('b', null, 'Headlights:'), __alloT('stem.roadready.required_when_wipers_on', ' required when wipers are in constant use or visibility is under 1,000 ft')),
+                  h('li', null, h('b', null, __alloT('stem.roadready.move_over', 'Move over:')), __alloT('stem.roadready.for_stopped_emergency_utility_vehicles', ' for disabled/flashing-light vehicles; move over or slow carefully')),
                   h('li', null, h('b', null, __alloT('stem.roadready.snow_law', 'Snow law:')), __alloT('stem.roadready.clear_all_snow_before_driving_137_fine', ' take reasonable measures so snow/ice cannot fall off your vehicle')),
                   h('li', null, h('b', null, __alloT('stem.roadready.studded_tires_2', 'Studded tires:')), __alloT('stem.roadready.oct_1_may_1_only', ' Oct 1 – May 1 only'))
                 ),
@@ -26736,11 +26740,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' } },
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
               h('div', { style: { fontSize: '10px', color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.nhtsa_data', '⚠️ NHTSA data')),
-              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } }, __alloT('stem.roadready.texting_while_driving', 'Texting while driving = '), h('b', null, __alloT('stem.roadready.6_crash_risk', '6× crash risk')), __alloT('stem.roadready.3_142_distracted_driving_deaths_in_the', '. 3,142 distracted-driving deaths in the US in 2020 (most recent final data).'))
+              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } }, __alloT('stem.roadready.texting_while_driving', 'Texting while driving: '), h('b', null, __alloT('stem.roadready.6_crash_risk', '5 seconds eyes-off')), __alloT('stem.roadready.3_142_distracted_driving_deaths_in_the', '. At 55 mph, NHTSA compares that to driving a football-field length blind. NHTSA also reports 3,208 distracted-driving deaths and 315,167 injuries in 2024.'))
             ),
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
               h('div', { style: { fontSize: '10px', color: '#fbbf24', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.maine_law_2', '⚖️ Maine law')),
-              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } }, __alloT('stem.roadready.all_handheld_phone_use_banned_while_dr', 'ALL handheld phone use banned while driving (2019). Texting: '), h('b', null, __alloT('stem.roadready.250_fine', '$250 fine')), __alloT('stem.roadready.first_offense_primary_enforcement_unde', ' first offense, primary enforcement. Under 18: zero tolerance.'))
+              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } }, __alloT('stem.roadready.all_handheld_phone_use_banned_while_dr', 'Maine §2121: handheld phone/device interaction is banned while operating, including when temporarily stopped in traffic. Texting: '), h('b', null, __alloT('stem.roadready.250_fine', '$250 fine')), __alloT('stem.roadready.first_offense_primary_enforcement_unde', ' minimum first offense under §2119. Hands-free is allowed only for drivers 18+ who are not on a learner\'s permit or intermediate license.'))
             )
           ),
           // Interpretations
@@ -27009,7 +27013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { type: 'Roundabout', icon: '🔄', rules: ['Yield to traffic already circulating.', 'Enter when there is a safe gap.', 'Travel counterclockwise.', 'Signal right before your exit.', 'Do NOT stop inside the circle.'], tip: __alloT('stem.roadready.roundabouts_reduce_fatal_crashes_by_90_2', 'Roundabouts reduce fatal crashes by 90% vs. signals. Once you get used to them, they are faster and safer.') },
           { type: 'T-Intersection', icon: '⊤', rules: ['Traffic on the through road has the right-of-way.', 'The vehicle on the terminating road must yield/stop.', 'If both have stop signs, right-of-way goes to the right.'], tip: __alloT('stem.roadready.the_top_of_the_t_is_the_through_road_t', 'The "top of the T" is the through road. The "stem" yields.') },
           { type: 'Left Turn', icon: '↰', rules: ['Left turners yield to oncoming straight traffic unless you have a green arrow.', 'Wait behind the stop line until a safe gap.', 'Do NOT enter the intersection to wait unless you are certain you can clear it.', 'At a steady red light, do not make a left turn unless a traffic signal specifically allows that movement.'], tip: __alloT('stem.roadready.left_turns_are_the_1_most_dangerous_co', 'Left turns are the #1 most dangerous common maneuver. 53% of intersection crashes involve left turns.') },
-          { type: 'Pedestrian Crosswalk', icon: '🚶', rules: ['Yield to pedestrians in ALL crosswalks — marked AND unmarked.', 'Unmarked crosswalk = the imaginary extension of the sidewalk at any intersection.', 'Do NOT pass a vehicle stopped for a pedestrian.', 'If a ped is in your half of the road, you must stop.'], tip: __alloT('stem.roadready.maine_is_strict_on_this_164_fine_for_f', 'Maine is strict on this. $164 fine for failing to yield to a pedestrian in a crosswalk.') }
+          { type: 'Pedestrian Crosswalk', icon: '🚶', rules: ['Yield to pedestrians in marked crosswalks and those showing visible intent to enter.', 'Outside marked crosswalks, pedestrians generally yield, but drivers still owe due care.', 'Do NOT pass a vehicle stopped for a pedestrian.', 'If a pedestrian is in your path, slow or stop as needed to avoid a collision.'], tip: __alloT('stem.roadready.maine_is_strict_on_this_164_fine_for_f', 'Maine §2056 is specific: marked crosswalks and visible intent matter; due care still applies everywhere.') }
         ];
         return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_52', '← Menu')),
@@ -27044,7 +27048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { icon: '🟡', name: __alloT('stem.roadready.tpms_tire_pressure', 'TPMS (Tire Pressure)'), color: '#f59e0b', severity: 'MODERATE', desc: __alloT('stem.roadready.one_or_more_tires_is_significantly_und', 'One or more tires is significantly under-inflated (usually 25%+ below spec).'), action: 'Check all 4 tires with a gauge. Inflate to the PSI on the driver door sticker (NOT the tire sidewall — that is the maximum). A $5 gauge saves tires and fuel.' },
           { icon: '🟡', name: __alloT('stem.roadready.battery_charging', 'Battery / Charging'), color: '#f59e0b', severity: 'MODERATE', desc: __alloT('stem.roadready.alternator_not_charging_the_battery_th', 'Alternator not charging the battery. The car will run on battery power for 30-60 minutes, then die.'), action: 'Drive directly to a shop. Turn off AC, radio, heated seats — anything electrical. If the car stalls, you will lose power steering and power brakes.' },
           { icon: '🟡', name: __alloT('stem.roadready.traction_control_tc_esc', 'Traction Control (TC/ESC)'), color: '#f59e0b', severity: 'LOW', desc: __alloT('stem.roadready.blinking_system_is_actively_working_wh', 'Blinking = system is actively working (wheels are slipping). Steady = system is OFF.'), action: 'Blinking: slow down, the road is slippery. Steady: check if you accidentally turned it off. On snow/ice, you generally want it ON.' },
-          { icon: '🔵', name: __alloT('stem.roadready.high_beam_indicator', 'High Beam Indicator'), color: '#3b82f6', severity: 'INFO', desc: __alloT('stem.roadready.high_beams_are_on_remember_to_dim_for_', 'High beams are on. Remember to dim for oncoming traffic and following cars.'), action: 'Press L key in the sim or the headlight stalk in a real car. Always dim within 500 ft of other vehicles.' },
+          { icon: '🔵', name: __alloT('stem.roadready.high_beam_indicator', 'High Beam Indicator'), color: '#3b82f6', severity: 'INFO', desc: __alloT('stem.roadready.high_beams_are_on_remember_to_dim_for_', 'High beams are on. Maine requires dimming for oncoming traffic and when following another vehicle.'), action: 'Press L key in the sim or the headlight stalk in a real car. Dim within 500 ft of oncoming traffic or 300 ft when following another vehicle.' },
           { icon: '⬜', name: __alloT('stem.roadready.airbag_srs', 'Airbag (SRS)'), color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', severity: 'SAFETY', desc: __alloT('stem.roadready.airbag_system_fault_airbags_may_not_de', 'Airbag system fault. Airbags may not deploy in a crash.'), action: 'Get this diagnosed ASAP. Airbags are a critical safety system. The car is safe to drive, but you are unprotected in a crash.' }
         ];
         return h('div', { style: { padding: '20px', maxWidth: '800px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
@@ -27241,7 +27245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ),
           // The protocol
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.the_protocol_all_50_states', 'The Protocol (all 50 states)')),
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.the_protocol_all_50_states', 'Emergency Vehicle Protocol')),
             [
               { step: '1. CHECK', desc: __alloT('stem.roadready.check_mirrors_to_identify_the_emergenc', 'Check mirrors to identify the emergency vehicle\'s position and direction.'), icon: '👀' },
               { step: '2. SIGNAL', desc: __alloT('stem.roadready.signal_right_to_indicate_your_intent_t', 'Signal RIGHT to indicate your intent to move over.'), icon: '➡️' },
@@ -27264,17 +27268,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.special_situations', '⚠️ Special situations')),
             h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
               h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, __alloT('stem.roadready.at_an_intersection', 'At an intersection:')), ' If already inside the intersection, clear it first, then move right. If stopped before the line, stay clear of cross traffic.'),
-              h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, __alloT('stem.roadready.divided_highway', 'Divided highway:')), __alloT('stem.roadready.if_the_emergency_vehicle_is_on_the_oth', ' If the emergency vehicle is on the OTHER side of the median, you do not need to stop (but slow down).')),
-              h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, __alloT('stem.roadready.cannot_move_right', 'Cannot move right:')), __alloT('stem.roadready.if_right_shoulder_is_blocked_stop_wher', ' If right shoulder is blocked, stop where you are. The emergency vehicle will go around you.')),
+              h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, __alloT('stem.roadready.divided_highway', 'Divided highway:')), __alloT('stem.roadready.if_the_emergency_vehicle_is_on_the_oth', ' Maine §2054 does not list a median exception; move right when safe, stay clear of intersections, and stop until it passes.')),
+              h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, __alloT('stem.roadready.cannot_move_right', 'Cannot move right:')), __alloT('stem.roadready.if_right_shoulder_is_blocked_stop_wher', ' If the right shoulder is blocked, signal and move as far right as practicable, stay clear of intersections, and stop where the lane stays clearest.')),
               h('div', { style: { marginBottom: '4px' } }, '• ', h('b', null, __alloT('stem.roadready.multiple_vehicles', 'Multiple vehicles:')), __alloT('stem.roadready.stay_stopped_until_all_emergency_vehic', ' Stay stopped until ALL emergency vehicles have passed. They often travel in convoys.')),
-              h('div', null, '• ', h('b', null, __alloT('stem.roadready.maine_move_over_law', 'Maine Move Over law:')), __alloT('stem.roadready.also_applies_to_stopped_tow_trucks_uti', ' Also applies to stopped tow trucks, utility vehicles, and roadside assistance with lights flashing.'))
+              h('div', null, '• ', h('b', null, __alloT('stem.roadready.maine_move_over_law', 'Maine Move Over law:')), __alloT('stem.roadready.also_applies_to_stopped_tow_trucks_uti', ' Applies to stationary disabled vehicles and vehicles using flashing lights, including tow, utility, roadside assistance, and responders.'))
             )
           ),
           // Consequences
           h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', marginBottom: '14px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '6px' } }, __alloT('stem.roadready.why_this_matters_3', 'Why this matters')),
             h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.6' } },
-              __alloT('stem.roadready.every_second_counts_for_emergency_resp', 'Every second counts for emergency responders. A 1-minute delay reaching a cardiac arrest patient reduces survival by 10%. Failure to yield is a criminal offense in most states — fines from $250 to $2,500, possible license suspension, and if someone is hurt, potential manslaughter charges.')
+              __alloT('stem.roadready.every_second_counts_for_emergency_resp', 'Every second counts for emergency responders. A 1-minute delay reaching a cardiac arrest patient reduces survival by 10%. In Maine, failure to yield to an emergency vehicle is a Class E crime with at least a $250 fine for a first offense; repeat offenses can trigger license suspension.')
             )
           ),
           h('button', { onClick: function() {
@@ -27610,7 +27614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         return h(ScenarioParkingMode, { key: 'hill-uphill-mode', React: React, h: h, scenario: PARKING_SCENARIOS.hillUphill, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('hillUphill') });
       }
 
-      // ── PARKING MENU (hub for all 7 scenarios) ──
+      // ── PARKING MENU (hub for all 9 scenarios) ──
       if (view === 'parkingMenu') {
         var pb = d.parkingBest || {};
         var diffColor = function(diff) { return diff === 'hard' ? '#ef4444' : diff === 'medium' ? '#f59e0b' : '#4ade80'; };
@@ -28263,7 +28267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', null, __alloT('stem.roadready.one_at_fault_accident_stays_on_your_re', '• One at-fault accident stays on your record for 3-5 years')),
             h('div', null, __alloT('stem.roadready.a_dui_can_raise_rates_for_7_10_years_a', '• A DUI can raise rates for 7-10 years and may cause policy cancellation')),
             h('div', null, __alloT('stem.roadready.good_student_discount_b_average_typica', '• Good student discount (B average): typically 10-15% off')),
-            h('div', null, __alloT('stem.roadready.completing_a_driver_s_ed_course_like_t', '• Completing a driver\'s ed course (like this one!): 5-10% discount in most states'))
+            h('div', null, __alloT('stem.roadready.completing_a_driver_s_ed_course_like_t', '• Completing a driver\'s ed course may qualify you for an insurer/state discount; verify with your insurer.'))
           )
         );
       }
@@ -28466,7 +28470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', fontSize: '11px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', lineHeight: '1.6' } },
             h('div', { style: { fontWeight: 700, color: '#34d399', marginBottom: '4px' } }, __alloT('stem.roadready.trip_tips', '💡 Trip Tips')),
             h('div', null, '• Total trip time with stops: ~' + Math.floor(totalTime) + 'h ' + Math.round((totalTime % 1) * 60) + 'm'),
-            h('div', null, __alloT('stem.roadready.stop_every_2_hours_fatigue_is_as_dange', '• Stop every 2 hours — fatigue is as dangerous as alcohol at 17+ hours awake')),
+            h('div', null, __alloT('stem.roadready.stop_every_2_hours_fatigue_is_as_dange', '• Stop every 2 hours — fatigue impairs reaction, judgment, and lane control')),
             h('div', null, '• At ' + tripSpeed + ' mph, drag uses ' + Math.round(tripSpeed > 55 ? (tripSpeed - 55) / 55 * 100 : 0) + '% more fuel than at 55 mph'),
             h('div', null, '• Cost per mile: $' + (fuelCost / tripDist).toFixed(3)),
             h('div', null, __alloT('stem.roadready.pro_tip_fill_up_when_tank_hits_1_4_nev', '• Pro tip: fill up when tank hits 1/4 — never let it run near empty (fuel pump overheats)'))
@@ -28921,14 +28925,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             { skill: 'Speed control', weight: '⭐⭐⭐', note: __alloT('stem.roadready.within_5_mph_of_the_limit_too_fast_fai', 'Within 5 mph of the limit. Too fast = fail. Too slow (>10 under) = points off.') }
           ]},
           { category: 'Intersections', items: [
-            { skill: 'Full stop at stop signs', weight: '⭐⭐⭐', note: __alloT('stem.roadready.complete_stop_behind_the_line_rolling_', 'COMPLETE stop behind the line. Rolling stop = instant fail in many states.') },
+            { skill: 'Full stop at stop signs', weight: '⭐⭐⭐', note: __alloT('stem.roadready.complete_stop_behind_the_line_rolling_', 'COMPLETE stop behind the line. Rolling stop = critical error; expect major points off or automatic failure.') },
             { skill: 'Left-right-left scan', weight: '⭐⭐⭐', note: __alloT('stem.roadready.visible_head_movement_to_check_all_dir', 'Visible head movement to check all directions. Examiner must SEE you look.') },
             { skill: 'Right-of-way', weight: '⭐⭐', note: __alloT('stem.roadready.yield_correctly_taking_right_of_way_wh', 'Yield correctly. Taking right-of-way when it isn\'t yours = critical error.') },
             { skill: 'Traffic light compliance', weight: '⭐⭐⭐', note: __alloT('stem.roadready.do_not_enter_on_yellow_if_you_can_stop', 'Do not enter on yellow if you can stop safely. NEVER enter on red.') }
           ]},
           { category: 'Lane Skills', items: [
             { skill: 'Lane position', weight: '⭐⭐', note: __alloT('stem.roadready.center_of_your_lane_not_riding_the_lin', 'Center of your lane. Not riding the line or drifting.') },
-            { skill: 'Lane changes', weight: '⭐⭐⭐', note: __alloT('stem.roadready.signal_mirror_blind_spot_check_smooth_', 'Signal ��� mirror → blind spot check → smooth move. Each step must be visible.') },
+            { skill: 'Lane changes', weight: '⭐⭐⭐', note: __alloT('stem.roadready.signal_mirror_blind_spot_check_smooth_', 'Signal -> mirror -> blind spot check -> smooth move. Each step must be visible.') },
             { skill: 'Turn signals', weight: '⭐⭐', note: __alloT('stem.roadready.100_feet_before_turning_or_changing_la', '100 feet before turning or changing lanes. Signal BEFORE braking.') }
           ]},
           { category: 'Turns', items: [
@@ -29074,7 +29078,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             ),
             h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.5' } },
               'Your best reaction time of ' + rtState.bestTime + ' ms adds ' + Math.round(rtState.bestTime / 1000 * 88) + ' feet to your stopping distance at 60 mph. ',
-              __alloT('stem.roadready.fatigue_alcohol_or_phone_use_can_doubl', 'Fatigue, alcohol, or phone use can DOUBLE this. A 0.08% BAC typically increases reaction time to 400-600 ms.')
+              __alloT('stem.roadready.fatigue_alcohol_or_phone_use_can_doubl', 'Fatigue, alcohol, or phone use can slow recognition and response. NHTSA lists reaction-time impairment at .08 BAC; your safest fix is more following distance and no impaired driving.')
             )
           ) : null
         );
@@ -29147,7 +29151,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', null, '• Max safe speed with ' + nvBeams + ' beams: ', h('b', { style: { color: '#4ade80' } }, maxSafeSpeed + ' mph')),
             h('div', null, __alloT('stem.roadready.low_beams_illuminate_350_ft_high_beams', '• Low beams illuminate ~350 ft. High beams ~500 ft.')),
             h('div', null, __alloT('stem.roadready.rule_never_drive_faster_than_you_can_s', '• Rule: NEVER drive faster than you can stop within your headlight range.')),
-            h('div', null, __alloT('stem.roadready.dim_high_beams_within_500_ft_of_oncomi', '• Dim high beams within 500 ft of oncoming traffic (glare blinds them for 2+ seconds).')),
+            h('div', null, __alloT('stem.roadready.dim_high_beams_within_500_ft_of_oncomi', '• Maine §2067: dim high beams within 500 ft of oncoming traffic or 300 ft when following another vehicle.')),
             h('div', null, __alloT('stem.roadready.alcohol_shrinks_your_visual_field_by_u', '• Alcohol shrinks your visual field by up to 25% at night — tunnel vision + slow reaction = deadly.'))
           )
         );

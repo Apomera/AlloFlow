@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-08T18:33:47.985Z",
+  "generatedAt": "2026-07-09T12:40:34.612Z",
   "picks": [
     {
       "slug": "16411-too-big-too-small",
@@ -31083,6 +31083,4238 @@
       "cover": {
         "card": "https://static.storyweaver.org.in/illustration_crops/418464/size3/5e97aa42c6ae04ac3e506a40327ad23e.jpg",
         "large": "https://static.storyweaver.org.in/illustration_crops/418464/size6/5e97aa42c6ae04ac3e506a40327ad23e.jpg"
+      }
+    },
+    {
+      "slug": "49530-let-s-play",
+      "title": "Let's Play",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Ready, set, go...Learn the science behind play.",
+      "authors": [
+        "Meethil Momaya"
+      ],
+      "illustrators": [
+        "Shirish  Ghatge"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/717460/size3/371430b9f5e5718d4be9c13d0336e745.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/717460/size6/371430b9f5e5718d4be9c13d0336e745.jpg"
+      }
+    },
+    {
+      "slug": "43374-chunu-munu-the-corn-is-yummy",
+      "title": "Chunu & Munu: The Corn Is Yummy!",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Chunu and Munu help their father grow corn. Will they get to eat some, too?",
+      "authors": [
+        "Alisha Berger"
+      ],
+      "illustrators": [
+        "Abin  Shrestha"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/99528/size3/f0a253ffcb86cbc4b8093efa33ded772.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/99528/size6/f0a253ffcb86cbc4b8093efa33ded772.jpg"
+      }
+    },
+    {
+      "slug": "6100-bath-time-for-chunnu-and-munnu",
+      "title": "Bath time for Chunnu and Munnu",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Join Chunnu and Munnu as they splash about while having a bath. A fun read-aloud and a great way to say goodnight. ",
+      "authors": [
+        "Rohini Nilekani"
+      ],
+      "illustrators": [
+        "Sonal Goyal",
+        "Sumit Sakhuja"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/721702/size3/fb052d30f4a73aae542e0c8d52969aab.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/721702/size6/fb052d30f4a73aae542e0c8d52969aab.jpg"
+      }
+    },
+    {
+      "slug": "39695-young-or-old",
+      "title": "Young or Old?",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "A little boy is old enough to tie his shoes, but too young to help his father paint the house. He is old enough to feed himself, but too young to help his mother cook. Is he too young, or too old?",
+      "authors": [
+        "Shannon David"
+      ],
+      "illustrators": [
+        "Shailja Jain Chougule"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/384646/size3/f8f79bcb3795b4c076d7650f0c04430b.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/384646/size6/f8f79bcb3795b4c076d7650f0c04430b.jpg"
+      }
+    },
+    {
+      "slug": "13919-little-sock-and-the-tiny-creatures",
+      "title": "Little Sock and the Tiny Creatures",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "It’s wash day for the Socks, but where has Little Sock gone?",
+      "authors": [
+        "Jon Keevy"
+      ],
+      "illustrators": [
+        "Lili   Probart"
+      ],
+      "originalAuthors": [],
+      "publisher": "Book Dash",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/38638/size3/bba9d63774f7cfbb4f7792882b0029f1.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/38638/size6/bba9d63774f7cfbb4f7792882b0029f1.jpg"
+      }
+    },
+    {
+      "slug": "41354-billy-to-the-rescue",
+      "title": "Billy to the Rescue",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Putting out fires makes Billy the fire engine dirty. Will he still do his work?",
+      "authors": [
+        "Alisha Berger"
+      ],
+      "illustrators": [
+        "Samantha  van Riet"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/99512/size3/0b5ca3f2c7c9c66f3afbea838557dc62.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/99512/size6/0b5ca3f2c7c9c66f3afbea838557dc62.jpg"
+      }
+    },
+    {
+      "slug": "110883-water-dance",
+      "title": "Water Dance",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Guddu can dance to anything. Today he has found music in water and can’t stop doing a jig as he makes his way down a stream. A story that introduces water bodies and celebrates the joy of water.",
+      "authors": [
+        "Sean D'mello"
+      ],
+      "illustrators": [
+        "Ajanta Guhathakurta"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721324/size3/5a1f19ca4a60e1aaf734bc03f0c3be11.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721324/size6/5a1f19ca4a60e1aaf734bc03f0c3be11.jpg"
+      }
+    },
+    {
+      "slug": "14051-the-best-thing-ever",
+      "title": "The Best Thing Ever",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Muzi loves to build with his toys. But when he leaves them behind to travel to uGogo’s house, he discovers something very special about the world. And he learns something new about himself.\r\n\r\n",
+      "authors": [
+        "Melissa  Fagan ",
+        "Stefania Origgi"
+      ],
+      "illustrators": [
+        "Lauren   Nel"
+      ],
+      "originalAuthors": [],
+      "publisher": "Book Dash",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/118153/size3/bc2ba70b6ef08fef7c20b01264e48156.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/118153/size6/bc2ba70b6ef08fef7c20b01264e48156.jpg"
+      }
+    },
+    {
+      "slug": "444797-where-is-your-school",
+      "title": "Where Is Your School?",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Schools are not just for kids! On his way to school, Pintoo finds some interesting schools! Do you want to see them? Look inside!",
+      "authors": [
+        "Sai Keskar"
+      ],
+      "illustrators": [
+        "Sushant Ahire"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/727493/size3/21776053ccf55e215d97c6b50d6c8bc5.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/727493/size6/21776053ccf55e215d97c6b50d6c8bc5.jpg"
+      }
+    },
+    {
+      "slug": "17775-what-are-these-for",
+      "title": "What Are These For?",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "This charming tale with vibrant illustrations and visual clues showcases an innovative blend of learning and laughter. The kitchen is a mess! Who did this? Things are on the floor. What are these objects for?",
+      "authors": [
+        "Bhavini"
+      ],
+      "illustrators": [
+        "Chaaya Prabhat"
+      ],
+      "originalAuthors": [],
+      "publisher": "Ms Moochie",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/130164/size3/ff56e0366777fa6b2338456e64b1e8d6.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/130164/size6/ff56e0366777fa6b2338456e64b1e8d6.jpg"
+      }
+    },
+    {
+      "slug": "213354-the-peacock-s-dance",
+      "title": "The Peacock's Dance",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Hina went to the farm with her father one day. She saw a peacock dancing and started to dance as well. How did the peacock react? Read more to find out.",
+      "authors": [
+        "Kaminee Singh"
+      ],
+      "illustrators": [
+        "Partho Sengupta"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Education Foundation",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/285296/size3/fdb378a472f71021e971a650d68c810b.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/285296/size6/fdb378a472f71021e971a650d68c810b.jpg"
+      }
+    },
+    {
+      "slug": "409-colours-of-nature",
+      "title": "Colours of Nature",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "An eminent artist plays with the colours of nature. A lovely offering for early readers.",
+      "authors": [
+        "Bulbul Sharma"
+      ],
+      "illustrators": [
+        "Bulbul Sharma"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721742/size3/e6cd378a92a264ce09409ce1aa323988.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721742/size6/e6cd378a92a264ce09409ce1aa323988.jpg"
+      }
+    },
+    {
+      "slug": "36290-nin-wants-to-get-dressed",
+      "title": "Nin Wants to Get Dressed",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "It's Nin's first day of school. She wants to get dressed in her uniform for school but everyone is too busy to help her! Can Nin get dressed all by herself?",
+      "authors": [
+        "Alisha Berger"
+      ],
+      "illustrators": [
+        "Aphisith Souphavongtay"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/93891/size3/827ac2f61721dcdd027c7bfade890546.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/93891/size6/827ac2f61721dcdd027c7bfade890546.jpg"
+      }
+    },
+    {
+      "slug": "95108-wet-or-dry",
+      "title": "Wet or Dry",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "What do you do with your waste? Do you have separate bins for the wet and the dry? Read this fun poem and give it a try.",
+      "authors": [
+        "Lovleen  Misra "
+      ],
+      "illustrators": [
+        "Kavita Singh Kale"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/145759/size3/beb14f9fe944bd7f5b8da10710b44755.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/145759/size6/beb14f9fe944bd7f5b8da10710b44755.jpg"
+      }
+    },
+    {
+      "slug": "15050-how-many",
+      "title": "How Many?",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Some animals and birds want to meet you! All they are asking you to do is count some things for them. Will you? ",
+      "authors": [
+        "Clare Verbeek",
+        "Thembani  Dladla",
+        "Zanele Buthelezi"
+      ],
+      "illustrators": [
+        "Sandra   McDougall"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/118192/size3/73fd05ed78bd9a4e5e6ac8a0ef70f181.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/118192/size6/73fd05ed78bd9a4e5e6ac8a0ef70f181.jpg"
+      }
+    },
+    {
+      "slug": "60808-my-family",
+      "title": "My Family",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Come and meet my big family.",
+      "authors": [
+        "Manisha Chaudhry"
+      ],
+      "illustrators": [
+        "Rajeev Verma 'Banjara'"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/534571/size3/9c37e0f0dfbdd4fbb5a4aada16598c88.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/534571/size6/9c37e0f0dfbdd4fbb5a4aada16598c88.jpg"
+      }
+    },
+    {
+      "slug": "240-chhuk-chhuk-chhak",
+      "title": "Chhuk-Chhuk-Chhak",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Get on to little Nanhi's train as it chuffs away. Chhuk-Chhuk-Chhak-Chhak!",
+      "authors": [
+        "Ritu Singh"
+      ],
+      "illustrators": [
+        "Suvidha Mistry"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/700075/size3/faeccd984e18b46ff116312bbbf5d044.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/700075/size6/faeccd984e18b46ff116312bbbf5d044.jpg"
+      }
+    },
+    {
+      "slug": "54-susheela-s-kolams",
+      "title": "Susheela's Kolams",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "You must have seen kolams on doorsteps at home and even in school, but have you ever seen a kolam in the sky? Read on to find out how Susheela made that!",
+      "authors": [
+        "Sridala Swami"
+      ],
+      "illustrators": [
+        "Priya Kuriyan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721007/size3/d555da2445138f0ad43899fed6f643b9.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721007/size6/d555da2445138f0ad43899fed6f643b9.jpg"
+      }
+    },
+    {
+      "slug": "14806-friends",
+      "title": "Friends",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Simo will tell you what her friends like to do best! What do Your friends like?",
+      "authors": [
+        "Hlengiwe  Zondi ",
+        "Zimbili  Dlamini "
+      ],
+      "illustrators": [
+        "Catherine Groenewald"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/40715/size3/1a157d12838097ede31750fda683a3df.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/40715/size6/1a157d12838097ede31750fda683a3df.jpg"
+      }
+    },
+    {
+      "slug": "8828-maaloo-kaaloo-and-who",
+      "title": "Maaloo, Kaaloo ...and who?",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Maaloo and Kaaloo are back! This time they are playing detective at Grandma’s house in the hills.",
+      "authors": [
+        "Manisha Chaudhry"
+      ],
+      "illustrators": [
+        "Suvidha Mistry"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722825/size3/a8f6d625f16864f8d814762e38c0e384.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722825/size6/a8f6d625f16864f8d814762e38c0e384.jpg"
+      }
+    },
+    {
+      "slug": "1067-naughty-dog",
+      "title": "Naughty Dog",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "If you had a tail, you would wag it after reading this book. This book is one of the four books in the 'Animals Around Us' series.",
+      "authors": [
+        "Kanchan Bannerjee"
+      ],
+      "illustrators": [
+        "Deepa Balsavar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/704905/size3/6ba1aebea83f179aa77599f8f256fc8d.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/704905/size6/6ba1aebea83f179aa77599f8f256fc8d.jpg"
+      }
+    },
+    {
+      "slug": "1057-clean-cat",
+      "title": "Clean Cat",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "You take a bath and cats do not. Yet, why do we call them clean? This book is one of the four books in the 'Animals Around Us' series.",
+      "authors": [
+        "Kanchan Bannerjee"
+      ],
+      "illustrators": [
+        "Deepa Balsavar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/704876/size3/64305c3dcc61674c119e049ed04c6f3f.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/704876/size6/64305c3dcc61674c119e049ed04c6f3f.jpg"
+      }
+    },
+    {
+      "slug": "927-the-royal-toothache",
+      "title": "The Royal Toothache",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Even the king of the jungle must keep his teeth clean. Read this sweet story about who taught him this important lesson.",
+      "authors": [
+        "Manisha Chaudhry"
+      ],
+      "illustrators": [
+        "Ajit Narayan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721939/size3/730a74fae41af958bee4353aff545c11.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721939/size6/730a74fae41af958bee4353aff545c11.jpg"
+      }
+    },
+    {
+      "slug": "22247-ape-and-crocodile",
+      "title": "Ape and Crocodile",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Do the Ape and the Crocodile have a happy friendship story? ",
+      "authors": [
+        "Mulualem Daba"
+      ],
+      "illustrators": [
+        "Abraham Muzee"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/130933/size3/94684613766dee09332eba2857f49e9b.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/130933/size6/94684613766dee09332eba2857f49e9b.jpg"
+      }
+    },
+    {
+      "slug": "42989-who-is-faster",
+      "title": "Who is Faster?",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Which animal is fast and which is slow? This book tells young readers which animals are faster than others. ",
+      "authors": [
+        "Rose Larsen"
+      ],
+      "illustrators": [
+        "Kishor Joshi"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101398/size3/20ce9555025b846ccb27ae94345a490a.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101398/size6/20ce9555025b846ccb27ae94345a490a.jpg"
+      }
+    },
+    {
+      "slug": "14392-round-and-round-tell-me-now-series",
+      "title": "Round and Round (Tell me now series)",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Learn through interesting questions and answers.",
+      "authors": [
+        "Madhav Chavan"
+      ],
+      "illustrators": [
+        "Rijuta Ghate"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/722058/size3/7fc3bb0dcb3346d38a5c1cd1d95b7237.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/722058/size6/7fc3bb0dcb3346d38a5c1cd1d95b7237.jpg"
+      }
+    },
+    {
+      "slug": "19085-clever-pig",
+      "title": "Clever Pig",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Pig loves to play!\r\nOne day, Pig is gone.\r\nWill Pig come back?",
+      "authors": [
+        "Nathalie  Koenig"
+      ],
+      "illustrators": [
+        "Josh Morgan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Book Dash",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/85540/size3/19f1e6ea35e32023afc85d0ee0d8beb0.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/85540/size6/19f1e6ea35e32023afc85d0ee0d8beb0.jpg"
+      }
+    },
+    {
+      "slug": "43364-chunu-and-munu-read",
+      "title": "Chunu and Munu Read",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Chunu and Munu discover the joys of reading!",
+      "authors": [
+        "Stephanie  Wei"
+      ],
+      "illustrators": [
+        "Abin  Shrestha"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101414/size3/027db7659010cd4302f65b21b02a5688.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101414/size6/027db7659010cd4302f65b21b02a5688.jpg"
+      }
+    },
+    {
+      "slug": "42291-now-i-ve-got-you",
+      "title": "Now I've Got You!",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "One day, Frog catches Wasp. 'Now I've got you!' Frog says. But Wasp sees that Frog is in trouble, too! In a humorous chain of events, each animal is caught and nearly eaten by another, until Wasp comes up with a clever solution to save them all!",
+      "authors": [
+        "Alisha Berger"
+      ],
+      "illustrators": [
+        "Mayukh Gosh"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101394/size3/769b9b95f2896b83fb2aa16001371d4f.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101394/size6/769b9b95f2896b83fb2aa16001371d4f.jpg"
+      }
+    },
+    {
+      "slug": "34684-such-a-sweet-smell",
+      "title": "Such a Sweet Smell!",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Appu is relaxing one lazy afternoon, when he catches a whiff of… he doesn’t know what. He decides to follow his nose to the source of the smell. Wouldn’t you like to tag along? This story about smells takes you to the charming city of Kolkata.",
+      "authors": [
+        "Meera Hadap"
+      ],
+      "illustrators": [
+        "Shreya  Sen"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/725414/size3/c639bab6e686d995eaf6bdec0c08d4bf.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/725414/size6/c639bab6e686d995eaf6bdec0c08d4bf.jpg"
+      }
+    },
+    {
+      "slug": "14833-houses",
+      "title": "Houses",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "People live in such different kinds of houses all around you. Let's take a look!",
+      "authors": [
+        "Clare Verbeek",
+        "Thembani  Dladla",
+        "Zanele Buthelezi"
+      ],
+      "illustrators": [
+        "Kathy   Arbuckle"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/85017/size3/e88e8e085cdf3ddc8f661f59b167b71e.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/85017/size6/e88e8e085cdf3ddc8f661f59b167b71e.jpg"
+      }
+    },
+    {
+      "slug": "105115-come-back-cat",
+      "title": "Come back, Cat!",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "A delightful tale about an independent cat.",
+      "authors": [
+        "Nicola  Rijsdijk"
+      ],
+      "illustrators": [
+        "Karen  Lilje",
+        "Karen Lilje Lilje"
+      ],
+      "originalAuthors": [],
+      "publisher": "Book Dash",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/259360/size3/b9f36da2f3bc96ad07444d436d11b674.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/259360/size6/b9f36da2f3bc96ad07444d436d11b674.jpg"
+      }
+    },
+    {
+      "slug": "14790-counting-animals",
+      "title": "Counting Animals",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "All the animals in the jungle are so thirsty!  Join them while they all  go to drink some water.",
+      "authors": [
+        "Clare Verbeek",
+        "Thembani  Dladla",
+        "Zanele Buthelezi"
+      ],
+      "illustrators": [
+        "Rob Owen"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/118182/size3/5caab703e4e606c00ec553be0522696b.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/118182/size6/5caab703e4e606c00ec553be0522696b.jpg"
+      }
+    },
+    {
+      "slug": "18402-tumi-goes-to-the-park",
+      "title": "Tumi Goes to the Park",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "It’s Tumi’s first visit to the park. She’s so excited, there are many adventures. She might even make a new friend.",
+      "authors": [
+        "Paballo  Rampa"
+      ],
+      "illustrators": [
+        "Nyambura Kariuki"
+      ],
+      "originalAuthors": [],
+      "publisher": "Book Dash",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/94916/size3/e163888393ac7afbf4c3b5b7a771e305.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/94916/size6/e163888393ac7afbf4c3b5b7a771e305.jpg"
+      }
+    },
+    {
+      "slug": "641131-the-rat-in-the-cat",
+      "title": "The Rat in the Cat",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "The cat chased the rat. Up and down, inside and outside, everywhere they could fit. Did the cat catch the rat?",
+      "authors": [
+        "Arundhati Venkatesh"
+      ],
+      "illustrators": [
+        "Canato Jimo"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/712616/size3/640d7ef8a8457e34e0b74a79ef296a2e.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/712616/size6/640d7ef8a8457e34e0b74a79ef296a2e.jpg"
+      }
+    },
+    {
+      "slug": "269546-circles-in-the-park",
+      "title": "Circles in the Park",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Golu and Tama go to the park to play. What do they see all around them?\r\nThis wordless book introduces circles, semi-circles and quarter-circles.",
+      "authors": [
+        "Veena Prasad"
+      ],
+      "illustrators": [
+        "Canato Jimo"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/716360/size3/6fc2c67115bf34f0d009b7009d9c9fbc.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/716360/size6/6fc2c67115bf34f0d009b7009d9c9fbc.jpg"
+      }
+    },
+    {
+      "slug": "11515-tommy-and-tingu",
+      "title": "Tommy and Tingu",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Tommy is a small puppy and Tingu is an angry cat.  Read more about them in this short story!\r\n",
+      "authors": [
+        "Kanchan Bannerjee"
+      ],
+      "illustrators": [
+        "Natasha  Mehra"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/33289/size3/b6f24ba504deed92b32d53bd291e37ce.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/33289/size6/b6f24ba504deed92b32d53bd291e37ce.jpg"
+      }
+    },
+    {
+      "slug": "213112-the-balloon-man",
+      "title": "The Balloon Man",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Chiku buys a balloon and also asks her friends to buy some. But her friends could not buy the balloons because…read more to find out!",
+      "authors": [
+        "Kratika Pande"
+      ],
+      "illustrators": [
+        "Shohei Emura"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Education Foundation",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/283788/size3/b5f465a5feaef361a1e4f8086ade0bd8.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/283788/size6/b5f465a5feaef361a1e4f8086ade0bd8.jpg"
+      }
+    },
+    {
+      "slug": "13933-londi-the-dreaming-girl",
+      "title": "Londi: The Dreaming Girl",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Londi loves to dream all day. But where will her dreams take her? ",
+      "authors": [
+        "Nathalie  Koenig"
+      ],
+      "illustrators": [
+        "Lauren Holliday"
+      ],
+      "originalAuthors": [],
+      "publisher": "Book Dash",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/38927/size3/d9f1f12d9a19adc9cc5babaaa6e0a299.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/38927/size6/d9f1f12d9a19adc9cc5babaaa6e0a299.jpg"
+      }
+    },
+    {
+      "slug": "959-i-am-not-afraid",
+      "title": "I Am Not Afraid!",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "A little girl goes out alone in the dark. What does she find? This book is one of the four books in the 'Growing Up' series. ",
+      "authors": [
+        "Mini Shrinivasan"
+      ],
+      "illustrators": [
+        "Rayika Sen"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/705396/size3/184db2e732a8ca7d0d9383e42d4f043d.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/705396/size6/184db2e732a8ca7d0d9383e42d4f043d.jpg"
+      }
+    },
+    {
+      "slug": "15204-new-pussy-cat",
+      "title": "New Pussy Cat",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Prosy wants a cat, but she must find one that's the perfect size for everyone in her family! ",
+      "authors": [
+        "Ritah  Katetemera "
+      ],
+      "illustrators": [
+        "Marion  Drew"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/40951/size3/eb894038653d07a7e94109bb62cffc59.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/40951/size6/eb894038653d07a7e94109bb62cffc59.jpg"
+      }
+    },
+    {
+      "slug": "453-happy-and-sad-tell-me-now-series",
+      "title": "Happy and Sad (Tell me now series)",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Often, an inquisitive child asks his parents an endless set of questions. The 'Tell me ... now!' Series describes how interesting the questions and answers turn out. This one is about feelings and emotions.",
+      "authors": [
+        "Madhav Chavan"
+      ],
+      "illustrators": [
+        "Rijuta Ghate"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722033/size3/6f953dea1448b109b24b70edf7350a65.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722033/size6/6f953dea1448b109b24b70edf7350a65.jpg"
+      }
+    },
+    {
+      "slug": "35337-wheel-s-big-problem",
+      "title": "Wheel's Big Problem",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Wheel does not like rolling on hot or bumpy roads under Car, so he decides to look for a new vehicle. But Truck is too heavy and he does not fit Bicycle. Then, Wheel meets a boy who is looking for a friend. Can Wheel help the boy? ",
+      "authors": [
+        "Brian Kavanagh"
+      ],
+      "illustrators": [
+        "Prashant Soni"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/371263/size3/ee9db84d7d1150b1c86336f3dc04360f.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/371263/size6/ee9db84d7d1150b1c86336f3dc04360f.jpg"
+      }
+    },
+    {
+      "slug": "375-playtime",
+      "title": "Playtime",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Golu and Chhotu sure make a funny pair. Read about their antics in this funny story.",
+      "authors": [
+        "Manisha Chaudhry"
+      ],
+      "illustrators": [
+        "Ajit Narayan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721916/size3/906e74898bf061f7abefb75c6319ad63.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721916/size6/906e74898bf061f7abefb75c6319ad63.jpg"
+      }
+    },
+    {
+      "slug": "36289-bounthy-s-singing-birds",
+      "title": "Bounthy's Singing Birds",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Bounthy’s father captures birds and puts them in cages. Bounthy likes listening to the birds singing, but one day the birds stop singing. Will Bounthy be able to make the birds sing again?",
+      "authors": [
+        "Sanjana  Khoobchandani"
+      ],
+      "illustrators": [
+        "Nivong  Sengsakoun"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/93888/size3/1ef129b63ff5f374611f1296857cd642.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/93888/size6/1ef129b63ff5f374611f1296857cd642.jpg"
+      }
+    },
+    {
+      "slug": "37276-a-day-at-the-carnival",
+      "title": "A Day at the Carnival",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "The three mice brothers can’t wait to visit the carnival. They ride toy cars, go on the Ferris wheel, and visit the balloon shop. After some time, they realize their youngest brother is missing! Where can he be?",
+      "authors": [
+        "Alisha Berger"
+      ],
+      "illustrators": [
+        "Nivong  Sengsakoun"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/93876/size3/a434ae08226f7e4fb4da5b52fb4e12b5.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/93876/size6/a434ae08226f7e4fb4da5b52fb4e12b5.jpg"
+      }
+    },
+    {
+      "slug": "19072-where-is-thabo",
+      "title": "Where is Thabo?",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Thabo’s family is getting ready for the day and making a big mess as they hurry to get things done. But where is Thabo?",
+      "authors": [
+        "Melissa  Fagan "
+      ],
+      "illustrators": [
+        "Ndumiso  Nyoni"
+      ],
+      "originalAuthors": [],
+      "publisher": "Book Dash",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/85550/size3/c697e40152eebfff3c46f8ae19f1ea4d.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/85550/size6/c697e40152eebfff3c46f8ae19f1ea4d.jpg"
+      }
+    },
+    {
+      "slug": "36678-rat-and-goat",
+      "title": "Rat and Goat",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Rat loves to play hopscotch but he has no one to play with. His neighbour, Goat, is at home but he prefers to be alone. Can Rat persuade Goat to play with him?",
+      "authors": [
+        "Sanjana  Khoobchandani"
+      ],
+      "illustrators": [
+        "Try Samphors"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/101334/size3/34ea188d375dede8e22508a9013dc8eb.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/101334/size6/34ea188d375dede8e22508a9013dc8eb.jpg"
+      }
+    },
+    {
+      "slug": "43612-mother-call-that-bird",
+      "title": "Mother, Call that Bird!",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "A little child asks her mother to help her adopt a bird.",
+      "authors": [
+        "Alisha Berger"
+      ],
+      "illustrators": [
+        "Krishnagopal Shreshtha"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/99534/size3/5f965f2bff43145b1f5f996e90b44970.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/99534/size6/5f965f2bff43145b1f5f996e90b44970.jpg"
+      }
+    },
+    {
+      "slug": "14805-beloved-daughter",
+      "title": "Beloved Daughter",
+      "language": "English",
+      "langCode": "en",
+      "level": "1",
+      "description": "Natabo has run away from her home! Do you know why?",
+      "authors": [
+        "Mulongo  Bukheye ",
+        "Ritah  Katetemera "
+      ],
+      "illustrators": [
+        "Brian Wambi"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/40624/size3/b747473e2f2e9cb6a0c0052c4aaf3564.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/40624/size6/b747473e2f2e9cb6a0c0052c4aaf3564.jpg"
+      }
+    },
+    {
+      "slug": "103863-tiger-tiger-where-are-you",
+      "title": "Tiger, Tiger, Where Are You?",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "A tiger researcher is out looking for tiger hair and poop as part of his study. He finds plenty of signs of the tiger, but where is the big cat? After all, there are so many  ways to see a tiger without seeing a tiger.",
+      "authors": [
+        "Mujahid   Khan"
+      ],
+      "illustrators": [
+        "Manjari Chakravarti"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/646333/size3/2b9e78c3f98108e08349a85a7d95c20d.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/646333/size6/2b9e78c3f98108e08349a85a7d95c20d.jpg"
+      }
+    },
+    {
+      "slug": "108113-bobo-and-the-worms",
+      "title": "Bobo and the Worms",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Worms are chewing up plants. Bobo is on a mission to stop them. Can she manage it?",
+      "authors": [
+        "Abokali Jimomi"
+      ],
+      "illustrators": [
+        "Canato Jimo"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/495594/size3/9fec4d87f484e7a1832f21cae4834f7b.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/495594/size6/9fec4d87f484e7a1832f21cae4834f7b.jpg"
+      }
+    },
+    {
+      "slug": "99552-gudugu-thadugu",
+      "title": "Gudugu Thadugu",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Muni the mason has to break a shed and make a new clinic. He goes up the hill asking various people to help him. But sometimes help takes on an unexpected form!",
+      "authors": [
+        "Ashok Rajagopalan"
+      ],
+      "illustrators": [
+        "Ashok Rajagopalan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495625/size3/cb7272fca8729d1afce929ec613d09f9.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495625/size6/cb7272fca8729d1afce929ec613d09f9.jpg"
+      }
+    },
+    {
+      "slug": "103989-a-camel-for-kelam",
+      "title": "A Camel for Kelam",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Pabu’s niece Kelam wants a camel for her birthday. So he sets out from Rajasthan for Lanka to look for one. Find out where this journey takes him.",
+      "authors": [
+        "Anu Chowdhury-Sorabjee"
+      ],
+      "illustrators": [
+        "Kalyan Joshi"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/723694/size3/52318613cf20d8e64bec789d77e80602.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/723694/size6/52318613cf20d8e64bec789d77e80602.jpg"
+      }
+    },
+    {
+      "slug": "24770-thato-s-birthday-surprise",
+      "title": "Thato's Birthday Surprise",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "It is one week until Thato’s Birthday. His mama tells him he will have a big surprise. What will it be?",
+      "authors": [
+        "Corinne  Lamoral-Rosmarin",
+        "Jodi  Houareau"
+      ],
+      "illustrators": [
+        "Brad Cuzen"
+      ],
+      "originalAuthors": [],
+      "publisher": "Book Dash",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/399707/size3/bc3dde28d7810ab1f4020fb4e63320b1.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/399707/size6/bc3dde28d7810ab1f4020fb4e63320b1.jpg"
+      }
+    },
+    {
+      "slug": "212-the-tree",
+      "title": "The Tree",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "The tale of how a tree grows from a tiny seed.",
+      "authors": [
+        "Madhav Chavan"
+      ],
+      "illustrators": [
+        "Ketan Raut"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/722234/size3/94ca99b3484af2b07528283397858dba.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/722234/size6/94ca99b3484af2b07528283397858dba.jpg"
+      }
+    },
+    {
+      "slug": "38073-plek-plok-the-lucky-little-fish",
+      "title": "Plek Plok, the Lucky Little Fish",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Mommy and Plek Plok, her little son are swimming in shallow waters in the sea. Plek Plok sees bigger fish playing happily in the deep waters and wants to join them. Mommy warns he is too young to explore the deep waters, but Plek Plok goes anyway. What happens to him?",
+      "authors": [
+        "Erica Cuellar"
+      ],
+      "illustrators": [
+        "Seng Visal"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101350/size3/fe581f9e83d861b2dc322c9f507026ae.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101350/size6/fe581f9e83d861b2dc322c9f507026ae.jpg"
+      }
+    },
+    {
+      "slug": "111303-i-spy-a-lake",
+      "title": "I Spy a Lake!",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Manju and Hamid are playing a game of I Spy by the lake. But why is the game making Hamid sad? And what can they do about it? A story about pollution and the declining state of water bodies.",
+      "authors": [
+        "Menaka Raman"
+      ],
+      "illustrators": [
+        "Balaram J"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/196528/size3/4b27744f1d84c940dbf9370defe8966a.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/196528/size6/4b27744f1d84c940dbf9370defe8966a.jpg"
+      }
+    },
+    {
+      "slug": "91871-sringeri-srinivas-s-cow-must-moo",
+      "title": "Sringeri Srinivas's Cow Must Moo!",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Sringeri Srinivas is back with a new problem. His cow has stopped mooing and he is very angry. The farmer frowns at her. His children feed her sweets. But the cow does not moo. Join this lovable farmer's family and his new cat Manuli, in this tale with a twist.",
+      "authors": [
+        "Rohini Nilekani"
+      ],
+      "illustrators": [
+        "Angie & Upesh"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/703876/size3/b8450198b14417eb987648711d009944.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/703876/size6/b8450198b14417eb987648711d009944.jpg"
+      }
+    },
+    {
+      "slug": "2171-kaushik-the-kind-detective",
+      "title": "Kaushik, the Kind Detective",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "With his new torch and magnifying glass, Kaushik feels like a true detective. Join him as he explores the forest and makes exciting new discoveries.",
+      "authors": [
+        "N. Chokkan"
+      ],
+      "illustrators": [
+        "Megha Vishwanath"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721717/size3/eb5a572c2dc1b8583ea321e7209afa20.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721717/size6/eb5a572c2dc1b8583ea321e7209afa20.jpg"
+      }
+    },
+    {
+      "slug": "47971-where-is-my-mother",
+      "title": "Where is My Mother?",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "A small baby bird is separated from its mother. The baby bird searches and searches for its mother but can’t find her. What will happen?",
+      "authors": [
+        "Alisha Berger"
+      ],
+      "illustrators": [
+        "R. C. Pradeep Kumar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/128583/size3/c7cc6b50e502c26ed6dc910456cb202c.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/128583/size6/c7cc6b50e502c26ed6dc910456cb202c.jpg"
+      }
+    },
+    {
+      "slug": "380940-i-can-smell",
+      "title": "I Can Smell...",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "On a winter afternoon in Shantiniketan, Mini smells something delicious and decides to follow her nose. Follow Mini and find out what surprise awaits her.",
+      "authors": [
+        "Proiti Roy"
+      ],
+      "illustrators": [
+        "Proiti Roy"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/706357/size3/e619d7631277c90319d1b47e0d884bca.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/706357/size6/e619d7631277c90319d1b47e0d884bca.jpg"
+      }
+    },
+    {
+      "slug": "329920-when-we-are-home",
+      "title": "When We Are Home",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Home is the sights, the sounds, the smells and the touch of every room. In this book, Moromi remembers her home that was displaced by a flood.",
+      "authors": [
+        "Priyadarshini Gogoi"
+      ],
+      "illustrators": [
+        "Pankaj Saikia"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/426897/size3/727db468b86fe56b22b791ebcecc0a19.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/426897/size6/727db468b86fe56b22b791ebcecc0a19.jpg"
+      }
+    },
+    {
+      "slug": "69664-uh-oh",
+      "title": "Uh-oh",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "What happens when you get too close to some animals and plants? They use all sorts of tricks to protect themselves from danger. Find out in this hilarious book.",
+      "authors": [
+        "Aparna  Kapur",
+        "Radha Rangarajan"
+      ],
+      "illustrators": [
+        "Kingshuk Chaudhary"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/725074/size3/f5dbe41d34eb61fdb426b974dff0fa24.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/725074/size6/f5dbe41d34eb61fdb426b974dff0fa24.jpg"
+      }
+    },
+    {
+      "slug": "50458-binti-knows-her-mind",
+      "title": "Binti Knows Her Mind",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "You can try telling Binti that she can’t do something, but she knows best!",
+      "authors": [
+        "Richa  Jha"
+      ],
+      "illustrators": [
+        "Kalyani Naravane"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/121015/size3/e7f943a7bba87bbde3adea8376a9e15a.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/121015/size6/e7f943a7bba87bbde3adea8376a9e15a.jpg"
+      }
+    },
+    {
+      "slug": "126876-a-girl-called-cheeku",
+      "title": "A Girl Called Cheeku",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "It's just an ordinary day for Cheeku and her friends. But then something extraordinary happens. Will Cheeku save the day? A story that celebrates individuality and reminds us that each one of us is special. ",
+      "authors": [
+        "Swagata Sen Pillai"
+      ],
+      "illustrators": [
+        "Manasi Parikh"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/723773/size3/59eacf74760a6366ea11b0ecbb11fde2.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/723773/size6/59eacf74760a6366ea11b0ecbb11fde2.jpg"
+      }
+    },
+    {
+      "slug": "2380-the-story-of-stories",
+      "title": "The Story of Stories",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "In a happy, happy, happy forest lives Journalist Bear who is sad because he can't find a 'BREAKING NEWS' story. A Journalist Bear without a 'BREAKING NEWS' story, can you imagine! Then along comes Singing Sardarji who helps Bear see who he really is. Read this story which celebrates the power and magic of stories, and the people who weave them into being. ",
+      "authors": [
+        "Roopa Pai"
+      ],
+      "illustrators": [
+        "Prashant Miranda"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/699237/size3/a73ebf9c0be3829daf205c8376e0f49d.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/699237/size6/a73ebf9c0be3829daf205c8376e0f49d.jpg"
+      }
+    },
+    {
+      "slug": "997-pehelwaan-ji-plays-cricket",
+      "title": "Pehelwaan ji Plays Cricket",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "The children of the village were scared of the big man, Pehelwaan ji. So when he wanted to play with them, they just had to let him play. ",
+      "authors": [
+        "Manisha Chaudhry"
+      ],
+      "illustrators": [
+        "Ajit Narayan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/790732/size3/849b79ab9f4cab259d1ec9364b37eeb0.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/790732/size6/849b79ab9f4cab259d1ec9364b37eeb0.jpg"
+      }
+    },
+    {
+      "slug": "61-pehelwaan-ji",
+      "title": "Pehelwaan Ji",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Pehelwaan Ji was a bit of a bully. But Gappu soon took care of that. Read this amusing story about their bout of wrestling!",
+      "authors": [
+        "Manisha Chaudhry"
+      ],
+      "illustrators": [
+        "Ajit Narayan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722698/size3/98bcdcf0cb7fb7abb4210429783d8707.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722698/size6/98bcdcf0cb7fb7abb4210429783d8707.jpg"
+      }
+    },
+    {
+      "slug": "8028-avani-and-the-pea-plant",
+      "title": "Avani and the Pea Plant",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Who did it? Avani does not know. Her mother does not know. But you will know who did it when you read this book about a pea plant. ",
+      "authors": [
+        "Shruthi  Rao"
+      ],
+      "illustrators": [
+        "Debasmita Dasgupta"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/26596/size3/c506a61bdb5cf05f48f5d62d9067927c.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/26596/size6/c506a61bdb5cf05f48f5d62d9067927c.jpg"
+      }
+    },
+    {
+      "slug": "207-kaka-and-munni-a-folktale-from-punjab",
+      "title": "Kaka and Munni: A Folktale from Punjab",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Kaka, the wicked crow, wants to eat Munni's eggs. But Munni is a very clever sparrow. And so are all the characters in this popular folktale from Punjab.",
+      "authors": [
+        "Natasha Sharma"
+      ],
+      "illustrators": [
+        "Natasha Sharma"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/697427/size3/ddd85819f3435068b907c0561a812716.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/697427/size6/ddd85819f3435068b907c0561a812716.jpg"
+      }
+    },
+    {
+      "slug": "38365-brave-rima",
+      "title": "Brave Rima",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Rima is excited to visit the Boishakhi fair with her uncle. But while she is busy looking at all the wonderful things around her, she realizes her uncle is gone. Rima is lost! Will Rima be able to find her uncle in such a huge crowd?",
+      "authors": [
+        "Alisha Berger"
+      ],
+      "illustrators": [
+        "Shamim Ahmed"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/93518/size3/cbaaad1ee459031171dbabe5deedf12b.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/93518/size6/cbaaad1ee459031171dbabe5deedf12b.jpg"
+      }
+    },
+    {
+      "slug": "12012-aiman-s-school-bag",
+      "title": "Aiman's School Bag",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "After you read this story, you may wonder what your school bag feels about you. Aiman and her bag make quite a pair!",
+      "authors": [
+        "Rajesh Khar"
+      ],
+      "illustrators": [
+        "211 Studio"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722842/size3/fb8bc7e117714118000e689caafd0660.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722842/size6/fb8bc7e117714118000e689caafd0660.jpg"
+      }
+    },
+    {
+      "slug": "48013-the-big-book-of-boochandis",
+      "title": "The Big Book of Boochandis",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Beware! Boochandis can be anywhere and can give you a bit of a fright. Beloved bogeymen of Tamil Nadu, boochandis are summoned to get unwilling children to do as they are told. In this book are boochandis of all shapes and sizes, boochandis who growl and prowl. Watch out!",
+      "authors": [
+        "Pavithra Sankaran"
+      ],
+      "illustrators": [
+        "Rucha Dhayarkar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/157772/size3/c22c969c00ed3abf7b7e06e6075fa53c.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/157772/size6/c22c969c00ed3abf7b7e06e6075fa53c.jpg"
+      }
+    },
+    {
+      "slug": "86-hot-tea-and-warm-rugs",
+      "title": "Hot Tea and Warm Rugs",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Meenu's smart winter uniforms are out and the air is filled with the aroma of roasted nuts. Not to forget a cloud of mist in front of her mouth while she speaks! Let us find out what is happening this winter.",
+      "authors": [
+        "Mala Kumar",
+        "Manisha Chaudhry"
+      ],
+      "illustrators": [
+        "Priya Kuriyan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/702420/size3/42fc34e6412fa8bae45d57c80db0b6f3.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/702420/size6/42fc34e6412fa8bae45d57c80db0b6f3.jpg"
+      }
+    },
+    {
+      "slug": "43617-our-friends-in-the-wild",
+      "title": "Our Friends in the Wild",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Throughout time, people have shared a strong relationship with animals in nature. This non-fiction poem explores the many ways that animals help humans.",
+      "authors": [
+        "Shannon David"
+      ],
+      "illustrators": [
+        "Samit  Shrestha"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/99533/size3/0da7a566a04002a3cab59345951503b8.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/99533/size6/0da7a566a04002a3cab59345951503b8.jpg"
+      }
+    },
+    {
+      "slug": "40-listen-to-my-body",
+      "title": "Listen to My Body",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Each of us has a wonderful body. But have you ever listened to what it tells you?",
+      "authors": [
+        "Rohini Nilekani"
+      ],
+      "illustrators": [
+        "Angie & Upesh"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/700895/size3/19ca6ebcfc082bc86d63cf3227d13b74.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/700895/size6/19ca6ebcfc082bc86d63cf3227d13b74.jpg"
+      }
+    },
+    {
+      "slug": "270-ritu-s-letter-gets-longer",
+      "title": "Ritu's Letter Gets Longer!",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Little Ritu is very eager to see her cousin. So she posts him a very special letter.",
+      "authors": [
+        "Mala Kumar"
+      ],
+      "illustrators": [
+        "Henu"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/696671/size3/5a67c4862d76b9ca92826bddea4fa06d.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/696671/size6/5a67c4862d76b9ca92826bddea4fa06d.jpg"
+      }
+    },
+    {
+      "slug": "944-smart-sona-helps-her-mother",
+      "title": "Smart Sona Helps Her Mother",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Sona is smarter than ever. You may have read how she helped her father. This time she finds her mother’s work very interesting!",
+      "authors": [
+        "Manisha Chaudhry"
+      ],
+      "illustrators": [
+        "Suvidha Mistry"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/775961/size3/e667d3f450fb3580296679a5ba996def.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/775961/size6/e667d3f450fb3580296679a5ba996def.jpg"
+      }
+    },
+    {
+      "slug": "22543-the-special-painter",
+      "title": "The Special Painter",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Teo is missing the fingers on his right hand, but he loves painting and hopes to become a painter. Do you think Teo will be able to live out his dream in art class?",
+      "authors": [
+        "Gouri  Srindhi"
+      ],
+      "illustrators": [
+        "Nguyễn  Minh Hải"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/128560/size3/dcf15eda5a986a4ceb9d40ab30c806d0.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/128560/size6/dcf15eda5a986a4ceb9d40ab30c806d0.jpg"
+      }
+    },
+    {
+      "slug": "80-aunty-jui-s-baby",
+      "title": "Aunty Jui's Baby",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Anu and her mother visit Aunty Jui to see her new baby. \r\nAai and Aunty fuss over her but Anu thinks the baby is really silly.",
+      "authors": [
+        "Pratham Books Team"
+      ],
+      "illustrators": [
+        "Madhuri Purandare"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721708/size3/e06593123cad33ccaac20b9451642c4d.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721708/size6/e06593123cad33ccaac20b9451642c4d.jpg"
+      }
+    },
+    {
+      "slug": "113404-with-you-ma",
+      "title": "With You, Ma",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Aadya refuses to do anything without her Ma - whether it’s packing a bag for their holiday to Assam or it’s playing in the river. Will this trip make Aadya more self-reliant?",
+      "authors": [
+        "Adith A.K."
+      ],
+      "illustrators": [
+        "Amalendu Kaushik"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/727165/size3/4732117263204c3711957aac53a0efbe.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/727165/size6/4732117263204c3711957aac53a0efbe.jpg"
+      }
+    },
+    {
+      "slug": "48640-rose-and-rocky-go-green",
+      "title": "Rose and Rocky Go Green",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Rose has a recipe to turn waste into plant food. Join Rose and Rocky in their adventures in this book about composting.",
+      "authors": [
+        "Annie Besant"
+      ],
+      "illustrators": [
+        "Sandhya Prabhat"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/714300/size3/cb3c6c8b6d1b8b96716c58435660e6cb.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/714300/size6/cb3c6c8b6d1b8b96716c58435660e6cb.jpg"
+      }
+    },
+    {
+      "slug": "58551-hungry-on-the-steps",
+      "title": "Hungry on the Steps",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Pranav is hungry. As he climbs up the steps to his house slowly, many others join the line behind him. Who can make him run up the steps?",
+      "authors": [
+        "Nandini Nayar"
+      ],
+      "illustrators": [
+        "Nirzara Verulkar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/97609/size3/fce4da2bddc71052a69c395326c949bc.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/97609/size6/fce4da2bddc71052a69c395326c949bc.jpg"
+      }
+    },
+    {
+      "slug": "98337-sports-day",
+      "title": "Sports Day",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Lace up your shoes, drink some water, and get ready for Sports Day. Happy, sad, nervous, excited - the students of KV School are feeling so many emotions. Aska-lakadi-gala-galoo, cheer them, won’t you?",
+      "authors": [
+        "Menaka Raman"
+      ],
+      "illustrators": [
+        "Jemma Jose"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495676/size3/969538e582d44ed3863f7c2fe495445a.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495676/size6/969538e582d44ed3863f7c2fe495445a.jpg"
+      }
+    },
+    {
+      "slug": "124411-manasa-collects-a-rainbow",
+      "title": "Manasa Collects a Rainbow",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Manasa is on the hunt for a different kind of rainbow. Can she do it? Let’s find out. Join Manasa on her adventure.",
+      "authors": [
+        "Shalini  Srinivasan "
+      ],
+      "illustrators": [
+        "Pia Alizé Hazarika"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/495523/size3/5b4c1b6586eede14f66e66af9be535ef.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/495523/size6/5b4c1b6586eede14f66e66af9be535ef.jpg"
+      }
+    },
+    {
+      "slug": "162851-emotions-come-and-go",
+      "title": "Emotions Come and Go",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Look out for the emotions you feel and why! ",
+      "authors": [
+        "Mimi  Werna"
+      ],
+      "illustrators": [
+        "Joe Werna"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/231859/size3/bdb9d057c77432781e3e911d92aa1bfe.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/231859/size6/bdb9d057c77432781e3e911d92aa1bfe.jpg"
+      }
+    },
+    {
+      "slug": "64986-the-adventures-of-akara-and-linio",
+      "title": "The Adventures of Akara and Linio",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Akara is a standing line. Linio is a sleeping line. The two friends go out to play with their other line friends. What do you think happens? ",
+      "authors": [
+        "Kuzhali  Manickavel "
+      ],
+      "illustrators": [
+        "Aindri C"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/715539/size3/cf9d88b7013979cf37ea1f9bb0c93c9c.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/715539/size6/cf9d88b7013979cf37ea1f9bb0c93c9c.jpg"
+      }
+    },
+    {
+      "slug": "41263-colourful-birds",
+      "title": "Colourful Birds",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Once upon a time, all the birds in the world were white. Only Grandfather Magic could change their colours. What did he create?",
+      "authors": [
+        "Alisha Berger"
+      ],
+      "illustrators": [
+        "Chathurika Jayasooriya"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/128599/size3/3f4ccfdae226169d9e418f37af5a5881.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/128599/size6/3f4ccfdae226169d9e418f37af5a5881.jpg"
+      }
+    },
+    {
+      "slug": "366151-all-about-beaks",
+      "title": "All About Beaks",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Birds have beaks of all kinds, and they use them in many different ways. Dip in.",
+      "authors": [
+        "Rohan Dahotre"
+      ],
+      "illustrators": [
+        "Rohan Dahotre"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/527541/size3/8b9b4ad89f883b4d5fc2428c650116c9.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/527541/size6/8b9b4ad89f883b4d5fc2428c650116c9.jpg"
+      }
+    },
+    {
+      "slug": "51278-sahana-makes-music",
+      "title": "Sahana Makes Music",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Sahana’s home is too quiet. How can Sahana liven it up? She starts creating some music of her own. Listen in.",
+      "authors": [
+        "Ravi  Mundoli"
+      ],
+      "illustrators": [
+        "Noorain   Ahmed"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/725481/size3/36bebfc2c6bd04e5fa90fc5082458ae6.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/725481/size6/36bebfc2c6bd04e5fa90fc5082458ae6.jpg"
+      }
+    },
+    {
+      "slug": "114469-croak",
+      "title": "Croak",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "There’s a frog in the classroom, warn the students. A frog is eating up masterji’s lunch. A frog is sitting on masterji’s chair. But masterji isn’t going to fall for his students’ pranks today.",
+      "authors": [
+        "Kavitha Punniyamurthi"
+      ],
+      "illustrators": [
+        "Ekta Bharti"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/203519/size3/c431226adad48c0a771f46309189d357.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/203519/size6/c431226adad48c0a771f46309189d357.jpg"
+      }
+    },
+    {
+      "slug": "34990-it-s-a-laddoo-party",
+      "title": "It's a Laddoo Party!",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Mira and Mihir have a box full of laddoos. Just when they want to eat… DING DONG!\r\nOh, a guest. They have twelve laddoos.\r\nHow many laddoos do they each get?",
+      "authors": [
+        "Srividhya Venkat"
+      ],
+      "illustrators": [
+        "Ashika Singh"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/117565/size3/399dc3e5ef943846b6f10d2347afdec5.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/117565/size6/399dc3e5ef943846b6f10d2347afdec5.jpg"
+      }
+    },
+    {
+      "slug": "9817-mr-anand-has-an-adventure",
+      "title": "Mr. Anand has an Adventure",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Mr. Anand loves to go walking in new places. Every outing is an adventure to him. This time he thinks he has learnt a new language. Do you also think so?",
+      "authors": [
+        "Mala Kumar",
+        "Manisha Chaudhry"
+      ],
+      "illustrators": [
+        "Satya  Krishna Prakash"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117097/size3/137669bd0687a06e9fc27f0c3e2fdbad.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117097/size6/137669bd0687a06e9fc27f0c3e2fdbad.jpg"
+      }
+    },
+    {
+      "slug": "921-samira-s-awful-lunch",
+      "title": "Samira's Awful Lunch",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Samira doesn't like the lunch her mother has packed in her tiffin box. All her animal friends feel bad for her and offer her their lunch. Read all about Samira's lunchtime adventure...",
+      "authors": [
+        "Bharati Jagannathan"
+      ],
+      "illustrators": [
+        "Preeti Krishnamurthy"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/705275/size3/7aa1e49b58c73404d3c1206fe2389c8e.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/705275/size6/7aa1e49b58c73404d3c1206fe2389c8e.jpg"
+      }
+    },
+    {
+      "slug": "28951-amma-there-is-a-bat-in-my-sambar",
+      "title": "Amma, There is a Bat in My Sambar!",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Suppi is not at all happy to see a bat flying about in his house. In fact, he is quite scared of the bat.\r\nHow can Suppi and Amma get the bat back to her family?",
+      "authors": [
+        "Menaka Raman"
+      ],
+      "illustrators": [
+        "Tanya  Singh"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": true,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/57856/size3/f1e874aeb6aad2c5558fea57c8273c6c.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/57856/size6/f1e874aeb6aad2c5558fea57c8273c6c.jpg"
+      }
+    },
+    {
+      "slug": "37237-little-monkey-s-lost-bananas",
+      "title": "Little Monkey's Lost Bananas",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Little Monkey’s home is always messy. One day, Little Monkey feels hungry but his house is so messy that he cannot find his bananas to eat! He asks the other animals in the forest if they've seen his bananas. Do you think the other animals can help Little Monkey find his lost bananas?",
+      "authors": [
+        "Rose Larsen"
+      ],
+      "illustrators": [
+        "Youm Kosal"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101346/size3/c57a183a1cd9b82e2046d7aa671560ac.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/101346/size6/c57a183a1cd9b82e2046d7aa671560ac.jpg"
+      }
+    },
+    {
+      "slug": "16921-the-doll-that-bommakka-made",
+      "title": "The Doll That Bommakka Made",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "This charming cumulative tale celebrates the tradition of hand-crafted dolls, inspired by the South Indian Thanjavur Thalai Atti Bommai. Starting with a little ball of clay, we see the fine dancing doll grow before our eyes. The rhythmic descriptive words, stacked in a delightfully repetitive way, invite children to chant along. The vibrant illustrations complete the vivid imagery.",
+      "authors": [
+        "Praba Ram",
+        "Sheela Preuitt"
+      ],
+      "illustrators": [
+        "Debasmita Dasgupta"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/114328/size3/087d139e9e25a4db2e8af7c0435a63bc.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/114328/size6/087d139e9e25a4db2e8af7c0435a63bc.jpg"
+      }
+    },
+    {
+      "slug": "36707-an-adventure-with-a-water-snake",
+      "title": "An Adventure with a Water-Snake",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "Khan catches a water snake! In this underwater adventure, Khan meets strange creatures, makes new friends and even manages to save the day.",
+      "authors": [
+        "Gouri Srinidhi"
+      ],
+      "illustrators": [
+        "Mangkonephet  Sayasane"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/93894/size3/82f1e5c3b3971757ed40d31b3e9b4ce3.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/93894/size6/82f1e5c3b3971757ed40d31b3e9b4ce3.jpg"
+      }
+    },
+    {
+      "slug": "132-daddy-s-mo",
+      "title": "Daddy's Mo",
+      "language": "English",
+      "langCode": "en",
+      "level": "2",
+      "description": "What does Anu like the most about her dad? His Mo! Do you know what a Mo is? Actually, Anu likes everyone with a Mo. So much so that when she sees a Mo, she gets funny ideas!",
+      "authors": [
+        "Sai Keskar"
+      ],
+      "illustrators": [
+        "Madhuri Purandare"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721686/size3/0eaa2e9b2d4d4c465ba2c5e05a6f092c.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721686/size6/0eaa2e9b2d4d4c465ba2c5e05a6f092c.jpg"
+      }
+    },
+    {
+      "slug": "4445-how-far-is-far",
+      "title": "How Far is Far?",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "If you thought your friend's house on the other side of town was far away, you have clearly not read this book. Climb the Magic Math Ladder to get from where you are to the top of Mount Everest, to Kashmir, to the moon, the Sun, and ultimately, to the edge of the Universe, which is very, very, VERY far away indeed. Ready, steady, go!",
+      "authors": [
+        "Sukanya  Sinha"
+      ],
+      "illustrators": [
+        "Vishnu  M Nair"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/711290/size3/90252bc769af8a1277ff89c784b24f7f.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/711290/size6/90252bc769af8a1277ff89c784b24f7f.jpg"
+      }
+    },
+    {
+      "slug": "61680-the-magic-letter",
+      "title": "The Magic Letter",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Ijas receives a letter from his best friend Vikram. He can't wait to read it! But when he opens the letter, he is in for a surprise.",
+      "authors": [
+        "Aaquib Jaleel"
+      ],
+      "illustrators": [
+        "Shreya  Sen"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/715435/size3/f5d72137c40e34f62e312d1469ef4961.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/715435/size6/f5d72137c40e34f62e312d1469ef4961.jpg"
+      }
+    },
+    {
+      "slug": "111755-rainbow-girls",
+      "title": "Rainbow Girls",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Are all girls alike? Do they like the same things, should they all dress similarly? Let's think about it.",
+      "authors": [
+        "Kamla Bhasin "
+      ],
+      "illustrators": [
+        "Priya Kuriyan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/775918/size3/387b24c89c6928c37934e632b4a92636.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/775918/size6/387b24c89c6928c37934e632b4a92636.jpg"
+      }
+    },
+    {
+      "slug": "32723-the-bone-puzzle",
+      "title": "The Bone Puzzle",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Zoya and Armaan have made a mess at Ma’s clinic. They will be in BIG trouble if she finds out. Can they put aside their differences and work as a team? ",
+      "authors": [
+        "Lavina  Mahbubani"
+      ],
+      "illustrators": [
+        "Rajasee Ray"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/724120/size3/c43ae4c1438930b9a3020cbb109e471a.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/724120/size6/c43ae4c1438930b9a3020cbb109e471a.jpg"
+      }
+    },
+    {
+      "slug": "103458-book-of-bhoots",
+      "title": "Book of Bhoots",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Who whispers your name in the wind on this moonless night? Maybe nothing. Maybe something. Turn the pages of this book, and maybe you’ll hear it. And if you do, there’s no going back.",
+      "authors": [
+        "Shabnam  Minwalla"
+      ],
+      "illustrators": [
+        "Ruchi  Bakshi"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/723696/size3/e0ce37ed7c3c01ca31cf9fd159adcc8b.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/723696/size6/e0ce37ed7c3c01ca31cf9fd159adcc8b.jpg"
+      }
+    },
+    {
+      "slug": "119223-the-time-travelling-river",
+      "title": "The Time-Travelling River",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Imagine all the stories rivers could tell us about the past, present and future!\r\nRivers were there when humans wanted to grow food. They were there when humans started to build cities. They are still here, providing water, food and livelihoods. But they are also being treated like rubbish bins. Rivers know how to take care of us, but if we want a future with them, maybe it is time for humans to take care of our precious water bodies.",
+      "authors": [
+        "Parinita Shetty"
+      ],
+      "illustrators": [
+        "Sunaina  Coelho"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/196531/size3/011dc21c4087678d4acf7f20de6a0ff6.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/196531/size6/011dc21c4087678d4acf7f20de6a0ff6.jpg"
+      }
+    },
+    {
+      "slug": "130189-the-power-of-one",
+      "title": "The Power of One",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "The children of Class 6 want to visit the amusement park, but will they be able to save enough money for the tickets?",
+      "authors": [
+        "Payoshni Saraf"
+      ],
+      "illustrators": [
+        "Ujwal Nair"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495474/size3/618585369afe23028c52ba9786f8c37e.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495474/size6/618585369afe23028c52ba9786f8c37e.jpg"
+      }
+    },
+    {
+      "slug": "327645-vira-and-tilli",
+      "title": "Vira and Tilli",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Vira has been looking after Tilli, and now it’s harvest time. Has Tilli grown into a healthy onion? When the time comes, will he be able to\r\nlet go of Tilli? A heartwarming story about a boy and his onion plant, and how our food is grown.",
+      "authors": [
+        "Meenu Thomas"
+      ],
+      "illustrators": [
+        "David Yambem"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/420659/size3/59e2352cd8c1fd7b00518690574670b2.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/420659/size6/59e2352cd8c1fd7b00518690574670b2.jpg"
+      }
+    },
+    {
+      "slug": "24754-dipa-karmakar-in-perfect-balance",
+      "title": "Dipa Karmakar - In Perfect Balance",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Dipa Karmakar was the first Indian female\r\ngymnast to compete in the Olympic Games.\r\nIn 2016, she finished fourth at the event held in Rio. She grew up in Tripura and began learning gymnastics at the age of five. Read about her journey from Agartala to Rio.",
+      "authors": [
+        "Sreelata Menon"
+      ],
+      "illustrators": [
+        "Sonal Gupta Vaswani"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/179748/size3/c76e52ff448184126696ea3475f7f43b.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/179748/size6/c76e52ff448184126696ea3475f7f43b.jpg"
+      }
+    },
+    {
+      "slug": "28890-mukhil-s-bloody-adventure",
+      "title": "Mukhil's Bloody Adventure",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "When Mukhil gets a fever, her mother takes her to a clinic. Give Mukhil company as she goes through her very first blood test. ",
+      "authors": [
+        "Kannal  Achuthan"
+      ],
+      "illustrators": [
+        "Tanvee Nabar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/724151/size3/d0c6a34c2ae1e41832c171b1ca3e427f.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/724151/size6/d0c6a34c2ae1e41832c171b1ca3e427f.jpg"
+      }
+    },
+    {
+      "slug": "59533-why-don-t-birds-comb-their-hair",
+      "title": "Why Don't Birds Comb Their Hair?",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Some birds have hair that sticks out in funny ways. What would you do if you had hair like that? Read this book to meet some fascinating birds. ",
+      "authors": [
+        "Suchi Govindarajan"
+      ],
+      "illustrators": [
+        "Anjora Noronha"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/715403/size3/facfcb3ed0569c840e40a087e98ba009.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/715403/size6/facfcb3ed0569c840e40a087e98ba009.jpg"
+      }
+    },
+    {
+      "slug": "144609-sizing-things-up",
+      "title": "Sizing Things Up",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "The world is made up of many things — big, small and middling. A small book with a big message.",
+      "authors": [
+        "Aparna  Kapur"
+      ],
+      "illustrators": [
+        "Debjyoti  Saha"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/300525/size3/1ae8271ff5b7dc30824b20d2844d6b57.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/300525/size6/1ae8271ff5b7dc30824b20d2844d6b57.jpg"
+      }
+    },
+    {
+      "slug": "3905-why-can-t-we-glow-like-fireflies",
+      "title": "Why Can't We Glow Like Fireflies?",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Did you know that fireflies are also called lightning bugs? And did you know that baby fireflies use their glow to chase away predators? Jump right into this book if you want to find out more about these creatures that light up the dark.",
+      "authors": [
+        "Nabanita Deshmukh"
+      ],
+      "illustrators": [
+        "Samidha Gunjal"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/712545/size3/7b77bada31449b4371f8220006d7b99f.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/712545/size6/7b77bada31449b4371f8220006d7b99f.jpg"
+      }
+    },
+    {
+      "slug": "92361-chuchu-manthu-s-jar-of-toffees",
+      "title": "Chuchu Manthu's Jar of Toffees",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Chuchu Manthu is the most loving person Preet knows. After his death, Preet wonders if his kindness has disappeared with him. Based on a true story about loss and grief, and compassion in everyday actions.",
+      "authors": [
+        "Adithi Rao"
+      ],
+      "illustrators": [
+        "Krishna Bala Shenoi"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/626163/size3/005493b833ecfdd4e4d5d8fcb4b69545.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/626163/size6/005493b833ecfdd4e4d5d8fcb4b69545.jpg"
+      }
+    },
+    {
+      "slug": "271304-mini-s-first-vote",
+      "title": "Mini's First Vote",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Mini is in Standard 6, old enough to vote in the school elections. Soon, she has to help choose the school captain. Whom should she vote for?",
+      "authors": [
+        "Shabnam  Minwalla"
+      ],
+      "illustrators": [
+        "Ekta Bharti"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/495450/size3/63481348a8ea5c976dae3fa5d1e70c72.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/495450/size6/63481348a8ea5c976dae3fa5d1e70c72.jpg"
+      }
+    },
+    {
+      "slug": "63826-razia-learns-to-swim",
+      "title": "Razia Learns to Swim",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Razia must learn to swim. But she’s terrified of water! Join Razia in the lagoon as she kicks, wiggles and floats. ",
+      "authors": [
+        "Divya Panicker"
+      ],
+      "illustrators": [
+        "Lavanya  Naidu"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/715532/size3/275a879874497771e67c6eda8995eff9.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/715532/size6/275a879874497771e67c6eda8995eff9.jpg"
+      }
+    },
+    {
+      "slug": "363202-every-minute-counts",
+      "title": "Every Minute Counts",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Adil has a full hour to get ready and walk to school. But he is late every day! Where is he losing time? His friend Paro decides to help him account for every minute of the hour.",
+      "authors": [
+        "Shabnam  Minwalla"
+      ],
+      "illustrators": [
+        "Shaheen Sheriff"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/715159/size3/650ba79042fee11ebd6f09a6ba108f43.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/715159/size6/650ba79042fee11ebd6f09a6ba108f43.jpg"
+      }
+    },
+    {
+      "slug": "360-the-auto-that-flew",
+      "title": "The Auto That Flew",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Caught in the mad traffic of Delhi, an auto feels a touch of magic. Take a ride with the driver and the passenger, and feel the feather touch of a little stardust.",
+      "authors": [
+        "Ken Spillman"
+      ],
+      "illustrators": [
+        "Ajanta Guhathakurta"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721008/size3/ff25bb40f46b3cc1d01ce26448db417a.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/721008/size6/ff25bb40f46b3cc1d01ce26448db417a.jpg"
+      }
+    },
+    {
+      "slug": "355422-every-rupee-counts",
+      "title": "Every Rupee Counts",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Banko has saved some money. He wants to donate the money to people who rescue animals. Daee helps him convert paise to rupees and teaches him how to count the value of money.",
+      "authors": [
+        "Mala Kumar"
+      ],
+      "illustrators": [
+        "Tanvi Bhat"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/524648/size3/9ebcee8fba0efbc406431490a6764fc5.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/524648/size6/9ebcee8fba0efbc406431490a6764fc5.jpg"
+      }
+    },
+    {
+      "slug": "31922-why-are-bubbles-round",
+      "title": "Why are Bubbles Round?",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Maya and Manu want to see if they can make bubbles of different shapes. Like them, you too can learn about bubbles and their shapes.",
+      "authors": [
+        "Sukanya  Sinha"
+      ],
+      "illustrators": [
+        "Swapnil Kapoor"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/717015/size3/7e694fb5fdd89111f6964e007a88db37.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/717015/size6/7e694fb5fdd89111f6964e007a88db37.jpg"
+      }
+    },
+    {
+      "slug": "5398-at-least-i-m-okay",
+      "title": "At Least I'm Okay!",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Una, a mountain goat, lives on top of a mountain in beautiful Sakuland. The animals love their home but one day, the climate begins to change and the animals are forced to leave Sakuland. A story about climate change and how it affects animals and the natural world. ",
+      "authors": [
+        "Alison Byrnes"
+      ],
+      "illustrators": [
+        "Alison Byrnes"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/710847/size3/3bab4e8048a326736b97144b90136520.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/710847/size6/3bab4e8048a326736b97144b90136520.jpg"
+      }
+    },
+    {
+      "slug": "122989-shruthi-floats-an-idea",
+      "title": "Shruthi Floats an Idea",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Shruthi has to grow a plant. But she doesn’t want to grow it in soil. Is there any other way?",
+      "authors": [
+        "Navin Dorairaju"
+      ],
+      "illustrators": [
+        "Vibha Surya"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/720803/size3/41ee34426ef6d529e6dd9f66802e4f77.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/720803/size6/41ee34426ef6d529e6dd9f66802e4f77.jpg"
+      }
+    },
+    {
+      "slug": "123206-why-do-sunflowers-love-the-sun",
+      "title": "Why Do Sunflowers Love the Sun?",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "All Viveka wants to do is paint the perfect picture of the sunflower field next to her house. But why won’t the flowers stay still?",
+      "authors": [
+        "Siddharth Mehta"
+      ],
+      "illustrators": [
+        "Debangshu Moulik"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/541210/size3/b5c6ad71003d7f28d6aeceef1a5e5a95.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/541210/size6/b5c6ad71003d7f28d6aeceef1a5e5a95.jpg"
+      }
+    },
+    {
+      "slug": "31874-who-s-on-divya-s-map",
+      "title": "Who's on  Divya's Map?",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Divya is excited that her cousin Ravi is going to come to Gajapur soon. But she is not sure how he will find her house. Would a map help?",
+      "authors": [
+        "Rohan Jahagirdar"
+      ],
+      "illustrators": [
+        "Smitha Shivaswamy"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/717011/size3/6c1c36d92ace6c0269eb253f538a74bd.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/717011/size6/6c1c36d92ace6c0269eb253f538a74bd.jpg"
+      }
+    },
+    {
+      "slug": "27877-a-friend-for-little-goat",
+      "title": "A Friend for Little Goat",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Little Goat does not really like going to school. The school is so big, and Little Goat is so little. But he discovers that friends make school a happier place.",
+      "authors": [
+        "Sudeshna  Shome Ghosh"
+      ],
+      "illustrators": [
+        "Aratrika Choudhury"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/56714/size3/09baa03c3f14ff525275869ba21e7fbc.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/56714/size6/09baa03c3f14ff525275869ba21e7fbc.jpg"
+      }
+    },
+    {
+      "slug": "351653-gola-gola",
+      "title": "Gola Gola",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Everyone wants a different-coloured gola from the mela! If only there were an easier way for Mariyu to remember all of their choices? A story that introduces the concept of Venn diagrams.",
+      "authors": [
+        "Aithihya Ashok Kumar"
+      ],
+      "illustrators": [
+        "Aithihya Ashok Kumar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/727386/size3/4ef251bd361e98a2383d82fc2c944bdd.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/727386/size6/4ef251bd361e98a2383d82fc2c944bdd.jpg"
+      }
+    },
+    {
+      "slug": "52584-how-to-solve-a-problem-like-himani",
+      "title": "How to Solve a Problem like Himani",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "In a tiny school in the Uttarakhand hills,\r\nHimani and her classmates learn how to\r\nsolve real-life problems. The story takes\r\nyou through her diary entries as she learns\r\nthe steps to solve problems, big and small.",
+      "authors": [
+        "Mala Kumar"
+      ],
+      "illustrators": [
+        "Ruchi Shah",
+        "Students of  Himalayan Public School"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/125850/size3/be9ca1b26ca00a4f57cb5188c7c34265.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/125850/size6/be9ca1b26ca00a4f57cb5188c7c34265.jpg"
+      }
+    },
+    {
+      "slug": "136819-suppamma-loves-to-craft",
+      "title": "Suppamma Loves to Craft",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Suppamma loves to build things out of recycled waste. But she doesn’t like paying attention in school, or doing homework. Can Suppamma become successful by following her passions?",
+      "authors": [
+        "Thirupurasundari Sevvel"
+      ],
+      "illustrators": [
+        "Vibha Surya"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/726194/size3/fa3869211439a8b65f32c4c39ce50074.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/726194/size6/fa3869211439a8b65f32c4c39ce50074.jpg"
+      }
+    },
+    {
+      "slug": "104751-piku-s-little-world",
+      "title": "Piku's Little World",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Piku loves long summer afternoons, and\r\ndislikes dark summer evenings. But his\r\nafternoons become darker when, all of\r\na sudden, there is no one to read Piku a\r\nstory. Will Piku’s books remain unread?",
+      "authors": [
+        "Somak Ghoshal"
+      ],
+      "illustrators": [
+        "Proiti Roy"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/157681/size3/ba42069ffa44213dbf0574fc90eefab9.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/157681/size6/ba42069ffa44213dbf0574fc90eefab9.jpg"
+      }
+    },
+    {
+      "slug": "352043-achchachi-s-bagbrella",
+      "title": "Achchachi's Bagbrella",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Sahyadri lost her umbrella at school, again. Amma is going to be very angry. Luckily for Sahyadri, Achchachi is going to help her make a new umbrella. A story that introduces the concept of pie charts.",
+      "authors": [
+        "Aithihya Ashok Kumar"
+      ],
+      "illustrators": [
+        "Aithihya Ashok Kumar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/727418/size3/37170842b20a8ced11ae674f17ce3855.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/727418/size6/37170842b20a8ced11ae674f17ce3855.jpg"
+      }
+    },
+    {
+      "slug": "326351-a-tea-garden-party",
+      "title": "A Tea Garden Party",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Abha is going to the cool hills of Darjeeling. On the way she stops at a tea factory. She has so many questions! Is tea a leaf? Where does it grow? What makes it taste so good? Go on a tour of a tea garden and factory and find the answers to these questions with Abha.",
+      "authors": [
+        "Swati Sengupta"
+      ],
+      "illustrators": [
+        "Rishav  Mohanty"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/422097/size3/b064c2ac77aba307892edb71ceb40ca9.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/422097/size6/b064c2ac77aba307892edb71ceb40ca9.jpg"
+      }
+    },
+    {
+      "slug": "151534-let-s-fly-a-plane",
+      "title": "Let's Fly a Plane!",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Have you ever dreamed of being a pilot? Open this book, step into the cockpit and let’s fly an aeroplane!",
+      "authors": [
+        "Anjna Singh"
+      ],
+      "illustrators": [
+        "Sharath Ravishankar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/216369/size3/243eb9630a42e8b6462dfb3774b9d6b0.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/216369/size6/243eb9630a42e8b6462dfb3774b9d6b0.jpg"
+      }
+    },
+    {
+      "slug": "4991-up-world-down-world",
+      "title": "Up World, Down World",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "In a canopy forest in India, the Up World and Down World have always been suspicious of each other. But it all changes when Gopa the dormouse drops her book by accident on Fatima’s head. A story about the biodiversity of the canopy forests and friendship. ",
+      "authors": [
+        "Padmaparna Ghosh"
+      ],
+      "illustrators": [
+        "Sunaina  Coelho"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/723877/size3/512e37faaf23415856672bb730140ee1.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/723877/size6/512e37faaf23415856672bb730140ee1.jpg"
+      }
+    },
+    {
+      "slug": "266079-sweet-memories-of-gutar-goo",
+      "title": "Sweet Memories of Gutar Goo",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Open this special album to meet Gutar Goo and his rocking family and friends. Join the pigeon as he steps out of his (egg)shell into a wonderful new world where he finds his flock and is embraced with love and joy. A tongue-in-cheek book that celebrates identity and of course, pigeons.",
+      "authors": [
+        "Priya Kuriyan"
+      ],
+      "illustrators": [
+        "Priya Kuriyan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/461847/size3/7ae6e1b1cd071d40d93b6cd1ecdb80ac.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/461847/size6/7ae6e1b1cd071d40d93b6cd1ecdb80ac.jpg"
+      }
+    },
+    {
+      "slug": "53256-every-drop-counts",
+      "title": "Every Drop Counts",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Samir is on a mission to save all the water he can. His mission takes him to several houses where he learns new and exciting ways to make every drop count! Can he, with the help of his Mina Chachi, make a difference? ",
+      "authors": [
+        "Sanjana  Kapur"
+      ],
+      "illustrators": [
+        "Shreya  Sen"
+      ],
+      "originalAuthors": [],
+      "publisher": "Janaagraha Centre for Citizenship & Democracy",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/345754/size3/267c7255adfe74286e7abe55dc2a4db1.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/345754/size6/267c7255adfe74286e7abe55dc2a4db1.jpg"
+      }
+    },
+    {
+      "slug": "122657-that-night",
+      "title": "That Night",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Chaitu wakes up to loud and angry voices. The night is dark but a fire rages in the distance. Chaitu is terrified for her family, friends and home. Why are these voices so angry? What do they want? A story set in a world fed by fear\r\nand intolerance.",
+      "authors": [
+        "Bijal Vachharajani"
+      ],
+      "illustrators": [
+        "Shrujana Shridhar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/710426/size3/dc91ffc6c1d42b6c393ee8c400316dfa.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/710426/size6/dc91ffc6c1d42b6c393ee8c400316dfa.jpg"
+      }
+    },
+    {
+      "slug": "32423-slip-and-slide",
+      "title": "Slip and Slide",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "The hills are covered with snow. Seven sisters are excited to go out and play. Join them on their adventure!",
+      "authors": [
+        "Naresh R"
+      ],
+      "illustrators": [
+        "Isaac Gergan",
+        "Sirawon Khathing"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117499/size3/6b388733732c1c14993ebf366096043b.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117499/size6/6b388733732c1c14993ebf366096043b.jpg"
+      }
+    },
+    {
+      "slug": "678-the-day-the-vegetables-came-to-school",
+      "title": "The Day the Vegetables Came to School",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Raju cannot believe his eyes. On his way to school, he sees vegetables of all shapes and sizes also headed there, carrying their schoolbags and water bottles! What’s more, no one else, including his teacher, seems surprised to see them. Whatever is going on?",
+      "authors": [
+        "Divaspathy Hegde"
+      ],
+      "illustrators": [
+        "Padmanabh"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722318/size3/17abcfb72df4343564c63356594732e8.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/722318/size6/17abcfb72df4343564c63356594732e8.jpg"
+      }
+    },
+    {
+      "slug": "28266-how-heavy-is-heavy",
+      "title": "How Heavy Is Heavy?",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "A stone is heavier than a feather and lighter than a rock. So is the stone heavy, or is it light? Can we know for sure how heavy (or light) a stone is? Find answers to these and other fascinating questions in this fun book about weight.",
+      "authors": [
+        "Sukanya  Sinha"
+      ],
+      "illustrators": [
+        "Hari Kumar Nair"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/714192/size3/f84b89b4e29caf6ef8a5b8b5e542bf4c.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/714192/size6/f84b89b4e29caf6ef8a5b8b5e542bf4c.jpg"
+      }
+    },
+    {
+      "slug": "111756-rainbow-boys",
+      "title": "Rainbow Boys",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Are all boys alike? Do they like the same things, should they dress similarly? Let's think about it.",
+      "authors": [
+        "Kamla Bhasin "
+      ],
+      "illustrators": [
+        "Priya Kuriyan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/775919/size3/4334aae4a82881a81c0df34f51417e67.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/775919/size6/4334aae4a82881a81c0df34f51417e67.jpg"
+      }
+    },
+    {
+      "slug": "26976-the-very-shocking-report-card",
+      "title": "The Very Shocking Report Card",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "What would happen if report cards were not all about studying and writing exams? What\r\nmarks would you get then?",
+      "authors": [
+        "Jane De Suza"
+      ],
+      "illustrators": [
+        "Sonal Gupta Vaswani"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/55823/size3/7a98e95badfcfc3d0de61368a90d57a2.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/55823/size6/7a98e95badfcfc3d0de61368a90d57a2.jpg"
+      }
+    },
+    {
+      "slug": "43001-think-before-you-act",
+      "title": "Think Before You Act",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "A man takes advice from his friend without thinking twice about it himself. Where do you think this will lead him?",
+      "authors": [
+        "Rose Larsen"
+      ],
+      "illustrators": [
+        "Raju Babu Shakya"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/99516/size3/5717eeb81f7e16ed04c71d00881764bb.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/99516/size6/5717eeb81f7e16ed04c71d00881764bb.jpg"
+      }
+    },
+    {
+      "slug": "24727-a-dancer-s-tale",
+      "title": "A Dancer's Tale",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Phyllis Spira was dancing by the age of four. That was just the beginning of her journey towards becoming one of South Africa’s Prima Ballerinas.",
+      "authors": [
+        "Samantha  Cutler"
+      ],
+      "illustrators": [
+        "Thea   Nicole de Klerk"
+      ],
+      "originalAuthors": [],
+      "publisher": "Book Dash",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/118445/size3/6d4487eef5949021134d249be38f211a.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/118445/size6/6d4487eef5949021134d249be38f211a.jpg"
+      }
+    },
+    {
+      "slug": "10395-apu-s-giant-earthquake",
+      "title": "Apu's Giant Earthquake",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Did Apu’s singing cause the earth to tremble and shake? Or was it an earthquake? Find out more in this humorous and fascinating story about earthquakes.",
+      "authors": [
+        "Sudeshna  Shome Ghosh"
+      ],
+      "illustrators": [
+        "Aindri C"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/713578/size3/2e61153788e79629615dbd8dd46a58fc.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/713578/size6/2e61153788e79629615dbd8dd46a58fc.jpg"
+      }
+    },
+    {
+      "slug": "3625-why-do-bees-buzz",
+      "title": "Why Do Bees Buzz?",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Why can't bees work quietly? They buzz because there are some very good reasons to do so. Learn about the humble bees in this book.",
+      "authors": [
+        "Nabanita Deshmukh"
+      ],
+      "illustrators": [
+        "Zainab Tambawalla"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/712557/size3/923f83c35af803721c0069afdc49bd7f.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/712557/size6/923f83c35af803721c0069afdc49bd7f.jpg"
+      }
+    },
+    {
+      "slug": "127-the-missing-bat",
+      "title": "The Missing Bat",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "There was a cricket bat missing from Rehman Chacha's warehouse, and he suspected that young Ahmed had stolen it. A funny tale from Kashmir, the land of the willow trees.",
+      "authors": [
+        "Vaishali Shroff"
+      ],
+      "illustrators": [
+        "Tapas Guha"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/709415/size3/e95e51b7c1b18b6cf495e95f90fd659e.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/709415/size6/e95e51b7c1b18b6cf495e95f90fd659e.jpg"
+      }
+    },
+    {
+      "slug": "99106-my-brother-s-wheeeeelchair",
+      "title": "My Brother's Wheeeeelchair",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Meet Durva and Dhrubo. And Dhrubo's wheeeeelchair. Join the brother and sister as they explore parks, markets, and many other places and have lots of fun together, just like siblings do.",
+      "authors": [
+        "Salil  Chaturvedi"
+      ],
+      "illustrators": [
+        "Tanvi Bhat"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495678/size3/30c9c6f01105d7fa1d9b37bd919d931f.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495678/size6/30c9c6f01105d7fa1d9b37bd919d931f.jpg"
+      }
+    },
+    {
+      "slug": "4628-reeti-and-mithu",
+      "title": "Reeti and Mithu",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Reeti's holidays have begun, but she isn't happy. She doesn't like holidays because she misses being with her friends. One day she gets a pet - Mithu, the talking parrot. Does Mithu become her new best friend? Read this heartwarming story of friendship to find out!",
+      "authors": [
+        "Anupa Lal"
+      ],
+      "illustrators": [
+        "Soumya Menon"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/712362/size3/6e9dd62bad3d039fcb159c653b045aae.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/712362/size6/6e9dd62bad3d039fcb159c653b045aae.jpg"
+      }
+    },
+    {
+      "slug": "259479-so-many-leaves",
+      "title": "So Many Leaves",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "Some leaves are tiny, others are not. Some taste sweet, others bitter. There are so many different kinds of leaves around us. Leaf through the leaves of this book about leaves.",
+      "authors": [
+        "Harini Nagendra",
+        "Seema Mundoli"
+      ],
+      "illustrators": [
+        "Barkha Lohia"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/725226/size3/853dcaabef8ae2b388b4ccc36003a038.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/725226/size6/853dcaabef8ae2b388b4ccc36003a038.jpg"
+      }
+    },
+    {
+      "slug": "11314-a-big-day-for-the-little-wheels",
+      "title": "A Big Day for the Little Wheels",
+      "language": "English",
+      "langCode": "en",
+      "level": "3",
+      "description": "The little wheels in Shazia’s new cycle think they are very special. What they don’t know is that wheels are everywhere, even when we can’t see them.\r\n",
+      "authors": [
+        "Shals  Mahajan"
+      ],
+      "illustrators": [
+        "Rae  Zachariah"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/713565/size3/3722fa6d4b3c0bb3ae91f53e0a1f31e6.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/713565/size6/3722fa6d4b3c0bb3ae91f53e0a1f31e6.jpg"
+      }
+    },
+    {
+      "slug": "263627-tree-s-company-a-play",
+      "title": "Tree's Company: a play",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Three stories about three special trees. A\r\nwonderful play about the importance of\r\nplants in our lives, with a strong message\r\nof conservation.",
+      "authors": [
+        "Jerry Pinto"
+      ],
+      "illustrators": [
+        "Kalyani  Ganapathy"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/727364/size3/19e38052fea94ea1e003d45585603b62.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/727364/size6/19e38052fea94ea1e003d45585603b62.jpg"
+      }
+    },
+    {
+      "slug": "265508-you-won-t-believe-me",
+      "title": "You Won't Believe Me",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Here is a boy who likes his school a lot, but is sure that his school does not like him back. His classmates bully him. His teachers shout at him. But there is a pond full of fish — where he discovers that he’s not alone. ",
+      "authors": [
+        "Jairaj Singh"
+      ],
+      "illustrators": [
+        "Bhargavi Rudraraju"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/779402/size3/042eb258adf24d4467bf65854d88621c.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/779402/size6/042eb258adf24d4467bf65854d88621c.jpg"
+      }
+    },
+    {
+      "slug": "26638-ahilyabai-holkar",
+      "title": "Ahilyabai Holkar",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "This is the story of Ahilyabai Holkar, a queen who ruled Malwa for 28 years. Read about\r\nthis ruler who made history with her deeds.",
+      "authors": [
+        "Sandhya Taksale"
+      ],
+      "illustrators": [
+        "Priyankar Gupta"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/162406/size3/a847404ffd4ea78d9060f1dbd640ab66.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/162406/size6/a847404ffd4ea78d9060f1dbd640ab66.jpg"
+      }
+    },
+    {
+      "slug": "252839-with-love-gaia",
+      "title": "With Love, Gaia",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "A beautiful leaf flutters from the palm of Gaia, Mother Earth, with a message for Kaya and Kabir. \r\nWhat’s the message?\r\nRead on to find out about Kaya and Kabir’s adventure.\r\n",
+      "authors": [
+        "Kirthi Jayakumar",
+        "Nanditha  Ravindar"
+      ],
+      "illustrators": [
+        "Raghu  Ramachandran"
+      ],
+      "originalAuthors": [],
+      "publisher": "Janaagraha Centre for Citizenship & Democracy",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/524467/size3/7456755a89edbeb7936a7b108ae79556.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/524467/size6/7456755a89edbeb7936a7b108ae79556.jpg"
+      }
+    },
+    {
+      "slug": "4782-bonda-and-devi",
+      "title": "Bonda and Devi",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Do best friends always have to be alike? Devi and Bonda are best friends, but Devi is a little girl, while Bonda is a… Well, he can lift heavy boxes, he can extend his arms and legs, he never forgets anything he’s told, he can be turned on and off. Can you guess what he is?",
+      "authors": [
+        "Roopa Pai"
+      ],
+      "illustrators": [
+        "Jit  Chowdhury"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/723790/size3/52bbadeb3606658617b9a6032bc22021.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/723790/size6/52bbadeb3606658617b9a6032bc22021.jpg"
+      }
+    },
+    {
+      "slug": "256820-monumental-maths",
+      "title": "Monumental Maths",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "What do the pyramids, ancient temples\r\nand Jantar Mantar all have in common?\r\nMaths! Innovative architects across the\r\nworld have used mathematics to build\r\nwonders that we still marvel at today.",
+      "authors": [
+        "Veena Prasad"
+      ],
+      "illustrators": [
+        "Mohith O"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/715991/size3/fed27aa128d74c4879f6305804722539.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/715991/size6/fed27aa128d74c4879f6305804722539.jpg"
+      }
+    },
+    {
+      "slug": "608413-full-of-light",
+      "title": "Full of Light",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "When it comes to her Amma, Shakthi can’t seem to do anything right. She feels like a disappointment—until she meets a girl who reminds her that all of us have the ability to shine bright.",
+      "authors": [
+        "Mathangi  Subramanian "
+      ],
+      "illustrators": [
+        "Proiti Roy"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/779399/size3/c4f12a6400d658288e16f94f15ad2f81.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/779399/size6/c4f12a6400d658288e16f94f15ad2f81.jpg"
+      }
+    },
+    {
+      "slug": "10824-kallu-s-world-3-mangu-mali-and-the-ambia-bhoot",
+      "title": "Kallu's world 3 - Mangu Mali and the Ambia Bhoot",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Welcome to Khajuria – a village where young Kallu and his gang run delightful adventurous riots almost everyday. Sometimes they question the village traditions, defy bullies or might just be going about their daily business but Kallu and his gang are up for anything. Join them as they grow wiser and wittier, happily roaming the village finding new things to do, and see what they come up with!\r\nEverybody in Khajuria knew about Munia's temper. Everybody also knew how stingy Mangu Mali was about giving away mangoes from the tree in his orchard. Now, Munia wanted mangoes...really badly and that too from Mangu Mali's orchard. Can you imagine a situation like this? Read on, to find out what happens...\r\n",
+      "authors": [
+        "Subhadra Sen Gupta"
+      ],
+      "illustrators": [
+        "Tapas Guha"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/31115/size3/6d83c8e348dae277f57773d74ef2f9e2.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/31115/size6/6d83c8e348dae277f57773d74ef2f9e2.jpg"
+      }
+    },
+    {
+      "slug": "146096-what-happens-when-you-flush",
+      "title": "What Happens When You Flush?",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Nozy the pet rat finds himself in the underground sewers. It’s a good thing Cheeky is around to take him on a splashy, smelly adventure!",
+      "authors": [
+        "Vani Vasudev"
+      ],
+      "illustrators": [
+        "Samidha Gunjal"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/203168/size3/3d957f5d94c59837655fef02fa903ba4.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/203168/size6/3d957f5d94c59837655fef02fa903ba4.jpg"
+      }
+    },
+    {
+      "slug": "265897-at-home",
+      "title": "At Home",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Ammini misses school, and her brother Unni misses his aunt. Both of them miss playing in the park. But everyone has to stay indoors. Maybe they can go out for a walk today? Ammini hopes so. A day in the life of two children in a time of lockdowns and social distancing.\r\n",
+      "authors": [
+        "Shweta Ganesh Kumar"
+      ],
+      "illustrators": [
+        "Annada Menon"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/362389/size3/92cfd489ab32329c3852cad118700016.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/362389/size6/92cfd489ab32329c3852cad118700016.jpg"
+      }
+    },
+    {
+      "slug": "160297-moonlight-in-the-sea",
+      "title": "Moonlight in the Sea",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Fatima grows up on an idyllic island in the Lakshadweep, watched over by Nihla, the moon. She falls in love with the underwater world of colourful corals, fascinating fish, mysterious manta rays, grizzled old turtles and dancing dolphins. One day, in a terrible storm, she gets lost at sea. Join Fatima on her incredible adventure on remote islands with wonderful marine creatures.  ",
+      "authors": [
+        "Kartik Shanker"
+      ],
+      "illustrators": [
+        "Prabha  Mallya"
+      ],
+      "originalAuthors": [],
+      "publisher": "Dakshin Foundation",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495444/size3/426c88236440f481778e9bd837e0aafa.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/495444/size6/426c88236440f481778e9bd837e0aafa.jpg"
+      }
+    },
+    {
+      "slug": "263984-everyday-superheroes",
+      "title": "Everyday Superheroes",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Superheroes don’t always wear capes, or carry weapons. They don’t always fly. Some superheroes wear masks and protective suits. Some carry stethoscopes and thermometers. And some look through microscopes and examine lab reports. A book on everyday heroes in the time of a pandemic.",
+      "authors": [
+        "Minakshi  Dewan"
+      ],
+      "illustrators": [
+        "Shirish  Ghatge"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/716009/size3/face7ba6c7f85b3a809b4af747dd3ccf.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/716009/size6/face7ba6c7f85b3a809b4af747dd3ccf.jpg"
+      }
+    },
+    {
+      "slug": "140-jungle-brew",
+      "title": "Jungle Brew",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Bulbuli had heard so much about the mysterious place in the jungle that everybody talked about but nobody had visited. Was she actually going to have the biggest adventure of her life with only Totaram for company?",
+      "authors": [
+        "Tanya Luther Agarwal"
+      ],
+      "illustrators": [
+        "Sanjay Sarkar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/720907/size3/a1d4cbb9fca226b83fe34cb0077dbe59.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/720907/size6/a1d4cbb9fca226b83fe34cb0077dbe59.jpg"
+      }
+    },
+    {
+      "slug": "709-raza-meets-the-king",
+      "title": "Raza Meets the King",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Raza's father Rahmat Khan is the royal tailor to none other than the great Mughal emperor Akbar. When they go to the palace to deliver the Emperor's new summer clothes, Raza realizes that the emperor is not completely satisfied with his father's designs. Raza wants desperately to help his father. But what can a little boy do?",
+      "authors": [
+        "Subhadra Sen Gupta"
+      ],
+      "illustrators": [
+        "Tapas Guha"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/703510/size3/13407a9c27504b76fe16a628a443bf2b.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/703510/size6/13407a9c27504b76fe16a628a443bf2b.jpg"
+      }
+    },
+    {
+      "slug": "75559-the-body-builders",
+      "title": "The Body Builders",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Vava is amazed that his little sister knew how to make her hair, her lungs and her ever-growing legs when she was in Amma’s belly. Join him as he explores how the millions of cells inside us grow and build our bodies.\r\n",
+      "authors": [
+        "Supriya Nair"
+      ],
+      "illustrators": [
+        "Shivam Thapliyal"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/146763/size3/cd20c6624ef8ec0ffae3fcba78318c40.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/146763/size6/cd20c6624ef8ec0ffae3fcba78318c40.jpg"
+      }
+    },
+    {
+      "slug": "34983-under-the-invisibility-cloak",
+      "title": "Under the Invisibility Cloak",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "What would you do if you had an invisibility cloak? For one, playing hide-and-seek would be great fun. But is anyone making invisibility cloaks? Or do they exist only in science fiction and fantasy stories? Arnav and Tanisha head to the library to find out. Let’s follow them quietly – they can’t see us, we are invisible in their world.",
+      "authors": [
+        "Varsha  Joshi"
+      ],
+      "illustrators": [
+        "Radhika Tipnis"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/117560/size3/aea0af0ba611e75850bc4dd4c24a7c54.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/117560/size6/aea0af0ba611e75850bc4dd4c24a7c54.jpg"
+      }
+    },
+    {
+      "slug": "31846-walking-in-the-wild",
+      "title": "Walking in the Wild",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Take a walk with Zakhuma, a brave forest guard who lives in Mizoram. As Zakhuma takes us through his forest, we learn about the different animals and what it means to protect the jungle. ",
+      "authors": [
+        "Sejal Mehta"
+      ],
+      "illustrators": [
+        "Barkha Lohia"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/524523/size3/105ec7cc57f87e459269355b2764f4bf.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/524523/size6/105ec7cc57f87e459269355b2764f4bf.jpg"
+      }
+    },
+    {
+      "slug": "356934-who-got-the-goat",
+      "title": "Who Got the Goat?",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Chinnasura and Cheekasura spot a stray goat. Both want it. The only way out is to have a neer-more drinking contest. Learn fractions and decimals while the asuras drink up.\r\n",
+      "authors": [
+        "Aparna Athreya"
+      ],
+      "illustrators": [
+        "Shreya  Sen"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/477081/size3/dc85ca43c5000a1f7a9917528c6ca133.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/477081/size6/dc85ca43c5000a1f7a9917528c6ca133.jpg"
+      }
+    },
+    {
+      "slug": "188181-jackpot",
+      "title": "Jackpot",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Vikram has high and lofty dreams. He wants to travel the world like a prince and build a library that's unparalleled in its glory. But Vikram can't be bothered with working hard to earn his desires. He looks for the easy way to attain his dreams, and hence proceeds to buy a lottery ticket. Does he win the lottery and finally travel the world? Or does his life begin to crumble due to his thirst and greed for easy money? ",
+      "authors": [
+        "Poonam S. Kudesia"
+      ],
+      "illustrators": [
+        "Maithili  Joshi"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/526075/size3/7b79b1b0249f33e7c975016f745073c4.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/526075/size6/7b79b1b0249f33e7c975016f745073c4.jpg"
+      }
+    },
+    {
+      "slug": "176853-the-salt-inspector",
+      "title": "The Salt Inspector",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Munshi Vanshidar lacks the ability to be dishonest or corrupt in spite of being surrounded by greedy people soaked in money. As the salt inspector, he is true to himself and to the integrity of his work. Soon, this leads him to clash with Pandit Alopideen, the most powerful man in their area. What follows is a tale that will always be relevant to our society, portraying the constant war between the lure of money and the need to be moral.",
+      "authors": [
+        "Vibha Lohani"
+      ],
+      "illustrators": [
+        "Swathi Sambasivam"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/526054/size3/2e25b6bda7e562108e56282766f1c927.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/526054/size6/2e25b6bda7e562108e56282766f1c927.jpg"
+      }
+    },
+    {
+      "slug": "62386-cracking-the-code-women-who-have-changed-the-way-we-look-at-computers",
+      "title": "Cracking the Code: Women Who Have Changed the Way We Look at Computers",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "What do 19th Century English mathematician Ada Lovelace, new-age fashion designer Anouk Wipprecht, and the current Digital Minister of Taiwan Audrey Tang have in common? They’ve all impacted the way we look at computers and coding. This book introduces some inspiring women from the world of technology, from across a century.",
+      "authors": [
+        "Alisha Sadikot"
+      ],
+      "illustrators": [
+        "Shreyas R Krishnan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/718336/size3/673001d175ce2760146ea7f626f8e1f0.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/718336/size6/673001d175ce2760146ea7f626f8e1f0.jpg"
+      }
+    },
+    {
+      "slug": "152931-pick-it-up",
+      "title": "Pick It Up",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "A story that takes a stance against bullying and emphasizes on doing the right thing. ",
+      "authors": [
+        "Fanie Viljoen"
+      ],
+      "illustrators": [
+        "Stephen Wallace"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/529552/size3/55127f1c0c444a320c3cf198c5a1a020.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/529552/size6/55127f1c0c444a320c3cf198c5a1a020.jpg"
+      }
+    },
+    {
+      "slug": "34303-sir-m-visvesvaraya-the-builder-of-dams-bridges-and-a-nation",
+      "title": "Sir M. Visvesvaraya: The Builder of Dams, Bridges and a Nation",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "As a child, Vishwa walked a long way to get to school. As a college student, he tutored two children to make ends meet. And as an engineer, he built dams, bridges and institutions, and the foundation for a modern India. Read this book to know how Sir M. Visvesvaraya observed the world around him, learnt from it, made bold decisions and never shied away from hard work.",
+      "authors": [
+        "Mala Kumar"
+      ],
+      "illustrators": [
+        "Krupa Thakur-Patil",
+        "Sachin Pandit",
+        "Sheshadri Mokshagundam",
+        "Visvesvaraya National Memorial Trust"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/725457/size3/13b195dae0c939e0eb0b24e8e93cb63c.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/725457/size6/13b195dae0c939e0eb0b24e8e93cb63c.jpg"
+      }
+    },
+    {
+      "slug": "252821-something-s-stuck-around-the-duck",
+      "title": "Something's Stuck Around the Duck",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "When Nandini and Kavitha go to the park, they find a lot of garbage lying around.\r\nA duck has tried to eat a piece of plastic but now it is stuck around her beak.\r\nCan the girls help save the duck and clean up the park for good?\r\n\r\nRead on to find out!",
+      "authors": [
+        "Katie Pyle"
+      ],
+      "illustrators": [
+        "Jemma Jose"
+      ],
+      "originalAuthors": [],
+      "publisher": "Janaagraha Centre for Citizenship & Democracy",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/351172/size3/c8030b6dc58074e0eb25fca6a9ce7af4.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/351172/size6/c8030b6dc58074e0eb25fca6a9ce7af4.jpg"
+      }
+    },
+    {
+      "slug": "268489-roy-s-noisy-secret",
+      "title": "Roy's Noisy Secret",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Nobody must find out that Roy is wearing his grandmother’s tinkling anklet. But keeping a secret is harder than Roy imagined and he feels weighed down by guilt. How did Roy get himself into this mess and how will he find a way out?",
+      "authors": [
+        "Yamini Vijayan"
+      ],
+      "illustrators": [
+        "Anjali Kamat"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/717407/size3/2ceccd52eb887c7a45da3ee2d7871842.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/717407/size6/2ceccd52eb887c7a45da3ee2d7871842.jpg"
+      }
+    },
+    {
+      "slug": "19724-miss-bandicota-bengalensis-digs-up-the-seashore",
+      "title": "Miss Bandicota Bengalensis Digs Up the Seashore",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Miss Bandicota Bengalensis was not just any little Indian mole rat. She had\r\nmagical eyes like no other mole rat and she wanted to see everything. Every\r\nnight, she packed her explorer's kit: her sunglasses, binoculars, magnifying\r\nglass and of course, her favourite – a strip of sticker bandages. 'An explorer is\r\nalways prepared,' she said. Every time she dug in a new direction and returned\r\nthrough a new burrow!\r\nThis time our unlikely explorer has surfaced near the sea. Enjoy a walk along\r\nthe beach with her as she befriends a host of strange creatures.",
+      "authors": [
+        "Aditi Ghosh"
+      ],
+      "illustrators": [
+        "Sunaina  Coelho"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117644/size3/345aa877047222aeb24a3b5c333a5da8.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117644/size6/345aa877047222aeb24a3b5c333a5da8.jpg"
+      }
+    },
+    {
+      "slug": "163725-polygon-family",
+      "title": "Polygon Family",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "The family of Polygons come together in an attempt to know each other! Do you want to know them?",
+      "authors": [
+        "African Storybook Initiative",
+        "Lindiwe Tshabalala"
+      ],
+      "illustrators": [
+        "Isaac  Okwir"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/228290/size3/e4e6314995480cca3523d0fff4f0b051.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/228290/size6/e4e6314995480cca3523d0fff4f0b051.jpg"
+      }
+    },
+    {
+      "slug": "16146-we-call-her-ba-a-biography-of-kasturba-gandhi",
+      "title": "We call her Ba - A Biography of Kasturba Gandhi",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Kasturba Gandhi was no ordinary woman. She had a strong identity, courage and tremendous willpower and she sacrificed a lot for her country. She was a friend and trusted companion of the Father of the Nation, Mahatma Gandhi. Gandhiji’s biographer, Louis Fischer wrote about her, 'Being herself and being at the same time a shadow of the Mahatma made her a remarkable woman.'\r\nRead about this amazing woman who walked shoulder to shoulder with one of the most prominent leaders of the world during the most turbulent times of this peninsula.\r\n",
+      "authors": [
+        "Subhadra Sen Gupta"
+      ],
+      "illustrators": [
+        "Neeta Gangopadhya"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/43053/size3/b8e88a3967820974f51cc878f316d3ed.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/43053/size6/b8e88a3967820974f51cc878f316d3ed.jpg"
+      }
+    },
+    {
+      "slug": "258781-around-you-states-of-matter",
+      "title": "Around You: States of Matter",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Imagine you are at the local market. What do you see around you? Do you think all these things have something in common? A book that introduces readers to matter, and the properties of solids, liquids and gases.",
+      "authors": [
+        "Sukanya  Sinha"
+      ],
+      "illustrators": [
+        "Shivam Choudhary"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/716106/size3/02e339023b3e541b1468c97c115b5098.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/716106/size6/02e339023b3e541b1468c97c115b5098.jpg"
+      }
+    },
+    {
+      "slug": "539333-goal",
+      "title": "Goal!",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Every Sunday, Heena watches a group of girls playing football from her window. She wants to join them. But convincing Ammi and Abbu is not going to be easy. Will she be able to join the team? Run, kick and score goals and experience freedom like never before?",
+      "authors": [
+        "Radhika Shenoy"
+      ],
+      "illustrators": [
+        "Alafiya Hasan",
+        "pyro draws"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/722712/size3/9dad0be4a882027e361a9250311b4692.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/722712/size6/9dad0be4a882027e361a9250311b4692.jpg"
+      }
+    },
+    {
+      "slug": "24195-miss-bandicota-bengalensis-discovers-the-old-caves",
+      "title": "Miss Bandicota Bengalensis Discovers the Old Caves",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Miss Bandicota Bengalensis was no ordinary Indian mole rat. She was quite the adventurer. Every evening, she set out with her explorer's kit – sunglasses, binoculars, magnifying glass and a strip of sticker bandages.\r\n'An explorer is always prepared,' she said. Through the night, she dug in a new direction, to a new sea, up a new hill...\r\nNow, join Miss Bandicota and her new friend in exploring one of the oldest hills and caves of India.",
+      "authors": [
+        "Aditi Ghosh"
+      ],
+      "illustrators": [
+        "Sunaina  Coelho"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117031/size3/51df7e3258940334c16aef2ad8a6f8e6.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/117031/size6/51df7e3258940334c16aef2ad8a6f8e6.jpg"
+      }
+    },
+    {
+      "slug": "24641-my-mother-s-child",
+      "title": "My Mother's Child",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "My Mother’s Child is the story of Neo, a young boy who becomes a big brother. After being an only child all his life, how will Neo react to his new baby sister? Will his parents treat him differently? Neo is afraid he will become the outcast of the family. Read on to find out what happens!",
+      "authors": [
+        "Sara M Mohale"
+      ],
+      "illustrators": [
+        "Vusi  Malindi"
+      ],
+      "originalAuthors": [],
+      "publisher": "Room to Read",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/133765/size3/5ae251b54846672d8b9dc73c854dc8df.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/133765/size6/5ae251b54846672d8b9dc73c854dc8df.jpg"
+      }
+    },
+    {
+      "slug": "158121-my-elder-brother",
+      "title": "My Elder Brother",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "The elder brother is found with books and formulas. The younger brother is found with butterflies and lost kites. The elder brother keeps studying everyday and barely does anything else. The younger brother plays in gardens and enjoys doing what he likes. The elder brother takes every chance to criticize his younger brother for not studying. The younger brother still keeps playing outdoors. What follows is a timeless tale of following one's own heart despite those that only ridicule and demotivate.",
+      "authors": [
+        "Madhu B. Joshi"
+      ],
+      "illustrators": [
+        "Swathi Sambasivam"
+      ],
+      "originalAuthors": [],
+      "publisher": "StoryWeaver",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/526077/size3/eeb09f48b43bd15afb126b9d2f8cef28.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/526077/size6/eeb09f48b43bd15afb126b9d2f8cef28.jpg"
+      }
+    },
+    {
+      "slug": "259305-the-secrets-of-rocks",
+      "title": "The Secrets of Rocks",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Rocks are everywhere — under the ground,\r\nabove the ground, and even at the bottom of\r\nour oceans. But where do rocks come from?\r\nWhat are they made of? If rocks could talk,\r\nthey would share many secrets.",
+      "authors": [
+        "Suchi Govindarajan"
+      ],
+      "illustrators": [
+        "Shivam Choudhary"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/716006/size3/2a7fc11e509d305c2c43159bbedf1d55.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/716006/size6/2a7fc11e509d305c2c43159bbedf1d55.jpg"
+      }
+    },
+    {
+      "slug": "9847-the-adventures-of-philautus-frog",
+      "title": "The Adventures of Philautus Frog",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Philautus, the little tree frog wants to see the wide blue sea, so far away from his home on Big Tree, in the middle of a forest. Take a magnificent trek with Philautus across the Western Ghats teeming with creatures that are funny, fat and fascinating. Seasoned with humour, this lush book reveals the splendours of the wild through a compelling tale.",
+      "authors": [
+        "Kartik Shanker"
+      ],
+      "illustrators": [
+        "Maya  Ramaswamy"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/29639/size3/cfbcf6f1aa30ca587bf2ba269bb87a31.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/29639/size6/cfbcf6f1aa30ca587bf2ba269bb87a31.jpg"
+      }
+    },
+    {
+      "slug": "41199-saru-and-her-little-secret",
+      "title": "Saru and her Little Secret",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Mai does not approve of indiscipline and Saru finds it hard to always walk the straight and narrow path. Saru often gets into trouble with Mai. What has she done this time? What will happen when Mai finds out? Read on to find out more.",
+      "authors": [
+        "Sunita Lad Bhamray"
+      ],
+      "illustrators": [
+        "Divya George"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/96028/size3/84cc07db945e7775faa10c9e809beeca.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/96028/size6/84cc07db945e7775faa10c9e809beeca.jpg"
+      }
+    },
+    {
+      "slug": "108374-i-know-my-rights",
+      "title": "I Know My Rights",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "The United Nations Convention on the Rights of the Child lists out the basic rights that children have. It doesn’t matter where you come from, what colour your skin is, whether you practice a religion or not, what language you speak, whether you are a boy or a girl or haven’t decided yet – you have the right to these rights! This poster books lists out some of the rights of the child.",
+      "authors": [
+        "Menaka Raman"
+      ],
+      "illustrators": [
+        "Sunando C"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/156212/size3/89ed34011a88c4888b1dba527607d9f5.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/156212/size6/89ed34011a88c4888b1dba527607d9f5.jpg"
+      }
+    },
+    {
+      "slug": "105518-the-art-gallery-on-princess-street",
+      "title": "The Art Gallery on Princess Street",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Kekoo and Khorshed Gandhy gave modern\r\nIndian art a window to make a mark around\r\nthe world. Bombay’s Gallery Chemould was a\r\nhome away from home for the art community.",
+      "authors": [
+        "Jerry Pinto"
+      ],
+      "illustrators": [
+        "Gieve Patel",
+        "Kripa B",
+        "Sudhir Patwardhan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/723771/size3/475cc54a1ace4505cff93c42ec3d05df.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/723771/size6/475cc54a1ace4505cff93c42ec3d05df.jpg"
+      }
+    },
+    {
+      "slug": "91645-the-world-of-money",
+      "title": "The World of Money",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "The Rupaiya Paisa Series brings out many useful facts about money that will help children to use money wisely as they grow up in an ever-changing world. What were early coins made of? How do people earn, save and use money? Can the family buy a fridge even if it does not have the money for it today? Find out all this and more in The World of Money, Book 1 in the Rupaiya Paisa Series.",
+      "authors": [
+        "Mala Kumar"
+      ],
+      "illustrators": [
+        "Deepa Balsavar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/521973/size3/c717236abc9f0de954dd4e1ee3789ee9.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/521973/size6/c717236abc9f0de954dd4e1ee3789ee9.jpg"
+      }
+    },
+    {
+      "slug": "94094-how-zebra-got-his-stripes",
+      "title": "How Zebra got his stripes",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Brave Zebra saves the day.",
+      "authors": [
+        "Jaco Jacobs"
+      ],
+      "illustrators": [
+        "Stephen Wallace"
+      ],
+      "originalAuthors": [],
+      "publisher": "African Storybook Initiative",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/139852/size3/cc857b88c9f9aeb63dcfdb0a58196033.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/139852/size6/cc857b88c9f9aeb63dcfdb0a58196033.jpg"
+      }
+    },
+    {
+      "slug": "299399-b-r-ambedkar-a-life-in-books",
+      "title": "B. R. Ambedkar: A life in books",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "This is the story of B. R. Ambedkar, also known as the Father of India’s Constitution. Babasaheb, as he was fondly called, was not only a visionary, an economist and a revolutionary, he was also a lifelong reader. This is the story of his love for learning and how it fuelled his journey. ",
+      "authors": [
+        "Yogesh Maitreya"
+      ],
+      "illustrators": [
+        "Nidhin Shobhana"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/791158/size3/0b50127397ed3aaf8d662df69102cce1.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/791158/size6/0b50127397ed3aaf8d662df69102cce1.jpg"
+      }
+    },
+    {
+      "slug": "453678-our-constitution-our-people",
+      "title": "Our Constitution, Our People",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "The Constitution of India is a dream, a vision, a set of promises. Step into the pages of Indian history to understand what this important document means for our present and our future, and what it means to be a citizen of this country.",
+      "authors": [
+        "Harsh Mander"
+      ],
+      "illustrators": [
+        "Priya Kuriyan"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/532359/size3/08ed742ec4dd49254e2e0e201e413974.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/532359/size6/08ed742ec4dd49254e2e0e201e413974.jpg"
+      }
+    },
+    {
+      "slug": "117565-building-a-building",
+      "title": "Building a Building",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Meenu and Elango are getting a new school! What goes into building one? Let's find out!",
+      "authors": [
+        "Kavitha Punniyamurthi"
+      ],
+      "illustrators": [
+        "Mohith O"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/715608/size3/eaa06bd0d5dfd166f7bacd59e419381d.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/715608/size6/eaa06bd0d5dfd166f7bacd59e419381d.jpg"
+      }
+    },
+    {
+      "slug": "177511-we-all-need-to-save-water",
+      "title": "We All Need to Save Water",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Baby bear Golu is taken to Rani Ki Vav, a famous stepwell in Gujarat, for a family trip. What does Golu learn from there?\r\n",
+      "authors": [
+        "Bhumija  Rishi"
+      ],
+      "illustrators": [
+        "Harshika G",
+        "Rhea Nandy"
+      ],
+      "originalAuthors": [],
+      "publisher": "Why Waste?",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/334962/size3/9a35f96625e71b5e8806e445a9e5558b.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/334962/size6/9a35f96625e71b5e8806e445a9e5558b.jpg"
+      }
+    },
+    {
+      "slug": "292656-earth-our-home",
+      "title": "Earth, Our Home",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "The story of Earth is the story of life. It is also a story of loss, one worsened by climate change. But while the climate crisis can be a story of devastation, the work being done to mitigate it, to adapt to it, brings hope. And reminds us, our future is in our hands. The verses in this book tell these stories, in the voices of the orangutan, the Hasdeo Arand forest, the Gangetic dolphin and the Pondicherry shark.",
+      "authors": [
+        "Anushka  Ravishankar",
+        "Karthika Nair",
+        "Salil  Chaturvedi",
+        "Sampurna Chattarji"
+      ],
+      "illustrators": [
+        "Aindri C"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/721331/size3/772b3d930ec8af783d7a1a163c6b23de.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/721331/size6/772b3d930ec8af783d7a1a163c6b23de.jpg"
+      }
+    },
+    {
+      "slug": "274958-the-secret-world-of-mehlli-gobhai-the-man-who-found-art-everywhere",
+      "title": "The Secret World of Mehlli Gobhai: The Man Who Found Art Everywhere",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "The murky waters of a winding stream, stark trees stripped of leaves, a crow messing up a canvas—Mehlli Gobhai saw art in all of this. Follow the journey of this inspiring painter and see how art is all around and can help you see the world anew.",
+      "authors": [
+        "Jerry Pinto"
+      ],
+      "illustrators": [
+        "Kripa B",
+        "Mehlli Gobhai"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/433438/size3/57ac0a1b3775ce938ca762eda9019d2a.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/433438/size6/57ac0a1b3775ce938ca762eda9019d2a.jpg"
+      }
+    },
+    {
+      "slug": "134496-girls-also-want-azadi",
+      "title": "Girls Also Want Azadi",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Now girls also want azadi. Freedom from violence and harassment, the freedom to choose and to exercise their rights. And azadi to be who they want to be.",
+      "authors": [
+        "Kamla  Bhasin"
+      ],
+      "illustrators": [
+        "Shrujana Shridhar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/761023/size3/e8dae37ba6f8b5d17b5f2faa757e1d96.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/761023/size6/e8dae37ba6f8b5d17b5f2faa757e1d96.jpg"
+      }
+    },
+    {
+      "slug": "142339-where-did-my-call-go",
+      "title": "Where Did My Call Go?",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "When we make phone calls, our voice is able to travel to places that are far away. Have you ever wondered how cell phones can make a voice travel over long distances?",
+      "authors": [
+        "Samidha Gunjal"
+      ],
+      "illustrators": [
+        "Samidha Gunjal"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/216365/size3/d4a5d158d2688512fdccc901a63c125c.jpg",
+        "large": "https://storage.googleapis.com/static.storyweaver.org.in/illustration_crops/216365/size6/d4a5d158d2688512fdccc901a63c125c.jpg"
+      }
+    },
+    {
+      "slug": "63546-a-shade-of-green",
+      "title": "A Shade of GREEN",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "The air in the city is grey and polluted. Nayantara and Aliza feel suffocated. They dream of leaves that work day and night to produce oxygen and clean energy. Can they invent a leaf that does all that?",
+      "authors": [
+        "Rya Jetha"
+      ],
+      "illustrators": [
+        "Sourav Sarkar"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/718464/size3/347a0a585fadb43ad09779f4df38781d.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/718464/size6/347a0a585fadb43ad09779f4df38781d.jpg"
+      }
+    },
+    {
+      "slug": "561819-grace-one-engineer-s-fight-to-make-science-education-accessible-for-all",
+      "title": "Grace: One engineer's fight to make science education accessible for all",
+      "language": "English",
+      "langCode": "en",
+      "level": "4",
+      "description": "Grace had many questions. Why did she have to sit outside her classroom? Why did she have to wear pants instead of a dress? Why could transgender persons not study engineering? She wondered why science and technology education was not accepting of differences in people. And she decided to find answers in the courtroom. This is the story of Grace Banu, who is working towards making science and technology education more accessible for all.",
+      "authors": [
+        "Sayantan Datta"
+      ],
+      "illustrators": [
+        "Priya Dali"
+      ],
+      "originalAuthors": [],
+      "publisher": "Pratham Books",
+      "isAudio": false,
+      "cover": {
+        "card": "https://static.storyweaver.org.in/illustration_crops/727661/size3/3c8694a938efd491878f737a36124812.jpg",
+        "large": "https://static.storyweaver.org.in/illustration_crops/727661/size6/3c8694a938efd491878f737a36124812.jpg"
       }
     }
   ]

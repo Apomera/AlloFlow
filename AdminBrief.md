@@ -1,146 +1,155 @@
 # AlloFlow: The $26,000 Question
 ### A One-Pager for District Decision-Makers
 
-*Updated April 2026*
+*Updated July 2026*
 
 ---
 
 ## The Problem
 
-Your teachers are juggling 5–7 different EdTech subscriptions:
+Teachers are juggling 5-7 different edtech subscriptions:
 
-- **Text leveling** (Newsela, Diffit)
-- **Gamified quizzes** (Kahoot, Quizizz)
-- **Interactive lessons** (Nearpod, Pear Deck)
-- **Accessibility tools** (Read&Write, Immersive Reader)
-- **Reading assessment** (Amira, Literably)
-- **AI content generation** (MagicSchool, School AI)
+- Text leveling: Newsela, Diffit
+- Gamified quizzes: Kahoot, Quizizz
+- Interactive lessons: Nearpod, Pear Deck
+- Accessibility tools: Read&Write, Immersive Reader
+- Reading assessment: Amira, Literably
+- AI content generation: MagicSchool, SchoolAI
 
-**Annual cost for a typical school site: $20,000–$30,000.**
+Annual cost for a typical school site: **$20,000-$30,000**.
 
-Each tool requires separate logins, separate training, separate data-sharing agreements, and separate renewal negotiations. Most collect student data your district is already struggling to govern.
+Each tool requires separate logins, separate training, separate data-sharing agreements, and separate renewal negotiations. Most also create another student-data surface for the district to govern.
 
 ---
 
 ## The Solution
 
-**AlloFlow** is a single, open-source platform that combines all six categories — plus specialty clinical tools that typically aren't even part of the subscription stack because districts can't afford them.
+**AlloFlow** is a single, open-source platform that combines those core categories with specialty accessibility, clinical, STEM, SEL, and local-first tools that districts often cannot afford separately.
 
 | Capability | Typical Tool | Typical Cost | AlloFlow |
-|---|---|---|---|
-| Text leveling | Diffit | $3,000/yr | ✅ Included |
-| Gamification | Kahoot | $3,000/yr | ✅ Included |
-| Interactive lessons | Nearpod | $5,000/yr | ✅ Included |
-| Accessibility suite | Read&Write | $4,500/yr | ✅ Included |
-| Oral fluency assessment | Amira | $3,000/yr | ✅ Included |
-| AI content generation | MagicSchool | $5,000/yr | ✅ Included |
-| AAC / symbol boards | Boardmaker | $500+/student | ✅ Symbol Studio included |
-| PDF accessibility remediation | Human services | $5–25/page | ✅ AI pipeline + Knowbility referral |
-| Psychoeducational report writing | Q-Global / Q-interactive | $500+/clinician | ✅ Report Writer included |
-| **TOTAL (top 6 rows)** | | **~$26,000/yr** | **$0** |
+|---|---|---:|---|
+| Text leveling | Diffit | $3,000/yr | Included |
+| Gamification | Kahoot | $3,000/yr | Included |
+| Interactive lessons | Nearpod | $5,000/yr | Included |
+| Accessibility suite | Read&Write | $4,500/yr | Included |
+| Oral fluency assessment | Amira | $3,000/yr | Included |
+| AI content generation | MagicSchool | $5,000/yr | Included |
+| AAC / symbol boards | Boardmaker | $500+/student | Symbol Studio included |
+| PDF accessibility remediation | Human services | $5-25/page | AI pipeline + expert referral path |
+| Psychoeducational report writing | Q-Global / Q-interactive | $500+/clinician | Report Writer included |
+| **TOTAL, top 6 rows** | | **~$26,000/yr** | **$0 software cost** |
 
-Clinical tools (bottom 3 rows) aren't included in the $26K figure because most districts can't afford them at all — they're additive value, not replaced subscriptions.
+Clinical tools are additive value, not part of the $26K replacement figure.
 
 ---
 
-## Why It's Free
+## Why It Is Free
 
-AlloFlow is licensed under **AGPL v3** (the same license as Linux).
+AlloFlow is licensed under **AGPL v3**.
 
 - No subscription fees
 - No per-seat licensing
-- No "freemium" upgrade pressure
+- No freemium upgrade pressure
 - Source code is public and auditable
 - No vendor lock-in
 
-Built by a school psychologist, for educators. The catch? There isn't one.
+The software is free. Cloud AI costs depend on the deployment path and provider choices. Gemini Canvas can run under Google Workspace quotas; self-hosted Firebase uses the district's own Google project; Desktop/local paths can use local models where available.
 
 ---
 
-## What's Included
+## What Is Included
 
-**100+ integrated tools on a single UDL-aligned platform**, spanning:
+**Hundreds of documented features on a single UDL-aligned platform**, including:
 
-**🎓 For teachers**
-- **Fullpack** — one click generates leveled text (K–graduate), glossary, quiz, visual organizer, lesson plan, and scaffolds from any source text
-- **Live Session** — push any resource to student devices in real time, with teacher-paced or student-paced modes and per-group differentiation
-- **18-language UI** with offline TTS (40+ languages via Kokoro + Piper)
+For teachers:
 
-**🎮 For students**
-- **Adventure Mode** — choose-your-own-adventure RPG with XP, inventory, and AI-illustrated scenes
-- **Boss Battle / Escape Room / Democracy / Jeopardy** — full-class cooperative learning games
-- **Immersive Reader** — RSVP speed reader, karaoke highlighting, bionic reading, adjustable reading ruler, oral fluency coach
+- **Fullpack**: leveled text, glossary, quiz, visual organizer, lesson plan, and scaffolds from source text
+- **Live Session**: push resources to student devices with teacher-paced or student-paced modes and per-group differentiation
+- **AlloStudio / Open Groove / Video Studio**: born-accessible documents, music, and video workflows
+- **Multilingual and voice options** through browser, cloud, Desktop, or optional local voice engines
 
-**🩺 For special educators, SLPs, and BCBAs**
-- **Symbol Studio (AAC)** — AI-generated PCS-style symbols, board builder, visual schedules, social stories (Carol Gray format), multilingual boards in 14 languages, per-cell parent voice recording, 8 student profiles
-- **BehaviorLens** — full FBA/BIP suite with 6 IOA methods, 5 sampling types, MSWO/Paired/Free-Operant preference assessments, intervention templates, restorative-language layer
-- **Word Sounds Studio** — 8 phonemic awareness activity types with grade-normed adaptive difficulty
-- **StoryForge** — 6-phase scaffolded writing with Imagen illustration, 8 TTS voices, custom rubrics, sprint timers
+For students:
 
-**🧠 For school psychologists**
-- **Report Writer** — 17 standardized assessment presets (WISC-V, WIAT-4, BASC-3, Vineland-3, BRIEF-2, Conners-4, WJ-IV, KABC-II, DAS-II, CELF-5, KTEA-3, SRS-2, GARS-3, BOT-2), fact-chunk PII scrubbing, self-healing accuracy audit, bilingual export
-- **Student Analytics (RTI)** — Tier 1/2/3 classification with aimline monitoring, ORF / Math Fluency / Literacy CBM probes, anomaly flagging, CSV export
-- **PDF Accessibility Pipeline** — 5-auditor triangulated AI audit with ICC/Cronbach's-α statistics, Vision API remediation, axe-core verification, self-healing auto-fix loop, export to accessible PDF/HTML/audio
+- **Adventure Mode**: choose-your-own-adventure learning with XP, inventory, and AI-illustrated scenes
+- **Boss Battle / Escape Room / Democracy / Jeopardy**: whole-class cooperative learning games
+- **Immersive Reader**: RSVP speed reader, karaoke highlighting, bionic reading, reading ruler, and oral-fluency supports
 
-**🔬 STEM Lab (77 simulations)** — math fundamentals through advanced calculus, life/earth/space science, physics/chemistry, CS/tech, creative, plus specialty labs (RoadReady driver's ed, Space Explorer roguelike, LLM Literacy Lab, AppLab generative-AI mini-app builder, and more).
+For special educators, SLPs, and BCBAs:
 
-**💚 SEL Hub (27 tools)** — aligned to CASEL's 5 competencies: self-awareness, self-management, social awareness, relationship skills, responsible decision-making. Includes Growth Mindset Workshop, Restorative Circle, Ethical Reasoning Lab, Culture Explorer.
+- **Symbol Studio (AAC)**: AI-generated PCS-style symbols, board builder, visual schedules, social stories, multilingual boards, and parent voice recording
+- **BehaviorLens**: FBA/BIP suite with IOA, sampling tools, preference assessments, intervention templates, and restorative-language support
+- **Word Sounds Studio**: phonemic-awareness activities with adaptive difficulty
+
+For school psychologists:
+
+- **Report Writer**: standardized assessment presets, fact-chunk PII scrubbing, accuracy audit, and bilingual export
+- **Student Analytics (RTI)**: tier classification, aimline monitoring, CBM probes, anomaly flagging, and CSV export
+- **PDF Accessibility Pipeline**: multi-auditor AI review, OCR/remediation workflow, axe-core verification, native tagged-PDF output, in-app structural checks, optional local veraPDF QA, redaction, and export options
+
+Curriculum depth:
+
+- **STEM Lab**: 111 tool files / 116 registered plugin IDs across math, life science, earth/space, physics/chemistry, CS, design, and applied simulations
+- **SEL Hub**: 70 tools aligned to CASEL and expanded AlloFlow categories such as self-direction, inner work, care of self, and stewardship
 
 ---
 
-## Privacy & Compliance
+## Privacy And Compliance
 
-| Concern | Answer |
+| Concern | Current answer |
 |---|---|
-| **Where does student data go?** | Rosters, settings, and student work stay on-device in the browser's local storage — AlloFlow operates no servers. One exception to plan for: AI features (including the PDF audit/remediation pipeline) send the content being processed to Google's Gemini API for analysis. Inside Gemini Canvas that processing runs under your district's existing Workspace agreement; the School Box air-gap path (below) keeps it fully on-prem. |
-| **Do students need accounts?** | No. Join via 4-character session codes. No PII ever required. |
-| **Is it FERPA-compatible?** | Designed for it: no PII collection, no AlloFlow-operated databases, no third-party data brokers. Note that documents a teacher runs through the AI pipeline are processed by Google Gemini (see above) — so route documents containing student records through your district's Google Workspace channel, or use the air-gap deployment. |
-| **Google Workspace for Education integration?** | Runs inside Gemini Canvas with your district's existing Workspace DPA covering it. No new data-processor relationship. |
-| **Can we self-host?** | Yes — three deployment paths (see below). |
-| **What AI model powers it?** | Google Gemini via your district's Workspace account. District controls the key; no shared API billing. |
+| Where does student data go? | Ordinary saves use browser storage or downloaded project files. Live-session and AI data flow depends on deployment mode and selected provider. |
+| Do students need accounts? | No. Students can join with session codes or local LAN join links; no PII is required by default. |
+| Is it FERPA-compatible? | AlloFlow is designed to support FERPA-aligned deployments, but final compliance depends on district policy, contracts, access controls, retention, consent, and actual use. |
+| Google Workspace for Education integration? | Gemini Canvas and Google/Firebase coverage depend on school-account use and the district's agreement with Google. |
+| Can we self-host or run locally? | Yes. AlloFlow now has a Desktop local-first path, self-hosted Firebase path, and optional School Box Server stack. |
+| What AI model powers it? | The selected provider: Gemini/Imagen, AlloFlow Desktop's built-in local engine, LM Studio, Ollama, LocalAI, or a custom endpoint. |
 
-**Your IT department can deploy AlloFlow on district infrastructure — no vendor servers, no new data agreements, no procurement gridlock.** Software is free (AGPL v3). The Canvas deployment path has no API costs (Google injects the key under Workspace quotas); self-hosted Firebase runs on the Gemini API free tier for typical classroom use, with pay-as-you-go pricing applying to heavy PDF batch remediation — full cost model in [DEPLOY_YOUR_OWN.md](./DEPLOY_YOUR_OWN.md).
+AlloFlow does not require a developer-operated student database. Districts that need tighter control can use school-owned Firebase, AlloFlow Desktop, Desktop LAN, or the optional School Box Server path.
 
 ---
 
-## Deployment options
+## Deployment Options
 
-1. **Gemini Canvas (simplest)** — zero install. Teachers launch AlloFlow in Google's Gemini Canvas on their Workspace account. No IT ticket required.
-2. **Self-hosted Firebase** — for districts that want their own deployment. Hosts as a static site on your district's Google Cloud. Docs provided.
-3. **School Box air-gap** *(in development with [Physher](https://physher.com))* — full local stack on district hardware. Ollama LLM + local database + local TTS + SearXNG. Zero external API calls, zero ongoing costs. For districts with the strictest data-sovereignty requirements.
+1. **Gemini Canvas**: simplest web path for teachers already using Google Workspace.
+2. **AlloFlow Desktop**: installed local-first path for teacher laptops. No Docker required for the bundled app, local keys, built-in local engine, or same-room Desktop LAN sessions.
+3. **Self-hosted Firebase**: district-owned web deployment using the district's Firebase/GCP project.
+4. **School Box Server**: optional Docker server/appliance stack for school-owned boxes, district experiments, persistence/TLS work, and heavier air-gapped infrastructure.
 
 ---
 
 ## Accessibility
 
-- **WCAG 2.1 AA** — 5,608+ aria-labels across 97 files at 98%+ code-level coverage. VPAT published (April 2026). Runtime verification with screen-reader users in progress via partnership conversations with **Knowbility**.
-- **Text-to-Speech** — two offline engines (Kokoro for English, Piper for 40+ languages); audio never hits cloud APIs.
-- **Reading supports** — dyslexia fonts (OpenDyslexic, Lexend), color overlays (Irlen), bionic reading, reading ruler, RSVP speed reader.
-- **Keyboard navigation** — full keyboard accessibility; no mouse-required interactions.
-- **Multilingual UI** — 18 languages with community-contributed translations.
+- Built toward **WCAG 2.1 AA** with keyboard-first interaction patterns, audits, and per-tool accessibility gates
+- VPAT and audit artifacts are published in the repo
+- PDF pipeline supports native tagged-PDF output, structural checks, and optional local veraPDF QA
+- Reading supports include dyslexia-friendly fonts, color overlays, bionic reading, reading ruler, RSVP speed reader, and voice options
+- Multilingual UI and content support continue to expand
+
+Compliance-sensitive deployments should verify the exact workflows and exports they use.
 
 ---
 
 ## The Ask
 
-**Pilot AlloFlow in 3–5 classrooms for one semester.**
+**Pilot AlloFlow in 3-5 classrooms for one semester.**
 
-- **Zero cost** to try
-- **Zero procurement paperwork** — it's open-source
-- **Zero IT burden** if you use the Canvas deployment path
+- Zero software cost to try
+- Open-source codebase
+- Low IT burden if using the Canvas path
+- Desktop/local options for privacy-sensitive pilots
 
-If it works, expand. If it doesn't, you've lost nothing. Pilots launching Fall 2026; early-pilot districts receive direct support from the creator and help shape the roadmap.
+If it works, expand. If it does not, the district has not bought into a subscription stack.
 
 ---
 
-## Who's behind it
+## Who Is Behind It
 
 **Aaron Pomeranz, PsyD**
-School Psychologist, Portland Public Schools (ME) & Developer
+School Psychologist, Portland Public Schools (ME) and developer
 
 - Clinical focus: students with executive-function, attention, and learning differences
-- 117 passing clinical-logic tests verifying scoring, PII scrubbing, RTI tier classification, assessment-preset integrity
-- Active partnership conversations: Knowbility (WCAG + AccessWorks usability testing), Holly Clark (AI-integration PD), Physher (School Box deployment)
+- Automated tests cover clinical logic, scoring, PII scrubbing, RTI classification, and assessment presets
+- Active partnership and pilot conversations include accessibility, AI-integration PD, and local-first deployment work
 
 ---
 
@@ -148,11 +157,11 @@ School Psychologist, Portland Public Schools (ME) & Developer
 
 **aaron.pomeranz@maine.edu**
 
-- **Website:** https://apomera.github.io/AlloFlow
-- **GitHub:** https://github.com/Apomera/AlloFlow
-- **License:** [AGPL v3](https://www.gnu.org/licenses/agpl-3.0.html) (open source)
-- **VPAT / WCAG audit:** see [VPAT-2.5-WCAG-AlloFlow.md](./VPAT-2.5-WCAG-AlloFlow.md) and [alloflow_wcag_aa_audit_report.md](./alloflow_wcag_aa_audit_report.md) in the repo
+- Website: https://apomera.github.io/AlloFlow
+- GitHub: https://github.com/Apomera/AlloFlow
+- License: AGPL v3
+- VPAT / WCAG audit: see `VPAT-2.5-WCAG-AlloFlow.md` and `alloflow_wcag_aa_audit_report.md`
 
 ---
 
-*"Differentiation shouldn't depend on budget."*
+*"Differentiation should not depend on budget."*

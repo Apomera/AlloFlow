@@ -269,8 +269,9 @@
       // Bottom-LEFT diagnostics cluster (2026-06-19): the reading-tools FAB stack (ruler/line-focus/
       // dictation) owns bottom-RIGHT, and the pipeline diagnostics-log button was also bottom-right —
       // a bottom-right error badge stacked on top of them on small screens. The badge now sits at the
-      // bottom-LEFT corner; the diagnostics-log button stacks just above it. Distinct regions can't overlap.
-      'position:fixed', 'bottom:16px', 'left:16px', 'z-index:2147483646',
+      // bottom-LEFT corner; the diagnostics-log button stacks just above it. Keep the small badge below
+      // modal/first-run layers; the report panel itself still opens at maximum priority.
+      'position:fixed', 'bottom:16px', 'left:16px', 'z-index:9000',
       'padding:8px 14px', 'border-radius:999px',
       'background:#dc2626', 'color:#fff', 'border:2px solid #fff',
       'font:700 13px/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
@@ -287,6 +288,10 @@
   function updateBadge() {
     var errCount = buffer.filter(function (e) { return e.level === 'error'; }).length;
     if (!document.body) return; // still booting
+    if (document.body && document.body.classList.contains('alloflow-launchpad-active')) {
+      if (badge) badge.style.display = 'none';
+      return;
+    }
     if (errCount === 0) {
       if (badge) badge.style.display = 'none';
       return;

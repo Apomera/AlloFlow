@@ -1,5 +1,7 @@
 # Optics Lab — deep-dive review (2026-06-20)
 
+> **Historical review snapshot, not current open-bug status (2026-07-09):** This June deep dive is preserved for its analysis of the tool at that time. Later STEM refinements and QA reports may have changed individual findings; verify against current source/mirrors/tests before treating an item as open.
+
 Tool: `stem_lab/stem_tool_optics.js` (`opticsLab`, ~20,250 lines — a flagship "20K" tool).
 Sub-tools: Reflection (mirrors), Refraction, Lenses, Interference, Diffraction, Polarization,
 Quiz. Physics engine is a set of module-scoped functions (`thinLens`, `snell`, etc.).

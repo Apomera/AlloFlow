@@ -4,8 +4,8 @@
 // hand edits there have no build-script safety net. This mounts the real
 // module (same harness as reading_library_render.test.js) and drives the
 // reworked step 2: merged "Find on the Web" card (Paste URL + AI Auto-Search
-// collapsed into one), and the new Story Books card whose picker serves the
-// REAL mirrored StoryWeaver index through a stubbed fetch and hands the book
+// collapsed into one), and the Reading Catalog card whose picker serves the
+// mirrored Reading Library index through a stubbed fetch and hands the selected
 // text to the wizard as fetchedContent.
 
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
@@ -101,21 +101,21 @@ async function mountAtSourceStep() {
 }
 
 describe('source-material step (step 2)', () => {
-  it('shows merged Find-on-the-Web card and the Story Books card, not the old pair', async () => {
+  it('shows merged Find-on-the-Web card and the Reading Catalog card, not the old pair', async () => {
     await mountAtSourceStep();
     const labels = Array.from(host.querySelectorAll('button')).map((b) => b.textContent || '');
     expect(labels.some((l) => l.includes('Find on the Web'))).toBe(true);
-    expect(labels.some((l) => l.includes('Story Books'))).toBe(true);
+    expect(labels.some((l) => l.includes('Reading Catalog'))).toBe(true);
     // the old separate cards are gone (their t-keys would echo raw)
     expect(labels.some((l) => l.includes('wizard.paste_url'))).toBe(false);
     expect(labels.some((l) => l.includes('wizard.ai_search'))).toBe(false);
   });
 });
 
-describe('story-books flow', () => {
+describe('reading-catalog flow', () => {
   it('preselects the reading level from the chosen grade, then loads a book as source content', async () => {
     await mountAtSourceStep(); // wizard grade defaults to '3rd Grade'
-    clickByText('Story Books');
+    clickByText('Reading Catalog');
     await flush();
     // two selects now: level (first) + language (second)
     const selects = host.querySelectorAll('select');
@@ -123,11 +123,12 @@ describe('story-books flow', () => {
     // 3rd Grade → Level 3 preselect, with the grade note shown
     expect(selects[0].value).toBe('3');
     expect(host.textContent).toContain('matched to your grade');
+    expect(Array.from(selects[0].querySelectorAll('option')).map((o) => o.value)).toContain('6');
     // language dropdown still carries every language
     expect(selects[1].querySelectorAll('option').length).toBe(index.languages.length + 1);
     // the whole (uncapped) level-3 set is rendered — count line reflects it
     const lvl3books = index.books.filter((b) => String(b.level) === '3');
-    expect(host.textContent).toContain(lvl3books.length + ' books');
+    expect(host.textContent).toContain(lvl3books.length + ' resources');
     const cards = host.querySelectorAll('.grid button');
     expect(cards.length).toBe(lvl3books.length); // no 30-cap
     // a book with a description renders it in the card
@@ -144,7 +145,7 @@ describe('story-books flow', () => {
 
   it('carries the picked book as a resource ref (storybookRef) through to completion', async () => {
     const calls = await mountAtSourceStep();
-    clickByText('Story Books');
+    clickByText('Reading Catalog');
     await flush();
     const lvl3 = index.books.filter((b) => String(b.level) === '3')[0];
     clickByText(lvl3.title);
@@ -162,11 +163,13 @@ describe('story-books flow', () => {
     // the ref carries what the host needs to build a readingBook history item
     expect(done.storybookRef.language).toBe(lvl3.language);
     expect(String(done.storybookRef.level)).toBe(String(lvl3.level));
+    expect(done.storybookRef.sourceId).toBe(lvl3.sourceId || 'storyweaver');
+    expect(done.storybookRef.sourceName).toBeTruthy();
   });
 
   it('clearing the level filter to All levels widens the grid', async () => {
     await mountAtSourceStep();
-    clickByText('Story Books');
+    clickByText('Reading Catalog');
     await flush();
     const levelSelect = host.querySelectorAll('select')[0];
     expect(levelSelect.value).toBe('3');

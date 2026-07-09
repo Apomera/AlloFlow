@@ -199,14 +199,16 @@ describe('Open Groove project core', () => {
     const patch = OG.ogSetSynthInstrument(project, synth.id, {
       oscillator: 'square',
       filter: { type: 'bandpass', cutoff: 24000, q: 3.4 },
-      envelope: { attack: 0.2, sustain: 0.35, release: 9 }
+      envelope: { attack: 0.2, sustain: 0.35, release: 9 },
+      unison: { voices: 99, detune: 200, spread: 2 }
     });
     expect(patch).toMatchObject({
       oscillator: 'square',
       filter: { type: 'bandpass', cutoff: 18000, q: 3.4 },
-      envelope: { attack: 0.2, sustain: 0.35, release: 5 }
+      envelope: { attack: 0.2, sustain: 0.35, release: 5 },
+      unison: { voices: 7, detune: 80, spread: 1 }
     });
-    expect(OG.ogBuildSynthPatchSummary(project, synth.id)).toMatchObject({ oscillator: 'square', filterType: 'bandpass', cutoff: 18000 });
+    expect(OG.ogBuildSynthPatchSummary(project, synth.id)).toMatchObject({ oscillator: 'square', filterType: 'bandpass', cutoff: 18000, unisonVoices: 7 });
     expect(OG.ogValidateProject(project)).toEqual([]);
   });
 
@@ -219,6 +221,8 @@ describe('Open Groove project core', () => {
     const presets = OG.ogListSynthPatchPresets();
     expect(presets.map(preset => preset.name)).toContain('Warm Bass');
     expect(presets.map(preset => preset.name)).toContain('Classic Piano');
+    expect(presets.map(preset => preset.name)).toContain('Wide Unison Lead');
+    expect(presets.map(preset => preset.name)).toContain('FM Bell');
     expect(presets.map(preset => preset.name)).toContain('Solo Violin');
     expect(presets.map(preset => preset.name)).toContain('Flute');
     expect(presets.map(preset => preset.name)).toContain('Trumpet');
@@ -235,6 +239,10 @@ describe('Open Groove project core', () => {
     expect(violinProfile.samplePlan.articulations).toContain('sustain');
     expect(OG.ogListInstrumentProfiles().map(profile => profile.presetId)).toContain('trumpet');
     expect(OG.ogGetSynthPatchPreset('classicPiano').instrument.partials.length).toBeGreaterThan(1);
+    expect(OG.ogGetSynthPatchPreset('wideUnisonLead').instrument).toMatchObject({
+      engine: 'unison-layered-subtractive',
+      unison: { voices: 5 }
+    });
     const presetPatch = OG.ogApplySynthPatchPreset(projectA, synthA.id, 'glassPluck');
     expect(presetPatch).toMatchObject({
       name: 'Glass Pluck',
@@ -757,6 +765,61 @@ describe('Open Groove project core', () => {
     expect(OG.ogValidateProject(project)).toEqual([]);
   });
 
+  it('installs original procedural factory kits without attribution risk', () => {
+    const project = OG.ogCreateProject();
+    const drums = project.tracks[0];
+    const kits = OG.ogListFactorySampleKits();
+    expect(kits.map(kit => kit.id)).toEqual(expect.arrayContaining([
+      'openGrooveProceduralKit',
+      'openGrooveElectronicKit',
+      'openGrooveClassroomPercussionKit'
+    ]));
+    expect(kits.every(kit => kit.license === 'Original' && kit.creator === 'Open Groove' && kit.pads.length === 16)).toBe(true);
+
+    const installed = OG.ogInstallFactorySampleKit(project, drums.id, 'openGrooveProceduralKit', { createdAt: 456 });
+    expect(installed).toMatchObject({
+      kitId: 'openGrooveProceduralKit',
+      license: 'Original',
+      assignedCount: 16,
+      createdCount: 16,
+      reusedCount: 0
+    });
+    expect(project.assets).toHaveLength(16);
+    expect(project.assets.every(asset => asset.license === 'Original' && asset.mimeType === 'audio/procedural')).toBe(true);
+    expect(project.assets.every(asset => asset.tags.includes('factory') && asset.tags.includes('procedural'))).toBe(true);
+    expect(project.assets[0].proceduralVoice).toMatchObject({ character: 'studio', kitId: 'openGrooveProceduralKit' });
+    expect(drums.pads.find(pad => pad.id === 'pad_1')).toMatchObject({ proceduralVoice: { character: 'studio', kitId: 'openGrooveProceduralKit', body: 1 } });
+    expect(drums.pads.find(pad => pad.id === 'pad_14')).toMatchObject({ engine: 'chord', name: 'Minor Chord Hit' });
+    expect(OG.ogBuildProjectStorageReport(project)).toMatchObject({
+      assetCount: 16,
+      sessionCount: 16,
+      factoryCount: 16,
+      proceduralCount: 16
+    });
+    expect(OG.ogBuildLicenseReport(project)).toMatchObject({ assetCount: 16, exportSafe: true });
+    expect(OG.ogBuildAttributionText(project)).toBe('No attribution-required assets.');
+
+    const reinstalled = OG.ogInstallFactorySampleKit(project, drums.id, 'openGrooveProceduralKit');
+    expect(reinstalled).toMatchObject({ assignedCount: 16, createdCount: 0, reusedCount: 16 });
+    expect(project.assets).toHaveLength(16);
+
+    const electronic = OG.ogInstallFactorySampleKit(project, drums.id, 'openGrooveElectronicKit');
+    expect(electronic).toMatchObject({ assignedCount: 16, createdCount: 16, reusedCount: 0 });
+    expect(project.assets).toHaveLength(32);
+    expect(drums.pads.find(pad => pad.id === 'pad_1')).toMatchObject({ engine: 'kick', name: 'Punch Kick', proceduralVoice: { character: 'electronic', kitId: 'openGrooveElectronicKit', brightness: 1.22 } });
+    expect(OG.ogBuildProjectStorageReport(project)).toMatchObject({ assetCount: 32, factoryCount: 32, proceduralCount: 32 });
+    expect(OG.ogBuildLicenseReport(project)).toMatchObject({ assetCount: 32, exportSafe: true });
+
+    const classroomProject = OG.ogCreateProject();
+    const classroom = OG.ogInstallFactorySampleKit(classroomProject, classroomProject.tracks[0].id, 'openGrooveClassroomPercussionKit');
+    expect(classroom).toMatchObject({ assignedCount: 16, createdCount: 16 });
+    expect(classroomProject.tracks[0].pads.find(pad => pad.id === 'pad_1')).toMatchObject({ name: 'Desk Boom', proceduralVoice: { character: 'classroom', kitId: 'openGrooveClassroomPercussionKit', noise: 1.18 } });
+    OG.ogSetDrumStep(classroomProject, classroomProject.patterns[0].id, classroomProject.tracks[0].id, 'pad_1', 0, 16, { on: true });
+    expect(OS.ogBuildPlaybackPlan(classroomProject, { patternId: classroomProject.patterns[0].id })[0]).toMatchObject({ padEngine: 'kick', drumVoice: { character: 'classroom', kitId: 'openGrooveClassroomPercussionKit', noise: 1.18 } });
+    expect(OG.ogBuildLicenseReport(classroomProject)).toMatchObject({ assetCount: 16, exportSafe: true });
+    expect(OG.ogValidateProject(project)).toEqual([]);
+    expect(OG.ogValidateProject(classroomProject)).toEqual([]);
+  });
   it('supports embedded user sample data and lightweight project serialization', () => {
     const project = OG.ogCreateProject();
     const embeddedAudio = 'data:audio/webm;base64,QUJDRA==';

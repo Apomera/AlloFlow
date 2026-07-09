@@ -1,5 +1,7 @@
 # STEM Lab Theme Responsiveness Audit
 
+> **Historical audit snapshot, not current STEM theme status (2026-07-09):** This May 2026 note explains the design choice behind contrast-theme overrides and STEM lab theming. Current STEM counts and visual/a11y status should be verified from `a11y-audit/`, `FEATURE_INVENTORY.md`, and the latest test runs.
+
 **Generated**: 2026-05-19 (Claude Opus 4.7)
 **Updated**: 2026-05-19 (Claude Opus 4.7) — Pieces A + B + C landed.
 **Trigger**: Fractions Lab and other tools render dark backgrounds that don't respond to AlloFlow theme switching. Aaron's example: in Fractions Lab the bottom section flips with theme, the top viz area stays dark navy regardless.

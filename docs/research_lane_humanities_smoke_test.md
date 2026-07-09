@@ -1,5 +1,7 @@
 # Tier 4 Humanities lane (Inquiry Studio) — manual smoke test
 
+> **Historical manual smoke checklist, verify before reuse (2026-07-09):** This checklist was written for a specific deploy/commit state. Confirm the current Research Hub lane status, route labels, and deploy commit before running it as a pass/fail script.
+
 **Run this in the deployed Gemini Canvas** once `deploy.sh` ships commit `e8f29790` (or successor) to the CDN. Companion to `docs/research_lane_humanities_design.md`.
 
 The most consequential tests are starred ★. If short on time, see the "highest priority" section at the bottom.

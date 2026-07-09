@@ -1,5 +1,7 @@
 # veraPDF in-browser — AlloFlow integration plan (ready to apply)
 
+> **Prototype integration plan, not current product documentation (2026-07-09):** This plan is additive guidance for a gated browser-veraPDF experiment. Do not cite it as shipped behavior until hosting, Canvas/runtime testing, size gating, and user opt-in UX are verified. Current guidance lives in `docs/verapdf_install.md`, `docs/wcag_sc_coverage.md`, and `PIPELINE_ARCHITECTURE.md`.
+
 Status: feasibility PROVEN; component (`verapdf_validator.html`) + driver (`verapdf_client.js`)
 BUILT + headless-tested. This is the exact, additive, **default-OFF** wiring into the live app.
 Apply once the two gates clear:
@@ -52,8 +54,8 @@ function getVera() {
         localStorage.setItem('alloflow.verapdf.optin', e.target.checked ? '1' : '0');
         if (e.target.checked) { const v = getVera(); if (v) v.warmUp().catch(() => {}); }
       }} />
-    <span>{t('pdf_audit.verapdf.optin') || 'Independently verify with veraPDF (ISO 14289-1)'}
-      <span className="text-slate-500"> — {t('pdf_audit.verapdf.note') || 'downloads ~25 MB once, runs privately in your browser; nothing is uploaded'}</span>
+    <span>{t('pdf_audit.verapdf.optin') || 'Check with veraPDF (ISO 14289-1)'}
+      <span className="text-slate-500"> — {t('pdf_audit.verapdf.note') || 'downloads ~25 MB once, runs locally in your browser; no document is uploaded to an AlloFlow server'}</span>
     </span>
   </label>
 )}
@@ -93,7 +95,7 @@ if (veraEnabled && _result && _result.bytes) {
     {veraPdfResult && !veraPdfResult.error && (
       <details>
         <summary data-help-ignore="true" className="cursor-pointer font-bold">
-          {veraPdfResult.compliant ? '✅' : '❌'} {t('pdf_audit.verapdf.title') || 'Independently validated by veraPDF (ISO 14289-1)'} — {veraPdfResult.compliant ? (t('pdf_audit.verapdf.pass') || 'PASSES PDF/UA-1') : `${veraPdfResult.failedRules.length} rule(s) failed`}
+          {veraPdfResult.compliant ? '✅' : '❌'} {t('pdf_audit.verapdf.title') || 'veraPDF check (ISO 14289-1)'} — {veraPdfResult.compliant ? (t('pdf_audit.verapdf.pass') || 'No PDF/UA-1 rule failures reported') : `${veraPdfResult.failedRules.length} rule(s) failed`}
         </summary>
         {!veraPdfResult.compliant && (
           <ul className="mt-1 pl-5 list-disc">

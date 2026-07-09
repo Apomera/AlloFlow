@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "noaa-ocean-currents-card",
+  "title": "NOAA Ocean Currents",
+  "description": "A NOAA source card about ocean circulation, currents, heat movement, and ecosystems.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "noaa",
+  "contentType": "source-card",
+  "subjects": [
+    "Ocean science",
+    "Climate",
+    "Currents",
+    "Earth systems"
+  ],
+  "authors": [
+    "NOAA Education"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "license": "U.S. Government Work / item-level rights vary",
+  "licenseUrl": "https://www.noaa.gov/education/resource-collections/ocean-coasts/ocean-currents",
+  "source": {
+    "id": "noaa",
+    "name": "NOAA Education",
+    "url": "https://www.noaa.gov/education/resource-collections/ocean-coasts/ocean-currents"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NOAA ocean currents resources explain how wind, density, temperature, salinity, Earth rotation, and coastline shape influence moving water."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for systems thinking about heat transfer, climate patterns, marine ecosystems, navigation, and pollution movement."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NOAA materials are generally U.S. government work, but resource collections may link to partners or offsite materials. Check item-level rights before mirroring linked resources."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

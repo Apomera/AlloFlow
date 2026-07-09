@@ -531,6 +531,73 @@ const callGeminiAudio = async (prompt, base64Audio, opts = {}) => {
 if (typeof window !== 'undefined') {
     window.callGeminiAudio = callGeminiAudio;
 }
+const ALLO_QR_STUDENT_AI_OFF_KEY = 'alloflow_qr_student_ai_disabled';
+function _isQrStudentAiDisabled() {
+    if (typeof window === 'undefined') return false;
+    try {
+        if (window.__alloStudentAiDisabled === true) return true;
+        if (window.sessionStorage && window.sessionStorage.getItem(ALLO_QR_STUDENT_AI_OFF_KEY) === '1') return true;
+        const params = new URLSearchParams(window.location.search || '');
+        const hasQrEntry = params.has('allo_join') || params.has('allo_live_join') || params.has('allo_assignment');
+        return hasQrEntry && String(params.get('allo_ai') || 'off').toLowerCase() !== 'on';
+    } catch (_) {
+        return false;
+    }
+}
+function _makeQrStudentAiBlockedFn(label) {
+    const blocked = async () => {
+        const err = new Error('AI generation is off for this teacher-prepared QR activity.');
+        err.code = 'allo-qr-ai-disabled';
+        err.aiDisabledFor = label || 'qr-student-mode';
+        throw err;
+    };
+    blocked._alloQrBlocked = true;
+    return blocked;
+}
+function _installQrStudentAiGuard() {
+    if (!_isQrStudentAiDisabled()) return false;
+    callGemini = _makeQrStudentAiBlockedFn('text');
+    callGeminiVision = _makeQrStudentAiBlockedFn('vision');
+    callGeminiImageEdit = _makeQrStudentAiBlockedFn('image-edit');
+    if (typeof window !== 'undefined') {
+        window.__alloStudentAiDisabled = true;
+        window.callGemini = callGemini;
+        window.callGeminiVision = callGeminiVision;
+        window.callGeminiImageEdit = callGeminiImageEdit;
+        window.callGeminiAudio = _makeQrStudentAiBlockedFn('audio');
+    }
+    return true;
+}
+if (typeof window !== 'undefined') window.__alloInstallQrStudentAiGuard = _installQrStudentAiGuard;
+function _loadAlloQrLibrary() {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return Promise.reject(new Error('QR library requires a browser'));
+    if (window.qrcode) return Promise.resolve(window.qrcode);
+    if (window.__alloQrLibraryPromise) return window.__alloQrLibraryPromise;
+    window.__alloQrLibraryPromise = new Promise((resolve, reject) => {
+        const sources = ['https://alloflow-cdn.pages.dev/qrcode.js', './qrcode.js'];
+        let index = 0;
+        const tryNext = () => {
+            if (window.qrcode) { resolve(window.qrcode); return; }
+            if (index >= sources.length) { window.__alloQrLibraryPromise = null; reject(new Error('QR library unavailable')); return; }
+            const script = document.createElement('script');
+            script.src = sources[index++];
+            script.async = true;
+            script.dataset.alloQrcode = 'true';
+            script.onload = () => window.qrcode ? resolve(window.qrcode) : tryNext();
+            script.onerror = tryNext;
+            document.head.appendChild(script);
+        };
+        tryNext();
+    });
+    return window.__alloQrLibraryPromise;
+}
+async function _makeAlloQrSvg(value, title = 'AlloFlow QR') {
+    await _loadAlloQrLibrary();
+    const qr = window.qrcode(0, 'M');
+    qr.addData(String(value || ''));
+    qr.make();
+    return qr.createSvgTag({ cellSize: 5, margin: 2, scalable: true, title });
+}
 function _readAlloAiUserConfig() {
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') return null;
     try {
@@ -572,6 +639,7 @@ function _installLocalTextBridge(aiInstance, aiConfig) {
             taskSupport: localProfile ? localProfile.taskSupport : null,
         };
     }
+    _installQrStudentAiGuard();
     return true;
 }
 function _installLocalTextBridgeFromStorage() {
@@ -619,11 +687,12 @@ function _upgradeGeminiAPI() {
         if (wantsLocalTextBridge) {
             _installLocalTextBridgeFromStorage();
         }
+        const qrStudentAiBlocked = _installQrStudentAiGuard();
         // One-shot, non-blocking boot health probe: detect a dead/renamed DEFAULT model up front
         // (e.g. gemini-3-flash-preview removed) so the user gets an honest banner instead of every
         // document failing mid-run. The probe surfaces a banner itself on auth/quota/config; runs
         // still recover via the now-genuinely-different fallback. Fire-and-forget — never blocks boot.
-        if (!wantsLocalTextBridge && !window.__alloModelProbeFired && api.probeModelHealth) {
+        if (!wantsLocalTextBridge && !qrStudentAiBlocked && !window.__alloModelProbeFired && api.probeModelHealth) {
             window.__alloModelProbeFired = true;
             Promise.resolve().then(() => api.probeModelHealth(GEMINI_MODELS.default))
                 .then((r) => { if (r && r.kind && r.kind !== 'ok' && r.kind !== 'skipped') warnLog('[GeminiAPI] boot model probe — default ' + GEMINI_MODELS.default + ': ' + r.kind); })
@@ -5015,7 +5084,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '3a325a80b';
+    var pluginCdnVersion = '1783604936018';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -5172,38 +5241,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=3a325a80b');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=3a325a80b');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=3a325a80b');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=3a325a80b');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=3a325a80b');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=3a325a80b');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=3a325a80b');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=3a325a80b');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=3a325a80b');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=3a325a80b');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=3a325a80b');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=3a325a80b');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=3a325a80b');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=3a325a80b');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=3a325a80b');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=3a325a80b');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=3a325a80b');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=3a325a80b');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=3a325a80b');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=3a325a80b');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=3a325a80b');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=3a325a80b');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=3a325a80b');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=3a325a80b');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=3a325a80b'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=3a325a80b'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -5212,80 +5281,80 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=3a325a80b');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=3a325a80b');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=3a325a80b');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=3a325a80b');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=3a325a80b');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=3a325a80b');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=3a325a80b');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=3a325a80b');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=3a325a80b');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=3a325a80b');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=3a325a80b');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=3a325a80b');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=3a325a80b');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=3a325a80b'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('ReadingLibrary', './reading_library_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=3a325a80b');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=3a325a80b');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=3a325a80b');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=3a325a80b');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=3a325a80b');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=3a325a80b');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=3a325a80b');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=3a325a80b');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=3a325a80b');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=3a325a80b'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=3a325a80b');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=3a325a80b');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=3a325a80b'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=3a325a80b'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=3a325a80b'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=3a325a80b');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=3a325a80b');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=3a325a80b');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=3a325a80b');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=3a325a80b');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=3a325a80b');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=3a325a80b');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=3a325a80b');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=3a325a80b');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=3a325a80b'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=3a325a80b'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=3a325a80b'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=3a325a80b'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=3a325a80b'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=3a325a80b');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=3a325a80b');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=3a325a80b');
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=3a325a80b');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=3a325a80b');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=3a325a80b');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=3a325a80b');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=3a325a80b');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=3a325a80b');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=3a325a80b');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=3a325a80b');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=3a325a80b');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('PdfAuditView', './view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', './view_export_preview_module.js');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -5322,64 +5391,64 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=3a325a80b');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=3a325a80b');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=3a325a80b');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=3a325a80b');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=3a325a80b');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=3a325a80b');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=3a325a80b');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=3a325a80b');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=3a325a80b');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=3a325a80b');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=3a325a80b');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=3a325a80b');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=3a325a80b');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=698f5b1f8');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=3a325a80b');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=3a325a80b');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=3a325a80b');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=3a325a80b');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=3a325a80b');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=3a325a80b');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=3a325a80b');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=3a325a80b');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=3a325a80b');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=3a325a80b');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=3a325a80b');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=3a325a80b');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=3a325a80b');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=3a325a80b');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=3a325a80b');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=3a325a80b');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=3a325a80b');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=3a325a80b');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=3a325a80b');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=3a325a80b');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=3a325a80b');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=3a325a80b');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=3a325a80b');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=3a325a80b');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=3a325a80b');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=3a325a80b');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=3a325a80b');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=3a325a80b');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=3a325a80b');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=3a325a80b');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=3a325a80b');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=3a325a80b');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=3a325a80b');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=3a325a80b');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=3a325a80b');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=3a325a80b');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=3a325a80b');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=3a325a80b');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=3a325a80b');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=3a325a80b');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -11245,6 +11314,85 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [sourceVocabulary, setSourceVocabulary] = useState('');
   const [sourceLength, setSourceLength] = useState('250');
   const [sourceCustomInstructions, setSourceCustomInstructions] = useState('');
+  const [qrShareModal, setQrShareModal] = useState(null);
+  const [qrShareSvg, setQrShareSvg] = useState('');
+  const [pendingQrAssignmentResource, setPendingQrAssignmentResource] = useState(null);
+  const buildAlloShareUrl = useCallback((params = {}) => {
+      if (typeof window === 'undefined') return '';
+      try {
+          const url = new URL(window.location.href);
+          url.search = '';
+          url.hash = '';
+          Object.entries(params).forEach(([key, value]) => {
+              if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
+          });
+          return url.toString();
+      } catch (_) {
+          return '';
+      }
+  }, []);
+  useEffect(() => {
+      let cancelled = false;
+      const url = qrShareModal?.url || '';
+      if (!url) {
+          setQrShareSvg('');
+          return undefined;
+      }
+      _makeAlloQrSvg(url, qrShareModal?.title || 'AlloFlow QR')
+          .then(svg => { if (!cancelled) setQrShareSvg(svg); })
+          .catch(() => { if (!cancelled) setQrShareSvg(''); });
+      return () => { cancelled = true; };
+  }, [qrShareModal?.url, qrShareModal?.title]);
+  const createHomeworkAssignmentLink = useCallback(async () => {
+      const fallbackCurrent = generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type) ? [generatedContent] : [];
+      const resourceCandidates = (Array.isArray(history) ? history : []).filter(item => item && item.id && !TEACHER_ONLY_TYPES.includes(item.type));
+      const resourcesToAssign = resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
+      if (!resourcesToAssign.length) {
+          addToast('Create or restore a teacher resource before making a homework QR.', 'info');
+          return null;
+      }
+      try {
+          const assignmentId = 'HW-' + generateUUID();
+          const title = String(sourceTopic || generatedContent?.title || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
+          const uploadedResources = await uploadSessionAssets(appId, resourcesToAssign, assignmentId);
+          const prepared = prepareSessionResourcesForWrite(uploadedResources || resourcesToAssign);
+          const assignmentRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', assignmentId);
+          const resources = prepared.resources || [];
+          await setDoc(assignmentRef, stripUndefined({
+              kind: 'assignment',
+              assignmentId,
+              title,
+              hostAppId: appId,
+              hostId: user?.uid || null,
+              createdAt: new Date().toISOString(),
+              status: 'assignment',
+              mode: 'assignment',
+              isActive: false,
+              currentResourceId: resources[0]?.id || resourcesToAssign[0]?.id || null,
+              resources,
+              aiPolicy: {
+                  studentAi: 'off',
+                  defaultStudentAi: 'off',
+                  teacherPrepared: true,
+              },
+              roster: {},
+              version: 1,
+          }));
+          const shareUrl = buildAlloShareUrl({ allo_assignment: assignmentId, allo_host: appId, allo_ai: 'off' });
+          if (!shareUrl) throw new Error('Could not build assignment URL');
+          copyToClipboard(shareUrl);
+          setQrShareModal({ type: 'assignment', title, url: shareUrl, resourceCount: resources.length || resourcesToAssign.length });
+          addToast('Homework QR ready. Students open teacher-prepared resources with AI generation off.', 'success');
+          if (prepared.droppedCount > 0 || prepared.overLimit) {
+              addToast('Some older resources were trimmed to keep the QR assignment reliable.', 'info');
+          }
+          return shareUrl;
+      } catch (e) {
+          warnLog('Homework QR creation failed:', e);
+          addToast('Could not create homework QR link.', 'error');
+          return null;
+      }
+  }, [appId, buildAlloShareUrl, copyToClipboard, generatedContent, history, sourceTopic, user?.uid]);
   const [includeSourceCitations, setIncludeSourceCitations] = useState(false);
   const [saveOriginalOnAdjust, setSaveOriginalOnAdjust] = useState(false);
   const [isGeneratingSource, setIsGeneratingSource] = useState(false);
@@ -15469,6 +15617,12 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     });
   };
   const callImagen = async (prompt, width = 300, qual = 0.7) => {
+    if (_isQrStudentAiDisabled()) {
+      const err = new Error('AI image generation is off for this teacher-prepared QR activity.');
+      err.code = 'allo-qr-ai-disabled';
+      err.aiDisabledFor = 'imagen';
+      throw err;
+    }
     // Explicit "SD-Turbo (this computer)" choice in AI Settings: local runs
     // FIRST even when a cloud key exists. Not ready yet → kick the download
     // in the background (adapter permitting) and fall through honestly to
@@ -18795,7 +18949,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const timeoutId = setTimeout(syncResourcesToSession, 1500);
       return () => clearTimeout(timeoutId);
   }, [history, activeSessionCode, isTeacherMode, appId]);
-  const joinClassSession = async (code) => {
+  const joinClassSession = async (code, hostOverride = '') => {
       const cleanCode = code.trim().toUpperCase();
       if (!cleanCode) {
           addToast(t('session.error_invalid_code'), "error");
@@ -18805,7 +18959,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           sessionUnsubscribeRef.current();
           sessionUnsubscribeRef.current = null;
       }
-      const targetAppId = joinAppIdInput.trim() || appId;
+      const targetAppId = String(hostOverride || joinAppIdInput || '').trim() || appId;
       setActiveSessionAppId(targetAppId);
       setActiveSessionCode(cleanCode);
       setIsJoinPopoverOpen(false);
@@ -18862,6 +19016,36 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               try { joinClassSession(lanCode); } catch (e) { warnLog('LAN auto-join failed', e); }
           }, 600);
       } catch (_) { /* URL parsing unavailable — never block boot */ }
+      return () => { cancelled = true; if (timer) clearTimeout(timer); };
+  }, []);
+  useEffect(() => {
+      let cancelled = false;
+      let timer = null;
+      try {
+          const params = new URLSearchParams(window.location.search);
+          const liveCode = (params.get('allo_join') || params.get('allo_live_join') || '').trim().toUpperCase();
+          if (!liveCode) return undefined;
+          const hostId = (params.get('allo_host') || params.get('allo_app') || params.get('hostAppId') || '').trim();
+          window.__alloQrStudentMode = { type: 'live', aiDisabled: true, code: liveCode, hostAppId: hostId || appId };
+          window.__alloStudentAiDisabled = true;
+          try { window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1'); } catch (_) {}
+          try { if (typeof window.__alloInstallQrStudentAiGuard === 'function') window.__alloInstallQrStudentAiGuard(); } catch (_) {}
+          setHasSelectedMode(true);
+          setHasSelectedRole(true);
+          setShowWizard(false);
+          setShowStudentWelcome(false);
+          setIsTeacherMode(false);
+          setIsParentMode(false);
+          setIsIndependentMode(false);
+          setIsStudentLinkMode(true);
+          setShowStudentEntry(true);
+          if (hostId) setJoinAppIdInput(hostId);
+          setJoinCodeInput(liveCode);
+          timer = setTimeout(() => {
+              if (cancelled) return;
+              try { joinClassSession(liveCode, hostId); } catch (e) { warnLog('QR live auto-join failed', e); }
+          }, 600);
+      } catch (e) { warnLog('QR live auto-join failed', e); }
       return () => { cancelled = true; if (timer) clearTimeout(timer); };
   }, []);
   const handleExportPDF = () => {
@@ -19959,6 +20143,65 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
       }
   };
+  useEffect(() => {
+      if (!pendingQrAssignmentResource || isTeacherMode) return;
+      handleRestoreView(pendingQrAssignmentResource);
+      setPendingQrAssignmentResource(null);
+  }, [pendingQrAssignmentResource, isTeacherMode]);
+  useEffect(() => {
+      let cancelled = false;
+      try {
+          const params = new URLSearchParams(window.location.search);
+          const assignmentId = (params.get('allo_assignment') || '').trim();
+          if (!assignmentId) return undefined;
+          const hostId = (params.get('allo_host') || params.get('allo_app') || params.get('hostAppId') || '').trim() || appId;
+          window.__alloQrStudentMode = { type: 'assignment', aiDisabled: true, assignmentId, hostAppId: hostId };
+          window.__alloStudentAiDisabled = true;
+          try { window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1'); } catch (_) {}
+          try { if (typeof window.__alloInstallQrStudentAiGuard === 'function') window.__alloInstallQrStudentAiGuard(); } catch (_) {}
+          setHasSelectedMode(true);
+          setHasSelectedRole(true);
+          setShowWizard(false);
+          setShowStudentWelcome(false);
+          setIsTeacherMode(false);
+          setIsParentMode(false);
+          setIsIndependentMode(false);
+          setIsStudentLinkMode(true);
+          setShowStudentEntry(true);
+          setActiveSessionCode(null);
+          setActiveSessionAppId(hostId);
+          const loadAssignment = async () => {
+              try {
+                  const assignmentRef = doc(db, 'artifacts', hostId, 'public', 'data', 'sessions', assignmentId);
+                  const snap = await getDoc(assignmentRef);
+                  if (!snap.exists()) throw new Error('Assignment not found');
+                  const packet = snap.data() || {};
+                  const rawResources = Array.isArray(packet.resources) ? packet.resources : [];
+                  if (!rawResources.length) throw new Error('Assignment has no resources');
+                  let restoredResources = rawResources;
+                  try {
+                      restoredResources = await hydrateSessionAssets(hostId, rawResources);
+                  } catch (hydrateErr) {
+                      warnLog('Assignment asset hydration failed:', hydrateErr);
+                  }
+                  if (cancelled) return;
+                  setHistory(restoredResources);
+                  const firstId = packet.currentResourceId || restoredResources[0]?.id;
+                  const firstResource = restoredResources.find(item => item && item.id === firstId) || restoredResources[0];
+                  if (!firstResource) throw new Error('Assignment has no openable resource');
+                  setPendingQrAssignmentResource(firstResource);
+                  addToast('Homework loaded: ' + (packet.title || firstResource.title || 'AlloFlow assignment'), 'success');
+              } catch (e) {
+                  warnLog('Homework QR load failed:', e);
+                  if (!cancelled) addToast('Could not load this homework QR assignment.', 'error');
+              }
+          };
+          loadAssignment();
+      } catch (e) {
+          warnLog('Homework QR load failed:', e);
+      }
+      return () => { cancelled = true; };
+  }, []);
   useEffect(() => {
       if (activeView === 'adventure' && generatedContent?.type === 'adventure' && adventureState.turnCount > 0) {
           const timeout = setTimeout(() => {
@@ -27002,6 +27245,27 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             </div>
         ))}
       </div>
+      {qrShareModal && (
+        <div className="fixed inset-0 bg-black/70 z-[151] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label="AlloFlow QR share" onClick={() => setQrShareModal(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 text-center max-w-md w-full relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setQrShareModal(null)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
+            <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center"><Share2 size={24}/></div>
+            <h2 className="text-xl font-black text-slate-900 mb-1">Homework QR</h2>
+            <p className="text-sm text-slate-600 mb-4">{qrShareModal.title}</p>
+            <div className="flex justify-center mb-4">
+              <div className="bg-white border border-slate-200 rounded-xl p-3 w-52 h-52 flex items-center justify-center shadow-sm">
+                {qrShareSvg
+                  ? <div className="w-full h-full [&_svg]:w-full [&_svg]:h-full" dangerouslySetInnerHTML={{ __html: qrShareSvg }} />
+                  : <span className="text-xs font-bold text-cyan-700 text-center">QR loading</span>}
+              </div>
+            </div>
+            <button onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-cyan-800 hover:text-cyan-900 bg-cyan-50 border border-cyan-300 hover:border-cyan-400 rounded-lg p-2 transition-all break-all">
+              Copy homework link <Copy size={12}/>
+            </button>
+            <p className="text-[11px] text-slate-500 mt-3">Students open teacher-prepared resources with AI generation off.</p>
+          </div>
+        </div>
+      )}
       {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
       {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
       {promptDialog && <PromptDialog promptDialog={promptDialog} setPromptDialog={setPromptDialog} t={t} />}
@@ -27846,7 +28110,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {/* SR announcement regions — drive these via window.alloAnnounce(msg, 'polite'|'assertive'). */}
       <div id="allo-live-polite" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
       <div id="allo-live-assertive" role="alert" aria-live="assertive" aria-atomic="true" className="sr-only" />
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={startClassSession} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={startClassSession} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {/* Wrapper divs attach the focus-trap refs declared near line 6677. They
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and
@@ -29213,7 +29477,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">{t('input.quickstart_heading') || 'Start in one click'}</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {[
-                        { key: 'book', emoji: '📖', label: t('input.qs_book') || 'Open a story book', sub: t('input.qs_book_sub') || 'Real illustrated books, 50+ languages', onClick: () => setIsReadingLibraryOpen(true) },
+                        { key: 'book', emoji: '📖', label: t('input.qs_book') || 'Open reading catalog', sub: t('input.qs_book_sub') || 'Books, articles & primary sources', onClick: () => setIsReadingLibraryOpen(true) },
                         { key: 'write', emoji: '📝', label: t('input.qs_write') || 'Write or paste text', sub: t('input.qs_write_sub') || 'Use your own material', onClick: () => { setActiveSidebarTab('create'); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); setTimeout(() => { const panel = document.getElementById('tour-input-panel'); if (panel) { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); const field = panel.querySelector('textarea, [contenteditable="true"], input[type="text"]'); if (field && field.focus) field.focus(); } }, 150); } },
                         { key: 'find', emoji: '🔎', label: t('input.qs_find') || 'Find a resource online', sub: t('input.qs_find_sub') || 'Paste a link or let AI search', onClick: () => { setActiveSidebarTab('create'); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); setShowUrlInput(true); setTimeout(() => { const panel = document.getElementById('tour-input-panel'); if (panel) { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); const field = panel.querySelector('input[type="url"], input[type="text"], input'); if (field && field.focus) field.focus(); } }, 200); } },
                         { key: 'generate', emoji: '✨', label: t('input.qs_generate') || 'Generate from a topic', sub: t('input.qs_generate_sub') || 'AI writes it for you', onClick: () => { setActiveSidebarTab('create'); setShowSourceGen(true); setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]); } },
@@ -32100,10 +32364,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 onSaveToLesson: (bookRef) => {
                     if (!bookRef || !bookRef.slug) return;
                     // Subtitle shown under the title in the resource pack, so a
-                    // pinned book reads as an illustrated story with its level +
-                    // language rather than a bare title.
+                    // pinned catalog item carries its source, level, and language
+                    // rather than a bare title.
                     const meta = [
-                        t('readinglib_resource_kind') || 'StoryWeaver illustrated story',
+                        bookRef.sourceName || 'Reading Catalog resource',
                         bookRef.level ? (t('readinglib_level') || 'Level') + ' ' + bookRef.level : null,
                         bookRef.language,
                         bookRef.hasAudio ? ('🔊 ' + (t('readinglib_narrated') || 'narrated')) : null,

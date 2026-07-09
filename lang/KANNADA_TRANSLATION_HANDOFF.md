@@ -1,5 +1,7 @@
 # Kannada (ಕನ್ನಡ) — Translation Handoff / Native-Review Punchlist
 
+> **Historical native-review handoff (2026-07-09):** This records the June 2026 Kannada pack QA state and punchlist. Re-run current i18n verification and inspect `lang/kannada.js` before treating the issue counts below as current.
+
 **Pack:** `lang/kannada.js` (11,286 keys) — built 2026-06-21 (AI translation, machine-verified).
 **Status:** Registered and shipping. 100% key parity with the reference pack (incl. the late `word_sounds.voice_pack_*` backfill), 0 placeholder mismatches, 0 JSON errors, arrays + DNT preserved, deep-screen 0 defects.
 

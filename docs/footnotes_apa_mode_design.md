@@ -1,6 +1,8 @@
 # Document Builder — Footnotes & APA Mode Design
 
 **Status:** Design (no code yet). **Source:** workflow wn28xnkgq, 2026-06-13, code-verified against real bytes.
+> **Design snapshot note (2026-07-09):** This June 13, 2026 design records a byte-level code read from that date. Verify current Document Builder, citation/footnote, DOCX export, tagged-PDF, and APA-mode code before treating "current state," line numbers, or no-code status below as current.
+
 **Two questions answered:** (A) Does the builder support footnotes? (B) Can the left panel be mode-configured (e.g. APA)?
 
 ---

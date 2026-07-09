@@ -1,5 +1,7 @@
 # Titration Lab — deep-dive review (2026-06-20)
 
+> **Historical review snapshot, not current open-bug status (2026-07-09):** This June deep dive is preserved for its analysis of the tool at that time. Later STEM refinements and QA reports may have changed individual findings; verify against current source/mirrors/tests before treating an item as open.
+
 Tool: `stem_lab/stem_tool_titration.js` (`titrationLab`, ~3,170 lines). SVG/DOM-based
 (no `<canvas>`). Tabs: Titrate · Challenge · Incidents · Equipment · Molarity, behind a
 mandatory safety walkthrough gate.

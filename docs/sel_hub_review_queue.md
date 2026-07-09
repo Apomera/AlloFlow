@@ -1,5 +1,7 @@
 # SEL Hub — Review & Deploy Queue
 
+> **Historical review/deploy queue snapshot, not current SEL status (2026-07-09):** This June 20 queue captured local/unpushed SEL work at that moment. Later SEL changes, QA passes, and documentation sweeps may have superseded individual items. Verify against current source, mirrors, `a11y-audit/`, tests, and `AGENT_HANDOFF.md` before using it as an active deploy checklist.
+
 **For:** Aaron · **Prepared:** 2026-06-20 · **Status:** everything below is **LOCAL / UNPUSHED / UNDEPLOYED** on `main`.
 
 This is the action list coming out of the 2026-06-09 SEL Hub review (30 findings) after this round of fixes. The review is essentially worked through: all 5 HIGH findings closed, Batches A & C done, the full a11y batch (A11Y‑1..8) done, integrity-copy lows done, and per-tool triage done. What's left is **your review of the safety/clinical/privacy-sensitive changes** and a handful of **decisions only you should make**.

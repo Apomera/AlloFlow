@@ -1,5 +1,7 @@
 # SEL Hub WCAG AA and Theme Audit
 
+> **Generated audit snapshot (2026-07-09):** This report captures one harness run from the generated timestamp below. It is an automated QA signal, not a blanket WCAG conformance guarantee; rerun the harness and do human review for sensitive releases.
+
 Generated: 2026-07-03T00:27:16.030Z
 
 ## Summary

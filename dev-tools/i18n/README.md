@@ -5,6 +5,8 @@ gap reporting, incremental translation, orphan cleanup, a blocking Spanglish gua
 and community-correction ingest. (Originally built around `behavior_lens_module.js`;
 the gap/merge/guard tooling now applies repo-wide.)
 
+> **Currency note (2026-07-09):** The repo currently has 63 mirrored `lang/*.js` pack files. Re-run the gap/staleness tools before using older sample counts below for planning.
+
 ## 1. `extract_behavior_lens_keys.cjs`
 
 Scans `behavior_lens_module.js` for every `t('behavior_lens.X') || 'English'` call site, compares the keys + fallbacks against the canonical English in `ui_strings.js`, and emits three diagnostic JSON files plus a merge mode that auto-fills any missing English keys.
@@ -71,7 +73,7 @@ GEMINI_API_KEY=... node dev-tools/i18n/merge_missing_translations.cjs --concurre
 
 Each touched pack gets a `*.bak.<timestamp>` backup. Output validates that the LLM returned every input key and ignores any extras it hallucinated.
 
-**Cost estimate:** ~46 new keys × 56 langs × ~50 output tokens ≈ 130K output tokens. Single-digit USD on `gemini-3-flash-preview`.
+**Token scale estimate:** ~46 new keys x 63 languages x ~50 output tokens is about 145K output tokens before prompt overhead. Check current provider pricing and the active model before running an apply pass.
 
 ## 4. `verify_orphans_full_repo.cjs` + `purge_dead_orphans.cjs`
 
@@ -85,7 +87,7 @@ node dev-tools/i18n/verify_orphans_full_repo.cjs
 # Dry-run preview
 node dev-tools/i18n/purge_dead_orphans.cjs
 
-# Apply: remove from ui_strings.js + all 56 lang packs (each backs up first)
+# Apply: remove from ui_strings.js + all mirrored lang packs (63 pack files as of 2026-07-09; each backs up first)
 node dev-tools/i18n/purge_dead_orphans.cjs --write
 ```
 

@@ -1,5 +1,7 @@
 # STEM Visual QA Audit
 
+> **Generated audit snapshot (2026-07-09):** This report captures one harness run from the generated timestamp below. Rerun the relevant visual QA harness before treating pass/fail counts, drift status, or monitored-marker coverage as current.
+
 Generated: 2026-07-08T21:20:53.613Z
 
 ## Scope

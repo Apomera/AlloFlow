@@ -1,5 +1,7 @@
 # STEM Tool UI/UX Accessibility Audit
 
+> **Generated audit snapshot (2026-07-09):** This report captures one harness run from the generated timestamp below. Rerun the STEM a11y harness before treating tool counts, findings, or recommendations as current.
+
 Generated: 2026-07-05T19:26:48.724Z
 
 ## Scope
@@ -163,4 +165,3 @@ Generated: 2026-07-05T19:26:48.724Z
 - The audit renders the default first screen for every registered plugin tool. It does not click through every tab/state.
 - Canvas and field findings are intentionally tool-level: the STEM host has fallback labeling, but tool-authored names are still more precise and resilient.
 - Use `node dev-tools/check_stem_a11y.cjs --gate` if you want high-confidence errors to fail automation.
-

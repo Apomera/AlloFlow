@@ -1,5 +1,7 @@
 # Language Pack Quality Status
 
+> **Status note, July 9, 2026:** This log documents the major 56-pack quality wave. The repo currently has 63 `lang/*.js` pack files mirrored to `prismflow-deploy/public/lang/`; run the current i18n verification tools before applying the 56-pack quality summary to newer packs or the PPS cluster.
+
 **Last updated:** 2026-06-20 (June i18n wave — see entry below)
 
 ## 2026-06 — Spanglish elimination, content sweep, behavior_lens, and new-key coverage
@@ -444,7 +446,7 @@ verify earlier cleanup. Found and fixed residual contamination:
 ### Verified clean (post-fix sampling)
 All 56 packs sampled. Final status:
 - ✅ tour.adventure_text reads fluently in target language for all packs
-- ✅ tour.quiz_text reads fluently in target language for all packs  
+- ✅ tour.quiz_text reads fluently in target language for all packs
 - ✅ tour.simplified_text reads fluently in target language for all packs
 - ✅ sidebar.ai_guide_welcome clean across all packs
 

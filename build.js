@@ -1635,6 +1635,7 @@ if (dryRun) {
         'word_sounds_module.js',
         'teacher_module.js',
         'ui_strings.js',
+        'qrcode.js',
         'escape_room_module.js',
         // stem_lab hub
         'stem_lab/stem_lab_module.js'

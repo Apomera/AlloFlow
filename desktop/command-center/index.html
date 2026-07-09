@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -19,7 +19,7 @@
       <nav class="tabs" aria-label="Command center">
         <button class="tab active" data-tab="app" type="button">App</button>
         <button class="tab" data-tab="ai" type="button">AI</button>
-        <button class="tab" data-tab="schoolbox" type="button">School Box</button>
+        <button class="tab" data-tab="schoolbox" type="button">Server</button>
         <button class="tab" data-tab="settings" type="button">Settings</button>
       </nav>
       <div class="runtime-pill" id="runtime-pill">Starting</div>
@@ -43,34 +43,34 @@
           </div>
         </header>
         <!-- Setup Health: one glance answers "is this machine actually ready?"
-             Field-test lesson (0.2.0–0.2.2): every failure so far LOOKED like
-             silence — engine unused, voice falling back, images impossible —
+             Field-test lesson (0.2.0â€“0.2.2): every failure so far LOOKED like
+             silence â€” engine unused, voice falling back, images impossible â€”
              and testers had to infer state from an error chip. Each row shows
              live truth and, where the runtime can act, a one-click fix. -->
         <section class="panel health-card" id="setup-health" aria-label="Setup health">
           <div class="health-item" id="health-engine">
-            <span class="health-dot" data-dot>·</span>
-            <div class="health-body"><strong>AI Engine</strong><span data-text>Checking…</span></div>
+            <span class="health-dot" data-dot>Â·</span>
+            <div class="health-body"><strong>AI Engine</strong><span data-text>Checkingâ€¦</span></div>
             <button type="button" data-act hidden></button>
           </div>
           <div class="health-item" id="health-voice">
-            <span class="health-dot" data-dot>·</span>
-            <div class="health-body"><strong>Reading voice</strong><span data-text>Checking…</span></div>
+            <span class="health-dot" data-dot>Â·</span>
+            <div class="health-body"><strong>Reading voice</strong><span data-text>Checkingâ€¦</span></div>
             <button type="button" data-act hidden></button>
           </div>
           <div class="health-item" id="health-images">
-            <span class="health-dot" data-dot>·</span>
-            <div class="health-body"><strong>Local images</strong><span data-text>Checking…</span></div>
+            <span class="health-dot" data-dot>Â·</span>
+            <div class="health-body"><strong>Local images</strong><span data-text>Checkingâ€¦</span></div>
             <button type="button" data-act hidden></button>
           </div>
           <div class="health-item" id="health-asr">
-            <span class="health-dot" data-dot>·</span>
-            <div class="health-body"><strong>Speech-to-text</strong><span data-text>Checking…</span></div>
+            <span class="health-dot" data-dot>Â·</span>
+            <div class="health-body"><strong>Speech-to-text</strong><span data-text>Checkingâ€¦</span></div>
             <button type="button" data-act hidden></button>
           </div>
           <div class="health-item" id="health-mic">
-            <span class="health-dot" data-dot>·</span>
-            <div class="health-body"><strong>Microphone</strong><span data-text>Checking…</span></div>
+            <span class="health-dot" data-dot>Â·</span>
+            <div class="health-body"><strong>Microphone</strong><span data-text>Checkingâ€¦</span></div>
             <button type="button" data-act hidden></button>
           </div>
         </section>
@@ -159,35 +159,35 @@
             <label for="engine-model-select">AI model</label>
             <select id="engine-model-select">
               <optgroup label="Light (any laptop)">
-                <option value="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf">Qwen 1.5B — 1.0 GB, fastest</option>
+                <option value="https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf">Qwen 1.5B â€” 1.0 GB, fastest</option>
               </optgroup>
               <optgroup label="Balanced (8 GB+ RAM)">
-                <option value="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_k_m.gguf" selected>Qwen 3B — 2.0 GB, recommended</option>
-                <option value="https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf">Llama 3.2 3B — 1.9 GB</option>
-                <option value="https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf">Gemma 3 4B — 2.3 GB</option>
-                <option value="https://huggingface.co/bartowski/microsoft_Phi-4-mini-instruct-GGUF/resolve/main/microsoft_Phi-4-mini-instruct-Q4_K_M.gguf">Phi-4 Mini — 2.3 GB</option>
-                <option value="https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/main/Qwen3-4B-Instruct-2507-Q4_K_M.gguf">Qwen3 4B — 2.3 GB, newer generation</option>
+                <option value="https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_k_m.gguf" selected>Qwen 3B â€” 2.0 GB, recommended</option>
+                <option value="https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf">Llama 3.2 3B â€” 1.9 GB</option>
+                <option value="https://huggingface.co/ggml-org/gemma-3-4b-it-GGUF/resolve/main/gemma-3-4b-it-Q4_K_M.gguf">Gemma 3 4B â€” 2.3 GB</option>
+                <option value="https://huggingface.co/bartowski/microsoft_Phi-4-mini-instruct-GGUF/resolve/main/microsoft_Phi-4-mini-instruct-Q4_K_M.gguf">Phi-4 Mini â€” 2.3 GB</option>
+                <option value="https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/main/Qwen3-4B-Instruct-2507-Q4_K_M.gguf">Qwen3 4B â€” 2.3 GB, newer generation</option>
               </optgroup>
               <optgroup label="Strong (12 GB+ RAM)">
-                <option value="https://huggingface.co/ggml-org/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf">Gemma 4 E4B — 5.0 GB, newest Google open model</option>
-                <option value="https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf">Qwen 7B — 4.4 GB</option>
-                <option value="https://huggingface.co/bartowski/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/Mistral-7B-Instruct-v0.3-Q4_K_M.gguf">Mistral 7B — 4.1 GB</option>
+                <option value="https://huggingface.co/ggml-org/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf">Gemma 4 E4B â€” 5.0 GB, newest Google open model</option>
+                <option value="https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf">Qwen 7B â€” 4.4 GB</option>
+                <option value="https://huggingface.co/bartowski/Mistral-7B-Instruct-v0.3-GGUF/resolve/main/Mistral-7B-Instruct-v0.3-Q4_K_M.gguf">Mistral 7B â€” 4.1 GB</option>
               </optgroup>
               <optgroup label="Big (24 GB+ RAM / school machine)">
-                <option value="https://huggingface.co/bartowski/google_gemma-3-12b-it-GGUF/resolve/main/google_gemma-3-12b-it-Q4_K_M.gguf">Gemma 3 12B — 6.8 GB</option>
+                <option value="https://huggingface.co/bartowski/google_gemma-3-12b-it-GGUF/resolve/main/google_gemma-3-12b-it-Q4_K_M.gguf">Gemma 3 12B â€” 6.8 GB</option>
               </optgroup>
               <optgroup label="Server class (district GPU box, 32 GB+ )">
-                <option value="https://huggingface.co/bartowski/google_gemma-3-27b-it-GGUF/resolve/main/google_gemma-3-27b-it-Q4_K_M.gguf">Gemma 3 27B — 15.4 GB</option>
-                <option value="https://huggingface.co/Qwen/Qwen3-32B-GGUF/resolve/main/Qwen3-32B-Q4_K_M.gguf">Qwen3 32B — 18.4 GB</option>
+                <option value="https://huggingface.co/bartowski/google_gemma-3-27b-it-GGUF/resolve/main/google_gemma-3-27b-it-Q4_K_M.gguf">Gemma 3 27B â€” 15.4 GB</option>
+                <option value="https://huggingface.co/Qwen/Qwen3-32B-GGUF/resolve/main/Qwen3-32B-Q4_K_M.gguf">Qwen3 32B â€” 18.4 GB</option>
               </optgroup>
               <optgroup label="Bring your own">
-                <option value="__custom">Custom… (URL, or a .gguf file on a USB drive)</option>
+                <option value="__custom">Customâ€¦ (URL, or a .gguf file on a USB drive)</option>
               </optgroup>
             </select>
             <div id="engine-custom-row" hidden>
               <label for="engine-custom-input">Custom model <span class="hint">(a direct .gguf URL, or a full path like E:\models\my-model.gguf)</span></label>
               <div class="button-row">
-                <input id="engine-custom-input" type="text" placeholder="https://… or E:\models\my-model.gguf">
+                <input id="engine-custom-input" type="text" placeholder="https://â€¦ or E:\models\my-model.gguf">
                 <button id="engine-custom-apply" type="button">Use it</button>
                 <button id="engine-custom-cancel" type="button">Cancel</button>
               </div>
@@ -214,15 +214,15 @@
       <section class="pane" id="pane-schoolbox" aria-labelledby="tab-schoolbox">
         <header class="pane-header">
           <div>
-            <h1>School Box</h1>
-            <p id="schoolbox-status">Checking host status</p>
+            <h1>School Box Server</h1>
+            <p id="schoolbox-status">Checking optional server status</p>
           </div>
           <div class="toolbar">
             <button id="refresh-schoolbox" type="button">Refresh</button>
             <button id="setup-schoolbox" type="button">Prepare</button>
-            <button id="start-schoolbox" type="button">Start Host</button>
-            <button id="stop-schoolbox" type="button">Stop Host</button>
-            <a id="open-schoolbox-link" class="button-link" target="_blank" rel="noreferrer">Open</a>
+            <button id="start-schoolbox" type="button">Start Server</button>
+            <button id="stop-schoolbox" type="button">Stop Server</button>
+            <a id="open-schoolbox-link" class="button-link" target="_blank" rel="noreferrer">Open Server</a>
           </div>
         </header>
         <div class="schoolbox-grid">
@@ -238,7 +238,7 @@
             </dl>
             <label for="live-session-mode-select">Live session backend</label>
             <select id="live-session-mode-select">
-              <option value="schoolbox-lan">School Box / Local Network</option>
+              <option value="schoolbox-lan">Desktop LAN / Local Network</option>
               <option value="local-preview">Local Preview Only</option>
               <option value="district-server">District Server (future)</option>
               <option value="byo-firebase">Bring Your Own Firebase</option>
@@ -276,12 +276,13 @@
             <ol id="classroom-wizard" class="setup-guide"></ol>
             <div class="button-row">
               <button id="run-classroom-check" type="button">Run classroom check</button>
+              <button id="copy-classroom-readiness" type="button">Copy classroom report</button>
             </div>
             <pre id="classroom-check-result" class="result" aria-live="polite"></pre>
             <p class="lan-hint">AlloFlow Desktop is designed to support school-controlled, privacy-first deployments. Whether a deployment meets FERPA or district policy depends on how your school configures and uses it &mdash; this app avoids cloud student data by default, but compliance is an institutional decision.</p>
           </section>
           <section class="panel">
-            <h2>Readiness</h2>
+            <h2>Optional Server Readiness</h2>
             <dl class="kv">
               <dt>Mode</dt><dd id="schoolbox-mode">-</dd>
               <dt>Address</dt><dd id="schoolbox-address">-</dd>
@@ -294,7 +295,7 @@
             <ul id="schoolbox-next-actions" class="next-actions"></ul>
           </section>
           <section class="panel">
-            <h2>Setup Guide</h2>
+            <h2>Server Setup Guide</h2>
             <ol id="schoolbox-setup-guide" class="setup-guide"></ol>
           </section>
           <section class="panel">
@@ -302,7 +303,7 @@
             <label for="schoolbox-mode-select">Mode</label>
             <select id="schoolbox-mode-select">
               <option value="disabled">Disabled</option>
-              <option value="desktop-host">Desktop Host (local)</option>
+              <option value="desktop-host">Docker Server Host</option>
               <option value="district-server">District Server (future)</option>
             </select>
             <label for="schoolbox-port">Port</label>
@@ -315,7 +316,7 @@
             <pre id="schoolbox-result" class="result" aria-live="polite"></pre>
           </section>
           <section class="panel services-panel">
-            <h2>Services</h2>
+            <h2>Docker Services</h2>
             <div class="service-list" id="schoolbox-services"></div>
           </section>
           <section class="panel logs-panel">

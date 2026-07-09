@@ -213,6 +213,48 @@ if (!window._galaxyHasLoadedOnce) {
 
           ];
 
+          var HYDROGEN_FUSION_LIMIT = 0.08;
+          var M_DWARF_LIMIT = 0.45;
+
+          function spectralTypeForMass(mass) {
+            if (mass < HYDROGEN_FUSION_LIMIT) return null;
+            return mass < M_DWARF_LIMIT ? 'M' : mass < 0.8 ? 'K' : mass < 1.04 ? 'G' : mass < 1.4 ? 'F' : mass < 2.1 ? 'A' : mass < 16 ? 'B' : 'O';
+          }
+
+          function lifecycleMassCategory(mass) {
+            if (mass < HYDROGEN_FUSION_LIMIT) return 'Brown dwarf';
+            if (mass < M_DWARF_LIMIT) return 'Red dwarf';
+            if (mass < 0.8) return 'Orange K-type star';
+            if (mass < 1.04) return 'Sun-like G-type star';
+            if (mass < 1.4) return 'Yellow-white F-type star';
+            if (mass < 2.1) return 'White A-type star';
+            if (mass < 8) return 'Hot B-type star';
+            if (mass < 25) return 'Massive star';
+            return 'Very massive O-type star';
+          }
+
+          function lifecycleMassBadgeClass(mass) {
+            return mass < HYDROGEN_FUSION_LIMIT ? "bg-stone-800 text-stone-300 border border-stone-600" :
+              mass < M_DWARF_LIMIT ? "bg-red-900/60 text-red-300 border border-red-700/50" :
+              mass < 0.8 ? "bg-orange-900/60 text-orange-300 border border-orange-600/50" :
+              mass < 1.04 ? "bg-amber-900/60 text-amber-300 border border-amber-600/50" :
+              mass < 2.1 ? "bg-blue-900/60 text-blue-300 border border-blue-600/50" :
+              mass < 8 ? "bg-sky-900/60 text-sky-300 border border-sky-600/50" :
+              mass < 25 ? "bg-violet-900/60 text-violet-300 border border-violet-600/50" :
+              "bg-fuchsia-900/60 text-fuchsia-300 border border-fuchsia-600/50";
+          }
+
+          function lifecycleMassHint(mass) {
+            if (mass < HYDROGEN_FUSION_LIMIT) return "Below sustained hydrogen fusion";
+            if (mass < M_DWARF_LIMIT) return "Lives for trillions of years";
+            if (mass < 0.8) return "Stable, long-lived main sequence star";
+            if (mass < 1.04) return "Lives roughly 10 billion years";
+            if (mass < 2.1) return "Hotter and shorter-lived than the Sun";
+            if (mass < 8) return "Burns bright for tens to hundreds of millions of years";
+            if (mass < 25) return "Core collapse can leave a neutron star";
+            return "Core collapse can form a black hole";
+          }
+
 
 
           // ── Nebulae + deep-sky objects (expanded from 4 to 8) ──
@@ -307,6 +349,7 @@ if (!window._galaxyHasLoadedOnce) {
           var activeRealSkyUniverseStop = activeRealSkyTarget.key === 'm87' ? 'm87' : activeRealSkyTarget.key === 'm51' ? 'm51' : 'deep-field';
           var activeRealSkyEvidenceThread = activeRealSkyTarget.key === 'm87' ? 'blackholes' : activeRealSkyTarget.key === 'm1' ? 'candles' : 'redshift';
           var activeRealSkyUniverseTime = activeRealSkyEvidenceThread === 'candles' ? 8.8 : 13.8;
+          var activeRealSkyMission = activeRealSkyTarget.key === 'm87' ? 'black-hole-proof' : activeRealSkyTarget.key === 'm1' ? 'stellar-rulers' : 'expansion';
 
           function ensureGalaxyAladinLite(cb) {
             if (window.A && window.A.aladin) { cb(true); return; }
@@ -516,20 +559,20 @@ if (!window._galaxyHasLoadedOnce) {
               { id: 'nebula', name: t('stem.galaxy.nebula'), emoji: '\u2601\uFE0F', desc: t('stem.galaxy.a_vast_cloud_of_gas'), color: '#a855f7' },
               { id: 'protostar', name: t('stem.galaxy.protostar'), emoji: '\uD83D\uDFE0', desc: t('stem.galaxy.core_heats_up_from_gravitational'), color: '#fb923c' }
             ];
-            if (mass < 0.5) {
-              stages.push({ id: 'main_sequence', name: 'Brown Dwarf', emoji: '\uD83E\uDDF4', desc: 'Too small for hydrogen fusion. Glows faintly from gravitational contraction.', color: '#a16207' });
-              stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'A cold, dead ember wandering the cosmos forever.', color: '#18181b' });
-            } else if (mass < 0.8) {
+            if (mass < HYDROGEN_FUSION_LIMIT) {
+              stages.push({ id: 'main_sequence', name: 'Brown Dwarf', emoji: '\uD83E\uDDF4', desc: 'Too small for sustained hydrogen fusion; it glows faintly while cooling.', color: '#a16207' });
+              stages.push({ id: 'black_dwarf', name: 'Cooling Brown Dwarf', emoji: '\u26AB', desc: 'A substellar ember fading slowly over cosmic time.', color: '#18181b' });
+            } else if (mass < M_DWARF_LIMIT) {
               stages.push({ id: 'main_sequence', name: 'Red Dwarf', emoji: '\uD83D\uDD34', desc: 'Burns slowly for hundreds of billions of years.', color: '#dc2626' });
               stages.push({ id: 'blue_dwarf', name: 'Blue Dwarf', emoji: '\uD83D\uDD35', desc: 'Theoretical phase where a red dwarf heats up as its opacity changes.', color: '#3b82f6' });
               stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: 'var(--allo-stem-text, #e2e8f0)' });
-              stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'A cold, dead ember wandering the cosmos forever.', color: '#18181b' });
+              stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'Theoretical future: a white dwarf cooled after far longer than the universe has existed.', color: '#18181b' });
             } else if (mass < 8) {
               stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'Hydrogen fusion ignites! Stable for billions of years.', color: '#fbbf24' });
               stages.push({ id: 'red_giant', name: t('stem.galaxy.red_giant'), emoji: '\uD83D\uDD34', desc: t('stem.galaxy.core_contracts_outer_layers_expand'), color: '#ef4444' });
               stages.push({ id: 'planetary_nebula', name: t('stem.galaxy.planetary_nebula'), emoji: '\uD83D\uDFE3', desc: t('stem.galaxy.outer_layers_shed_gently_into'), color: '#818cf8' });
               stages.push({ id: 'white_dwarf', name: t('stem.galaxy.white_dwarf'), emoji: '\u26AA', desc: t('stem.galaxy.dense_stellar_core_slowly_cools'), color: 'var(--allo-stem-text, #e2e8f0)' });
-              stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'A cold, dead ember wandering the cosmos forever.', color: '#18181b' });
+              stages.push({ id: 'black_dwarf', name: 'Black Dwarf', emoji: '\u26AB', desc: 'Theoretical future: a white dwarf cooled after far longer than the universe has existed.', color: '#18181b' });
             } else if (mass < 25) {
               stages.push({ id: 'main_sequence', name: t('stem.galaxy.main_sequence'), emoji: '\u2B50', desc: 'Hot and enormous. Burns through fuel in millions of years.', color: '#60a5fa' });
               stages.push({ id: 'red_supergiant', name: 'Red Supergiant', emoji: '\uD83D\uDD34', desc: 'Expands to massive proportions, large enough to swallow Jupiter!', color: '#b91c1c' });
@@ -3865,8 +3908,13 @@ if (!window._galaxyHasLoadedOnce) {
                         setLabToolData(function (prev) { return Object.assign({}, prev, { astronomy: Object.assign({}, prev.astronomy || {}, { tab: 'observe', eyepieceTarget: activeRealSkyTarget.astronomyTarget || 'andromeda' }) }); });
                         setStemLabTool('astronomy');
                       } },
-                      { title: 'Place it in time', body: 'Jump to Universe with a matching real-data tour stop and evidence thread already selected.', action: 'Universe', onClick: function () {
-                        setLabToolData(function (prev) { return Object.assign({}, prev, { universe: Object.assign({}, prev.universe || {}, { showImages: true, wwtTourStop: activeRealSkyUniverseStop, cosmicEvidenceThread: activeRealSkyEvidenceThread, cosmicTime: activeRealSkyUniverseTime }) }); });
+                      { title: 'Place it in time', body: 'Jump to Universe with the matching real-data tour, evidence thread, and guided mission selected.', action: 'Universe', onClick: function () {
+                        setLabToolData(function (prev) {
+                          var prevUniverse = prev.universe || {};
+                          var launched = prevUniverse.cosmicMissionsLaunched || [];
+                          var nextLaunched = launched.indexOf(activeRealSkyMission) === -1 ? launched.concat([activeRealSkyMission]) : launched;
+                          return Object.assign({}, prev, { universe: Object.assign({}, prevUniverse, { showImages: true, wwtTourStop: activeRealSkyUniverseStop, cosmicEvidenceThread: activeRealSkyEvidenceThread, cosmicTime: activeRealSkyUniverseTime, activeCosmicMission: activeRealSkyMission, cosmicMissionsLaunched: nextLaunched }) });
+                        });
                         setStemLabTool('universe');
                       } },
                       { title: 'Analyze data', body: 'Use Data Lab for the next step: spectra, brightness, color, classification, and student research questions.', action: 'Data Lab', onClick: function () { setStemLabTool('dataLab'); } }
@@ -3965,6 +4013,8 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("canvas", {
 
                   "data-star-life-canvas": "true",
+                  role: "img",
+                  "aria-label": "Animated star lifecycle visualization showing the selected mass and evolutionary stage, including red dwarf, main sequence, supernova, neutron star, and black hole outcomes.",
 
                   ref: function (cvEl) {
                     if (!cvEl) return;
@@ -4016,7 +4066,8 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // Determine star color based on mass
                       var coreColor, glowColor, coronaColor;
-                      if (mass < 0.5) { coreColor = '#ffaa44'; glowColor = '#ff7722'; coronaColor = '#ff550033'; }
+                      if (mass < HYDROGEN_FUSION_LIMIT) { coreColor = '#d6a35c'; glowColor = '#8b5a2b'; coronaColor = '#9f7a4426'; }
+                      else if (mass < M_DWARF_LIMIT) { coreColor = '#ffaa44'; glowColor = '#ff7722'; coronaColor = '#ff550033'; }
                       else if (mass < 0.8) { coreColor = '#ffcc6f'; glowColor = '#ff9944'; coronaColor = '#ff884422'; }
                       else if (mass < 1.04) { coreColor = '#fff8e8'; glowColor = '#ffe4a8'; coronaColor = '#ffdd6622'; }
                       else if (mass < 1.4) { coreColor = '#fff'; glowColor = '#f0f0ff'; coronaColor = '#dde4ff22'; }
@@ -4279,7 +4330,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       // ── BLACK DWARF: cold dead ember ──
                       else if (stage === 'black_dwarf') {
-                        stageLabel = '⚫ Black Dwarf';
+                        stageLabel = mass < HYDROGEN_FUSION_LIMIT ? '\u26AB Cooling Brown Dwarf' : '\u26AB Black Dwarf';
                         var bdR = baseR * 0.1;
                         // Faint deep purple/grey glow
                         var bdg = ctx.createRadialGradient(cx, cy, bdR, cx, cy, bdR * 3);
@@ -4406,23 +4457,24 @@ if (!window._galaxyHasLoadedOnce) {
                       ctx.fillStyle = 'rgba(255,255,255,0.8)';
                       ctx.fillText(stageLabel, cx, 22);
                       // Classification
-                      var cls = mass < 0.45 ? 'M-type Red Dwarf' : mass < 0.8 ? 'K-type Orange' : mass < 1.04 ? 'G-type (Sun-like)' : mass < 1.4 ? 'F-type Yellow-White' : mass < 2.1 ? 'A-type White' : mass < 16 ? 'B-type Blue-White' : 'O-type Blue Giant';
+                      var cls = mass < HYDROGEN_FUSION_LIMIT ? 'Brown dwarf (substellar)' : mass < M_DWARF_LIMIT ? 'M-type Red Dwarf' : mass < 0.8 ? 'K-type Orange' : mass < 1.04 ? 'G-type (Sun-like)' : mass < 1.4 ? 'F-type Yellow-White' : mass < 2.1 ? 'A-type White' : mass < 16 ? 'B-type Blue-White' : 'O-type Blue Giant';
                       ctx.font = '10px Inter, system-ui, sans-serif';
                       ctx.fillStyle = 'rgba(255,255,255,0.45)';
                       ctx.fillText(cls, cx, 36);
 
                       // ── Physical properties panel (bottom center) ──
-                      var surfTemp = mass < 0.45 ? 3200 : mass < 0.8 ? 4500 : mass < 1.04 ? 5778 : mass < 1.4 ? 6500 : mass < 2.1 ? 8500 : mass < 16 ? 20000 : 40000;
+                      var surfTemp = mass < HYDROGEN_FUSION_LIMIT ? 1800 : mass < M_DWARF_LIMIT ? 3200 : mass < 0.8 ? 4500 : mass < 1.04 ? 5778 : mass < 1.4 ? 6500 : mass < 2.1 ? 8500 : mass < 16 ? 20000 : 40000;
                       var luminosity = Math.pow(mass, 3.5);
                       var radius = mass < 0.8 ? Math.pow(mass, 0.8) : mass < 2 ? Math.pow(mass, 0.57) : Math.pow(mass, 0.78);
                       var lifetime = mass < 0.2 ? '>100' : (10 / Math.pow(mass, 2.5)).toFixed(mass < 1 ? 0 : 1);
+                      var lifetimeText = mass < HYDROGEN_FUSION_LIMIT ? 'No sustained hydrogen fusion' : 'Lifespan: ' + lifetime + ' billion years';
                       ctx.font = 'bold 10px Inter, system-ui, sans-serif';
                       ctx.fillStyle = 'rgba(255,255,255,0.55)';
                       ctx.fillText(mass + ' Solar Masses', cx, H - 40);
                       ctx.font = '9px monospace';
                       ctx.fillStyle = 'rgba(255,255,255,0.35)';
                       ctx.fillText('T: ' + surfTemp.toLocaleString() + ' K  |  L: ' + (luminosity < 100 ? luminosity.toFixed(1) : Math.round(luminosity).toLocaleString()) + ' L\u2609  |  R: ' + radius.toFixed(2) + ' R\u2609', cx, H - 26);
-                      ctx.fillText('Lifespan: ' + lifetime + ' billion years', cx, H - 14);
+                      ctx.fillText(lifetimeText, cx, H - 14);
 
                       // ── Radiative/Convective zone indicators (on main sequence stars) ──
                       if (stage === 'main_sequence' || stage === 'protostar') {
@@ -4537,18 +4589,18 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-                  React.createElement("span", { className: "text-[11px] text-amber-300/70 whitespace-nowrap w-8" }, "0.5"),
+                  React.createElement("span", { className: "text-[11px] text-amber-300/70 whitespace-nowrap w-8" }, "0.03"),
 
                   React.createElement("input", {
 
-                    type: "range", min: 0.5, max: 50, step: 0.5, value: lifecycleMass, "aria-label": "Star mass in solar masses",
+                    type: "range", min: 0.03, max: 50, step: 0.01, value: lifecycleMass, "aria-label": "Star or brown dwarf mass in solar masses",
 
                     onChange: function (e) {
                       var massVal = parseFloat(e.target.value);
                       upd("lifecycleMass", massVal);
                       // Canvas Narration: star mass change
                       if (typeof canvasNarrate === 'function') {
-                        var cat = massVal < 0.5 ? 'Brown Dwarf' : massVal < 0.8 ? 'Red Dwarf' : massVal < 2 ? 'Sun-like star' : massVal < 8 ? 'Hot star' : massVal < 25 ? 'Massive star' : 'Hypermassive star';
+                        var cat = lifecycleMassCategory(massVal);
                         canvasNarrate('galaxy', 'starMass', cat + ' at ' + massVal + ' solar masses', { debounce: 800 });
                       }
                     },
@@ -4567,49 +4619,24 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("span", {
 
-                    className: "px-3 py-1 rounded-full text-[11px] font-bold " +
-
-                      (lifecycleMass < 0.5 ? "bg-stone-800 text-stone-300 border border-stone-600" :
-
-                        lifecycleMass < 0.8 ? "bg-red-900/60 text-red-300 border border-red-700/50" :
-
-                          lifecycleMass < 2 ? "bg-amber-900/60 text-amber-300 border border-amber-600/50" :
-
-                            lifecycleMass < 8 ? "bg-blue-900/60 text-blue-300 border border-blue-600/50" :
-
-                              lifecycleMass < 25 ? "bg-violet-900/60 text-violet-300 border border-violet-600/50" :
-
-                                "bg-fuchsia-900/60 text-fuchsia-300 border border-fuchsia-600/50")
+                    className: "px-3 py-1 rounded-full text-[11px] font-bold " + lifecycleMassBadgeClass(lifecycleMass)
 
                   },
 
-                    lifecycleMass < 0.5 ? "\uD83E\uDEA8 Brown Dwarf" :
-
-                      lifecycleMass < 0.8 ? "\uD83D\uDD34 Red Dwarf (M-type)" :
-
-                        lifecycleMass < 2 ? "\u2600\uFE0F Sun-like (G/K-type)" :
-
-                          lifecycleMass < 8 ? "\uD83D\uDD35 Hot Star (A/B-type)" :
-
-                            lifecycleMass < 25 ? "\uD83D\uDCA5 Massive Star" :
-
-                              "\uD83D\uDD73\uFE0F Hypermassive Star"
+                    lifecycleMass < HYDROGEN_FUSION_LIMIT ? "\uD83E\uDEA8 Brown Dwarf" :
+                      lifecycleMass < M_DWARF_LIMIT ? "\uD83D\uDD34 Red Dwarf (M-type)" :
+                        lifecycleMass < 0.8 ? "\uD83D\uDFE0 Orange Dwarf (K-type)" :
+                          lifecycleMass < 1.04 ? "\u2600\uFE0F Sun-like (G-type)" :
+                            lifecycleMass < 2.1 ? "\uD83D\uDD35 Hot Main-Sequence Star" :
+                              lifecycleMass < 8 ? "\uD83D\uDD35 Bright B-type Star" :
+                                lifecycleMass < 25 ? "\uD83D\uDCA5 Massive Star" :
+                                  "\uD83D\uDD73\uFE0F Very Massive Star"
 
                   ),
 
                   React.createElement("span", { className: "text-[11px] text-slate-300 italic" },
 
-                    lifecycleMass < 0.5 ? "Too small for hydrogen fusion" :
-
-                      lifecycleMass < 0.8 ? "Lives 50\u2013100+ billion years" :
-
-                        lifecycleMass < 2 ? "Lives ~10 billion years" :
-
-                          lifecycleMass < 8 ? "Lives 1\u20134 billion years" :
-
-                            lifecycleMass < 25 ? "Lives 8\u201330 million years" :
-
-                              "Lives < 5 million years"
+                    lifecycleMassHint(lifecycleMass)
 
                   )
 
@@ -4617,12 +4644,16 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-4" },
                   [
+                    { key: 'browndwarf', label: "\uD83E\uDEA8 Brown-dwarf path", sub: "0.05 M\u2609 substellar", mass: 0.05, stage: 'main_sequence', border: 'rgba(161,98,7,0.55)', bg: 'rgba(161,98,7,0.14)', text: '#fde68a' },
+                    { key: 'reddwarf', label: "\uD83D\uDD34 Red-dwarf future", sub: "0.2 M\u2609 blue-dwarf phase", mass: 0.2, stage: 'blue_dwarf', border: 'rgba(96,165,250,0.55)', bg: 'rgba(59,130,246,0.12)', text: '#bfdbfe' },
                     { key: 'supernova', label: "\uD83D\uDCA5 Supernova path", sub: "12 M\u2609 core collapse", mass: 12, stage: 'supernova', border: 'rgba(251,191,36,0.55)', bg: 'rgba(251,191,36,0.12)', text: '#fde68a' },
                     { key: 'blackhole', label: "\uD83D\uDD73\uFE0F Black-hole path", sub: "30 M\u2609 remnant", mass: 30, stage: 'black_hole', border: 'rgba(168,85,247,0.55)', bg: 'rgba(168,85,247,0.14)', text: '#ddd6fe' }
                   ].map(function (path) {
                     return React.createElement("button", {
                       key: path.key,
                       type: "button",
+                      "aria-pressed": (Math.abs(lifecycleMass - path.mass) < 0.001 && activeStage === path.stage) ? "true" : "false",
+                      "aria-label": "Show " + path.label.replace(/^[^\s]+\s/, '') + " at " + path.mass + " solar masses",
                       onClick: function () {
                         patchGalaxy({ quizMode: false, simMode: "star", showLifecycle: true, lifecycleMass: path.mass, activeStage: path.stage });
                         if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'lifePathPreset', path.label.replace(/^[^\s]+\s/, '') + " selected at " + path.mass + " solar masses.", { debounce: 500 });
@@ -4666,10 +4697,10 @@ if (!window._galaxyHasLoadedOnce) {
                     var branchLabel = "", branchEmoji = "";
                     if (s.id === 'planetary_nebula') { showBranch = true; branchLabel = 'Gentle death \u2014 outer layers drift away'; branchEmoji = '\u2B07\uFE0F'; }
                     else if (s.id === 'supernova') { showBranch = true; branchLabel = 'Violent death \u2014 core collapse!'; branchEmoji = '\uD83D\uDCA5'; }
-                    else if (s.id === 'black_dwarf' && lifecycleMass < 0.5) { showBranch = true; branchLabel = 'Cooling phase \u2014 fades to black'; branchEmoji = '\u2B07\uFE0F'; }
+                    else if (s.id === 'black_dwarf' && lifecycleMass < HYDROGEN_FUSION_LIMIT) { showBranch = true; branchLabel = 'Cooling phase \u2014 fades slowly'; branchEmoji = '\u2B07\uFE0F'; }
 
                     var isDeathBranch = false;
-                    if (s.id === 'planetary_nebula' || s.id === 'white_dwarf' || s.id === 'black_dwarf' || s.id === 'supernova' || s.id === 'neutron_star' || s.id === 'black_hole' || (s.id === 'blue_dwarf' && lifecycleMass < 0.8)) {
+                    if (s.id === 'planetary_nebula' || s.id === 'white_dwarf' || s.id === 'black_dwarf' || s.id === 'supernova' || s.id === 'neutron_star' || s.id === 'black_hole' || (s.id === 'blue_dwarf' && lifecycleMass < M_DWARF_LIMIT)) {
                        isDeathBranch = true;
                     }
 
@@ -4681,7 +4712,7 @@ if (!window._galaxyHasLoadedOnce) {
                         )
                       ) : null,
 
-                      React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  onClick: function() {
+                      React.createElement("div", { role: "button", tabIndex: 0, "aria-pressed": isActive ? "true" : "false", "aria-label": "Select lifecycle stage: " + s.name + ". " + s.desc, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  onClick: function() {
                         upd('activeStage', s.id);
                         // Canvas Narration: lifecycle stage selection
                         if (typeof canvasNarrate === 'function') canvasNarrate('galaxy', 'stageSelect', {
@@ -4698,7 +4729,7 @@ if (!window._galaxyHasLoadedOnce) {
                         React.createElement("span", { className: "text-[11px] text-slate-300 flex-shrink-0" },
                           s.id === 'nebula' ? "" :
                           s.id === 'protostar' ? "~100K yr" :
-                          s.id === 'main_sequence' ? (lifecycleMass < 0.8 ? "~Trillions of yr" : lifecycleMass < 2 ? "~10 Gyr" : lifecycleMass < 8 ? "~1 Gyr" : lifecycleMass < 25 ? "~10 Myr" : "~3 Myr") :
+                          s.id === 'main_sequence' ? (lifecycleMass < HYDROGEN_FUSION_LIMIT ? "cools over time" : lifecycleMass < M_DWARF_LIMIT ? "~Trillions of yr" : lifecycleMass < 2 ? "~10 Gyr" : lifecycleMass < 8 ? "~1 Gyr" : lifecycleMass < 25 ? "~10 Myr" : "~3 Myr") :
                           s.id === 'red_giant' ? (lifecycleMass < 2 ? "~1 Gyr" : "~100 Myr") :
                           s.id === 'red_supergiant' || s.id === 'blue_supergiant' ? "~1 Myr" :
                           s.id === 'planetary_nebula' ? "~10,000 yr" :
@@ -4707,7 +4738,7 @@ if (!window._galaxyHasLoadedOnce) {
                         )
                       ),
                       
-                      (idx < arr.length - 1 && !(arr[idx+1].id === 'planetary_nebula' || arr[idx+1].id === 'supernova' || (lifecycleMass < 0.5 && arr[idx+1].id === 'black_dwarf'))) ? 
+                      (idx < arr.length - 1 && !(arr[idx+1].id === 'planetary_nebula' || arr[idx+1].id === 'supernova' || (lifecycleMass < HYDROGEN_FUSION_LIMIT && arr[idx+1].id === 'black_dwarf'))) ?
                         React.createElement("div", { className: "flex justify-center py-0.5" },
                           React.createElement("div", { className: "w-0.5 h-3 rounded-full" + (isDeathBranch ? " ml-6" : ""), style: { background: 'linear-gradient(to bottom, ' + s.color + '60, ' + arr[idx + 1].color + '60)' } })
                         ) 
@@ -4722,7 +4753,13 @@ if (!window._galaxyHasLoadedOnce) {
 
               // Core-collapse outcome panel
               (function () {
-                var collapseState = lifecycleMass < 8 ? {
+                var collapseState = lifecycleMass < HYDROGEN_FUSION_LIMIT ? {
+                  title: 'No sustained stellar fusion',
+                  badge: 'Substellar',
+                  desc: 'A brown dwarf is below the hydrogen-fusion limit, so it cools and fades instead of becoming a white dwarf, neutron star, or black hole.',
+                  accent: '#a16207',
+                  final: 'Cooling brown dwarf'
+                } : lifecycleMass < 8 ? {
                   title: 'No core-collapse supernova',
                   badge: 'Gentle ending',
                   desc: 'This star will shed outer layers and cool as a white dwarf instead of forming a neutron star or black hole.',
@@ -4784,15 +4821,16 @@ if (!window._galaxyHasLoadedOnce) {
 
                 var mass = lifecycleMass;
 
-                var msT = mass < 0.45 ? 3200 : mass < 0.8 ? 4500 : mass < 1.04 ? 5778 : mass < 1.4 ? 6500 : mass < 2.1 ? 8500 : mass < 16 ? 20000 : 40000;
+                var msT = mass < HYDROGEN_FUSION_LIMIT ? 1800 : mass < M_DWARF_LIMIT ? 3200 : mass < 0.8 ? 4500 : mass < 1.04 ? 5778 : mass < 1.4 ? 6500 : mass < 2.1 ? 8500 : mass < 16 ? 20000 : 40000;
 
                 var msL = Math.pow(mass, 3.5);
+                var massNoun = mass < HYDROGEN_FUSION_LIMIT ? "object" : "star";
 
                 var STAGE_HR = {
 
                   protostar: { T: 3800, L: Math.max(0.01, msL * 1.5), note: "sliding down the Hayashi track toward the main sequence" },
 
-                  main_sequence: { T: msT, L: msL, note: mass < 0.5 ? "a brown dwarf — below the true main sequence" : "on the main sequence, where it spends ~90% of its life" },
+                  main_sequence: { T: msT, L: msL, note: mass < HYDROGEN_FUSION_LIMIT ? "a brown dwarf — below the sustained hydrogen-fusion limit" : "on the main sequence, where it spends ~90% of its life" },
 
                   red_giant: { T: 3600, L: Math.max(80, msL * 200), note: "climbing the giant branch — cooler but far more luminous" },
 
@@ -4818,7 +4856,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   black_hole: "A black hole emits no light at all — nothing to plot. The diagram only maps shining stars.",
 
-                  black_dwarf: "A black dwarf is cold and dark — it has faded off the bottom of the map."
+                  black_dwarf: mass < HYDROGEN_FUSION_LIMIT ? "A cooling brown dwarf is faint and substellar — it fades below the main-sequence map." : "A black dwarf is a theoretical cooled white dwarf; the universe is not old enough for true black dwarfs yet."
 
                 };
 
@@ -4930,7 +4968,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   React.createElement("p", { className: "text-[11px] leading-relaxed mt-1 " + (cur ? "text-pink-300" : "text-amber-300") },
 
-                    cur ? "⭐ Your " + mass + " M☉ star is " + cur.note + "." : (OFF_CHART[activeStage] || "Select a lifecycle stage to plot your star.")
+                    cur ? "⭐ Your " + mass + " M☉ " + massNoun + " is " + cur.note + "." : (OFF_CHART[activeStage] || "Select a lifecycle stage to plot your star.")
 
                   )
 
@@ -4956,25 +4994,16 @@ if (!window._galaxyHasLoadedOnce) {
 
                   STAR_TYPES.map(function (st) {
 
-                    var isMatch = (lifecycleMass < 0.45 && st.id === 'M') ||
+                    var isMatch = spectralTypeForMass(lifecycleMass) === st.id;
 
-                      (lifecycleMass >= 0.45 && lifecycleMass < 0.8 && st.id === 'K') ||
-
-                      (lifecycleMass >= 0.8 && lifecycleMass < 1.04 && st.id === 'G') ||
-
-                      (lifecycleMass >= 1.04 && lifecycleMass < 1.4 && st.id === 'F') ||
-
-                      (lifecycleMass >= 1.4 && lifecycleMass < 2.1 && st.id === 'A') ||
-
-                      (lifecycleMass >= 2.1 && lifecycleMass < 16 && st.id === 'B') ||
-
-                      (lifecycleMass >= 16 && st.id === 'O');
-
-                    return React.createElement("div", { 
+                    return React.createElement("button", {
 
                       key: st.id,
+                      type: "button",
+                      "aria-pressed": isMatch ? "true" : "false",
+                      "aria-label": "Set mass to " + st.id + "-type star, " + st.mass + ", " + st.lifetime + " lifetime",
 
-                      className: "text-center p-2 rounded-xl border-2 transition-all cursor-pointer hover:scale-105 " +
+                      className: "text-center p-2 rounded-xl border-2 bg-transparent transition-all cursor-pointer hover:scale-105 " +
 
                         (isMatch ? "border-indigo-400 shadow-md shadow-indigo-100 scale-105" : "border-transparent hover:border-slate-200"),
 
@@ -5002,7 +5031,17 @@ if (!window._galaxyHasLoadedOnce) {
 
                 (function () {
 
-                  var matchType = lifecycleMass < 0.45 ? 'M' : lifecycleMass < 0.8 ? 'K' : lifecycleMass < 1.04 ? 'G' : lifecycleMass < 1.4 ? 'F' : lifecycleMass < 2.1 ? 'A' : lifecycleMass < 16 ? 'B' : 'O';
+                  var matchType = spectralTypeForMass(lifecycleMass);
+
+                  if (!matchType) {
+                    return React.createElement("div", { className: "mt-3 p-3 rounded-xl border border-stone-300 bg-stone-50" },
+                      React.createElement("div", { className: "flex items-center gap-2 mb-1.5" },
+                        React.createElement("span", { className: "text-lg" }, "\uD83E\uDEA8"),
+                        React.createElement("span", { className: "text-xs font-bold text-stone-700" }, "Brown dwarf (substellar)")
+                      ),
+                      React.createElement("p", { className: "text-[11px] text-stone-700 leading-relaxed" }, "This object is below about 0.08 solar masses, so it never settles onto the hydrogen-burning main sequence. It glows from leftover heat and slowly cools instead.")
+                    );
+                  }
 
                   var st = STAR_TYPES.find(function (s) { return s.id === matchType; });
 
@@ -5062,15 +5101,19 @@ if (!window._galaxyHasLoadedOnce) {
 
                 React.createElement("p", { className: "text-[11px] text-indigo-800 leading-relaxed" },
 
-                  lifecycleMass < 0.5 ? "Brown dwarfs are sometimes called 'failed stars.' They glow faintly from gravitational contraction, but never achieve hydrogen fusion. Jupiter is almost big enough to be one!" :
+                  lifecycleMass < HYDROGEN_FUSION_LIMIT ? "Brown dwarfs are sometimes called 'failed stars.' They glow faintly from leftover formation heat, but never sustain hydrogen fusion. They begin around 13 Jupiter masses, so Jupiter itself is far below the brown-dwarf range." :
 
-                    lifecycleMass < 2 ? "Stars like our Sun live ~10 billion years. Our Sun is about halfway through its life! When it dies, it will expand to engulf Mercury, Venus, and possibly Earth before shedding its outer layers into a beautiful planetary nebula." :
+                    lifecycleMass < M_DWARF_LIMIT ? "M-type red dwarfs are the most common true stars. They burn fuel so slowly that no red dwarf has had time to die since the universe began." :
 
-                      lifecycleMass < 8 ? "Larger low-mass stars burn hotter and die sooner. A 2 M\u2609 star lives only ~1.5 billion years. The relationship between mass and lifetime follows an inverse cube law: double the mass, live 8x shorter!" :
+                    lifecycleMass < 0.8 ? "K-type orange dwarfs are stable, long-lived stars. Astronomers like them for exoplanet studies because their habitable zones can last for many billions of years." :
+
+                    lifecycleMass < 1.4 ? "Stars near the Sun's mass live for billions of years. Our Sun is about halfway through its main-sequence life and will eventually become a red giant before shedding a planetary nebula." :
+
+                      lifecycleMass < 8 ? "Larger main-sequence stars burn hotter and die sooner. A 2 M\u2609 star lives only about 1-2 billion years, much shorter than the Sun." :
 
                         lifecycleMass < 25 ? "Neutron stars are so dense that a sugar-cube-sized piece weighs about 1 billion tons! They can spin up to 716 times per second and have magnetic fields trillions of times stronger than Earth's." :
 
-                          "Stellar black holes form from stars >25 M\u2609. The Milky Way alone has ~100 million of them! The most massive known stellar black hole, in the binary system LB-1, weighs about 70 solar masses."
+                          "Stellar black holes form when the collapsed cores of very massive stars become compact enough for gravity to trap light. Astronomers find them with X-ray binaries, stellar orbits, and gravitational waves."
 
                 )
 
@@ -5118,7 +5161,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                   activeStage === 'neutron_star' ? { nsm: true } :
 
-                  (activeStage === 'white_dwarf' || activeStage === 'black_dwarf') ? { wd: true } : {};
+                  (activeStage === 'white_dwarf' || (activeStage === 'black_dwarf' && lifecycleMass >= HYDROGEN_FUSION_LIMIT)) ? { wd: true } : {};
 
                 var stageMsg = activeStage === 'supernova' ? "💥 This explosion is forging oxygen, silicon, and calcium RIGHT NOW — glowing below." :
 
@@ -5128,9 +5171,11 @@ if (!window._galaxyHasLoadedOnce) {
 
                   activeStage === 'neutron_star' ? "If two neutron stars collide, they forge gold, platinum, and uranium in seconds." :
 
-                  activeStage === 'white_dwarf' ? "If a companion star dumps gas onto it, a white dwarf can detonate — the source of most of the iron in your blood." :
+                  activeStage === 'white_dwarf' ? "If a companion star dumps gas onto it, a white dwarf can detonate — the source of much of the iron in your blood." :
 
-                  activeStage === 'main_sequence' ? "Right now this star only fuses hydrogen into helium. Every heavier element comes from its DEATH." : null;
+                  activeStage === 'main_sequence' && lifecycleMass < HYDROGEN_FUSION_LIMIT ? "This brown dwarf is substellar: it glows from leftover heat, but it never sustains hydrogen fusion." :
+
+                  activeStage === 'main_sequence' ? "Right now this star fuses hydrogen into helium. Heavier elements come from later stellar stages, explosions, and compact-object mergers." : null;
 
                 return React.createElement("div", { className: "bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900 rounded-2xl border border-violet-400/30 p-4 shadow-lg" },
 

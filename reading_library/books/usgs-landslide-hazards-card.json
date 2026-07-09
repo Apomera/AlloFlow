@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-landslide-hazards-card",
+  "title": "USGS Landslide Hazards",
+  "description": "A USGS source card about landslides, triggers, maps, rainfall, slopes, and hazard mitigation.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Geology",
+    "Landslides",
+    "Hazards",
+    "Earth science"
+  ],
+  "authors": [
+    "USGS Landslide Hazards Program"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/programs/landslide-hazards",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/programs/landslide-hazards"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS landslide resources explain how gravity, slope, water, earthquakes, wildfire, and human activity can contribute to landslide hazards."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for local hazard research, map reading, and explanation writing about risk and prevention."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS materials are generally public domain as U.S. government work, but some linked media may have separate credit or rights requirements. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

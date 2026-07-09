@@ -71,6 +71,7 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Job Readiness');
     expect(html).toContain('Resume Builder');
     expect(html).toContain('Proof Locker');
+    expect(html).toContain('Interview Studio');
     expect(html).toContain('Communication');
     expect(html).toContain('Time Management');
     expect(html).toContain('Dental Care');
@@ -99,6 +100,7 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Job readiness check');
     expect(html).toContain('Resume builder check');
     expect(html).toContain('Proof locker check');
+    expect(html).toContain('Interview practice check');
     expect(html).toContain('Communication reset');
     expect(html).toContain('Time plan reset');
     expect(html).toContain('Body comfort reset');
@@ -278,6 +280,56 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Share-level cards');
     expect(html).toContain('Portfolio share packet');
     expect(html).toContain('Privacy first');
+  });
+
+  it('renders the interview practice studio Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'interviewstudio' } });
+
+    expect(html).toContain('data-lifeskills-interview-studio="true"');
+    expect(html).toContain('data-lifeskills-interview-practice-plan="true"');
+    expect(html).toContain('data-lifeskills-interview-rehearsal="true"');
+    expect(html).toContain('data-lifeskills-interview-proof-matcher="true"');
+    expect(html).toContain('data-lifeskills-interview-prep-packet="true"');
+    expect(html).toContain('Interview Practice Studio');
+    expect(html).toContain('Interview practice plan');
+    expect(html).toContain('5-10 minute routine');
+    expect(html).toContain('Practice plan progress');
+    expect(html).toContain('Use coaching feedback');
+    expect(html).toContain('Save practice plan');
+    expect(html).toContain('Daily practice steps');
+    expect(html).toContain('Interview practice plan progress');
+    expect(html).toContain('Calm rehearsal coach');
+    expect(html).toContain('Practice pace, confidence, and support scripts');
+    expect(html).toContain('Confidence before practice');
+    expect(html).toContain('Answer length target');
+    expect(html).toContain('Support script');
+    expect(html).toContain('Save rehearsal note');
+    expect(html).toContain('Use script in chat');
+    expect(html).toContain('Question-to-proof matcher');
+    expect(html).toContain('Pick the evidence before answering');
+    expect(html).toContain('Proof item or real example');
+    expect(html).toContain('Answer cue');
+    expect(html).toContain('Save proof cue');
+    expect(html).toContain('Use cue in chat');
+    expect(html).toContain('Question-to-proof cue');
+    expect(html).toContain('Interview prep checklist');
+    expect(html).toContain('Interview decisions');
+    expect(html).toContain('Persona-style practice chat');
+    expect(html).toContain('Auto-read off');
+    expect(html).toContain('Guided mode');
+    expect(html).toContain('Suggested responses');
+    expect(html).toContain('Mock interview conversation');
+    expect(html).toContain('Interview question bank');
+    expect(html).toContain('STAR answer builder');
+    expect(html).toContain('Interview reflection');
+    expect(html).toContain('Interview prep packet');
+    expect(html).toContain('Printable/exportable interview sheet');
+    expect(html).toContain('Packet preview');
+    expect(html).toContain('Save packet');
+    expect(html).toContain('Copy packet');
+    expect(html).toContain('Download .txt');
+    expect(html).toContain('Open print view');
+    expect(html).toContain('Save transcript');
   });
 
   it('renders the communication and conflict Life Skills addition', () => {

@@ -74,15 +74,35 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('id="transcriptSelectMatchesBtn"');
     expect(html).toContain('id="transcriptCopyPlanBtn"');
     expect(html).toContain('id="transcriptDecisionPanel"');
+    expect(html).toContain('id="importWordTimingsBtn"');
+    expect(html).toContain('id="importWordTimingsInput"');
+    expect(html).toContain('id="downloadWordTimingsBtn"');
     expect(html).toContain('id="wordRipplePanel"');
+    expect(html).toContain('id="wordRippleFillersBtn"');
+    expect(html).toContain('id="wordRippleRepeatsBtn"');
     expect(html).toContain('id="wordRippleCutBtn"');
     expect(html).toContain('id="wordRippleClearBtn"');
+    expect(html).toContain('id="wordCleanupPanel"');
+    expect(html).toContain('id="wordCleanupScanBtn"');
+    expect(html).toContain('id="wordCleanupApproveAllBtn"');
+    expect(html).toContain('id="wordCleanupClearBtn"');
+    expect(html).toContain('id="wordCleanupMuteBtn"');
+    expect(html).toContain('id="wordCleanupBuildBtn"');
+    expect(html).toContain('id="wordCleanupList"');
     expect(html).toContain('function applyTranscriptMuteSelection');
     expect(html).toContain('function selectTranscriptSearchMatches');
     expect(html).toContain('function recordTranscriptDecision');
     expect(html).toContain('function copyTranscriptEditPlan');
+    expect(html).toContain('function importTranscriptWordsFile');
+    expect(html).toContain('function downloadTranscriptWordsFile');
     expect(html).toContain('function renderWordRipplePanel');
+    expect(html).toContain('function selectWordRippleAuto');
     expect(html).toContain('function buildWordRippleCutScene');
+    expect(html).toContain('function renderWordCleanupPanel');
+    expect(html).toContain('function scanWordCleanupQueue');
+    expect(html).toContain('function muteWordCleanupQueue');
+    expect(html).toContain('function buildWordCleanupScene');
+    expect(html).toContain("source: 'transcript_cleanup'");
     expect(html).toContain('function addClipFromTranscriptSelection');
     expect(html).toContain('Transcript clip added to the scene builder.');
     expect(html).toContain('vsTranscriptSelectionRange');
@@ -95,6 +115,32 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('transcript_edits.json');
     expect(html).toContain('transcript_edits.txt');
     expect(html).toContain('transcript_words.json');
+    expect(html).toContain('audio_edits.json');
+    expect(html).toContain('project_readme.txt');
+    expect(html).toContain('vsBuildAudioEditManifest');
+    expect(html).toContain('vsBuildProjectBundleReadme');
+    expect(html).toContain('vsBuildProjectImportSummary');
+    expect(html).toContain('id="importSummaryBox"');
+    expect(html).toContain('id="editImportSummaryBox"');
+    expect(html).toContain('class="restore-summary import-summary-box"');
+    expect(html).toContain('function importSummaryPanelBoxes');
+    expect(html).toContain('function clearImportSummaryPanel');
+    expect(html).toContain('function renderImportSummaryPanel');
+    expect(html).toContain('.restore-chip.warn');
+    expect(html).toContain('restore-action-row');
+    expect(html).toContain('data-import-action');
+    expect(html).toContain("addAction('Review transcript'");
+    expect(html).toContain("addAction('Review audio'");
+    expect(html).toContain("addAction('Review credits'");
+    expect(html).toContain("addAction('Finish checklist'");
+    expect(html).toContain('mediaCreditCount: mediaCredits.length');
+    expect(html).toContain('cleanAudioState(audioState');
+    expect(html).toContain('audioEdits: sendAudioEdits');
+    expect(html).toContain('function bundleAudioFileName');
+    expect(html).toContain("audioMedia[e.name]");
+    expect(html).toContain("return 'audio/'");
+    expect(html).toContain('segments[].words');
+    expect(html).toContain('alloflow_transcript_words');
     expect(html).toContain('Using true word timestamps.');
     expect(html).toContain('source: \'transcript\'');
     const moduleText = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
@@ -105,9 +151,16 @@ describe('Scene builder popup wiring', () => {
     expect(moduleText).toContain('vsSanitizeTranscriptWords');
     expect(moduleText).toContain('vsTranscriptWordsForTake');
     expect(moduleText).toContain('vsCaptionCuesFromTranscriptWords');
+    expect(moduleText).toContain('vsTranscriptWordAutoSelect');
+    expect(moduleText).toContain('vsBuildTranscriptCleanupQueue');
     expect(moduleText).toContain('vsTranscriptWordSelectionRanges');
     expect(moduleText).toContain('vsBuildRippleKeepSegments');
+    expect(moduleText).toContain('vsBuildAudioEditManifest');
+    expect(moduleText).toContain('vsBuildProjectBundleReadme');
+    expect(moduleText).toContain('vsBuildProjectImportSummary');
     expect(moduleText).toContain('transcript_words.json');
+    expect(moduleText).toContain('audio_edits.json');
+    expect(moduleText).toContain('project_readme.txt');
   });
   it('keeps licensed media credit controls wired into exports', () => {
     const html = popup();
@@ -560,7 +613,31 @@ describe('vsZoomState', () => {
   });
 });
 
-// ─── vsGainAt (audio mute spans + master volume) ─────────────────────────────
+// --- Audio mute-span normalization + gain ------------------------------------
+describe('vsNormalizeMuteSpans', () => {
+  it('sorts, clamps, merges, and labels messy silence spans', () => {
+    const out = VS.vsNormalizeMuteSpans([
+      { start: 2, end: 1, source: 'manual', note: 'first pass' },
+      { start: 1.25, end: 1.6, source: 'transcript_cleanup', note: 'cleanup word' },
+      { start: Number.NaN, end: 3 },
+      { start: 5, end: 5.01 },
+      { start: 9.8, end: 12, source: 'ai_suggestion', note: 'tail' },
+    ], 10, 0.06);
+    expect(out).toHaveLength(2);
+    expect(out[0]).toMatchObject({ start: 1, end: 2, source: 'mixed' });
+    expect(out[0].note).toContain('first pass');
+    expect(out[0].note).toContain('cleanup word');
+    expect(out[1]).toMatchObject({ start: 9.8, end: 10, source: 'ai_suggestion', note: 'tail' });
+  });
+  it('keeps adjacent ranges separate when the gap is intentional', () => {
+    const out = VS.vsNormalizeMuteSpans([
+      { start: 1, end: 1.3 },
+      { start: 1.5, end: 1.8 },
+    ], 3, 0.05);
+    expect(out).toEqual([{ start: 1, end: 1.3 }, { start: 1.5, end: 1.8 }]);
+  });
+});
+
 describe('vsGainAt', () => {
   const spans = [{ start: 5, end: 8 }, { start: 20, end: 21.5 }];
   it('passes the master volume outside every span', () => {
@@ -586,9 +663,171 @@ describe('vsGainAt', () => {
   it('skips malformed spans without silencing everything', () => {
     expect(VS.vsGainAt([null, { start: NaN, end: 5 }, { start: 1 }], 1, 2)).toBe(1);
   });
+  it('uses normalized overlapping spans for playback checks', () => {
+    expect(VS.vsGainAt([{ start: 4, end: 3 }, { start: 3.95, end: 4.5 }], 1, 4.2)).toBe(0);
+  });
 });
 
 // ─── vsDetectFillerSpans (on-device "um" scrubber) ───────────────────────────
+describe('vsBuildAudioEditManifest', () => {
+  it('captures source audio edits and mix metadata without embedding audio bytes', () => {
+    const manifest = VS.vsBuildAudioEditManifest({
+      duration: 12,
+      audio: {
+        volume: 1.35,
+        removeAll: false,
+        muteSpans: [
+          { start: 3, end: 2, source: 'manual', note: 'pause' },
+          { start: 2.9, end: 4, source: 'transcript_cleanup', note: 'repeat' },
+        ],
+      },
+      musicBed: { start: 0, end: 20, volume: 0.4, name: 'Calm loop', blob: { size: 100 } },
+      narration: { volume: 0.8, mimeType: 'audio/webm' },
+      audioClips: [{ id: 'clip1', name: 'Bell', t: 5, volume: 0.7, type: 'audio/wav', blob: { size: 25 } }],
+      applyToSource: true,
+    });
+    expect(manifest).toMatchObject({
+      type: 'alloflow_audio_edits',
+      version: 1,
+      applyToSource: true,
+      bakedIntoVideo: false,
+      hasAudioEdits: true,
+      hasSourceAudioChanges: true,
+      muteSpanCount: 1,
+      hasMusicBed: true,
+      audioClipCount: 1,
+    });
+    expect(manifest.sourceAudio.muteSpans[0]).toMatchObject({ start: 2, end: 4, source: 'mixed' });
+    expect(manifest.musicBed).not.toHaveProperty('blob');
+    expect(manifest.narration).toMatchObject({ present: true, embedded: false, volume: 0.8 });
+    expect(manifest.audioClips[0]).toMatchObject({ id: 'clip1', start: 5, embedded: false, mimeType: 'audio/wav' });
+  });
+  it('can sanitize an imported manifest back into source-audio state', () => {
+    const imported = VS.vsBuildAudioEditManifest({
+      type: 'alloflow_audio_edits',
+      duration: 8,
+      applyToSource: true,
+      sourceAudio: { volume: 0.9, removeAll: false, muteSpans: [{ start: 1, end: 2 }] },
+    });
+    expect(imported.applyToSource).toBe(true);
+    expect(imported.sourceAudio).toMatchObject({ volume: 0.9, muteSpans: [{ start: 1, end: 2 }] });
+  });
+  it('marks narration and clip media as embedded only for editable project bundles', () => {
+    const manifest = VS.vsBuildAudioEditManifest({
+      duration: 9,
+      narration: { blob: { size: 12 }, fileName: 'audio/narration.webm', volume: 1 },
+      audioClips: [{ blob: { size: 8 }, fileName: 'audio/audio_clip_001_bell.wav', t: 2, volume: 0.6, type: 'audio/wav' }],
+      mediaEmbedded: true,
+      applyToSource: true,
+    });
+    expect(manifest.narration).toMatchObject({ embedded: true, fileName: 'audio/narration.webm' });
+    expect(manifest.audioClips[0]).toMatchObject({ embedded: true, fileName: 'audio/audio_clip_001_bell.wav' });
+    const auditOnly = VS.vsBuildAudioEditManifest(Object.assign({}, manifest, { mediaEmbedded: false, applyToSource: false }));
+    expect(auditOnly.narration.embedded).toBe(false);
+    expect(auditOnly.audioClips[0].embedded).toBe(false);
+  });
+});
+
+describe('vsBuildProjectBundleReadme', () => {
+  it('explains editable bundle restore behavior and licensing boundaries', () => {
+    const audioManifest = VS.vsBuildAudioEditManifest({
+      duration: 12,
+      audio: { muteSpans: [{ start: 1, end: 2 }] },
+      narration: { blob: { size: 12 }, fileName: 'audio/narration.webm' },
+      audioClips: [{ blob: { size: 8 }, fileName: 'audio/audio_clip_001_bell.wav', t: 4 }],
+      mediaEmbedded: true,
+      applyToSource: true,
+    });
+    const text = VS.vsBuildProjectBundleReadme({
+      title: 'Fractions demo',
+      entries: [
+        'meta.json',
+        'fractions_demo.webm',
+        'fractions_demo.vtt',
+        'audio_edits.json',
+        'audio/narration.webm',
+        'audio/audio_clip_001_bell.wav',
+        'media_credits.json',
+      ],
+      audioManifest,
+      editableSource: true,
+      generatedAt: '2026-07-09T10:00:00Z',
+    });
+    expect(text).toMatch(/Editable source project/);
+    expect(text).toMatch(/Source audio volume\/mute edits/);
+    expect(text).toMatch(/Narration audio/);
+    expect(text).toMatch(/Added audio clips \(1\)/);
+    expect(text).toMatch(/AGPL-3\.0/);
+    expect(text).toMatch(/Media inside this bundle keeps its own license/);
+    expect(text).toMatch(/media_credits\.json/);
+  });
+  it('marks rendered export bundle audio metadata as audit-only', () => {
+    const text = VS.vsBuildProjectBundleReadme({
+      title: 'Rendered lesson',
+      entries: ['meta.json', 'rendered_lesson.webm', 'audio_edits.json'],
+      audioManifest: { duration: 5, sourceAudio: { muteSpans: [{ start: 0, end: 1 }] }, applyToSource: false, bakedIntoVideo: true },
+      editableSource: false,
+      generatedAt: '2026-07-09T10:00:00Z',
+    });
+    expect(text).toMatch(/Rendered export bundle/);
+    expect(text).toMatch(/audit only for rendered audio/);
+    expect(text).not.toMatch(/Source audio volume\/mute edits/);
+  });
+});
+
+describe('vsBuildProjectImportSummary', () => {
+  it('summarizes restored editable bundle contents', () => {
+    const summary = VS.vsBuildProjectImportSummary({
+      captionCount: 4,
+      transcriptEditCount: 2,
+      transcriptWordCount: 40,
+      chapterCount: 3,
+      mediaCreditCount: 2,
+      hasMusicBed: true,
+      audioManifest: {
+        duration: 10,
+        applyToSource: true,
+        sourceAudio: { muteSpans: [{ start: 1, end: 2 }] },
+        narration: { embedded: true, fileName: 'audio/narration.webm' },
+        audioClips: [{ embedded: true, fileName: 'audio/audio_clip_001_bell.wav', start: 4 }],
+      },
+      narrationRestored: true,
+      audioClipCount: 1,
+    });
+    expect(summary.status).toBe('ok');
+    expect(summary.text).toMatch(/Restored 4 captions/);
+    expect(summary.text).toMatch(/source audio edits/);
+    expect(summary.text).toMatch(/narration audio/);
+    expect(summary.text).toMatch(/1 audio clip/);
+    expect(summary.text).toMatch(/music bed/);
+    expect(summary.restored).toContain('2 media credits');
+  });
+  it('warns when embedded audio referenced by a bundle is missing', () => {
+    const summary = VS.vsBuildProjectImportSummary({
+      audioManifest: {
+        duration: 8,
+        applyToSource: true,
+        narration: { embedded: true, fileName: 'audio/narration.webm' },
+      },
+      missingAudioFiles: ['audio/narration.webm'],
+    });
+    expect(summary.status).toBe('warn');
+    expect(summary.text).toMatch(/Missing bundled audio/);
+    expect(summary.text).toMatch(/audio\/narration\.webm/);
+  });
+  it('labels rendered bundle audio metadata as review-only', () => {
+    const summary = VS.vsBuildProjectImportSummary({
+      audioManifest: {
+        duration: 8,
+        applyToSource: false,
+        sourceAudio: { muteSpans: [{ start: 1, end: 2 }] },
+      },
+    });
+    expect(summary.status).toBe('ok');
+    expect(summary.text).toMatch(/audit-only/);
+  });
+});
+
 describe('vsDetectFillerSpans', () => {
   const w = (word, start, end) => ({ word, start, end });
   it('finds um/uh variants with 50ms padding', () => {
@@ -619,9 +858,27 @@ describe('vsDetectFillerSpans', () => {
     expect(merged[0].text).toContain('um');
     expect(merged[0].text).toContain('uh');
   });
+  it('selects filler and repeated transcript words for ripple review', () => {
+    const words = [
+      { index: 10, word: 'So', start: 0, end: 0.2 },
+      { index: 11, word: 'um', start: 0.3, end: 0.5 },
+      { index: 12, word: 'the', start: 0.8, end: 1.0 },
+      { index: 13, word: 'the', start: 1.1, end: 1.25 },
+      { index: 14, word: 'lesson', start: 1.4, end: 1.8 },
+    ];
+    expect(VS.vsTranscriptWordAutoSelect(words, 'fillers')).toEqual([11]);
+    expect(VS.vsTranscriptWordAutoSelect(words, 'repeats')).toEqual([12]);
+    expect(VS.vsTranscriptWordAutoSelect(words, 'fillers_and_repeats')).toEqual([11, 12]);
+    const queue = VS.vsBuildTranscriptCleanupQueue(words, 'fillers_and_repeats');
+    expect(queue).toEqual([
+      expect.objectContaining({ wordIndex: 11, text: 'um', reason: 'filler', checked: true }),
+      expect.objectContaining({ wordIndex: 12, text: 'the', reason: 'repeat', checked: true }),
+    ]);
+  });
   it('tolerates malformed word entries', () => {
     expect(VS.vsDetectFillerSpans([null, w('', 1, 2), w('um', NaN, 2), w('um', 3, 3)])).toHaveLength(0);
     expect(VS.vsDetectFillerSpans('nope')).toEqual([]);
+    expect(VS.vsTranscriptWordAutoSelect('nope', 'fillers')).toEqual([]);
   });
 });
 
@@ -712,6 +969,14 @@ describe('vsTranscriptSelectionRange', () => {
     expect(words[0]).toMatchObject({ start: 0.1, end: 0.32, source: 'true', normalized: 'please' });
     expect(words[2].start).toBeCloseTo(0.8);
     expect(words[3].end).toBeCloseTo(1.4);
+    const nested = VS.vsSanitizeTranscriptWords({
+      segments: [
+        { start: 0, end: 1, text: 'segment fallback' },
+        { words: [{ word: 'Nested', start: 1.1, end: 1.3 }, { word: 'words', start: 1.35, end: 1.7 }] },
+      ],
+    }, 2);
+    expect(nested.map((w) => w.text)).toEqual(['segment', 'fallback', 'Nested', 'words']);
+    expect(nested[2]).toMatchObject({ cueIndex: 1, source: 'true' });
     const picked = VS.vsTranscriptWordsForTake([{ start: 0, end: 2, text: 'Fallback only' }], raw, 2);
     expect(picked[0].source).toBe('true');
     const fallback = VS.vsTranscriptWordsForTake([{ start: 0, end: 2, text: 'Fallback only' }], [], 2);
@@ -997,12 +1262,13 @@ describe('caption polish, chapters, and teaching inserts', () => {
     const preset = VS.vsAudioPolishPreset('quiet voice');
     expect(preset).toMatchObject({ key: 'quiet_voice', audio: { volume: 1.25, removeAll: false } });
     const applied = VS.vsApplyAudioPolishPreset({
-      audio: { volume: 0.9, removeAll: false, muteSpans: [{ start: 1, end: 2 }] },
+      audio: { volume: 0.9, removeAll: false, muteSpans: [{ start: 2, end: 1 }, { start: 1.8, end: 2.4 }] },
       musicBed: { start: 0, end: 60, volume: 0.8, fadeIn: 0, fadeOut: 0, duck: false, name: 'Loop' },
       duration: 60,
     }, 'music_under');
     expect(applied.audio).toMatchObject({ volume: 1, removeAll: false });
     expect(applied.audio.muteSpans).toHaveLength(1);
+    expect(applied.audio.muteSpans[0]).toMatchObject({ start: 1, end: 2.4 });
     expect(applied.musicBed).toMatchObject({ volume: 0.16, fadeIn: 2, fadeOut: 3, duck: true });
     expect(VS.vsApplyAudioPolishPreset({ audio: {}, duration: 20 }, 'voiceover_replace').audio.removeAll).toBe(true);
   });
@@ -1412,7 +1678,7 @@ describe('vsMakePackReference (pack-size guard)', () => {
     const ref = VS.vsMakePackReference({
       title: 'Fractions demo', duration: 93.6, size: 14680064,
       sha256: 'A'.repeat(64).toLowerCase(), fileName: 'fractions_demo.webm',
-      hasCaptions: true, hasTranscriptEdits: true, transcriptEditCount: 3, hasTranscriptWords: true, transcriptWordCount: 120, hasVisualDescriptions: true, hasVisualPrompts: true, hasLocalizations: true, localizationCount: 2, hasVisualOverlays: true, hasMusicBed: true, hasMediaCredits: true, mediaCreditCount: 2, mediaCreditWarningCount: 1, resourceCueCount: 3, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
+      hasCaptions: true, hasTranscriptEdits: true, transcriptEditCount: 3, hasTranscriptWords: true, transcriptWordCount: 120, hasAudioEdits: true, audioEditsApplyToSource: true, muteSpanCount: 7, hasVisualDescriptions: true, hasVisualPrompts: true, hasLocalizations: true, localizationCount: 2, hasVisualOverlays: true, hasMusicBed: true, hasMediaCredits: true, mediaCreditCount: 2, mediaCreditWarningCount: 1, resourceCueCount: 3, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
     });
     expect(ref.type).toBe('videoRef');
     expect(ref.durationSec).toBe(94);
@@ -1422,6 +1688,9 @@ describe('vsMakePackReference (pack-size guard)', () => {
     expect(ref.transcriptEditCount).toBe(3);
     expect(ref.hasTranscriptWords).toBe(true);
     expect(ref.transcriptWordCount).toBe(120);
+    expect(ref.hasAudioEdits).toBe(true);
+    expect(ref.audioEditsApplyToSource).toBe(true);
+    expect(ref.muteSpanCount).toBe(7);
     expect(ref.hasVisualDescriptions).toBe(true);
     expect(ref.hasVisualPrompts).toBe(true);
     expect(ref.hasLocalizations).toBe(true);

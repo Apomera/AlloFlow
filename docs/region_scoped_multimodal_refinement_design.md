@@ -1,5 +1,7 @@
 # Region-Scoped Multimodal Refinement — Design Spec
 
+> **Roadmap snapshot, not current shipped-status authority (2026-07-09):** This June 23 design captures the region-scoped refinement direction and local implementation status at that time. Verify current code, deployment state, and Canvas smoke status before treating any "shipped so far" item below as available to users.
+
 **Status:** Roadmap (2026-06-23). **SHIPPED so far:** S2 palette-with-guaranteed-contrast (all 4 slices), S1 scoped-intent + freehand drag-region select, the S3 reading-order guard `checkReadingOrderPreserved`, and S3 block-restyle (slice 1: curated callout/list transforms, triple-gated; slice 2: the AI "where would a callout/list help?" proposal pass; slice 3: outline-safe heading promotion — all adversarially hardened). All local/unpushed, deploy held; Canvas-smoke pending for the UI surfaces.
 **One-line vision:** *Direct, multimodal annotation on the live document → an agent interprets intent → it executes via region-scoped deterministic micro-tools, with readback + per-region accept/revert.*
 

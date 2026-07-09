@@ -43,6 +43,10 @@
   }
 
   var OG_THEME_STORAGE_KEY = 'openGrooveThemePreference';
+  var OG_DRAFT_STORAGE_KEY = 'openGrooveDraftProject';
+  var OG_DRAFT_META_STORAGE_KEY = 'openGrooveDraftMeta';
+  var OG_DRAFT_SOFT_CHAR_LIMIT = 1800000;
+  var OG_DRAFT_HARD_CHAR_LIMIT = 4200000;
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -87,6 +91,54 @@
     return preference === 'contrast' ? 'High Contrast' : preference === 'dark' ? 'Dark' : 'Light';
   }
 
+  function ogStorageRead(rootLike, key) {
+    try {
+      return rootLike.localStorage ? rootLike.localStorage.getItem(key) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function ogStorageWrite(rootLike, key, value) {
+    if (!rootLike.localStorage) throw new Error('Browser storage is unavailable.');
+    rootLike.localStorage.setItem(key, value);
+  }
+
+  function ogStorageRemove(rootLike, key) {
+    try {
+      if (rootLike.localStorage) rootLike.localStorage.removeItem(key);
+    } catch (_) {}
+  }
+
+  function ogReadDraftMeta(rootLike) {
+    try {
+      var text = ogStorageRead(rootLike, OG_DRAFT_META_STORAGE_KEY);
+      if (!text) return null;
+      var meta = JSON.parse(text);
+      return meta && meta.savedAt ? meta : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function ogFormatDraftTime(value) {
+    try {
+      var date = new Date(value);
+      if (!isFinite(date.getTime())) return 'unknown time';
+      return date.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    } catch (_) {
+      return 'unknown time';
+    }
+  }
+
+  function ogDescribeDraftMeta(meta) {
+    if (!meta) return 'Draft: none';
+    var title = meta.title || 'Untitled Groove';
+    var size = meta.chars ? ' - ' + Math.max(1, Math.round(meta.chars / 1024)) + ' KB' : '';
+    var audio = meta.thin ? ' - audio not embedded' : '';
+    return 'Draft: ' + title + ' saved ' + ogFormatDraftTime(meta.savedAt) + size + audio;
+  }
+
   function OpenGrooveStudio(props) {
     props = props || {};
     var React = props.React || root.React;
@@ -119,6 +171,12 @@
     var transportViewPair = React.useState({ active: false, mode: 'pattern', progress: 0, label: 'Stopped', loop: false });
     var transportView = transportViewPair[0];
     var setTransportView = transportViewPair[1];
+    var draftMetaPair = React.useState(function () { return ogReadDraftMeta(root); });
+    var draftMeta = draftMetaPair[0];
+    var setDraftMeta = draftMetaPair[1];
+    var draftStatusPair = React.useState('');
+    var draftStatus = draftStatusPair[0];
+    var setDraftStatus = draftStatusPair[1];
     var dependencyTick = React.useState(0);
     var setDependencyTick = dependencyTick[1];
 
@@ -249,6 +307,9 @@
     var stemEnginePair = React.useState('manual-import');
     var selectedStemEngine = stemEnginePair[0];
     var setSelectedStemEngine = stemEnginePair[1];
+    var factoryKitPair = React.useState('openGrooveProceduralKit');
+    var selectedFactoryKitId = factoryKitPair[0];
+    var setSelectedFactoryKitId = factoryKitPair[1];
     var notationEntryPair = React.useState('C4:q D4:q Eb4:h | G4:h R:q Bb4:q');
     var notationEntry = notationEntryPair[0];
     var setNotationEntry = notationEntryPair[1];
@@ -275,6 +336,8 @@
     var previousFocusRef = React.useRef(null);
     var engineRef = React.useRef(null);
     var transportRef = React.useRef({ token: 0, timers: [], interval: null });
+    var autosaveReadyRef = React.useRef(false);
+    var autosaveTimerRef = React.useRef(null);
     var recorderRef = React.useRef(null);
     var recorderChunksRef = React.useRef([]);
     var fileInputRef = React.useRef(null);
@@ -374,6 +437,24 @@
         if (root.removeEventListener) root.removeEventListener('keydown', handleComputerKey);
       };
     }, [keyboardOctave, keyboardRecordEnabled, keyboardMode, keyboardDurationSteps, keyboardStep, selectedBar, selectedPatternId, project]);
+
+    React.useEffect(function () {
+      if (!C || !C.ogSerializeProject || !project) return undefined;
+      if (!autosaveReadyRef.current) {
+        autosaveReadyRef.current = true;
+        return undefined;
+      }
+      clearPendingDraftAutosave();
+      var id = root.setTimeout(function () {
+        autosaveTimerRef.current = null;
+        saveDraftNow(false);
+      }, 700);
+      autosaveTimerRef.current = id;
+      return function () {
+        if (autosaveTimerRef.current === id) autosaveTimerRef.current = null;
+        root.clearTimeout(id);
+      };
+    }, [project, !!C]);
 
     function currentPatternIn(proj) {
       return C.ogFindPattern && C.ogFindPattern(proj, selectedPatternId) || proj.patterns[0];
@@ -722,7 +803,7 @@
         ogAnnounce(pad.name);
         return;
       }
-      A.ogPlayDrum(engine, pad.engine, engine.ctx.currentTime + 0.01, 0.85);
+      A.ogPlayDrum(engine, pad.engine, engine.ctx.currentTime + 0.01, 0.85, null, pad.proceduralVoice);
       ogAnnounce(pad.name);
     }
 
@@ -1504,6 +1585,22 @@
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
 
+    function installFactoryKit() {
+      if (!drumTrack || !C.ogInstallFactorySampleKit) {
+        addToast('Factory kit installation is not available in this build.', 'info');
+        return;
+      }
+      var installed = null;
+      var kitId = selectedFactoryKit && selectedFactoryKit.id || selectedFactoryKitId || 'openGrooveProceduralKit';
+      mutate(function (next) {
+        var nextDrums = next.tracks.find(function (track) { return track.type === 'drumRack'; });
+        installed = C.ogInstallFactorySampleKit(next, nextDrums.id, kitId, { createdAt: Date.now() });
+      });
+      if (!installed) return;
+      var reused = installed.reusedCount ? ' Reused ' + installed.reusedCount + '.' : '';
+      addToast(installed.name + ' assigned to ' + installed.assignedCount + ' pads.' + reused, 'success');
+      ogAnnounce(installed.name + ' installed');
+    }
     function prepareStemSlots() {
       if (!C.ogPrepareStemSlots) {
         addToast('Stem preparation is not available in this build yet.', 'info');
@@ -1719,6 +1816,86 @@
       ogAnnounce('Stopped');
     }
 
+    function buildDraftPayload() {
+      if (!C || !C.ogSerializeProject) throw new Error('Project serializer is unavailable.');
+      var text = C.ogSerializeProject(project);
+      var thin = false;
+      if (text.length > OG_DRAFT_SOFT_CHAR_LIMIT) {
+        text = C.ogSerializeProject(project, { includeEmbeddedAudio: false });
+        thin = true;
+      }
+      if (text.length > OG_DRAFT_HARD_CHAR_LIMIT) throw new Error('Project is too large for browser draft storage.');
+      return { text: text, thin: thin };
+    }
+
+    function clearPendingDraftAutosave() {
+      if (!autosaveTimerRef.current) return;
+      root.clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = null;
+    }
+
+    function saveDraftNow(manual) {
+      try {
+        if (manual) clearPendingDraftAutosave();
+        var payload = buildDraftPayload();
+        var meta = {
+          savedAt: new Date().toISOString(),
+          title: project.title || 'Untitled Groove',
+          schemaVersion: project.schemaVersion || null,
+          chars: payload.text.length,
+          thin: payload.thin
+        };
+        ogStorageWrite(root, OG_DRAFT_STORAGE_KEY, payload.text);
+        ogStorageWrite(root, OG_DRAFT_META_STORAGE_KEY, JSON.stringify(meta));
+        setDraftMeta(meta);
+        setDraftStatus(ogDescribeDraftMeta(meta));
+        if (manual) {
+          addToast(payload.thin ? 'Draft saved without embedded audio.' : 'Draft saved.', 'success');
+          ogAnnounce('Draft saved');
+        }
+        return meta;
+      } catch (err) {
+        var message = 'Draft: not saved - ' + (err && err.message || 'unknown error');
+        setDraftStatus(message);
+        if (manual) addToast(message, 'error');
+        return null;
+      }
+    }
+
+    function restoreDraft() {
+      try {
+        var text = ogStorageRead(root, OG_DRAFT_STORAGE_KEY);
+        if (!text) throw new Error('No browser draft is available.');
+        var next = C.ogParseProject(text);
+        commitProject(next);
+        if (next.patterns && next.patterns[0]) choosePattern(next.patterns[0].id);
+        restoreEmbeddedSamplesFor(next, false);
+        var meta = ogReadDraftMeta(root);
+        setDraftMeta(meta);
+        setDraftStatus(meta ? 'Draft restored: ' + (meta.title || next.title || 'Untitled Groove') : 'Draft restored');
+        addToast(meta && meta.thin ? 'Draft restored. Embedded audio was not stored in the browser draft.' : 'Draft restored.', 'success');
+        ogAnnounce('Draft restored');
+      } catch (err) {
+        var message = 'Could not restore draft: ' + (err && err.message || 'unknown error');
+        setDraftStatus(message);
+        addToast(message, 'error');
+      }
+    }
+
+    function clearDraft() {
+      clearPendingDraftAutosave();
+      ogStorageRemove(root, OG_DRAFT_STORAGE_KEY);
+      ogStorageRemove(root, OG_DRAFT_META_STORAGE_KEY);
+      setDraftMeta(null);
+      setDraftStatus('Draft: cleared');
+      addToast('Draft cleared.', 'success');
+      ogAnnounce('Draft cleared');
+    }
+
+    function draftStatusLabel() {
+      return draftStatus || ogDescribeDraftMeta(draftMeta);
+    }
+
     function saveProject() {
       var text = C.ogSerializeProject(project);
       if (jsonRef.current) jsonRef.current.value = text;
@@ -1857,6 +2034,9 @@
       ? compositionNames.scaleDegrees.map(function (degree) { return degree.note; })
       : C.ogBuildScale ? C.ogBuildScale(project.key && project.key.tonic || 'C', project.key && project.key.mode || 'minor') : [];
     var sampleAssets = (project.assets || []).filter(function (asset) { return asset.type === 'recording' || asset.type === 'sample' || asset.type === 'loop'; });
+    var factoryKits = C.ogListFactorySampleKits ? C.ogListFactorySampleKits() : [];
+    var selectedFactoryKit = factoryKits.filter(function (kit) { return kit.id === selectedFactoryKitId; })[0] || factoryKits[0] || null;
+    var selectedFactoryKitValue = selectedFactoryKit && selectedFactoryKit.id || selectedFactoryKitId;
     var nav = root.navigator || {};
     var stemCapabilities = {
       cpuCores: nav.hardwareConcurrency || 0,
@@ -2988,6 +3168,21 @@
               }, recording ? 'Stop' : 'Record Pad'),
               h('button', { style: styles.smallButton, onClick: openImportPicker }, 'Import'),
               h('button', { style: styles.smallButton, onClick: function () { createOwnedSampleSlot(null); } }, 'Owned Slot'),
+              factoryKits.length ? h('label', { style: styles.fieldLabel }, 'Kit',
+                h('select', {
+                  style: styles.select,
+                  value: selectedFactoryKitValue,
+                  onChange: function (ev) { setSelectedFactoryKitId(ev.target.value); },
+                  'aria-label': 'Factory kit'
+                }, factoryKits.map(function (kit) {
+                  return h('option', { key: kit.id, value: kit.id }, kit.name);
+                }))) : null,
+              h('button', {
+                style: Object.assign({}, styles.smallButton, !factoryKits.length ? styles.disabledButton : null),
+                onClick: installFactoryKit,
+                disabled: !factoryKits.length,
+                'aria-label': 'Install selected original factory kit'
+              }, 'Install Kit'),
               h('button', { style: styles.smallButton, onClick: prepareAttribution }, 'Attribution'),
               h('input', {
                 ref: fileInputRef,
@@ -3075,10 +3270,24 @@
               h('button', { style: styles.smallButton, onClick: saveProject }, 'Prepare JSON'),
               h('button', { style: styles.smallButton, onClick: saveThinProject }, 'Thin JSON'),
               h('button', { style: styles.smallButton, onClick: loadProjectFromText }, 'Load Text'),
+              h('button', { style: styles.smallButton, onClick: function () { saveDraftNow(true); }, 'aria-label': 'Save browser draft' }, 'Save Draft'),
+              h('button', {
+                style: Object.assign({}, styles.smallButton, !draftMeta ? styles.disabledButton : null),
+                onClick: restoreDraft,
+                disabled: !draftMeta,
+                'aria-label': 'Restore browser draft'
+              }, 'Restore Draft'),
+              h('button', {
+                style: Object.assign({}, styles.smallButton, !draftMeta ? styles.disabledButton : null),
+                onClick: clearDraft,
+                disabled: !draftMeta,
+                'aria-label': 'Clear browser draft'
+              }, 'Clear Draft'),
               h('button', { style: styles.smallButton, onClick: downloadProject }, 'Download'),
               h('button', { style: styles.smallButton, onClick: prepareMusicXml }, 'MusicXML'),
               h('button', { style: styles.smallButton, onClick: downloadMidi }, 'Pattern MIDI'),
               h('button', { style: styles.smallButton, onClick: downloadSongMidi }, 'Song MIDI')),
+            h('div', { style: styles.sampleRegion, role: 'status', 'aria-live': 'polite' }, draftStatusLabel()),
             h('textarea', {
               ref: jsonRef,
               defaultValue: '',

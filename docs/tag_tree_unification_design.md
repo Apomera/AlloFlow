@@ -1,5 +1,7 @@
 # Approach 1 — Unified Tag Tree (createTaggedPdf)
 
+> **Historical design/mechanism snapshot, not current implementation guidance (2026-07-09):** This note captured a proposed tag-tree unification path and harness findings at that time. Verify current PDF pipeline code, OCR/tagging fixes, veraPDF results, and `PIPELINE_ARCHITECTURE.md` before implementing any slice from this document.
+
 Status: **design + mechanism proven; Slice 1 ready to implement.**
 Owner: doc/PDF remediation pipeline. Gate: `tests/e2e/pdf_tag_tree_golden.spec.ts`.
 

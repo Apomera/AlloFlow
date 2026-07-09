@@ -284,6 +284,68 @@
       }
     },
     {
+      id: 'wideUnisonLead',
+      name: 'Wide Unison Lead',
+      role: 'lead',
+      family: 'Synth',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Wide Unison Lead',
+        presetId: 'wideUnisonLead',
+        oscillator: 'sawtooth',
+        filter: { type: 'lowpass', cutoff: 5600, q: 1.7 },
+        envelope: { attack: 0.007, decay: 0.16, sustain: 0.66, release: 0.32 },
+        partials: [
+          { ratio: 1, type: 'sawtooth', gain: 0.84 },
+          { ratio: 2, type: 'triangle', gain: 0.18, detune: -5 },
+          { ratio: 3, type: 'sine', gain: 0.06, detune: 7 }
+        ],
+        unison: { voices: 5, detune: 18, spread: 0.65 }
+      }
+    },
+    {
+      id: 'tapeKeys',
+      name: 'Tape Keys',
+      role: 'keys',
+      family: 'Keys',
+      sourceType: 'synth',
+      instrument: {
+        name: 'Tape Keys',
+        presetId: 'tapeKeys',
+        oscillator: 'triangle',
+        filter: { type: 'lowpass', cutoff: 4300, q: 0.7 },
+        envelope: { attack: 0.018, decay: 0.44, sustain: 0.42, release: 0.96 },
+        partials: [
+          { ratio: 1, type: 'triangle', gain: 0.86 },
+          { ratio: 1.995, type: 'sine', gain: 0.18, detune: -6 },
+          { ratio: 3.01, type: 'triangle', gain: 0.08, detune: 5 }
+        ],
+        transient: { gain: 0.055, duration: 0.024, cutoff: 3200 },
+        unison: { voices: 3, detune: 7, spread: 0.35 }
+      }
+    },
+    {
+      id: 'fmBell',
+      name: 'FM Bell',
+      role: 'mallet',
+      family: 'Mallets',
+      sourceType: 'synth',
+      instrument: {
+        name: 'FM Bell',
+        presetId: 'fmBell',
+        oscillator: 'sine',
+        filter: { type: 'bandpass', cutoff: 5200, q: 3.1 },
+        envelope: { attack: 0.003, decay: 1.2, sustain: 0.04, release: 1.6 },
+        partials: [
+          { ratio: 1, type: 'sine', gain: 0.82 },
+          { ratio: 2.71, type: 'sine', gain: 0.32, detune: 4 },
+          { ratio: 3.92, type: 'triangle', gain: 0.18, detune: -9 },
+          { ratio: 5.43, type: 'sine', gain: 0.08 }
+        ],
+        transient: { gain: 0.09, duration: 0.012, cutoff: 8400 }
+      }
+    },
+    {
       id: 'classicPiano',
       name: 'Classic Piano',
       role: 'keys',
@@ -762,6 +824,9 @@
     brightLead: { low: 'C3', high: 'C6', register: 'lead' },
     softPad: { low: 'C2', high: 'C6', register: 'wide pad' },
     glassPluck: { low: 'C3', high: 'C6', register: 'plucked lead' },
+    wideUnisonLead: { low: 'C2', high: 'C6', register: 'stacked synth lead' },
+    tapeKeys: { low: 'A0', high: 'C7', register: 'lo-fi keyboard' },
+    fmBell: { low: 'C3', high: 'C7', register: 'bright bell' },
     classicPiano: { low: 'A0', high: 'C8', register: 'full keyboard' },
     electricPiano: { low: 'A0', high: 'C8', register: 'full keyboard' },
     tonewheelOrgan: { low: 'C2', high: 'C7', register: 'manuals' },
@@ -880,6 +945,92 @@
     ['pad_14', 'Chord Hit', 'chord'],
     ['pad_15', 'Vocal Chop', 'vocal'],
     ['pad_16', 'FX', 'fx']
+  ];
+  var OG_FACTORY_SAMPLE_KITS = [
+    {
+      id: 'openGrooveProceduralKit',
+      name: 'Open Groove Procedural Kit',
+      version: 1,
+      license: 'Original',
+      creator: 'Open Groove',
+      source: 'Built-in procedural synthesis',
+      voice: { character: 'studio', pitch: 1, brightness: 1, decay: 1, noise: 1, click: 1, body: 1 },
+      originalUrl: 'generated://open-groove/procedural-kit',
+      pads: [
+        { padId: 'pad_1', name: 'Deep Kick', engine: 'kick', durationSec: 0.42, gain: 0.95, tags: ['kick', 'drum'] },
+        { padId: 'pad_2', name: 'Body Snare', engine: 'snare', durationSec: 0.26, gain: 0.88, tags: ['snare', 'drum'] },
+        { padId: 'pad_3', name: 'Tight Hat', engine: 'hihat', durationSec: 0.08, gain: 0.72, chokeGroup: 'hat', tags: ['hat', 'drum'] },
+        { padId: 'pad_4', name: 'Open Air Hat', engine: 'openhat', durationSec: 0.42, gain: 0.78, chokeGroup: 'hat', tags: ['hat', 'drum'] },
+        { padId: 'pad_5', name: 'Layered Clap', engine: 'clap', durationSec: 0.18, gain: 0.84, tags: ['clap', 'drum'] },
+        { padId: 'pad_6', name: 'Bright Rim', engine: 'rim', durationSec: 0.12, gain: 0.78, tags: ['rim', 'drum'] },
+        { padId: 'pad_7', name: 'Low Tom', engine: 'tomLow', durationSec: 0.34, gain: 0.86, tags: ['tom', 'drum'] },
+        { padId: 'pad_8', name: 'High Tom', engine: 'tomHigh', durationSec: 0.28, gain: 0.82, tags: ['tom', 'drum'] },
+        { padId: 'pad_9', name: 'Wash Crash', engine: 'crash', durationSec: 0.9, gain: 0.68, tags: ['cymbal', 'drum'] },
+        { padId: 'pad_10', name: 'Ping Ride', engine: 'ride', durationSec: 0.78, gain: 0.66, tags: ['cymbal', 'drum'] },
+        { padId: 'pad_11', name: 'Soft Shaker', engine: 'shaker', durationSec: 0.1, gain: 0.62, tags: ['shaker', 'percussion'] },
+        { padId: 'pad_12', name: 'Wood Perc', engine: 'perc', durationSec: 0.16, gain: 0.76, tags: ['percussion', 'wood'] },
+        { padId: 'pad_13', name: 'Round Sub Hit', engine: 'sub', durationSec: 0.48, gain: 0.9, tags: ['sub', 'bass'] },
+        { padId: 'pad_14', name: 'Minor Chord Hit', engine: 'chord', durationSec: 0.52, gain: 0.7, tags: ['chord', 'tonal'] },
+        { padId: 'pad_15', name: 'Vowel Chop', engine: 'vocal', durationSec: 0.28, gain: 0.72, tags: ['vocal', 'tonal'] },
+        { padId: 'pad_16', name: 'Noise Sweep FX', engine: 'fx', durationSec: 0.6, gain: 0.7, tags: ['fx', 'sweep'] }
+      ]
+    },
+    {
+      id: 'openGrooveElectronicKit',
+      name: 'Open Groove Electronic Kit',
+      version: 1,
+      license: 'Original',
+      creator: 'Open Groove',
+      source: 'Built-in procedural synthesis',
+      voice: { character: 'electronic', pitch: 1.08, brightness: 1.22, decay: 0.74, noise: 0.86, click: 1.45, body: 0.95 },
+      originalUrl: 'generated://open-groove/electronic-kit',
+      pads: [
+        { padId: 'pad_1', name: 'Punch Kick', engine: 'kick', durationSec: 0.34, gain: 0.98, tags: ['kick', 'electronic'] },
+        { padId: 'pad_2', name: 'Snap Snare', engine: 'snare', durationSec: 0.2, gain: 0.86, tags: ['snare', 'electronic'] },
+        { padId: 'pad_3', name: 'Tick Hat', engine: 'hihat', durationSec: 0.06, gain: 0.66, chokeGroup: 'hat', tags: ['hat', 'electronic'] },
+        { padId: 'pad_4', name: 'Sizzle Hat', engine: 'openhat', durationSec: 0.28, gain: 0.72, chokeGroup: 'hat', tags: ['hat', 'electronic'] },
+        { padId: 'pad_5', name: 'Digital Clap', engine: 'clap', durationSec: 0.14, gain: 0.82, tags: ['clap', 'electronic'] },
+        { padId: 'pad_6', name: 'Machine Rim', engine: 'rim', durationSec: 0.08, gain: 0.74, tags: ['rim', 'electronic'] },
+        { padId: 'pad_7', name: 'Laser Tom Low', engine: 'tomLow', durationSec: 0.3, gain: 0.82, tags: ['tom', 'electronic'] },
+        { padId: 'pad_8', name: 'Laser Tom High', engine: 'tomHigh', durationSec: 0.24, gain: 0.78, tags: ['tom', 'electronic'] },
+        { padId: 'pad_9', name: 'Bright Crash', engine: 'crash', durationSec: 0.72, gain: 0.62, tags: ['cymbal', 'electronic'] },
+        { padId: 'pad_10', name: 'Metal Ride', engine: 'ride', durationSec: 0.58, gain: 0.62, tags: ['cymbal', 'electronic'] },
+        { padId: 'pad_11', name: 'Clock Shaker', engine: 'shaker', durationSec: 0.08, gain: 0.58, tags: ['shaker', 'electronic'] },
+        { padId: 'pad_12', name: 'Bit Perc', engine: 'perc', durationSec: 0.12, gain: 0.72, tags: ['percussion', 'electronic'] },
+        { padId: 'pad_13', name: 'Short Sub Drop', engine: 'sub', durationSec: 0.4, gain: 0.88, tags: ['sub', 'electronic'] },
+        { padId: 'pad_14', name: 'Stab Chord', engine: 'chord', durationSec: 0.38, gain: 0.68, tags: ['chord', 'electronic'] },
+        { padId: 'pad_15', name: 'Robot Vowel', engine: 'vocal', durationSec: 0.22, gain: 0.68, tags: ['vocal', 'electronic'] },
+        { padId: 'pad_16', name: 'Riser FX', engine: 'fx', durationSec: 0.54, gain: 0.72, tags: ['fx', 'electronic'] }
+      ]
+    },
+    {
+      id: 'openGrooveClassroomPercussionKit',
+      name: 'Open Groove Classroom Percussion Kit',
+      version: 1,
+      license: 'Original',
+      creator: 'Open Groove',
+      source: 'Built-in procedural synthesis',
+      voice: { character: 'classroom', pitch: 0.92, brightness: 0.82, decay: 1.12, noise: 1.18, click: 0.72, body: 1.08 },
+      originalUrl: 'generated://open-groove/classroom-percussion-kit',
+      pads: [
+        { padId: 'pad_1', name: 'Desk Boom', engine: 'kick', durationSec: 0.38, gain: 0.9, tags: ['kick', 'classroom'] },
+        { padId: 'pad_2', name: 'Book Snap', engine: 'snare', durationSec: 0.22, gain: 0.8, tags: ['snare', 'classroom'] },
+        { padId: 'pad_3', name: 'Pencil Tick', engine: 'hihat', durationSec: 0.06, gain: 0.58, chokeGroup: 'hat', tags: ['hat', 'classroom'] },
+        { padId: 'pad_4', name: 'Paper Swish', engine: 'openhat', durationSec: 0.34, gain: 0.62, chokeGroup: 'hat', tags: ['hat', 'classroom'] },
+        { padId: 'pad_5', name: 'Hand Clap', engine: 'clap', durationSec: 0.18, gain: 0.76, tags: ['clap', 'classroom'] },
+        { padId: 'pad_6', name: 'Table Rim', engine: 'rim', durationSec: 0.1, gain: 0.72, tags: ['rim', 'classroom'] },
+        { padId: 'pad_7', name: 'Floor Tom', engine: 'tomLow', durationSec: 0.32, gain: 0.78, tags: ['tom', 'classroom'] },
+        { padId: 'pad_8', name: 'Container Tom', engine: 'tomHigh', durationSec: 0.26, gain: 0.74, tags: ['tom', 'classroom'] },
+        { padId: 'pad_9', name: 'Foil Crash', engine: 'crash', durationSec: 0.74, gain: 0.58, tags: ['cymbal', 'classroom'] },
+        { padId: 'pad_10', name: 'Bell Ride', engine: 'ride', durationSec: 0.64, gain: 0.58, tags: ['cymbal', 'classroom'] },
+        { padId: 'pad_11', name: 'Cup Shaker', engine: 'shaker', durationSec: 0.1, gain: 0.6, tags: ['shaker', 'classroom'] },
+        { padId: 'pad_12', name: 'Wood Block', engine: 'perc', durationSec: 0.14, gain: 0.7, tags: ['percussion', 'classroom'] },
+        { padId: 'pad_13', name: 'Low Hum Hit', engine: 'sub', durationSec: 0.42, gain: 0.78, tags: ['sub', 'classroom'] },
+        { padId: 'pad_14', name: 'Group Chord Hit', engine: 'chord', durationSec: 0.46, gain: 0.64, tags: ['chord', 'classroom'] },
+        { padId: 'pad_15', name: 'Syllable Chop', engine: 'vocal', durationSec: 0.24, gain: 0.66, tags: ['vocal', 'classroom'] },
+        { padId: 'pad_16', name: 'Room Sweep FX', engine: 'fx', durationSec: 0.52, gain: 0.66, tags: ['fx', 'classroom'] }
+      ]
+    }
   ];
 
   function ogClone(value) {
@@ -1708,13 +1859,21 @@
     }).filter(function (partial) {
       return partial.gain > 0;
     }).slice(0, 8) : [];
+    var unisonInput = instrumentLike.unison || {};
+    var unisonVoices = Math.max(1, Math.min(7, ogInt(unisonInput.voices, 1)));
+    var unison = {
+      voices: unisonVoices,
+      detune: ogClamp(unisonInput.detune, 0, 80, unisonVoices > 1 ? 12 : 0),
+      spread: ogClamp(unisonInput.spread, 0, 1, unisonVoices > 1 ? 0.5 : 0)
+    };
     var hasTransient = transient.gain != null || transient.duration != null || transient.cutoff != null;
     return {
-      engine: partials.length ? 'layered-subtractive' : 'subtractive',
+      engine: (unison.voices > 1 ? 'unison-' : '') + (partials.length ? 'layered-subtractive' : 'subtractive'),
       name: ogSafeString(instrumentLike.name, presetId ? 'Preset Patch' : 'Custom Patch'),
       presetId: presetId || null,
       oscillator: osc,
       partials: partials,
+      unison: unison,
       transient: hasTransient ? {
         gain: ogClamp(transient.gain, 0, 1, 0.08),
         duration: ogClamp(transient.duration, 0.001, 0.2, 0.015),
@@ -1814,6 +1973,7 @@
       next.envelope = Object.assign({}, next.envelope, updates.envelope);
     }
     if (updates.partials) next.partials = updates.partials;
+    if (Object.prototype.hasOwnProperty.call(updates, 'unison')) next.unison = updates.unison;
     if (Object.prototype.hasOwnProperty.call(updates, 'transient')) next.transient = updates.transient;
     track.instrument = ogNormalizeSynthInstrument(next);
     return track.instrument;
@@ -1857,6 +2017,11 @@
         decay: round(0.05 + ogSeededUnit(seed + ':decay') * 0.7, 3),
         sustain: round(0.18 + ogSeededUnit(seed + ':sustain') * 0.68, 2),
         release: round(0.05 + Math.pow(ogSeededUnit(seed + ':release'), 1.3) * 1.55, 3)
+      },
+      unison: {
+        voices: ogSeededUnit(seed + ':unison') > 0.58 ? 3 : 1,
+        detune: round(4 + ogSeededUnit(seed + ':detune') * 14, 1),
+        spread: round(0.25 + ogSeededUnit(seed + ':spread') * 0.55, 2)
       }
     };
     track.instrument = ogNormalizeSynthInstrument(patch);
@@ -1871,7 +2036,10 @@
       name: track && track.name || 'Synth',
       patchName: patch.name,
       presetId: patch.presetId,
+      engine: patch.engine,
       oscillator: patch.oscillator,
+      unisonVoices: patch.unison.voices,
+      unisonDetune: patch.unison.detune,
       filterType: patch.filter.type,
       cutoff: patch.filter.cutoff,
       q: patch.filter.q,
@@ -3628,6 +3796,108 @@
     });
   }
 
+  function ogNormalizeProceduralVoice(voiceLike) {
+    voiceLike = voiceLike || {};
+    return {
+      kitId: voiceLike.kitId ? ogSafeString(voiceLike.kitId, '') : null,
+      kitName: voiceLike.kitName ? ogSafeString(voiceLike.kitName, '') : null,
+      character: ogSafeString(voiceLike.character, 'studio'),
+      pitch: ogClamp(voiceLike.pitch, 0.5, 2, 1),
+      brightness: ogClamp(voiceLike.brightness, 0.35, 2.4, 1),
+      decay: ogClamp(voiceLike.decay, 0.25, 2.5, 1),
+      noise: ogClamp(voiceLike.noise, 0, 2, 1),
+      click: ogClamp(voiceLike.click, 0, 2, 1),
+      body: ogClamp(voiceLike.body, 0, 2, 1)
+    };
+  }
+  function ogListFactorySampleKits() {
+    return OG_FACTORY_SAMPLE_KITS.map(function (kit) {
+      return ogClone(kit);
+    });
+  }
+
+  function ogGetFactorySampleKit(kitId) {
+    var id = String(kitId || '').trim();
+    for (var i = 0; i < OG_FACTORY_SAMPLE_KITS.length; i++) {
+      if (OG_FACTORY_SAMPLE_KITS[i].id === id) return ogClone(OG_FACTORY_SAMPLE_KITS[i]);
+    }
+    return null;
+  }
+
+  function ogFindFactoryAsset(project, kitId, padId) {
+    var assets = project && Array.isArray(project.assets) ? project.assets : [];
+    var kitTag = 'factory-kit:' + kitId;
+    var padTag = 'pad:' + padId;
+    for (var i = 0; i < assets.length; i++) {
+      var tags = assets[i] && assets[i].tags || [];
+      if (tags.indexOf('factory') >= 0 && tags.indexOf(kitTag) >= 0 && tags.indexOf(padTag) >= 0) return assets[i];
+    }
+    return null;
+  }
+
+  function ogInstallFactorySampleKit(project, trackId, kitId, options) {
+    options = options || {};
+    if (!project || !Array.isArray(project.assets)) throw new Error('OpenGroove: project is not ready');
+    var track = ogFindTrack(project, trackId);
+    if (!track || track.type !== 'drumRack') throw new Error('OpenGroove: drum rack track not found');
+    var kit = ogGetFactorySampleKit(kitId) || ogGetFactorySampleKit(OG_FACTORY_SAMPLE_KITS[0].id);
+    var created = [];
+    var assigned = [];
+    var reusedCount = 0;
+    (kit.pads || []).forEach(function (slot) {
+      var pad = ogFindPad(project, track.id, slot.padId);
+      if (!pad) return;
+      var proceduralVoice = ogNormalizeProceduralVoice(Object.assign({}, kit.voice || {}, slot.voice || {}, { kitId: kit.id, kitName: kit.name }));
+      var asset = ogFindFactoryAsset(project, kit.id, slot.padId);
+      if (asset) {
+        reusedCount += 1;
+      } else {
+        var tags = ['factory', 'procedural', 'factory-kit:' + kit.id, 'pad:' + slot.padId, 'engine:' + slot.engine]
+          .concat(Array.isArray(slot.tags) ? slot.tags : []);
+        asset = ogAddAsset(project, {
+          type: 'sample',
+          name: ogSafeString(slot.name, pad.name),
+          file: 'generated://open-groove/' + kit.id + '/' + slot.padId,
+          source: kit.source,
+          creator: kit.creator,
+          license: kit.license,
+          attributionRequired: false,
+          originalUrl: kit.originalUrl,
+          durationSec: slot.durationSec,
+          sizeBytes: 0,
+          mimeType: 'audio/procedural',
+          storage: 'session',
+          localOnly: false,
+          createdAt: options.createdAt,
+          tags: tags
+        });
+        created.push(asset);
+      }
+      asset.proceduralVoice = proceduralVoice;
+      pad.assetId = asset.id;
+      pad.engine = ogSafeString(slot.engine, pad.engine || 'sample');
+      pad.name = asset.name;
+      pad.gain = slot.gain == null ? pad.gain : ogClamp(slot.gain, 0, 1.5, pad.gain || 0.9);
+      pad.pitch = slot.pitch == null ? pad.pitch || 0 : ogClamp(slot.pitch, -24, 24, 0);
+      pad.proceduralVoice = ogClone(proceduralVoice);
+      if (Object.prototype.hasOwnProperty.call(slot, 'chokeGroup')) pad.chokeGroup = slot.chokeGroup;
+      else if (slot.engine === 'hihat' || slot.engine === 'openhat') pad.chokeGroup = 'hat';
+      pad.sampleRegion = null;
+      assigned.push({ padId: pad.id, assetId: asset.id, engine: pad.engine, name: pad.name, proceduralVoice: ogClone(proceduralVoice) });
+    });
+    return {
+      kitId: kit.id,
+      name: kit.name,
+      license: kit.license,
+      creator: kit.creator,
+      createdCount: created.length,
+      reusedCount: reusedCount,
+      assignedCount: assigned.length,
+      assetIds: assigned.map(function (item) { return item.assetId; }),
+      assignments: assigned
+    };
+  }
+
   function ogNormalizeStemMode(mode) {
     var key = String(mode || 'four').toLowerCase();
     if (key === '2' || key === '2stem' || key === '2stems' || key === 'two') return 'two';
@@ -3839,6 +4109,7 @@
     pad.assetId = asset.id;
     pad.engine = 'sample';
     pad.name = asset.name;
+    pad.proceduralVoice = asset.proceduralVoice ? ogClone(asset.proceduralVoice) : null;
     return pad;
   }
 
@@ -3879,6 +4150,7 @@
       pad.assetId = asset.id;
       pad.engine = 'sample';
       pad.name = asset.name + ' ' + (i + 1);
+      pad.proceduralVoice = asset.proceduralVoice ? ogClone(asset.proceduralVoice) : null;
       pad.sampleRegion = ogNormalizeSampleRegion(asset, {
         startSec: sliceStart,
         endSec: sliceEnd,
@@ -3931,10 +4203,15 @@
     var embeddedBytes = 0;
     var sessionCount = 0;
     var externalCount = 0;
+    var factoryCount = 0;
+    var proceduralCount = 0;
     var slicedPadCount = 0;
     var humanizedHitCount = 0;
     var grooveHitCount = 0;
     assets.forEach(function (asset) {
+      var tags = asset && asset.tags || [];
+      if (tags.indexOf('factory') >= 0) factoryCount += 1;
+      if (asset && asset.mimeType === 'audio/procedural') proceduralCount += 1;
       if (asset.storage === 'embedded' || asset.dataUrl) {
         embeddedCount += 1;
         embeddedBytes += asset.sizeBytes || ogEstimateDataUrlBytes(asset.dataUrl);
@@ -3961,6 +4238,8 @@
       embeddedBytes: embeddedBytes,
       sessionCount: sessionCount,
       externalCount: externalCount,
+      factoryCount: factoryCount,
+      proceduralCount: proceduralCount,
       slicedPadCount: slicedPadCount,
       humanizedHitCount: humanizedHitCount,
       grooveHitCount: grooveHitCount
@@ -4165,6 +4444,7 @@
     OG_SCALE_INTERVALS: ogClone(OG_SCALE_INTERVALS),
     OG_CHORD_INTERVALS: ogClone(OG_CHORD_INTERVALS),
     OG_SYNTH_PATCH_PRESETS: ogListSynthPatchPresets(),
+    OG_FACTORY_SAMPLE_KITS: ogListFactorySampleKits(),
     OG_EFFECT_PRESETS: ogListEffectPresets(),
     OG_AUTOMATION_TARGETS: ogListAutomationTargets(),
     OG_SONG_FORM_PRESETS: ogListSongFormPresets(),
@@ -4272,6 +4552,9 @@
     ogBuildStemAssetSummary: ogBuildStemAssetSummary,
     ogAddAsset: ogAddAsset,
     ogRegisterUserRecording: ogRegisterUserRecording,
+    ogListFactorySampleKits: ogListFactorySampleKits,
+    ogGetFactorySampleKit: ogGetFactorySampleKit,
+    ogInstallFactorySampleKit: ogInstallFactorySampleKit,
     ogEmbedAssetData: ogEmbedAssetData,
     ogAssignAssetToPad: ogAssignAssetToPad,
     ogSetPadSampleRegion: ogSetPadSampleRegion,

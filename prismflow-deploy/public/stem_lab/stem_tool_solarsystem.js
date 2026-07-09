@@ -637,7 +637,7 @@ const d = labToolData.solarSystem || {};
           // ── Enhanced Quiz with Error-Correcting Feedback ──
           var QUIZ_BANK = [
             { q: 'Which planet is the hottest?', a: 'Venus', opts: ['Mercury', 'Venus', 'Mars', 'Jupiter'], tip: __alloT('stem.solarsystem.venus_has_a_runaway_greenhouse_effect_', 'Venus has a runaway greenhouse effect reaching 462\u00B0C!'), wrongFeedback: { Mercury: 'Mercury is closest to the Sun, but Venus is hotter because its thick CO\u2082 atmosphere traps heat (greenhouse effect). Distance isn\u2019t everything!', Mars: 'Mars is actually very cold (-65\u00B0C average). Its thin atmosphere can\u2019t trap much heat.', Jupiter: 'Jupiter is far from the Sun and made of cold gas. Its cloud tops are -145\u00B0C!' }, difficulty: 1, concept: 'greenhouse effect' },
-            { q: 'Which planet has the most moons?', a: 'Saturn', opts: ['Jupiter', 'Saturn', 'Uranus', 'Neptune'], tip: __alloT('stem.solarsystem.saturn_has_146_known_moons_as_of_2024', 'Saturn has 146 known moons as of 2024!'), wrongFeedback: { Jupiter: 'Close! Jupiter has 95 known moons, but Saturn surpassed it with 146 discoveries in recent surveys.', Uranus: 'Uranus has 27 known moons \u2014 far fewer than the gas giant leaders.', Neptune: 'Neptune has only 16 known moons. Triton is the famous one \u2014 it orbits backwards!' }, difficulty: 1, concept: 'moons' },
+            { q: 'Which planet has the most moons?', a: 'Saturn', opts: ['Jupiter', 'Saturn', 'Uranus', 'Neptune'], tip: __alloT('stem.solarsystem.saturn_has_146_known_moons_as_of_2024', 'Saturn has 293 known moons in the current JPL planetary satellite list.'), wrongFeedback: { Jupiter: 'Close! Jupiter has 115 known moons, but Saturn is currently ahead with 293 listed by JPL.', Uranus: 'Uranus has 29 known moons \u2014 far fewer than the gas giant leaders.', Neptune: 'Neptune has 16 known moons. Triton is the famous one \u2014 it orbits backwards!' }, difficulty: 1, concept: 'moons' },
             { q: 'Which planet rotates on its side?', a: 'Uranus', opts: ['Neptune', 'Uranus', 'Saturn', 'Pluto'], tip: __alloT('stem.solarsystem.uranus_has_an_axial_tilt_of_97_77', 'Uranus has an axial tilt of 97.77\u00B0!'), wrongFeedback: { Neptune: 'Neptune\u2019s tilt is 28\u00B0 \u2014 similar to Earth\u2019s 23.5\u00B0.', Saturn: 'Saturn\u2019s tilt is 27\u00B0 \u2014 it has normal seasons.', Pluto: 'Pluto\u2019s tilt is 120\u00B0 (extreme!), but Uranus at 98\u00B0 is the textbook answer for "on its side."' }, difficulty: 2, concept: 'axial tilt' },
             { q: 'Which is the smallest planet?', a: 'Mercury', opts: ['Mercury', 'Mars', 'Pluto', 'Venus'], tip: __alloT('stem.solarsystem.mercury_is_only_4_879_km_in_diameter', 'Mercury is only 4,879 km in diameter.'), wrongFeedback: { Mars: 'Mars (6,779 km) is small but still 40% larger than Mercury.', Pluto: 'Pluto is tiny (2,377 km) but it\u2019s no longer classified as a planet since 2006!', Venus: 'Venus (12,104 km) is nearly the same size as Earth \u2014 much larger than Mercury.' }, difficulty: 1, concept: 'planetary size' },
             { q: 'Which planet has the longest year?', a: 'Pluto', opts: ['Neptune', 'Pluto', 'Uranus', 'Saturn'], tip: __alloT('stem.solarsystem.pluto_takes_248_earth_years_to_orbit_t', 'Pluto takes 248 Earth years to orbit the Sun!'), wrongFeedback: { Neptune: 'Neptune\u2019s year is 165 Earth years \u2014 long, but Pluto\u2019s is even longer at 248.', Uranus: 'Uranus orbits in 84 Earth years \u2014 less than half of Pluto\u2019s.', Saturn: 'Saturn takes 29.5 Earth years. The farther from the Sun, the longer the orbit!' }, difficulty: 2, concept: 'orbital period' },
@@ -806,11 +806,11 @@ const d = labToolData.solarSystem || {};
 
             { name: t('stem.solar_sys.mars'), emoji: '\uD83D\uDD34', color: '#ef4444', rgb: [0.94, 0.27, 0.27], size: 0.35, dist: 18, speed: 0.53, tilt: 0.44, moons: 2, diameter: '6,779 km', dayLen: '24h 37m', yearLen: '687 days', temp: '\u221265\u00B0C avg.', fact: __alloT('stem.solarsystem.has_the_tallest_volcano_in_the_solar_s', 'Has the tallest volcano in the solar system: Olympus Mons (21.9 km high).'), gravity: '0.38g', atmosphere: '95% CO\u2082 \u2014 thin (0.6% of Earth pressure)', surface: 'Red iron-oxide desert with deep canyons', notableFeatures: ['Olympus Mons (21.9 km \u2014 tallest volcano)', 'Valles Marineris (4,000 km canyon)', 'Polar ice caps of CO\u2082 and water'], skyColor: '#c4856b', terrainColor: '#b5452a', terrainType: 'desert', surfaceDesc: 'Rust-red desert beneath a butterscotch sky. Dust devils dance across the barren plains.' },
 
-            { name: t('stem.solar_sys.jupiter'), emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 3.2, dist: 28, speed: 0.084, tilt: 0.05, moons: 95, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: __alloT('stem.solarsystem.largest_planet_the_great_red_spot_is_a', 'Largest planet. The Great Red Spot is a storm larger than Earth!'), gravity: '2.53g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
+            { name: t('stem.solar_sys.jupiter'), emoji: '\uD83E\uDE90', color: '#f97316', rgb: [0.98, 0.45, 0.09], size: 3.2, dist: 28, speed: 0.084, tilt: 0.05, moons: 115, diameter: '139,820 km', dayLen: '10 hours', yearLen: '12 years', temp: '\u2212110\u00B0C', fact: __alloT('stem.solarsystem.largest_planet_the_great_red_spot_is_a', 'Largest planet. The Great Red Spot is a storm larger than Earth!'), gravity: '2.53g', atmosphere: '90% H\u2082, 10% He \u2014 no solid surface', surface: 'Gas giant \u2014 layered cloud bands of ammonia and water', notableFeatures: ['Great Red Spot (storm > Earth-sized)', 'Strongest magnetic field', 'Europa may harbor an ocean under ice'], skyColor: '#d4924f', terrainColor: '#c4713a', terrainType: 'gasgiant', surfaceDesc: 'Endless stratified cloud layers in bands of amber, cream, and rust. Lightning flashes illuminate ammonia storms.' },
 
-            { name: t('stem.solar_sys.saturn'), emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 2.7, dist: 36, speed: 0.034, tilt: 0.47, moons: 146, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: __alloT('stem.solarsystem.its_rings_are_made_of_ice_and_rock_cou', 'Its rings are made of ice and rock. Could float in a giant bathtub!'), hasRings: true, gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
+            { name: t('stem.solar_sys.saturn'), emoji: '\uD83E\uDE90', color: '#eab308', rgb: [0.92, 0.70, 0.03], size: 2.7, dist: 36, speed: 0.034, tilt: 0.47, moons: 293, diameter: '116,460 km', dayLen: '10.7 hours', yearLen: '29 years', temp: '\u2212140\u00B0C', fact: __alloT('stem.solarsystem.its_rings_are_made_of_ice_and_rock_cou', 'Its rings are made of ice and rock. Could float in a giant bathtub!'), hasRings: true, gravity: '1.06g', atmosphere: '96% H\u2082, 3% He \u2014 second gas giant', surface: 'Gas giant \u2014 golden cloud bands, no solid surface', notableFeatures: ['Ring system 282,000 km wide', 'Hexagonal storm at north pole', 'Titan has lakes of liquid methane'], skyColor: '#d4b16a', terrainColor: '#c9a04a', terrainType: 'gasgiant', surfaceDesc: 'Golden cloud decks with ring arcs slicing across the amber sky. A hexagonal polar vortex churns above.' },
 
-            { name: t('stem.solar_sys.uranus'), emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, tilt: 1.71, moons: 28, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: __alloT('stem.solarsystem.rotates_on_its_side_an_ice_giant_with_', 'Rotates on its side! An ice giant with methane atmosphere.'), gravity: '0.89g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
+            { name: t('stem.solar_sys.uranus'), emoji: '\u26AA', color: '#67e8f9', rgb: [0.40, 0.91, 0.98], size: 1.5, dist: 44, speed: 0.012, tilt: 1.71, moons: 29, diameter: '50,724 km', dayLen: '17 hours', yearLen: '84 years', temp: '\u2212195\u00B0C', fact: __alloT('stem.solarsystem.rotates_on_its_side_an_ice_giant_with_', 'Rotates on its side! An ice giant with methane atmosphere.'), gravity: '0.89g', atmosphere: '83% H\u2082, 15% He, 2% CH\u2084 \u2014 ice giant', surface: 'Ice giant \u2014 methane gives blue-green color', notableFeatures: ['Rotates on its side (97.8\u00B0 tilt)', 'Faint ring system', 'Diamond rain in the interior'], skyColor: '#5aafa5', terrainColor: '#4a9a9a', terrainType: 'icegiant', surfaceDesc: 'Blue-green ice clouds under a teal sky. Deep below, extreme pressures crush carbon into diamonds that rain down.' },
 
             { name: t('stem.solar_sys.neptune'), emoji: '\uD83D\uDD35', color: '#6366f1', rgb: [0.39, 0.40, 0.95], size: 1.4, dist: 52, speed: 0.006, tilt: 0.49, moons: 16, diameter: '49,244 km', dayLen: '16 hours', yearLen: '165 years', temp: '\u2212200\u00B0C', fact: __alloT('stem.solarsystem.windiest_planet_winds_up_to_2_100_km_h', 'Windiest planet: winds up to 2,100 km/h. Deep blue from methane.'), gravity: '1.14g', atmosphere: '80% H\u2082, 19% He, 1% CH\u2084 \u2014 deep blue', surface: 'Ice giant \u2014 vivid blue from methane absorption', notableFeatures: ['Fastest winds: 2,100 km/h', 'Great Dark Spot (storm)', 'Triton orbits backwards'], skyColor: '#2a4a8a', terrainColor: '#1a3a6a', terrainType: 'icegiant', surfaceDesc: 'Deep indigo cloud layers whipped by supersonic winds. Dark storms rage across the methane-blue atmosphere.' },
 
@@ -1460,7 +1460,7 @@ const d = labToolData.solarSystem || {};
               cometMesh._a = 35; // semi-major axis
               cometMesh._e = 0.94; // eccentricity
               cometMesh._speedScale = 0.8;
-              
+
               // Add a simple tail using points
               const tailGeo = new THREE.BufferGeometry();
               const tailPos = new Float32Array(50 * 3);
@@ -1468,7 +1468,7 @@ const d = labToolData.solarSystem || {};
               const tailPoints = new THREE.Points(tailGeo, new THREE.PointsMaterial({ color: 0x88ffff, size: 0.1, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); // glowing ion tail
               scene.add(tailPoints);
               cometMesh._tail = tailPoints;
-              
+
               scene.add(cometMesh);
               planetMeshes.push(cometMesh);
 
@@ -1774,7 +1774,7 @@ const d = labToolData.solarSystem || {};
                     mesh.position.x = Math.cos(mesh._orbitAngle) * r - (mesh._a * mesh._e);
                     mesh.position.z = Math.sin(mesh._orbitAngle) * r;
                     mesh.rotation.y += 0.1;
-                    
+
                     // Update comet tail
                     if (mesh._tail) {
                        const tArr = mesh._tail.geometry.attributes.position.array;
@@ -1800,7 +1800,7 @@ const d = labToolData.solarSystem || {};
                   mesh.position.z = Math.sin(mesh._orbitAngle) * mesh._orbitDist;
 
                   mesh.rotation.y += 0.02 * speed * (isPaused ? 0 : 1);
-                  
+
                   if (mesh._moonObj && !isPaused) {
                     mesh._moonObj._orbitAngle += 0.05 * speed;
                     mesh._moonObj.position.x = Math.cos(mesh._moonObj._orbitAngle) * mesh._moonObj._dist;
@@ -2306,7 +2306,7 @@ const d = labToolData.solarSystem || {};
     { id: "venus",    name: __alloT('stem.solarsystem.venus', "Venus"),          emoji: "\u2640", color: "#e8c36a", a: 0.723,   e: 0.0068, T: 0.615,    i: 3.4,   m: 0.815,   R: 6051.8, type: "planet", desc: __alloT('stem.solarsystem.thick_co_atmosphere_runaway_greenhouse', "Thick CO\u2082 atmosphere, runaway greenhouse, rotates retrograde.") },
     { id: "earth",    name: __alloT('stem.solarsystem.earth', "Earth"),          emoji: "\ud83c\udf0d", color: "#4a90d9", a: 1.000,   e: 0.0167, T: 1.000,    i: 0.0,   m: 1.000,   R: 6371.0, type: "planet", desc: __alloT('stem.solarsystem.our_home_liquid_water_magnetosphere_li', "Our home \u2014 liquid water, magnetosphere, life.") },
     { id: "mars",     name: __alloT('stem.solarsystem.mars', "Mars"),           emoji: "\u2642", color: "#c1440e", a: 1.524,   e: 0.0934, T: 1.881,    i: 1.85,  m: 0.107,   R: 3389.5, type: "planet", desc: __alloT('stem.solarsystem.thin_atmosphere_iron_oxide_surface_two', "Thin atmosphere, iron oxide surface, two small moons.") },
-    { id: "jupiter",  name: __alloT('stem.solarsystem.jupiter', "Jupiter"),        emoji: "\u2643", color: "#c88b3a", a: 5.203,   e: 0.0489, T: 11.86,    i: 1.3,   m: 317.8,   R: 69911,  type: "planet", desc: __alloT('stem.solarsystem.gas_giant_great_red_spot_95_known_moon', "Gas giant, Great Red Spot, 95 known moons.") },
+    { id: "jupiter",  name: __alloT('stem.solarsystem.jupiter', "Jupiter"),        emoji: "\u2643", color: "#c88b3a", a: 5.203,   e: 0.0489, T: 11.86,    i: 1.3,   m: 317.8,   R: 69911,  type: "planet", desc: __alloT('stem.solarsystem.gas_giant_great_red_spot_95_known_moon', "Gas giant, Great Red Spot, 115 known moons.") },
     { id: "saturn",   name: __alloT('stem.solarsystem.saturn', "Saturn"),         emoji: "\u2644", color: "#e0c068", a: 9.537,   e: 0.0565, T: 29.46,    i: 2.49,  m: 95.16,   R: 58232,  type: "planet", desc: __alloT('stem.solarsystem.magnificent_ring_system_density_less_t', "Magnificent ring system, density less than water.") },
     { id: "uranus",   name: __alloT('stem.solarsystem.uranus', "Uranus"),         emoji: "\u26e2", color: "#73c2d0", a: 19.19,   e: 0.0457, T: 84.01,    i: 0.77,  m: 14.54,   R: 25362,  type: "planet", desc: __alloT('stem.solarsystem.ice_giant_tilted_98_faint_rings_27_kno', "Ice giant tilted 98\u00b0, faint rings, 27 known moons.") },
     { id: "neptune",  name: __alloT('stem.solarsystem.neptune', "Neptune"),        emoji: "\u2646", color: "#3f5fc4", a: 30.07,   e: 0.0113, T: 164.8,    i: 1.77,  m: 17.15,   R: 24622,  type: "planet", desc: __alloT('stem.solarsystem.strongest_winds_in_the_solar_system_vi', "Strongest winds in the solar system, vivid blue colour.") },
@@ -11648,9 +11648,9 @@ const d = labToolData.solarSystem || {};
 
                             if (navGoalLine) { navGoalLine.material.color.setHex(0x34d399); }
 
-                            setTimeout(function () { 
+                            setTimeout(function () {
 
-                              if (navTargetMesh) { scene.remove(navTargetMesh); navTargetMesh = null; } 
+                              if (navTargetMesh) { scene.remove(navTargetMesh); navTargetMesh = null; }
 
                               if (navGoalLine) { scene.remove(navGoalLine); navGoalLine = null; }
 
@@ -14604,7 +14604,7 @@ const d = labToolData.solarSystem || {};
                   }, d.showExo ? 'Hide' : 'Explore \u2192')
                 ),
                 d.showExo && React.createElement("div", { className: "space-y-1.5" },
-                  React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-200') + " italic mb-1" }, __alloT('stem.solarsystem.compare_our_planets_to_worlds_around_o', "Compare our planets to worlds around other stars (5,700+ discovered!)")),
+                  React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-200') + " italic mb-1" }, __alloT('stem.solarsystem.compare_our_planets_to_worlds_around_o', "Compare our planets to worlds around other stars (6,300+ confirmed!)")),
                   EXOPLANETS.map(function(exo, ei) {
                     return React.createElement("div", { key: ei, className: (isDark ? 'bg-slate-700 border-slate-600' : 'bg-white border-teal-100') + " rounded-lg p-2 border" },
                       React.createElement("div", { className: "flex items-center justify-between" },
@@ -15009,7 +15009,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.stellar_evolution_timeline', "⭐ Stellar Evolution Timeline")),
                   React.createElement('button', {
                     onClick: function() { upd("showStellarEvo", !d.showStellarEvo); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showStellarEvo ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showStellarEvo ? 'Hide' : 'Open')
                 ),
@@ -15120,7 +15120,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.moon_phase_dial', "🌙 Moon Phase Dial")),
                   React.createElement('button', {
                     onClick: function() { upd("showMoonPhase", !d.showMoonPhase); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMoonPhase ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showMoonPhase ? 'Hide' : 'Open')
                 ),
@@ -15186,7 +15186,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.eclipse_theater', "☀ Eclipse Theater")),
                   React.createElement('button', {
                     onClick: function() { upd("showEclipse", !d.showEclipse); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showEclipse ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showEclipse ? 'Hide' : 'Open')
                 ),
@@ -15260,7 +15260,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.aurora_tuner', "✨ Aurora Tuner")),
                   React.createElement('button', {
                     onClick: function() { upd("showAurora", !d.showAurora); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAurora ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
                   }, d.showAurora ? 'Hide' : 'Open')
                 ),
@@ -15327,7 +15327,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.comet_tail_builder', "☄ Comet Tail Builder")),
                   React.createElement('button', {
                     onClick: function() { upd("showComet", !d.showComet); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showComet ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-700 hover:bg-sky-200')
                   }, d.showComet ? 'Hide' : 'Open')
                 ),
@@ -15398,7 +15398,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.black_hole_visualizer', "⚫ Black Hole Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showBlackHole", !d.showBlackHole); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBlackHole ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showBlackHole ? 'Hide' : 'Open')
                 ),
@@ -15462,7 +15462,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.orbital_speed_race', "🏁 Orbital Speed Race")),
                   React.createElement('button', {
                     onClick: function() { upd("showRace", !d.showRace); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showRace ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showRace ? 'Hide' : 'Open')
                 ),
@@ -15530,7 +15530,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.spacecraft_designer', "🚀 Spacecraft Designer")),
                   React.createElement('button', {
                     onClick: function() { upd("showDesigner", !d.showDesigner); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDesigner ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
                   }, d.showDesigner ? 'Hide' : 'Open')
                 ),
@@ -15606,7 +15606,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.solar_cycle_visualizer', "☀ Solar Cycle Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showSunCycle", !d.showSunCycle); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSunCycle ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showSunCycle ? 'Hide' : 'Open')
                 ),
@@ -15678,7 +15678,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.habitable_zone_calculator', "🌱 Habitable Zone Calculator")),
                   React.createElement('button', {
                     onClick: function() { upd("showHZ", !d.showHZ); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showHZ ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
                   }, d.showHZ ? 'Hide' : 'Open')
                 ),
@@ -15755,7 +15755,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.tidal_forces_visualizer', "🌊 Tidal Forces Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showTides", !d.showTides); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTides ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showTides ? 'Hide' : 'Open')
                 ),
@@ -15823,7 +15823,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.day_night_globe', "🌍 Day/Night Globe")),
                   React.createElement('button', {
                     onClick: function() { upd("showGlobe", !d.showGlobe); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showGlobe ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showGlobe ? 'Hide' : 'Open')
                 ),
@@ -15897,7 +15897,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.lagrange_points_lab', "⚖ Lagrange Points Lab")),
                   React.createElement('button', {
                     onClick: function() { upd("showLagrange", !d.showLagrange); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showLagrange ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200')
                   }, d.showLagrange ? 'Hide' : 'Open')
                 ),
@@ -15973,7 +15973,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.spectroscopy_lab', "🌈 Spectroscopy Lab")),
                   React.createElement('button', {
                     onClick: function() { upd("showSpectro", !d.showSpectro); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSpectro ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showSpectro ? 'Hide' : 'Open')
                 ),
@@ -16055,7 +16055,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.constellation_hunter', "✨ Constellation Hunter")),
                   React.createElement('button', {
                     onClick: function() { upd("showConst", !d.showConst); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showConst ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showConst ? 'Hide' : 'Open')
                 ),
@@ -16135,7 +16135,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.trajectory_designer', "🛰 Trajectory Designer")),
                   React.createElement('button', {
                     onClick: function() { upd("showTraj", !d.showTraj); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTraj ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200')
                   }, d.showTraj ? 'Hide' : 'Open')
                 ),
@@ -16199,7 +16199,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mars_rover_pathfinder', "🚗 Mars Rover Pathfinder")),
                   React.createElement('button', {
                     onClick: function() { upd("showRover", !d.showRover); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showRover ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
                   }, d.showRover ? 'Hide' : 'Open')
                 ),
@@ -16279,7 +16279,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cosmic_distance_ladder', "📏 Cosmic Distance Ladder")),
                   React.createElement('button', {
                     onClick: function() { upd("showDistLadder", !d.showDistLadder); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDistLadder ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
                   }, d.showDistLadder ? 'Hide' : 'Open')
                 ),
@@ -16343,7 +16343,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.doppler_shift_demo', "🚦 Doppler Shift Demo")),
                   React.createElement('button', {
                     onClick: function() { upd("showDoppler", !d.showDoppler); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDoppler ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
                   }, d.showDoppler ? 'Hide' : 'Open')
                 ),
@@ -16413,7 +16413,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.planetary_albedo_lab', "❄ Planetary Albedo Lab")),
                   React.createElement('button', {
                     onClick: function() { upd("showAlbedo", !d.showAlbedo); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAlbedo ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-700 hover:bg-sky-200')
                   }, d.showAlbedo ? 'Hide' : 'Open')
                 ),
@@ -16483,7 +16483,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.big_bang_stretch', "💥 Big Bang Stretch")),
                   React.createElement('button', {
                     onClick: function() { upd("showBigBang", !d.showBigBang); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBigBang ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showBigBang ? 'Hide' : 'Open')
                 ),
@@ -16552,7 +16552,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.asteroid_defender', "🎯 Asteroid Defender")),
                   React.createElement('button', {
                     onClick: function() { upd("showDefender", !d.showDefender); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDefender ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
                   }, d.showDefender ? 'Hide' : 'Open')
                 ),
@@ -16629,7 +16629,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.galaxy_spiral_map', "🌌 Galaxy Spiral Map")),
                   React.createElement('button', {
                     onClick: function() { upd("showGalaxy", !d.showGalaxy); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showGalaxy ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showGalaxy ? 'Hide' : 'Open')
                 ),
@@ -16717,7 +16717,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.telescope_aperture_lab', "🔭 Telescope Aperture Lab")),
                   React.createElement('button', {
                     onClick: function() { upd("showScope", !d.showScope); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showScope ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
                   }, d.showScope ? 'Hide' : 'Open')
                 ),
@@ -16776,7 +16776,7 @@ const d = labToolData.solarSystem || {};
                                           })
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.aperture_matters_more_than_magnificati', 'Aperture matters more than magnification! Bigger objective gathers more light + resolves finer detail. Magnification beyond 50×/cm aperture just blurs. JWST aperture 6.5m sees galaxies just 200 million years after Big Bang.')
+                                          __alloT('stem.solarsystem.aperture_matters_more_than_magnificati', 'Aperture matters more than magnification! Bigger objective gathers more light + resolves finer detail. Magnification beyond 50×/cm aperture just blurs. JWST\'s 6.5 m mirror studies galaxies from the first few hundred million years after the Big Bang.')
                                         )
                                       );
                                     })()
@@ -16789,7 +16789,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.atmospheric_layers', "🌫 Atmospheric Layers")),
                   React.createElement('button', {
                     onClick: function() { upd("showAtmos", !d.showAtmos); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAtmos ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-700 hover:bg-sky-200')
                   }, d.showAtmos ? 'Hide' : 'Open')
                 ),
@@ -16870,7 +16870,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.phases_of_venus_galileo', "♀ Phases of Venus (Galileo)")),
                   React.createElement('button', {
                     onClick: function() { upd("showPhasesV", !d.showPhasesV); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showPhasesV ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showPhasesV ? 'Hide' : 'Open')
                 ),
@@ -16940,7 +16940,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.magnetic_field_visualizer', "🧲 Magnetic Field Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showMag", !d.showMag); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMag ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
                   }, d.showMag ? 'Hide' : 'Open')
                 ),
@@ -17024,7 +17024,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.solar_system_scale', "📐 Solar System Scale")),
                   React.createElement('button', {
                     onClick: function() { upd("showScale", !d.showScale); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showScale ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200')
                   }, d.showScale ? 'Hide' : 'Open')
                 ),
@@ -17090,7 +17090,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.lunar_lander_mini_game', "🛬 Lunar Lander Mini-Game")),
                   React.createElement('button', {
                     onClick: function() { upd("showLander", !d.showLander); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showLander ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showLander ? 'Hide' : 'Open')
                 ),
@@ -17155,7 +17155,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.light_year_walker', "⏱ Light-Year Walker")),
                   React.createElement('button', {
                     onClick: function() { upd("showLY", !d.showLY); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showLY ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showLY ? 'Hide' : 'Open')
                 ),
@@ -17217,7 +17217,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.sun_path_across_latitudes', "☀ Sun Path Across Latitudes")),
                   React.createElement('button', {
                     onClick: function() { upd("showSunPath", !d.showSunPath); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSunPath ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showSunPath ? 'Hide' : 'Open')
                 ),
@@ -17295,7 +17295,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.habitable_moons', "🌙 Habitable Moons")),
                   React.createElement('button', {
                     onClick: function() { upd("showHabMoons", !d.showHabMoons); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showHabMoons ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
                   }, d.showHabMoons ? 'Hide' : 'Open')
                 ),
@@ -17370,7 +17370,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mars_terraforming_lab', "🌱 Mars Terraforming Lab")),
                   React.createElement('button', {
                     onClick: function() { upd("showTerraform", !d.showTerraform); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTerraform ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
                   }, d.showTerraform ? 'Hide' : 'Open')
                 ),
@@ -17435,7 +17435,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.hubble_deep_field', "🔬 Hubble Deep Field")),
                   React.createElement('button', {
                     onClick: function() { upd("showHDF", !d.showHDF); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showHDF ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showHDF ? 'Hide' : 'Open')
                 ),
@@ -17483,7 +17483,7 @@ const d = labToolData.solarSystem || {};
                                           React.createElement('span', { className: 'text-[10px] font-mono w-10 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, zoom.toFixed(1) + '×')
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.in_1995_hubble_pointed_at_a_tiny_dark_', 'In 1995, Hubble pointed at a tiny dark patch of sky for 10 days. Result: 3000 distant galaxies in one image. JWST has now pushed this deeper, finding galaxies just 300 million years after the Big Bang.')
+                                          __alloT('stem.solarsystem.in_1995_hubble_pointed_at_a_tiny_dark_', 'In 1995, Hubble pointed at a tiny dark patch of sky for 10 days. Result: 3000 distant galaxies in one image. JWST has pushed this deeper, studying galaxies from the first few hundred million years after the Big Bang.')
                                         )
                                       );
                                     })()
@@ -17496,7 +17496,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.star_color_temperature', "🌟 Star Color + Temperature")),
                   React.createElement('button', {
                     onClick: function() { upd("showStarWheel", !d.showStarWheel); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showStarWheel ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showStarWheel ? 'Hide' : 'Open')
                 ),
@@ -17573,7 +17573,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.tidal_locking_simulator', "🔒 Tidal Locking Simulator")),
                   React.createElement('button', {
                     onClick: function() { upd("showTLock", !d.showTLock); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTLock ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showTLock ? 'Hide' : 'Open')
                 ),
@@ -17615,7 +17615,7 @@ const d = labToolData.solarSystem || {};
                                               React.createElement('span', { className: 'font-mono w-8 text-right ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, s.val)
                                             );
                                           })
-                                          
+
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
                                           __alloT('stem.solarsystem.tidal_forces_gradually_slow_a_moon_s_r', 'Tidal forces gradually slow a moon\'s rotation until it matches its orbital period. Our Moon is tidally locked: same face always toward Earth. Mercury is in a 3:2 resonance with the Sun (not quite locked).')
@@ -17631,7 +17631,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.crater_counter', "🌑 Crater Counter")),
                   React.createElement('button', {
                     onClick: function() { upd("showCrater", !d.showCrater); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCrater ? 'bg-stone-500 text-white' : 'bg-stone-100 text-stone-700 hover:bg-stone-200')
                   }, d.showCrater ? 'Hide' : 'Open')
                 ),
@@ -17690,7 +17690,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.gravity_well_visualizer', "⚖ Gravity Well Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showGrav", !d.showGrav); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showGrav ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showGrav ? 'Hide' : 'Open')
                 ),
@@ -17775,7 +17775,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.asteroid_composition', "🪨 Asteroid Composition")),
                   React.createElement('button', {
                     onClick: function() { upd("showAstComp", !d.showAstComp); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAstComp ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showAstComp ? 'Hide' : 'Open')
                 ),
@@ -17852,7 +17852,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cosmic_microwave_background', "📡 Cosmic Microwave Background")),
                   React.createElement('button', {
                     onClick: function() { upd("showCMB", !d.showCMB); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCMB ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showCMB ? 'Hide' : 'Open')
                 ),
@@ -17904,7 +17904,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.saturn_ring_composer', "🪐 Saturn Ring Composer")),
                   React.createElement('button', {
                     onClick: function() { upd("showRings", !d.showRings); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showRings ? 'bg-yellow-500 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200')
                   }, d.showRings ? 'Hide' : 'Open')
                 ),
@@ -17961,7 +17961,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.custom_planet_builder', "🪐 Custom Planet Builder")),
                   React.createElement('button', {
                     onClick: function() { upd("showBuilder", !d.showBuilder); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBuilder ? 'bg-emerald-500 text-white' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200')
                   }, d.showBuilder ? 'Hide' : 'Open')
                 ),
@@ -18024,7 +18024,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.pulsar_beam_sweeper', "📡 Pulsar Beam Sweeper")),
                   React.createElement('button', {
                     onClick: function() { upd("showPulsar", !d.showPulsar); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showPulsar ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showPulsar ? 'Hide' : 'Open')
                 ),
@@ -18082,7 +18082,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.solar_wind_streamer', "💨 Solar Wind Streamer")),
                   React.createElement('button', {
                     onClick: function() { upd("showSWind", !d.showSWind); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSWind ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showSWind ? 'Hide' : 'Open')
                 ),
@@ -18150,7 +18150,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.iss_orbital_position', "🛰 ISS Orbital Position")),
                   React.createElement('button', {
                     onClick: function() { upd("showISS", !d.showISS); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showISS ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-700 hover:bg-sky-200')
                   }, d.showISS ? 'Hide' : 'Open')
                 ),
@@ -18209,11 +18209,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.voyager_position_tracker', "🚀 Voyager Position Tracker")),
                   React.createElement('button', {
                     onClick: function() { upd("showVoy", !d.showVoy); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showVoy ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showVoy ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.voyager_1_2_launched_1977_they_are_now', "Voyager 1 + 2 launched 1977. They are now in interstellar space — both crossed the heliopause this decade.")),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.voyager_1_2_launched_1977_they_are_now', "Voyager 1 + 2 launched in 1977. They are now in interstellar space; Voyager 1 crossed the heliopause in 2012 and Voyager 2 in 2018.")),
                 d.showVoy && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var year = d.voyYear != null ? d.voyYear : 2026;
@@ -18266,7 +18266,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mercury_transit', "🌑 Mercury Transit")),
                   React.createElement('button', {
                     onClick: function() { upd("showTrans", !d.showTrans); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTrans ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showTrans ? 'Hide' : 'Open')
                 ),
@@ -18318,7 +18318,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.foucault_pendulum', "🎯 Foucault Pendulum")),
                   React.createElement('button', {
                     onClick: function() { upd("showFouc", !d.showFouc); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showFouc ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
                   }, d.showFouc ? 'Hide' : 'Open')
                 ),
@@ -18371,7 +18371,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.saturn_hexagon', "⬡ Saturn Hexagon")),
                   React.createElement('button', {
                     onClick: function() { upd("showHex", !d.showHex); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showHex ? 'bg-yellow-500 text-white' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200')
                   }, d.showHex ? 'Hide' : 'Open')
                 ),
@@ -18423,7 +18423,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.sundial_demo', "🕰 Sundial Demo")),
                   React.createElement('button', {
                     onClick: function() { upd("showSundial", !d.showSundial); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSundial ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showSundial ? 'Hide' : 'Open')
                 ),
@@ -18469,7 +18469,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.local_group_map', "🌐 Local Group Map")),
                   React.createElement('button', {
                     onClick: function() { upd("showLG", !d.showLG); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showLG ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showLG ? 'Hide' : 'Open')
                 ),
@@ -18520,7 +18520,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.asteroid_impact_outcomes', "☄ Asteroid Impact Outcomes")),
                   React.createElement('button', {
                     onClick: function() { upd("showImpact", !d.showImpact); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showImpact ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
                   }, d.showImpact ? 'Hide' : 'Open')
                 ),
@@ -18571,7 +18571,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.coronal_mass_ejection', "⚡ Coronal Mass Ejection")),
                   React.createElement('button', {
                     onClick: function() { upd("showCME", !d.showCME); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCME ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200')
                   }, d.showCME ? 'Hide' : 'Open')
                 ),
@@ -18633,7 +18633,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cepheid_variable_star', "💫 Cepheid Variable Star")),
                   React.createElement('button', {
                     onClick: function() { upd("showPVar", !d.showPVar); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showPVar ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showPVar ? 'Hide' : 'Open')
                 ),
@@ -18695,7 +18695,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.comet_orbit_drawer', "☄ Comet Orbit Drawer")),
                   React.createElement('button', {
                     onClick: function() { upd("showCOrb", !d.showCOrb); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCOrb ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showCOrb ? 'Hide' : 'Open')
                 ),
@@ -18749,35 +18749,39 @@ const d = labToolData.solarSystem || {};
                 React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.atmospheric_window', "🌐 Atmospheric Window")),
                   React.createElement('button', {
+                    type: 'button',
                     onClick: function() { upd("showAW", !d.showAW); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    'aria-expanded': d.showAW ? 'true' : 'false',
+                    'aria-label': (d.showAW ? 'Hide' : 'Open') + ' atmospheric window mini-tool',
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAW ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showAW ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_s_atmosphere_blocks_most_wavelen', "Earth's atmosphere blocks most wavelengths. Only visible light + radio waves reach the ground.")),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.earth_s_atmosphere_blocks_most_wavelen', "Earth's atmosphere blocks many wavelengths. Visible light, radio, and some infrared windows reach the ground.")),
                 d.showAW && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 230', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 100%)' } },
+                                          React.createElement('svg', { viewBox: '0 0 400 230', role: 'img', 'aria-label': 'Atmospheric transmission diagram. Visible light and radio waves pass through most easily; some infrared reaches the ground through atmospheric windows; gamma rays, X-rays, ultraviolet, and much infrared are blocked.', style: { width: '100%', display: 'block', background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 100%)' } },
                                             React.createElement('rect', { x: 0, y: 170, width: 400, height: 60, fill: '#1e40af', opacity: 0.5 }),
                                             ['Gamma', 'X-ray', 'UV', 'Vis', 'IR', 'Microwave', 'Radio'].map(function(b, bi) {
                                               var x = 30 + bi * 50;
-                                              var visible = bi === 3 || bi === 6 || (bi === 5 && bi !== 5);
                                               var passes = bi === 3 || bi === 6;
+                                              var partial = bi === 4;
                                               return React.createElement('g', { key: b },
-                                                React.createElement('rect', { x: x - 18, y: 30, width: 36, height: 130, fill: passes ? '#fbbf24' : '#dc2626', opacity: passes ? 0.3 : 0.5 }),
+                                                React.createElement('rect', { x: x - 18, y: 30, width: 36, height: 130, fill: passes ? '#fbbf24' : partial ? '#38bdf8' : '#dc2626', opacity: passes ? 0.3 : partial ? 0.28 : 0.5 }),
                                                 React.createElement('text', { x: x, y: 50, textAnchor: 'middle', fill: '#fff', fontSize: 9, fontWeight: 'bold' }, b),
-                                                React.createElement('line', { x1: x, y1: 60, x2: x, y2: passes ? 200 : 170, stroke: passes ? '#fde047' : '#dc2626', strokeWidth: 2, strokeDasharray: passes ? 'none' : '4,3' }),
-                                                !passes && React.createElement('text', { x: x, y: 175, textAnchor: 'middle', fill: '#dc2626', fontSize: 8 }, '✖')
+                                                React.createElement('line', { x1: x, y1: 60, x2: x, y2: passes ? 200 : partial ? 188 : 170, stroke: passes ? '#fde047' : partial ? '#7dd3fc' : '#dc2626', strokeWidth: 2, strokeDasharray: passes ? 'none' : partial ? '2,2' : '4,3' }),
+                                                partial && React.createElement('text', { x: x, y: 190, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 8 }, 'some'),
+                                                (!passes && !partial) && React.createElement('text', { x: x, y: 175, textAnchor: 'middle', fill: '#dc2626', fontSize: 8 }, '✖')
                                               );
                                             }),
                                             React.createElement('text', { x: 200, y: 200, textAnchor: 'middle', fill: '#fde047', fontSize: 9, fontWeight: 'bold' }, __alloT('stem.solarsystem.earth_ground_level', 'Earth ground level')),
-                                            React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, __alloT('stem.solarsystem.visible_light_radio_waves_penetrate_th', '✔ Visible light + radio waves penetrate the atmosphere'))
+                                            React.createElement('text', { x: 200, y: 220, textAnchor: 'middle', fill: '#fff', fontSize: 9 }, __alloT('stem.solarsystem.visible_light_radio_waves_penetrate_th', '✔ Visible light, radio waves, and some infrared reach the ground'))
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.earth_atmosphere_blocks_most_wavelengt', 'Earth atmosphere blocks most wavelengths. Only visible light + radio waves reach the ground. Why all telescopes for UV/X-ray/gamma rays must be in space: Hubble, JWST, Chandra, Fermi.')
+                                          __alloT('stem.solarsystem.earth_atmosphere_blocks_most_wavelengt', 'Earth atmosphere blocks many wavelengths. Visible light, radio, and some infrared windows reach the ground; UV, X-ray, gamma-ray, and much infrared astronomy require space-based observatories such as Hubble, JWST, Chandra, and Fermi.')
                                         )
                                       );
                                     })()
@@ -18790,7 +18794,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.star_spectra_comparison', "📊 Star Spectra Comparison")),
                   React.createElement('button', {
                     onClick: function() { upd("showSpc", !d.showSpc); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSpc ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showSpc ? 'Hide' : 'Open')
                 ),
@@ -18833,7 +18837,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.time_zone_visualizer', "🕐 Time Zone Visualizer")),
                   React.createElement('button', {
                     onClick: function() { upd("showTZ", !d.showTZ); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTZ ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showTZ ? 'Hide' : 'Open')
                 ),
@@ -18881,7 +18885,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mind_blowing_facts_gallery', "💡 Mind-Blowing Facts Gallery")),
                   React.createElement('button', {
                     onClick: function() { upd("showFacts", !d.showFacts); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showFacts ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showFacts ? 'Hide' : 'Open')
                 ),
@@ -18893,13 +18897,13 @@ const d = labToolData.solarSystem || {};
                                         { f: 'A day on Venus is longer than its year', d: 'Venus rotates so slowly it takes 243 Earth days for one Venus day. But its year is only 225 Earth days.', icon: '♀' },
                                         { f: 'Saturn would float in water', d: 'Saturn\'s density is only 0.69 g/cm³ — less than water (1.0). It would float (in a bathtub the size of Saturn)!', icon: '🪐' },
                                         { f: 'Mauna Kea is the tallest mountain', d: 'From base to summit, Mauna Kea is 33,500 ft tall — taller than Everest. But it\'s mostly underwater.', icon: '⛰' },
-                                        { f: 'Jupiter has 95 known moons', d: 'And counting. New moons are still being discovered. The four big ones (Galilean moons) are visible with binoculars.', icon: '🪐' },
+                                        { f: 'Jupiter has 115 known moons', d: 'And counting. New moons are still being discovered. The four big ones (Galilean moons) are visible with binoculars.', icon: '🪐' },
                                         { f: 'Earth weighs ~5.97 × 10^24 kg', d: 'About 6 trillion trillion kilograms. Newton calculated this using gravitational mechanics around 1687.', icon: '🌍' },
                                         { f: 'There are 200 billion-trillion stars', d: '200,000,000,000,000,000,000,000 estimated stars in the observable universe. More stars than grains of sand on all Earth\'s beaches.', icon: '⭐' },
                                         { f: 'The Sun loses 4 million tons per second', d: 'Through nuclear fusion converting mass to energy. The Sun has been doing this for 4.6 billion years.', icon: '☀' },
                                         { f: 'Earth has 2 trojan asteroids', d: 'They co-orbit Earth at the L4 + L5 Lagrange points. Discovered 2010 + 2020.', icon: '☄' },
                                         { f: 'A neutron star is the size of a city', d: '~20 km diameter, but as massive as 1.4 Suns. A teaspoon weighs 6 billion tons.', icon: '⭐' },
-                                        { f: 'JWST sees back 13.5 billion years', d: 'Light from the earliest galaxies has been traveling toward us nearly the age of the universe.', icon: '🔭' },
+                                        { f: 'JWST reads ancient infrared light', d: 'Light from early galaxies has been traveling toward us for over 13 billion years, stretched into infrared wavelengths by cosmic expansion.', icon: '🔭' },
                                         { f: 'Mars has the largest volcano', d: 'Olympus Mons: 22 km tall, 600 km wide. ~3× taller than Mount Everest. Possibly still active.', icon: '🔴' },
                                         { f: 'Pluto is smaller than the Moon', d: 'Pluto: 2,377 km diameter. Earth\'s Moon: 3,474 km. That\'s partly why Pluto was reclassified as dwarf planet.', icon: '🥚' }
                                       ];
@@ -18926,7 +18930,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.earth_moon_true_scale', "📐 Earth-Moon True Scale")),
                   React.createElement('button', {
                     onClick: function() { upd("showEMS", !d.showEMS); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showEMS ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showEMS ? 'Hide' : 'Open')
                 ),
@@ -18976,7 +18980,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.day_length_comparison', "⏰ Day Length Comparison")),
                   React.createElement('button', {
                     onClick: function() { upd("showDL", !d.showDL); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDL ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200')
                   }, d.showDL ? 'Hide' : 'Open')
                 ),
@@ -19020,7 +19024,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.eclipse_path_maker', "🗺 Eclipse Path Maker")),
                   React.createElement('button', {
                     onClick: function() { upd("showEPath", !d.showEPath); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showEPath ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showEPath ? 'Hide' : 'Open')
                 ),
@@ -19068,7 +19072,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cosmic_calendar', "📅 Cosmic Calendar")),
                   React.createElement('button', {
                     onClick: function() { upd("showCal", !d.showCal); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCal ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showCal ? 'Hide' : 'Open')
                 ),
@@ -19117,7 +19121,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.drake_equation_calculator', "👽 Drake Equation Calculator")),
                   React.createElement('button', {
                     onClick: function() { upd("showDrake", !d.showDrake); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDrake ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
                   }, d.showDrake ? 'Hide' : 'Open')
                 ),
@@ -19168,7 +19172,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.world_telescopes_catalog', "🔭 World Telescopes Catalog")),
                   React.createElement('button', {
                     onClick: function() { upd("showTelCat", !d.showTelCat); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTelCat ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
                   }, d.showTelCat ? 'Hide' : 'Open')
                 ),
@@ -19215,7 +19219,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.star_lifespan_calculator', "⏳ Star Lifespan Calculator")),
                   React.createElement('button', {
                     onClick: function() { upd("showSLT", !d.showSLT); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSLT ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showSLT ? 'Hide' : 'Open')
                 ),
@@ -19255,7 +19259,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.your_cosmic_journey', "🎯 Your Cosmic Journey")),
                   React.createElement('button', {
                     onClick: function() { upd("showSummary", !d.showSummary); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSummary ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
                   }, d.showSummary ? 'Hide' : 'Open')
                 ),
@@ -19291,7 +19295,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.astronomy_hall_of_fame', "👨‍🚀 Astronomy Hall of Fame")),
                   React.createElement('button', {
                     onClick: function() { upd("showAstr", !d.showAstr); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAstr ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showAstr ? 'Hide' : 'Open')
                 ),
@@ -19342,7 +19346,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.obafgkm_spectral_classes', "⭐ OBAFGKM Spectral Classes")),
                   React.createElement('button', {
                     onClick: function() { upd("showSpS", !d.showSpS); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSpS ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showSpS ? 'Hide' : 'Open')
                 ),
@@ -19383,7 +19387,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.mars_vs_earth_atmosphere', "🌐 Mars vs Earth Atmosphere")),
                   React.createElement('button', {
                     onClick: function() { upd("showMA", !d.showMA); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMA ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
                   }, d.showMA ? 'Hide' : 'Open')
                 ),
@@ -19427,7 +19431,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.black_hole_vocabulary', "🕳 Black Hole Vocabulary")),
                   React.createElement('button', {
                     onClick: function() { upd("showBHG", !d.showBHG); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBHG ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showBHG ? 'Hide' : 'Open')
                 ),
@@ -19469,7 +19473,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.auroras_across_solar_system', "🌈 Auroras Across Solar System")),
                   React.createElement('button', {
                     onClick: function() { upd("showAuSS", !d.showAuSS); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAuSS ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
                   }, d.showAuSS ? 'Hide' : 'Open')
                 ),
@@ -19515,7 +19519,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.famous_space_missions', "🚀 Famous Space Missions")),
                   React.createElement('button', {
                     onClick: function() { upd("showMP", !d.showMP); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMP ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
                   }, d.showMP ? 'Hide' : 'Open')
                 ),
@@ -19532,7 +19536,7 @@ const d = labToolData.solarSystem || {};
                                         { name: 'OSIRIS-REx', year: 2020, where: 'Bennu', icon: '☄', desc: __alloT('stem.solarsystem.sample_return_from_asteroid', 'Sample return from asteroid') },
                                         { name: 'DART', year: 2022, where: 'Dimorphos', icon: '💥', desc: __alloT('stem.solarsystem.first_planetary_defense_test', 'First planetary defense test') },
                                         { name: __alloT('stem.solarsystem.perseverance_ingenuity', 'Perseverance + Ingenuity'), year: 2021, where: 'Jezero Crater Mars', icon: '🚁', desc: __alloT('stem.solarsystem.rover_first_mars_helicopter', 'Rover + first Mars helicopter') },
-                                        { name: 'JWST', year: 2021, where: 'L2 Lagrange', icon: '🔭', desc: __alloT('stem.solarsystem.replaced_hubble_for_infrared_deep_fiel', 'Replaced Hubble for infrared deep field') }
+                                        { name: 'JWST', year: 2021, where: 'L2 Lagrange', icon: '🔭', desc: __alloT('stem.solarsystem.replaced_hubble_for_infrared_deep_fiel', 'Complements Hubble with infrared deep fields') }
                                       ];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'grid grid-cols-2 gap-2 max-h-72 overflow-y-auto' },
@@ -19556,7 +19560,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.star_magnitude_scale', "✨ Star Magnitude Scale")),
                   React.createElement('button', {
                     onClick: function() { upd("showSMag", !d.showSMag); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSMag ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showSMag ? 'Hide' : 'Open')
                 ),
@@ -19605,7 +19609,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.celestial_coordinate_systems', "🧭 Celestial Coordinate Systems")),
                   React.createElement('button', {
                     onClick: function() { upd("showCoords", !d.showCoords); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCoords ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                   }, d.showCoords ? 'Hide' : 'Open')
                 ),
@@ -19644,7 +19648,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.big_numbers_in_astronomy', "🔢 Big Numbers in Astronomy")),
                   React.createElement('button', {
                     onClick: function() { upd("showBN", !d.showBN); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBN ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showBN ? 'Hide' : 'Open')
                 ),
@@ -19688,7 +19692,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.space_debris_tracker', "🛰 Space Debris Tracker")),
                   React.createElement('button', {
                     onClick: function() { upd("showJunk", !d.showJunk); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showJunk ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
                   }, d.showJunk ? 'Hide' : 'Open')
                 ),
@@ -19734,7 +19738,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.constellation_mythology', "📜 Constellation Mythology")),
                   React.createElement('button', {
                     onClick: function() { upd("showCM", !d.showCM); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCM ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showCM ? 'Hide' : 'Open')
                 ),
@@ -19779,7 +19783,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.exoplanet_detection_methods', "🔍 Exoplanet Detection Methods")),
                   React.createElement('button', {
                     onClick: function() { upd("showExMth", !d.showExMth); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showExMth ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showExMth ? 'Hide' : 'Open')
                 ),
@@ -19809,7 +19813,7 @@ const d = labToolData.solarSystem || {};
                                           React.createElement('div', { className: 'text-[11px] ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, sel.desc)
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.first_exoplanet_around_a_sun_like_star', 'First exoplanet around a Sun-like star: 51 Pegasi b (1995). Now 5500+ confirmed. JWST is doing atmospheric spectroscopy on exoplanets — searching for biosignatures.')
+                                          __alloT('stem.solarsystem.first_exoplanet_around_a_sun_like_star', 'First exoplanet around a Sun-like star: 51 Pegasi b (1995). Now 6,300+ are confirmed. JWST is doing atmospheric spectroscopy on exoplanets — searching for biosignatures.')
                                         )
                                       );
                                     })()
@@ -19822,7 +19826,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.upcoming_eclipses', "🌙 Upcoming Eclipses")),
                   React.createElement('button', {
                     onClick: function() { upd("showECat", !d.showECat); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showECat ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showECat ? 'Hide' : 'Open')
                 ),
@@ -19866,7 +19870,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.galaxy_types_gallery', "🌌 Galaxy Types Gallery")),
                   React.createElement('button', {
                     onClick: function() { upd("showGT", !d.showGT); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showGT ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showGT ? 'Hide' : 'Open')
                 ),
@@ -19911,11 +19915,11 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cosmic_speeds_chart', "⚡ Cosmic Speeds Chart")),
                   React.createElement('button', {
                     onClick: function() { upd("showCSp", !d.showCSp); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCSp ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showCSp ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.from_walking_to_light_speed_log_scale_', "From walking to light speed (log scale). Voyager 1 is fastest human-made object, but still glacial cosmically.")),
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.from_walking_to_light_speed_log_scale_', "From walking to light speed (log scale). Voyager 1 is the farthest human-made object and one of our fastest outbound probes, but still glacial cosmically.")),
                 d.showCSp && React.createElement('div', { className: 'mt-2' },
                   (function() {
                                       var SP = [
@@ -19945,7 +19949,7 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.voyager_1_is_the_fastest_object_humans', 'Voyager 1 is the fastest object humans have made — yet would take 80,000 years to reach the nearest star. Light makes the same trip in 4 years.')
+                                          __alloT('stem.solarsystem.voyager_1_is_the_fastest_object_humans', 'Voyager 1 is fast by spacecraft standards and is now the farthest human-made object, yet it would still take about 80,000 years to reach the nearest star. Light makes the same trip in 4 years.')
                                         )
                                       );
                                     })()
@@ -19958,7 +19962,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.star_forming_region', "✨ Star Forming Region")),
                   React.createElement('button', {
                     onClick: function() { upd("showSFR", !d.showSFR); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSFR ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200')
                   }, d.showSFR ? 'Hide' : 'Open')
                 ),
@@ -20014,7 +20018,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.big_cosmic_questions', "❓ Big Cosmic Questions")),
                   React.createElement('button', {
                     onClick: function() { upd("showCQ", !d.showCQ); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showCQ ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showCQ ? 'Hide' : 'Open')
                 ),
@@ -20057,7 +20061,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.solar_system_side_by_side', "📊 Solar System Side-by-Side")),
                   React.createElement('button', {
                     onClick: function() { upd("showSQC", !d.showSQC); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSQC ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
                   }, d.showSQC ? 'Hide' : 'Open')
                 ),
@@ -20068,7 +20072,7 @@ const d = labToolData.solarSystem || {};
                                         { name: __alloT('stem.solarsystem.diameter_km', 'Diameter (km)'), sun: 1392700, mercury: 4879, venus: 12104, earth: 12742, mars: 6779, jupiter: 139820 },
                                         { name: __alloT('stem.solarsystem.gravity_g', 'Gravity (g)'), sun: 28, mercury: 0.38, venus: 0.91, earth: 1.0, mars: 0.38, jupiter: 2.34 },
                                         { name: __alloT('stem.solarsystem.day_hours', 'Day (hours)'), sun: 25 * 24, mercury: 1408, venus: 5832, earth: 24, mars: 24.6, jupiter: 9.9 },
-                                        { name: __alloT('stem.solarsystem.moons', 'Moons'), sun: 0, mercury: 0, venus: 0, earth: 1, mars: 2, jupiter: 95 }
+                                        { name: __alloT('stem.solarsystem.moons', 'Moons'), sun: 0, mercury: 0, venus: 0, earth: 1, mars: 2, jupiter: 115 }
                                       ];
                                       var labels = ['Sun', 'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter'];
                                       var keys = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter'];
@@ -20092,7 +20096,7 @@ const d = labToolData.solarSystem || {};
                                           )
                                         ),
                                         React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.side_by_side_comparison_of_key_planet_', 'Side-by-side comparison of key planet properties. Earth = baseline. Sun is 1000× Earth radius. Jupiter has 95 known moons. Venus rotates so slowly its day exceeds its year.')
+                                          __alloT('stem.solarsystem.side_by_side_comparison_of_key_planet_', 'Side-by-side comparison of key planet properties. Earth = baseline. Sun is 1000× Earth radius. Jupiter has 115 known moons. Venus rotates so slowly its day exceeds its year.')
                                         )
                                       );
                                     })()
@@ -20105,7 +20109,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.about_this_tool', "🌌 About This Tool")),
                   React.createElement('button', {
                     onClick: function() { upd("showAbout", !d.showAbout); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showAbout ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showAbout ? 'Hide' : 'Open')
                 ),
@@ -20136,7 +20140,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.meteor_shower_calendar', "☄ Meteor Shower Calendar")),
                   React.createElement('button', {
                     onClick: function() { upd("showMS", !d.showMS); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMS ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showMS ? 'Hide' : 'Open')
                 ),
@@ -20180,7 +20184,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.famous_astronomy_quotes', "💬 Famous Astronomy Quotes")),
                   React.createElement('button', {
                     onClick: function() { upd("showFQ", !d.showFQ); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showFQ ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showFQ ? 'Hide' : 'Open')
                 ),
@@ -20223,7 +20227,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.tonight_sky_observing_guide', "🔭 Tonight Sky Observing Guide")),
                   React.createElement('button', {
                     onClick: function() { upd("showTNT", !d.showTNT); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTNT ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showTNT ? 'Hide' : 'Open')
                 ),
@@ -20265,7 +20269,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.pale_blue_dot', "🌍 Pale Blue Dot")),
                   React.createElement('button', {
                     onClick: function() { upd("showClose", !d.showClose); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showClose ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showClose ? 'Hide' : 'Open')
                 ),
@@ -20295,7 +20299,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.famous_nebulae', "☁ Famous Nebulae")),
                   React.createElement('button', {
                     onClick: function() { upd("showNeb", !d.showNeb); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showNeb ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showNeb ? 'Hide' : 'Open')
                 ),
@@ -20349,7 +20353,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.astronomy_toolkit_guide', "🛠 Astronomy Toolkit Guide")),
                   React.createElement('button', {
                     onClick: function() { upd("showTools", !d.showTools); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTools ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
                   }, d.showTools ? 'Hide' : 'Open')
                 ),
@@ -20392,7 +20396,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.how_stars_die', "⚱ How Stars Die")),
                   React.createElement('button', {
                     onClick: function() { upd("showDeath", !d.showDeath); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDeath ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700 hover:bg-red-200')
                   }, d.showDeath ? 'Hide' : 'Open')
                 ),
@@ -20433,7 +20437,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.cosmic_distance_reference', "📏 Cosmic Distance Reference")),
                   React.createElement('button', {
                     onClick: function() { upd("showDist", !d.showDist); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDist ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-700 hover:bg-sky-200')
                   }, d.showDist ? 'Hide' : 'Open')
                 ),
@@ -20452,7 +20456,7 @@ const d = labToolData.solarSystem || {};
                                         { unit: '4.2 ly', what: 'Distance to Proxima Centauri (nearest star)' },
                                         { unit: '~100,000 ly', what: 'Milky Way diameter' },
                                         { unit: '2.5 million ly', what: 'Andromeda Galaxy' },
-                                        { unit: '13.5 billion ly', what: 'Most distant JWST observed objects' },
+                                        { unit: '13+ billion ly', what: 'Early-universe JWST targets' },
                                         { unit: '93 billion ly (diameter)', what: 'Observable universe' }
                                       ];
                                       return React.createElement('div', null,
@@ -20478,7 +20482,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.maine_night_sky_by_season', "🌲 Maine Night Sky by Season")),
                   React.createElement('button', {
                     onClick: function() { upd("showMS2", !d.showMS2); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMS2 ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700 hover:bg-green-200')
                   }, d.showMS2 ? 'Hide' : 'Open')
                 ),
@@ -20518,7 +20522,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.space_news_timeline', "📰 Space News Timeline")),
                   React.createElement('button', {
                     onClick: function() { upd("showWN", !d.showWN); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showWN ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
                   }, d.showWN ? 'Hide' : 'Open')
                 ),
@@ -20531,10 +20535,10 @@ const d = labToolData.solarSystem || {};
                                         { date: 'Apr 2024', what: 'Total solar eclipse crosses Maine + N America' },
                                         { date: 'Jun 2024', what: 'NASA Europa Clipper launches toward Jupiter\'s moon Europa' },
                                         { date: 'Oct 2024', what: 'ESA Hera mission launches to study DART impact aftermath' },
-                                        { date: '2025', what: 'JWST continues finding earliest galaxies ever observed' },
+                                        { date: '2025+', what: 'JWST deepens early-galaxy surveys' },
                                         { date: '2025-2026', what: 'Artemis II — first crewed Moon mission since 1972' },
                                         { date: '2026', what: 'Total solar eclipse over Spain + Iceland' },
-                                        { date: '2027', what: 'Roman Space Telescope launches (Hubble successor for wide-field)' }
+                                        { date: 'late 2020s', what: 'Roman Space Telescope begins wide-field survey science' }
                                       ];
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'space-y-1' },
@@ -20561,7 +20565,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.solar_system_at_a_glance', "📊 Solar System At a Glance")),
                   React.createElement('button', {
                     onClick: function() { upd("showSAG", !d.showSAG); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSAG ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showSAG ? 'Hide' : 'Open')
                 ),
@@ -20594,7 +20598,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.10_most_famous_moons', "🌑 10 Most Famous Moons")),
                   React.createElement('button', {
                     onClick: function() { upd("showFM", !d.showFM); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showFM ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showFM ? 'Hide' : 'Open')
                 ),
@@ -20639,7 +20643,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.why_utc_matters', "🌐 Why UTC Matters")),
                   React.createElement('button', {
                     onClick: function() { upd("showUTC", !d.showUTC); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showUTC ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200')
                   }, d.showUTC ? 'Hide' : 'Open')
                 ),
@@ -20670,7 +20674,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.final_inspiration', "✨ Final Inspiration")),
                   React.createElement('button', {
                     onClick: function() { upd("showIns", !d.showIns); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showIns ? 'bg-purple-500 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')
                   }, d.showIns ? 'Hide' : 'Open')
                 ),
@@ -20697,7 +20701,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.astronomy_bucket_list', "✅ Astronomy Bucket List")),
                   React.createElement('button', {
                     onClick: function() { upd("showBL", !d.showBL); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showBL ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showBL ? 'Hide' : 'Open')
                 ),
@@ -20744,7 +20748,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.surprising_planet_facts', "💎 Surprising Planet Facts")),
                   React.createElement('button', {
                     onClick: function() { upd("showTR", !d.showTR); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showTR ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showTR ? 'Hide' : 'Open')
                 ),
@@ -20787,7 +20791,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.messages_to_the_stars', "📜 Messages to the Stars")),
                   React.createElement('button', {
                     onClick: function() { upd("showMsg", !d.showMsg); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showMsg ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showMsg ? 'Hide' : 'Open')
                 ),
@@ -20818,7 +20822,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.credits', "🎓 Credits")),
                   React.createElement('button', {
                     onClick: function() { upd("showFin", !d.showFin); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showFin ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showFin ? 'Hide' : 'Open')
                 ),
@@ -20847,7 +20851,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.keep_wondering', "🌠 Keep Wondering")),
                   React.createElement('button', {
                     onClick: function() { upd("showDn", !d.showDn); },
-                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' + 
+                    className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showDn ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200')
                   }, d.showDn ? 'Hide' : 'Open')
                 ),
@@ -20909,7 +20913,7 @@ const d = labToolData.solarSystem || {};
               ),
 
               // === TUTORIAL OVERLAY (first visit) ===
-              !d.tutorialDismissed && React.createElement("div", { 
+              !d.tutorialDismissed && React.createElement("div", {
                 className: "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50",
                 onClick: function(e) { if (e.target === e.currentTarget) upd('tutorialDismissed', true); }
               },

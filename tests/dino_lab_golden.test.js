@@ -21,7 +21,7 @@ describe('Dino Lab — registration contract', () => {
     expect(meta()).toMatchSnapshot();
   });
 
-  it('exposes exactly the 17 expected tabs as working renderers', () => {
+  it('exposes exactly the 18 expected tabs as working renderers', () => {
     TABS.forEach(tab => {
       const html = renderTab(tab);
       expect(typeof html, tab).toBe('string');
@@ -176,6 +176,15 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     const html = renderTab('explore');
     expect(html).toMatch(/Print a trading card/); // aria-label on the button
     expect(html).toMatch(/🖨️ Card/);
+  });
+
+  it('the 3D Field Station explains reconstruction layers and uncertainty', () => {
+    const html = renderTab('field3d');
+    expect(html).toMatch(/3D Field Station/);
+    expect(html).toMatch(/Skeleton proxy/);
+    expect(html).toMatch(/Body outline/);
+    expect(html).toMatch(/Human scale/);
+    expect(html).toMatch(/Inference boundary/);
   });
 
   it('the Deep Time tab places the cosmic-calendar milestones correctly', () => {

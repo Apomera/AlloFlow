@@ -340,7 +340,7 @@
   ];
 
   var EXO_OVERVIEW = {
-    knownCount: '~5,800+ confirmed (as of 2024-2025)',
+    knownCount: '6,300+ confirmed (NASA Exoplanet Archive, July 2026)',
     methods: [
       { id: 'doppler', name: 'Radial velocity (Doppler)',
         how: 'The star wobbles slightly as a planet orbits, shifting starlight to redder or bluer wavelengths. Detects massive planets first.',
@@ -383,14 +383,14 @@
     { id: 'venus',   name: 'Venus',    icon: '♀', auFromSun: 0.72, diameterEarth: 0.95, dayHours: 5832,   yearDays: 225,   moons: 0,   visible: 'naked-eye', color: '#e8c47a',
       fact: 'Brightest planet, often the "morning star" or "evening star." Thick CO₂ atmosphere creates runaway greenhouse — surface is 465°C (hotter than Mercury). Spins backwards (retrograde).' },
     { id: 'earth',   name: 'Earth',    icon: '🜨', auFromSun: 1.00, diameterEarth: 1.00, dayHours: 24,     yearDays: 365.25, moons: 1,   visible: 'self', color: '#4a90e2',
-      fact: 'The only known world with liquid water on its surface, a magnetic field strong enough to protect from solar wind, and life. So far we have not detected life anywhere else, despite ~5,500 confirmed exoplanets.' },
+      fact: 'The only known world with liquid water on its surface, a magnetic field strong enough to protect from solar wind, and life. So far we have not detected life anywhere else, despite 6,300+ confirmed exoplanets.' },
     { id: 'mars',    name: 'Mars',     icon: '♂', auFromSun: 1.52, diameterEarth: 0.53, dayHours: 24.6,   yearDays: 687,   moons: 2,   visible: 'naked-eye', color: '#d76f43',
       fact: 'Olympus Mons is the largest volcano in the solar system — 22 km tall, three times the height of Everest. Past evidence of running water; now mostly frozen. The two moons (Phobos, Deimos) are probably captured asteroids.' },
-    { id: 'jupiter', name: 'Jupiter',  icon: '♃', auFromSun: 5.20, diameterEarth: 11.2, dayHours: 9.9,    yearDays: 4333,  moons: 95,  visible: 'naked-eye', color: '#c9a877',
+    { id: 'jupiter', name: 'Jupiter',  icon: '♃', auFromSun: 5.20, diameterEarth: 11.2, dayHours: 9.9,    yearDays: 4333,  moons: 115,  visible: 'naked-eye', color: '#c9a877',
       fact: 'The largest planet — could fit 1,300 Earths inside. The Great Red Spot is a storm bigger than Earth that has lasted at least 400 years. Four large moons (Io, Europa, Ganymede, Callisto) visible with binoculars; Europa likely has a subsurface ocean.' },
-    { id: 'saturn',  name: 'Saturn',   icon: '♄', auFromSun: 9.54, diameterEarth: 9.45, dayHours: 10.7,   yearDays: 10759, moons: 146, visible: 'naked-eye', color: '#e6d39f',
+    { id: 'saturn',  name: 'Saturn',   icon: '♄', auFromSun: 9.54, diameterEarth: 9.45, dayHours: 10.7,   yearDays: 10759, moons: 293, visible: 'naked-eye', color: '#e6d39f',
       fact: 'The rings are mostly ice particles, from dust-sized to house-sized. So thin (about 10 m thick) that they almost disappear when seen edge-on. Saturn is less dense than water — if you had an ocean big enough, it would float.' },
-    { id: 'uranus',  name: 'Uranus',   icon: '♅', auFromSun: 19.2, diameterEarth: 4.0,  dayHours: 17.2,   yearDays: 30687, moons: 27,  visible: 'binoculars', color: '#a3d4d9',
+    { id: 'uranus',  name: 'Uranus',   icon: '♅', auFromSun: 19.2, diameterEarth: 4.0,  dayHours: 17.2,   yearDays: 30687, moons: 29,  visible: 'binoculars', color: '#a3d4d9',
       fact: 'Tipped on its side — axial tilt of 98°. Each pole gets 42 years of continuous sunlight, then 42 years of darkness. The methane in its atmosphere gives the cyan color.' },
     { id: 'neptune', name: 'Neptune',  icon: '♆', auFromSun: 30.1, diameterEarth: 3.9,  dayHours: 16.1,   yearDays: 60190, moons: 16,  visible: 'telescope',  color: '#4068c4',
       fact: 'Discovered by mathematics first — astronomers noticed Uranus wasn\'t orbiting quite right, predicted where another planet had to be, and pointed telescopes there. Winds reach 2,100 km/h, the fastest in the solar system.' }
@@ -508,7 +508,7 @@
     { q: 'What is the difference between a meteor, a meteoroid, and a meteorite?', choices: ['Nothing — they\'re the same thing', 'Meteoroid in space; meteor in the atmosphere as a streak of light; meteorite on the ground', 'Meteor in space; meteoroid on the ground; meteorite in the atmosphere', 'Meteoroid in space; meteorite in the atmosphere; meteor on the ground'], answer: 1, explain: 'Meteoroid: rocky/icy body in space. Meteor: the streak of light when it burns up in the atmosphere. Meteorite: the surviving piece on the ground.' },
     { q: 'Most of the elements in your body (calcium in bones, iron in blood) were made where?', choices: ['On Earth, by geological processes', 'In the Sun', 'In supernovae (exploding stars) billions of years ago', 'In the Big Bang directly'], answer: 2, explain: 'The Big Bang made hydrogen, helium, and a trace of lithium. Everything heavier was forged inside stars and scattered into space when stars exploded. We are, literally, made of star stuff (Carl Sagan was being precise, not poetic).' },
     { q: 'Which planet has the largest volcano in the solar system?', choices: ['Earth', 'Venus', 'Mars', 'Jupiter (its moon Io)'], answer: 2, explain: 'Olympus Mons on Mars is 22 km tall (3× Everest) and 600 km wide. Mars\'s lack of plate tectonics allowed a single hot spot to build up an enormous shield volcano over billions of years.' },
-    { q: 'Roughly how many exoplanets have been confirmed as of 2024?', choices: ['About 50', 'About 500', 'About 5,800', 'About 1 million'], answer: 2, explain: 'As of late 2024, ~5,800 confirmed exoplanets. The first one around a Sun-like star (51 Pegasi b) was confirmed in 1995. The Kepler space telescope (2009-2018) alone added ~2,700.' },
+    { q: 'Roughly how many exoplanets have been confirmed as of July 2026?', choices: ['About 50', 'About 500', 'About 6,300', 'About 1 million'], answer: 2, explain: 'As of July 2026, NASA Exoplanet Archive lists 6,300+ confirmed planets. The first one around a Sun-like star (51 Pegasi b) was confirmed in 1995. The Kepler space telescope (2009-2018) alone added thousands.' },
     { q: 'On the Hertzsprung-Russell diagram, where is our Sun located?', choices: ['Among the red giants', 'On the main sequence in the middle', 'Among the supergiants', 'Among the white dwarfs'], answer: 1, explain: 'The Sun is a G-type main-sequence star. It sits in the middle of the main sequence — neither very hot nor very cool. It will spend ~10 billion years on the main sequence before becoming a red giant, then a white dwarf.' },
     { q: 'Which is the closest star system to our Sun?', choices: ['Sirius', 'Vega', 'Alpha Centauri (triple system, includes Proxima)', 'Betelgeuse'], answer: 2, explain: 'Alpha Centauri is 4.37 light-years away — a triple system of Alpha Centauri A, B, and Proxima Centauri. Proxima Centauri b, an Earth-mass planet in the habitable zone, was discovered in 2016.' }
   ];
@@ -1579,7 +1579,7 @@
                   caveat: 'Spacecraft missions are extraordinarily expensive — a flagship mission like Cassini or Mars 2020 costs $2-4 billion + takes 7-15 years from concept to launch. They are also institutional triumphs: NASA, ESA, JAXA, Roscosmos, ISRO, CNSA all maintain decades-long programs. Politically, missions are vulnerable to budget cuts; scientifically, they are the source of essentially all our deep knowledge of other worlds.'
                 },
                 { id: 'voyager', name: __alloT('stem.astronomy.voyager_1_2_the_grand_tour', 'Voyager 1 + 2 — the Grand Tour'), emoji: '🛸',
-                  body: __alloT('stem.astronomy.voyager_1_2_launched_1977_were_designe', 'Voyager 1 + 2 (launched 1977) were designed to use a once-in-176-years planetary alignment to visit ALL FOUR outer planets with a single trajectory + gravity assists. Voyager 2 succeeded: Jupiter (1979), Saturn (1981), Uranus (1986, ONLY spacecraft EVER to visit), Neptune (1989, ONLY spacecraft EVER to visit). Voyager 1 took a different path that went past Saturn\'s moon Titan but skipped Uranus + Neptune; it is now the FARTHEST human-made object from Earth (~ 24 billion km, ~ 162 AU, 22.5 light-hours away as of 2025). Both spacecraft crossed the HELIOPAUSE (the boundary of the Sun\'s magnetic influence) — Voyager 1 in 2012, Voyager 2 in 2018 — entering INTERSTELLAR SPACE. Their plutonium-238 power supplies still work + they transmit data; expected to operate until ~ 2030.'),
+                  body: __alloT('stem.astronomy.voyager_1_2_launched_1977_were_designe', 'Voyager 1 + 2 (launched 1977) were designed to use a once-in-176-years planetary alignment to visit ALL FOUR outer planets with a single trajectory + gravity assists. Voyager 2 succeeded: Jupiter (1979), Saturn (1981), Uranus (1986, ONLY spacecraft EVER to visit), Neptune (1989, ONLY spacecraft EVER to visit). Voyager 1 took a different path that went past Saturn\'s moon Titan but skipped Uranus + Neptune; it is now the FARTHEST human-made object from Earth, more than 160 AU away and still receding. Both spacecraft crossed the HELIOPAUSE (the boundary of the Sun\'s magnetic influence) — Voyager 1 in 2012, Voyager 2 in 2018 — entering INTERSTELLAR SPACE. Their plutonium-238 power supplies still work + they transmit data; expected to operate until around 2030.'),
                   caveat: 'Voyager 1 + 2 carry the GOLDEN RECORDS — 12-inch gold-plated copper discs with sounds + images of Earth, intended as messages to any extraterrestrial civilization that might find them in millions of years. Carl Sagan chaired the selection committee. The records will outlast the spacecraft + may eventually be the longest-lasting human artifacts. Their value as actual communication is essentially zero (they would be unreadable without context); their value as cultural statement + monument is large.'
                 },
                 { id: 'cassini', name: __alloT('stem.astronomy.cassini_huygens_saturn_1997_2017', 'Cassini-Huygens — Saturn 1997-2017'), emoji: '🪐',
@@ -2430,8 +2430,10 @@
                 var size = 20 + STAR_TYPES.indexOf(s) * 3;
                 return h('button', {
                   key: s.id,
+                  type: 'button',
                   onClick: function() { upd({ selectedStarType: s.id }); },
-                  'aria-label': s.name,
+                  'aria-label': 'Select ' + s.name + ' spectral class. Surface temperature ' + s.tempK + ' K. Example: ' + s.example + '.',
+                  'aria-pressed': active ? 'true' : 'false',
                   style: { padding: 8, borderRadius: 8, border: '1px solid ' + (active ? '#fbbf24' : '#334155'), background: active ? 'rgba(245,158,11,0.15)' : 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 60 }
                 },
                   h('div', { style: { width: size, height: size, borderRadius: '50%', background: s.color, boxShadow: '0 0 ' + (size / 2) + 'px ' + s.color } }),
@@ -2476,6 +2478,14 @@
               var spectrumType = d.spectrumType || 'continuous';
               var dopplerKms = d.dopplerKms != null ? d.dopplerKms : 0;  // -300 to +300 km/s
               var c = 299792.458; // km/s
+              var zApprox = dopplerKms / c;
+              var shiftPct = Math.abs(zApprox * 100).toFixed(3);
+              var shiftSummary = dopplerKms === 0
+                ? 'Spectral lines match their rest wavelengths: no radial Doppler shift.'
+                : 'Spectral lines shift ' + (dopplerKms > 0 ? 'redward' : 'blueward') + ' by about ' + shiftPct + '%. This is ordinary radial Doppler motion.';
+              var shiftValueText = dopplerKms === 0
+                ? 'At rest: no Doppler shift'
+                : Math.abs(dopplerKms) + ' kilometers per second ' + (dopplerKms > 0 ? 'away from us, redshifted' : 'toward us, blueshifted');
               var rest = [
                 { name: __alloT('stem.astronomy.h_balmer', 'Hα (Balmer)'), nm: 656.28, color: '#ff6666' },
                 { name: 'Hβ', nm: 486.13, color: '#66ccff' },
@@ -2516,18 +2526,22 @@
                 // Doppler-shifted line positions
                 var shiftFactor = 1 + dopplerKms / c; // λ_observed = λ_rest * (1 + v/c)
                 var shifted = rest.map(function(r) { return { name: r.name, nm: r.nm * shiftFactor, restNm: r.nm }; });
+                var spectrumUid = 'astroSpectrum-' + spectrumType + '-' + String(Math.round(dopplerKms)).replace('-', 'm');
+                var titleId = spectrumUid + '-title';
+                var descId = spectrumUid + '-desc';
+                var gradientId = spectrumUid + '-gradient';
 
-                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': 'spectrumTitle spectrumDesc' },
-                  h('title', { id: 'spectrumTitle' }, spectrumType + ' spectrum with Doppler shift of ' + dopplerKms + ' km/s'),
-                  h('desc', { id: 'spectrumDesc' }, 'A visual spectrum from 380 to 750 nm showing ' + spectrumType + ' lines. Doppler shift is ' + (dopplerKms === 0 ? 'zero (at rest).' : (dopplerKms > 0 ? 'positive (object moving away, redshift)' : 'negative (object moving toward us, blueshift)') + '.')),
+                return h('svg', { viewBox: '0 0 ' + svgW + ' ' + svgH, width: '100%', height: svgH, role: 'img', 'aria-labelledby': titleId + ' ' + descId },
+                  h('title', { id: titleId }, spectrumType + ' spectrum with Doppler shift of ' + dopplerKms + ' km/s'),
+                  h('desc', { id: descId }, 'A visual spectrum from 380 to 750 nm showing ' + spectrumType + ' lines. ' + shiftSummary),
                   h('defs', null,
-                    h('linearGradient', { id: 'visSpect', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                    h('linearGradient', { id: gradientId, x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
                       grad.map(function(g, i) { return h('stop', { key: i, offset: g.pct + '%', stopColor: g.color }); })
                     )
                   ),
                   // Spectrum bar
                   h('rect', { x: leftPad, y: 15, width: plotW, height: 35,
-                    fill: spectrumType === 'continuous' || spectrumType === 'absorption' ? 'url(#visSpect)' : '#000' }),
+                    fill: spectrumType === 'continuous' || spectrumType === 'absorption' ? 'url(#' + gradientId + ')' : '#000' }),
                   // Lines
                   shifted.map(function(l, i) {
                     if (l.nm < lambdaMin || l.nm > lambdaMax) return null;
@@ -2550,7 +2564,7 @@
 
               return h('div', null,
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
-                  __alloT('stem.astronomy.light_from_a_star_spreads_into_a_spect', 'Light from a star spreads into a spectrum when passed through a prism or diffraction grating. The pattern of bright + dark lines tells us EVERYTHING about the star: what it is made of (line positions), how hot it is (line intensities), how it is moving (line shifts), and even its magnetic field (line splitting). Spectroscopy is the single most important technique in modern astrophysics.')
+                  __alloT('stem.astronomy.light_from_a_star_spreads_into_a_spect', 'Light from a star spreads into a spectrum when passed through a prism or diffraction grating. The pattern of bright and dark lines tells us a remarkable amount about the star: what it is made of (line positions), how hot it is (line intensities), how it is moving (line shifts), and even its magnetic field (line splitting). Spectroscopy is one of the most important techniques in modern astrophysics.')
                 ),
                 h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
                   [
@@ -2560,7 +2574,10 @@
                   ].map(function(s) {
                     var active = spectrumType === s.id;
                     return h('button', { key: s.id,
+                      type: 'button',
                       onClick: function() { upd({ spectrumType: s.id }); },
+                      'aria-label': 'Show ' + s.name + ' spectrum. ' + s.desc,
+                      'aria-pressed': active ? 'true' : 'false',
                       style: { padding: '8px 12px', borderRadius: 8, background: active ? 'rgba(245,158,11,0.20)' : '#1e293b', border: '1px solid ' + (active ? '#fbbf24' : '#334155'), color: active ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'left', maxWidth: 220 } },
                       h('div', null, s.name),
                       h('div', { style: { fontSize: 10, opacity: 0.75, fontWeight: 500, marginTop: 2, lineHeight: 1.4 } }, s.desc)
@@ -2581,16 +2598,23 @@
                   h('input', { type: 'range', min: -300, max: 300, step: 10, value: dopplerKms,
                     onChange: function(e) { upd({ dopplerKms: parseInt(e.target.value, 10) }); },
                     'aria-label': __alloT('stem.astronomy.doppler_radial_velocity_in_km_s', 'Doppler radial velocity in km/s'),
+                    'aria-valuetext': shiftValueText,
                     style: { width: '100%', accentColor: '#fbbf24' }
-                  })
+                  }),
+                  h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 8, fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.55 } }, shiftSummary)
+                ),
+
+                h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.32)', fontSize: 12, color: '#bae6fd', lineHeight: 1.65, marginBottom: 10 } },
+                  h('strong', null, __alloT('stem.astronomy.model_boundary', 'Model boundary: ')),
+                  __alloT('stem.astronomy.this_slider_models_ordinary_doppler_m', 'This slider models ordinary Doppler radial velocity for nearby stars and exoplanet wobbles. Distant galaxies can also be redshifted because expanding space stretches light during travel; use the Universe redshift section for that distinction.')
                 ),
 
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.astronomy.what_spectroscopy_tells_us_about_a_sta', 'What spectroscopy tells us about a star: ')),
                   h('ul', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.7 } },
                     h('li', null, h('strong', null, 'Composition: '), __alloT('stem.astronomy.each_element_has_a_unique_pattern_of_s', 'Each element has a unique pattern of spectral lines (its "fingerprint"). Hydrogen, helium, calcium, sodium, iron — all identifiable by line wavelength.')),
-                    h('li', null, h('strong', null, 'Temperature: '), __alloT('stem.astronomy.the_continuum_background_spectrum_foll', 'The CONTINUUM (background spectrum) follows Planck\'s blackbody curve. Hotter stars peak at shorter (bluer) wavelengths; cooler stars at longer (redder).')),
-                    h('li', null, h('strong', null, __alloT('stem.astronomy.radial_velocity', 'Radial velocity: ')), __alloT('stem.astronomy.a_star_moving_toward_us_blueshifts_its', 'A star moving toward us blueshifts its lines (compressed); moving away redshifts (stretched). Doppler shift Δλ/λ = v/c. This is how exoplanets are found by the radial-velocity method.')),
+                    h('li', null, h('strong', null, 'Temperature: '), __alloT('stem.astronomy.the_continuum_background_spectrum_foll', 'The continuum background roughly follows a blackbody curve. Hotter stars peak at shorter (bluer) wavelengths; cooler stars at longer (redder).')),
+                    h('li', null, h('strong', null, __alloT('stem.astronomy.radial_velocity', 'Radial velocity: ')), __alloT('stem.astronomy.a_star_moving_toward_us_blueshifts_its', 'A star moving toward us blueshifts its lines; moving away redshifts them. For these speeds, Δλ/λ ≈ v/c. This is how exoplanets are found by the radial-velocity method. Cosmological redshift is different: space stretches the light during travel.')),
                     h('li', null, h('strong', null, 'Rotation: '), __alloT('stem.astronomy.a_spinning_star_has_one_limb_moving_to', 'A spinning star has one limb moving toward us, the other away — blueshifted + redshifted at once. Lines BROADEN. Astronomers measure rotation by line width.')),
                     h('li', null, h('strong', null, __alloT('stem.astronomy.magnetic_field', 'Magnetic field: ')), __alloT('stem.astronomy.strong_magnetic_fields_split_a_single_', 'Strong magnetic fields split a single line into multiple components (Zeeman effect). The Sun\'s sunspot magnetic fields show this clearly.'))
                   )
@@ -3420,7 +3444,7 @@
         return h('div', { style: { padding: 16 } },
           sectionCard('🌌 Our Milky Way',
             h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
-              __alloT('stem.astronomy.a_barred_spiral_galaxy_about_100_000_l', 'A barred spiral galaxy, about 100,000 light-years across, containing 100-400 billion stars and an unknown number of planets (probably trillions). Our Sun is about 26,000 light-years from the center, in a quiet spiral arm called the Orion Arm. The supermassive black hole at the center (Sagittarius A*) is 4 million times the mass of the Sun. The Milky Way is one of about 2 trillion galaxies in the observable universe.')
+              __alloT('stem.astronomy.a_barred_spiral_galaxy_about_100_000_l', 'A barred spiral galaxy, about 100,000 light-years across, containing 100-400 billion stars and an unknown number of planets (probably trillions). Our Sun is about 26,000 light-years from the center, in a quiet spiral arm called the Orion Arm. The supermassive black hole at the center (Sagittarius A*) is 4 million times the mass of the Sun. The Milky Way is one of hundreds of billions to trillions of galaxies in the observable universe.')
             )
           ),
 
@@ -4462,7 +4486,7 @@
                 ),
                 h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.astronomy.current_detection_programs', 'Current detection programs: ')),
-                  __alloT('stem.astronomy.nasa_esa_amateur_observatories_worldwi', 'NASA + ESA + amateur observatories worldwide. NASA\'s Center for NEO Studies tracks ~35,000+ known near-Earth asteroids (as of 2024). The Catalina Sky Survey, Pan-STARRS, ATLAS find dozens of new ones per month. The Vera C. Rubin Observatory (Chile, first light 2025) is expected to find tens of thousands more in its first few years. The Sun-direction "blind spot" remains a major gap; NASA\'s NEO Surveyor space telescope (launching 2027-28) will close it.')
+                  __alloT('stem.astronomy.nasa_esa_amateur_observatories_worldwi', 'NASA + ESA + amateur observatories worldwide. NASA\'s Center for NEO Studies tracks tens of thousands of known near-Earth asteroids. The Catalina Sky Survey, Pan-STARRS, and ATLAS find many more each month. The Vera C. Rubin Observatory is expected to find tens of thousands more in its first few years. The Sun-direction "blind spot" remains a major gap; NASA\'s NEO Surveyor space telescope is designed to help close it.')
                 ),
                 h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.astronomy.deflection_options', 'Deflection options: ')),
@@ -5344,7 +5368,7 @@
                 },
                 { id: 'mauna', name: __alloT('stem.astronomy.mauna_kea_the_thirty_meter_telescope', 'Mauna Kea + the Thirty Meter Telescope'), emoji: '🏔️',
                   body: __alloT('stem.astronomy.mauna_kea_on_the_big_island_of_hawai_i', 'Mauna Kea on the Big Island of Hawai\'i is one of the world\'s best observatory sites — high altitude (4,200 m), low humidity, stable atmosphere. Thirteen telescopes already operate near its summit, built since the 1960s. Mauna Kea is also one of Hawaiian Indigenous (Kānaka Maoli) culture\'s most sacred sites — the "wao akua" (realm of the gods) + the home of multiple Hawaiian deities. In 2015 + 2019, the planned THIRTY METER TELESCOPE (TMT, $2+ billion, ~ 30 m optical mirror, an order of magnitude bigger than current scopes) became a focal point of Native Hawaiian opposition. Thousands of protectors blocked the construction road in 2019; arrests were made; the project has been suspended on Mauna Kea but is exploring alternatives in the Canary Islands. The opposition was NOT anti-science but pro-respect: Kānaka Maoli scientists + astronomers were among the protectors.'),
-                  caveat: 'The TMT controversy is one of the clearest contemporary examples of astronomy ethics in conflict. The TMT collaboration\'s 2019 statement promised improved consultation + economic benefits to Hawaiians; protectors responded that meaningful consent had been requested for 50+ years + repeatedly ignored. The University of Hawaii\'s management of the Mauna Kea Observatories has been independently critiqued + is now being reformed (the 2022 Mauna Kea Stewardship + Oversight Authority replaces UH management). The TMT decision is unresolved as of 2025.'
+                  caveat: 'The TMT controversy is one of the clearest contemporary examples of astronomy ethics in conflict. The TMT collaboration\'s 2019 statement promised improved consultation + economic benefits to Hawaiians; protectors responded that meaningful consent had been requested for 50+ years + repeatedly ignored. The University of Hawaii\'s management of the Mauna Kea Observatories has been independently critiqued + is being reformed through the Mauna Kea Stewardship + Oversight Authority. The project remains a living ethics, governance, and consent case study.'
                 },
                 { id: 'decolonize', name: __alloT('stem.astronomy.decolonizing_astronomy', 'Decolonizing astronomy'), emoji: '🌐',
                   body: __alloT('stem.astronomy.western_astronomy_has_been_the_dominan', 'Western astronomy has been the dominant academic tradition globally since the 19th century, but it is ONE tradition among many (see the Sky Traditions tab). Decolonizing astronomy means: (1) ACKNOWLEDGING that observatory sites worldwide are often on Indigenous lands taken without consent (Mauna Kea, Maunakea, Cerro Pachón, Cerro Paranal in Chile on Diaguita territory, Maxwell Telescope at Mauna Kea, Karoo Square Kilometre Array in South Africa on Khoekhoe + San lands). (2) HONORING the astronomical traditions + sky knowledge of Indigenous peoples + non-Western cultures alongside modern Western science. (3) WORKING with descendant communities as PARTNERS not stakeholders, with veto power over development. (4) DIVERSIFYING the people who get to be astronomers — racial, gender, geographic, class diversity. (5) MAKING astronomy education + observation accessible to communities that have historically been excluded.'),
@@ -5689,7 +5713,7 @@
                   caveat: 'Light pollution has grown ~2% per year globally for decades, faster than population growth. The LED revolution (started ~2010) was supposed to reduce energy costs + light pollution; in practice, the cost reduction made cities INCREASE light output ("Jevons paradox" applied to illumination). Per-capita light emission has risen, not fallen, in most LED-converted cities. The technology itself was not the problem; the lack of design guidance was.'
                 },
                 { id: 'shielding', name: __alloT('stem.astronomy.solutions_that_actually_work', 'Solutions that actually work'), emoji: '🔅',
-                  body: __alloT('stem.astronomy.engineering_fixes_a_full_cut_off_fixtu', 'Engineering fixes: (a) FULL CUT-OFF fixtures (light directed ONLY downward, no light escaping above horizontal). The IDA-approved "Dark Sky Friendly" certification specifies this. (b) WARMER LED color temperature (≤ 3000 K, ideally 2200 K amber). Cooler/whiter light (4000-6000 K) scatters more in the atmosphere + harms wildlife circadian rhythms. (c) LOWER lumen output (most outdoor lighting is over-lit by 2-5×). (d) MOTION-ACTIVATED + scheduled DIMMING (light only when needed). (e) Avoid uplighting of buildings + landscape features. Phoenix, Tucson, Flagstaff (since 1958 — the FIRST dark-sky city), and parts of Hawaii (around Mauna Kea) have effective lighting ordinances. The International Dark-Sky Association (IDA, founded 1988) certifies "International Dark-Sky Places" — about 200 communities + parks worldwide as of 2024.'),
+                  body: __alloT('stem.astronomy.engineering_fixes_a_full_cut_off_fixtu', 'Engineering fixes: (a) FULL CUT-OFF fixtures (light directed ONLY downward, no light escaping above horizontal). The IDA-approved "Dark Sky Friendly" certification specifies this. (b) WARMER LED color temperature (≤ 3000 K, ideally 2200 K amber). Cooler/whiter light (4000-6000 K) scatters more in the atmosphere + harms wildlife circadian rhythms. (c) LOWER lumen output (most outdoor lighting is over-lit by 2-5×). (d) MOTION-ACTIVATED + scheduled DIMMING (light only when needed). (e) Avoid uplighting of buildings + landscape features. Phoenix, Tucson, Flagstaff (since 1958 — the FIRST dark-sky city), and parts of Hawaii (around Mauna Kea) have effective lighting ordinances. DarkSky International certifies dark-sky communities, parks, reserves, and sanctuaries worldwide.'),
                   caveat: 'Dark-sky-friendly lighting has the same actual functional benefit (you can still see at night, walk safely, drive safely) as poorly-designed lighting + costs the same or less. The barriers are not technical. They are aesthetic + regulatory + sometimes safety-anxiety-driven (more lumens does NOT reliably improve safety; the evidence on lighting + crime + traffic safety is more mixed than commonly assumed).'
                 },
                 { id: 'wildlife', name: __alloT('stem.astronomy.effects_on_wildlife', 'Effects on wildlife'), emoji: '🦋',
@@ -6161,7 +6185,7 @@
             { term: 'Escape velocity', cat: 'Physics', def: 'The minimum speed needed to escape a body\'s gravitational pull. Earth surface: 11.2 km/s. Solar system from Earth\'s orbit: 42.1 km/s.' },
             { term: 'Eyepiece', cat: 'Telescopes', def: 'The small lens assembly at the back of a telescope that magnifies the image. Designs: Plossl, Erfle, Konig, Nagler, Ethos. Higher-quality designs have wider apparent field of view.' },
             { term: 'Event horizon', cat: 'Black holes', def: 'The boundary of a black hole — the surface beyond which nothing, not even light, can escape to the outside universe. Defined for a non-rotating black hole as the Schwarzschild radius.' },
-            { term: 'Exoplanet', cat: 'Planets', def: 'A planet orbiting a star other than the Sun. ~ 5,800 confirmed as of 2025; estimated billions in the Milky Way.' },
+            { term: 'Exoplanet', cat: 'Planets', def: 'A planet orbiting a star other than the Sun. 6,300+ confirmed as of July 2026; estimated billions in the Milky Way.' },
             { term: 'Extinction', cat: 'Atmospheric', def: 'The dimming of starlight by atmospheric absorption + scattering. ~ 0.3 magnitudes at zenith from sea level (visible band); much worse at horizon.' },
 
             // F
@@ -6177,7 +6201,7 @@
             // G
             { term: 'Gaia', cat: 'Missions', def: 'European Space Agency astrometry mission (2013-present) measuring positions + parallaxes + motions of ~ 2 billion stars in the Milky Way + Local Group.' },
             { term: 'Galactic center', cat: 'Milky Way', def: 'The center of the Milky Way galaxy, located in Sagittarius. Contains the supermassive black hole Sagittarius A* (4.1 million solar masses).' },
-            { term: 'Galaxy', cat: 'Categories', def: 'A massive gravitationally-bound system of stars + gas + dust + dark matter. Trillion+ in the observable universe. Sizes: dwarf (millions of stars) to giant (trillions).' },
+            { term: 'Galaxy', cat: 'Categories', def: 'A massive gravitationally-bound system of stars + gas + dust + dark matter. The observable universe contains hundreds of billions to trillions of them. Sizes: dwarf (millions of stars) to giant (trillions).' },
             { term: 'Galactic disk', cat: 'Galaxies', def: 'The flat rotating component of a spiral galaxy, containing most of the gas + young stars + spiral arms. Milky Way\'s disk is ~ 100,000 ly across + ~ 1,000 ly thick.' },
             { term: 'Galilean moons', cat: 'Solar system', def: 'Jupiter\'s 4 largest moons: Io, Europa, Ganymede, Callisto. Discovered by Galileo in 1610. Visible in any telescope or binoculars.' },
             { term: 'Galaxy cluster', cat: 'Cosmology', def: 'A gravitationally-bound system of hundreds to thousands of galaxies. Largest structures known to be in dynamical equilibrium. Local Group is part of the Virgo Supercluster.' },

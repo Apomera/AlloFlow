@@ -4,21 +4,23 @@
 **Companion docs:** [`lang/README.md`](README.md) (high-level workflow + CLI batch path) · [`lang/SPANISH_TRANSLATION_HANDOFF.md`](SPANISH_TRANSLATION_HANDOFF.md) (Spanish-specific state)
 **Source of truth:** `dev-tools/build_language_pack.cjs` — the CLI mirrors the runtime exactly, so it's the canonical reference for pack structure.
 
-This guide is the **in-chat** workflow — for when Aaron wants top-quality hand-translated packs that exceed Gemini Flash output. For batch generation of long-tail languages where Flash quality is acceptable, use the CLI path documented in `lang/README.md`.
+> **Currency note (2026-07-09):** The workflow remains useful, but exact line numbers, pack counts, matcher aliases, and model names drift. Use `lang/README.md`, the current `lang/manifest.json`, and the i18n verification tools before relying on any dated examples below.
+
+This guide is the **in-chat** workflow — for when Aaron wants top-quality hand-translated packs that exceed the live runtime translation fallback. For batch generation of long-tail languages where runtime-model quality is acceptable, use the CLI path documented in `lang/README.md`.
 
 ## Why this matters
 
 A language pack does three things:
 
 1. **Lets PPS families pick their home language** from the AlloFlow language picker and immediately see the UI in that language, without any per-user API cost or latency.
-2. **Skips runtime translation** for that language — every user who picks it gets the cached pack instead of triggering live `translateChunk` calls to Gemini Flash. Shared across all users, server-side cost = 0.
-3. **Provides higher quality** than the runtime fallback. Runtime uses Flash with DNT masking + domain glossary (decent quality). Hand-translated by Claude in chat uses your full LLM capability with cultural context, pedagogical register, and consistency across the entire pack — meaningfully better, and the only path that meets Aaron's "top quality is everything" bar.
+2. **Skips runtime translation** for that language — every user who picks it gets the cached pack instead of triggering live `translateChunk` calls to the configured Gemini translation model. Shared across all users, server-side cost = 0.
+3. **Provides higher quality** than the runtime fallback. Runtime translation uses DNT masking + domain glossary (decent quality). Hand-translated in chat uses richer cultural context, pedagogical register, and consistency across the entire pack — meaningfully better, and the only path that meets Aaron's "top quality is everything" bar.
 
 ---
 
 ## 1. How packs plug into AlloFlow at runtime
 
-When a user picks a language, the runtime block in `AlloFlowANTI.txt` (around the `AvailableLanguagesView` component, ~line 1243) does this in order:
+When a user picks a language, the runtime block in `AlloFlowANTI.txt` (near the `AvailableLanguagesView` component; verify the current line before editing) does this in order:
 
 1. **Fuzzy match the user's input** via `window.AlloLangMatcher.match(userInput)`. The matcher (in `language_matcher_module.js`) has 291 aliases covering:
    - Display name variants (`Spanish (Latin America)` ↔ `spanish_latin_america`)
@@ -28,7 +30,7 @@ When a user picks a language, the runtime block in `AlloFlowANTI.txt` (around th
    - Levenshtein fallback ≥0.7 similarity for anything that doesn't hit a direct alias
 2. **Try Cloudflare** at `https://alloflow-cdn.pages.dev/lang/<slug>.js`. This is the primary CDN, auto-synced from `prismflow-deploy/public/lang/` on every git push.
 3. **Fall back to GitHub raw** at `https://raw.githubusercontent.com/Apomera/AlloFlow/main/lang/<slug>.js` if Cloudflare is slow.
-4. **Fall back to live `translateChunk`** (Gemini Flash + DNT masking + domain glossary) for anything without a pre-built pack.
+4. **Fall back to live `translateChunk`** (configured Gemini translation model + DNT masking + domain glossary) for anything without a pre-built pack.
 
 **Important consequence:** Any language without a pre-built pack still works at runtime — it just costs an API call per chunk per user. Pre-built packs are an optimization for the most-used languages, not a gate.
 
@@ -408,7 +410,7 @@ The priority order is captured in the `TIERS` constant in `dev-tools/build_prior
 Cost-benefit:
 
 - **Build pre-built pack** if: the language is a Tier 1-3 PPS priority, OR if you (Aaron or Claude) have done at least one careful pass through the pack and want the cached quality for all users.
-- **Skip and let runtime handle** if: the language is rare in PPS (handful of families), the time investment is high, AND Flash quality with DNT + glossary is acceptable. Users still get a working translated UI — just at slightly lower quality and per-user API cost.
+- **Skip and let runtime handle** if: the language is rare in PPS (handful of families), the time investment is high, AND the runtime model quality with DNT + glossary is acceptable. Users still get a working translated UI — just at slightly lower quality and per-user API cost.
 
 Threshold rule of thumb from Aaron's prior decisions: anything with **>3 PPS families** speaking it gets a pre-built pack; rare languages can wait for runtime.
 

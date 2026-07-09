@@ -374,14 +374,14 @@ const handleWizardComplete = (data, deps) => {
       const topic = finalData.searchQuery || finalData.topic;
       if (topic) setSourceTopic(topic);
       setExpandedTools(prev => prev.includes('source-input') ? prev : [...prev, 'source-input']);
-      // A picked story book also becomes a resource-pack entry (same
+      // A picked catalog resource also becomes a resource-pack entry (same
       // 'readingBook' item the reader's Save-to-lesson creates), so it rides
       // along with the lesson and can be reopened from Resources — not just
       // dumped into the source box.
       if (finalData.sourceMode === 'storybook' && finalData.storybookRef && finalData.storybookRef.slug) {
         const ref = finalData.storybookRef;
         const meta = [
-          t('readinglib_resource_kind') || 'StoryWeaver illustrated story',
+          ref.sourceName || 'Reading Catalog resource',
           ref.level ? (t('readinglib_level') || 'Level') + ' ' + ref.level : null,
           ref.language,
           ref.hasAudio ? ('🔊 ' + (t('readinglib_narrated') || 'narrated')) : null,

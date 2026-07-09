@@ -1,5 +1,7 @@
 # Spanish (Latin America) Translation Handoff
 
+> **Historical batch handoff, not current pack status (2026-07-09):** This May 2026 note is kept as a reference for the successful Spanish help-string workflow. The current workspace pack is much larger (`lang/spanish_latin_america.js`: 17,601 keys, 165 top-level sections in this checkout). Use `lang/README.md`, `PACK_QUALITY_STATUS.md`, and the current i18n verification tools for present coverage/readiness.
+
 **For:** Claude (next session) — Spanish pack is now COMPLETE; this doc is a reference for future language packs.
 **As of:** 2026-05-18, commit `e6f108b9` on `main` branch
 **Status:** ✅ DONE. 8,440 keys translated, ~90% coverage. All 11 help_strings batches shipped to Cloudflare.
@@ -222,7 +224,7 @@ e3d45960 lang: Spanish +75 keys (7,744 total, 83% coverage) - help_strings batch
 Aaron Pomeranz, PsyD, solo creator of AlloFlow. Stationed at King Middle (Portland Public Schools, Maine). PPS has Spanish-speaking families that need this pack. He explicitly:
 
 - Wants top quality (rejected agent shortcuts that produced Spanglish)
-- Committed to in-chat Claude translation, not Gemini Flash batch generation
+- Committed to in-chat translation, not runtime-model batch generation
 - Said "I'm not in a rush" — multi-session is fine
 - Said "Almost done you're doing great!" after batch 5 — he's been monitoring progress and the pack is loading correctly
 

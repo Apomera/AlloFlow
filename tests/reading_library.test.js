@@ -115,6 +115,69 @@ describe('bookPlainText / attributionLine', () => {
   it('concatenates title + page texts, skipping empty pages', () => {
     expect(RL._bookPlainText(book)).toBe('Test Book\n\nPage one.\n\nPage two.');
   });
+  it('extracts only clean reader text for the lesson pipeline', () => {
+    const noisy = {
+      title: '  Clean Source  ',
+      cover: { card: 'https://example.test/cover.png' },
+      description: 'Metadata should not become source text.',
+      pages: [
+        {
+          text: 'Main reading text. ![chart](data:image/png;base64,AAAA) <img src="x.png" alt="not source">',
+          img: 'https://example.test/page.png',
+          caption: 'Visual caption should stay out.',
+          alt: 'Alt text should stay out.',
+          source: { url: 'https://example.test/original' },
+        },
+        { img: 'https://example.test/image-only.jpg', caption: 'Image-only caption should not be pulled in.' },
+        'A plain string page with <figure><figcaption>hidden caption</figcaption></figure> useful text.',
+        { text: ['Line one', { visual: 'skip me' }, 'Line two'] },
+        { text: { nested: 'object text is not safe input' } },
+      ],
+    };
+    const out = RL._bookPlainText(noisy);
+    expect(out).toBe('Clean Source\n\nMain reading text.\n\nA plain string page with useful text.\n\nLine one\nLine two');
+    expect(out).not.toContain('caption');
+    expect(out).not.toContain('Alt text');
+    expect(out).not.toContain('data:image');
+    expect(out).not.toContain('<img');
+    expect(out).not.toContain('Metadata');
+    expect(out).not.toContain('object text');
+  });
+  it('supports translated page arrays through the same cleanup path', () => {
+    expect(RL._bookPlainTextFromPages('Translated', ['First page', '![cover](x.png)', 'Second page']))
+      .toBe('Translated\n\nFirst page\n\nSecond page');
+  });
+  it('detects chapters and extracts only the selected chapter or page range', () => {
+    const pages = [
+      { text: 'Preface\nA note before the book.' },
+      { text: 'CHAPTER I\nThe first chapter starts here.' },
+      { text: 'The first chapter continues.' },
+      { text: 'CHAPTER II\nThe second chapter starts here.' },
+      { text: 'The second chapter continues.' },
+    ];
+    const sections = RL._detectReadingSections('Long Book', pages);
+    expect(sections.map((s) => [s.title, s.start, s.end])).toEqual([
+      ['Preface', 0, 0],
+      ['CHAPTER I', 1, 2],
+      ['CHAPTER II', 3, 4],
+    ]);
+    const chapter = RL._bookPlainTextForScope('Long Book', pages, 'chapter', 1, '', '', sections);
+    expect(chapter.label).toBe('CHAPTER I (Pages 2-3)');
+    expect(chapter.text).toContain('The first chapter starts here.');
+    expect(chapter.text).toContain('The first chapter continues.');
+    expect(chapter.text).not.toContain('The second chapter starts here.');
+
+    const range = RL._bookPlainTextForScope('Long Book', pages, 'range', 0, '3', '4', sections);
+    expect(range.label).toBe('Pages 3-4');
+    expect(range.text).toContain('The first chapter continues.');
+    expect(range.text).toContain('The second chapter starts here.');
+    expect(range.text).not.toContain('A note before the book.');
+  });
+  it('treats full texts and very long books as long-form source material', () => {
+    expect(RL._isLongFormBook({ contentType: 'public-domain-full-text' }, [{ text: 'short' }])).toBe(true);
+    expect(RL._isLongFormBook({ stats: { words: 12000 } }, [{ text: 'short' }])).toBe(true);
+    expect(RL._isLongFormBook({ stats: { words: 500 } }, [{ text: 'short' }])).toBe(false);
+  });
   it('credits author, illustrator and publisher', () => {
     const line = RL._attributionLine(book);
     expect(line).toContain('A. Author');

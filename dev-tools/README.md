@@ -2,6 +2,8 @@
 
 Verifiers, audits, and analyzers used during development. **None of these run in production** — they're guards against the bug classes that have surfaced during the project's growth.
 
+> **Snapshot note (2026-07-09):** This is a curated developer-tool catalog, not the complete source of truth for every script. `package.json` and the scripts themselves are authoritative for current command names, pack counts, and runtime behavior; older "first run" counts below are historical triage notes unless re-run.
+
 If you're looking for the WCAG/VPAT compliance documentation (the *results* of accessibility audits, not the audit *tools*), see the markdown files at the repo root: `tool_conformance_ledger.md`, `AXE_AUDIT.md`, `VPAT-2.5-WCAG-AlloFlow.md`, `alloflow_wcag_aa_audit_report.md`.
 
 If you're looking for *unit tests* that run via Vitest, those live in [`tests/`](../tests/) at the repo root (`npm test`).
@@ -94,7 +96,7 @@ Slice-level free-variable analyzer using Babel AST. Takes `(file, startLine, end
 Verifies every identifier a JSX block uses still has a definition. Supports `--moving`/`--deleting` flags to simulate post-extraction state and predict orphan-ref errors before making the deletes. Use before any JSX-block extraction.
 
 ### `phase2_diff_audit.js`
-For each JSX `*_source.jsx` ↔ `*_module.js` pair listed in its `MODULES` array, compiles source via Babel, auto-detects the IIFE wrapper, and reports byte-level diff. Shows which modules can be safely auto-compiled today vs which need manual drift back-port first. Currently 1/13 modules are byte-perfect; the rest have drift (informational, not always blocking).
+For each JSX `*_source.jsx` ↔ `*_module.js` pair listed in its `MODULES` array, compiles source via Babel, auto-detects the IIFE wrapper, and reports byte-level diff. Shows which modules can be safely auto-compiled today vs which need manual drift back-port first. At the original audit snapshot, 1/13 modules were byte-perfect; re-run the tool for the current drift count before using it to plan extraction work.
 
 ### `scope_aware_dep_check.js`
 Same scope-walk logic as `enumerate_block_scope_aware.js` but for a whole file rather than a slice. Less common; primarily for understanding what an entire CDN module pulls from outer scope.
@@ -127,7 +129,7 @@ Pre-deploy gate for the JSX-view extraction pattern (DBQ / Glossary / Timeline /
 The six blocking checks that `deploy.sh` Step 0.6 and `npm run verify:gate` run before any deploy — they statically render-smoke the monolith + STEM/SEL plugins to catch undefined-ref / keyless-map / setState-in-render crash classes before they ship. The highest-value gate in this folder.
 
 ### i18n checks (`check_lang_json.cjs` + `dev-tools/i18n/`)
-`check_lang_json.cjs` (`verify:lang-json`) validates all 56 `lang/*.js` packs parse as JSON. The `dev-tools/i18n/` subtree holds the translation toolchain — see [`dev-tools/i18n/README.md`](i18n/README.md) (gap reports, key merging, `check_safety_string_spanglish.cjs` = `verify:spanglish`, `ingest_translation_feedback.cjs`).
+`check_lang_json.cjs` (`verify:lang-json`) validates all 63 mirrored `lang/*.js` pack files parse as JSON. The `dev-tools/i18n/` subtree holds the translation toolchain — see [`dev-tools/i18n/README.md`](i18n/README.md) (gap reports, key merging, `check_safety_string_spanglish.cjs` = `verify:spanglish`, `ingest_translation_feedback.cjs`).
 
 > **This catalog is a curated subset.** The repo has ~50 `dev-tools/*` scripts and 40+ `verify:*` npm scripts. `npm run verify:gate` / `npm run verify:all` chain the blocking ones; run `npm run` or grep `package.json` for the complete, authoritative list.
 

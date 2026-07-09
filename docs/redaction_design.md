@@ -2,13 +2,15 @@
 
 Status: **core infrastructure shipped + unit-tested; UI deferred (needs maintainer/visual testing).**
 
+> **Current-verification note (2026-07-09):** This June 15, 2026 safety contract records the shipped/deferred state at that time. Verify current `doc_pipeline_source.jsx`, PDF/HTML export paths, tests, and any redaction UI before treating shipped, deferred, or file-reference claims below as current.
+
 ## The one rule that matters
 
 **Redaction must REMOVE the content, never cover it.** A black box drawn over text, or text hidden
 with CSS (`display:none`, white-on-white, `visibility:hidden`), leaves the characters in the file —
 still copy-pasteable, still machine-readable, still in the PDF's text/extraction layer. For a teacher
 redacting a student's name, SSN, DOB, or diagnosis from an IEP before sharing, a fake redaction is a
-**FERPA breach that looks done**. So the only acceptable redaction truly deletes the characters and is
+**FERPA/privacy breach risk that looks done**. So the only acceptable redaction truly deletes the characters and is
 **verified** to be gone.
 
 ## What shipped (the core)

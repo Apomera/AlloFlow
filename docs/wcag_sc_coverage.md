@@ -15,7 +15,7 @@ Of the **20** WCAG 2.1 A/AA criteria that meaningfully apply to a *static remedi
 
 The remaining **22** A/AA criteria are interactive-web criteria (keyboard operation, timing, focus, status messages, …) that **do not apply to a static document** — they are listed below as N/A rather than counted as gaps, because counting them would understate coverage dishonestly.
 
-> **This is a self-reported capability map, not a conformance claim.** Per-document PDF/UA-1 conformance is checked independently by veraPDF (`dev-tools/verapdf_diff.cjs`, gated in `verify_all`); WCAG verification is the axe-core (Deque) deterministic axis plus a multi-pass AI self-consistency review. A criterion marked "Automated" means AlloFlow *attempts a repair* for it, not that every document passes it. Independent validation (veraPDF / PAC 2024 / a human audit) is always recommended for compliance-sensitive use.
+> **This is a self-reported capability map, not a conformance claim.** AlloFlow includes automated PDF/UA-oriented structural checks and a local veraPDF comparison helper (`dev-tools/verapdf_diff.cjs`) for reproducible QA when veraPDF is available; WCAG verification is the axe-core (Deque) deterministic axis plus a multi-pass AI self-consistency review. A criterion marked "Automated" means AlloFlow *attempts a repair* for it, not that every document passes it. Independent validation (veraPDF / PAC-style review / a human audit) is always recommended for compliance-sensitive use.
 
 ### Principle 1: Perceivable
 

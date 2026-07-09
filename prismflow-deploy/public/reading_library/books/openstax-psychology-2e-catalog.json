@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-psychology-2e-catalog",
+  "title": "OpenStax Psychology 2e",
+  "description": "A source card for the OpenStax Psychology 2e textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Psychology",
+    "Textbooks",
+    "Learning",
+    "Human behavior"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/psychology-2e"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax Psychology 2e introduces research methods, biology and behavior, sensation, learning, memory, development, personality, social psychology, and mental health."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for nonfiction reading tied to self-understanding, research design, brain science, and media claims about human behavior."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters or figures."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

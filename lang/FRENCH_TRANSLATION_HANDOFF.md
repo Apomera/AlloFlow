@@ -1,12 +1,14 @@
 # French (Parisian/Metropolitan) Translation Handoff
 
-**For:** Claude (next session) continuing the French pack translation
+> **Historical batch handoff, not current pack status (2026-07-09):** This May 2026 note preserves the workflow that finished early French sections. The current workspace pack is much larger (`lang/french.js`: 17,370 keys, 162 top-level sections in this checkout). Use `lang/README.md`, `PACK_QUALITY_STATUS.md`, and the current i18n verification tools before treating any remaining-task list below as active.
+
+**Original recipient:** Claude, for the May 2026 French pack translation work
 **As of:** 2026-05-18, commit `03773062` on `main` branch
 **Status:** 8,748 / ~9,500 keys (~92% coverage). All 143 ui_strings sections COMPLETE. Only help_strings.js (782 hover-help keys) remain.
 
 ## The job in one sentence
 
-Translate the remaining ~7,500 entries of `ui_strings.js` + 782 of `help_strings.js` into Parisian/Metropolitan French, adding them to the existing sections of `lang/french.js`, in batches of 75-200 keys per Edit depending on section size.
+Historical May task: translate the then-remaining `ui_strings.js` and `help_strings.js` entries into Parisian/Metropolitan French, adding them to the existing sections of `lang/french.js`, in batches of 75-200 keys per Edit depending on section size.
 
 ## What's DONE
 

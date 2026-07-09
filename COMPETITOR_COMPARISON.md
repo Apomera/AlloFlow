@@ -7,7 +7,7 @@
 
 **Granular comparison:** For feature-by-feature review, see [docs/feature_by_feature_competitive_matrix_2026-07-03.md](docs/feature_by_feature_competitive_matrix_2026-07-03.md) and the filterable [CSV companion](docs/feature_by_feature_competitive_matrix_2026-07-03.csv). That matrix currently covers 414 AlloFlow feature/tool rows against MagicSchool, Brisk, Diffit, Curipod, Eduaide, SchoolAI, and Khanmigo.
 
-**Public market check:** Current official pages still show competitors with stronger adoption/procurement signals: MagicSchool advertises district, security, and PD positioning plus 80+ teacher tools and 50+ student tools; Brisk positions itself inside Google/Microsoft workflows and claims 2M+ teachers / 20K districts; Diffit focuses on fast differentiated resources and editable Google/Microsoft/PDF exports; Curipod emphasizes writing practice, immediate AI feedback, reports, curriculum alignment, and case-study outcomes; Eduaide emphasizes lesson/assessment/resource builders; SchoolAI emphasizes teacher-designed AI spaces and Mission Control dashboards; Khanmigo emphasizes tutor/teacher assistant workflows inside the Khan Academy ecosystem.
+**Public market check:** As of the July 3, 2026 public-page review, competitors showed stronger adoption/procurement signals: MagicSchool advertised district, security, and PD positioning plus 80+ teacher tools and 50+ student tools; Brisk positioned itself inside Google/Microsoft workflows and claimed 2M+ teachers / 20K districts; Diffit focused on fast differentiated resources and editable Google/Microsoft/PDF exports; Curipod emphasized writing practice, immediate AI feedback, reports, curriculum alignment, and case-study outcomes; Eduaide emphasized lesson/assessment builders; SchoolAI emphasized teacher-designed AI spaces and Mission Control dashboards; Khanmigo emphasized tutor/teacher assistant workflows inside the Khan Academy ecosystem. Re-check competitor pages before using this comparison in external materials.
 
 **Honest framing:** AlloFlow has more documented surface area than every competitor in this list, and is genuinely free for districts using the Gemini Canvas distribution because Google injects the API key under their Education Workspace quotas. Self-hosted Firebase deployment incurs Gemini API costs at standard Google AI pricing; most usage should fit within free-tier limits, but heavy PDF remediation can consume Vision/API calls that may push heavy users into Blaze billing. AlloFlow is also pre-distribution and built by one person, so polish, support, adoption evidence, and brand recognition lag the commercial products.
 
@@ -15,7 +15,7 @@
 
 ## Elevator pitch
 
-AlloFlow is a single-creator AI lesson-design and student-experience platform with **720+ documented features** and a July 2026 measured codebase footprint of **~2.70M canonical-ish source lines** after excluding deployment mirrors and generated source/module duplicate pairs. It is distributed primarily as a Gemini Canvas artifact, so districts using Canvas can run it without a separate vendor bill; self-hosted Firebase deployment is also supported for teams that want more control. AlloFlow includes **111 STEM Lab tool files / 116 registered STEM plugin IDs**, **70 SEL Hub tools** mapped to CASEL, a WCAG/VPAT accessibility infrastructure, LTI 1.3 LMS integration, multi-provider TTS with offline fallback, gamepad/adaptive-controller support, Behavior Lens for FBA/BIP workflows, Symbol Studio as a Boardmaker-style alternative, Cinematic Studio, AlloStudio for born-accessible visual documents, Open Groove Studio for music composition, community Professional Development, and a PDF accessibility audit/remediation pipeline with native tagged-PDF output plus independent veraPDF/PDF-UA validation.
+AlloFlow is a single-creator AI lesson-design and student-experience platform with **720+ documented features** and a July 2026 measured codebase footprint of **~2.70M canonical-ish source lines** after excluding deployment mirrors and generated source/module duplicate pairs. It is distributed primarily as a Gemini Canvas artifact, so districts using Canvas can run it without a separate vendor bill; self-hosted Firebase deployment is also supported for teams that want more control. AlloFlow Desktop now provides the everyday local-first path, while the Docker School Box stack remains optional server/appliance infrastructure. AlloFlow includes **111 STEM Lab tool files / 116 registered STEM plugin IDs**, **70 SEL Hub tools** mapped to CASEL, a WCAG/VPAT accessibility infrastructure, LTI 1.3 LMS integration, multi-provider TTS with offline/local fallback paths, gamepad/adaptive-controller support, Behavior Lens for FBA/BIP workflows, Symbol Studio as a Boardmaker-style alternative, Cinematic Studio, AlloStudio for born-accessible visual documents, Open Groove Studio for music composition, community Professional Development, and a PDF accessibility audit/remediation pipeline with native tagged-PDF output plus local veraPDF/PDF-UA QA workflows.
 
 The creator is a school psychologist (PsyD), so SEL, FBA/BIP, accessibility, and special-education depth are unusually strong relative to teacher-built or VC-funded competitors that lead with classroom-content generation.
 
@@ -25,7 +25,7 @@ The creator is a school psychologist (PsyD), so SEL, FBA/BIP, accessibility, and
 
 | Product | District cost | Per-teacher cost | Distribution | Self-host? |
 |---|---|---|---|---|
-| **AlloFlow** | **$0 in Gemini Canvas distribution** | **$0 in Gemini Canvas distribution** | Gemini Canvas artifact, with Firebase/self-host path | Yes, with air-gap/Docker path in progress |
+| **AlloFlow** | **$0 in Gemini Canvas distribution** | **$0 in Gemini Canvas distribution** | Gemini Canvas artifact, Firebase/self-host path, Desktop local app | Yes, via Desktop local-first path and optional Docker server stack |
 | MagicSchool AI | Site licenses / district pricing | Free and paid tiers | SaaS | No |
 | Brisk Teaching | District pricing / premium tiers | Free and paid tiers | Browser extension + integrations | No |
 | Diffit | Free and paid tiers | Free and paid tiers | SaaS | No |
@@ -52,10 +52,10 @@ Numbers below are documented user-facing features, not internal helpers. AlloFlo
 | **Quiz generation** | 4 strategy modes + AI grading + live aggregation | Yes | Yes | Yes | Yes | Yes | Limited | Limited |
 | **STEM-specific tools** | **111 tool files / 116 registered plugin IDs** across math, bio, chem, physics, earth/space, engineering, CS, arts, and life skills | Some STEM prompts/tools | Generic | Generic | Generic | Generic | Generic | Math + general tutoring |
 | **SEL/CASEL tools** | **70 tools** mapped to CASEL competencies | Some SEL prompts | No | No | Limited | No | No | No |
-| **PDF accessibility audit + remediation** | Native tagged-PDF output, axe/a11y audit path, PDF/UA/veraPDF validation, Expert Workbench | No | No | No | No | No | No | No |
+| **PDF accessibility audit + remediation** | Native tagged-PDF output, axe/a11y audit path, local veraPDF/PDF/UA QA workflow, Expert Workbench | No | No | No | No | No | No | No |
 | **WCAG/accessibility infrastructure** | Per-tool conformance ledger, VPAT 2.5, PDF/UA work, STEM/SEL visual and a11y gates | Partial | Partial | Partial | Partial | Partial | Partial | Partial |
 | **Adaptive controller / gamepad support** | Full gamepad-as-mouse layer | No | No | No | No | No | No | No |
-| **Multi-provider TTS** | Gemini + Kokoro offline + speechSynthesis fallback | Single provider | Single provider | Single provider | Single provider | Single provider | Single provider | Single provider |
+| **Multi-provider TTS** | Gemini + local/Desktop voice paths + browser speech fallback | Single provider | Single provider | Single provider | Single provider | Single provider | Single provider | Single provider |
 | **Speech recognition + dictation** | Unified Voice layer | Limited | No | No | No | No | Limited | No |
 | **AAC / Symbol Studio** | AI-generated PCS-style symbols and refinement workflows | No | No | No | No | No | No | No |
 | **Behavior Lens** | FBA + BIP + ABC + IEP-ready report generation | No | No | No | No | No | No | No |
@@ -69,7 +69,7 @@ Numbers below are documented user-facing features, not internal helpers. AlloFlo
 | **Adventure / persona / role-play** | Quest system + harmony tracking + role-play components | Limited | No | No | No | No | Chat-based | Tutor-based |
 | **Web search grounding** | SearxNG + Firebase proxy path | Limited | No | No | No | No | No | Yes |
 | **Sample lesson library** | Sample lessons and briefs | Templates | No | No | Templates | No | No | No |
-| **Air-gap / Docker self-host** | In progress | No | No | No | No | No | No | No |
+| **Desktop local-first / optional server self-host** | Desktop path shipped; Docker server stack optional | No | No | No | No | No | No | No |
 
 ---
 
@@ -96,7 +96,7 @@ Honest take - what AlloFlow is *not* yet competitive on:
 
 These features either do not exist anywhere else in the reviewed field, or exist only as narrower implementations:
 
-1. **PDF accessibility remediation as a working product area** - AlloFlow has native tagged-PDF output, audit/remediation workflows, PDF/UA intent, and independent veraPDF validation language. Most AI lesson tools do not compete in document accessibility at all.
+1. **PDF accessibility remediation as a working product area** - AlloFlow has native tagged-PDF output, audit/remediation workflows, PDF/UA intent, in-app structural checks, and local veraPDF QA tooling. Most AI lesson tools do not compete in document accessibility at all.
 
 2. **Behavior Lens for school psychologists and special education teams** - FBA, BIP, ABC observation, and IEP-ready report support are normally separate specialty workflows. In AlloFlow they are part of the same educator/student toolkit.
 
@@ -108,7 +108,7 @@ These features either do not exist anywhere else in the reviewed field, or exist
 
 6. **STEM Lab breadth as a bundled toolkit** - The 111 STEM tool files span categories competitors usually do not touch: welding, driving, emergency response, nutrition, birds, weather, circuits, school behavior, astronomy, math, chemistry, biology, and more.
 
-7. **Built-in offline TTS fallback** - Kokoro and browser speech fallback reduce the chance that access disappears when a network, account, or quota path fails.
+7. **Local voice fallback paths** - Kokoro/Desktop voice work and browser speech fallback reduce the chance that access disappears when a network, account, or quota path fails.
 
 8. **Anti-toxic-gamification meta-experience** - AlloHaven avoids leaderboards, streak punishment, and peer comparison. It treats motivation as reflection, care, and agency rather than pressure.
 
@@ -132,7 +132,7 @@ The honest-disclosure hook: **"It is pre-distribution and still needs readiness 
 
 | Risk | Mitigation |
 |---|---|
-| Gemini Canvas changes terms or pricing | Keep Firebase/self-host and Docker/air-gap path active; document cost model clearly |
+| Gemini Canvas changes terms or pricing | Keep Firebase/self-host, Desktop local-first, and optional School Box Server paths active; document cost model clearly |
 | Solo maintainer cannot scale support | Prioritize pilots and partner channels before broad teacher acquisition |
 | Variable tool quality undermines first impression | Add Ready/Beta/Experimental classification and default demos to Ready flows |
 | Accessibility drift as features ship faster than audits | Generate docs from registry/test/audit outputs and keep per-tool gates in CI |

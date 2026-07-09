@@ -1,5 +1,7 @@
 # Plan: Independent PDF/UA Validation for AlloFlow's Tagged-PDF Output
 
+> **Plan snapshot note (2026-07-09):** This June 2026 plan predates the July PDF/UA documentation sweep and later veraPDF guidance. Verify current `PIPELINE_ARCHITECTURE.md`, `docs/verapdf_install.md`, PDF pipeline tests, and actual validator availability before treating "no code written" or implementation steps below as current.
+
 **Status:** Proposed (plan only — no code written)
 **Author:** Claude (research + architecture verification session, 2026-06-13)
 **For:** The agent currently working on the remediation pipeline
@@ -47,7 +49,7 @@ AlloFlow's remediation pipeline was verified from source this session (`doc_pipe
 
 ## The browser constraint (important — shapes the whole approach)
 
-veraPDF is a **Java** application (CLI + Greenfield validation library; an official **Docker image** exists). There is **no official browser/WASM build**. AlloFlow is browser/client-side (Canvas-first) with an optional local Docker stack (the School Box already runs Dockerized microservices — see `docker/`, `tts-server/`).
+veraPDF is a **Java** application (CLI + Greenfield validation library; an official **Docker image** exists). There is **no official browser/WASM build**. AlloFlow is browser/client-side (Canvas-first) with a Desktop local runtime and an optional Docker School Box stack for server/appliance deployments.
 
 Therefore validation **cannot** run inline in the pure browser/Canvas path. The plan is **two-tier**, sequenced so the highest-value, lowest-risk work comes first and **does not touch the runtime pipeline at all**:
 

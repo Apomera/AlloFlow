@@ -3,6 +3,13 @@
 **Generated:** 2026-05-17 · For Aaron's planning use
 **Companion docs:** [COMPETITOR_RUBRIC.md](COMPETITOR_RUBRIC.md) (functional capability scoring), [COMPETITOR_COMPARISON.md](COMPETITOR_COMPARISON.md) (narrative comparison incl cost), [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) (§13 most recent additions)
 
+> **Status note, 2026-07-09:** this is a May 2026 planning snapshot, not the
+> current source of truth for counts, Desktop, School Box, privacy posture, or
+> deployment. Use `README.md`, `desktop/README.md`,
+> `docs/SCHOOL_SERVER_ARCHITECTURE.md`, `docs/DATA_PRIVACY_POSTURE.md`, and
+> `COMPETITOR_COMPARISON.md` for the current Desktop-first/no-Docker path,
+> optional School Box Server stack, and more modest FERPA-aligned language.
+
 ---
 
 ## Executive summary
@@ -71,7 +78,7 @@ Not a rubric impact (Accessibility is already 5/5), but a polish gain. The May 1
 
 **Effort:** 1 day
 **Rubric impact:** 0 (already maxed)
-**Strategic impact:** Audit closure means AlloFlow can claim "0 WCAG AA text-contrast issues across the entire codebase" — useful for VPAT and ADA Title II compliance documentation
+**Strategic impact:** Audit closure means AlloFlow can claim "0 WCAG AA text-contrast issues across the entire codebase" — useful for VPAT support and ADA Title II evidence materials
 
 **Horizon 1 total: 4-5 days for 99.8% rubric score.**
 
@@ -107,7 +114,7 @@ The website (`for-districts.html`, `index.html`) is functional but the visual de
 1. Hero video (30 seconds, screen capture of: teacher generates a lesson → student takes adventure → teacher reviews work in dashboard)
 2. "Used by" logos (even just the 1-2 pilot schools — King Middle if Aaron has permission)
 3. Comparison table front-and-center (the COMPETITOR_RUBRIC.md numbers, presented as a graphic)
-4. Specific district pain-points addressed (FERPA compliance, $0 cost, ADA Title II coverage) on first scroll
+4. Specific district pain-points addressed (FERPA-aligned privacy, $0 cost, ADA Title II readiness) on first scroll
 
 **Effort:** 1 week (with help from a design contractor if available; 2 weeks solo)
 **Strategic impact:** First-impression delta vs MagicSchool/Curipod marketing sites is currently the biggest "feels less polished" perception gap. Fixing this changes conversion at the district-evaluation step.

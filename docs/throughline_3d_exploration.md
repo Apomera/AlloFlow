@@ -1,5 +1,7 @@
 # Throughline — exploring a 3rd ("3D") mapping dimension
 
+> **Historical exploration snapshot, not current Throughline status (2026-07-09):** This July 2 note answers a design question from the codebase state at that time. Verify current `mind_map_module.js`, unit/Throughline work, and deploy status before treating any implementation-status line below as live.
+
 **Question explored:** should Throughline (`mind_map_module.js`) expand to a three-dimensional
 mapping space, in addition to or instead of the current 2D canvas?
 

@@ -1,4 +1,7 @@
 # AlloFlow Handoff — Next Steps for Agents & Humans
+
+> **Historical handoff snapshot, not current priority authority (2026-07-09):** This July 6 handoff preserves the end-of-session context from that day. Use `AGENT_HANDOFF.md` and current source/test status for live priorities before acting on any task list below.
+
 **Written 2026-07-06 by Claude (Fable 5), end of session. Companion to `REFLECTIVE_JOURNAL.md` Entry 18 and the memory files under `~/.claude/projects/C--Users-cabba/memory/`.**
 
 ---

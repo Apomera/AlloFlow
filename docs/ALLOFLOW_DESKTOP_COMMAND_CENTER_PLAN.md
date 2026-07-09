@@ -1,29 +1,29 @@
 # AlloFlow Desktop Command Center Plan
 
-Status: foundation note, 2026-07-03
+Status: foundation note, 2026-07-03; refreshed 2026-07-09 after the Desktop 0.2.7 local stack work.
 
 ## Decision
 
-AlloFlow Desktop should become the standalone command center for local, personal, and future School Box deployments.
+AlloFlow Desktop is the standalone command center for local, personal, and future School Box deployments.
 
-The long-term default should be an AlloFlow-owned local model runner, but the first foundation should keep LM Studio and Ollama as supported compatibility presets. That avoids forcing early users into one local-AI stack while still letting the product grow toward a bundled, one-click experience.
+The long-term default is now the AlloFlow-owned local model runner. Desktop 0.2.x ships an opt-in AlloFlow Built-in Engine that downloads and manages a private llama.cpp server. LM Studio and Ollama should remain supported compatibility presets, not required dependencies.
 
 In plain terms:
 
 - Canvas remains the easiest demo and current delivery path.
 - Web deploy remains useful for hosted demos and cloud-key use.
-- Desktop becomes the serious product shell: local files, user keys, local AI, sync controls, and School Box command center.
+- Desktop is the serious product shell: local files, user keys, local AI, same-room LAN sessions, sync controls, and optional School Box Server command center.
 - School Box server/district mode can be embedded and managed by Desktop later, rather than becoming a totally separate product.
 
-## Why Keep LM Studio And Ollama For Now
+## Why Keep LM Studio And Ollama
 
-LM Studio and Ollama should be presets, not the product architecture.
+LM Studio and Ollama should remain presets, not the product architecture.
 
-They help immediately because many users already have one installed, and they reduce the amount AlloFlow must solve on day one: model download, GPU detection, quantization choices, memory limits, and local server reliability.
+They help because many users already have one installed, and they give advanced users a familiar local-AI path. They also remain useful fallbacks while the built-in engine grows through more model choices, GPU detection, quantization choices, memory limits, and local server reliability work.
 
-They should not be the final dependency. A polished desktop product should eventually offer:
+They should not be required for the ordinary teacher path. The desktop product should offer:
 
-- AlloFlow Built-in Engine: bundled local runner, one-click install, controlled UX.
+- AlloFlow Built-in Engine: managed local runner, one-click install/start, controlled UX.
 - LM Studio: OpenAI-compatible local server preset for users who already like it.
 - Ollama: native local API preset for users who already use it.
 - Custom Endpoint: escape hatch for schools, districts, labs, or hosted inference.
@@ -59,13 +59,13 @@ Suggested local services:
 
 ## Provider Presets
 
-Current and planned provider presets:
+Current provider presets:
 
+- AlloFlow Built-in Engine: managed OpenAI-compatible local API at `http://127.0.0.1:32173` when Desktop starts it
 - Gemini: cloud default, user key or deploy key depending on environment
 - LM Studio: OpenAI-compatible local API through base server `http://localhost:1234` (`/v1` is appended by the provider layer)
 - Ollama: native API at `http://localhost:11434`
 - LocalAI: OpenAI-compatible local/self-hosted API through base server `http://localhost:8080`
-- AlloFlow Built-in Engine: future OpenAI-compatible local API through base server `http://localhost:32173`
 - Custom Endpoint: advanced user/admin endpoint
 
 Notes verified on 2026-07-03:
@@ -80,37 +80,44 @@ Official references:
 
 ## Desktop As School Box Command Center
 
-Desktop can eventually embed or supervise the School Box district/server version.
+Desktop can supervise both the everyday local classroom mode and the optional School Box district/server version.
 
-The useful split is not "desktop app versus server app." The better split is:
+The useful split is not "desktop app versus server app." The better split is now:
 
 - Desktop Solo: one teacher or learner, local projects, local model or personal cloud keys.
-- Desktop Host: teacher starts a local classroom server from the desktop app.
-- School Box Server: managed school/district deployment, with Desktop acting as admin console and client.
+- Desktop LAN / Local Network: teacher starts a student-safe LAN Share from the desktop app. This does not require Docker.
+- Optional Docker Server Host: school-owned appliance/server experiments that need the Docker School Box stack.
+- District Server: future managed school/district deployment, with Desktop acting as admin console and client.
 
 Desktop should be able to:
 
-- Start and stop the embedded host.
+- Start and stop Desktop LAN sharing.
+- Prepare, start, and stop the optional Docker School Box server when Docker is installed.
 - Show server health and active sessions.
 - Manage local model availability.
 - Manage keys without exposing them to students.
 - Export/import school data.
 - Later connect to a district server when one exists.
 
-## First Foundation Tasks
+## Foundation Status As Of 2026-07-09
 
-1. Add explicit provider presets for LM Studio and AlloFlow Built-in Engine.
-2. Make the settings connection test use the selected provider immediately, not only the already-loaded provider.
-3. Keep the AI provider abstraction backend-neutral.
-4. Add a desktop runtime contract before choosing Electron/Tauri details.
-5. Build School Box as a service that Desktop can host or connect to.
+Shipped foundation:
 
-## Non-Goals For This Step
+1. Explicit provider presets for AlloFlow Built-in Engine, LM Studio, Ollama, LocalAI, Gemini, and custom endpoints.
+2. Settings and command-center status checks that report the selected provider and local engine state.
+3. Backend-neutral AI provider abstraction.
+4. Desktop Runtime Bridge contract and smoke coverage.
+5. Opt-in managed llama.cpp engine.
+6. Desktop LAN classroom mode with QR/join link/PIN diagnostics and a student-safe public listener.
+7. Optional Docker School Box Server controls that are no longer presented as required for ordinary Desktop use.
 
-- Do not bundle a model runner yet.
-- Do not pick final model files yet.
-- Do not require Ollama or LM Studio.
-- Do not split School Box into a separate product surface yet.
+Remaining work:
+
+- Package a fresh installer whenever source/app-build changes need to reach the installed desktop app.
+- Continue model selection, license review, and hardware guidance for the built-in engine.
+- Keep Ollama and LM Studio optional rather than required.
+- Build the remote District Server mode deliberately, with school-owned keys, retention, logging, and access controls.
+- Decide whether WebRTC signaling should move onto the LAN bridge in a later version.
 
 ## Parked Idea: Document Intelligence Pack
 
