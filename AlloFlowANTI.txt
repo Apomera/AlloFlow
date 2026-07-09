@@ -14235,18 +14235,27 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   useEffect(() => {
     if (typeof window !== 'undefined' && !window.lamejs) {
         const script = document.createElement('script');
-        // Vendored copy on our own CDN first (ships with School Box / offline
-        // mirrors, no third-party dependency); cdnjs stays as the fallback for
-        // deploys that predate lame.min.js landing in public/.
+        // Vendored copy on our own CDN first (no third-party dependency).
+        // NOTE: alloflow-cdn.pages.dev serves the REPOSITORY ROOT (see
+        // deploy.sh Step 6) — the vendored file must live at /lame.min.js in
+        // the repo root; a prismflow-deploy/public/ copy only reaches
+        // Firebase Hosting.
         script.src = "https://alloflow-cdn.pages.dev/lame.min.js";
         script.async = true;
-        script.onerror = () => {
+        const ensureLame = () => {
+            // A missing Pages file arrives as the SPA's index.html with HTTP
+            // 200 — the <script> fetch "succeeds" and onerror never fires
+            // (evaluation errors don't reach element.onerror). So verify the
+            // global after load and fall back to cdnjs whenever it's absent.
+            if (window.lamejs) return;
             if (document.body.contains(script)) document.body.removeChild(script);
             const fallback = document.createElement('script');
             fallback.src = "https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js";
             fallback.async = true;
             document.body.appendChild(fallback);
         };
+        script.onload = ensureLame;
+        script.onerror = ensureLame;
         document.body.appendChild(script);
         return () => {
             if (document.body.contains(script)) {

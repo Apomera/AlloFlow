@@ -312,7 +312,10 @@ else
   FIREBASE_URL="${FIREBASE_URL:-}"
   CDN_BASE="https://alloflow-cdn.pages.dev"
   # Modules most worth confirming reached the CDN (pipeline-critical first).
-  CDN_MODULES=(doc_pipeline_module.js view_pdf_audit_module.js gemini_api_module.js app/index.html app/sw.js)
+  # lame.min.js: karaoke MP3 encoder — served from the REPO ROOT; if it goes
+  # missing, Pages returns index.html with HTTP 200 and every karaoke capture
+  # silently stores WAV instead of MP3 (2026-07-09 incident).
+  CDN_MODULES=(doc_pipeline_module.js view_pdf_audit_module.js gemini_api_module.js app/index.html app/sw.js lame.min.js)
   CDN_RETRIES="${POST_VERIFY_CDN_RETRIES:-4}"   # freshness re-checks (Cloudflare lag)
   CDN_WAIT="${POST_VERIFY_CDN_WAIT:-20}"        # seconds between freshness re-checks
 
