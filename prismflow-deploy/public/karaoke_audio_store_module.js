@@ -22,15 +22,43 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
 
   // Normalized key: how a sentence is identified across store, player, and
   // regenerate. Case/whitespace-insensitive so trivial differences collapse.
+  // ALSO punctuation-spacing-insensitive (2026-07-09): the karaoke overlay
+  // rebuilds its text from immersiveData word/punct TOKENS joined with
+  // spaces ("The sun is hot ."), while the leveled-text/FAQ views key off
+  // the raw resource text ("The sun is hot."). Every rule below is applied
+  // to BOTH the writer's and the reader's sentence, so the two spellings
+  // converge on one key and prepped audio serves every surface. Collisions
+  // (two sentences normalizing identically) just share a clip — harmless.
   function keyFor(sentence) {
-    return String(sentence == null ? '' : sentence).toLowerCase().replace(/\s+/g, ' ').trim();
+    return String(sentence == null ? '' : sentence).toLowerCase()
+      .replace(/[‘’]/g, "'")
+      .replace(/[“”]/g, '"')
+      .replace(/([a-z0-9À-ÿ])\s*'\s*([a-z0-9À-ÿ])/g, "$1'$2")
+      .replace(/([0-9])\s*\.\s*([0-9])/g, '$1.$2')
+      .replace(/\s+([.,!?;:%)\]}…])/g, '$1')
+      .replace(/([([{])\s+/g, '$1')
+      .replace(/\s*"\s*/g, '"')
+      .replace(/([a-z0-9À-ÿ])\s*-\s*([a-z0-9À-ÿ])/g, '$1-$2')
+      .replace(/\s*—\s*/g, '—')
+      .replace(/\s+/g, ' ').trim();
   }
 
-  // Sentence splitter shared with KaraokeReaderOverlay (identical regex) so the
-  // prep flow generates exactly the sentences the player will request.
+  // Sentence splitter shared with KaraokeReaderOverlay so the prep flow
+  // generates exactly the sentences the player will request. When the app's
+  // canonical splitter (PureHelpers.splitTextToSentences — the one handleSpeak
+  // and the leveled-text/FAQ views use) is loaded, DELEGATE to it so overlay
+  // and view sentence BOUNDARIES agree too (honorifics like "Dr.", links,
+  // LaTeX); the inline regex below stays as the standalone fallback.
   function splitSentences(text) {
     var cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
     if (!cleaned) return [];
+    try {
+      var PH = window.AlloModules && window.AlloModules.PureHelpers;
+      if (PH && typeof PH.splitTextToSentences === 'function') {
+        var viaApp = PH.splitTextToSentences(cleaned, {});
+        if (Array.isArray(viaApp) && viaApp.length) return viaApp;
+      }
+    } catch (_) {}
     var parts = cleaned.split(/([.!?]+["'”’]?)(\s+|$)/);
     var out = [];
     var buf = '';
@@ -95,7 +123,10 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         map.forEach(function (e, k) { sentences[k] = e.b64; mimes[k] = e.mime || 'audio/mpeg'; sources[k] = e.source || 'ai'; });
         return { format: 'per-entry', version: 2, sentences: sentences, mimes: mimes, sources: sources };
       },
-      // resource JSON → memory. Returns count hydrated.
+      // resource JSON → memory. Returns count hydrated. Keys are re-run
+      // through keyFor so payloads saved under an older normalization
+      // (e.g. pre-punctuation-spacing keys from the overlay) migrate to
+      // the current key space on load instead of being orphaned.
       hydrate: function (obj) {
         if (!obj || !obj.sentences || typeof obj.sentences !== 'object') return 0;
         var n = 0;
@@ -105,9 +136,15 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
         for (var k in obj.sentences) {
           if (!Object.prototype.hasOwnProperty.call(obj.sentences, k)) continue;
           try {
+            var kk = keyFor(k);
+            if (!kk) continue;
+            // Never let a stale-keyed AI clip overwrite a human take that
+            // normalized onto the same key.
+            var existing = map.get(kk);
+            if (existing && String(existing.source || '').indexOf('human') === 0 && String(sources[k] || 'ai').indexOf('human') !== 0) continue;
             var mime = mimes[k] || fallbackMime;
             var url = b64ToUrl(obj.sentences[k], mime);
-            if (url) { _revoke(map.get(k)); map.set(k, { b64: String(obj.sentences[k] || ''), mime: mime, url: url, source: sources[k] || 'ai' }); n++; }
+            if (url) { _revoke(existing); map.set(kk, { b64: String(obj.sentences[k] || ''), mime: mime, url: url, source: sources[k] || 'ai' }); n++; }
           } catch (_) {}
         }
         return n;

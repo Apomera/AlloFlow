@@ -1440,14 +1440,15 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                                 {recording ? `⏹ ${safeT(t, 'immersive.stop_recording', 'Stop recording')}` : `🎤 ${safeT(t, 'immersive.record_sentence', 'Record my voice')}`}
                             </button>
                             <button
-                                onClick={prepareAll}
-                                disabled={!!(prepState && prepState.busy)}
-                                title={safeT(t, 'immersive.prepare_readaloud_tip', 'Generate audio for every sentence and save it into this resource so students hear it instantly on any device.')}
+                                onClick={() => { if (prepState && prepState.busy) { window.__alloPrepareReadAloudCancel = true; return; } prepareAll(); }}
+                                title={prepState && prepState.busy
+                                    ? safeT(t, 'immersive.prepare_readaloud_stop', 'Stop after the current sentence (already-saved audio is kept).')
+                                    : safeT(t, 'immersive.prepare_readaloud_tip', 'Generate audio for every sentence and save it into this resource so students hear it instantly on any device.')}
                                 className="px-2.5 py-1 rounded-full transition-all flex items-center gap-1"
                                 style={{ background: (prepState && !prepState.busy) ? c.accent : 'transparent', color: c.ink, border: `1px solid ${c.dim}55`, opacity: (prepState && prepState.busy) ? 0.7 : 1 }}
                             >
                                 {prepState && prepState.busy
-                                    ? `… ${prepState.done}/${prepState.total}`
+                                    ? `… ${prepState.done}/${prepState.total} ✕`
                                     : (prepState && !prepState.busy)
                                         ? `✓ ${safeT(t, 'immersive.readaloud_saved', 'Saved')}${prepState.bytes ? ' · ' + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + ' MB' : ''}`
                                         : `💾 ${safeT(t, 'immersive.prepare_readaloud', 'Prepare read-aloud for students')}`}

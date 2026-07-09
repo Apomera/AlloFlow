@@ -60,22 +60,11 @@ const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
 };
 const captureReadAloudClip = (contentId, mode, sentence, url) => {
   if (!shouldCaptureReadAloud(contentId, mode, sentence, url)) return;
-  const run = () => {
-    try {
-      const result = window.__alloCaptureKaraokeAudio(sentence, url);
-      if (result && typeof result.catch === "function") result.catch(() => {
-      });
-    } catch (_) {
-    }
-  };
   try {
-    if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
-      window.requestIdleCallback(run, { timeout: 1200 });
-    } else {
-      setTimeout(run, 250);
-    }
+    const result = window.__alloCaptureKaraokeAudio(sentence, url);
+    if (result && typeof result.catch === "function") result.catch(() => {
+    });
   } catch (_) {
-    setTimeout(run, 250);
   }
 };
 const playSequence = async (index, sentences, sessionId, mode = "standard", voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0, speakerName = null, deps, contentId = null) => {
@@ -1352,10 +1341,10 @@ const executeSaveFile = async (deps) => {
     }
   }
   let outName = filename;
-  const _hasVoice = dataStr.indexOf("data:audio") !== -1 || /"audioRecording"\s*:\s*"/.test(dataStr);
+  const _hasVoice = dataStr.indexOf("data:audio") !== -1 || /"audioRecording"\s*:\s*"/.test(dataStr) || /"human-student"/.test(dataStr);
   const _hasSelText = /"selToolData"\s*:\s*\{\s*"/.test(dataStr) || /"selProgress"\s*:\s*\{\s*"/.test(dataStr) || /"selSnapshots"\s*:\s*\[\s*\{/.test(dataStr) || /"studentArtifacts"\s*:\s*\[\s*\{/.test(dataStr);
   if (_hasVoice || _hasSelText) {
-    const _msg = _hasVoice ? "This project file contains a student's voice recording (an Oral Fluency read-aloud and/or an SEL voice check-in). A recorded voice is identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location \u2014 don't email it or put it in personal cloud storage.\n\nSave anyway?" : "This project file includes SEL activity data, which can contain a student's reflections, journal entries, or safety plan \u2014 identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location \u2014 don't email it or put it in personal cloud storage.\n\nSave anyway?";
+    const _msg = _hasVoice ? "This project file contains a student's voice recording (an Oral Fluency read-aloud, a karaoke practice recording, and/or an SEL voice check-in). A recorded voice is identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location \u2014 don't email it or put it in personal cloud storage.\n\nSave anyway?" : "This project file includes SEL activity data, which can contain a student's reflections, journal entries, or safety plan \u2014 identifiable, FERPA-protected student data.\n\nThe file uses the student's codename (not a real name), but save it only to a school-approved, encrypted location \u2014 don't email it or put it in personal cloud storage.\n\nSave anyway?";
     const _ok = typeof window !== "undefined" && typeof window.confirm === "function" ? window.confirm(_msg) : true;
     if (!_ok) {
       try {

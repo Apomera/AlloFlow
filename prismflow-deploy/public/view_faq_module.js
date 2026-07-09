@@ -101,7 +101,10 @@ function FaqView(props) {
     };
   }, []);
   var cleanSentenceForAudio = function (sentence) {
-    return String(sentence || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\[Source\s+\d+\]/gi, '').replace(/\[\d+\]/g, '').replace(/^#{1,6}\s+/gm, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '').replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '').replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
+    // Must mirror playSequence's textToSpeak cleaning (phase_k) — the store
+    // key is derived from the cleaned sentence on BOTH sides, so a rule
+    // present in one place but not the other orphans that sentence's audio.
+    return String(sentence || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '').replace(/\[Source\s+\d+\]/gi, '').replace(/\[\d+\]/g, '').replace(/^#{1,6}\s+/gm, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '').replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '').replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
   };
   var getReadAloudStore = function () {
     try {
@@ -256,17 +259,22 @@ function FaqView(props) {
     className: "flex items-center gap-2 flex-wrap"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: handlePrepareFaqAudio,
-    disabled: prepState.busy,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
-    title: t('immersive.prepare_all') || 'Save TTS',
-    "aria-label": t('immersive.prepare_all') || 'Save TTS'
+    onClick: function () {
+      if (prepState.busy) {
+        window.__alloPrepareReadAloudCancel = true;
+        return;
+      }
+      handlePrepareFaqAudio();
+    },
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50 transition-all shadow-sm",
+    title: prepState.busy ? t('common.stop') || 'Stop' : t('immersive.prepare_all') || 'Save TTS',
+    "aria-label": prepState.busy ? t('common.stop') || 'Stop saving TTS' : t('immersive.prepare_all') || 'Save TTS'
   }, prepState.busy ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement(Volume2, {
     size: 14
-  }), prepState.busy ? `${prepState.done}/${prepState.total || '...'}` : 'Save TTS'), /*#__PURE__*/React.createElement("button", {
+  }), prepState.busy ? `${prepState.done}/${prepState.total || '...'} ✕` : 'Save TTS'), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.toggle_edit_faq'),
     onClick: handleToggleIsEditingFaq,
     "data-help-key": "faq_edit_toggle",

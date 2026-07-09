@@ -1336,13 +1336,18 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: prepareAll,
-      disabled: !!(prepState && prepState.busy),
-      title: safeT(t, "immersive.prepare_readaloud_tip", "Generate audio for every sentence and save it into this resource so students hear it instantly on any device."),
+      onClick: () => {
+        if (prepState && prepState.busy) {
+          window.__alloPrepareReadAloudCancel = true;
+          return;
+        }
+        prepareAll();
+      },
+      title: prepState && prepState.busy ? safeT(t, "immersive.prepare_readaloud_stop", "Stop after the current sentence (already-saved audio is kept).") : safeT(t, "immersive.prepare_readaloud_tip", "Generate audio for every sentence and save it into this resource so students hear it instantly on any device."),
       className: "px-2.5 py-1 rounded-full transition-all flex items-center gap-1",
       style: { background: prepState && !prepState.busy ? c.accent : "transparent", color: c.ink, border: `1px solid ${c.dim}55`, opacity: prepState && prepState.busy ? 0.7 : 1 }
     },
-    prepState && prepState.busy ? `\u2026 ${prepState.done}/${prepState.total}` : prepState && !prepState.busy ? `\u2713 ${safeT(t, "immersive.readaloud_saved", "Saved")}${prepState.bytes ? " \xB7 " + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + " MB" : ""}` : `\u{1F4BE} ${safeT(t, "immersive.prepare_readaloud", "Prepare read-aloud for students")}`
+    prepState && prepState.busy ? `\u2026 ${prepState.done}/${prepState.total} \u2715` : prepState && !prepState.busy ? `\u2713 ${safeT(t, "immersive.readaloud_saved", "Saved")}${prepState.bytes ? " \xB7 " + Math.max(1, Math.round(prepState.bytes / 1048576 * 10) / 10) + " MB" : ""}` : `\u{1F4BE} ${safeT(t, "immersive.prepare_readaloud", "Prepare read-aloud for students")}`
   )), !isTeacher && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.student_reading_tools", "My reading") }, /* @__PURE__ */ React.createElement(
     "button",
     {

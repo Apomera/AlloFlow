@@ -389,7 +389,10 @@ function SimplifiedView(props) {
     setSavingAudioKeys({});
   }, [generatedContent && generatedContent.id]);
   var cleanSentenceForAudio = function (sentence) {
-    return String(sentence || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\[Source\s+\d+\]/gi, '').replace(/\[\d+\]/g, '').replace(/^#{1,6}\s+/gm, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '').replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '').replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
+    // Must mirror playSequence's textToSpeak cleaning (phase_k) — the store
+    // key is derived from the cleaned sentence on BOTH sides, so a rule
+    // present in one place but not the other orphans that sentence's audio.
+    return String(sentence || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\[?⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]?/g, '').replace(/\[Source\s+\d+\]/gi, '').replace(/\[\d+\]/g, '').replace(/^#{1,6}\s+/gm, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '').replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '').replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
   };
   var getReadAloudStore = function () {
     try {
@@ -1031,18 +1034,23 @@ function SimplifiedView(props) {
   }) : /*#__PURE__*/React.createElement(Download, {
     size: 14
   }), downloadingContentId === 'dl-simplified-main' ? t('common.downloading') : t('common.download_audio')), /*#__PURE__*/React.createElement("button", {
-    onClick: handlePrepareReadAloudAudio,
-    disabled: ttsPrepState.busy,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap",
-    title: t('immersive.prepare_all') || 'Save TTS',
-    "aria-label": t('immersive.prepare_all') || 'Save TTS',
+    onClick: function () {
+      if (ttsPrepState.busy) {
+        window.__alloPrepareReadAloudCancel = true;
+        return;
+      }
+      handlePrepareReadAloudAudio();
+    },
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap",
+    title: ttsPrepState.busy ? t('common.stop') || 'Stop' : t('immersive.prepare_all') || 'Save TTS',
+    "aria-label": ttsPrepState.busy ? t('common.stop') || 'Stop saving TTS' : t('immersive.prepare_all') || 'Save TTS',
     "data-help-key": "simplified_save_tts"
   }, ttsPrepState.busy ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: "animate-spin"
   }) : /*#__PURE__*/React.createElement(Volume2, {
     size: 14
-  }), ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'}` : 'Save TTS'))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+  }), ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'} ✕` : 'Save TTS'))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.toggle_edit_text'),
     onClick: handleToggleIsEditingLeveledText,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingLeveledText ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`,

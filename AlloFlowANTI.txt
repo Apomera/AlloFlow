@@ -10997,6 +10997,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                 if (item.levelCheck) serializedItem.levelCheck = item.levelCheck;
                 if (item.alignmentCheck) serializedItem.alignmentCheck = item.alignmentCheck;
                 if (item.posData) serializedItem.posData = item.posData;
+                // Vetted read-aloud audio (and student practice takes) must survive
+                // the browser-session autosave, not just explicit project-file saves —
+                // otherwise a plain refresh silently deletes prepped TTS and recorded
+                // voices. Dropped in the stripped (quota-exceeded) retry like other
+                // binary payloads.
+                if (!stripImages && item.karaokeAudio) serializedItem.karaokeAudio = item.karaokeAudio;
+                if (!stripImages && item.karaokeStudentAudio) serializedItem.karaokeStudentAudio = item.karaokeStudentAudio;
                 return serializedItem;
             });
         };
@@ -14071,8 +14078,18 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   useEffect(() => {
     if (typeof window !== 'undefined' && !window.lamejs) {
         const script = document.createElement('script');
-        script.src = "https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js";
+        // Vendored copy on our own CDN first (ships with School Box / offline
+        // mirrors, no third-party dependency); cdnjs stays as the fallback for
+        // deploys that predate lame.min.js landing in public/.
+        script.src = "https://alloflow-cdn.pages.dev/lame.min.js";
         script.async = true;
+        script.onerror = () => {
+            if (document.body.contains(script)) document.body.removeChild(script);
+            const fallback = document.createElement('script');
+            fallback.src = "https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js";
+            fallback.async = true;
+            document.body.appendChild(fallback);
+        };
         document.body.appendChild(script);
         return () => {
             if (document.body.contains(script)) {
@@ -17669,7 +17686,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       if (window.lamejs && _ah && typeof _ah.pcmToMp3 === 'function') {
         const r = await fetchTTSBytes(sentence, selectedVoice);
         if (r && r.bytes) {
-          const mp3Blob = _ah.pcmToMp3(r.bytes, 24000);
+          // 64 kbps mono is transparent for 24 kHz speech and halves the
+          // embedded-JSON weight vs the 128 kbps download default.
+          const mp3Blob = _ah.pcmToMp3(r.bytes, 24000, 64);
           return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg' };
         }
       }
@@ -17728,12 +17747,19 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     try {
       const allowed = new Set(list.map(s => KS.keyFor ? KS.keyFor(s) : String(s || '').toLowerCase().replace(/\s+/g, ' ').trim()));
       const payload = st.serialize();
+      const _pruneSources = (payload && payload.sources) || {};
       Object.keys((payload && payload.sentences) || {}).forEach(k => {
-        if (!allowed.has(k)) st.remove(k);
+        // Prune only stale AI takes. A teacher/student RECORDING is human
+        // work — never bulk-delete it just because this surface's sentence
+        // list (overlay vs view) didn't contain its key.
+        if (!allowed.has(k) && String(_pruneSources[k] || 'ai').indexOf('human') !== 0) st.remove(k);
       });
     } catch (_) {}
     const todo = st.missing(list);
     let n = 0;
+    // A Stop click that landed after the previous run finished must not
+    // cancel this run's first sentence.
+    window.__alloPrepareReadAloudCancel = false;
     for (let i = 0; i < todo.length; i++) {
       if (window.__alloPrepareReadAloudCancel) { window.__alloPrepareReadAloudCancel = false; break; }
       const out = await _synthSentenceForStore(todo[i]);
@@ -17766,14 +17792,23 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     if (st.has(sentence)) return false;
     _notifyKaraokeAudioCapture(sentence, 'saving', resourceId);
     try {
+      // Snapshot the bytes IMMEDIATELY: playSequence revokes the played clip's
+      // blob URL in its onended handler, so a deferred fetch can lose very
+      // short clips. The heavy part (MP3 encode) still waits for an idle slot.
       const buf = await (await fetch(url)).arrayBuffer();
+      await new Promise(res => {
+        try {
+          if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(res, { timeout: 1200 });
+          else setTimeout(res, 250);
+        } catch (_) { setTimeout(res, 250); }
+      });
       const bytes = new Uint8Array(buf);
       const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46; // 'RIFF'
       const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
       if (isWav && window.lamejs && _ah && typeof _ah.pcmToMp3 === 'function') {
         try {
           const pcm = new Uint8Array(buf, 44); // strip WAV header -> PCM
-          const mp3Blob = _ah.pcmToMp3(pcm, 24000);
+          const mp3Blob = _ah.pcmToMp3(pcm, 24000, 64); // 64 kbps: speech-transparent, half the JSON weight
           st.put(sentence, await _blobToBase64(mp3Blob), 'audio/mpeg');
           _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
           _notifyKaraokeAudioCapture(sentence, 'saved', resourceId, { mime: 'audio/mpeg' });
