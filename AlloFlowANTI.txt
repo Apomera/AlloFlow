@@ -532,6 +532,64 @@ if (typeof window !== 'undefined') {
     window.callGeminiAudio = callGeminiAudio;
 }
 const ALLO_QR_STUDENT_AI_OFF_KEY = 'alloflow_qr_student_ai_disabled';
+const ALLOFLOW_PUBLIC_STUDENT_BASE_URL = 'https://prismflow-911fe.web.app/';
+const ALLO_QR_CELL_SIZE = 5;
+const ALLO_QR_QUIET_ZONE = ALLO_QR_CELL_SIZE * 4;
+const ALLO_QR_SCRIPT_TIMEOUT_MS = 5000;
+function _alloShareHostIsNotStudentReachable(url) {
+    if (!url) return true;
+    const protocol = String(url.protocol || '').toLowerCase();
+    const host = String(url.hostname || '').toLowerCase();
+    const href = String(url.href || '').toLowerCase();
+    return !/^https?:$/.test(protocol)
+        || href.startsWith('blob:')
+        || href.startsWith('about:')
+        || host === 'localhost'
+        || host === '127.0.0.1'
+        || host.includes('googleusercontent')
+        || host.includes('scf.usercontent')
+        || host.includes('gemini.google')
+        || host.includes('idx.google')
+        || host.includes('run.app');
+}
+function _alloCleanFirestoreDocId(value, fallback = '') {
+    const text = String(value || '').trim();
+    if (!text || text.length > 180 || text.includes('/') || text === '.' || text === '..') return fallback;
+    return text;
+}
+function _alloCleanLiveSessionCode(value) {
+    const text = String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    return /^[A-Z0-9]{5}$/.test(text) ? text : '';
+}
+function _alloCleanQrAssignmentId(value) {
+    const text = _alloCleanFirestoreDocId(value, '');
+    return /^HW-[0-9a-f-]{36}$/i.test(text) ? text : '';
+}
+function _buildAlloShareUrl(params = {}) {
+    const fallback = () => {
+        const url = new URL(ALLOFLOW_PUBLIC_STUDENT_BASE_URL);
+        Object.entries(params || {}).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
+        });
+        return url.toString();
+    };
+    if (typeof window === 'undefined') return fallback();
+    try {
+        const current = new URL(window.location.href);
+        const url = _alloShareHostIsNotStudentReachable(current)
+            ? new URL(ALLOFLOW_PUBLIC_STUDENT_BASE_URL)
+            : current;
+        url.search = '';
+        url.hash = '';
+        Object.entries(params || {}).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
+        });
+        return url.toString();
+    } catch (_) {
+        return fallback();
+    }
+}
+if (typeof window !== 'undefined') window.__alloBuildShareUrl = _buildAlloShareUrl;
 function _isQrStudentAiDisabled() {
     if (typeof window === 'undefined') return false;
     try {
@@ -574,7 +632,12 @@ function _loadAlloQrLibrary() {
     if (window.qrcode) return Promise.resolve(window.qrcode);
     if (window.__alloQrLibraryPromise) return window.__alloQrLibraryPromise;
     window.__alloQrLibraryPromise = new Promise((resolve, reject) => {
-        const sources = ['https://alloflow-cdn.pages.dev/qrcode.js', './qrcode.js'];
+        const publicQrSrc = new URL('qrcode.js', ALLOFLOW_PUBLIC_STUDENT_BASE_URL).toString();
+        let preferPublic = true;
+        try { preferPublic = _alloShareHostIsNotStudentReachable(new URL(window.location.href)); } catch (_) {}
+        const sources = Array.from(new Set(preferPublic
+            ? ['https://alloflow-cdn.pages.dev/qrcode.js', publicQrSrc, './qrcode.js']
+            : ['./qrcode.js', publicQrSrc, 'https://alloflow-cdn.pages.dev/qrcode.js']));
         let index = 0;
         const tryNext = () => {
             if (window.qrcode) { resolve(window.qrcode); return; }
@@ -583,8 +646,20 @@ function _loadAlloQrLibrary() {
             script.src = sources[index++];
             script.async = true;
             script.dataset.alloQrcode = 'true';
-            script.onload = () => window.qrcode ? resolve(window.qrcode) : tryNext();
-            script.onerror = tryNext;
+            let settled = false;
+            let timeoutId = null;
+            const settle = (loaded) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timeoutId);
+                script.onload = null;
+                script.onerror = null;
+                if (loaded && window.qrcode) resolve(window.qrcode);
+                else tryNext();
+            };
+            timeoutId = setTimeout(() => settle(false), ALLO_QR_SCRIPT_TIMEOUT_MS);
+            script.onload = () => settle(true);
+            script.onerror = () => settle(false);
             document.head.appendChild(script);
         };
         tryNext();
@@ -592,12 +667,15 @@ function _loadAlloQrLibrary() {
     return window.__alloQrLibraryPromise;
 }
 async function _makeAlloQrSvg(value, title = 'AlloFlow QR') {
+    const payload = String(value || '').trim();
+    if (!payload) throw new Error('QR payload is empty');
     await _loadAlloQrLibrary();
     const qr = window.qrcode(0, 'M');
-    qr.addData(String(value || ''));
+    qr.addData(payload);
     qr.make();
-    return qr.createSvgTag({ cellSize: 5, margin: 2, scalable: true, title });
+    return qr.createSvgTag({ cellSize: ALLO_QR_CELL_SIZE, margin: ALLO_QR_QUIET_ZONE, scalable: true, title });
 }
+if (typeof window !== 'undefined') window.__alloMakeQrSvg = _makeAlloQrSvg;
 function _readAlloAiUserConfig() {
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') return null;
     try {
@@ -11316,17 +11394,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [sourceCustomInstructions, setSourceCustomInstructions] = useState('');
   const [qrShareModal, setQrShareModal] = useState(null);
   const [qrShareSvg, setQrShareSvg] = useState('');
+  const [qrShareError, setQrShareError] = useState(false);
   const [pendingQrAssignmentResource, setPendingQrAssignmentResource] = useState(null);
   const buildAlloShareUrl = useCallback((params = {}) => {
-      if (typeof window === 'undefined') return '';
       try {
-          const url = new URL(window.location.href);
-          url.search = '';
-          url.hash = '';
-          Object.entries(params).forEach(([key, value]) => {
-              if (value !== undefined && value !== null && value !== '') url.searchParams.set(key, String(value));
-          });
-          return url.toString();
+          return _buildAlloShareUrl(params);
       } catch (_) {
           return '';
       }
@@ -11336,11 +11408,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const url = qrShareModal?.url || '';
       if (!url) {
           setQrShareSvg('');
+          setQrShareError(false);
           return undefined;
       }
+      setQrShareSvg('');
+      setQrShareError(false);
       _makeAlloQrSvg(url, qrShareModal?.title || 'AlloFlow QR')
           .then(svg => { if (!cancelled) setQrShareSvg(svg); })
-          .catch(() => { if (!cancelled) setQrShareSvg(''); });
+          .catch(() => { if (!cancelled) { setQrShareSvg(''); setQrShareError(true); } });
       return () => { cancelled = true; };
   }, [qrShareModal?.url, qrShareModal?.title]);
   const createHomeworkAssignmentLink = useCallback(async () => {
@@ -17669,6 +17744,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
     return { ok: true, generated: n, total: todo.length, bytes: st.estimateBytes() };
   };
+  const _notifyKaraokeAudioCapture = (sentence, status, resourceId, extra) => {
+    try {
+      window.dispatchEvent(new CustomEvent('alloflow:karaoke-audio-capture', {
+        detail: Object.assign({ sentence, status, resourceId: resourceId || null }, extra || {})
+      }));
+    } catch (_) {}
+  };
   // Save-as-you-play (Option B): capture the clip karaoke ALREADY generated
   // on play into the store instead of discarding it, so vetted read-aloud
   // accumulates during normal use with zero added synthesis. No-op if the
@@ -17682,6 +17764,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const st = KS.current;
     const resourceId = generatedContent && generatedContent.id;
     if (st.has(sentence)) return false;
+    _notifyKaraokeAudioCapture(sentence, 'saving', resourceId);
     try {
       const buf = await (await fetch(url)).arrayBuffer();
       const bytes = new Uint8Array(buf);
@@ -17693,14 +17776,19 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           const mp3Blob = _ah.pcmToMp3(pcm, 24000);
           st.put(sentence, await _blobToBase64(mp3Blob), 'audio/mpeg');
           _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
+          _notifyKaraokeAudioCapture(sentence, 'saved', resourceId, { mime: 'audio/mpeg' });
           return true;
         } catch (_) {}
       }
       const blob = new Blob([buf], { type: isWav ? 'audio/wav' : 'audio/mpeg' });
       st.put(sentence, await _blobToBase64(blob), blob.type);
       _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
+      _notifyKaraokeAudioCapture(sentence, 'saved', resourceId, { mime: blob.type });
       return true;
-    } catch (_) { return false; }
+    } catch (_) {
+      _notifyKaraokeAudioCapture(sentence, 'error', resourceId);
+      return false;
+    }
   };
   // Human voice takes: persist a recorded clip (teacher or student) as one
   // sentence's audio, tagged with its source so provenance is honest by
@@ -18950,7 +19038,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       return () => clearTimeout(timeoutId);
   }, [history, activeSessionCode, isTeacherMode, appId]);
   const joinClassSession = async (code, hostOverride = '') => {
-      const cleanCode = code.trim().toUpperCase();
+      const cleanCode = _alloCleanLiveSessionCode(code);
       if (!cleanCode) {
           addToast(t('session.error_invalid_code'), "error");
           return;
@@ -18959,7 +19047,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           sessionUnsubscribeRef.current();
           sessionUnsubscribeRef.current = null;
       }
-      const targetAppId = String(hostOverride || joinAppIdInput || '').trim() || appId;
+      const requestedAppId = String(hostOverride || joinAppIdInput || '').trim();
+      const targetAppId = _alloCleanFirestoreDocId(requestedAppId, appId) || appId;
       setActiveSessionAppId(targetAppId);
       setActiveSessionCode(cleanCode);
       setIsJoinPopoverOpen(false);
@@ -19023,9 +19112,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       let timer = null;
       try {
           const params = new URLSearchParams(window.location.search);
-          const liveCode = (params.get('allo_join') || params.get('allo_live_join') || '').trim().toUpperCase();
+          const liveCode = _alloCleanLiveSessionCode(params.get('allo_join') || params.get('allo_live_join') || '');
           if (!liveCode) return undefined;
-          const hostId = (params.get('allo_host') || params.get('allo_app') || params.get('hostAppId') || '').trim();
+          const hostId = _alloCleanFirestoreDocId(params.get('allo_host') || params.get('allo_app') || params.get('hostAppId') || '', '');
           window.__alloQrStudentMode = { type: 'live', aiDisabled: true, code: liveCode, hostAppId: hostId || appId };
           window.__alloStudentAiDisabled = true;
           try { window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1'); } catch (_) {}
@@ -20152,9 +20241,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       let cancelled = false;
       try {
           const params = new URLSearchParams(window.location.search);
-          const assignmentId = (params.get('allo_assignment') || '').trim();
+          const assignmentId = _alloCleanQrAssignmentId(params.get('allo_assignment') || '');
           if (!assignmentId) return undefined;
-          const hostId = (params.get('allo_host') || params.get('allo_app') || params.get('hostAppId') || '').trim() || appId;
+          const hostId = _alloCleanFirestoreDocId(params.get('allo_host') || params.get('allo_app') || params.get('hostAppId') || '', appId) || appId;
           window.__alloQrStudentMode = { type: 'assignment', aiDisabled: true, assignmentId, hostAppId: hostId };
           window.__alloStudentAiDisabled = true;
           try { window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1'); } catch (_) {}
@@ -27256,7 +27345,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               <div className="bg-white border border-slate-200 rounded-xl p-3 w-52 h-52 flex items-center justify-center shadow-sm">
                 {qrShareSvg
                   ? <div className="w-full h-full [&_svg]:w-full [&_svg]:h-full" dangerouslySetInnerHTML={{ __html: qrShareSvg }} />
-                  : <span className="text-xs font-bold text-cyan-700 text-center">QR loading</span>}
+                  : <span className="text-xs font-bold text-cyan-700 text-center">{qrShareError ? 'Copy link below' : 'QR loading'}</span>}
               </div>
             </div>
             <button onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-cyan-800 hover:text-cyan-900 bg-cyan-50 border border-cyan-300 hover:border-cyan-400 rounded-lg p-2 transition-all break-all">

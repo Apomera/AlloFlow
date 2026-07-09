@@ -1,4 +1,4 @@
-// Inject Chunk Read mood keyframes once. Reduced-motion media query disables
+﻿// Inject Chunk Read mood keyframes once. Reduced-motion media query disables
   // the animations globally so users with that preference see static styling.
   (function () {
     if (typeof document === 'undefined') return;
@@ -260,16 +260,57 @@
     var ttsPrepState_state = React.useState({ busy: false, done: 0, total: 0 });
     var ttsPrepState = ttsPrepState_state[0];
     var setTtsPrepState = ttsPrepState_state[1];
+    var saveTtsAsPlayed_state = React.useState(function () {
+      try { return localStorage.getItem('allo_save_karaoke_audio') === '1'; } catch (_) { return false; }
+    });
+    var saveTtsAsPlayed = saveTtsAsPlayed_state[0];
+    var setSaveTtsAsPlayed = saveTtsAsPlayed_state[1];
+    var savingAudioKeys_state = React.useState({});
+    var savingAudioKeys = savingAudioKeys_state[0];
+    var setSavingAudioKeys = savingAudioKeys_state[1];
     var regenAudioKey_state = React.useState(null);
     var regenAudioKey = regenAudioKey_state[0];
     var setRegenAudioKey = regenAudioKey_state[1];
     var setAudioStatusTick = React.useState(0)[1];
+    var getReadAloudAudioKey = function (sentence) {
+      try {
+        var KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+        if (KS && typeof KS.keyFor === 'function') return KS.keyFor(sentence);
+      } catch (_) {}
+      return String(sentence || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    };
+    var setSaveTtsAsPlayedEnabled = function (value) {
+      var next = !!value;
+      setSaveTtsAsPlayed(next);
+      try { localStorage.setItem('allo_save_karaoke_audio', next ? '1' : '0'); } catch (_) {}
+    };
     React.useEffect(function () {
       if (typeof window === 'undefined') return;
       var onAudioUpdate = function () { setAudioStatusTick(function (n) { return n + 1; }); };
+      var onAudioCapture = function (event) {
+        var detail = event && event.detail ? event.detail : {};
+        if (generatedContent && generatedContent.id && detail.resourceId && detail.resourceId !== generatedContent.id) return;
+        var key = getReadAloudAudioKey(detail.sentence);
+        if (!key) return;
+        if (detail.status === 'saving') {
+          setSavingAudioKeys(function (prev) { return Object.assign({}, prev, { [key]: true }); });
+        } else {
+          setSavingAudioKeys(function (prev) {
+            var next = Object.assign({}, prev);
+            delete next[key];
+            return next;
+          });
+          setAudioStatusTick(function (n) { return n + 1; });
+        }
+      };
       window.addEventListener('alloflow:karaoke-audio-updated', onAudioUpdate);
-      return function () { window.removeEventListener('alloflow:karaoke-audio-updated', onAudioUpdate); };
-    }, []);
+      window.addEventListener('alloflow:karaoke-audio-capture', onAudioCapture);
+      return function () {
+        window.removeEventListener('alloflow:karaoke-audio-updated', onAudioUpdate);
+        window.removeEventListener('alloflow:karaoke-audio-capture', onAudioCapture);
+      };
+    }, [generatedContent && generatedContent.id]);
+    React.useEffect(function () { setSavingAudioKeys({}); }, [generatedContent && generatedContent.id]);
     var cleanSentenceForAudio = function (sentence) {
       return String(sentence || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\[Source\s+\d+\]/gi, '').replace(/\[\d+\]/g, '').replace(/^#{1,6}\s+/gm, '').replace(/\*\*/g, '').replace(/\*/g, '').replace(/__|_/g, '').replace(/~~/g, '').replace(/`/g, '').replace(/^>\s?/gm, '').replace(/^[-*+]\s/gm, '').replace(/^\d+\.\s/gm, '').replace(/\s+/g, ' ').trim();
     };
@@ -302,6 +343,7 @@
       if (ttsPrepState.busy || typeof window.__alloPrepareReadAloud !== 'function') return;
       var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
       if (!sentences.length) return;
+      setSaveTtsAsPlayedEnabled(true);
       setTtsPrepState({ busy: true, done: 0, total: sentences.length });
       try {
         await window.__alloPrepareReadAloud(sentences, function (done, total) {
@@ -325,14 +367,16 @@
       var sentences = getReadAloudSentencesForText(generatedContent && generatedContent.data);
       if (!sentences.length) return null;
       var summary = getReadAloudAudioSummary(sentences);
-      return <div className="flex flex-wrap gap-1.5 p-2 bg-orange-50 border-t border-orange-100 max-h-32 overflow-y-auto"><div className="w-full flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-wide text-orange-700 pb-1"><span>TTS {summary.saved}/{summary.total} saved</span><span className="text-slate-500 normal-case font-semibold">Click a sentence to regenerate</span></div>{sentences.map(function (sentence, i) {
+      var savingCount = Object.keys(savingAudioKeys || {}).length;
+      return <div className="flex flex-wrap gap-1.5 p-2 bg-orange-50 border-t border-orange-100 max-h-36 overflow-y-auto"><div className="w-full flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-wide text-orange-700 pb-1"><div className="flex items-center gap-2 flex-wrap"><span>TTS {summary.saved}/{summary.total} saved</span>{savingCount > 0 && <span className="inline-flex items-center gap-1 normal-case text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-0.5"><RefreshCw size={10} className="animate-spin" /> Saving {savingCount}</span>}</div><label className="inline-flex items-center gap-1.5 text-slate-600 normal-case font-semibold cursor-pointer"><input type="checkbox" checked={saveTtsAsPlayed} onChange={function (e) { setSaveTtsAsPlayedEnabled(e.target.checked); }} className="accent-orange-600" aria-label="Save played TTS into this resource" /><span>Save played TTS</span></label></div><div className="w-full text-[11px] text-slate-500 font-semibold -mt-1 mb-0.5">Click a sentence to regenerate. Played TTS saves only when the checkbox is on.</div>{sentences.map(function (sentence, i) {
         var key = 'simplified-' + i;
+        var audioKey = getReadAloudAudioKey(sentence);
         var busy = regenAudioKey === key;
+        var isSaving = !!savingAudioKeys[audioKey];
         var isSaved = hasStoredReadAloudAudio(sentence);
-        return <button key={key} type="button" onClick={() => handleRegenerateReadAloudSentence(sentence, key)} disabled={!!regenAudioKey} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'}`} title={`${isSaved ? 'TTS saved' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`} aria-label={`${isSaved ? 'Saved TTS' : 'Missing TTS'} for sentence ${i + 1}. Regenerate audio.`}>{busy ? <RefreshCw size={12} className="animate-spin" /> : isSaved ? <CheckCircle2 size={12} /> : <Volume2 size={12} />}<span>{i + 1}</span></button>;
+        return <button key={key} type="button" onClick={() => handleRegenerateReadAloudSentence(sentence, key)} disabled={!!regenAudioKey || isSaving} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${isSaving ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'}`} title={`${isSaving ? 'TTS saving' : isSaved ? 'TTS saved' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`} aria-label={`${isSaving ? 'Saving TTS' : isSaved ? 'Saved TTS' : 'Missing TTS'} for sentence ${i + 1}. Regenerate audio.`}>{busy || isSaving ? <RefreshCw size={12} className="animate-spin" /> : isSaved ? <CheckCircle2 size={12} /> : <Volume2 size={12} />}<span>{i + 1}</span></button>;
       })}</div>;
-    };
-    return <div className="space-y-6">{isImmersiveReaderActive && generatedContent?.immersiveData && <div className="fixed inset-0 z-[200] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 flex flex-col font-sans" style={{
+    };    return <div className="space-y-6">{isImmersiveReaderActive && generatedContent?.immersiveData && <div className="fixed inset-0 z-[200] overflow-y-auto animate-in fade-in zoom-in-95 duration-300 flex flex-col font-sans" style={{
         backgroundColor: immersiveSettings.bgColor || '#fdfbf7'
       }} onMouseMove={e => setImmersiveRulerY(e.clientY)}><ImmersiveToolbar settings={immersiveSettings} setSettings={setImmersiveSettings} onClose={handleCloseImmersiveReader} onGeneratePOS={handleGeneratePOSData} isGeneratingPOS={isAnalyzingPos} posReady={!!generatedContent?.posEnriched} onGenerateSyllables={handleGeneratePOSData} isGeneratingSyllables={isAnalyzingPos} syllablesReady={!!generatedContent?.posEnriched} playbackRate={playbackRate} setPlaybackRate={setPlaybackRate} lineHeight={lineHeight} setLineHeight={setLineHeight} letterSpacing={letterSpacing} setLetterSpacing={setLetterSpacing} isFocusReaderActive={isFocusReaderActive} onToggleFocusReader={() => setIsFocusReaderActive(!isFocusReaderActive)} isChunkReaderActive={isChunkReaderActive} onToggleChunkReader={() => {
           setIsChunkReaderActive(!isChunkReaderActive);

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "noaa-coral-reef-conservation-card",
+  "title": "NOAA Coral Reef Conservation",
+  "description": "A NOAA source card about coral reefs, threats, monitoring, and restoration.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "noaa",
+  "contentType": "source-card",
+  "subjects": [
+    "Coral reefs",
+    "Ocean science",
+    "Conservation",
+    "Climate"
+  ],
+  "authors": [
+    "NOAA Education"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "license": "U.S. Government Work / item-level rights vary",
+  "licenseUrl": "https://www.noaa.gov/education",
+  "source": {
+    "id": "noaa",
+    "name": "NOAA Coral Reef Conservation Program",
+    "url": "https://coralreef.noaa.gov/education/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NOAA coral reef resources cover reef ecosystems, bleaching, ocean change, local stressors, monitoring, restoration, and conservation decisions."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for reading about biodiversity, climate impacts, evidence, and community responses in marine environments."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NOAA materials are generally U.S. government work, but resource collections may link to partners or offsite materials. Check item-level rights before mirroring linked resources."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

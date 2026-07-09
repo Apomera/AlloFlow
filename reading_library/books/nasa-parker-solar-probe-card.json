@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-parker-solar-probe-card",
+  "title": "NASA Parker Solar Probe",
+  "description": "A NASA source card about Parker Solar Probe and close-up study of the Sun.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": [
+    "Sun",
+    "Space weather",
+    "Missions",
+    "Heliophysics"
+  ],
+  "authors": [
+    "NASA Science"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/mission/parker-solar-probe/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA Parker Solar Probe resources explain a mission designed to travel through the Sun outer atmosphere and study solar wind, magnetic fields, and energetic particles."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for reading about engineering under extreme conditions and how scientists gather evidence close to a star."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NASA materials are generally public domain as U.S. government work, but some images, partner resources, insignia, and logos have separate usage rules. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 69
+  }
+}

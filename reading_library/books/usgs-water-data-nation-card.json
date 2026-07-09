@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-water-data-nation-card",
+  "title": "USGS Water Data for the Nation",
+  "description": "A USGS source card for streamflow, groundwater, water quality, and real-time water data.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Water",
+    "Hydrology",
+    "Climate",
+    "Data literacy"
+  ],
+  "authors": [
+    "U.S. Geological Survey"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://waterdata.usgs.gov/nwis"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "USGS Water Data for the Nation shares streamflow, lake levels, groundwater, precipitation, and water-quality observations from monitoring stations."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for graph reading, local watershed investigations, evidence-based claims, and discussions about floods, drought, and water resources."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS water data are generally public domain, but linked maps, photos, or partner resources may include separate notices or attribution requests."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 58
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-artemis-program-card",
+  "title": "NASA Artemis Program",
+  "description": "A NASA source card about Artemis, Moon exploration, technology, and human spaceflight.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": [
+    "Space exploration",
+    "Moon",
+    "Engineering",
+    "Human spaceflight"
+  ],
+  "authors": [
+    "NASA Science"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA",
+    "url": "https://www.nasa.gov/humans-in-space/artemis/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA Artemis resources introduce current Moon exploration goals, spacecraft, rockets, lunar science, habitats, spacesuits, and plans for long-term exploration."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for nonfiction reading about engineering constraints, mission planning, public investment, and scientific goals."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NASA materials are generally public domain as U.S. government work, but some images, partner resources, insignia, and logos have separate usage rules. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 60
+  }
+}

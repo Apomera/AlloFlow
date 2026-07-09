@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-09T17:13:46.983Z",
+ "generatedAt": "2026-07-09T17:50:56.832Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -10,7 +10,7 @@
   {
    "name": "English",
    "code": "en",
-   "count": 1595
+   "count": 1645
   },
   {
    "name": "Spanish",
@@ -87644,6 +87644,1706 @@
    "pageCount": 3,
    "wordCount": 58,
    "file": "books/wikisource-monroe-doctrine-source-card.json"
+  },
+  {
+   "slug": "openstax-world-history-volume-1-catalog",
+   "title": "OpenStax World History Volume 1",
+   "description": "A source card for the OpenStax World History Volume 1 textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "World history",
+    "Textbooks",
+    "Ancient history",
+    "Medieval history"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/world-history-volume-1"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 71,
+   "file": "books/openstax-world-history-volume-1-catalog.json"
+  },
+  {
+   "slug": "openstax-world-history-volume-2-catalog",
+   "title": "OpenStax World History Volume 2",
+   "description": "A source card for the OpenStax World History Volume 2 textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "World history",
+    "Textbooks",
+    "Modern history",
+    "Global studies"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/world-history-volume-2"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 64,
+   "file": "books/openstax-world-history-volume-2-catalog.json"
+  },
+  {
+   "slug": "openstax-calculus-volume-1-catalog",
+   "title": "OpenStax Calculus Volume 1",
+   "description": "A source card for the OpenStax Calculus Volume 1 textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Mathematics",
+    "Calculus",
+    "Functions",
+    "Textbooks"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/calculus-volume-1"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 64,
+   "file": "books/openstax-calculus-volume-1-catalog.json"
+  },
+  {
+   "slug": "openstax-calculus-volume-2-catalog",
+   "title": "OpenStax Calculus Volume 2",
+   "description": "A source card for the OpenStax Calculus Volume 2 textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Mathematics",
+    "Calculus",
+    "Integration",
+    "Series"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/calculus-volume-2"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 58,
+   "file": "books/openstax-calculus-volume-2-catalog.json"
+  },
+  {
+   "slug": "openstax-calculus-volume-3-catalog",
+   "title": "OpenStax Calculus Volume 3",
+   "description": "A source card for the OpenStax Calculus Volume 3 textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Mathematics",
+    "Calculus",
+    "Vectors",
+    "Multivariable calculus"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/calculus-volume-3"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 56,
+   "file": "books/openstax-calculus-volume-3-catalog.json"
+  },
+  {
+   "slug": "openstax-microbiology-catalog",
+   "title": "OpenStax Microbiology",
+   "description": "A source card for the OpenStax Microbiology textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Biology",
+    "Microbiology",
+    "Health science",
+    "Textbooks"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/microbiology"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 56,
+   "file": "books/openstax-microbiology-catalog.json"
+  },
+  {
+   "slug": "openstax-organic-chemistry-catalog",
+   "title": "OpenStax Organic Chemistry",
+   "description": "A source card for the OpenStax Organic Chemistry textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Chemistry",
+    "Organic chemistry",
+    "Molecules",
+    "Textbooks"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/organic-chemistry"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 56,
+   "file": "books/openstax-organic-chemistry-catalog.json"
+  },
+  {
+   "slug": "openstax-business-ethics-catalog",
+   "title": "OpenStax Business Ethics",
+   "description": "A source card for the OpenStax Business Ethics textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Ethics",
+    "Business",
+    "Civics",
+    "Textbooks"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/business-ethics"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 58,
+   "file": "books/openstax-business-ethics-catalog.json"
+  },
+  {
+   "slug": "openstax-introduction-political-science-catalog",
+   "title": "OpenStax Introduction to Political Science",
+   "description": "A source card for the OpenStax Introduction to Political Science textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Political science",
+    "Government",
+    "Civics",
+    "Textbooks"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/introduction-political-science"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 61,
+   "file": "books/openstax-introduction-political-science-catalog.json"
+  },
+  {
+   "slug": "openstax-contemporary-mathematics-catalog",
+   "title": "OpenStax Contemporary Mathematics",
+   "description": "A source card for the OpenStax Contemporary Mathematics textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Mathematics",
+    "Quantitative reasoning",
+    "Data literacy",
+    "Textbooks"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/contemporary-mathematics"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/openstax-contemporary-mathematics-catalog.json"
+  },
+  {
+   "slug": "openstax-college-success-catalog",
+   "title": "OpenStax College Success",
+   "description": "A source card for the OpenStax College Success textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Study skills",
+    "Learning strategies",
+    "Executive function",
+    "Textbooks"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/college-success"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 57,
+   "file": "books/openstax-college-success-catalog.json"
+  },
+  {
+   "slug": "openstax-principles-management-catalog",
+   "title": "OpenStax Principles of Management",
+   "description": "A source card for the OpenStax Principles of Management textbook.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "openstax",
+   "contentType": "textbook-source-card",
+   "subjects": [
+    "Business",
+    "Management",
+    "Leadership",
+    "Textbooks"
+   ],
+   "license": "OpenStax Creative Commons / item-level license",
+   "licenseUrl": "https://openstax.org/license",
+   "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/principles-management"
+   },
+   "cover": null,
+   "authors": [
+    "OpenStax"
+   ],
+   "illustrators": [],
+   "publisher": "OpenStax",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 54,
+   "file": "books/openstax-principles-management-catalog.json"
+  },
+  {
+   "slug": "nasa-james-webb-space-telescope-card",
+   "title": "NASA James Webb Space Telescope",
+   "description": "A NASA source card about the James Webb Space Telescope and infrared astronomy.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "nasa",
+   "contentType": "source-card",
+   "subjects": [
+    "Astronomy",
+    "Telescopes",
+    "Space science",
+    "Infrared light"
+   ],
+   "license": "Public Domain / NASA Media Usage Guidelines",
+   "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+   "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/mission/webb/"
+   },
+   "cover": null,
+   "authors": [
+    "NASA Science"
+   ],
+   "illustrators": [],
+   "publisher": "NASA",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 65,
+   "file": "books/nasa-james-webb-space-telescope-card.json"
+  },
+  {
+   "slug": "nasa-hubble-space-telescope-card",
+   "title": "NASA Hubble Space Telescope",
+   "description": "A NASA source card about Hubble observations, missions, and astronomy evidence.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "nasa",
+   "contentType": "source-card",
+   "subjects": [
+    "Astronomy",
+    "Telescopes",
+    "Galaxies",
+    "Space science"
+   ],
+   "license": "Public Domain / NASA Media Usage Guidelines",
+   "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+   "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/mission/hubble/"
+   },
+   "cover": null,
+   "authors": [
+    "NASA Science"
+   ],
+   "illustrators": [],
+   "publisher": "NASA",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 61,
+   "file": "books/nasa-hubble-space-telescope-card.json"
+  },
+  {
+   "slug": "nasa-artemis-program-card",
+   "title": "NASA Artemis Program",
+   "description": "A NASA source card about Artemis, Moon exploration, technology, and human spaceflight.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "nasa",
+   "contentType": "source-card",
+   "subjects": [
+    "Space exploration",
+    "Moon",
+    "Engineering",
+    "Human spaceflight"
+   ],
+   "license": "Public Domain / NASA Media Usage Guidelines",
+   "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+   "source": {
+    "id": "nasa",
+    "name": "NASA",
+    "url": "https://www.nasa.gov/humans-in-space/artemis/"
+   },
+   "cover": null,
+   "authors": [
+    "NASA Science"
+   ],
+   "illustrators": [],
+   "publisher": "NASA",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 60,
+   "file": "books/nasa-artemis-program-card.json"
+  },
+  {
+   "slug": "nasa-international-space-station-card",
+   "title": "NASA International Space Station",
+   "description": "A NASA source card about the International Space Station, microgravity, research, and cooperation.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "nasa",
+   "contentType": "source-card",
+   "subjects": [
+    "Space exploration",
+    "Microgravity",
+    "Research",
+    "Engineering"
+   ],
+   "license": "Public Domain / NASA Media Usage Guidelines",
+   "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+   "source": {
+    "id": "nasa",
+    "name": "NASA",
+    "url": "https://www.nasa.gov/international-space-station/"
+   },
+   "cover": null,
+   "authors": [
+    "NASA Science"
+   ],
+   "illustrators": [],
+   "publisher": "NASA",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/nasa-international-space-station-card.json"
+  },
+  {
+   "slug": "nasa-parker-solar-probe-card",
+   "title": "NASA Parker Solar Probe",
+   "description": "A NASA source card about Parker Solar Probe and close-up study of the Sun.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "nasa",
+   "contentType": "source-card",
+   "subjects": [
+    "Sun",
+    "Space weather",
+    "Missions",
+    "Heliophysics"
+   ],
+   "license": "Public Domain / NASA Media Usage Guidelines",
+   "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+   "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/mission/parker-solar-probe/"
+   },
+   "cover": null,
+   "authors": [
+    "NASA Science"
+   ],
+   "illustrators": [],
+   "publisher": "NASA",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 69,
+   "file": "books/nasa-parker-solar-probe-card.json"
+  },
+  {
+   "slug": "nasa-tess-exoplanet-mission-card",
+   "title": "NASA TESS Exoplanet Mission",
+   "description": "A NASA source card about TESS and the search for exoplanets.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "nasa",
+   "contentType": "source-card",
+   "subjects": [
+    "Exoplanets",
+    "Astronomy",
+    "Missions",
+    "Data"
+   ],
+   "license": "Public Domain / NASA Media Usage Guidelines",
+   "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+   "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/mission/tess/"
+   },
+   "cover": null,
+   "authors": [
+    "NASA Science"
+   ],
+   "illustrators": [],
+   "publisher": "NASA",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 61,
+   "file": "books/nasa-tess-exoplanet-mission-card.json"
+  },
+  {
+   "slug": "nasa-chandra-xray-observatory-card",
+   "title": "NASA Chandra X-ray Observatory",
+   "description": "A NASA source card about Chandra and high-energy astronomy.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "nasa",
+   "contentType": "source-card",
+   "subjects": [
+    "Astronomy",
+    "X-rays",
+    "Black holes",
+    "Telescopes"
+   ],
+   "license": "Public Domain / NASA Media Usage Guidelines",
+   "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+   "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/mission/chandra/"
+   },
+   "cover": null,
+   "authors": [
+    "NASA Science"
+   ],
+   "illustrators": [],
+   "publisher": "NASA",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 61,
+   "file": "books/nasa-chandra-xray-observatory-card.json"
+  },
+  {
+   "slug": "nasa-aeronautics-research-card",
+   "title": "NASA Aeronautics Research",
+   "description": "A NASA source card about aviation research, aircraft design, and flight systems.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "nasa",
+   "contentType": "source-card",
+   "subjects": [
+    "Engineering",
+    "Flight",
+    "Aeronautics",
+    "Technology"
+   ],
+   "license": "Public Domain / NASA Media Usage Guidelines",
+   "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+   "source": {
+    "id": "nasa",
+    "name": "NASA",
+    "url": "https://www.nasa.gov/aeronautics/"
+   },
+   "cover": null,
+   "authors": [
+    "NASA Science"
+   ],
+   "illustrators": [],
+   "publisher": "NASA",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 60,
+   "file": "books/nasa-aeronautics-research-card.json"
+  },
+  {
+   "slug": "noaa-hurricanes-card",
+   "title": "NOAA Hurricanes",
+   "description": "A NOAA source card about hurricane science, forecasting, hazards, and preparedness.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "noaa",
+   "contentType": "source-card",
+   "subjects": [
+    "Weather",
+    "Hurricanes",
+    "Hazards",
+    "Forecasting"
+   ],
+   "license": "U.S. Government Work / item-level rights vary",
+   "licenseUrl": "https://www.noaa.gov/education",
+   "source": {
+    "id": "noaa",
+    "name": "NOAA Education",
+    "url": "https://www.nhc.noaa.gov/"
+   },
+   "cover": null,
+   "authors": [
+    "NOAA Education"
+   ],
+   "illustrators": [],
+   "publisher": "National Oceanic and Atmospheric Administration",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 57,
+   "file": "books/noaa-hurricanes-card.json"
+  },
+  {
+   "slug": "noaa-tornadoes-card",
+   "title": "NOAA Tornadoes",
+   "description": "A NOAA source card about tornado formation, forecasting, warnings, and safety.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "noaa",
+   "contentType": "source-card",
+   "subjects": [
+    "Weather",
+    "Tornadoes",
+    "Hazards",
+    "Safety"
+   ],
+   "license": "U.S. Government Work / item-level rights vary",
+   "licenseUrl": "https://www.noaa.gov/education",
+   "source": {
+    "id": "noaa",
+    "name": "NOAA Education",
+    "url": "https://www.weather.gov/safety/tornado"
+   },
+   "cover": null,
+   "authors": [
+    "NOAA Education"
+   ],
+   "illustrators": [],
+   "publisher": "National Oceanic and Atmospheric Administration",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 54,
+   "file": "books/noaa-tornadoes-card.json"
+  },
+  {
+   "slug": "noaa-marine-debris-card",
+   "title": "NOAA Marine Debris",
+   "description": "A NOAA source card about marine debris, pollution, ecosystems, and prevention.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "noaa",
+   "contentType": "source-card",
+   "subjects": [
+    "Ocean science",
+    "Pollution",
+    "Marine ecosystems",
+    "Human impacts"
+   ],
+   "license": "U.S. Government Work / item-level rights vary",
+   "licenseUrl": "https://www.noaa.gov/education",
+   "source": {
+    "id": "noaa",
+    "name": "NOAA Marine Debris Program",
+    "url": "https://oceanservice.noaa.gov/facts/marinedebris.html"
+   },
+   "cover": null,
+   "authors": [
+    "NOAA Education"
+   ],
+   "illustrators": [],
+   "publisher": "National Oceanic and Atmospheric Administration",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 62,
+   "file": "books/noaa-marine-debris-card.json"
+  },
+  {
+   "slug": "noaa-estuaries-card",
+   "title": "NOAA Estuaries",
+   "description": "A NOAA source card about estuaries, watersheds, habitats, and coastal ecosystems.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "noaa",
+   "contentType": "source-card",
+   "subjects": [
+    "Estuaries",
+    "Coasts",
+    "Ecosystems",
+    "Water"
+   ],
+   "license": "U.S. Government Work / item-level rights vary",
+   "licenseUrl": "https://www.noaa.gov/education",
+   "source": {
+    "id": "noaa",
+    "name": "NOAA Education",
+    "url": "https://oceanservice.noaa.gov/education/tutorial_estuaries/"
+   },
+   "cover": null,
+   "authors": [
+    "NOAA Education"
+   ],
+   "illustrators": [],
+   "publisher": "National Oceanic and Atmospheric Administration",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 58,
+   "file": "books/noaa-estuaries-card.json"
+  },
+  {
+   "slug": "noaa-coral-reef-conservation-card",
+   "title": "NOAA Coral Reef Conservation",
+   "description": "A NOAA source card about coral reefs, threats, monitoring, and restoration.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "noaa",
+   "contentType": "source-card",
+   "subjects": [
+    "Coral reefs",
+    "Ocean science",
+    "Conservation",
+    "Climate"
+   ],
+   "license": "U.S. Government Work / item-level rights vary",
+   "licenseUrl": "https://www.noaa.gov/education",
+   "source": {
+    "id": "noaa",
+    "name": "NOAA Coral Reef Conservation Program",
+    "url": "https://coralreef.noaa.gov/education/"
+   },
+   "cover": null,
+   "authors": [
+    "NOAA Education"
+   ],
+   "illustrators": [],
+   "publisher": "National Oceanic and Atmospheric Administration",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 57,
+   "file": "books/noaa-coral-reef-conservation-card.json"
+  },
+  {
+   "slug": "noaa-ocean-exploration-card",
+   "title": "NOAA Ocean Exploration",
+   "description": "A NOAA source card about ocean exploration, mapping, deep-sea science, and expeditions.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "noaa",
+   "contentType": "source-card",
+   "subjects": [
+    "Ocean exploration",
+    "Deep sea",
+    "Mapping",
+    "Technology"
+   ],
+   "license": "U.S. Government Work / item-level rights vary",
+   "licenseUrl": "https://www.noaa.gov/education",
+   "source": {
+    "id": "noaa",
+    "name": "NOAA Ocean Exploration",
+    "url": "https://oceanexplorer.noaa.gov/discover/"
+   },
+   "cover": null,
+   "authors": [
+    "NOAA Education"
+   ],
+   "illustrators": [],
+   "publisher": "National Oceanic and Atmospheric Administration",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 60,
+   "file": "books/noaa-ocean-exploration-card.json"
+  },
+  {
+   "slug": "noaa-fisheries-learning-card",
+   "title": "NOAA Fisheries Learning Resources",
+   "description": "A NOAA source card about fisheries science, protected species, habitats, and sustainable seafood.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "noaa",
+   "contentType": "source-card",
+   "subjects": [
+    "Marine biology",
+    "Fisheries",
+    "Conservation",
+    "Ecosystems"
+   ],
+   "license": "U.S. Government Work / item-level rights vary",
+   "licenseUrl": "https://www.noaa.gov/education",
+   "source": {
+    "id": "noaa",
+    "name": "NOAA Fisheries",
+    "url": "https://www.fisheries.noaa.gov/topic/sustainable-fisheries"
+   },
+   "cover": null,
+   "authors": [
+    "NOAA Education"
+   ],
+   "illustrators": [],
+   "publisher": "National Oceanic and Atmospheric Administration",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 56,
+   "file": "books/noaa-fisheries-learning-card.json"
+  },
+  {
+   "slug": "noaa-national-weather-service-education-card",
+   "title": "NOAA National Weather Service Education",
+   "description": "A NOAA source card for weather safety, forecasting, and National Weather Service learning materials.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "noaa",
+   "contentType": "source-card",
+   "subjects": [
+    "Weather",
+    "Forecasting",
+    "Safety",
+    "Data literacy"
+   ],
+   "license": "U.S. Government Work / item-level rights vary",
+   "licenseUrl": "https://www.noaa.gov/education",
+   "source": {
+    "id": "noaa",
+    "name": "National Weather Service",
+    "url": "https://www.weather.gov/education/"
+   },
+   "cover": null,
+   "authors": [
+    "NOAA Education"
+   ],
+   "illustrators": [],
+   "publisher": "National Oceanic and Atmospheric Administration",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 58,
+   "file": "books/noaa-national-weather-service-education-card.json"
+  },
+  {
+   "slug": "usgs-earthquake-hazards-program-card",
+   "title": "USGS Earthquake Hazards Program",
+   "description": "A USGS source card for earthquake monitoring, maps, preparedness, and seismic science.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "usgs",
+   "contentType": "source-card",
+   "subjects": [
+    "Earthquakes",
+    "Geology",
+    "Hazards",
+    "Data literacy"
+   ],
+   "license": "Public Domain / some linked media may vary",
+   "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+   "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/programs/earthquake-hazards"
+   },
+   "cover": null,
+   "authors": [
+    "U.S. Geological Survey"
+   ],
+   "illustrators": [],
+   "publisher": "U.S. Geological Survey",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 68,
+   "file": "books/usgs-earthquake-hazards-program-card.json"
+  },
+  {
+   "slug": "usgs-landsat-missions-card",
+   "title": "USGS Landsat Missions",
+   "description": "A USGS source card about Landsat satellites and Earth-observation data.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "usgs",
+   "contentType": "source-card",
+   "subjects": [
+    "Remote sensing",
+    "Satellites",
+    "Earth systems",
+    "Data literacy"
+   ],
+   "license": "Public Domain / some linked media may vary",
+   "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+   "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/landsat-missions"
+   },
+   "cover": null,
+   "authors": [
+    "U.S. Geological Survey"
+   ],
+   "illustrators": [],
+   "publisher": "U.S. Geological Survey",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 60,
+   "file": "books/usgs-landsat-missions-card.json"
+  },
+  {
+   "slug": "usgs-national-map-card",
+   "title": "USGS The National Map",
+   "description": "A USGS source card for maps, elevation, hydrography, boundaries, and geographic data.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "usgs",
+   "contentType": "source-card",
+   "subjects": [
+    "Geography",
+    "Maps",
+    "Topography",
+    "Data literacy"
+   ],
+   "license": "Public Domain / some linked media may vary",
+   "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+   "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/programs/national-geospatial-program/national-map"
+   },
+   "cover": null,
+   "authors": [
+    "U.S. Geological Survey"
+   ],
+   "illustrators": [],
+   "publisher": "U.S. Geological Survey",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 58,
+   "file": "books/usgs-national-map-card.json"
+  },
+  {
+   "slug": "usgs-water-data-nation-card",
+   "title": "USGS Water Data for the Nation",
+   "description": "A USGS source card for streamflow, groundwater, water quality, and real-time water data.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "usgs",
+   "contentType": "source-card",
+   "subjects": [
+    "Water",
+    "Hydrology",
+    "Climate",
+    "Data literacy"
+   ],
+   "license": "Public Domain / some linked media may vary",
+   "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+   "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://waterdata.usgs.gov/nwis"
+   },
+   "cover": null,
+   "authors": [
+    "U.S. Geological Survey"
+   ],
+   "illustrators": [],
+   "publisher": "U.S. Geological Survey",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 58,
+   "file": "books/usgs-water-data-nation-card.json"
+  },
+  {
+   "slug": "usgs-groundwater-science-card",
+   "title": "USGS Groundwater Science",
+   "description": "A USGS source card about aquifers, wells, groundwater flow, and water availability.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "usgs",
+   "contentType": "source-card",
+   "subjects": [
+    "Groundwater",
+    "Water",
+    "Earth science",
+    "Environmental science"
+   ],
+   "license": "Public Domain / some linked media may vary",
+   "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+   "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/water-science-school/science/groundwater-what-groundwater"
+   },
+   "cover": null,
+   "authors": [
+    "U.S. Geological Survey"
+   ],
+   "illustrators": [],
+   "publisher": "U.S. Geological Survey",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/usgs-groundwater-science-card.json"
+  },
+  {
+   "slug": "usgs-natural-hazards-card",
+   "title": "USGS Natural Hazards",
+   "description": "A USGS source card for earthquakes, volcanoes, landslides, coastal change, and other hazards.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "usgs",
+   "contentType": "source-card",
+   "subjects": [
+    "Natural hazards",
+    "Risk",
+    "Earth science",
+    "Preparedness"
+   ],
+   "license": "Public Domain / some linked media may vary",
+   "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+   "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/mission-areas/natural-hazards"
+   },
+   "cover": null,
+   "authors": [
+    "U.S. Geological Survey"
+   ],
+   "illustrators": [],
+   "publisher": "U.S. Geological Survey",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 55,
+   "file": "books/usgs-natural-hazards-card.json"
+  },
+  {
+   "slug": "usgs-climate-adaptation-science-centers-card",
+   "title": "USGS Climate Adaptation Science Centers",
+   "description": "A USGS source card about climate adaptation research and regional environmental decisions.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "usgs",
+   "contentType": "source-card",
+   "subjects": [
+    "Climate change",
+    "Adaptation",
+    "Ecosystems",
+    "Decision making"
+   ],
+   "license": "Public Domain / some linked media may vary",
+   "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+   "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/programs/climate-adaptation-science-centers"
+   },
+   "cover": null,
+   "authors": [
+    "U.S. Geological Survey"
+   ],
+   "illustrators": [],
+   "publisher": "U.S. Geological Survey",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 54,
+   "file": "books/usgs-climate-adaptation-science-centers-card.json"
+  },
+  {
+   "slug": "usgs-national-wildlife-health-center-card",
+   "title": "USGS National Wildlife Health Center",
+   "description": "A USGS source card about wildlife disease, ecology, and public science response.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "usgs",
+   "contentType": "source-card",
+   "subjects": [
+    "Wildlife health",
+    "Ecology",
+    "Disease",
+    "Environmental science"
+   ],
+   "license": "Public Domain / some linked media may vary",
+   "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+   "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/centers/nwhc"
+   },
+   "cover": null,
+   "authors": [
+    "U.S. Geological Survey"
+   ],
+   "illustrators": [],
+   "publisher": "U.S. Geological Survey",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/usgs-national-wildlife-health-center-card.json"
+  },
+  {
+   "slug": "loc-american-revolution-primary-source-set-card",
+   "title": "Library of Congress: American Revolution Sources",
+   "description": "A LOC source card for American Revolution primary sources and classroom inquiry.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "loc",
+   "contentType": "source-card",
+   "subjects": [
+    "American Revolution",
+    "Primary sources",
+    "U.S. history",
+    "Civics"
+   ],
+   "license": "Library of Congress / item-level rights vary",
+   "licenseUrl": "https://www.loc.gov/legal/",
+   "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/american-revolution/"
+   },
+   "cover": null,
+   "authors": [
+    "Library of Congress"
+   ],
+   "illustrators": [],
+   "publisher": "Library of Congress",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/loc-american-revolution-primary-source-set-card.json"
+  },
+  {
+   "slug": "loc-civil-war-primary-source-set-card",
+   "title": "Library of Congress: Civil War Primary Sources",
+   "description": "A LOC source card for Civil War documents, photographs, maps, and classroom materials.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "loc",
+   "contentType": "source-card",
+   "subjects": [
+    "Civil War",
+    "Primary sources",
+    "U.S. history",
+    "Historical evidence"
+   ],
+   "license": "Library of Congress / item-level rights vary",
+   "licenseUrl": "https://www.loc.gov/legal/",
+   "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/?q=civil+war"
+   },
+   "cover": null,
+   "authors": [
+    "Library of Congress"
+   ],
+   "illustrators": [],
+   "publisher": "Library of Congress",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 58,
+   "file": "books/loc-civil-war-primary-source-set-card.json"
+  },
+  {
+   "slug": "loc-japanese-american-internment-primary-source-set-card",
+   "title": "Library of Congress: Japanese American Internment Sources",
+   "description": "A LOC source card for primary sources about Japanese American incarceration during World War II.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "loc",
+   "contentType": "source-card",
+   "subjects": [
+    "World War II",
+    "Civil liberties",
+    "Primary sources",
+    "Japanese American history"
+   ],
+   "license": "Library of Congress / item-level rights vary",
+   "licenseUrl": "https://www.loc.gov/legal/",
+   "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/japanese-american-internment/"
+   },
+   "cover": null,
+   "authors": [
+    "Library of Congress"
+   ],
+   "illustrators": [],
+   "publisher": "Library of Congress",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 63,
+   "file": "books/loc-japanese-american-internment-primary-source-set-card.json"
+  },
+  {
+   "slug": "loc-great-depression-new-deal-primary-source-set-card",
+   "title": "Library of Congress: Great Depression and New Deal Sources",
+   "description": "A LOC source card for Great Depression and New Deal primary sources.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "loc",
+   "contentType": "source-card",
+   "subjects": [
+    "Great Depression",
+    "New Deal",
+    "Primary sources",
+    "Economics"
+   ],
+   "license": "Library of Congress / item-level rights vary",
+   "licenseUrl": "https://www.loc.gov/legal/",
+   "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/?q=great+depression+new+deal"
+   },
+   "cover": null,
+   "authors": [
+    "Library of Congress"
+   ],
+   "illustrators": [],
+   "publisher": "Library of Congress",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/loc-great-depression-new-deal-primary-source-set-card.json"
+  },
+  {
+   "slug": "loc-constitution-primary-source-set-card",
+   "title": "Library of Congress: Constitution Primary Sources",
+   "description": "A LOC source card for Constitution-related primary sources and civic reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "loc",
+   "contentType": "source-card",
+   "subjects": [
+    "Constitution",
+    "Civics",
+    "Primary sources",
+    "U.S. history"
+   ],
+   "license": "Library of Congress / item-level rights vary",
+   "licenseUrl": "https://www.loc.gov/legal/",
+   "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/constitution/"
+   },
+   "cover": null,
+   "authors": [
+    "Library of Congress"
+   ],
+   "illustrators": [],
+   "publisher": "Library of Congress",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/loc-constitution-primary-source-set-card.json"
+  },
+  {
+   "slug": "loc-westward-expansion-primary-source-set-card",
+   "title": "Library of Congress: Westward Expansion Sources",
+   "description": "A LOC source card for westward expansion primary sources and maps.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "loc",
+   "contentType": "source-card",
+   "subjects": [
+    "Westward expansion",
+    "Maps",
+    "Primary sources",
+    "U.S. history"
+   ],
+   "license": "Library of Congress / item-level rights vary",
+   "licenseUrl": "https://www.loc.gov/legal/",
+   "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/?q=westward+expansion"
+   },
+   "cover": null,
+   "authors": [
+    "Library of Congress"
+   ],
+   "illustrators": [],
+   "publisher": "Library of Congress",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 59,
+   "file": "books/loc-westward-expansion-primary-source-set-card.json"
+  },
+  {
+   "slug": "loc-child-labor-primary-source-set-card",
+   "title": "Library of Congress: Child Labor Primary Sources",
+   "description": "A LOC source card for child labor photographs, documents, and social reform materials.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "loc",
+   "contentType": "source-card",
+   "subjects": [
+    "Child labor",
+    "Progressive Era",
+    "Primary sources",
+    "Social reform"
+   ],
+   "license": "Library of Congress / item-level rights vary",
+   "licenseUrl": "https://www.loc.gov/legal/",
+   "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/child-labor/"
+   },
+   "cover": null,
+   "authors": [
+    "Library of Congress"
+   ],
+   "illustrators": [],
+   "publisher": "Library of Congress",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 58,
+   "file": "books/loc-child-labor-primary-source-set-card.json"
+  },
+  {
+   "slug": "wikisource-washington-farewell-address-source-card",
+   "title": "Washington's Farewell Address",
+   "description": "A Wikisource source card for Washington's Farewell Address and older-student civics reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "wikisource",
+   "contentType": "public-domain-source-card",
+   "subjects": [
+    "Civics",
+    "Primary sources",
+    "U.S. history",
+    "Political philosophy"
+   ],
+   "license": "Public Domain / Wikisource item-level license",
+   "licenseUrl": "https://en.wikisource.org/wiki/Washington%27s_Farewell_Address",
+   "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Washington%27s_Farewell_Address"
+   },
+   "cover": null,
+   "authors": [
+    "George Washington"
+   ],
+   "illustrators": [],
+   "publisher": "Wikisource",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 62,
+   "file": "books/wikisource-washington-farewell-address-source-card.json"
+  },
+  {
+   "slug": "wikisource-lincoln-second-inaugural-source-card",
+   "title": "Lincoln's Second Inaugural Address",
+   "description": "A Wikisource source card for Lincoln's Second Inaugural Address.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "wikisource",
+   "contentType": "public-domain-source-card",
+   "subjects": [
+    "Civil War",
+    "Rhetoric",
+    "Primary sources",
+    "U.S. history"
+   ],
+   "license": "Public Domain / Wikisource item-level license",
+   "licenseUrl": "https://en.wikisource.org/wiki/Abraham_Lincoln%27s_Second_Inaugural_Address",
+   "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Abraham_Lincoln%27s_Second_Inaugural_Address"
+   },
+   "cover": null,
+   "authors": [
+    "Abraham Lincoln"
+   ],
+   "illustrators": [],
+   "publisher": "Wikisource",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 57,
+   "file": "books/wikisource-lincoln-second-inaugural-source-card.json"
+  },
+  {
+   "slug": "wikisource-common-sense-source-card",
+   "title": "Common Sense",
+   "description": "A Wikisource source card for Common Sense by Thomas Paine.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "wikisource",
+   "contentType": "public-domain-source-card",
+   "subjects": [
+    "American Revolution",
+    "Persuasive writing",
+    "Primary sources",
+    "Political philosophy"
+   ],
+   "license": "Public Domain / Wikisource item-level license",
+   "licenseUrl": "https://en.wikisource.org/wiki/Common_Sense",
+   "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Common_Sense"
+   },
+   "cover": null,
+   "authors": [
+    "Thomas Paine"
+   ],
+   "illustrators": [],
+   "publisher": "Wikisource",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 58,
+   "file": "books/wikisource-common-sense-source-card.json"
+  },
+  {
+   "slug": "wikisource-rights-of-man-source-card",
+   "title": "Rights of Man",
+   "description": "A Wikisource source card for Rights of Man by Thomas Paine.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "wikisource",
+   "contentType": "public-domain-source-card",
+   "subjects": [
+    "Human rights",
+    "Political philosophy",
+    "Primary sources",
+    "Revolutions"
+   ],
+   "license": "Public Domain / Wikisource item-level license",
+   "licenseUrl": "https://en.wikisource.org/wiki/Rights_of_Man",
+   "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Rights_of_Man"
+   },
+   "cover": null,
+   "authors": [
+    "Thomas Paine"
+   ],
+   "illustrators": [],
+   "publisher": "Wikisource",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 54,
+   "file": "books/wikisource-rights-of-man-source-card.json"
+  },
+  {
+   "slug": "wikisource-magna-carta-source-card",
+   "title": "Magna Carta",
+   "description": "A Wikisource source card for Magna Carta and the history of law and rights.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "wikisource",
+   "contentType": "public-domain-source-card",
+   "subjects": [
+    "Law",
+    "Rights",
+    "World history",
+    "Primary sources"
+   ],
+   "license": "Public Domain / Wikisource item-level license",
+   "licenseUrl": "https://en.wikisource.org/wiki/Magna_Carta",
+   "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Magna_Carta"
+   },
+   "cover": null,
+   "authors": [
+    "Traditional / historical document"
+   ],
+   "illustrators": [],
+   "publisher": "Wikisource",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 61,
+   "file": "books/wikisource-magna-carta-source-card.json"
+  },
+  {
+   "slug": "wikisource-mayflower-compact-source-card",
+   "title": "Mayflower Compact",
+   "description": "A Wikisource source card for the Mayflower Compact and early colonial governance.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "wikisource",
+   "contentType": "public-domain-source-card",
+   "subjects": [
+    "Colonial America",
+    "Self-government",
+    "Primary sources",
+    "Civics"
+   ],
+   "license": "Public Domain / Wikisource item-level license",
+   "licenseUrl": "https://en.wikisource.org/wiki/Mayflower_Compact",
+   "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Mayflower_Compact"
+   },
+   "cover": null,
+   "authors": [
+    "Mayflower passengers"
+   ],
+   "illustrators": [],
+   "publisher": "Wikisource",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 61,
+   "file": "books/wikisource-mayflower-compact-source-card.json"
+  },
+  {
+   "slug": "wikisource-souls-of-black-folk-source-card",
+   "title": "The Souls of Black Folk",
+   "description": "A Wikisource source card for The Souls of Black Folk by W. E. B. Du Bois.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "wikisource",
+   "contentType": "public-domain-source-card",
+   "subjects": [
+    "African American history",
+    "Sociology",
+    "Essays",
+    "Primary sources"
+   ],
+   "license": "Public Domain / Wikisource item-level license",
+   "licenseUrl": "https://en.wikisource.org/wiki/The_Souls_of_Black_Folk",
+   "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/The_Souls_of_Black_Folk"
+   },
+   "cover": null,
+   "authors": [
+    "W. E. B. Du Bois"
+   ],
+   "illustrators": [],
+   "publisher": "Wikisource",
+   "hasAudio": false,
+   "pageCount": 3,
+   "wordCount": 62,
+   "file": "books/wikisource-souls-of-black-folk-source-card.json"
   }
  ]
 }

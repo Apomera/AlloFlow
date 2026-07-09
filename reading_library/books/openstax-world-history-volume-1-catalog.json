@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-world-history-volume-1-catalog",
+  "title": "OpenStax World History Volume 1",
+  "description": "A source card for the OpenStax World History Volume 1 textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "World history",
+    "Textbooks",
+    "Ancient history",
+    "Medieval history"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/world-history-volume-1"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax World History Volume 1 covers human societies from early history through roughly 1500, including states, belief systems, trade networks, empires, technology, and cultural exchange."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source when students need broader historical context before reading primary sources from ancient, classical, medieval, African, Asian, Islamic, European, or American histories."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters, figures, or ancillary materials."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 71
+  }
+}

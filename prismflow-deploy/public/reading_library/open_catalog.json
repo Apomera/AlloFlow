@@ -4324,6 +4324,206 @@
     {
       "slug": "wikisource-monroe-doctrine-source-card",
       "file": "books/wikisource-monroe-doctrine-source-card.json"
+    },
+    {
+      "slug": "openstax-world-history-volume-1-catalog",
+      "file": "books/openstax-world-history-volume-1-catalog.json"
+    },
+    {
+      "slug": "openstax-world-history-volume-2-catalog",
+      "file": "books/openstax-world-history-volume-2-catalog.json"
+    },
+    {
+      "slug": "openstax-calculus-volume-1-catalog",
+      "file": "books/openstax-calculus-volume-1-catalog.json"
+    },
+    {
+      "slug": "openstax-calculus-volume-2-catalog",
+      "file": "books/openstax-calculus-volume-2-catalog.json"
+    },
+    {
+      "slug": "openstax-calculus-volume-3-catalog",
+      "file": "books/openstax-calculus-volume-3-catalog.json"
+    },
+    {
+      "slug": "openstax-microbiology-catalog",
+      "file": "books/openstax-microbiology-catalog.json"
+    },
+    {
+      "slug": "openstax-organic-chemistry-catalog",
+      "file": "books/openstax-organic-chemistry-catalog.json"
+    },
+    {
+      "slug": "openstax-business-ethics-catalog",
+      "file": "books/openstax-business-ethics-catalog.json"
+    },
+    {
+      "slug": "openstax-introduction-political-science-catalog",
+      "file": "books/openstax-introduction-political-science-catalog.json"
+    },
+    {
+      "slug": "openstax-contemporary-mathematics-catalog",
+      "file": "books/openstax-contemporary-mathematics-catalog.json"
+    },
+    {
+      "slug": "openstax-college-success-catalog",
+      "file": "books/openstax-college-success-catalog.json"
+    },
+    {
+      "slug": "openstax-principles-management-catalog",
+      "file": "books/openstax-principles-management-catalog.json"
+    },
+    {
+      "slug": "nasa-james-webb-space-telescope-card",
+      "file": "books/nasa-james-webb-space-telescope-card.json"
+    },
+    {
+      "slug": "nasa-hubble-space-telescope-card",
+      "file": "books/nasa-hubble-space-telescope-card.json"
+    },
+    {
+      "slug": "nasa-artemis-program-card",
+      "file": "books/nasa-artemis-program-card.json"
+    },
+    {
+      "slug": "nasa-international-space-station-card",
+      "file": "books/nasa-international-space-station-card.json"
+    },
+    {
+      "slug": "nasa-parker-solar-probe-card",
+      "file": "books/nasa-parker-solar-probe-card.json"
+    },
+    {
+      "slug": "nasa-tess-exoplanet-mission-card",
+      "file": "books/nasa-tess-exoplanet-mission-card.json"
+    },
+    {
+      "slug": "nasa-chandra-xray-observatory-card",
+      "file": "books/nasa-chandra-xray-observatory-card.json"
+    },
+    {
+      "slug": "nasa-aeronautics-research-card",
+      "file": "books/nasa-aeronautics-research-card.json"
+    },
+    {
+      "slug": "noaa-hurricanes-card",
+      "file": "books/noaa-hurricanes-card.json"
+    },
+    {
+      "slug": "noaa-tornadoes-card",
+      "file": "books/noaa-tornadoes-card.json"
+    },
+    {
+      "slug": "noaa-marine-debris-card",
+      "file": "books/noaa-marine-debris-card.json"
+    },
+    {
+      "slug": "noaa-estuaries-card",
+      "file": "books/noaa-estuaries-card.json"
+    },
+    {
+      "slug": "noaa-coral-reef-conservation-card",
+      "file": "books/noaa-coral-reef-conservation-card.json"
+    },
+    {
+      "slug": "noaa-ocean-exploration-card",
+      "file": "books/noaa-ocean-exploration-card.json"
+    },
+    {
+      "slug": "noaa-fisheries-learning-card",
+      "file": "books/noaa-fisheries-learning-card.json"
+    },
+    {
+      "slug": "noaa-national-weather-service-education-card",
+      "file": "books/noaa-national-weather-service-education-card.json"
+    },
+    {
+      "slug": "usgs-earthquake-hazards-program-card",
+      "file": "books/usgs-earthquake-hazards-program-card.json"
+    },
+    {
+      "slug": "usgs-landsat-missions-card",
+      "file": "books/usgs-landsat-missions-card.json"
+    },
+    {
+      "slug": "usgs-national-map-card",
+      "file": "books/usgs-national-map-card.json"
+    },
+    {
+      "slug": "usgs-water-data-nation-card",
+      "file": "books/usgs-water-data-nation-card.json"
+    },
+    {
+      "slug": "usgs-groundwater-science-card",
+      "file": "books/usgs-groundwater-science-card.json"
+    },
+    {
+      "slug": "usgs-natural-hazards-card",
+      "file": "books/usgs-natural-hazards-card.json"
+    },
+    {
+      "slug": "usgs-climate-adaptation-science-centers-card",
+      "file": "books/usgs-climate-adaptation-science-centers-card.json"
+    },
+    {
+      "slug": "usgs-national-wildlife-health-center-card",
+      "file": "books/usgs-national-wildlife-health-center-card.json"
+    },
+    {
+      "slug": "loc-american-revolution-primary-source-set-card",
+      "file": "books/loc-american-revolution-primary-source-set-card.json"
+    },
+    {
+      "slug": "loc-civil-war-primary-source-set-card",
+      "file": "books/loc-civil-war-primary-source-set-card.json"
+    },
+    {
+      "slug": "loc-japanese-american-internment-primary-source-set-card",
+      "file": "books/loc-japanese-american-internment-primary-source-set-card.json"
+    },
+    {
+      "slug": "loc-great-depression-new-deal-primary-source-set-card",
+      "file": "books/loc-great-depression-new-deal-primary-source-set-card.json"
+    },
+    {
+      "slug": "loc-constitution-primary-source-set-card",
+      "file": "books/loc-constitution-primary-source-set-card.json"
+    },
+    {
+      "slug": "loc-westward-expansion-primary-source-set-card",
+      "file": "books/loc-westward-expansion-primary-source-set-card.json"
+    },
+    {
+      "slug": "loc-child-labor-primary-source-set-card",
+      "file": "books/loc-child-labor-primary-source-set-card.json"
+    },
+    {
+      "slug": "wikisource-washington-farewell-address-source-card",
+      "file": "books/wikisource-washington-farewell-address-source-card.json"
+    },
+    {
+      "slug": "wikisource-lincoln-second-inaugural-source-card",
+      "file": "books/wikisource-lincoln-second-inaugural-source-card.json"
+    },
+    {
+      "slug": "wikisource-common-sense-source-card",
+      "file": "books/wikisource-common-sense-source-card.json"
+    },
+    {
+      "slug": "wikisource-rights-of-man-source-card",
+      "file": "books/wikisource-rights-of-man-source-card.json"
+    },
+    {
+      "slug": "wikisource-magna-carta-source-card",
+      "file": "books/wikisource-magna-carta-source-card.json"
+    },
+    {
+      "slug": "wikisource-mayflower-compact-source-card",
+      "file": "books/wikisource-mayflower-compact-source-card.json"
+    },
+    {
+      "slug": "wikisource-souls-of-black-folk-source-card",
+      "file": "books/wikisource-souls-of-black-folk-source-card.json"
     }
   ]
 }

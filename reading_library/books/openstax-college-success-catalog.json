@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-college-success-catalog",
+  "title": "OpenStax College Success",
+  "description": "A source card for the OpenStax College Success textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Study skills",
+    "Learning strategies",
+    "Executive function",
+    "Textbooks"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/college-success"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax College Success covers goal setting, time management, reading strategies, note-taking, studying, communication, wellness, finances, and planning."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for older students who need explicit support with academic reading routines, self-management, and transition skills."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters, figures, or ancillary materials."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 57
+  }
+}

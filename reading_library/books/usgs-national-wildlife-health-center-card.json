@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "usgs-national-wildlife-health-center-card",
+  "title": "USGS National Wildlife Health Center",
+  "description": "A USGS source card about wildlife disease, ecology, and public science response.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "usgs",
+  "contentType": "source-card",
+  "subjects": [
+    "Wildlife health",
+    "Ecology",
+    "Disease",
+    "Environmental science"
+  ],
+  "authors": [
+    "U.S. Geological Survey"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "U.S. Geological Survey",
+  "license": "Public Domain / some linked media may vary",
+  "licenseUrl": "https://www.usgs.gov/faqs/are-usgs-reports-copyrighted",
+  "source": {
+    "id": "usgs",
+    "name": "U.S. Geological Survey",
+    "url": "https://www.usgs.gov/centers/nwhc"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "The USGS National Wildlife Health Center studies wildlife disease, ecosystem health, emerging threats, and how scientists investigate animal mortality events."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for inquiry reading about ecology, evidence collection, public health connections, and how scientists respond to environmental problems."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "USGS text is generally public domain, while linked images, maps, and partner resources may have item-level credits or restrictions."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 59
+  }
+}

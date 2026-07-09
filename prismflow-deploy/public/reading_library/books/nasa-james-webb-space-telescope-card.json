@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-james-webb-space-telescope-card",
+  "title": "NASA James Webb Space Telescope",
+  "description": "A NASA source card about the James Webb Space Telescope and infrared astronomy.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": [
+    "Astronomy",
+    "Telescopes",
+    "Space science",
+    "Infrared light"
+  ],
+  "authors": [
+    "NASA Science"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/mission/webb/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA Webb resources explain how the James Webb Space Telescope studies early galaxies, star formation, exoplanet atmospheres, and infrared light from distant objects."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for students comparing observation tools, wavelengths, evidence, and how engineering choices shape scientific discovery."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NASA materials are generally public domain as U.S. government work, but some images, partner resources, insignia, and logos have separate usage rules. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 65
+  }
+}

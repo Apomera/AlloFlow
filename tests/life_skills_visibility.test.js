@@ -289,6 +289,7 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('data-lifeskills-interview-practice-plan="true"');
     expect(html).toContain('data-lifeskills-interview-rehearsal="true"');
     expect(html).toContain('data-lifeskills-interview-proof-matcher="true"');
+    expect(html).toContain('data-lifeskills-interview-day-sheet="true"');
     expect(html).toContain('data-lifeskills-interview-prep-packet="true"');
     expect(html).toContain('Interview Practice Studio');
     expect(html).toContain('Interview practice plan');
@@ -312,6 +313,12 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Save proof cue');
     expect(html).toContain('Use cue in chat');
     expect(html).toContain('Question-to-proof cue');
+    expect(html).toContain('Interview day run sheet');
+    expect(html).toContain('Before, during, after checklist');
+    expect(html).toContain('Arrival/tech plan');
+    expect(html).toContain('Materials note');
+    expect(html).toContain('Backup/access plan');
+    expect(html).toContain('Save run sheet');
     expect(html).toContain('Interview prep checklist');
     expect(html).toContain('Interview decisions');
     expect(html).toContain('Persona-style practice chat');

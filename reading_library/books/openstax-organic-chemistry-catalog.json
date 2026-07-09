@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "openstax-organic-chemistry-catalog",
+  "title": "OpenStax Organic Chemistry",
+  "description": "A source card for the OpenStax Organic Chemistry textbook.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "openstax",
+  "contentType": "textbook-source-card",
+  "subjects": [
+    "Chemistry",
+    "Organic chemistry",
+    "Molecules",
+    "Textbooks"
+  ],
+  "authors": [
+    "OpenStax"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "OpenStax",
+  "license": "OpenStax Creative Commons / item-level license",
+  "licenseUrl": "https://openstax.org/license",
+  "source": {
+    "id": "openstax",
+    "name": "OpenStax",
+    "url": "https://openstax.org/details/books/organic-chemistry"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "OpenStax Organic Chemistry introduces molecular structure, bonding, stereochemistry, reaction mechanisms, spectroscopy, functional groups, and synthesis."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for advanced chemistry readers who need structured vocabulary and diagrams before extracting smaller passages for adaptation."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "OpenStax books carry Creative Commons licenses. Check the linked book page for the exact license before mirroring chapters, figures, or ancillary materials."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 56
+  }
+}

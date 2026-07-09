@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "nasa-tess-exoplanet-mission-card",
+  "title": "NASA TESS Exoplanet Mission",
+  "description": "A NASA source card about TESS and the search for exoplanets.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "nasa",
+  "contentType": "source-card",
+  "subjects": [
+    "Exoplanets",
+    "Astronomy",
+    "Missions",
+    "Data"
+  ],
+  "authors": [
+    "NASA Science"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "NASA",
+  "license": "Public Domain / NASA Media Usage Guidelines",
+  "licenseUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "source": {
+    "id": "nasa",
+    "name": "NASA Science",
+    "url": "https://science.nasa.gov/mission/tess/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "NASA TESS resources explain how the Transiting Exoplanet Survey Satellite searches for planets by measuring tiny changes in starlight."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for students learning how indirect evidence, graphs, repeated measurements, and models support planet discoveries."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "NASA materials are generally public domain as U.S. government work, but some images, partner resources, insignia, and logos have separate usage rules. Check item-level rights."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 61
+  }
+}

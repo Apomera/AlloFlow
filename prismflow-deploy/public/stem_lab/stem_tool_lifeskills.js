@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════
-// stem_tool_lifeskills.js — Life Skills Lab  v5.22
+// stem_tool_lifeskills.js — Life Skills Lab  v5.23
 // Enhanced STEM Lab tool — 33 sub-tools
 // Start Here · Paycheck · Data Literacy · Decisions · Contracts
 // Records · Transportation · Job Readiness · Resume Builder · Proof Locker · Interview Studio · Communication · Time Management · Insurance · Applied Science · Car Care · Home Repair
@@ -133,6 +133,7 @@ window.StemLab = window.StemLab || {
     { id: 'interviewPacketBuilder', icon: '\uD83D\uDCE6', name: 'Interview Packet', desc: 'Build an interview prep packet' },
     { id: 'interviewRehearsalReady', icon: '\u23F1\uFE0F', name: 'Rehearsal Ready', desc: 'Save a calm interview rehearsal note' },
     { id: 'interviewEvidenceMatcher', icon: '\uD83D\uDCCD', name: 'Evidence Matcher', desc: 'Save a question-to-proof interview cue' },
+    { id: 'interviewDayReady', icon: '\uD83D\uDDD3\uFE0F', name: 'Interview Day Ready', desc: 'Save an interview day run sheet' },
     { id: 'communicationReady', icon: '\uD83D\uDCAC', name: 'Communication Ready', desc: 'Build a clear communication checklist' },
     { id: 'conflictNavigator', icon: '\uD83E\uDD1D', name: 'Conflict Navigator', desc: 'Practice 3 communication or conflict decisions' },
     { id: 'timePlanner', icon: '\u23F3', name: 'Time Planner', desc: 'Build a realistic time-management checklist' },
@@ -420,7 +421,7 @@ window.StemLab = window.StemLab || {
       'K-2': 'Interview practice is a safe rehearsal. Learners can practice saying their name, naming a strength, listening to a question, and asking for help when they do not understand.',
       '3-5': 'Interview skills include greeting, listening, answering with examples, asking one question, and saying thank you. A practice interview can feel easier when learners use sentence starters and kind feedback.',
       '6-8': 'Interview literacy connects resume bullets and proof items to spoken answers. Students can use STAR stories, clarifying questions, prepared questions for the interviewer, and a short practice plan for nerves.',
-      '9-12': 'Interview practice includes role targeting, accessible preparation, response mode choice, read-aloud support, mock interviewer turns, calm rehearsal, question-to-proof matching, bite-size practice plans, evidence-backed STAR answers, prep packets, follow-up questions, reflection, and respectful accommodation or support scripts when needed.'
+      '9-12': 'Interview practice includes role targeting, accessible preparation, response mode choice, read-aloud support, mock interviewer turns, calm rehearsal, question-to-proof matching, interview day planning, bite-size practice plans, evidence-backed STAR answers, prep packets, follow-up questions, reflection, and respectful accommodation or support scripts when needed.'
     }},
     { title: 'Communication & Conflict Basics', icon: '\uD83D\uDCAC', tryIt: 'communication', content: {
       'K-2': 'Communication means sharing ideas, listening, asking for help, and using words or tools that make needs clear. It is okay to pause and ask a trusted grown-up when a problem feels too big.',
@@ -1405,6 +1406,15 @@ window.StemLab = window.StemLab || {
     { id: 'learning', title: 'Learning quickly', question: 'Tell me about a time you learned something new.', skill: 'learning mindset and asking for help', proofPrompt: 'A new tool, class skill, job task, recipe, route, app, or workplace routine.', answerStem: 'A time I learned something new was...', safeShare: 'It is okay to mention support or practice without oversharing personal information.' },
     { id: 'service', title: 'Customer or community care', question: 'How would you help someone who needs support?', skill: 'kind communication and service', proofPrompt: 'Helping a classmate, family member, customer, neighbor, visitor, or teammate.', answerStem: 'When someone needs support, I try to...', safeShare: 'Use respectful language and protect the other person\'s privacy.' },
     { id: 'access', title: 'Self-advocacy', question: 'What helps you do your best work?', skill: 'self-advocacy and clear communication', proofPrompt: 'Notes, written instructions, captions, a checklist, extra processing time, or a quiet reset.', answerStem: 'A support that helps me do my best work is...', safeShare: 'Focus on the support and how it helps performance, not private medical details.' }
+  ];
+
+  var INTERVIEW_DAY_CHECKS = [
+    { id: 'time', phase: 'Before', title: 'Confirm time and place', detail: 'Know the date, start time, location, meeting link, room, or check-in instructions.' },
+    { id: 'travel', phase: 'Before', title: 'Plan travel or tech', detail: 'Set a route, ride, parking, device charge, internet check, and arrival buffer.' },
+    { id: 'materials', phase: 'Before', title: 'Gather materials', detail: 'Bring resume, proof items, notes, ID if needed, water, charger, and contact information.' },
+    { id: 'access', phase: 'Before', title: 'Prepare access supports', detail: 'Have notes, captions, written instructions, processing-time script, interpreter plan, or support person details if needed.' },
+    { id: 'during', phase: 'During', title: 'Use a reset strategy', detail: 'Pause, breathe, ask to clarify, or use a support script when a question feels confusing.' },
+    { id: 'after', phase: 'After', title: 'Send follow-up', detail: 'Send a thank-you, note next steps, save what went well, and record one improvement.' }
   ];
 
   var COMMUNICATION_CHECKS = [
@@ -2482,6 +2492,13 @@ window.StemLab = window.StemLab || {
       var interviewProofCueMsg = d.interviewProofCueMsg || '';
       var interviewProofCueSavedAt = d.interviewProofCueSavedAt || 0;
       var interviewProofCuePreview = interviewProofMatcher.answerStem + ' Proof I can use: ' + (interviewProofNote.trim() || interviewProofMatcher.proofPrompt);
+      var interviewDayChecklist = d.interviewDayChecklist || {};
+      var interviewDayDone = INTERVIEW_DAY_CHECKS.filter(function(step) { return !!interviewDayChecklist[step.id]; }).length;
+      var interviewArrivalPlan = d.interviewArrivalPlan || '';
+      var interviewMaterialsNote = d.interviewMaterialsNote || '';
+      var interviewBackupPlan = d.interviewBackupPlan || '';
+      var interviewDayMsg = d.interviewDayMsg || '';
+      var interviewDaySavedAt = d.interviewDaySavedAt || 0;
       var interviewPacketPreview = buildInterviewPrepPacket();
 
       function setInterviewCheck(id, checked) {
@@ -2739,6 +2756,23 @@ window.StemLab = window.StemLab || {
         announceToSR('Interview proof cue added to chat answer');
       }
 
+      function setInterviewDayCheck(id, checked) {
+        var next = Object.assign({}, interviewDayChecklist);
+        next[id] = checked;
+        upd('interviewDayChecklist', next);
+        if (INTERVIEW_DAY_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('interviewDayReady');
+      }
+
+      function saveInterviewDayRunSheet() {
+        if (!interviewArrivalPlan.trim() && !interviewMaterialsNote.trim() && !interviewBackupPlan.trim()) {
+          upd('interviewDayMsg', 'Add one arrival, materials, or backup detail before saving the run sheet.');
+          return;
+        }
+        updMulti({ interviewDayMsg: 'Interview day run sheet saved.', interviewDaySavedAt: Date.now() });
+        checkBadge('interviewDayReady');
+        announceToSR('Interview day run sheet saved');
+      }
+
       function escapeInterviewPacketHtml(text) {
         return String(text || '').replace(/[&<>"']/g, function(ch) {
           return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
@@ -2748,6 +2782,7 @@ window.StemLab = window.StemLab || {
       function buildInterviewPrepPacket() {
         var checkedPrep = INTERVIEW_CHECKS.filter(function(step) { return !!interviewChecklist[step.id]; }).map(function(step) { return '- ' + step.title + ': ' + step.action; });
         var checkedPractice = INTERVIEW_PLAN_STEPS.filter(function(step) { return !!interviewPlanChecklist[step.id]; }).map(function(step) { return '- ' + step.label + ': ' + step.detail; });
+        var checkedDay = INTERVIEW_DAY_CHECKS.filter(function(step) { return !!interviewDayChecklist[step.id]; }).map(function(step) { return '- ' + step.phase + ': ' + step.title + ' - ' + step.detail; });
         var latestPlan = interviewPlanLog.length ? interviewPlanLog[0] : null;
         var planTitle = latestPlan ? latestPlan.title : interviewPracticePlan.title;
         var planGoal = latestPlan ? latestPlan.goal : interviewPlanGoal;
@@ -2779,6 +2814,12 @@ window.StemLab = window.StemLab || {
           '',
           'Question-to-proof cue',
           interviewSavedProofCue || (interviewProofNote.trim() ? buildInterviewProofCueText() : 'No proof cue saved yet.'),
+          '',
+          'Interview day run sheet',
+          checkedDay.length ? checkedDay.join('\n') : '- No interview day checklist items checked yet.',
+          'Arrival/tech plan: ' + (interviewArrivalPlan || 'No arrival or tech plan saved yet.'),
+          'Materials note: ' + (interviewMaterialsNote || 'No materials note saved yet.'),
+          'Backup/access plan: ' + (interviewBackupPlan || 'No backup or access plan saved yet.'),
           '',
           'Calm rehearsal plan',
           'Confidence: ' + interviewRehearsalConfidence + '/5',
@@ -3144,7 +3185,7 @@ window.StemLab = window.StemLab || {
             workreadiness: { accent: '#4338ca', soft: 'rgba(67,56,202,0.10)', icon: '\uD83D\uDCBC', title: __alloT('stem.lifeskills.job_readiness', 'Job readiness + workplace basics'), hint: __alloT('stem.lifeskills.job_readiness_hint', 'Applications, resumes, availability, interviews, first-day plans, workplace communication, feedback, pay records, safety, respect, and asking clear questions.') },
             resumebuilder: { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83D\uDCC4', title: __alloT('stem.lifeskills.resume_builder', 'Resume builder + evidence review'), hint: __alloT('stem.lifeskills.resume_builder_hint', 'Role matching, truthful evidence bullets, clean sections, O*NET vocabulary, NACE career-readiness skills, privacy checks, and cautious AI/ATS review.') },
             prooflocker: { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\uD83D\uDDC2\uFE0F', title: __alloT('stem.lifeskills.proof_locker', 'Portfolio + proof locker'), hint: __alloT('stem.lifeskills.proof_locker_hint', 'Collect projects, certificates, work samples, volunteer proof, references, links, privacy checks, captions, and share-ready packets that support resume and interview claims.') },
-            interviewstudio: { accent: '#6d28d9', soft: 'rgba(109,40,217,0.10)', icon: '\uD83C\uDFA4', title: __alloT('stem.lifeskills.interview_studio', 'Interview practice studio'), hint: __alloT('stem.lifeskills.interview_studio_hint', 'Persona-style mock interview chat with guided/free response, suggested stems, read-aloud, calm rehearsal, question-to-proof matching, topic spark coaching, bite-size practice plans, STAR answers, prep packets, transcript save, reflection, and accessibility scripts.') },
+            interviewstudio: { accent: '#6d28d9', soft: 'rgba(109,40,217,0.10)', icon: '\uD83C\uDFA4', title: __alloT('stem.lifeskills.interview_studio', 'Interview practice studio'), hint: __alloT('stem.lifeskills.interview_studio_hint', 'Persona-style mock interview chat with guided/free response, suggested stems, read-aloud, calm rehearsal, question-to-proof matching, interview day run sheet, topic spark coaching, bite-size practice plans, STAR answers, prep packets, transcript save, reflection, and accessibility scripts.') },
             communication: { accent: '#7c2d12', soft: 'rgba(124,45,18,0.10)', icon: '\uD83D\uDCAC', title: __alloT('stem.lifeskills.communication_conflict', 'Communication + conflict'), hint: __alloT('stem.lifeskills.communication_conflict_hint', 'Pausing, listening, clarifying, I-statements, boundaries, message tone, repair attempts, apologies, and getting trusted support when conflict is unsafe or too big.') },
             timemanagement: { accent: '#854d0e', soft: 'rgba(133,77,14,0.10)', icon: '\u23F3', title: __alloT('stem.lifeskills.time_management', 'Time management + planning'), hint: __alloT('stem.lifeskills.time_management_hint', 'Task capture, priorities, realistic estimates, buffers, reminders, calendars, checklists, focus tools, and recovery plans when the day changes.') },
             insurance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFE5', title: __alloT('stem.lifeskills.insurance_basics', 'Insurance basics'),        hint: __alloT('stem.lifeskills.premium_deductible_out_of_pocket_max_n', 'Premium / deductible / out-of-pocket max / network. Insurance protects against catastrophic loss \u2014 not against everyday cost. High-deductible plans + HSA can beat low-deductible for healthy people.') },
@@ -4458,6 +4499,47 @@ window.StemLab = window.StemLab || {
                   h('button', { onClick: useInterviewProofCueInChat, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-700' }, 'Use cue in chat')
                 ),
                 interviewProofCueMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewProofCueSavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewProofCueMsg)
+              )
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-interview-day-sheet': 'true' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Interview day run sheet'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, 'Before, during, after checklist'),
+                h('p', { className: 'text-xs text-slate-700 leading-relaxed max-w-2xl' }, 'Plan the practical details that make interview day calmer: travel or tech, materials, access supports, reset strategy, and follow-up.')
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-cyan-50 border border-cyan-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-cyan-800' }, 'Run sheet'),
+                h('p', { className: 'text-2xl font-black text-cyan-900 leading-none' }, interviewDayDone + '/' + INTERVIEW_DAY_CHECKS.length)
+              )
+            ),
+            h('div', { className: 'grid lg:grid-cols-[1fr_0.9fr] gap-3' },
+              h('div', { className: 'space-y-2' },
+                INTERVIEW_DAY_CHECKS.map(function(step) {
+                  var checked = !!interviewDayChecklist[step.id];
+                  return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-cyan-300') },
+                    h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setInterviewDayCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                    h('span', { className: 'min-w-0' },
+                      h('span', { className: 'block text-[10px] uppercase font-black text-cyan-800' }, step.phase),
+                      h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                      h('span', { className: 'block text-[11px] text-slate-700 leading-relaxed' }, step.detail)
+                    )
+                  );
+                })
+              ),
+              h('div', { className: 'space-y-3' },
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Arrival/tech plan',
+                  h('textarea', { value: interviewArrivalPlan, onChange: function(e) { upd('interviewArrivalPlan', e.target.value); }, rows: 3, placeholder: 'Route, meeting link, device check, arrival buffer...', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview arrival or tech plan' })
+                ),
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Materials note',
+                  h('input', { type: 'text', value: interviewMaterialsNote, onChange: function(e) { upd('interviewMaterialsNote', e.target.value); }, placeholder: 'Resume, proof item, notes, charger, ID if needed...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Interview materials note' })
+                ),
+                h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Backup/access plan',
+                  h('textarea', { value: interviewBackupPlan, onChange: function(e) { upd('interviewBackupPlan', e.target.value); }, rows: 3, placeholder: 'Who to contact, access support, reset script, backup route...', className: 'mt-1 w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Interview backup or access plan' })
+                ),
+                h('button', { onClick: saveInterviewDayRunSheet, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save run sheet'),
+                interviewDayMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewDaySavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewDayMsg)
               )
             )
           ),
@@ -6897,5 +6979,5 @@ window.StemLab = window.StemLab || {
     }
   });
 
-  console.log('[StemLab] stem_tool_lifeskills.js v5.22 loaded');
+  console.log('[StemLab] stem_tool_lifeskills.js v5.23 loaded');
 })();

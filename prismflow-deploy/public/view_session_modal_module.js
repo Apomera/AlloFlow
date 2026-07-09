@@ -42,15 +42,23 @@ function SessionModal({
   const XCircle = window.XCircle || noop;
   const lanJoinUrl = Array.isArray(sessionData?.joinUrls) ? sessionData.joinUrls[0] : "";
   const [liveQrSvg, setLiveQrSvg] = React.useState("");
+  const [liveQrError, setLiveQrError] = React.useState(false);
   const liveJoinUrl = React.useMemo(() => {
     if (!activeSessionCode || typeof window === "undefined") return "";
+    const params = {
+      allo_join: activeSessionCode,
+      allo_host: activeSessionAppId || appId,
+      allo_ai: "off"
+    };
+    if (typeof window.__alloBuildShareUrl === "function") {
+      try {
+        return window.__alloBuildShareUrl(params);
+      } catch (_) {
+      }
+    }
     try {
-      const url = new URL(window.location.href);
-      url.search = "";
-      url.hash = "";
-      url.searchParams.set("allo_join", activeSessionCode);
-      url.searchParams.set("allo_host", activeSessionAppId || appId);
-      url.searchParams.set("allo_ai", "off");
+      const url = new URL("https://prismflow-911fe.web.app/");
+      Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, String(value)));
       return url.toString();
     } catch (_) {
       return "";
@@ -58,46 +66,30 @@ function SessionModal({
   }, [activeSessionAppId, activeSessionCode, appId]);
   React.useEffect(() => {
     let cancelled = false;
-    const loadQrScript = () => {
-      if (window.qrcode) return Promise.resolve(window.qrcode);
-      if (window.__alloQrLibraryPromise) return window.__alloQrLibraryPromise;
-      window.__alloQrLibraryPromise = new Promise((resolve, reject) => {
-        const sources = ["https://alloflow-cdn.pages.dev/qrcode.js", "./qrcode.js"];
-        let index = 0;
-        const tryNext = () => {
-          if (window.qrcode) {
-            resolve(window.qrcode);
-            return;
-          }
-          if (index >= sources.length) {
-            window.__alloQrLibraryPromise = null;
-            reject(new Error("QR library unavailable"));
-            return;
-          }
-          const script = document.createElement("script");
-          script.src = sources[index++];
-          script.async = true;
-          script.dataset.alloQrcode = "true";
-          script.onload = () => window.qrcode ? resolve(window.qrcode) : tryNext();
-          script.onerror = tryNext;
-          document.head.appendChild(script);
-        };
-        tryNext();
-      });
-      return window.__alloQrLibraryPromise;
-    };
     if (!liveJoinUrl || typeof window === "undefined") {
       setLiveQrSvg("");
+      setLiveQrError(false);
       return void 0;
     }
-    loadQrScript().then(() => {
-      if (cancelled || !window.qrcode) return;
+    setLiveQrSvg("");
+    setLiveQrError(false);
+    const makeQrSvg = async () => {
+      if (typeof window.__alloMakeQrSvg === "function") {
+        return window.__alloMakeQrSvg(liveJoinUrl, "AlloFlow student join QR");
+      }
+      if (!window.qrcode) throw new Error("QR helper unavailable");
       const qr = window.qrcode(0, "M");
       qr.addData(liveJoinUrl);
       qr.make();
-      setLiveQrSvg(qr.createSvgTag({ cellSize: 5, margin: 2, scalable: true, title: "AlloFlow student join QR" }));
+      return qr.createSvgTag({ cellSize: 5, margin: 20, scalable: true, title: "AlloFlow student join QR" });
+    };
+    makeQrSvg().then((svg) => {
+      if (!cancelled) setLiveQrSvg(svg);
     }).catch(() => {
-      if (!cancelled) setLiveQrSvg("");
+      if (!cancelled) {
+        setLiveQrSvg("");
+        setLiveQrError(true);
+      }
     });
     return () => {
       cancelled = true;
@@ -112,7 +104,7 @@ function SessionModal({
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-7xl font-black text-indigo-600 tracking-widest font-mono" }, activeSessionCode),
     /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Copy, { size: 10 }), " ", t("session.click_to_copy"))
-  ), liveJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-cyan-50 p-4 rounded-xl border border-cyan-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center" }, "Student QR join"), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-cyan-200 rounded-lg p-2 w-40 h-40 flex items-center justify-center shadow-sm" }, liveQrSvg ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full [&_svg]:w-full [&_svg]:h-full", dangerouslySetInnerHTML: { __html: liveQrSvg } }) : /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-cyan-700 text-center" }, "QR loading"))), /* @__PURE__ */ React.createElement(
+  ), liveJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-cyan-50 p-4 rounded-xl border border-cyan-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center" }, "Student QR join"), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-cyan-200 rounded-lg p-2 w-40 h-40 flex items-center justify-center shadow-sm" }, liveQrSvg ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full [&_svg]:w-full [&_svg]:h-full", dangerouslySetInnerHTML: { __html: liveQrSvg } }) : /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-cyan-700 text-center" }, liveQrError ? "Copy link below" : "QR loading"))), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.copy"),

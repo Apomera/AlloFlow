@@ -235,6 +235,40 @@ const getComicLetteringPreviewFlexClass = (value) => {
   };
   return map[clean] || "items-start justify-center";
 };
+const clampComicLetteringPercent = (value, fallback = 50) => {
+  const n = Number(value);
+  const safe = Number.isFinite(n) ? n : fallback;
+  return Math.max(8, Math.min(92, Math.round(safe * 10) / 10));
+};
+const hasComicLetteringPosition = (rough = {}) => Number.isFinite(Number(rough.letteringX)) && Number.isFinite(Number(rough.letteringY));
+const getComicLetteringPosition = (rough = {}, space = "top") => {
+  if (hasComicLetteringPosition(rough)) {
+    return {
+      x: clampComicLetteringPercent(rough.letteringX),
+      y: clampComicLetteringPercent(rough.letteringY)
+    };
+  }
+  const clean = normalizeComicLetteringSpace(space);
+  const anchors = {
+    top: { x: 50, y: 18 },
+    bottom: { x: 50, y: 82 },
+    left: { x: 22, y: 50 },
+    right: { x: 78, y: 50 },
+    "top-left": { x: 24, y: 22 },
+    "top-right": { x: 76, y: 22 },
+    "bottom-left": { x: 24, y: 78 },
+    "bottom-right": { x: 76, y: 78 }
+  };
+  return anchors[clean] || anchors.top;
+};
+const getComicLetteringPositionStyle = (rough = {}, space = "top") => {
+  const pos = getComicLetteringPosition(rough, space);
+  return { left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%, -50%)" };
+};
+const getComicLetteringPositionStyleText = (rough = {}, space = "top") => {
+  const pos = getComicLetteringPosition(rough, space);
+  return `left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);`;
+};
 const getComicReadingOrderLabel = (layout) => layout === "manga" ? "Read right-to-left" : "Read left-to-right";
 const normalizeComicPageTurn = (value) => {
   const raw = String(value || "").trim().toLowerCase().replace(/\s+/g, "-").replace(/_+/g, "-");
@@ -464,6 +498,10 @@ const sanitizePanelThumbnails = (obj) => {
     if (typeof v.sketchNote === "string" && v.sketchNote.trim()) clean.sketchNote = v.sketchNote.slice(0, 260);
     const space = normalizeComicLetteringSpace(v.letteringSpace);
     if (space) clean.letteringSpace = space;
+    if (Number.isFinite(Number(v.letteringX)) && Number.isFinite(Number(v.letteringY))) {
+      clean.letteringX = clampComicLetteringPercent(v.letteringX);
+      clean.letteringY = clampComicLetteringPercent(v.letteringY);
+    }
     if (Object.keys(clean).length) out[key] = clean;
   });
   return out;
@@ -1087,6 +1125,7 @@ const StoryForge = React.memo(({
   const [panelThumbnails, setPanelThumbnails] = useState({});
   const [panelLayouts, setPanelLayouts] = useState({});
   const [panelResizeDrag, setPanelResizeDrag] = useState(null);
+  const [bubbleDrag, setBubbleDrag] = useState(null);
   const [comicContinuity, setComicContinuity] = useState({ cast: "", setting: "", palette: "", styleNotes: "" });
   const [comicPageComposer, setComicPageComposer] = useState({ panelsPerPage: 4, pages: {} });
   const [comicPrintSafety, setComicPrintSafety] = useState({ format: "letter", gutter: "standard", showGuides: true, includeBleed: true });
@@ -1109,9 +1148,26 @@ const StoryForge = React.memo(({
     setPanelThumbnails((prev) => {
       const next = { ...prev };
       const current = { ...next[pId] || {} };
-      const cleanValue = field === "letteringSpace" ? normalizeComicLetteringSpace(value) : String(value || "").slice(0, 260);
-      if (cleanValue) current[field] = cleanValue;
-      else delete current[field];
+      if (field === "letteringSpace") {
+        const cleanValue = normalizeComicLetteringSpace(value);
+        const previousSpace = current.letteringSpace || "";
+        if (cleanValue) current.letteringSpace = cleanValue;
+        else delete current.letteringSpace;
+        if (previousSpace !== cleanValue) {
+          delete current.letteringX;
+          delete current.letteringY;
+        }
+      } else if (field === "letteringX" || field === "letteringY") {
+        if (Number.isFinite(Number(value))) current[field] = clampComicLetteringPercent(value);
+        else delete current[field];
+      } else if (field === "resetLetteringPosition") {
+        delete current.letteringX;
+        delete current.letteringY;
+      } else {
+        const cleanValue = String(value || "").slice(0, 260);
+        if (cleanValue) current[field] = cleanValue;
+        else delete current[field];
+      }
       if (Object.keys(current).length) next[pId] = current;
       else delete next[pId];
       return next;
@@ -1169,6 +1225,45 @@ const StoryForge = React.memo(({
     event.preventDefault();
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     setPanelResizeDrag(null);
+  };
+  const getBubblePositionFromPointer = (rect, event) => ({
+    x: clampComicLetteringPercent((event.clientX - rect.left) / Math.max(1, rect.width) * 100),
+    y: clampComicLetteringPercent((event.clientY - rect.top) / Math.max(1, rect.height) * 100)
+  });
+  const updatePanelLetteringPosition = (pId, position) => {
+    setPanelThumbnails((prev) => {
+      const next = { ...prev };
+      const current = { ...next[pId] || {} };
+      if (!normalizeComicLetteringSpace(current.letteringSpace)) current.letteringSpace = "top";
+      current.letteringX = clampComicLetteringPercent(position.x);
+      current.letteringY = clampComicLetteringPercent(position.y);
+      next[pId] = current;
+      return next;
+    });
+    if (!isDirty) setIsDirty(true);
+  };
+  const startBubbleDrag = (event, pId) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const artLayer = event.currentTarget.closest('[data-sf-comic-art-layer="true"]');
+    const rect = artLayer?.getBoundingClientRect?.();
+    if (!rect) return;
+    const dragRect = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    setBubbleDrag({ pId, pointerId: event.pointerId, rect: dragRect });
+    updatePanelLetteringPosition(pId, getBubblePositionFromPointer(dragRect, event));
+  };
+  const updateBubbleDrag = (event) => {
+    if (!bubbleDrag || event.pointerId !== bubbleDrag.pointerId) return;
+    event.preventDefault();
+    updatePanelLetteringPosition(bubbleDrag.pId, getBubblePositionFromPointer(bubbleDrag.rect, event));
+  };
+  const endBubbleDrag = (event) => {
+    if (!bubbleDrag || event.pointerId !== bubbleDrag.pointerId) return;
+    event.preventDefault();
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    setBubbleDrag(null);
+    sfAnnounce("Speech bubble position updated");
   };
   const updateComicContinuity = (field, value) => {
     setComicContinuity((prev) => sanitizeComicContinuity({ ...prev, [field]: value }));
@@ -4047,6 +4142,8 @@ Continue?`)) return;
         const letteringSpace = normalizeComicLetteringSpace(rough.letteringSpace);
         const spaceClass = getComicLetteringSpaceClass(letteringSpace);
         const hasOverlayBubble = Boolean(img && safeSpeech && letteringSpace && letteringSpace !== "none");
+        const customLetteringPosition = hasComicLetteringPosition(rough);
+        const customLetteringStyle = customLetteringPosition ? getComicLetteringPositionStyleText(rough, letteringSpace) : "";
         const sticker = panelStickers[p.id] || "";
         chaptersHtml += `<article class="panel ${escapeHtml(getComicPanelFrameClass(panelLayout.frame))}" style="${escapeHtml(getComicPanelGridStyleText(panelLayout, panelPageLayout, panelPageIndex))}" aria-label="${escapeHtml(t("a11y.comic_panel", { n: idx + 1 }))}">`;
         chaptersHtml += `<span class="panel-order-badge" aria-hidden="true">${idx + 1}</span>`;
@@ -4055,7 +4152,7 @@ Continue?`)) return;
         if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="${escapeHtml(t("a11y.sound_effect", { fx: panel.sfx }))}">${safeSfx}</span>`;
         if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
         if (hasOverlayBubble) {
-          chaptersHtml += `<div class="lettering-overlay"><div class="dialogue-bubble overlay-bubble">`;
+          chaptersHtml += `<div class="lettering-overlay${customLetteringPosition ? " lettering-overlay-custom" : ""}"><div class="dialogue-bubble overlay-bubble"${customLetteringPosition ? ` style="${escapeHtml(customLetteringStyle)}"` : ""}>`;
           if (safeSpeaker) chaptersHtml += `<div class="dialogue-speaker">${safeSpeaker}:</div>`;
           chaptersHtml += `<div class="dialogue-speech">${safeSpeech}</div></div></div>`;
         }
@@ -4179,6 +4276,8 @@ main{display:block}
 .panel-img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
 .lettering-overlay{position:absolute;left:8px;right:8px;top:8px;bottom:8px;display:flex;pointer-events:none;z-index:3}
 .lettering-overlay .overlay-bubble{max-width:72%;margin:0;box-shadow:0 2px 8px rgba(15,23,42,.18)}
+.lettering-overlay-custom{display:block}
+.lettering-overlay-custom .overlay-bubble{position:absolute;max-width:72%}
 .lettering-space-top .lettering-overlay{align-items:flex-start;justify-content:center}
 .lettering-space-bottom .lettering-overlay{align-items:flex-end;justify-content:center}
 .lettering-space-left .lettering-overlay{align-items:center;justify-content:flex-start}
@@ -4819,7 +4918,35 @@ Continue?`)) return;
       const rough = panelThumbnails[p.id] || {};
       const space = normalizeComicLetteringSpace(rough.letteringSpace);
       const showPlacedSpeech = Boolean(dialogue.speech && space && space !== "none");
-      return /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Panel ${idx + 1}`, className: `w-full object-cover ${isComicPanelWideFrame(layoutFrame, previewLayout, pageIndex) ? "aspect-video" : "aspect-square"}` }), showPlacedSpeech && /* @__PURE__ */ React.createElement("div", { className: `absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}` }, /* @__PURE__ */ React.createElement("div", { className: "max-w-[72%] bg-white border-2 border-slate-900 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed shadow-lg" }, dialogue.speaker && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-blue-600 mb-0.5" }, dialogue.speaker, ":"), dialogue.speech)), space && !dialogue.speech && /* @__PURE__ */ React.createElement("div", { className: `absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}` }, /* @__PURE__ */ React.createElement("div", { className: "border-2 border-dashed border-teal-300 bg-white/70 text-teal-700 rounded-xl px-2 py-1 text-[10px] font-black uppercase tracking-widest" }, "Bubble space")));
+      const customLetteringPosition = hasComicLetteringPosition(rough);
+      const draggingSpeechBubble = bubbleDrag?.pId === p.id;
+      return /* @__PURE__ */ React.createElement("div", { className: "relative", "data-sf-comic-art-layer": "true" }, /* @__PURE__ */ React.createElement("img", { src: illustrations[p.id].imageUrl, alt: `Panel ${idx + 1}`, className: `w-full object-cover ${isComicPanelWideFrame(layoutFrame, previewLayout, pageIndex) ? "aspect-video" : "aspect-square"}` }), showPlacedSpeech && (customLetteringPosition ? /* @__PURE__ */ React.createElement("div", { className: "absolute inset-2 z-10 pointer-events-none" }, /* @__PURE__ */ React.createElement("div", { className: `sf-bubble-drag-target absolute max-w-[72%] bg-white border-2 border-slate-900 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed shadow-lg ${draggingSpeechBubble ? "ring-4 ring-fuchsia-300" : ""}`, style: getComicLetteringPositionStyle(rough, space) }, dialogue.speaker && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-blue-600 mb-0.5" }, dialogue.speaker, ":"), dialogue.speech, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onPointerDown: (e) => startBubbleDrag(e, p.id),
+          onPointerMove: updateBubbleDrag,
+          onPointerUp: endBubbleDrag,
+          onPointerCancel: endBubbleDrag,
+          className: "sf-bubble-drag-handle absolute -bottom-3 -right-3 pointer-events-auto rounded-full border-2 border-slate-900 bg-white text-[9px] font-black text-slate-900 px-2 py-0.5 shadow-md cursor-move touch-none",
+          title: "Drag bubble",
+          "aria-label": `Drag speech bubble for panel ${idx + 1}`
+        },
+        "Drag"
+      ))) : /* @__PURE__ */ React.createElement("div", { className: `absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}` }, /* @__PURE__ */ React.createElement("div", { className: `sf-bubble-drag-target relative max-w-[72%] bg-white border-2 border-slate-900 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed shadow-lg ${draggingSpeechBubble ? "ring-4 ring-fuchsia-300" : ""}` }, dialogue.speaker && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-blue-600 mb-0.5" }, dialogue.speaker, ":"), dialogue.speech, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onPointerDown: (e) => startBubbleDrag(e, p.id),
+          onPointerMove: updateBubbleDrag,
+          onPointerUp: endBubbleDrag,
+          onPointerCancel: endBubbleDrag,
+          className: "sf-bubble-drag-handle absolute -bottom-3 -right-3 pointer-events-auto rounded-full border-2 border-slate-900 bg-white text-[9px] font-black text-slate-900 px-2 py-0.5 shadow-md cursor-move touch-none",
+          title: "Drag bubble",
+          "aria-label": `Drag speech bubble for panel ${idx + 1}`
+        },
+        "Drag"
+      )))), space && !dialogue.speech && /* @__PURE__ */ React.createElement("div", { className: `absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}` }, /* @__PURE__ */ React.createElement("div", { className: "border-2 border-dashed border-teal-300 bg-white/70 text-teal-700 rounded-xl px-2 py-1 text-[10px] font-black uppercase tracking-widest" }, "Bubble space")));
     })(), panelStickers[p.id] && /* @__PURE__ */ React.createElement("div", { className: `absolute ${mangaFlow ? "top-11 right-2" : "top-2 right-2"} text-3xl drop-shadow-lg select-none pointer-events-none`, style: { transform: "rotate(12deg)" } }, panelStickers[p.id]), (panelDialogue[p.id] || {}).sfx && /* @__PURE__ */ React.createElement("div", { className: `absolute ${mangaFlow ? "top-3 left-3" : "top-11 left-3"} font-black text-red-500 text-lg drop-shadow-lg select-none pointer-events-none`, style: { transform: "rotate(-8deg)", textShadow: "2px 2px 0 #fff, -1px -1px 0 #fff" } }, panelDialogue[p.id].sfx), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -4859,11 +4986,12 @@ Continue?`)) return;
         .sf-modal-root.theme-dark .sf-comic-page-panel .text-purple-700{color:#7e22ce!important}
         .sf-modal-root.theme-dark .sf-comic-page-panel .text-blue-600{color:#2563eb!important}
         .sf-modal-root.theme-dark .sf-resize-handle{background:#f8fafc!important;color:#0f172a!important;border-color:#0f172a!important}
+        .sf-modal-root.theme-dark .sf-bubble-drag-handle{background:#f8fafc!important;color:#0f172a!important;border-color:#0f172a!important}
         .sf-modal-root.theme-contrast .sf-dialog-card{background:#000!important;color:#ff0!important;border:2px solid #ff0!important}
         .sf-modal-root.theme-contrast .sf-comic-preview-shell,.sf-modal-root.theme-contrast .sf-comic-tool-card,.sf-modal-root.theme-contrast .sf-comic-layout-row,.sf-modal-root.theme-contrast .sf-comic-page-row{background:#000!important;color:#ff0!important;border-color:#ff0!important}
         .sf-modal-root.theme-contrast .sf-comic-toolbar{background:#000!important;border:2px solid #ff0!important;border-radius:10px;padding:4px}
         .sf-modal-root.theme-contrast .sf-comic-page-row select,.sf-modal-root.theme-contrast .sf-comic-page-row input{background:#000!important;color:#ff0!important;border-color:#ff0!important}
-        .sf-modal-root.theme-contrast .sf-comic-action,.sf-modal-root.theme-contrast .sf-comic-frame-choice,.sf-modal-root.theme-contrast .sf-resize-handle{background:#000!important;color:#0f0!important;border-color:#0f0!important;box-shadow:none!important}
+        .sf-modal-root.theme-contrast .sf-comic-action,.sf-modal-root.theme-contrast .sf-comic-frame-choice,.sf-modal-root.theme-contrast .sf-resize-handle,.sf-modal-root.theme-contrast .sf-bubble-drag-handle{background:#000!important;color:#0f0!important;border-color:#0f0!important;box-shadow:none!important}
         .sf-modal-root.theme-contrast .sf-comic-status-pill,.sf-modal-root.theme-contrast .sf-comic-frame-choice-active{background:#000!important;color:#ff0!important;border-color:#ff0!important}
       `), showRestorePrompt && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-restore-title" }, /* @__PURE__ */ React.createElement("div", { className: "sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3", "aria-hidden": "true" }, "\xF0\u0178\u201C\u2013"), /* @__PURE__ */ React.createElement("h3", { id: "sf-restore-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.continue_where_left")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "A saved draft was found. Would you like to restore it?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: discardDraft, className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.start_fresh")), /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: restoreDraft, className: "px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-bold hover:bg-rose-700 transition-colors" }, t("ui_common.restore_draft"))))), showCloseConfirm && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[210] bg-black/60 flex items-center justify-center animate-in fade-in duration-200", role: "dialog", "aria-modal": "true", "aria-labelledby": "sf-close-confirm-title" }, /* @__PURE__ */ React.createElement("div", { className: "sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl mb-3" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("h3", { id: "sf-close-confirm-title", className: "text-lg font-black text-slate-800 mb-2" }, t("ui_common.unsaved_changes")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-4" }, "Your story progress hasn't been exported or saved. Are you sure you want to close?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: () => setShowCloseConfirm(false), className: "px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors" }, t("ui_common.keep_working")), /* @__PURE__ */ React.createElement("button", { "data-sf-focusable": true, onClick: () => {
     setShowCloseConfirm(false);
@@ -6093,6 +6221,7 @@ Continue?`)) return;
     const frame = layoutFrame.frame || "";
     const hasCustomSpans = layoutFrame.colSpan !== void 0 || layoutFrame.rowSpan !== void 0;
     const letteringSpace = (panelThumbnails[p.id] || {}).letteringSpace || "";
+    const hasCustomBubblePosition = hasComicLetteringPosition(panelThumbnails[p.id] || {});
     return /* @__PURE__ */ React.createElement("div", { key: p.id, className: "sf-comic-layout-row border border-fuchsia-100 rounded-lg p-3 bg-fuchsia-50/40" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 text-sm" }, "Panel ", idx + 1), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, "Sequence ", idx + 1, " of ", paragraphs.length)), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-toolbar flex flex-wrap items-center gap-1.5", role: "toolbar", "aria-label": `Panel ${idx + 1} layout actions` }, /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -6156,6 +6285,14 @@ Continue?`)) return;
         "aria-label": `Panel ${idx + 1} bubble anchor`
       },
       COMIC_LETTERING_SPACE_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.value || "unset", value: option.value }, option.label))
+    )), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, hasCustomBubblePosition ? "Bubble manually placed in preview" : "Bubble follows selected anchor"), hasCustomBubblePosition && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => updatePanelThumbnail(p.id, "resetLetteringPosition"),
+        className: "sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300"
+      },
+      "Reset bubble position"
     )));
   }))), /* @__PURE__ */ React.createElement("div", { className: "sf-comic-preview-shell bg-gradient-to-b from-amber-50 to-white border-2 border-amber-200 rounded-2xl overflow-hidden shadow-lg" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8 border-b border-amber-200 bg-gradient-to-r from-amber-100/50 to-rose-100/50" }, coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: t("alts.book_cover"), className: "max-w-[200px] mx-auto rounded-xl shadow-lg mb-4 border-2 border-amber-200" }), /* @__PURE__ */ React.createElement("h3", { className: "text-3xl font-black text-amber-900" }, storyTitle || storyPrompt || sourceTopic || "My Story"), authorName && /* @__PURE__ */ React.createElement("p", { className: "text-amber-800 text-sm mt-1 font-bold" }, "By ", authorName), /* @__PURE__ */ React.createElement("p", { className: "text-amber-700 text-sm mt-1 italic" }, GENRE_TEMPLATES[genre]?.label || "Creative Writing", " \xC2\xB7 ", vocabTerms.length, " vocabulary terms")), layoutMode === "comic" ? (
     /* Page-aware Comic Preview */

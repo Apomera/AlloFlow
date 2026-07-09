@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "loc-japanese-american-internment-primary-source-set-card",
+  "title": "Library of Congress: Japanese American Internment Sources",
+  "description": "A LOC source card for primary sources about Japanese American incarceration during World War II.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "5",
+  "orientation": "portrait",
+  "sourceId": "loc",
+  "contentType": "source-card",
+  "subjects": [
+    "World War II",
+    "Civil liberties",
+    "Primary sources",
+    "Japanese American history"
+  ],
+  "authors": [
+    "Library of Congress"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Library of Congress",
+  "license": "Library of Congress / item-level rights vary",
+  "licenseUrl": "https://www.loc.gov/legal/",
+  "source": {
+    "id": "loc",
+    "name": "Library of Congress",
+    "url": "https://www.loc.gov/classroom-materials/japanese-american-internment/"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Library of Congress resources on Japanese American incarceration include photographs, documents, personal accounts, and context for studying civil liberties during wartime."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for careful historical inquiry, evaluating government decisions, discussing constitutional rights, and reading personal testimony with context."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Rights vary by item in Library of Congress collections. Review each source page before mirroring images, oral histories, or documents into classroom materials."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 63
+  }
+}

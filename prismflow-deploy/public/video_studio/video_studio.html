@@ -172,6 +172,8 @@
   .restore-chip.warn { border-color: var(--warn); background: rgba(251,191,36,0.14); color: #fde68a; }
   .restore-action-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .restore-action-row button { min-height: 28px; padding: 5px 10px; font-size: 12px; }
+  .restore-action-row .restore-dismiss { margin-left: auto; }
+  @media (max-width: 640px) { .restore-action-row .restore-dismiss { margin-left: 0; } }
   .export-plan { border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; margin: 10px 0; background: var(--panel2); }
   .export-plan strong { display: block; color: var(--text); font-size: 13px; margin-bottom: 4px; }
   .export-plan span { display: block; color: var(--dim); font-size: 13px; line-height: 1.35; }
@@ -317,7 +319,7 @@
         <input type="file" id="importInput" accept="video/*,.mp4,.webm,.mov,.m4v,.mkv,.allopack" hidden>
         <span class="status" id="importStatus" style="margin-top:0">Or drop a video file anywhere on this page. Imported videos get the same trim, caption, and export tools as recordings.</span>
       </div>
-      <div id="importSummaryBox" class="restore-summary import-summary-box" hidden aria-live="polite"></div>
+      <div id="importSummaryBox" class="restore-summary import-summary-box" hidden aria-live="polite" aria-label="Project restore summary"></div>
     </div>
     <div class="stage" id="stage">
       <div class="placeholder" id="stagePlaceholder">Press <strong>Start recording</strong> — you’ll pick what to share, then a 3-second countdown runs.</div>
@@ -338,7 +340,7 @@
 
   <!-- ─── EDIT ─── -->
   <section id="panelEdit" role="tabpanel" aria-labelledby="tabEdit" hidden>
-    <div id="editImportSummaryBox" class="restore-summary import-summary-box" hidden aria-live="polite"></div>
+    <div id="editImportSummaryBox" class="restore-summary import-summary-box" hidden aria-live="polite" aria-label="Project restore summary"></div>
     <div class="card edit-focus-card">
       <div>
         <h2>Editor focus</h2>
@@ -4654,6 +4656,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         btn.className = idx === 0 ? 'action' : 'quiet';
         btn.textContent = action.label;
         btn.setAttribute('data-import-action', action.label);
+        btn.setAttribute('aria-label', 'Open ' + action.label.toLowerCase() + ' for this restored project');
         btn.addEventListener('click', function () {
           if (action.focusMode) setEditorFocusMode(action.focusMode, action.showAll);
           else if (action.showAll) setEditorFocusMode(EDITOR_FOCUS_DEFAULT, true);
@@ -4662,6 +4665,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         });
         actionRow.appendChild(btn);
       });
+      var dismiss = document.createElement('button');
+      dismiss.type = 'button';
+      dismiss.className = 'quiet restore-dismiss';
+      dismiss.textContent = 'Dismiss';
+      dismiss.setAttribute('data-import-action', 'Dismiss');
+      dismiss.setAttribute('aria-label', 'Dismiss restored project summary');
+      dismiss.addEventListener('click', function () {
+        clearImportSummaryPanel();
+        setStatus($('importStatus'), 'Restored project summary dismissed.', 'ok');
+      });
+      actionRow.appendChild(dismiss);
       box.appendChild(actionRow);
     };
     boxes.forEach(renderBox);

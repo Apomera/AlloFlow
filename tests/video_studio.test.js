@@ -128,6 +128,9 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('function renderImportSummaryPanel');
     expect(html).toContain('.restore-chip.warn');
     expect(html).toContain('restore-action-row');
+    expect(html).toContain('restore-dismiss');
+    expect(html).toContain('aria-label="Project restore summary"');
+    expect(html).toContain('Dismiss restored project summary');
     expect(html).toContain('data-import-action');
     expect(html).toContain("addAction('Review transcript'");
     expect(html).toContain("addAction('Review audio'");

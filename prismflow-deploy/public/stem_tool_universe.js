@@ -3244,13 +3244,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             React.createElement("div", { className: "mt-3 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-200') + " rounded-xl p-3 border" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, "\uD83D\uDD2C Hubble Inquiry \u2014 Universe Expansion"),
-                React.createElement("button", { "aria-label": "Toggle Hubble inquiry section",
+                React.createElement("button", { "aria-label": "Toggle Hubble inquiry section", type: "button",
                   onClick: function() { upd('showHubbleInquiry', !d.showHubbleInquiry); },
+                  'aria-expanded': d.showHubbleInquiry ? 'true' : 'false',
                   className: "transition-colors text-[11px] text-indigo-500 hover:text-indigo-700"
                 }, d.showHubbleInquiry ? 'Hide' : 'Explore \u2192')
               ),
               d.showHubbleInquiry && (function() {
                 var iq = d.hubbleInquiry || { distMpc: 100, hubbleConst: 70, darkEnergy: 70, matter: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+                var iqLog = Array.isArray(iq.log) ? iq.log : [];
                 function setIQ(patch) { upd('hubbleInquiry', Object.assign({}, iq, patch)); }
                 function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
                 var c = 299792; // km/s
@@ -3293,7 +3295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       );
                     })
                   ),
-                  React.createElement("svg", { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                  React.createElement("svg", { width: '100%', height: 120, viewBox: '0 0 320 120', role: 'img', 'aria-label': "Hubble diagram showing the selected galaxy distance on the v equals H0 times d line. Current distance is " + iq.distMpc + " megaparsecs, H0 is " + iq.hubbleConst + ", and estimated redshift is " + z.toFixed(3) + ".", style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
                     React.createElement("line", { x1: 30, y1: 100, x2: 310, y2: 100, stroke: '#1e293b' }),
                     React.createElement("line", { x1: 30, y1: 10, x2: 30, y2: 100, stroke: '#1e293b' }),
                     // Hubble line: v = H * d
@@ -3315,34 +3317,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
                     React.createElement("label", { className: "text-[10px]" },
                       React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Distance (Mpc)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.distMpc)),
-                      React.createElement("input", { type: 'range', min: 1, max: 4000, step: 1, value: iq.distMpc, onChange: function(e) { setKey('distMpc', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      React.createElement("input", { type: 'range', min: 1, max: 4000, step: 1, value: iq.distMpc, 'aria-label': 'Galaxy distance in megaparsecs', 'aria-valuetext': iq.distMpc + ' megaparsecs', onChange: function(e) { setKey('distMpc', parseInt(e.target.value, 10)); }, className: "w-full" })
                     ),
                     React.createElement("label", { className: "text-[10px]" },
                       React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'H\u2080 (km/s/Mpc)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.hubbleConst)),
-                      React.createElement("input", { type: 'range', min: 60, max: 80, step: 0.5, value: iq.hubbleConst, onChange: function(e) { setKey('hubbleConst', parseFloat(e.target.value)); }, className: "w-full" })
+                      React.createElement("input", { type: 'range', min: 60, max: 80, step: 0.5, value: iq.hubbleConst, 'aria-label': 'Hubble constant in kilometers per second per megaparsec', 'aria-valuetext': iq.hubbleConst + ' kilometers per second per megaparsec', onChange: function(e) { setKey('hubbleConst', parseFloat(e.target.value)); }, className: "w-full" })
                     ),
                     React.createElement("label", { className: "text-[10px]" },
                       React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, '\u03A9 dark energy (%)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.darkEnergy)),
-                      React.createElement("input", { type: 'range', min: 0, max: 100, step: 1, value: iq.darkEnergy, onChange: function(e) { setKey('darkEnergy', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      React.createElement("input", { type: 'range', min: 0, max: 100, step: 1, value: iq.darkEnergy, 'aria-label': 'Dark energy density percentage', 'aria-valuetext': iq.darkEnergy + ' percent dark energy', onChange: function(e) { setKey('darkEnergy', parseInt(e.target.value, 10)); }, className: "w-full" })
                     ),
                     React.createElement("label", { className: "text-[10px]" },
                       React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, '\u03A9 matter (%)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.matter)),
-                      React.createElement("input", { type: 'range', min: 0, max: 100, step: 1, value: iq.matter, onChange: function(e) { setKey('matter', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      React.createElement("input", { type: 'range', min: 0, max: 100, step: 1, value: iq.matter, 'aria-label': 'Matter density percentage', 'aria-valuetext': iq.matter + ' percent matter', onChange: function(e) { setKey('matter', parseInt(e.target.value, 10)); }, className: "w-full" })
                     )
                   ),
                   React.createElement("div", { className: "flex gap-2 mb-2" },
-                    React.createElement("button", { onClick: function() {
+                    React.createElement("button", { type: "button", onClick: function() {
                       var t = new Date().toISOString().slice(11, 19);
-                      setIQ({ log: iq.log.concat([{ t: t, d: iq.distMpc, H: iq.hubbleConst, de: iq.darkEnergy, m: iq.matter, z: z.toFixed(3), state: sm.label }]) });
+                      setIQ({ log: iqLog.concat([{ t: t, d: iq.distMpc, H: iq.hubbleConst, de: iq.darkEnergy, m: iq.matter, z: z.toFixed(3), state: sm.label }]) });
                     }, className: "flex-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '\uD83D\uDCCB Log this cosmology'),
-                    React.createElement("button", { onClick: function() { setIQ({ distMpc: 100, hubbleConst: 70, darkEnergy: 70, matter: 30 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                    React.createElement("button", { type: "button", onClick: function() { setIQ({ distMpc: 100, hubbleConst: 70, darkEnergy: 70, matter: 30 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
                   ),
-                  iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[9px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
-                    iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' \u00B7 d=' + e.d + ' H=' + e.H + ' \u03A9de=' + e.de + ' \u03A9m=' + e.m + ' \u2192 z=' + e.z); })
+                  iqLog.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[9px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
+                    iqLog.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' \u00B7 d=' + e.d + ' H=' + e.H + ' \u03A9de=' + e.de + ' \u03A9m=' + e.m + ' \u2192 z=' + e.z); })
                   ),
                   React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, 'Your hypothesis (why are Planck (~67) and SH0ES (~73) values of H\u2080 in tension?)'),
-                  React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., the early-universe and late-universe methods give different H\u2080 values \u2014 could be systematics or new physics...', className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                  !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "\uD83E\uDD14 I'm stuck \u2014 show open questions"),
+                  React.createElement("textarea", { value: iq.hypothesis, 'aria-label': 'Your hypothesis about the Hubble tension', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., the early-universe and late-universe methods give different H\u2080 values \u2014 could be systematics or new physics...', className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                  !iq.stuckRevealed && React.createElement("button", { type: "button", onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "\uD83E\uDD14 I'm stuck \u2014 show open questions"),
                   iq.stuckRevealed && React.createElement("div", { className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
                     React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
                     React.createElement("ul", { className: "pl-4 m-0" },

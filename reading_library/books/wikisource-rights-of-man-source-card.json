@@ -1,0 +1,55 @@
+{
+  "schema": "allo-reading-book@1",
+  "slug": "wikisource-rights-of-man-source-card",
+  "title": "Rights of Man",
+  "description": "A Wikisource source card for Rights of Man by Thomas Paine.",
+  "language": "English",
+  "langCode": "en",
+  "isRtl": false,
+  "level": "6",
+  "orientation": "portrait",
+  "sourceId": "wikisource",
+  "contentType": "public-domain-source-card",
+  "subjects": [
+    "Human rights",
+    "Political philosophy",
+    "Primary sources",
+    "Revolutions"
+  ],
+  "authors": [
+    "Thomas Paine"
+  ],
+  "illustrators": [],
+  "originalAuthors": [],
+  "publisher": "Wikisource",
+  "license": "Public Domain / Wikisource item-level license",
+  "licenseUrl": "https://en.wikisource.org/wiki/Rights_of_Man",
+  "source": {
+    "id": "wikisource",
+    "name": "Wikisource",
+    "url": "https://en.wikisource.org/wiki/Rights_of_Man"
+  },
+  "cover": null,
+  "audio": null,
+  "pages": [
+    {
+      "n": 1,
+      "img": null,
+      "text": "Rights of Man is a public-domain political text for studying revolution, government, rights, inequality, and Enlightenment-era argument."
+    },
+    {
+      "n": 2,
+      "img": null,
+      "text": "Use this source for guided excerpts, comparing political philosophies, tracking abstract vocabulary, and analyzing how authors build arguments."
+    },
+    {
+      "n": 3,
+      "img": null,
+      "text": "Wikisource texts may include edition-specific notes. Check the linked work page for license and source information before importing selections."
+    }
+  ],
+  "stats": {
+    "pages": 3,
+    "words": 54
+  }
+}
