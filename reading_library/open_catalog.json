@@ -4524,6 +4524,102 @@
     {
       "slug": "wikisource-souls-of-black-folk-source-card",
       "file": "books/wikisource-souls-of-black-folk-source-card.json"
+    },
+    {
+      "slug": "gutenberg-ebook-74-the-adventures-of-tom-sawyer-complete",
+      "file": "books/gutenberg-ebook-74-the-adventures-of-tom-sawyer-complete.json"
+    },
+    {
+      "slug": "gutenberg-ebook-113-the-secret-garden",
+      "file": "books/gutenberg-ebook-113-the-secret-garden.json"
+    },
+    {
+      "slug": "gutenberg-ebook-514-little-women",
+      "file": "books/gutenberg-ebook-514-little-women.json"
+    },
+    {
+      "slug": "gutenberg-ebook-2591-grimms-fairy-tales",
+      "file": "books/gutenberg-ebook-2591-grimms-fairy-tales.json"
+    },
+    {
+      "slug": "gutenberg-ebook-21-three-hundred-aesop-s-fables-translated-by-george-fyler-townsend",
+      "file": "books/gutenberg-ebook-21-three-hundred-aesop-s-fables-translated-by-george-fyler-townsend.json"
+    },
+    {
+      "slug": "gutenberg-ebook-43-the-strange-case-of-dr-jekyll-and-mr-hyde",
+      "file": "books/gutenberg-ebook-43-the-strange-case-of-dr-jekyll-and-mr-hyde.json"
+    },
+    {
+      "slug": "gutenberg-ebook-289-the-wind-in-the-willows",
+      "file": "books/gutenberg-ebook-289-the-wind-in-the-willows.json"
+    },
+    {
+      "slug": "gutenberg-ebook-902-the-happy-prince-and-other-tales",
+      "file": "books/gutenberg-ebook-902-the-happy-prince-and-other-tales.json"
+    },
+    {
+      "slug": "gutenberg-ebook-244-a-study-in-scarlet",
+      "file": "books/gutenberg-ebook-244-a-study-in-scarlet.json"
+    },
+    {
+      "slug": "gutenberg-ebook-215-the-call-of-the-wild",
+      "file": "books/gutenberg-ebook-215-the-call-of-the-wild.json"
+    },
+    {
+      "slug": "gutenberg-ebook-46-a-christmas-carol-in-prose-being-a-ghost-story-of-christmas",
+      "file": "books/gutenberg-ebook-46-a-christmas-carol-in-prose-being-a-ghost-story-of-christmas.json"
+    },
+    {
+      "slug": "gutenberg-ebook-829-gulliver-s-travels-into-several-remote-nations-of-the-world",
+      "file": "books/gutenberg-ebook-829-gulliver-s-travels-into-several-remote-nations-of-the-world.json"
+    },
+    {
+      "slug": "gutenberg-ebook-12-through-the-looking-glass",
+      "file": "books/gutenberg-ebook-12-through-the-looking-glass.json"
+    },
+    {
+      "slug": "gutenberg-ebook-1322-leaves-of-grass",
+      "file": "books/gutenberg-ebook-1322-leaves-of-grass.json"
+    },
+    {
+      "slug": "gutenberg-ebook-521-the-life-and-adventures-of-robinson-crusoe",
+      "file": "books/gutenberg-ebook-521-the-life-and-adventures-of-robinson-crusoe.json"
+    },
+    {
+      "slug": "gutenberg-ebook-103-around-the-world-in-eighty-days",
+      "file": "books/gutenberg-ebook-103-around-the-world-in-eighty-days.json"
+    },
+    {
+      "slug": "gutenberg-ebook-164-twenty-thousand-leagues-under-the-sea",
+      "file": "books/gutenberg-ebook-164-twenty-thousand-leagues-under-the-sea.json"
+    },
+    {
+      "slug": "gutenberg-ebook-768-wuthering-heights",
+      "file": "books/gutenberg-ebook-768-wuthering-heights.json"
+    },
+    {
+      "slug": "gutenberg-ebook-1727-the-odyssey-rendered-into-english-prose-for-the-use-of-those-who",
+      "file": "books/gutenberg-ebook-1727-the-odyssey-rendered-into-english-prose-for-the-use-of-those-who.json"
+    },
+    {
+      "slug": "gutenberg-ebook-14838-the-tale-of-peter-rabbit",
+      "file": "books/gutenberg-ebook-14838-the-tale-of-peter-rabbit.json"
+    },
+    {
+      "slug": "gutenberg-ebook-14474-the-chemical-history-of-a-candle",
+      "file": "books/gutenberg-ebook-14474-the-chemical-history-of-a-candle.json"
+    },
+    {
+      "slug": "gutenberg-ebook-32-herland",
+      "file": "books/gutenberg-ebook-32-herland.json"
+    },
+    {
+      "slug": "gutenberg-ebook-67098-winnie-the-pooh",
+      "file": "books/gutenberg-ebook-67098-winnie-the-pooh.json"
+    },
+    {
+      "slug": "gutenberg-ebook-16-peter-pan-peter-and-wendy",
+      "file": "books/gutenberg-ebook-16-peter-pan-peter-and-wendy.json"
     }
   ]
 }

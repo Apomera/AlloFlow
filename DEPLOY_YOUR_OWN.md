@@ -1,216 +1,137 @@
-# AlloFlow — Self-Deployment Guide for Schools & Districts
+# AlloFlow self-deployment for schools and districts
 
-> **Deploy your own AlloFlow instance in ~15 minutes.**
-> Your data stays in YOUR Firebase project. The AlloFlow team never touches it.
+This path is intentionally conservative. A plain Firebase deploy publishes the static app only. It does not publish Cloud Functions or open Firestore.
 
-> Looking for the no-Docker local app? Start with [desktop/README.md](./desktop/README.md). This guide is for schools that want their own Firebase-hosted web deployment.
+For the strongest privacy and the full local AI path, use AlloFlow Desktop. Gemini Canvas remains the keyless Google-managed path.
 
----
+## 1. Create a Firebase project
 
-## Prerequisites
+1. Create a project in the [Firebase Console](https://console.firebase.google.com).
+2. Register a Web app and copy its public Firebase configuration.
+3. Create Firestore in **production mode**. Leave it fail-closed unless you explicitly enable live sessions below.
+4. Do not place Gemini, OpenAI, Anthropic, LMS, or other provider secrets in a `REACT_APP_*` variable. Those values are compiled into the public browser bundle.
 
-- **Node.js 18+** — [download](https://nodejs.org)
-- **A Google account** (for Firebase — free tier is sufficient)
-- **Optional**: A [Gemini API key](https://aistudio.google.com/apikey) (free tier: 1,500 requests/day)
+## 2. Install and configure
 
----
-
-## Step 1: Create Your Firebase Project (5 min)
-
-1. Go to [Firebase Console](https://console.firebase.google.com)
-2. Click **"Create a project"** → name it (e.g., `oakwood-alloflow`)
-3. Disable Google Analytics (not needed) → **Create**
-4. Once created, click **⚙️ Project Settings** → scroll to **"Your apps"**
-5. Click **Web** (</>) icon → register app name (e.g., `alloflow-web`)
-6. Firebase will show your config — **copy it** (you'll need it in Step 3)
-
-### Enable Authentication
-1. In Firebase Console → **Build** → **Authentication**
-2. Click **Get started**
-3. Enable **Anonymous** sign-in method → **Save**
-
-### Enable Firestore
-1. In Firebase Console → **Build** → **Firestore Database**
-2. Click **Create database**
-3. Choose **Start in production mode** → select your region → **Create**
-
----
-
-## Step 2: Install Firebase CLI & Clone AlloFlow
+Prerequisites: Node.js 18 or newer for the web build, a Google account, and the Firebase CLI.
 
 ```bash
-# Install Firebase CLI
 npm install -g firebase-tools
-
-# Login to your Firebase account
 firebase login
-
-# Clone AlloFlow
 git clone https://github.com/Apomera/AlloFlow.git
 cd AlloFlow/prismflow-deploy
 npm install
-```
-
----
-
-## Step 3: Configure Your Environment
-
-Copy the example environment file and edit it:
-
-```bash
 cp .env.example .env
 ```
 
-Edit `.env` with YOUR Firebase project values from Step 1:
+Fill in only the public Firebase Web configuration:
 
 ```env
-REACT_APP_API_KEY=your-firebase-api-key
+REACT_APP_API_KEY=your-public-firebase-web-api-key
 REACT_APP_AUTH_DOMAIN=your-project.firebaseapp.com
 REACT_APP_PROJECT_ID=your-project-id
 REACT_APP_STORAGE_BUCKET=your-project.firebasestorage.app
 REACT_APP_MESSAGING_SENDER_ID=your-sender-id
 REACT_APP_APP_ID=your-app-id
 REACT_APP_MEASUREMENT_ID=
-REACT_APP_GEMINI_API_KEY=your-gemini-key-or-leave-blank
+REACT_APP_FIREBASE_APP_CHECK_SITE_KEY=
 GENERATE_SOURCEMAP=false
 ESLINT_NO_DEV_ERRORS=true
 DISABLE_ESLINT_PLUGIN=true
 ```
 
-> **Note**: If you plan to use a local provider instead of Gemini,
-> you can leave `REACT_APP_GEMINI_API_KEY` blank. Teachers configure
-> the AI backend in the app settings or in AlloFlow Desktop.
+Set the project explicitly:
 
----
-
-## Step 4: Set Firebase Project
-
-Edit `.firebaserc` to point to YOUR project:
-
-```json
-{
-  "projects": {
-    "default": "your-project-id"
-  }
-}
-```
-
-Or run:
 ```bash
 firebase use --add your-project-id
 ```
 
----
+Confirm that `firebase use` and `REACT_APP_PROJECT_ID` name the same project before every deployment.
 
-## Step 5: Build & Deploy
+## 3. Safe default: hosting only
 
 ```bash
 npm run build
 firebase deploy --only hosting
 ```
 
-Your AlloFlow instance is now live at:
-```
-https://your-project-id.web.app
-```
+The default [firebase.json](./prismflow-deploy/firebase.json) contains no Functions source, Function rewrites, or Firestore rule deployment. A plain `firebase deploy` is therefore also hosting-only.
 
----
+In this mode:
 
-## Step 6: Optional — Enable Local AI
+- Static and local-first features work.
+- Firestore stays at the production-mode deny policy.
+- Cloud live sessions and the optional Serper search proxy are unavailable.
+- No cloud AI billing credential is compiled into the app.
 
-To run AI processing on school hardware instead of a cloud provider:
+## 4. Optional live sessions
 
-1. For the installed app, use AlloFlow Desktop's built-in local engine or another local provider from the command center.
-2. For the web deployment, install a local provider such as Ollama, LM Studio, or LocalAI on school hardware.
-3. In AlloFlow → **AI Backend Settings**, select the matching local provider.
-4. Confirm the connection test passes before using student material. Local provider choices can keep inference on school-controlled hardware; compliance still depends on configuration and policy.
+Live sessions use anonymous Firebase identities as short-lived transport identities. Anonymous authentication does **not** prove that someone is district staff.
 
----
+Before enabling live sessions:
 
-## Data Privacy
-
-| Question | Answer |
-|----------|--------|
-| Who owns the Firebase project? | **You do.** You created it with your Google account. |
-| Who has access to student data? | **Only your staff.** Firebase project access is controlled by you. |
-| Does AlloFlow send data to its developers? | **No.** The app runs in your Firebase project. We have zero access. |
-| What data is stored? | Anonymous session IDs, lesson content, quiz responses. No PII by default. |
-| FERPA posture? | **Designed to support FERPA-aligned use.** Your district still controls the Firebase project, policies, contracts, retention, and access controls. |
-
----
-
-## Gemini API Free Tier Notes
-
-The Gemini API free tier (available on Firebase Spark plan, no billing required) includes:
-
-| Feature | Spark (Free) | Blaze (Pay-as-you-go) |
-|---------|:---:|:---:|
-| Text generation (Gemini text models) | ✅ ~1,500 req/day | ✅ Higher limits |
-| Image generation (Gemini/Imagen image models) | ✅ Limited | ✅ Higher limits |
-| Text-to-Speech (Gemini TTS) | ✅ Limited | ✅ Higher limits |
-| Standalone Imagen API | ⚠️ May require Blaze | ✅ Full access |
-| Rate limit | 100 RPM/user | Configurable |
-
-> **Tip**: For schools with heavy usage or needing image generation at scale,
-> consider either upgrading to Blaze (pay-as-you-go) or using a
-> school-controlled local provider such as AlloFlow Desktop's built-in
-> engine, Ollama, LM Studio, or LocalAI.
-
----
-
-## PDF Remediation Cost Model (Self-Hosted Firebase Only)
-
-> **Canvas users: skip this section.** Inside Gemini Canvas, Google injects the
-> API key under your Workspace Education quotas — you pay $0 for inference, full
-> stop. This section is for Firebase self-hosted deployments where your district
-> supplies the Gemini API key and pays Google directly.
-
-The PDF accessibility audit + remediation pipeline (`doc_pipeline_source.jsx`,
-~19K lines) is AlloFlow's heaviest API consumer. Each PDF runs through a
-multi-pass audit panel that uses Gemini Vision (not just Flash text), so the
-cost model is different from text-only features like lesson generation.
-
-**Per-document cost estimate** (Gemini API list pricing, as of June 2026):
-
-| Document type | Vision calls per file | Approx cost per file |
-|---|---|---|
-| Ordinary text PDF (5-page handout) | 3–8 | $0.012–$0.08 |
-| Complex-table or scanned single-page | 8–20 | $0.03–$0.20 |
-| Multi-page scanned with OCR | 16–32 | $0.06–$0.32 |
-| Worst case (32 Vision calls / file) | 32 | ~$0.32 |
-
-A typical district batch (50 mixed-document files): **~$3–$16 total** depending
-on document mix. A K-12 school running 200 PDFs through the pipeline over a
-semester: **~$10–$60**.
-
-> **What this means for procurement.** Vision API charges are pay-as-you-go on
-> the Firebase Blaze tier. There is no upfront commitment, no per-seat license,
-> and the same key handles all AlloFlow's other Gemini features (text
-> generation, image generation, TTS) which mostly fit inside the free Spark
-> tier. The PDF pipeline is what may push a heavy-batch user over the free
-> ceiling — surface this in your Blaze projection if your IT department is
-> sizing a billing alert.
-
-**To keep PDF remediation cost-free in deploy mode:** stay on the Spark tier and
-batch-process under ~50 PDFs/month, or use a local-first path such as AlloFlow
-Desktop or the optional School Box Server stack with suitable local models.
-
-**In-app cost visibility (Canvas vs deploy):**
-
-- **Canvas:** the AI Backend Settings modal shows your daily Gemini quota
-  estimate (header bar → "AI" button).
-- **Deploy (self-hosted):** the same modal shows the model catalog you have
-  access to + a per-session ledger of requested-vs-served models. A real-time
-  cost meter is not yet built — track usage in your [Google Cloud billing console](https://console.cloud.google.com/billing).
-
----
-
-## Updating AlloFlow
-
-When a new version is released:
+1. Enable Firebase Authentication's Anonymous provider.
+2. Register the hosted Web app with Firebase App Check using reCAPTCHA Enterprise.
+3. Put the reCAPTCHA Enterprise site key in `REACT_APP_FIREBASE_APP_CHECK_SITE_KEY` and rebuild.
+4. Test teacher, student QR, homework, and incognito flows while App Check is in monitoring mode.
+5. Deploy the version-controlled rules and TTL policies:
 
 ```bash
-cd AlloFlow
+firebase deploy -c firebase.live-sessions.json --only firestore:rules,firestore:indexes
+```
+
+6. In Firebase Console, enforce App Check for Firestore after the monitored flows are healthy.
+
+The rules deny session listing, isolate host and participant writes, bind chunked assets to their owner and parent session, deny retired concept-mastery data, and expire asset/signaling records through Firestore TTL. A district that requires verified teacher identity should keep live sessions disabled until Workspace sign-in or teacher custom claims are implemented.
+
+## 5. Optional authenticated search Function
+
+This is the only Cloud Function currently supported. Node.js 22 is required for deployment.
+
+1. Complete the App Check setup above.
+2. Set the server-side Serper secret:
+
+```bash
+firebase functions:secrets:set SERPER_API_KEY
+```
+
+3. If you use a custom domain, set `ALLOFLOW_ALLOWED_ORIGINS` to a comma-separated exact-origin allowlist when Firebase prompts for the parameter.
+4. Deploy through the explicit optional configuration:
+
+```bash
+firebase deploy -c firebase.functions.json --only functions:searchProxy,hosting,firestore:indexes
+```
+
+The proxy accepts POST only and requires both a valid Firebase ID token and App Check token. It enforces strict origins, input limits, a Firestore-backed per-user quota, capped instances, no query logging, and no-store responses.
+
+Gemini Canvas does not fall back to the maintainer's Firebase proxy. It keeps its own keyless environment path.
+
+## Deliberately unavailable Firebase services
+
+The prior experimental LTI, LMS scan, dashboard, remediation-log, and accessible-HTML endpoints are not exported or rewritten. They must not be restored without verified district identity, tenant/course isolation, durable one-time protocol state, authorization tests, and isolated/sanitized document rendering.
+
+## Data and privacy boundaries
+
+| Question | Current answer |
+|---|---|
+| Who owns the Firebase project? | The deploying school or district. |
+| Does anonymous authentication mean staff-only? | No. It provides a per-browser identity, not staff verification. |
+| What reaches Firestore when live sessions are enabled? | Session coordination data, teacher-prepared resources, anonymous roster/codename state, quiz/reaction state, and short-lived signaling/assets. |
+| Does AlloFlow send Firebase data to its developer? | No, unless a deployer intentionally points the app at a developer-controlled service. The repository no longer provides that fallback. |
+| Is deployment automatically FERPA compliant? | No. The district remains responsible for identity, policy, contracts, retention, configuration, and review. |
+
+App Check reduces off-app abuse; it is not authorization. Security Rules protect data boundaries; they do not identify a teacher as staff.
+
+## AI choices
+
+- Gemini Canvas: keyless host-provided Gemini path.
+- Desktop: local engine or another school-controlled provider.
+- Firebase hosting: local/district endpoint configuration only. Do not compile a provider key into the browser.
+- A future district AI proxy should keep credentials in Secret Manager and enforce staff/tenant quotas server-side.
+
+## Updating
+
+```bash
 git pull origin main
 cd prismflow-deploy
 npm install
@@ -218,22 +139,13 @@ npm run build
 firebase deploy --only hosting
 ```
 
-Your `.env` and `.firebaserc` are gitignored — they won't be overwritten.
-
----
+If you enabled an optional service, review its security notes and redeploy its explicit configuration separately. Never replace production Firestore rules with test-mode allow-all rules to troubleshoot an app.
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| "Firebase project not found" | Run `firebase use --add your-project-id` |
-| Build fails | Ensure Node.js 18+: `node --version` |
-| Blank page after deploy | Check `.env` values match your Firebase project |
-| AI not working | Verify the Gemini API key or confirm the selected local provider is running |
-
----
-
-## Support
-
-- GitHub Issues: [github.com/Apomera/AlloFlow/issues](https://github.com/Apomera/AlloFlow/issues)
-- Documentation: [github.com/Apomera/AlloFlow/wiki](https://github.com/Apomera/AlloFlow/wiki)
+| Issue | Safer response |
+|---|---|
+| Firebase project not found | Run `firebase use --add your-project-id` and verify `firebase use`. |
+| Live sessions are denied | Keep Firestore fail-closed; complete the optional live-session and App Check checklist. |
+| Search proxy returns 401/403 | Verify Anonymous Auth, App Check registration/enforcement, the site key, and exact allowed origin. |
+| AI is unavailable | Use Gemini Canvas, AlloFlow Desktop, or a school-controlled local/district endpoint. Do not add a browser build secret. |

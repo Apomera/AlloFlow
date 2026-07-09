@@ -244,7 +244,7 @@ AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator compone
 cd prismflow-deploy
 npm install
 npm run build
-firebase deploy
+firebase deploy --only hosting
 
 # Run clinical logic test suite (no dependencies)
 node tests/clinical_tests.js

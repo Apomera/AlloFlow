@@ -9,6 +9,7 @@
  *   node build.js --mode=dev     Load modules from local paths (for npm start)
  *   node build.js --mode=prod    Load modules from CDN with auto-detected git hash
  *   node build.js --mode=prod --hash=abc1234   Use a specific hash
+ *   node build.js --copy-student-shell        Publish the compiled app at public/app/
  *
  * What it does:
  *   1. Reads AlloFlowANTI.txt
@@ -44,6 +45,87 @@ const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'AlloFlowANTI.txt');
 const OUTPUT = path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx');
 const BACKUP = path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt');
+const STUDENT_SHELL_BUILD_DIR = path.join(ROOT, 'prismflow-deploy', 'build');
+const STUDENT_SHELL_PUBLIC_DIR = path.join(ROOT, 'prismflow-deploy', 'public', 'app');
+const STUDENT_SHELL_ENTRIES = [
+    'index.html',
+    'asset-manifest.json',
+    'manifest.json',
+    'sw.js',
+    'qrcode.js',
+    'static',
+];
+const CLOUDFLARE_MAX_FILE_BYTES = 25 * 1024 * 1024;
+
+function publishStudentShell() {
+    const sourceIndex = path.join(STUDENT_SHELL_BUILD_DIR, 'index.html');
+    if (!fs.existsSync(sourceIndex)) {
+        throw new Error('Compiled app not found. Run npm run build in prismflow-deploy first.');
+    }
+
+    const html = fs.readFileSync(sourceIndex, 'utf8');
+    if (!html.includes('<div id="root"></div>') || Buffer.byteLength(html, 'utf8') < 100 * 1024) {
+        throw new Error('Compiled index is not the self-contained AlloFlow app produced by postbuild.js.');
+    }
+
+    fs.rmSync(STUDENT_SHELL_PUBLIC_DIR, { recursive: true, force: true });
+    fs.mkdirSync(STUDENT_SHELL_PUBLIC_DIR, { recursive: true });
+
+    for (const entry of STUDENT_SHELL_ENTRIES) {
+        const src = path.join(STUDENT_SHELL_BUILD_DIR, entry);
+        if (!fs.existsSync(src)) continue;
+        const dest = path.join(STUDENT_SHELL_PUBLIC_DIR, entry);
+        if (fs.statSync(src).isDirectory()) {
+            fs.cpSync(src, dest, { recursive: true });
+        } else {
+            fs.copyFileSync(src, dest);
+        }
+    }
+
+    const publishedIndex = path.join(STUDENT_SHELL_PUBLIC_DIR, 'index.html');
+    let publishedHtml = fs.readFileSync(publishedIndex, 'utf8');
+    const rootSwRegistration = 'navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"})';
+    const scopedSwRegistration = 'navigator.serviceWorker.register("./sw.js",{scope:"./",updateViaCache:"none"})';
+    if (!publishedHtml.includes(rootSwRegistration)) {
+        throw new Error('Student shell service-worker registration anchor was not found.');
+    }
+    publishedHtml = publishedHtml.replace(rootSwRegistration, scopedSwRegistration);
+    fs.writeFileSync(publishedIndex, publishedHtml, 'utf8');
+
+    const publishedSw = path.join(STUDENT_SHELL_PUBLIC_DIR, 'sw.js');
+    let sw = fs.readFileSync(publishedSw, 'utf8');
+    if (!sw.includes("const CACHE_NAME = 'alloflow-v") || !sw.includes("keys.filter(k => k !== CACHE_NAME)")) {
+        throw new Error('Student shell service-worker cache anchors were not found.');
+    }
+    sw = sw
+        .replace("const CACHE_NAME = 'alloflow-v", "const CACHE_NAME = 'alloflow-student-shell-v")
+        .replace("keys.filter(k => k !== CACHE_NAME)", "keys.filter(k => k.startsWith('alloflow-student-shell-v') && k !== CACHE_NAME)")
+        .replaceAll('/index.html', '/app/index.html');
+    fs.writeFileSync(publishedSw, sw, 'utf8');
+
+    let copiedFiles = 0;
+    const oversized = [];
+    const scan = (dir) => {
+        for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+            const itemPath = path.join(dir, item.name);
+            if (item.isDirectory()) scan(itemPath);
+            else if (item.isFile()) {
+                copiedFiles += 1;
+                if (fs.statSync(itemPath).size >= CLOUDFLARE_MAX_FILE_BYTES) {
+                    oversized.push(path.relative(ROOT, itemPath));
+                }
+            }
+        }
+    };
+    scan(STUDENT_SHELL_PUBLIC_DIR);
+    if (oversized.length) {
+        throw new Error('Student shell contains Cloudflare-ineligible files: ' + oversized.join(', '));
+    }
+
+    console.log('Published student shell: ' + path.relative(ROOT, STUDENT_SHELL_PUBLIC_DIR)
+        + ' (' + copiedFiles + ' files, self-contained index)');
+}
+
 
 // ── CDN base (May 12 2026) ──────────────────────────────────────
 // Switched from jsdelivr (cdn.jsdelivr.net/gh/Apomera/AlloFlow@<hash>/<file>)
@@ -1339,6 +1421,17 @@ function compileSources() {
     return results;
 }
 
+// Publish the postbuild output into the Cloudflare Pages public tree without
+// duplicating the hundreds of megabytes of teaching assets already served there.
+if (hasFlag('copy-student-shell')) {
+    try {
+        publishStudentShell();
+        process.exit(0);
+    } catch (error) {
+        console.error('Student shell publish failed: ' + error.message);
+        process.exit(1);
+    }
+}
 // Standalone compile mode — run just the compilation step and exit.
 if (args.includes('--compile')) {
     console.log('── Compiling source modules ──');

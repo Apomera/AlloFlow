@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-09T17:50:56.832Z",
+ "generatedAt": "2026-07-09T19:15:48.465Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -10,7 +10,7 @@
   {
    "name": "English",
    "code": "en",
-   "count": 1645
+   "count": 1669
   },
   {
    "name": "Spanish",
@@ -52272,7 +52272,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "5",
+   "level": "6",
    "sourceId": "frontiers",
    "contentType": "science-article",
    "subjects": [
@@ -53584,7 +53584,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -54116,7 +54116,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "4",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -54250,7 +54250,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -54608,23 +54608,25 @@
   {
    "slug": "gutenberg-ebook-41-the-legend-of-sleepy-hollow",
    "title": "The Legend of Sleepy Hollow",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Legend of Sleepy Hollow for middle-grade reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Ghosts -- Fiction",
-    "New York (State) -- History -- 1775-1865 -- Fiction"
+    "Fiction",
+    "American literature",
+    "Short stories"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/41"
+    "url": "https://www.gutenberg.org/ebooks/41",
+    "textUrl": "https://www.gutenberg.org/cache/epub/41/pg41.txt"
    },
    "cover": null,
    "authors": [
@@ -54633,8 +54635,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 73,
+   "pageCount": 29,
+   "wordCount": 12253,
    "file": "books/gutenberg-ebook-41-the-legend-of-sleepy-hollow.json"
   },
   {
@@ -54679,7 +54681,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -55450,7 +55452,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -55811,7 +55813,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -56655,7 +56657,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -84761,7 +84763,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -84932,7 +84934,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -84966,7 +84968,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85272,7 +85274,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85306,7 +85308,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85374,7 +85376,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85408,7 +85410,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85476,7 +85478,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85510,7 +85512,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "4",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85544,7 +85546,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85578,7 +85580,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85646,7 +85648,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85714,7 +85716,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85748,7 +85750,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85816,7 +85818,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85884,7 +85886,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -85918,7 +85920,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -89344,6 +89346,821 @@
    "pageCount": 3,
    "wordCount": 62,
    "file": "books/wikisource-souls-of-black-folk-source-card.json"
+  },
+  {
+   "slug": "gutenberg-ebook-74-the-adventures-of-tom-sawyer-complete",
+   "title": "The Adventures of Tom Sawyer, Complete",
+   "description": "A full in-app public-domain copy of The Adventures of Tom Sawyer for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Adventure",
+    "American literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/74",
+    "textUrl": "https://www.gutenberg.org/files/74/74-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Twain, Mark"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 157,
+   "wordCount": 70839,
+   "file": "books/gutenberg-ebook-74-the-adventures-of-tom-sawyer-complete.json"
+  },
+  {
+   "slug": "gutenberg-ebook-113-the-secret-garden",
+   "title": "The Secret Garden",
+   "description": "A full in-app public-domain copy of The Secret Garden for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/113",
+    "textUrl": "https://www.gutenberg.org/cache/epub/113/pg113.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Burnett, Frances Hodgson"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 168,
+   "wordCount": 80671,
+   "file": "books/gutenberg-ebook-113-the-secret-garden.json"
+  },
+  {
+   "slug": "gutenberg-ebook-514-little-women",
+   "title": "Little Women",
+   "description": "A full in-app public-domain copy of Little Women for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Family",
+    "American literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/514",
+    "textUrl": "https://www.gutenberg.org/files/514/514-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Alcott, Louisa May"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 397,
+   "wordCount": 186151,
+   "file": "books/gutenberg-ebook-514-little-women.json"
+  },
+  {
+   "slug": "gutenberg-ebook-2591-grimms-fairy-tales",
+   "title": "Grimms' Fairy Tales",
+   "description": "A full in-app public-domain copy of Grimms' Fairy Tales for younger and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fairy tales",
+    "Folklore",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/2591",
+    "textUrl": "https://www.gutenberg.org/cache/epub/2591/pg2591.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Grimm, Jacob",
+    "Grimm, Wilhelm"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 238,
+   "wordCount": 101195,
+   "file": "books/gutenberg-ebook-2591-grimms-fairy-tales.json"
+  },
+  {
+   "slug": "gutenberg-ebook-21-three-hundred-aesop-s-fables-translated-by-george-fyler-townsend",
+   "title": "Three hundred Aesop’s fables: Translated by George Fyler Townsend",
+   "description": "A full in-app public-domain copy of Aesop's Fables for younger readers and moral-lesson study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fables",
+    "Folklore",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/21",
+    "textUrl": "https://www.gutenberg.org/files/21/21-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Aesop"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 100,
+   "wordCount": 44924,
+   "file": "books/gutenberg-ebook-21-three-hundred-aesop-s-fables-translated-by-george-fyler-townsend.json"
+  },
+  {
+   "slug": "gutenberg-ebook-43-the-strange-case-of-dr-jekyll-and-mr-hyde",
+   "title": "The strange case of Dr. Jekyll and Mr. Hyde",
+   "description": "A full in-app public-domain copy of The Strange Case of Dr. Jekyll and Mr. Hyde for older-student reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Gothic",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/43",
+    "textUrl": "https://www.gutenberg.org/cache/epub/43/pg43.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Stevenson, Robert Louis"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 60,
+   "wordCount": 25674,
+   "file": "books/gutenberg-ebook-43-the-strange-case-of-dr-jekyll-and-mr-hyde.json"
+  },
+  {
+   "slug": "gutenberg-ebook-289-the-wind-in-the-willows",
+   "title": "The Wind in the Willows",
+   "description": "A full in-app public-domain copy of The Wind in the Willows for younger and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Animals",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/289",
+    "textUrl": "https://www.gutenberg.org/files/289/289-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Grahame, Kenneth"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 132,
+   "wordCount": 58465,
+   "file": "books/gutenberg-ebook-289-the-wind-in-the-willows.json"
+  },
+  {
+   "slug": "gutenberg-ebook-902-the-happy-prince-and-other-tales",
+   "title": "The Happy Prince, and Other Tales",
+   "description": "A full in-app public-domain copy of The Happy Prince and Other Tales for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fairy tales",
+    "Short stories",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/902",
+    "textUrl": "https://www.gutenberg.org/files/902/902-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Wilde, Oscar"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 35,
+   "wordCount": 16411,
+   "file": "books/gutenberg-ebook-902-the-happy-prince-and-other-tales.json"
+  },
+  {
+   "slug": "gutenberg-ebook-244-a-study-in-scarlet",
+   "title": "A Study in Scarlet",
+   "description": "A full in-app public-domain copy of A Study in Scarlet for older-student mystery reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Mystery",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/244",
+    "textUrl": "https://www.gutenberg.org/files/244/244-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Doyle, Arthur Conan"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 94,
+   "wordCount": 43466,
+   "file": "books/gutenberg-ebook-244-a-study-in-scarlet.json"
+  },
+  {
+   "slug": "gutenberg-ebook-215-the-call-of-the-wild",
+   "title": "The call of the wild",
+   "description": "A full in-app public-domain copy of The Call of the Wild for middle-grade adventure reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Animals",
+    "Adventure"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/215",
+    "textUrl": "https://www.gutenberg.org/files/215/215-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "London, Jack"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 72,
+   "wordCount": 31863,
+   "file": "books/gutenberg-ebook-215-the-call-of-the-wild.json"
+  },
+  {
+   "slug": "gutenberg-ebook-46-a-christmas-carol-in-prose-being-a-ghost-story-of-christmas",
+   "title": "A Christmas Carol in Prose; Being a Ghost Story of Christmas",
+   "description": "A full in-app public-domain copy of A Christmas Carol for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Holidays",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/46",
+    "textUrl": "https://www.gutenberg.org/files/46/46-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Dickens, Charles"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 62,
+   "wordCount": 28580,
+   "file": "books/gutenberg-ebook-46-a-christmas-carol-in-prose-being-a-ghost-story-of-christmas.json"
+  },
+  {
+   "slug": "gutenberg-ebook-829-gulliver-s-travels-into-several-remote-nations-of-the-world",
+   "title": "Gulliver's Travels into Several Remote Nations of the World",
+   "description": "A full in-app public-domain copy of Gulliver's Travels for older-student reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Satire",
+    "Adventure"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/829",
+    "textUrl": "https://www.gutenberg.org/files/829/829-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Swift, Jonathan"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 256,
+   "wordCount": 105124,
+   "file": "books/gutenberg-ebook-829-gulliver-s-travels-into-several-remote-nations-of-the-world.json"
+  },
+  {
+   "slug": "gutenberg-ebook-12-through-the-looking-glass",
+   "title": "Through the Looking-Glass",
+   "description": "A full in-app public-domain copy of Through the Looking-Glass for younger and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Fantasy",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/12",
+    "textUrl": "https://www.gutenberg.org/cache/epub/12/pg12.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Carroll, Lewis"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 61,
+   "wordCount": 29791,
+   "file": "books/gutenberg-ebook-12-through-the-looking-glass.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1322-leaves-of-grass",
+   "title": "Leaves of Grass",
+   "description": "A full in-app public-domain copy of Leaves of Grass for older-student poetry study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Poetry",
+    "American literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1322",
+    "textUrl": "https://www.gutenberg.org/cache/epub/1322/pg1322.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Whitman, Walt"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 261,
+   "wordCount": 121751,
+   "file": "books/gutenberg-ebook-1322-leaves-of-grass.json"
+  },
+  {
+   "slug": "gutenberg-ebook-521-the-life-and-adventures-of-robinson-crusoe",
+   "title": "The Life and Adventures of Robinson Crusoe",
+   "description": "A full in-app public-domain copy of Robinson Crusoe for older-student adventure reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Adventure",
+    "Survival"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/521",
+    "textUrl": "https://www.gutenberg.org/files/521/521-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Defoe, Daniel"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 292,
+   "wordCount": 120959,
+   "file": "books/gutenberg-ebook-521-the-life-and-adventures-of-robinson-crusoe.json"
+  },
+  {
+   "slug": "gutenberg-ebook-103-around-the-world-in-eighty-days",
+   "title": "Around the World in Eighty Days",
+   "description": "A full in-app public-domain copy of Around the World in Eighty Days for middle-grade adventure reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Adventure",
+    "Geography"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/103",
+    "textUrl": "https://www.gutenberg.org/cache/epub/103/pg103.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Verne, Jules"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 136,
+   "wordCount": 63373,
+   "file": "books/gutenberg-ebook-103-around-the-world-in-eighty-days.json"
+  },
+  {
+   "slug": "gutenberg-ebook-164-twenty-thousand-leagues-under-the-sea",
+   "title": "Twenty Thousand Leagues under the Sea",
+   "description": "A full in-app public-domain copy of Twenty Thousand Leagues Under the Seas for middle-grade science-adventure reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Science fiction",
+    "Ocean"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/164",
+    "textUrl": "https://www.gutenberg.org/files/164/164-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Verne, Jules"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 225,
+   "wordCount": 104712,
+   "file": "books/gutenberg-ebook-164-twenty-thousand-leagues-under-the-sea.json"
+  },
+  {
+   "slug": "gutenberg-ebook-768-wuthering-heights",
+   "title": "Wuthering Heights",
+   "description": "A full in-app public-domain copy of Wuthering Heights for older-student literature study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Gothic",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/768",
+    "textUrl": "https://www.gutenberg.org/cache/epub/768/pg768.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Brontë, Emily"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 252,
+   "wordCount": 115988,
+   "file": "books/gutenberg-ebook-768-wuthering-heights.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1727-the-odyssey-rendered-into-english-prose-for-the-use-of-those-who",
+   "title": "The Odyssey: Rendered into English prose for the use of those who cannot read the original",
+   "description": "A full in-app public-domain copy of The Odyssey (Butler translation) for older-student mythology and literature study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Epic poetry",
+    "Mythology",
+    "World literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1727",
+    "textUrl": "https://www.gutenberg.org/files/1727/1727-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Homer"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 294,
+   "wordCount": 129610,
+   "file": "books/gutenberg-ebook-1727-the-odyssey-rendered-into-english-prose-for-the-use-of-those-who.json"
+  },
+  {
+   "slug": "gutenberg-ebook-14838-the-tale-of-peter-rabbit",
+   "title": "The Tale of Peter Rabbit",
+   "description": "A full in-app public-domain copy of The Tale of Peter Rabbit for early readers.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Animals",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/14838",
+    "textUrl": "https://www.gutenberg.org/cache/epub/14838/pg14838.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Potter, Beatrix"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 4,
+   "wordCount": 1051,
+   "file": "books/gutenberg-ebook-14838-the-tale-of-peter-rabbit.json"
+  },
+  {
+   "slug": "gutenberg-ebook-14474-the-chemical-history-of-a-candle",
+   "title": "The Chemical History of a Candle",
+   "description": "A full in-app public-domain copy of Faraday's The Chemical History of a Candle for older-student science reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Science",
+    "Chemistry",
+    "Lectures"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/14474",
+    "textUrl": "https://www.gutenberg.org/files/14474/14474-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Faraday, Michael"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 102,
+   "wordCount": 41751,
+   "file": "books/gutenberg-ebook-14474-the-chemical-history-of-a-candle.json"
+  },
+  {
+   "slug": "gutenberg-ebook-32-herland",
+   "title": "Herland",
+   "description": "A full in-app public-domain copy of Herland for older-student literature and social-studies discussion.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Utopian literature",
+    "American literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/32",
+    "textUrl": "https://www.gutenberg.org/files/32/32-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Gilman, Charlotte Perkins"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 108,
+   "wordCount": 52197,
+   "file": "books/gutenberg-ebook-32-herland.json"
+  },
+  {
+   "slug": "gutenberg-ebook-67098-winnie-the-pooh",
+   "title": "Winnie-the-Pooh",
+   "description": "A full in-app public-domain copy of Winnie-the-Pooh for early and middle-grade readers.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Animals",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/67098",
+    "textUrl": "https://www.gutenberg.org/files/67098/67098-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Milne, A. A. (Alan Alexander)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 48,
+   "wordCount": 23094,
+   "file": "books/gutenberg-ebook-67098-winnie-the-pooh.json"
+  },
+  {
+   "slug": "gutenberg-ebook-16-peter-pan-peter-and-wendy",
+   "title": "Peter Pan: [Peter and Wendy]",
+   "description": "A full in-app public-domain copy of Peter Pan for younger and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Fantasy",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/16",
+    "textUrl": "https://www.gutenberg.org/files/16/16-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Barrie, J. M. (James Matthew)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 100,
+   "wordCount": 47307,
+   "file": "books/gutenberg-ebook-16-peter-pan-peter-and-wendy.json"
   }
  ]
 }

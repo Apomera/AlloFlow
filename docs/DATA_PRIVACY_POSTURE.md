@@ -1,5 +1,16 @@
 # AlloFlow Live Sessions — Data Privacy Posture
 
+> **Security status (2026-07-09): historical design memo, not a deployment guarantee.**
+> The safe default Firebase configuration is hosting-only. If a district explicitly enables
+> live sessions, anonymous authentication identifies a browser, not a staff member; quiz fallback
+> data can reach Firestore; session deletion is best-effort; and TTL applies only after deploying
+> `firebase.live-sessions.json`. The current rules bind session assets to owners and parents,
+> deny retired mastery data, and support quiz signaling, but a district pilot still requires
+> App Check enforcement and emulator tests. Use [DEPLOY_YOUR_OWN.md](../DEPLOY_YOUR_OWN.md) as
+> the authoritative deployment boundary. Do not quote the stronger historical statements below
+> as current legal, retention, or staff-access assurances.
+>
+
 **Audience:** district IT, privacy officers, and reviewers. Written 2026-07-01 from a verified
 read of the code (every storage write site enumerated), not from marketing intent.
 **Status of claims:** engineering statements are verified; legal conclusions are flagged as such —

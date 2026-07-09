@@ -32,6 +32,7 @@ import { Activity, Inbox, BookOpen, Globe, Layers, Sparkles, FileText, Layout, H
 } from 'lucide-react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously as _fbSignInAnonymously, signInWithCustomToken, onAuthStateChanged as _fbOnAuthStateChanged } from 'firebase/auth';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken as _fbGetAppCheckToken } from 'firebase/app-check';
 import { getFirestore, terminate as terminateFirestore, doc as _fbDoc, setDoc as _fbSetDoc, onSnapshot as _fbOnSnapshot, updateDoc as _fbUpdateDoc, getDoc as _fbGetDoc, deleteDoc as _fbDeleteDoc, deleteField as _fbDeleteField, collection as _fbCollection, query as _fbQuery, where as _fbWhere, getDocs as _fbGetDocs, writeBatch as _fbWriteBatch, limit as _fbLimit } from 'firebase/firestore';
 
 let doc = (...args) => _fbDoc(...args);
@@ -533,7 +534,9 @@ if (typeof window !== 'undefined') {
 }
 const ALLO_QR_STUDENT_AI_OFF_KEY = 'alloflow_qr_student_ai_disabled';
 const ALLOFLOW_STUDENT_BASE_URL_KEY = 'alloflow_student_base_url';
+const ALLOFLOW_DEFAULT_STUDENT_BASE_URL = 'https://alloflow-cdn.pages.dev/app/';
 const ALLOFLOW_DEMO_STUDENT_HOSTS = ['prismflow-911fe.web.app', 'prismflow-911fe.firebaseapp.com'];
+const ALLO_QR_INCOMPLETE_MESSAGE = 'This QR link is incomplete — ask your teacher for a new one';
 const ALLO_QR_FIREBASE_CONFIG_PARAM = 'allo_fb';
 const ALLO_QR_CELL_SIZE = 5;
 const ALLO_QR_QUIET_ZONE = ALLO_QR_CELL_SIZE * 4;
@@ -563,7 +566,8 @@ function _alloGetConfiguredStudentBaseUrl() {
             if (stored) return stored;
         } catch (_) {}
     }
-    return _alloNormalizeShareBaseUrl(_alloReadEnv('REACT_APP_STUDENT_BASE_URL'));
+    const envConfigured = _alloNormalizeShareBaseUrl(_alloReadEnv('REACT_APP_STUDENT_BASE_URL'));
+    return envConfigured || ALLOFLOW_DEFAULT_STUDENT_BASE_URL;
 }
 function _alloHostIsKnownDemoHost(host) {
     const normalized = String(host || '').trim().toLowerCase();
@@ -647,12 +651,19 @@ function _alloAttachFirebaseHandoff(url) {
     } catch (_) {}
     return url;
 }
-function _alloReadQrFirebaseHandoff() {
-    if (typeof window === 'undefined') return null;
+function _alloHasQrStudentEntry() {
+    if (typeof window === 'undefined') return false;
     try {
         const params = new URLSearchParams(window.location.search || '');
-        const hasQrEntry = params.has('allo_join') || params.has('allo_live_join') || params.has('allo_assignment');
-        if (!hasQrEntry) return null;
+        return params.has('allo_join') || params.has('allo_live_join') || params.has('allo_assignment');
+    } catch (_) {
+        return false;
+    }
+}
+function _alloReadQrFirebaseHandoff() {
+    if (!_alloHasQrStudentEntry()) return null;
+    try {
+        const params = new URLSearchParams(window.location.search || '');
         const encoded = params.get(ALLO_QR_FIREBASE_CONFIG_PARAM) || '';
         if (!encoded) return null;
         const config = JSON.parse(_alloBase64UrlDecode(encoded) || '{}');
@@ -665,6 +676,7 @@ function _alloReadQrFirebaseHandoff() {
     }
 }
 const _alloQrFirebaseHandoff = _alloReadQrFirebaseHandoff();
+const _alloQrFirebaseHandoffRequiredButMissing = _alloHasQrStudentEntry() && !_alloQrFirebaseHandoff;
 function _buildAlloShareUrl(params = {}) {
     if (typeof window === 'undefined') return '';
     try {
@@ -1025,24 +1037,59 @@ async function loadWordAudioBank() {
     return;
 }
 
+const ALLO_QR_BLOCKED_FIREBASE_CONFIG = Object.freeze({
+    apiKey: 'disabled-incomplete-qr',
+    authDomain: 'incomplete-qr.invalid',
+    projectId: 'alloflow-incomplete-qr',
+    appId: '1:0:web:alloflow-incomplete-qr',
+});
 const _alloRuntimeAppId = (_alloQrFirebaseHandoff && _alloQrFirebaseHandoff.appId)
-  || (typeof __app_id !== 'undefined' ? __app_id : (process.env.REACT_APP_APP_ID || 'default-app-id'));
+  || (_alloQrFirebaseHandoffRequiredButMissing
+    ? 'incomplete-qr'
+    : (typeof __app_id !== 'undefined' ? __app_id : (process.env.REACT_APP_APP_ID || 'default-app-id')));
 const firebaseConfig = (_alloQrFirebaseHandoff && _alloQrFirebaseHandoff.firebaseConfig)
-  || (typeof __firebase_config !== 'undefined'
-    ? JSON.parse(__firebase_config)
-    : {
-        apiKey: process.env.REACT_APP_API_KEY || '',
-        authDomain: process.env.REACT_APP_AUTH_DOMAIN || '',
-        projectId: process.env.REACT_APP_PROJECT_ID || '',
-        storageBucket: process.env.REACT_APP_STORAGE_BUCKET || '',
-        messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID || '',
-        appId: process.env.REACT_APP_APP_ID || '',
-        measurementId: process.env.REACT_APP_MEASUREMENT_ID || '',
-      });
+  || (_alloQrFirebaseHandoffRequiredButMissing
+    ? ALLO_QR_BLOCKED_FIREBASE_CONFIG
+    : (typeof __firebase_config !== 'undefined'
+      ? JSON.parse(__firebase_config)
+      : {
+          apiKey: process.env.REACT_APP_API_KEY || '',
+          authDomain: process.env.REACT_APP_AUTH_DOMAIN || '',
+          projectId: process.env.REACT_APP_PROJECT_ID || '',
+          storageBucket: process.env.REACT_APP_STORAGE_BUCKET || '',
+          messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID || '',
+          appId: process.env.REACT_APP_APP_ID || '',
+          measurementId: process.env.REACT_APP_MEASUREMENT_ID || '',
+        }));
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
-window.__alloFirebase = { db, doc, setDoc, getDoc, onSnapshot, updateDoc, deleteDoc, deleteField: _fbDeleteField, collection, query, where, getDocs, writeBatch, signInAnonymously, onAuthStateChanged };
+const _alloConfiguredFirebaseProject = process.env.REACT_APP_PROJECT_ID || '';
+const _alloAppCheckSiteKey = process.env.REACT_APP_FIREBASE_APP_CHECK_SITE_KEY || '';
+let appCheck = null;
+if (_alloAppCheckSiteKey && _alloConfiguredFirebaseProject && firebaseConfig.projectId === _alloConfiguredFirebaseProject) {
+  try {
+    appCheck = initializeAppCheck(firebaseApp, {
+      provider: new ReCaptchaEnterpriseProvider(_alloAppCheckSiteKey),
+      isTokenAutoRefreshEnabled: true,
+    });
+  } catch (error) {
+    console.warn('[Firebase] App Check initialization failed; optional Functions will remain unavailable.', error?.message);
+  }
+}
+const getFunctionSecurityHeaders = async () => {
+  if (!appCheck) throw new Error('Firebase App Check is not configured for this deployment.');
+  let currentUser = auth.currentUser;
+  if (!currentUser) {
+    const credential = await signInAnonymously(auth);
+    currentUser = credential?.user || auth.currentUser;
+  }
+  if (!currentUser) throw new Error('Firebase Authentication is unavailable.');
+  const [idToken, appCheckResult] = await Promise.all([currentUser.getIdToken(), _fbGetAppCheckToken(appCheck, false)]);
+  if (!appCheckResult?.token) throw new Error('Firebase App Check token is unavailable.');
+  return { Authorization: `Bearer ${idToken}`, 'X-Firebase-AppCheck': appCheckResult.token };
+};
+window.__alloFirebase = { auth, appCheck, getFunctionSecurityHeaders, db, doc, setDoc, getDoc, onSnapshot, updateDoc, deleteDoc, deleteField: _fbDeleteField, collection, query, where, getDocs, writeBatch, signInAnonymously, onAuthStateChanged };
 
 window.addEventListener('pagehide', () => {
     try { terminateFirestore(db).catch(() => {}); } catch(e) {}
@@ -1096,11 +1143,10 @@ const _initAlloData = async () => {
         debugLog('[AlloFlow] DataProvider not loaded — using raw Firebase calls');
     }
 };
-_initAlloData();
+if (!_alloQrFirebaseHandoffRequiredButMissing) _initAlloData();
 const appId = _alloRuntimeAppId;
-const apiKey = (typeof __firebase_config !== 'undefined' || _alloQrFirebaseHandoff)
-  ? ""
-  : (process.env.REACT_APP_GEMINI_API_KEY || '');
+// Public web bundles must never compile a provider billing credential.
+const apiKey = "";
 const fisherYatesShuffle = (arr) => {
   const shuffled = [...arr];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -3745,6 +3791,7 @@ const AlloFlowContent = () => {
   const { t, setUiLanguage, currentUiLanguage, isTranslating } = React.useContext(LanguageContext);
   const [user, setUser] = useState(auth.currentUser);
   useEffect(() => {
+      if (_alloQrFirebaseHandoffRequiredButMissing) return undefined;
       return onAuthStateChanged(auth, (u) => setUser(u));
   }, []);
   const [lmsSession, setLmsSession] = useState(null);
@@ -3752,41 +3799,10 @@ const AlloFlowContent = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    if (params.get('lti') === '1' && params.get('session')) {
-      const sessionToken = params.get('session');
-      const host = window.location.hostname;
-      const functionsBase = host.includes('localhost')
-        ? 'http://localhost:5001'
-        : `https://us-central1-${host.replace('.web.app', '').replace('.firebaseapp.com', '')}.cloudfunctions.net`;
-      fetch(`${functionsBase}/ltiSession?token=${sessionToken}`)
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (data) {
-            setLmsSession({
-              user: data.user || params.get('user') || 'User',
-              course: data.course || params.get('course') || 'Course',
-              role: data.isInstructor ? 'teacher' : 'student',
-              email: data.email,
-              courseId: data.courseId,
-              platformUrl: data.platformUrl,
-            });
-            debugLog('[LTI] Session loaded:', data.user, data.course);
-          }
-        })
-        .catch(err => {
-          warnLog('[LTI] Session fetch failed, using URL params:', err?.message);
-          setLmsSession({
-            user: params.get('user') || 'User',
-            course: params.get('course') || 'Course',
-            role: params.get('role') || 'student',
-          });
-        });
+    if (params.get('lti') === '1' || params.has('session')) {
+      warnLog('[LTI] Firebase LTI is disabled until a verified one-time identity exchange is available.');
       const cleanUrl = new URL(window.location);
-      cleanUrl.searchParams.delete('lti');
-      cleanUrl.searchParams.delete('session');
-      cleanUrl.searchParams.delete('course');
-      cleanUrl.searchParams.delete('role');
-      cleanUrl.searchParams.delete('user');
+      ['lti', 'session', 'course', 'role', 'user'].forEach((key) => cleanUrl.searchParams.delete(key));
       window.history.replaceState({}, '', cleanUrl.toString());
     }
     if (params.get('audit_urls')) {
@@ -10983,6 +10999,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
   }, [isTeacherMode, activeSessionCode, activeView, adventureState, activeSessionAppId]);
   useEffect(() => {
+    if (_alloQrFirebaseHandoffRequiredButMissing) {
+      setUser(null);
+      debugLog('Firebase auth skipped: QR link has no valid teacher handoff.');
+      return undefined;
+    }
     let authRetryTimer = null;
     const initAuth = async (retryCount = 0) => {
       try {
@@ -19261,7 +19282,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           const params = new URLSearchParams(window.location.search);
           const liveCode = _alloCleanLiveSessionCode(params.get('allo_join') || params.get('allo_live_join') || '');
           if (!liveCode) return undefined;
-          const hostId = _alloCleanFirestoreDocId(params.get('allo_host') || params.get('allo_app') || params.get('hostAppId') || '', '');
+          const firebaseHandoff = _alloReadQrFirebaseHandoff();
+          const hostId = firebaseHandoff ? firebaseHandoff.appId : '';
           window.__alloQrStudentMode = { type: 'live', aiDisabled: true, code: liveCode, hostAppId: hostId || appId };
           window.__alloStudentAiDisabled = true;
           try { window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1'); } catch (_) {}
@@ -19275,7 +19297,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setIsIndependentMode(false);
           setIsStudentLinkMode(true);
           setShowStudentEntry(true);
-          if (hostId) setJoinAppIdInput(hostId);
+          if (!firebaseHandoff) {
+              addToast(ALLO_QR_INCOMPLETE_MESSAGE, 'error');
+              return undefined;
+          }
+          setJoinAppIdInput(hostId);
           setJoinCodeInput(liveCode);
           timer = setTimeout(() => {
               if (cancelled) return;
@@ -20390,7 +20416,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           const params = new URLSearchParams(window.location.search);
           const assignmentId = _alloCleanQrAssignmentId(params.get('allo_assignment') || '');
           if (!assignmentId) return undefined;
-          const hostId = _alloCleanFirestoreDocId(params.get('allo_host') || params.get('allo_app') || params.get('hostAppId') || '', appId) || appId;
+          const firebaseHandoff = _alloReadQrFirebaseHandoff();
+          const hostId = firebaseHandoff ? firebaseHandoff.appId : '';
           window.__alloQrStudentMode = { type: 'assignment', aiDisabled: true, assignmentId, hostAppId: hostId };
           window.__alloStudentAiDisabled = true;
           try { window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1'); } catch (_) {}
@@ -20404,6 +20431,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setIsIndependentMode(false);
           setIsStudentLinkMode(true);
           setShowStudentEntry(true);
+          if (!firebaseHandoff) {
+              addToast(ALLO_QR_INCOMPLETE_MESSAGE, 'error');
+              return undefined;
+          }
           setActiveSessionCode(null);
           setActiveSessionAppId(hostId);
           const loadAssignment = async () => {

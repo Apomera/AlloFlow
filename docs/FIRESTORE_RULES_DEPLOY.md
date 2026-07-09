@@ -1,5 +1,14 @@
 # Deploying the Firestore Rules (step-by-step)
 
+> **Superseded deployment procedure (2026-07-09).** Do not paste these rules manually and do
+> not roll back to unknown console rules. Keep Firestore in production-mode deny by default.
+> When intentionally enabling live sessions, follow [DEPLOY_YOUR_OWN.md](../DEPLOY_YOUR_OWN.md)
+> and deploy the versioned rules plus TTL configuration with
+> `firebase deploy -c firebase.live-sessions.json --only firestore:rules,firestore:indexes`.
+> App Check monitoring/enforcement and emulator coverage are release requirements. The historical
+> checklist below remains only as behavioral context.
+>
+
 > **Deployment snapshot note (2026-07-09):** This checklist was written against the 2026-07-01 live-session paths. Before using it, compare `firestore.rules`, `docs/LIVE_SESSION_PROTOCOL.md`, and the current Firebase project settings; do not assume the "today" statements below still describe the live demo project without checking the console.
 
 For Aaron. The rules file is [`firestore.rules`](../firestore.rules) at the repo root.

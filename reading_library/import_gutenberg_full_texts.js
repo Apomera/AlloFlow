@@ -410,6 +410,135 @@ const DEFAULT_IMPORTS = [
     subjects: ['Drama', 'Poetry', 'British literature'],
     description: 'A full in-app public-domain copy of The Complete Works of William Shakespeare for older-student drama and literature study.',
   },
+  // ---- 2026-07-07 batch: classroom classics for younger/middle readers ----
+  // (the original canon skewed civics + upper-grade; these fill Gr 3-8.
+  //  IDs verified against gutenberg.org at import time — the importer prints
+  //  each fetched title; prune any mismatch and re-run.)
+  {
+    id: 74,
+    subjects: ['Fiction', 'Adventure', 'American literature'],
+    description: 'A full in-app public-domain copy of The Adventures of Tom Sawyer for middle-grade reading.',
+  },
+  {
+    id: 16,
+    subjects: ['Fiction', 'Fantasy', 'Children\'s literature'],
+    description: 'A full in-app public-domain copy of Peter Pan for younger and middle-grade reading.',
+  },
+  {
+    id: 113,
+    subjects: ['Fiction', 'Children\'s literature'],
+    description: 'A full in-app public-domain copy of The Secret Garden for middle-grade reading.',
+  },
+  {
+    id: 514,
+    subjects: ['Fiction', 'Family', 'American literature'],
+    description: 'A full in-app public-domain copy of Little Women for middle-grade reading.',
+  },
+  {
+    id: 2591,
+    subjects: ['Fairy tales', 'Folklore', 'Children\'s literature'],
+    description: 'A full in-app public-domain copy of Grimms\' Fairy Tales for younger and middle-grade reading.',
+  },
+  {
+    id: 21,
+    subjects: ['Fables', 'Folklore', 'Children\'s literature'],
+    description: 'A full in-app public-domain copy of Aesop\'s Fables for younger readers and moral-lesson study.',
+  },
+  {
+    id: 43,
+    subjects: ['Fiction', 'Gothic', 'British literature'],
+    description: 'A full in-app public-domain copy of The Strange Case of Dr. Jekyll and Mr. Hyde for older-student reading.',
+  },
+  {
+    id: 41,
+    subjects: ['Fiction', 'American literature', 'Short stories'],
+    description: 'A full in-app public-domain copy of The Legend of Sleepy Hollow for middle-grade reading.',
+  },
+  {
+    id: 289,
+    subjects: ['Fiction', 'Animals', 'Children\'s literature'],
+    description: 'A full in-app public-domain copy of The Wind in the Willows for younger and middle-grade reading.',
+  },
+  {
+    id: 902,
+    subjects: ['Fairy tales', 'Short stories', 'British literature'],
+    description: 'A full in-app public-domain copy of The Happy Prince and Other Tales for middle-grade reading.',
+  },
+  {
+    id: 244,
+    subjects: ['Fiction', 'Mystery', 'British literature'],
+    description: 'A full in-app public-domain copy of A Study in Scarlet for older-student mystery reading.',
+  },
+  {
+    id: 215,
+    subjects: ['Fiction', 'Animals', 'Adventure'],
+    description: 'A full in-app public-domain copy of The Call of the Wild for middle-grade adventure reading.',
+  },
+  {
+    id: 46,
+    subjects: ['Fiction', 'Holidays', 'British literature'],
+    description: 'A full in-app public-domain copy of A Christmas Carol for middle-grade reading.',
+  },
+  {
+    id: 829,
+    subjects: ['Fiction', 'Satire', 'Adventure'],
+    description: 'A full in-app public-domain copy of Gulliver\'s Travels for older-student reading.',
+  },
+  {
+    id: 12,
+    subjects: ['Fiction', 'Fantasy', 'Children\'s literature'],
+    description: 'A full in-app public-domain copy of Through the Looking-Glass for younger and middle-grade reading.',
+  },
+  {
+    id: 1322,
+    subjects: ['Poetry', 'American literature'],
+    description: 'A full in-app public-domain copy of Leaves of Grass for older-student poetry study.',
+  },
+  {
+    id: 521,
+    subjects: ['Fiction', 'Adventure', 'Survival'],
+    description: 'A full in-app public-domain copy of Robinson Crusoe for older-student adventure reading.',
+  },
+  {
+    id: 103,
+    subjects: ['Fiction', 'Adventure', 'Geography'],
+    description: 'A full in-app public-domain copy of Around the World in Eighty Days for middle-grade adventure reading.',
+  },
+  {
+    id: 164,
+    subjects: ['Fiction', 'Science fiction', 'Ocean'],
+    description: 'A full in-app public-domain copy of Twenty Thousand Leagues Under the Seas for middle-grade science-adventure reading.',
+  },
+  {
+    id: 768,
+    subjects: ['Fiction', 'Gothic', 'British literature'],
+    description: 'A full in-app public-domain copy of Wuthering Heights for older-student literature study.',
+  },
+  {
+    id: 1727,
+    subjects: ['Epic poetry', 'Mythology', 'World literature'],
+    description: 'A full in-app public-domain copy of The Odyssey (Butler translation) for older-student mythology and literature study.',
+  },
+  {
+    id: 14838,
+    subjects: ['Fiction', 'Animals', 'Children\'s literature'],
+    description: 'A full in-app public-domain copy of The Tale of Peter Rabbit for early readers.',
+  },
+  {
+    id: 14474,
+    subjects: ['Science', 'Chemistry', 'Lectures'],
+    description: 'A full in-app public-domain copy of Faraday\'s The Chemical History of a Candle for older-student science reading.',
+  },
+  {
+    id: 32,
+    subjects: ['Fiction', 'Utopian literature', 'American literature'],
+    description: 'A full in-app public-domain copy of Herland for older-student literature and social-studies discussion.',
+  },
+  {
+    id: 67098,
+    subjects: ['Fiction', 'Animals', 'Children\'s literature'],
+    description: 'A full in-app public-domain copy of Winnie-the-Pooh for early and middle-grade readers.',
+  },
 ];
 
 const dryRun = process.argv.includes('--dry-run');

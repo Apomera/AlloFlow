@@ -188,6 +188,22 @@ const makeSessionAssetId = (prefix, parts) => {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 };
 const getSessionAssetRef = (appId, assetId) => doc(db, "artifacts", appId, "public", "data", "session_assets", assetId);
+const getSessionAssetSecurityMetadata = (sessionCode) => {
+  const ownerUid = window.__alloFirebase && window.__alloFirebase.auth && window.__alloFirebase.auth.currentUser && window.__alloFirebase.auth.currentUser.uid;
+  const parentId = sanitizeSessionAssetIdPart(sessionCode);
+  if (!ownerUid) throw new Error("Firebase Authentication must be ready before uploading session assets.");
+  if (!sessionCode || parentId !== String(sessionCode)) throw new Error("A valid session or assignment ID is required for asset upload.");
+  const parentKind = parentId.startsWith("HW-") ? "assignment" : "live";
+  const now = new Date();
+  const lifetimeMs = parentKind === "assignment" ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+  return {
+    ownerUid,
+    parentId,
+    parentKind,
+    createdAt: now,
+    expiresAt: new Date(now.getTime() + lifetimeMs)
+  };
+};
 const enqueueChunkedStringAsset = (appId, assetId, kind, data, writeTasks, metadata = {}) => {
   const text = typeof data === "string" ? data : JSON.stringify(data);
   if (jsonByteLength(text) > SESSION_RESOURCE_CHUNK_SIZE) {
@@ -199,7 +215,8 @@ const enqueueChunkedStringAsset = (appId, assetId, kind, data, writeTasks, metad
         kind: `${kind}Chunk`,
         parent: assetId,
         index: chunkIds.length - 1,
-        data: text.slice(offset, offset + SESSION_RESOURCE_CHUNK_SIZE)
+        data: text.slice(offset, offset + SESSION_RESOURCE_CHUNK_SIZE),
+        ...metadata
       }));
     }
     writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
@@ -217,19 +234,21 @@ const enqueueChunkedStringAsset = (appId, assetId, kind, data, writeTasks, metad
     })));
   }
 };
-const enqueueSessionResourceAsset = (appId, assetId, item, itemJson, writeTasks) => {
+const enqueueSessionResourceAsset = (appId, assetId, item, itemJson, writeTasks, metadata = {}) => {
   if (jsonByteLength(itemJson) > SESSION_RESOURCE_CHUNK_SIZE) {
     enqueueChunkedStringAsset(appId, assetId, "sessionResource", itemJson, writeTasks, {
       id: item && item.id,
       type: item && item.type,
       title: item && item.title,
-      meta: item && item.meta
+      meta: item && item.meta,
+      ...metadata
     });
   } else {
     writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
       kind: "sessionResource",
       resource: item,
-      byteLength: jsonByteLength(itemJson)
+      byteLength: jsonByteLength(itemJson),
+      ...metadata
     })));
   }
 };
@@ -263,6 +282,7 @@ const compactLargeSessionResources = (appId, resources, writeTasks, options = {}
   }
   console.log("[SESSION DEBUG] Storing live-session resource bodies as refs outside the session doc.");
   const sessionCode = options.sessionCode || "session";
+  const securityMetadata = options.securityMetadata || {};
   const manifest = resources.map((item, index) => {
     let itemJson = "";
     try {
@@ -277,7 +297,7 @@ const compactLargeSessionResources = (appId, resources, writeTasks, options = {}
     }
     const itemHash = hashStringForSessionAsset(itemJson);
     const assetId = makeSessionAssetId("res", [sessionCode, index, item && item.id || item && item.type || "resource"]);
-    enqueueSessionResourceAsset(appId, assetId, item, itemJson, writeTasks);
+    enqueueSessionResourceAsset(appId, assetId, item, itemJson, writeTasks, securityMetadata);
     return stripUndefinedForFirestore({
       id: item && item.id || assetId,
       type: item && item.type || "resource",
@@ -302,7 +322,8 @@ const compactLargeSessionResources = (appId, resources, writeTasks, options = {}
   const manifestId = makeSessionAssetId("manifest", [sessionCode, manifestHash]);
   enqueueChunkedStringAsset(appId, manifestId, "sessionResourcesManifest", manifestJson, writeTasks, {
     count: manifest.length,
-    hash: manifestHash
+    hash: manifestHash,
+    ...securityMetadata
   });
   return [stripUndefinedForFirestore({
     id: manifestId,
@@ -359,6 +380,7 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
   } catch (preCheckErr) {
     console.error("[SESSION DEBUG] Pre-check error:", preCheckErr);
   }
+  const securityMetadata = getSessionAssetSecurityMetadata(sessionCode);
   const safeResources = structuredClone(stripUnsafeLiveSessionFields(resources));
   const writeTasks = [];
   const processField = (obj, key, assetSeed) => {
@@ -366,7 +388,7 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
     if (val && typeof val === "string" && val.startsWith("data:image")) {
       const assetId = makeSessionAssetId("img", assetSeed.concat([key, hashStringForSessionAsset(val)]));
       obj[key] = `ref::${assetId}`;
-      enqueueChunkedStringAsset(appId, assetId, "sessionImage", val, writeTasks);
+      enqueueChunkedStringAsset(appId, assetId, "sessionImage", val, writeTasks, securityMetadata);
     }
   };
   safeResources.forEach((item, index) => {
@@ -390,7 +412,7 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
     }
   });
   const firestoreResources = stripUndefinedForFirestore(safeResources);
-  const resourcesForSessionDoc = compactLargeSessionResources(appId, firestoreResources, writeTasks, { alwaysExternalize: true, sessionCode });
+  const resourcesForSessionDoc = compactLargeSessionResources(appId, firestoreResources, writeTasks, { alwaysExternalize: true, sessionCode, securityMetadata });
   await runFirestoreWriteTasks(writeTasks);
   return resourcesForSessionDoc;
 };

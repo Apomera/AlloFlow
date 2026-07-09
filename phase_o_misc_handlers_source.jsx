@@ -13,7 +13,7 @@ const startClassSession = async (deps) => {
     addToast(t('session.creating', { code }), "info");
     try {
         const resourcesToUpload = history.filter(h => h.id);
-        const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload);
+        const lightweightResources = await uploadSessionAssets(appId, resourcesToUpload, code);
         const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', code);
         const sessionPayload = {
             resources: lightweightResources,

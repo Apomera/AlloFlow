@@ -281,19 +281,20 @@ const WebSearchProvider = {
     _initSearchProxy() {
         if (this._serperInitialized) return;
         this._serperInitialized = true;
-        const FIREBASE_HOST = (typeof window !== 'undefined' && window.ALLOFLOW_HOST) || 'https://prismflow-911fe.web.app';
-        if (this._isCanvas) {
-            // Canvas: must use absolute URL (hosting rewrite → cloud function)
-            this._serperProxyUrl = `${FIREBASE_HOST}/api/searchProxy`;
-            console.log('[WebSearch] Canvas detected — using absolute Serper proxy URL:', this._serperProxyUrl);
-        } else if (typeof window !== 'undefined' && (window.location.hostname.includes('prismflow') || window.location.hostname.includes('.web.app'))) {
-            // On the actual Firebase site: use relative URL (same-origin)
+        const isOwnedFirebaseHost = typeof window !== 'undefined'
+            && (/\.web\.app$/.test(window.location.hostname) || /\.firebaseapp\.com$/.test(window.location.hostname));
+        const explicitHost = typeof window !== 'undefined'
+            ? String(window.ALLOFLOW_FUNCTIONS_HOST || window.ALLOFLOW_HOST || '').replace(/\/$/, '')
+            : '';
+        if (isOwnedFirebaseHost) {
             this._serperProxyUrl = '/api/searchProxy';
-            console.log('[WebSearch] Firebase site — using relative Serper proxy URL');
+            console.log('[WebSearch] Owned Firebase site - optional authenticated search proxy enabled.');
+        } else if (explicitHost) {
+            this._serperProxyUrl = `${explicitHost}/api/searchProxy`;
+            console.log('[WebSearch] Explicit optional search proxy configured.');
         } else {
-            // Dev / other: use absolute URL
-            this._serperProxyUrl = `${FIREBASE_HOST}/api/searchProxy`;
-            console.log('[WebSearch] Dev/other — using absolute Serper proxy URL:', this._serperProxyUrl);
+            this._serperProxyUrl = null;
+            console.log('[WebSearch] No optional Firebase search proxy configured; using the environment search path.');
         }
     },
 
@@ -630,13 +631,23 @@ const WebSearchProvider = {
      * Returns real Google SERP results.
      */
     async _fetchSerper(query, maxResults) {
-        const url = `${this._serperProxyUrl}?q=${encodeURIComponent(query)}&num=${Math.min(maxResults, 10)}`;
+        const url = this._serperProxyUrl;
+        const getSecurityHeaders = typeof window !== 'undefined'
+            && window.__alloFirebase
+            && window.__alloFirebase.getFunctionSecurityHeaders;
+        if (!url || typeof getSecurityHeaders !== 'function') {
+            throw new Error('Authenticated Firebase search is not configured.');
+        }
+        const securityHeaders = await getSecurityHeaders();
 
         let response;
         try {
-            console.log(`[WebSearch] Calling Serper proxy: ${this._serperProxyUrl}`);
+            console.log('[WebSearch] Calling authenticated Serper proxy.');
             response = await fetch(url, {
+                method: 'POST',
                 mode: 'cors',
+                headers: { 'Content-Type': 'application/json', ...securityHeaders },
+                body: JSON.stringify({ query, num: Math.min(maxResults, 10) }),
                 signal: AbortSignal.timeout ? AbortSignal.timeout((window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.webSearchMs) || 15000) : undefined,
             });
         } catch (fetchErr) {
