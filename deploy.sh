@@ -238,6 +238,9 @@ git add AlloFlowANTI.txt prismflow-deploy/src/AlloFlowANTI.txt prismflow-deploy/
 # mirrors during Step 3; without this line those deterministic copies linger
 # as a dirty tree after every deploy.
 git add prismflow-deploy/public/ 2>/dev/null || true
+# Cloudflare Pages serves the repository root, so the generated /app shell
+# must be committed there as well as in Firebase Hosting's public tree.
+git add app/ 2>/dev/null || true
 # The Cloudflare CDN (alloflow-cdn.pages.dev) serves the REPO-ROOT compiled
 # modules. build.js (Step 3) recompiles the COMPILE_PAIRS each deploy but they
 # were never staged here — so doc_pipeline_module.js etc. lagged a deploy behind
@@ -309,7 +312,7 @@ else
   FIREBASE_URL="${FIREBASE_URL:-}"
   CDN_BASE="https://alloflow-cdn.pages.dev"
   # Modules most worth confirming reached the CDN (pipeline-critical first).
-  CDN_MODULES=(doc_pipeline_module.js view_pdf_audit_module.js gemini_api_module.js)
+  CDN_MODULES=(doc_pipeline_module.js view_pdf_audit_module.js gemini_api_module.js app/index.html app/sw.js)
   CDN_RETRIES="${POST_VERIFY_CDN_RETRIES:-4}"   # freshness re-checks (Cloudflare lag)
   CDN_WAIT="${POST_VERIFY_CDN_WAIT:-20}"        # seconds between freshness re-checks
 

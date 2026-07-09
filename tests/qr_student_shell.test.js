@@ -222,6 +222,7 @@ describe('incomplete QR privacy guard', () => {
 describe('Cloudflare student shell build wiring', () => {
   it('keeps the committed /app artifact self-contained and Cloudflare-sized', () => {
     const shellDir = resolve(process.cwd(), 'prismflow-deploy/public/app');
+    const cdnShellDir = resolve(process.cwd(), 'app');
     const indexPath = resolve(shellDir, 'index.html');
     const index = readFileSync(indexPath, 'utf8');
     const serviceWorker = readFileSync(resolve(shellDir, 'sw.js'), 'utf8');
@@ -237,6 +238,8 @@ describe('Cloudflare student shell build wiring', () => {
     }
 
     expect(index.length).toBeGreaterThan(100 * 1024);
+    expect(readFileSync(resolve(cdnShellDir, 'index.html'), 'utf8')).toBe(index);
+    expect(readFileSync(resolve(cdnShellDir, 'sw.js'), 'utf8')).toBe(serviceWorker);
     expect(index).toContain('https://alloflow-cdn.pages.dev/app/');
     expect(index).toContain('This QR link is incomplete');
     expect(index).toContain('navigator.serviceWorker.register("./sw.js",{scope:"./"');
@@ -254,6 +257,7 @@ describe('Cloudflare student shell build wiring', () => {
 
     expect(packageJson.scripts.build).toContain('node ../build.js --copy-student-shell');
     expect(buildScript).toContain("const STUDENT_SHELL_PUBLIC_DIR = path.join(ROOT, 'prismflow-deploy', 'public', 'app')");
+    expect(buildScript).toContain("const STUDENT_SHELL_CDN_DIR = path.join(ROOT, 'app')");
     expect(buildScript).toContain("'index.html'");
     expect(buildScript).toContain("'static'");
     expect(buildScript).not.toContain("'alloflow_intro_teacher.mp4',");

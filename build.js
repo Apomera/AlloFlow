@@ -47,6 +47,7 @@ const OUTPUT = path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx');
 const BACKUP = path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt');
 const STUDENT_SHELL_BUILD_DIR = path.join(ROOT, 'prismflow-deploy', 'build');
 const STUDENT_SHELL_PUBLIC_DIR = path.join(ROOT, 'prismflow-deploy', 'public', 'app');
+const STUDENT_SHELL_CDN_DIR = path.join(ROOT, 'app');
 const STUDENT_SHELL_ENTRIES = [
     'index.html',
     'asset-manifest.json',
@@ -122,8 +123,12 @@ function publishStudentShell() {
         throw new Error('Student shell contains Cloudflare-ineligible files: ' + oversized.join(', '));
     }
 
+    fs.rmSync(STUDENT_SHELL_CDN_DIR, { recursive: true, force: true });
+    fs.cpSync(STUDENT_SHELL_PUBLIC_DIR, STUDENT_SHELL_CDN_DIR, { recursive: true });
+
     console.log('Published student shell: ' + path.relative(ROOT, STUDENT_SHELL_PUBLIC_DIR)
-        + ' (' + copiedFiles + ' files, self-contained index)');
+        + ' + ' + path.relative(ROOT, STUDENT_SHELL_CDN_DIR)
+        + ' (' + copiedFiles + ' files each, self-contained index)');
 }
 
 
