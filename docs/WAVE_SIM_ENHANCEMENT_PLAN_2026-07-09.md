@@ -1,5 +1,25 @@
 # Wave Simulator — Deep Dive + Enhancement Plan (2026-07-09)
 
+## STATUS @41fb9aabd (2026-07-09)
+
+**DONE (committed, both copies synced, wave golden rebaselined):** all of Batch 0
+(B0.1–B0.10; B0.11 `_tutWave` left in hub, superseded by in-tool tour) **plus** the
+canvas-stutter fix (inline ref re-init on every render — same class as DNA/Ecosystem),
+B1.1 pause/play/step (+Space, reduced-motion starts paused), B1.2 tour banner,
+B1.3 drag persist + wall slider, B1.4 accordion, B1.5 reset-all, B1.6+B2.3 legends→HTML,
+B2.2 accents, B2.4 scene-per-mode, B2.5 ripple ¼-res buffer, B3.1 beats preset +
+dual-oscillator audio, B3.2 doppler audio pitch-bend, B3.5 investigate callout,
+B3.6 myths panel, B3.7 quiz upgrades, B3.8 chip retitle, B4.2 canvas SR announcements,
+B4.3 aria-valuetext, partial B4.5 (chip/slider sizes).
+
+**OPEN:** B2.1 theme tokens (STEM lab is currently a light surface; do with a hub-wide
+token audit), B3.3 measure mode (λ-ruler + stopwatch on pause), B3.4 predict-first
+prompts (gradeLevel-banded), B4.1 full i18n extraction to `stem.wave.*` (`__alloT=ctx.t`),
+B4.6 contrast pass, keyboard nudge for ripple-source drag (separation slider gives
+functional parity today). **Browser smoke pending** (mount golden passed; draw loop,
+audio, and drag paths need eyes-on). Pre-existing golden failures for flightSim/galaxy/
+molecule/physics/spaceExplorer belong to other sessions — do not rebaseline them.
+
 Source of truth: `stem_lab/stem_tool_wave.js` (3,740 lines, ~299 KB).
 Deploy copy: `prismflow-deploy/public/stem_lab/stem_tool_wave.js` (byte-identical as of 2026-07-03) — keep both in sync on every edit.
 Golden coverage: `tests/stem_sim_tools_golden.test.js:147` (mount mode).
