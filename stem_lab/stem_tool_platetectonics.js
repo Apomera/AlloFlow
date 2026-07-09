@@ -209,6 +209,7 @@
     var h = React.createElement;
     var isDark = !!(props && props.darkMode);
     var announceToSR = props && props.announceToSR;
+    var addToast = (props && props.addToast) || null;
     var useState = React.useState;
     var useRef = React.useRef;
     var useEffect = React.useEffect;
@@ -244,6 +245,13 @@
 
     var canvasRef = useRef(null);
     var animRef = useRef(null);
+
+    // The rAF loop starts once ([] effect) and would otherwise call the FIRST render's
+    // draw() forever — freezing the canvas on the initial theme. Re-bind per render.
+    var drawRef = useRef(null);
+    drawRef.current = draw;
+    var isDarkRef = useRef(isDark);
+    isDarkRef.current = isDark;
 
     // S-P time for a station given current epicenter
     function spTime(station, epi) {
@@ -292,8 +300,8 @@
       var _lastSig = null;
       function frame() {
         if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; }
-        var sig = JSON.stringify(sRef.current) + '|' + JSON.stringify(stationsRef.current) + '|' + isDark;
-        if (sig !== _lastSig) { _lastSig = sig; draw(ctx, sRef.current); }
+        var sig = JSON.stringify(sRef.current) + '|' + JSON.stringify(stationsRef.current) + '|' + isDarkRef.current;
+        if (sig !== _lastSig) { _lastSig = sig; (drawRef.current || draw)(ctx, sRef.current); }
         if (!prefersReduced) animRef.current = requestAnimationFrame(frame);
       }
       frame();
@@ -594,14 +602,14 @@
           h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '📐 The math'),
           h('div', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
             h('div', { className: 'font-mono mb-1' }, 'distance = (S-P seconds) × Vp·Vs / (Vp − Vs)'),
-            'P-waves race through continental crust at ~' + VP.toFixed(1) + ' km/s; slower S-waves trail at ~' + VS.toFixed(1) + ' km/s. The lag between them grows by ~' + KM_PER_SP.toFixed(1) + ' km for every second of S-P time (≈ 8 s per 100 km, the rule of thumb students memorize). One station gives you a circle of possible locations; two narrow it to two intersection points; three pin down the epicenter. This is exactly how the 1906 San Francisco, 1989 Loma Prieta, and 2011 Tōhoku epicenters were located before GPS-based methods.'
+            'P-waves race through continental crust at ~' + VP.toFixed(1) + ' km/s; slower S-waves trail at ~' + VS.toFixed(1) + ' km/s. The lag between them grows by ~' + KM_PER_SP.toFixed(1) + ' km for every second of S-P time (≈ 12 s of S-P delay per 100 km — a handy rule of thumb). One station gives you a circle of possible locations; two narrow it to two intersection points; three pin down the epicenter. This is exactly how the 1906 San Francisco, 1989 Loma Prieta, and 2011 Tōhoku epicenters were located before GPS-based methods.'
           )
         ),
         h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-emerald-300') },
           h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '🎯 Try this'),
           h('ul', { className: 'text-[11px] space-y-0.5 list-disc pl-4 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
             h('li', null, 'Drag the red star directly on top of a station  -  its S-P time drops to 0 (you are AT the epicenter).'),
-            h('li', null, 'Move the star far away  -  every S-P time grows by ~8 seconds per 100 km. Triple-check by counting grid squares (100 km each).'),
+            h('li', null, 'Move the star far away  -  every S-P time grows by ~12 seconds per 100 km. Triple-check by counting grid squares (100 km each).'),
             h('li', null, 'Drag the stations into a straight line  -  triangulation becomes unstable (the math has no unique answer when stations are collinear).'),
             h('li', null, 'Turn off "Show circles" and rebuild them mentally from the readings  -  this is the job real analysts did with paper and compass before computers.')
           )
@@ -646,6 +654,10 @@
     var animRef = useRef(null);
     var sRef = useRef(s);
     sRef.current = s;
+    // Re-bind draw each render so the running rAF loop picks up the CURRENT theme
+    // (the [] effect otherwise calls the first render's draw closure forever).
+    var drawRef = useRef(null);
+    drawRef.current = draw;
 
     var BOUNDARY = {
       convergent: { name: 'Convergent', color: '#dc2626', icon: '🗻', desc: 'Plates collide -> mountains rise. Andes, Himalayas, Cascades.' },
@@ -702,7 +714,7 @@
           update(patch);
         }
 
-        draw(ctx, W, H, cur);
+        (drawRef.current || draw)(ctx, W, H, cur);
         animRef.current = requestAnimationFrame(frame);
       }
       animRef.current = requestAnimationFrame(frame);
@@ -1283,7 +1295,7 @@ var d = labToolData.plateTectonics || {};
               tier: "minor",
               type: "oceanic",
               area: "15M km²",
-              motion: "~10 cm/yr E",
+              motion: "~7.5 cm/yr E",
               notes: "Subducts under S. American plate forming Peru-Chile Trench + Andes."
             },
             {
@@ -1365,7 +1377,7 @@ var d = labToolData.plateTectonics || {};
               type: "continental",
               area: "3M km²",
               motion: "~5 cm/yr",
-              notes: "SE Asia including Java + Sumatra. Subducted by Indo-Australian plate."
+              notes: "SE Asia including Java + Sumatra. The Indo-Australian plate subducts beneath it, feeding the Java-Sumatra volcanic arc."
             },
             {
               id: 18,
@@ -1410,7 +1422,7 @@ var d = labToolData.plateTectonics || {};
               type: "oceanic",
               area: "small",
               motion: "Variable",
-              notes: "Subducted by African plate creating Hellenic Arc."
+              notes: "The African plate subducts beneath it, creating the Hellenic Arc."
             },
             {
               id: 23,
@@ -2223,7 +2235,7 @@ var d = labToolData.plateTectonics || {};
               year: 1952,
               magnitude: "9.0",
               location: "USSR (Russia)",
-              notes: "Caused Pacific-wide tsunami. ~10,000 deaths."
+              notes: "Caused Pacific-wide tsunami. ~2,300 deaths (Severo-Kurilsk)."
             },
             {
               id: 6,
@@ -2309,7 +2321,7 @@ var d = labToolData.plateTectonics || {};
               id: 16,
               name: __alloT('stem.platetectonics.tangshan_china', "Tangshan China"),
               year: 1976,
-              magnitude: "7.5",
+              magnitude: "7.6",
               location: "Tangshan, China",
               notes: "~242,000 deaths. One of deadliest of 20th century."
             },
@@ -2791,7 +2803,7 @@ var d = labToolData.plateTectonics || {};
               type: "Stratovolcano",
               height: "5895 m",
               status: "Dormant",
-              notes: "Africa's highest peak. Last erupted 360,000 years ago."
+              notes: "Africa's highest peak. Last major eruption ~150,000-200,000 years ago."
             },
             {
               id: 13,
@@ -2942,9 +2954,9 @@ var d = labToolData.plateTectonics || {};
               name: __alloT('stem.platetectonics.anak_krakatau', "Anak Krakatau"),
               location: "Indonesia",
               type: "Stratovolcano",
-              height: "813 m",
+              height: "~155 m",
               status: "Active",
-              notes: "New volcano emerging from Krakatoa caldera. 2018 collapse caused tsunami."
+              notes: "New volcano emerging from Krakatoa caldera. 2018 collapse caused tsunami and cut its height from ~338 m."
             },
             {
               id: 30,
@@ -3313,7 +3325,7 @@ var d = labToolData.plateTectonics || {};
               name: __alloT('stem.platetectonics.rocky_mountains', "Rocky Mountains"),
               region: "N. America",
               age: "~50-80 million years",
-              origin: "Pacific plate subduction",
+              origin: "Farallon plate subduction (Laramide orogeny)",
               notes: "Run from BC to NM."
             },
             {
@@ -3584,8 +3596,8 @@ var d = labToolData.plateTectonics || {};
               id: 37,
               name: __alloT('stem.platetectonics.white_mountains', "White Mountains"),
               region: "New Hampshire",
-              age: "~440 million years",
-              origin: "Old collision",
+              age: "~200-100 million years (granites)",
+              origin: "Jurassic magmatism atop older collided crust",
               notes: "NH. Mt Washington 1917m."
             },
             {
@@ -3656,8 +3668,8 @@ var d = labToolData.plateTectonics || {};
               id: 46,
               name: __alloT('stem.platetectonics.mount_washington', "Mount Washington"),
               region: "NH",
-              age: "~440 million years",
-              origin: "Old collision",
+              age: "~400 million years",
+              origin: "Acadian collision (Devonian)",
               notes: "World's windiest weather record 231 mph."
             },
             {
@@ -3734,7 +3746,7 @@ var d = labToolData.plateTectonics || {};
             {
               id: 6,
               name: __alloT('stem.platetectonics.frederick_vine', "Frederick Vine"),
-              years: "1939-2022",
+              years: "1939-2024",
               country: "UK",
               contribution: "Vine-Matthews-Morley hypothesis. Magnetic stripes on seafloor."
             },
@@ -4729,13 +4741,13 @@ var d = labToolData.plateTectonics || {};
           { year: 1989, place: "Loma Prieta", mag: 6.9, source: 6.9, deaths: 63, notes: "Bay Bridge collapse during World Series broadcast" },
           { year: 1994, place: "Northridge, CA", mag: 6.7, source: 6.7, deaths: 60, notes: "Hidden fault - surprise; freeway collapses; $20B+ damage" },
           { year: 2014, place: "South Napa, CA", mag: 6, source: 6, deaths: 1, notes: "Brick chimney damage; Napa Wine Train derailed casks" },
-          { year: 1923, place: "Charleston, SC", mag: 7.3, source: 7.3, deaths: 60, notes: "Far from any plate boundary; East Coast quake" },
+          { year: 1886, place: "Charleston, SC", mag: 7.0, source: 7.0, deaths: 60, notes: "Far from any plate boundary; East Coast quake" },
           { year: 1811, place: "New Madrid, MO", mag: 7.7, source: 7.7, deaths: 1, notes: "Mississippi flowed backward briefly; rang church bells in Boston" },
           { year: 1812, place: "New Madrid, MO sequence", mag: 7.5, source: 7.5, deaths: 0, notes: "Three M7+ in 3 months; created Reelfoot Lake; oral history" },
           { year: 2010, place: "Haiti", mag: 7, source: 7, deaths: 230000, notes: "Strike-slip; Port-au-Prince devastated; relief failure case study" },
           { year: 2003, place: "Bam, Iran", mag: 6.6, source: 6.6, deaths: 26271, notes: "Mud-brick architecture amplified deaths; UNESCO site lost" },
           { year: 2008, place: "Sichuan, China", mag: 7.9, source: 7.9, deaths: 87000, notes: "School collapses prompted accountability movement" },
-          { year: 1976, place: "Tangshan, China", mag: 7.5, source: 7.5, deaths: 242000, notes: "Hidden urban fault; deadliest 20th-century quake by some counts" },
+          { year: 1976, place: "Tangshan, China", mag: 7.6, source: 7.6, deaths: 242000, notes: "Hidden urban fault; deadliest 20th-century quake by some counts" },
           { year: 1995, place: "Kobe (Hyogo)", mag: 6.9, source: 6.9, deaths: 6434, notes: "Urban quake-fire chain; reshaped Japan building codes" },
           { year: 2023, place: "Turkey-Syria", mag: 7.8, source: 7.8, deaths: 59259, notes: "Doublet sequence (M7.8+M7.5); 14M people displaced" },
           { year: 2015, place: "Gorkha, Nepal", mag: 7.8, source: 7.8, deaths: 8964, notes: "Triggered Everest avalanche; Kathmandu Valley shifted 3m south" },
@@ -4752,7 +4764,7 @@ var d = labToolData.plateTectonics || {};
 
         // ========== FAULT DB (50 major faults) ==========
         var FAULT_DB = [
-          { name: __alloT('stem.platetectonics.san_andreas', "San Andreas"), region: "California", type: "transform", lengthKm: 1300, notes: "Pacific/North American; right-lateral; 1906 SF earthquake; ~700 yr return" },
+          { name: __alloT('stem.platetectonics.san_andreas', "San Andreas"), region: "California", type: "transform", lengthKm: 1300, notes: "Pacific/North American; right-lateral; 1906 SF earthquake; ~150-300 yr return on major segments" },
           { name: __alloT('stem.platetectonics.north_anatolian', "North Anatolian"), region: "Turkey", type: "transform", lengthKm: 1500, notes: "Right-lateral; sequential westward migrating earthquakes since 1939" },
           { name: __alloT('stem.platetectonics.alpine_fault', "Alpine Fault"), region: "New Zealand", type: "transform", lengthKm: 600, notes: "Pacific/Australian; locked for 300+ years; expected M8 overdue" },
           { name: __alloT('stem.platetectonics.dead_sea_transform', "Dead Sea Transform"), region: "Israel/Jordan", type: "transform", lengthKm: 1000, notes: "Left-lateral; created Sea of Galilee + Dead Sea + Red Sea triple junction" },
@@ -4793,7 +4805,7 @@ var d = labToolData.plateTectonics || {};
           { name: __alloT('stem.platetectonics.basin_and_range', "Basin and Range"), region: "Nevada/Utah", type: "extensional", lengthKm: 1600, notes: "Extended crust; alternating uplifted ranges + dropped basins" },
           { name: __alloT('stem.platetectonics.walker_lane', "Walker Lane"), region: "Nevada/California", type: "transform", lengthKm: 800, notes: "Diffuse transform zone east of Sierra Nevada" },
           { name: __alloT('stem.platetectonics.garlock_fault', "Garlock Fault"), region: "California", type: "transform", lengthKm: 250, notes: "Left-lateral; bounds Mojave Desert north edge" },
-          { name: __alloT('stem.platetectonics.owens_valley_fault', "Owens Valley Fault"), region: "California", type: "normal", lengthKm: 100, notes: "Eastern Sierra escarpment; 1872 M7.8 Owens Valley quake" },
+          { name: __alloT('stem.platetectonics.owens_valley_fault', "Owens Valley Fault"), region: "California", type: "oblique (strike-slip + normal)", lengthKm: 100, notes: "Eastern Sierra escarpment; 1872 M7.8 quake was mostly right-lateral" },
           { name: __alloT('stem.platetectonics.idaho_montana_detachment', "Idaho-Montana detachment"), region: "Northern Rockies", type: "normal", lengthKm: 0, notes: "Cordilleran extension; metamorphic core complexes" },
           { name: __alloT('stem.platetectonics.tintina_fault', "Tintina Fault"), region: "Yukon", type: "transform", lengthKm: 1000, notes: "Right-lateral; part of N American interior strike-slip" },
           { name: __alloT('stem.platetectonics.olympic_wallowa_lineament', "Olympic-Wallowa Lineament"), region: "Pacific NW", type: "lineament", lengthKm: 800, notes: "Linear feature; tectonic significance debated" },
@@ -4824,7 +4836,7 @@ var d = labToolData.plateTectonics || {};
           { name: "Tristan-Gough", plate: "S Atlantic", volcanoes: "Edinburgh Peak", notes: "Track to Etendeka traps (Africa) + Parana traps (S America)" },
           { name: __alloT('stem.platetectonics.comores', "Comores"), plate: "Indian Ocean", volcanoes: "Karthala", notes: "African plate; Anjouan + Grande Comore" },
           { name: __alloT('stem.platetectonics.marion', "Marion"), plate: "S Indian Ocean", volcanoes: "Marion Island", notes: "Sub-Antarctic; Crozet plateau track" },
-          { name: __alloT('stem.platetectonics.kerguelen', "Kerguelen"), plate: "S Indian Ocean", volcanoes: "Big Ben (Heard Is.)", notes: "Largest oceanic plateau; Cretaceous super-eruption" },
+          { name: __alloT('stem.platetectonics.kerguelen', "Kerguelen"), plate: "S Indian Ocean", volcanoes: "Big Ben (Heard Is.)", notes: "Second-largest oceanic plateau (after Ontong Java); Cretaceous super-eruption" },
           { name: __alloT('stem.platetectonics.crozet', "Crozet"), plate: "S Indian Ocean", volcanoes: "L'Alouette peak", notes: "French sub-Antarctic islands" },
           { name: __alloT('stem.platetectonics.bouvet', "Bouvet"), plate: "S Atlantic", volcanoes: "Bouvetøya", notes: "World's most remote island; Norway" },
           { name: __alloT('stem.platetectonics.balleny', "Balleny"), plate: "Antarctic", volcanoes: "Sturge Is.", notes: "Antarctica's most active modern hotspot" },
@@ -5005,11 +5017,11 @@ var d = labToolData.plateTectonics || {};
           { name: __alloT('stem.platetectonics.mt_battie', "Mt Battie"), place: "Camden Hills", notes: "Penobscot Bay overlook; granite intrusion" },
           { name: __alloT('stem.platetectonics.quoddy_head', "Quoddy Head"), place: "Lubec ME", notes: "Easternmost US point; Eastport pillow basalts" },
           { name: __alloT('stem.platetectonics.penobscot_bay_drumlins', "Penobscot Bay drumlins"), place: "Mid-coast", notes: "Wisconsin glacial drumlin field; Vinalhaven + Islesboro" },
-          { name: __alloT('stem.platetectonics.maine_moose_megunticook_fault', "Maine moose-Megunticook fault"), place: "Camden area", notes: "Maine's most active microseismic zone" },
+          { name: __alloT('stem.platetectonics.norumbega_fault_system', "Norumbega fault system"), place: "Runs NE across Maine", notes: "Maine's major ancient strike-slip fault zone; occasional minor microseismicity" },
           { name: __alloT('stem.platetectonics.boothbay_region_pluton', "Boothbay region pluton"), place: "Lincoln Co", notes: "Silurian-Devonian intrusion; granite + diorite" },
-          { name: __alloT('stem.platetectonics.mt_blue_state_park', "Mt Blue State Park"), place: "Weld ME", notes: "1300m peak; layered gneiss + schist; Avalon terrane" },
+          { name: __alloT('stem.platetectonics.mt_blue_state_park', "Mt Blue State Park"), place: "Weld ME", notes: "971m peak; layered gneiss + schist; Central Maine belt" },
           { name: __alloT('stem.platetectonics.saddleback_mountain', "Saddleback Mountain"), place: "Rangeley", notes: "1255m; Wisconsin glaciated; granite" },
-          { name: __alloT('stem.platetectonics.mt_abraham', "Mt Abraham"), place: "Kingfield", notes: "1280m; nordic + alpine zones; Mahoosuc Range" },
+          { name: __alloT('stem.platetectonics.mt_abraham', "Mt Abraham"), place: "Kingfield", notes: "1280m; nordic + alpine zones; Longfellow Mountains" },
           { name: __alloT('stem.platetectonics.old_man_of_the_mountain_nh_near_me', "Old Man of the Mountain (NH, near ME)"), place: "Franconia NH", notes: "Granite face collapsed 2003; iconic; State Symbol NH" },
           { name: __alloT('stem.platetectonics.mt_washington_nh', "Mt Washington (NH)"), place: "Presidential Range", notes: "1916m; tallest in NE; Mahoosuc terrane; weather record" },
           { name: __alloT('stem.platetectonics.cathedral_pines', "Cathedral Pines"), place: "Eustis ME", notes: "Glacial outwash deposit; old growth white pines on terrace" },
@@ -5053,8 +5065,8 @@ var d = labToolData.plateTectonics || {};
             { name: __alloT('stem.platetectonics.archean', 'Archean'), mya: '3,500 Ma', icon: '\uD83E\uDEA8', keyEvent: 'First rocks and proto-continents (cratons) emerge from cooling crust.',
               desc: __alloT('stem.platetectonics.the_archean_eon_4_0_2_5_ga_earth_s_cru', 'The Archean Eon (4.0-2.5 Ga). Earth\'s crust solidified. Small protocontinents called cratons formed the first stable landmasses. Plate tectonics may have begun. Oceans covered most of the surface.'),
               offsets: [0,0,0.02,0.01,0,-0.01,0] },
-            { name: __alloT('stem.platetectonics.rodinia', 'Rodinia'), mya: '1,100 Ma', icon: '\uD83C\uDF0D', keyEvent: 'First known supercontinent assembles - all cratons merge into Rodinia.',
-              desc: __alloT('stem.platetectonics.the_mesoproterozoic_era_rodinia_was_ea', 'The Mesoproterozoic Era. Rodinia was Earth\'s first supercontinent, assembling ~1.1 Ga. All major cratons were joined. Its breakup (~750 Ma) triggered Snowball Earth glaciations and eventually led to the Cambrian explosion of life.'),
+            { name: __alloT('stem.platetectonics.rodinia', 'Rodinia'), mya: '1,100 Ma', icon: '\uD83C\uDF0D', keyEvent: 'Supercontinent Rodinia assembles - most major cratons merge into one landmass.',
+              desc: __alloT('stem.platetectonics.the_mesoproterozoic_era_rodinia_was_ea', 'The Mesoproterozoic Era. Rodinia assembled ~1.1 Ga, joining most major cratons. It was not the first supercontinent - Columbia/Nuna (~1.8 Ga) and earlier assemblies came before it. Its breakup (~750 Ma) triggered Snowball Earth glaciations and eventually led to the Cambrian explosion of life.'),
               offsets: [0,0.05,0.14,0.14,0.10,0.04,0.02] },
             { name: __alloT('stem.platetectonics.pangaea', 'Pangaea'), mya: '335 Ma', icon: '\uD83C\uDFDE\uFE0F', keyEvent: 'All continents unite into the supercontinent Pangaea - one giant landmass.',
               desc: __alloT('stem.platetectonics.the_late_paleozoic_carboniferous_permi', 'The late Paleozoic (Carboniferous-Permian). Pangaea ("All Earth") was the most recent supercontinent. It stretched from pole to pole. The Tethys Sea separated its eastern margins. Coal swamps covered equatorial regions.'),
@@ -5139,7 +5151,7 @@ var d = labToolData.plateTectonics || {};
               concept: 'Convection',
               explain: 'Convection currents in the mantle transfer heat and drag plates along.',
               wrongFeedback: [
-                'Incorrect. Gravity plays a role via slab pull, but heat-driven circulation is the primary engine.',
+                'Close! Gravity powers slab pull - the strongest single plate-driving force - but sinking slabs are the cold limb of the mantle convection cycle, so "convection" is the best umbrella answer.',
                 'Correct! Heat from the core drives convection currents in the asthenosphere, moving plates.',
                 'Incorrect. Wind erosion only affects the surface of the Earth, not the deep mantle.',
                 'Incorrect. Solar energy drives weather and surface cycles, not internal tectonics.'
@@ -5219,7 +5231,7 @@ var d = labToolData.plateTectonics || {};
           ]);
           var PT_MYTHS_912 = PT_MYTHS_68.concat([
             { s: 'Plates move mainly because mantle convection drags them along from below.', t: false, why: 'The dominant force is SLAB PULL — the weight of the cold, dense subducting slab sinking and pulling the rest of the plate behind it. Ridge push and convection help, but slab pull leads.', tryIt: 'Compare fast plates (Pacific, lots of subducting edge) with slow ones (few subduction zones) on the plate info panels.' },
-            { s: 'Earth’s inner core is molten liquid because it is the hottest part of the planet.', t: false, why: 'The inner core is SOLID iron even at ~5,700°C. The crushing pressure raises iron’s melting point above that temperature. It is the OUTER core that is liquid — and its churning makes Earth’s magnetic field.', tryIt: 'Open the Earth’s Layers educational panel and compare solid inner core vs liquid outer core.' },
+            { s: 'Earth’s inner core is molten liquid because it is the hottest part of the planet.', t: false, why: 'The inner core is SOLID iron even at ~5,400°C — about as hot as the Sun’s surface. The crushing pressure raises iron’s melting point above that temperature. It is the OUTER core that is liquid — and its churning makes Earth’s magnetic field.', tryIt: 'Open the Earth’s Layers educational panel and compare solid inner core vs liquid outer core.' },
             { s: 'Pangaea was the only supercontinent that ever existed.', t: false, why: 'It was just the most recent. Earlier ones assembled and broke apart too — Rodinia ~1 billion years ago, Columbia/Nuna ~1.8 billion. The "supercontinent cycle" repeats roughly every 300–500 million years.', tryIt: 'On the Timeline, note that Pangaea forms only near the recent end of Earth’s 4.5-billion-year history.' }
           ]);
           var PT_MYTH_BANK = ptBand === '9-12' ? PT_MYTHS_912 : ptBand === '6-8' ? PT_MYTHS_68 : PT_MYTHS_35;
@@ -5397,32 +5409,60 @@ var d = labToolData.plateTectonics || {};
 
             if (!canvasEl) {
 
-              if (canvasRef._last) {
+              // React fires an inline ref (null)-then-(node) on EVERY re-render. Any upd()
+              // (quake counter, label toggle, challenge RP) used to tear the whole sim down
+              // and rebuild it — dragged plates snapped back and eruptions vanished mid-blast.
+              // Defer teardown so the immediate re-attach cancels it; a real unmount (null
+              // with no re-attach) still cleans up after the timeout.
+              var el = window._ptMainCanvas;
 
-                if (canvasRef._last._ptAnim) cancelAnimationFrame(canvasRef._last._ptAnim);
+              if (!el || window._ptCleanupTimer) return;
+
+              window._ptCleanupTimer = setTimeout(function() {
+
+                window._ptCleanupTimer = null;
+
+                if (el._ptAnim) cancelAnimationFrame(el._ptAnim);
 
                 // Memory-leak fix: remove every listener attached during init.
-                var _h = canvasRef._last._ptHandlers;
+                var _h = el._ptHandlers;
 
-                if (_h) Object.keys(_h).forEach(function(ev) { canvasRef._last.removeEventListener(ev, _h[ev]); });
+                if (_h) Object.keys(_h).forEach(function(ev) { el.removeEventListener(ev, _h[ev]); });
 
-                canvasRef._last._ptHandlers = null;
+                el._ptHandlers = null;
 
-                canvasRef._last._ptInit = false;
+                el._ptInit = false;
 
-                canvasRef._last = null;
+                if (window._ptMainCanvas === el) window._ptMainCanvas = null;
 
-              }
+              }, 60);
 
               return;
 
             }
 
-            if (canvasEl._ptInit) return;
+            if (window._ptCleanupTimer) { clearTimeout(window._ptCleanupTimer); window._ptCleanupTimer = null; }
+
+            canvasRef._last = canvasEl;
+
+            window._ptMainCanvas = canvasEl;
+
+            // Live-props channel: the ref re-fires on every render, so use it to hand the
+            // running sim the CURRENT values instead of rebuilding with stale closures.
+            canvasEl._ptLive = { speed: speed, showLabels: showLabels, showConvection: showConvection, isDark: isDark, timelineEra: timelineEra, d: d, upd: upd, checkChallenges: checkChallenges, awardStemXP: awardStemXP };
+
+            if (canvasEl._ptInit) {
+
+              // Era changed on the Timeline tab: reposition plates deliberately (the one reset that SHOULD happen).
+              if (canvasEl._ptEra !== timelineEra && canvasEl._ptSetEra) canvasEl._ptSetEra(timelineEra);
+
+              return;
+
+            }
 
             canvasEl._ptInit = true;
 
-            canvasRef._last = canvasEl;
+            canvasEl._ptEra = timelineEra;
 
             var _ptHandlers = canvasEl._ptHandlers = {};
 
@@ -5447,6 +5487,17 @@ var d = labToolData.plateTectonics || {};
               return { id: p.id, name: p.name, type: p.type, x: (p.x + (era.offsets[i] || 0)) * cW, w: p.w * cW, color: p.color, thick: p.thick, vx: 0 };
 
             });
+
+            // Deliberate reposition when the Timeline era changes (called from the live-props ref).
+            canvasEl._ptSetEra = function(eraIdx) {
+              canvasEl._ptEra = eraIdx;
+              var era2 = ERAS[eraIdx] || ERAS[5];
+              plates.forEach(function(p, i) {
+                var base = PLATES[i] || {};
+                p.x = ((base.x || 0) + (era2.offsets[i] || 0)) * cW;
+                p.vx = 0;
+              });
+            };
 
 
 
@@ -5565,18 +5616,23 @@ var d = labToolData.plateTectonics || {};
                     sfxTectQuake();
 
                     // Trigger full eruption at collision point
+                    var live = canvasEl._ptLive || {};
+                    var liveD = live.d || d;
+                    var liveUpd = live.upd || upd;
+
                     if ((dp.type !== op.type || Math.random() > 0.4) && !eruptState.active) {
                       triggerEruption(bx);
                       sfxTectErupt();
-                      var curErupt = (d.eruptionCount || 0) + 1;
-                      upd({ eruptionCount: curErupt });
+                      var curErupt = (liveD.eruptionCount || 0) + 1;
+                      liveUpd({ eruptionCount: curErupt });
                     }
 
-                    var curQuakes = (d.quakeCount || 0) + 1;
-                    upd({ quakeCount: curQuakes });
-                    setTimeout(checkChallenges, 50);
+                    var curQuakes = (liveD.quakeCount || 0) + 1;
+                    liveUpd({ quakeCount: curQuakes });
+                    setTimeout(live.checkChallenges || checkChallenges, 50);
 
-                    if (typeof awardStemXP === 'function') awardStemXP('plateTectonics', 3, 'Boundary interaction');
+                    var liveAward = live.awardStemXP || awardStemXP;
+                    if (typeof liveAward === 'function') liveAward('plateTectonics', 3, 'Boundary interaction');
 
                   }
 
@@ -5641,6 +5697,18 @@ var d = labToolData.plateTectonics || {};
 
 
             function draw() {
+
+              // Backstop: if React ever detaches the node without the deferred cleanup
+              // firing, stop the loop and allow a clean re-init on the next attach.
+              if (!canvasEl.isConnected) { canvasEl._ptInit = false; return; }
+
+              // Read CURRENT control values from the live-props channel (see canvasRef) —
+              // these shadow the init-time closure so toggles work without a sim rebuild.
+              var live = canvasEl._ptLive || {};
+              var speed = live.speed != null ? live.speed : 1;
+              var showLabels = live.showLabels !== false;
+              var showConvection = live.showConvection !== false;
+              var isDark = !!live.isDark;
 
               tick++;
 
@@ -5767,7 +5835,9 @@ var d = labToolData.plateTectonics || {};
               ctx.fillRect(0, crustY, cW, cH * 0.20);
 
               // -- Stipple texture on mantle layers --
-              if (tick % 3 === 0 || !canvasEl._stippleCache) {
+              // Generate ONCE: regenerating random dots every few frames read as flickering
+              // static across the whole mantle instead of a stable rock texture.
+              if (!canvasEl._stippleCache) {
                 canvasEl._stippleCache = [];
                 for (var stI = 0; stI < 80; stI++) {
                   canvasEl._stippleCache.push({ x: Math.random() * cW, y: crustY + Math.random() * (cH * 0.70 - crustY + cH * 0.18), a: 0.04 + Math.random() * 0.08, r: 1 + Math.random() * 2 });
@@ -5914,7 +5984,8 @@ var d = labToolData.plateTectonics || {};
                   ctx.lineWidth = 1;
                   ctx.beginPath();
                   for (var tc = 0; tc < pl.w - 4; tc += 3) {
-                    var tcY = crustY - pl.thick - Math.random() * 2;
+                    // Deterministic roughness (per-frame Math.random() made the edge shimmer)
+                    var tcY = crustY - pl.thick - (1 + Math.sin(tc * 1.7 + pi * 3.1) * 1);
                     if (tc === 0) ctx.moveTo(pl.x + 2 + tc, tcY);
                     else ctx.lineTo(pl.x + 2 + tc, tcY);
                   }
@@ -5967,9 +6038,13 @@ var d = labToolData.plateTectonics || {};
                   // Vegetation dots on continental surface
                   ctx.fillStyle = isDark ? 'rgba(34,197,94,0.25)' : 'rgba(60,140,50,0.35)';
                   for (var vg = 0; vg < Math.floor(pl.w / 8); vg++) {
-                    var vgX = pl.x + 6 + Math.random() * (pl.w - 12);
-                    var vgY = crustY - pl.thick + 2 + Math.random() * (pl.thick * 0.2);
-                    ctx.beginPath(); ctx.arc(vgX, vgY, 1 + Math.random(), 0, Math.PI * 2); ctx.fill();
+                    // Deterministic scatter keyed on plate + index: stable dots that ride
+                    // along with the plate instead of re-rolling (flickering) every frame.
+                    var vgH1 = Math.abs(Math.sin(vg * 12.9898 + pi * 78.233));
+                    var vgH2 = Math.abs(Math.sin(vg * 39.3468 + pi * 11.135));
+                    var vgX = pl.x + 6 + vgH1 * (pl.w - 12);
+                    var vgY = crustY - pl.thick + 2 + vgH2 * (pl.thick * 0.2);
+                    ctx.beginPath(); ctx.arc(vgX, vgY, 1 + vgH2, 0, Math.PI * 2); ctx.fill();
                   }
 
                 } else {
@@ -6293,9 +6368,10 @@ var d = labToolData.plateTectonics || {};
               if (!eruptState.active) {
                 triggerEruption(cW * 0.5);
                 sfxTectErupt();
-                var curErupt = (d.eruptionCount || 0) + 1;
-                upd({ eruptionCount: curErupt });
-                setTimeout(checkChallenges, 50);
+                var live = canvasEl._ptLive || {};
+                var liveD = live.d || d;
+                (live.upd || upd)({ eruptionCount: (liveD.eruptionCount || 0) + 1 });
+                setTimeout(live.checkChallenges || checkChallenges, 50);
               }
             });
 
@@ -6311,17 +6387,41 @@ var d = labToolData.plateTectonics || {};
 
             if (!canvasEl) {
 
-              if (seismoRef._last && seismoRef._last._seisAnim) { cancelAnimationFrame(seismoRef._last._seisAnim); seismoRef._last._seisInit = false; }
+              // Deferred teardown (same rationale as the main sim canvas): the inline ref
+              // re-fires on every re-render — e.g. every magnitude-slider tick — and eager
+              // teardown restarted the trace each time (phase snap).
+              var el = window._ptSeisCanvas;
+
+              if (!el || window._ptSeisCleanup) return;
+
+              window._ptSeisCleanup = setTimeout(function() {
+
+                window._ptSeisCleanup = null;
+
+                if (el._seisAnim) cancelAnimationFrame(el._seisAnim);
+
+                el._seisInit = false;
+
+                if (window._ptSeisCanvas === el) window._ptSeisCanvas = null;
+
+              }, 60);
 
               return;
 
             }
 
+            if (window._ptSeisCleanup) { clearTimeout(window._ptSeisCleanup); window._ptSeisCleanup = null; }
+
+            window._ptSeisCanvas = canvasEl;
+
+            seismoRef._last = canvasEl;
+
+            // Live-props channel: the running trace reads magnitude/theme from here.
+            canvasEl._seisLive = { eqMagnitude: eqMagnitude, isDark: isDark };
+
             if (canvasEl._seisInit) return;
 
             canvasEl._seisInit = true;
-
-            seismoRef._last = canvasEl;
 
             var sW = canvasEl.width = canvasEl.offsetWidth * 2;
 
@@ -6332,6 +6432,13 @@ var d = labToolData.plateTectonics || {};
             var sTick = 0;
 
             function drawSeis() {
+
+              if (!canvasEl.isConnected) { canvasEl._seisInit = false; return; }
+
+              // Shadow init-time closures with live values (see seismoRef).
+              var live = canvasEl._seisLive || {};
+              var isDark = !!live.isDark;
+              var eqMagnitude = live.eqMagnitude != null ? live.eqMagnitude : 5;
 
               sTick++;
 
@@ -6456,16 +6563,25 @@ var d = labToolData.plateTectonics || {};
                     tabs: ["sim", "earthquake", "timeline", "quiz", "boundaryHunt"] },
                   { id: "world", label: __alloT('stem.platetectonics.world_catalogs', "World Catalogs"), icon: "🗺", color: "blue",
                     desc: __alloT('stem.platetectonics.plates_faults_volcanoes_mountains_tsun', "Plates, faults, volcanoes, mountains, tsunamis, hotspots"),
-                    tabs: ["encyclopedia", "faults", "volcanoes", "mountains", "tsunamis", "hotspots"] },
+                    tabs: ["encyclopedia", "plateProfiles", "boundaries", "faults", "volcanoes", "mountains", "tsunamis", "hotspots", "seafloor"] },
                   { id: "earth_history", label: __alloT('stem.platetectonics.earth_history', "Earth History"), icon: "🦕", color: "emerald",
                     desc: __alloT('stem.platetectonics.rocks_fossils_ages_and_the_deep_past', "Rocks, fossils, ages, and the deep past"),
-                    tabs: ["rocks", "fossils"] },
+                    tabs: ["rocks", "minerals", "fossils", "dinosaurs", "extinctions", "periods", "paleo", "hominids"] },
+                  { id: "hazards", label: __alloT('stem.platetectonics.hazards_and_preparedness', "Hazards and Preparedness"), icon: "🚨", color: "amber",
+                    desc: __alloT('stem.platetectonics.cascadia_case_studies_impacts_and_stay', "Cascadia, case studies, impacts, and staying safe"),
+                    tabs: ["cascadia", "preparedness", "quakeStories", "eruptions", "impacts", "events"] },
+                  { id: "places", label: __alloT('stem.platetectonics.parks_and_landscapes', "Parks and Landscapes"), icon: "🏞", color: "teal",
+                    desc: __alloT('stem.platetectonics.national_parks_state_geology_caves_lan', "National parks, state geology, caves, landforms, resources"),
+                    tabs: ["parks", "us_states", "landforms", "caves", "outcrops", "geothermal", "critical_minerals"] },
+                  { id: "discovery", label: __alloT('stem.platetectonics.discovery_and_frontiers', "Discovery and Frontiers"), icon: "🔬", color: "cyan",
+                    desc: __alloT('stem.platetectonics.methods_expeditions_big_ideas_and_the_', "Methods, expeditions, big ideas, and the people exploring Earth"),
+                    tabs: ["methods", "expeditions", "submersibles", "projects", "women", "indigenous", "climate", "insights"] },
                   { id: "people_places", label: __alloT('stem.platetectonics.people_and_places', "People and Places"), icon: "🧑‍🔬", color: "indigo",
                     desc: __alloT('stem.platetectonics.history_of_geology_biographies_maine_s', "History of geology, biographies, Maine sites, careers"),
                     tabs: ["history", "biographies", "maine", "careers"] },
                   { id: "reference", label: __alloT('stem.platetectonics.reference_and_activities', "Reference and Activities"), icon: "📚", color: "rose",
-                    desc: __alloT('stem.platetectonics.glossary_and_classroom_activities', "Glossary and classroom activities"),
-                    tabs: ["glossary", "lessons"] }
+                    desc: __alloT('stem.platetectonics.glossary_and_classroom_activities', "Glossary, activities, review, and FAQ"),
+                    tabs: ["glossary", "lessons", "concepts", "review", "faq", "resources", "about"] }
                 ];
                 var PT_TAB_LABELS = {
                   sim: "🌍 Simulation", earthquake: "📈 Earthquake Lab", timeline: "⏳ Timeline", quiz: "❓ Quiz", boundaryHunt: "🔐 Boundary Stress",
@@ -6473,7 +6589,18 @@ var d = labToolData.plateTectonics || {};
                   tsunamis: "🌊 Tsunamis", hotspots: "🔥 Hotspots",
                   rocks: "🪨 Rocks", fossils: "🦴 Fossils",
                   history: "📜 History", biographies: "🧑‍🔬 Biographies", maine: "🌲 Maine", careers: "👨‍🔬 Careers",
-                  glossary: "📖 Glossary", lessons: "🎫 Activities"
+                  glossary: "📖 Glossary", lessons: "🎫 Activities",
+                  plateProfiles: "🌐 Plate Profiles", boundaries: "🧭 Boundaries in Detail", seafloor: "🌊 Seafloor",
+                  minerals: "💎 Minerals", dinosaurs: "🦖 Dinosaurs", extinctions: "💀 Mass Extinctions",
+                  periods: "🕰 Geologic Periods", paleo: "🗺 Supercontinents", hominids: "🧍 Hominid Sites",
+                  cascadia: "🌲 Cascadia Deep Dive", preparedness: "🎒 Preparedness", quakeStories: "📖 Quake Case Studies",
+                  eruptions: "🌋 Famous Eruptions", impacts: "☄️ Impact Sites", events: "🗓 Major Events",
+                  parks: "🏞 National Parks", us_states: "🗽 US State Geology", landforms: "🏜 Landforms",
+                  caves: "🕳 Caves", outcrops: "🪨 Famous Outcrops", geothermal: "♨️ Geothermal", critical_minerals: "⛏ Critical Minerals",
+                  methods: "🧪 Methods", expeditions: "⛵ Expeditions", submersibles: "🤿 Submersibles",
+                  projects: "💡 Project Ideas", women: "👩‍🔬 Women in Geoscience", indigenous: "🪶 Indigenous Knowledge",
+                  climate: "🌡 Climate Links", insights: "✨ Big Ideas",
+                  concepts: "🧠 Core Concepts", review: "📝 Quick Review", faq: "❔ FAQ", resources: "📚 Resources", about: "ℹ️ About"
                 };
                 var PT_TAB_TO_CATEGORY = {};
                 PT_CATEGORIES.forEach(function(c) { c.tabs.forEach(function(tid) { PT_TAB_TO_CATEGORY[tid] = c.id; }); });
@@ -6481,7 +6608,10 @@ var d = labToolData.plateTectonics || {};
                 var atHub = !d._ptCategory && !d._ptSearch && !d._ptPicked;
                 var activeCat = PT_CATEGORIES.find(function(c) { return c.id === activeCategoryId; });
                 var searchTerm = (d._ptSearch || "").toLowerCase();
-                var allTabs = ["sim","earthquake","timeline","quiz","encyclopedia","faults","volcanoes","mountains","tsunamis","hotspots","rocks","fossils","history","biographies","maine","careers","glossary","lessons"];
+                // Derive the searchable list from the categories so every wired tab is
+                // findable (the old hand-kept list had drifted to 18 of the ~54 tabs).
+                var allTabs = [];
+                PT_CATEGORIES.forEach(function(c) { c.tabs.forEach(function(tid) { if (allTabs.indexOf(tid) === -1) allTabs.push(tid); }); });
                 var searchResults = searchTerm ? allTabs.filter(function(m) { return (PT_TAB_LABELS[m] || m).toLowerCase().indexOf(searchTerm) !== -1; }) : null;
                 function setTab(t) { upd({ simTab: t, _ptPicked: true }); if (PT_TAB_TO_CATEGORY[t] && PT_TAB_TO_CATEGORY[t] !== d._ptCategory) { upd({ _ptCategory: PT_TAB_TO_CATEGORY[t] }); } }
                 function setCat(cid) { upd({ _ptCategory: cid, _ptSearch: "" }); }
@@ -7043,7 +7173,10 @@ var d = labToolData.plateTectonics || {};
 
                 var cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 30;
 
-                var tick = 0;
+                // Persist the animation clock on the node: this setup re-runs on every
+                // React render (setTimeout in the render body), and resetting the tick
+                // snapped star twinkle + continent drift each time.
+                var tick = canvas._geoTick || 0;
 
                 var ERA_CONTINENTS = [
                   // 0: Hadean - no continents, just magma ocean
@@ -7121,6 +7254,8 @@ var d = labToolData.plateTectonics || {};
 
                   tick += 0.5;
 
+                  canvas._geoTick = tick;
+
                   ctx.clearRect(0, 0, W, H);
 
                   // Read the active era and handle time-lapse auto-advance
@@ -7140,6 +7275,11 @@ var d = labToolData.plateTectonics || {};
                     tls.speed = parseFloat(tlDataEl.getAttribute('data-tl-speed')) || 1;
                   }
 
+                  // On play start, pick up from the era the student had selected instead of
+                  // always restarting at the Hadean.
+                  if (tls.playing && !tls._wasPlaying) { tls.progress = eraIdx; canvas._lastSyncedEra = eraIdx; }
+                  tls._wasPlaying = tls.playing;
+
                   if (tls.playing) {
                     tls.progress += 0.008 * tls.speed;
                     var totalEras = Math.min(ERAS_COUNT, eraMap.length);
@@ -7149,6 +7289,12 @@ var d = labToolData.plateTectonics || {};
                     eraIdx = Math.floor(tls.progress);
                     // Update the slider to match
                     if (slider) slider.value = eraIdx;
+                    // Keep React in sync so the era cards, description, and header chip
+                    // follow the playback instead of freezing on the starting era.
+                    if (canvas._lastSyncedEra !== eraIdx) {
+                      canvas._lastSyncedEra = eraIdx;
+                      try { upd({ timelineEra: eraIdx }); } catch (e) {}
+                    }
                   }
 
                   var configIdx = Math.min(eraIdx, eraMap.length - 1);
@@ -7158,6 +7304,19 @@ var d = labToolData.plateTectonics || {};
                   var eraFrac = tls.playing ? (tls.progress - Math.floor(tls.progress)) : 0;
                   var nextConfigIdx = Math.min(configIdx + 1, eraMap.length - 1);
                   var nextEra = ERA_CONTINENTS[eraMap[nextConfigIdx]];
+
+                  // Blend ocean/atmosphere color toward the next era during time-lapse so
+                  // the whole planet transitions smoothly (magma red -> archean blue -> ...).
+                  function lerpHex(a, b, f) {
+                    try {
+                      var pa = [parseInt(a.substr(1, 2), 16), parseInt(a.substr(3, 2), 16), parseInt(a.substr(5, 2), 16)];
+                      var pb = [parseInt(b.substr(1, 2), 16), parseInt(b.substr(3, 2), 16), parseInt(b.substr(5, 2), 16)];
+                      var out = '#';
+                      for (var li = 0; li < 3; li++) { out += ('0' + Math.round(pa[li] + (pb[li] - pa[li]) * f).toString(16)).slice(-2); }
+                      return out;
+                    } catch (e) { return a; }
+                  }
+                  var oceanCol = (eraFrac > 0 && nextEra !== era) ? lerpHex(era.ocean, nextEra.ocean, eraFrac) : era.ocean;
 
                   // Stars
 
@@ -7191,9 +7350,9 @@ var d = labToolData.plateTectonics || {};
 
                   var glow = ctx.createRadialGradient(cx, cy, R * 0.9, cx, cy, R * 1.3);
 
-                  glow.addColorStop(0, era.ocean + 'aa');
+                  glow.addColorStop(0, oceanCol + 'aa');
 
-                  glow.addColorStop(0.5, era.ocean + '44');
+                  glow.addColorStop(0.5, oceanCol + '44');
 
                   glow.addColorStop(1, 'transparent');
 
@@ -7215,11 +7374,11 @@ var d = labToolData.plateTectonics || {};
 
                   var oceanGrad = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, 0, cx, cy, R);
 
-                  oceanGrad.addColorStop(0, era.ocean);
+                  oceanGrad.addColorStop(0, oceanCol);
 
-                  var darkerOcean = era.ocean.replace(/[0-9a-f]{2}$/i, function (h) { return Math.max(0, parseInt(h, 16) - 40).toString(16).padStart(2, '0'); });
+                  var darkerOcean = oceanCol.replace(/[0-9a-f]{2}$/i, function (h) { return Math.max(0, parseInt(h, 16) - 40).toString(16).padStart(2, '0'); });
 
-                  oceanGrad.addColorStop(1, darkerOcean || era.ocean);
+                  oceanGrad.addColorStop(1, darkerOcean || oceanCol);
 
                   ctx.fillStyle = oceanGrad;
 
@@ -7255,8 +7414,37 @@ var d = labToolData.plateTectonics || {};
                     ctx.setLineDash([]);
                   }
 
-                  // Continents
-                  era.continents.forEach(function (c) {
+                  // Continents — during time-lapse, interpolate toward the next era:
+                  // landmasses present in both eras GLIDE to their new positions, the rest
+                  // crossfade out/in. (eraFrac was computed before but never used, so each
+                  // era boundary snapped abruptly.)
+                  var contRenderList;
+                  if (eraFrac > 0 && nextEra !== era) {
+                    contRenderList = [];
+                    var nextByLabel = {};
+                    nextEra.continents.forEach(function (nc) { nextByLabel[nc.label] = nc; });
+                    var matchedNext = {};
+                    era.continents.forEach(function (c) {
+                      var nc = nextByLabel[c.label];
+                      if (nc) {
+                        matchedNext[c.label] = true;
+                        contRenderList.push({
+                          cx: c.cx + (nc.cx - c.cx) * eraFrac,
+                          cy: c.cy + (nc.cy - c.cy) * eraFrac,
+                          r: c.r + (nc.r - c.r) * eraFrac,
+                          shape: c.shape, label: c.label, color: c.color, alpha: 1
+                        });
+                      } else {
+                        contRenderList.push({ cx: c.cx, cy: c.cy, r: c.r, shape: c.shape, label: c.label, color: c.color, alpha: 1 - eraFrac });
+                      }
+                    });
+                    nextEra.continents.forEach(function (nc) {
+                      if (!matchedNext[nc.label]) contRenderList.push({ cx: nc.cx, cy: nc.cy, r: nc.r, shape: nc.shape, label: nc.label, color: nc.color, alpha: eraFrac });
+                    });
+                  } else {
+                    contRenderList = era.continents.map(function (c) { return { cx: c.cx, cy: c.cy, r: c.r, shape: c.shape, label: c.label, color: c.color, alpha: 1 }; });
+                  }
+                  contRenderList.forEach(function (c) {
                     var contX = cx + c.cx * R;
                     var contY = cy + c.cy * R;
                     var contR = c.r * R;
@@ -7266,6 +7454,7 @@ var d = labToolData.plateTectonics || {};
                     contX += drift;
 
                     ctx.save();
+                    ctx.globalAlpha = c.alpha;
                     ctx.translate(contX, contY);
 
                     // Draw continent blob with per-continent color
@@ -7329,6 +7518,23 @@ var d = labToolData.plateTectonics || {};
                     }
                     ctx.restore();
                   });
+
+                  // Drifting cloud bands (still inside the sphere clip) — a light, slow
+                  // atmosphere layer that sells the "real planet" look. The Hadean magma
+                  // ball gets a volcanic-haze veil instead of water clouds.
+                  if (!era.magma) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+                    for (var cb = 0; cb < 5; cb++) {
+                      var cbY = cy + (cb - 2) * R * 0.38 + Math.sin(tick * 0.004 + cb * 2.1) * R * 0.05;
+                      var cbX = cx + (((tick * (0.15 + cb * 0.04) + cb * 173) % (R * 2.6)) - R * 1.3);
+                      ctx.beginPath();
+                      ctx.ellipse(cbX, cbY, R * (0.28 + (cb % 3) * 0.07), R * 0.06, 0, 0, Math.PI * 2);
+                      ctx.fill();
+                    }
+                  } else {
+                    ctx.fillStyle = 'rgba(255,120,40,0.05)';
+                    ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+                  }
 
                   // Sphere shading (3D effect)
 
@@ -7604,7 +7810,7 @@ var d = labToolData.plateTectonics || {};
 
                   React.createElement("h4", { className: "font-black text-red-800 mb-1" }, __alloT('stem.platetectonics.earth_s_layers', "Earth's Layers")),
 
-                  React.createElement("p", null, __alloT('stem.platetectonics.earth_has_four_main_layers_the', "Earth has four main layers: the "), React.createElement("strong", null, __alloT('stem.platetectonics.inner_core', "inner core")), __alloT('stem.platetectonics.solid_iron_5_200_c', " (solid iron, 5,200\u00B0C), "), React.createElement("strong", null, __alloT('stem.platetectonics.outer_core', "outer core")), __alloT('stem.platetectonics.liquid_iron', " (liquid iron), "), React.createElement("strong", null, "mantle"), __alloT('stem.platetectonics.hot_rock_that_flows_slowly_and_the_thi', " (hot rock that flows slowly), and the thin "), React.createElement("strong", null, "crust"), __alloT('stem.platetectonics.we_live_on', " we live on."))
+                  React.createElement("p", null, __alloT('stem.platetectonics.earth_has_four_main_layers_the', "Earth has four main layers: the "), React.createElement("strong", null, __alloT('stem.platetectonics.inner_core', "inner core")), __alloT('stem.platetectonics.solid_iron_5_200_c', " (solid iron, ~5,400\u00B0C), "), React.createElement("strong", null, __alloT('stem.platetectonics.outer_core', "outer core")), __alloT('stem.platetectonics.liquid_iron', " (liquid iron), "), React.createElement("strong", null, "mantle"), __alloT('stem.platetectonics.hot_rock_that_flows_slowly_and_the_thi', " (hot rock that flows slowly), and the thin "), React.createElement("strong", null, "crust"), __alloT('stem.platetectonics.we_live_on', " we live on."))
 
                 ),
 
@@ -7902,7 +8108,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('p', { className: 'text-xs text-indigo-700 mb-3' }, __alloT('stem.platetectonics.plate_tectonics_was_only_confirmed_in_', "Plate tectonics was only confirmed in the 1960s. Before that, continents were thought to be fixed. The intellectual journey from biblical flood geology to a unifying Earth-system theory took 350 years.")),
                 React.createElement('div', { className: 'space-y-2' },
                   (function() {
-                    var H = [["1669","Nicolas Steno proposes superposition","Steno (a Danish anatomist living in Italy) publishes Prodromus, articulating that lower rock layers are older than upper layers. Foundation of stratigraphy."],["1785","Hutton: Earth is unimaginably old","James Hutton presents Theory of the Earth to the Royal Society of Edinburgh. Argues for deep time and uniformitarianism: the present is the key to the past."],["1815","William Smith geological map","British surveyor produces the first geological map of any country (Britain). Realized fossils could correlate rocks. Called father of English geology."],["1830","Lyell's Principles of Geology","Charles Lyell's textbook codifies uniformitarianism and influences Darwin. Multiple volumes; reprinted for decades; standard text for a century."],["1837","Agassiz: ice ages","Louis Agassiz proposes that Northern Hemisphere was once covered in continental ice sheets. Initially mocked; later confirmed."],["1859","Darwin publishes On the Origin of Species","Built on Lyell's deep time; biological and geological history must reconcile."],["1862","Lord Kelvin 100 Myr Earth","Kelvin calculates Earth's age based on cooling and gets 20-400 million years. Wrong because he did not know about radioactive heating."],["1896","Becquerel discovers radioactivity","Soon (1907) used by Rutherford and Boltwood to date rocks by uranium-lead. Sets Earth's real age in motion."],["1912","Wegener proposes continental drift","Alfred Wegener (German meteorologist) argues continents move based on fit, fossils, paleoclimate. Ridiculed by geologists for lacking mechanism."],["1928","Holmes proposes mantle convection","Arthur Holmes (British geologist) suggests convection currents in the mantle drive continental motion. Mostly ignored at the time."],["1953","Bullard fit of continents","Sir Edward Bullard computes best mathematical fit of Africa and South America at continental shelf depth. Confirms Wegener."],["1956","Paleomagnetism reveals polar wander","Studies of magnetic alignment in old rocks show polar wander paths only make sense if continents moved."],["1957","Tharp and Heezen map the ocean floor","Marie Tharp and Bruce Heezen produce the first detailed bathymetric map. Reveals mid-ocean ridge with central rift valley."],["1962","Hess proposes seafloor spreading","Princeton's Harry Hess: ocean crust forms at ridges and is consumed at trenches. Revolutionary."],["1963","Vine-Matthews magnetic stripes","Magnetic stripes on either side of mid-ocean ridges symmetrically record paleomagnetic reversals, confirming seafloor spreading."],["1965","Wilson defines transform faults","Canadian J. Tuzo Wilson recognizes a third boundary type. Plate tectonics now has its three pillars."],["1967","Plate tectonics synthesized","Jason Morgan, Dan McKenzie, and Xavier Le Pichon independently formalize: Earth has ~12 rigid plates moving on a viscous mantle. Paradigm shift complete."],["1977","Hydrothermal vents discovered","Alvin submersible at Galapagos Rift finds black smokers and chemosynthetic life. New ecosystem informs life-on-Mars debate."],["1982","Alvarez: iridium at K-Pg boundary","Father-son Alvarez team finds iridium spike at Cretaceous-Paleogene boundary, evidence for asteroid impact at Chicxulub."],["1991","GPS measures plates directly","Continuous GPS networks measure plate motions in real time at millimeters per year."],["1993","Slow earthquakes detected","Cascadia and Japan show tremor lasting weeks, not normal earthquakes but slow-slip on subduction interface."],["2008","InSAR maps deformation","Satellite radar interferometry measures cm-scale ground motion across entire fault zones."],["2011","Tohoku M9 instrumented","Densest ever recorded megathrust; data continues to reshape subduction theory."],["2017","Subduction Earthquake Early Warning operational","ShakeAlert (USGS Pacific NW) begins delivering seconds of warning to subscribers."],["2023","AI seismic detection mature","Machine learning detects 10x more small earthquakes than humans; tracks fault behavior at unprecedented resolution."]];
+                    var H = [["1669","Nicolas Steno proposes superposition","Steno (a Danish anatomist living in Italy) publishes Prodromus, articulating that lower rock layers are older than upper layers. Foundation of stratigraphy."],["1785","Hutton: Earth is unimaginably old","James Hutton presents Theory of the Earth to the Royal Society of Edinburgh. Argues for deep time and uniformitarianism: the present is the key to the past."],["1815","William Smith geological map","British surveyor produces the first geological map of any country (Britain). Realized fossils could correlate rocks. Called father of English geology."],["1830","Lyell's Principles of Geology","Charles Lyell's textbook codifies uniformitarianism and influences Darwin. Multiple volumes; reprinted for decades; standard text for a century."],["1837","Agassiz: ice ages","Louis Agassiz proposes that Northern Hemisphere was once covered in continental ice sheets. Initially mocked; later confirmed."],["1859","Darwin publishes On the Origin of Species","Built on Lyell's deep time; biological and geological history must reconcile."],["1862","Lord Kelvin 100 Myr Earth","Kelvin calculates Earth's age based on cooling and gets 20-400 million years. Wrong because he did not know about radioactive heating."],["1896","Becquerel discovers radioactivity","Soon (1907) used by Rutherford and Boltwood to date rocks by uranium-lead. Sets Earth's real age in motion."],["1912","Wegener proposes continental drift","Alfred Wegener (German meteorologist) argues continents move based on fit, fossils, paleoclimate. Ridiculed by geologists for lacking mechanism."],["1928","Holmes proposes mantle convection","Arthur Holmes (British geologist) suggests convection currents in the mantle drive continental motion. Mostly ignored at the time."],["1965","Bullard fit of continents","Sir Edward Bullard computes best mathematical fit of Africa and South America at continental shelf depth. Confirms Wegener."],["1956","Paleomagnetism reveals polar wander","Studies of magnetic alignment in old rocks show polar wander paths only make sense if continents moved."],["1957","Tharp and Heezen map the ocean floor","Marie Tharp and Bruce Heezen produce the first detailed bathymetric map. Reveals mid-ocean ridge with central rift valley."],["1962","Hess proposes seafloor spreading","Princeton's Harry Hess: ocean crust forms at ridges and is consumed at trenches. Revolutionary."],["1963","Vine-Matthews magnetic stripes","Magnetic stripes on either side of mid-ocean ridges symmetrically record paleomagnetic reversals, confirming seafloor spreading."],["1965","Wilson defines transform faults","Canadian J. Tuzo Wilson recognizes a third boundary type. Plate tectonics now has its three pillars."],["1967","Plate tectonics synthesized","Jason Morgan, Dan McKenzie, and Xavier Le Pichon independently formalize: Earth has ~12 rigid plates moving on a viscous mantle. Paradigm shift complete."],["1977","Hydrothermal vents discovered","Alvin submersible at Galapagos Rift finds black smokers and chemosynthetic life. New ecosystem informs life-on-Mars debate."],["1980","Alvarez: iridium at K-Pg boundary","Father-son Alvarez team finds iridium spike at Cretaceous-Paleogene boundary, evidence for asteroid impact at Chicxulub."],["1991","GPS measures plates directly","Continuous GPS networks measure plate motions in real time at millimeters per year."],["1993","Slow earthquakes detected","Cascadia and Japan show tremor lasting weeks, not normal earthquakes but slow-slip on subduction interface."],["2008","InSAR maps deformation","Satellite radar interferometry measures cm-scale ground motion across entire fault zones."],["2011","Tohoku M9 instrumented","Densest ever recorded megathrust; data continues to reshape subduction theory."],["2017","Subduction Earthquake Early Warning operational","ShakeAlert (USGS Pacific NW) begins delivering seconds of warning to subscribers."],["2023","AI seismic detection mature","Machine learning detects 10x more small earthquakes than humans; tracks fault behavior at unprecedented resolution."]];
                     return H.map(function(h, i) {
                       return React.createElement('div', { key: i, className: 'p-3 rounded-lg bg-white border border-indigo-200' },
                         React.createElement('div', { className: 'flex justify-between mb-1' },
