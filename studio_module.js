@@ -75,6 +75,8 @@
   var ST_DOC_VERSION = 1;
   var ST_CHECKPOINT_EVERY = 50;
   var ST_MIN_SIZE = 8;
+  var ST_LARGE_IMAGE_SRC_LENGTH = 1500000;
+  var ST_IMAGE_OPTIMIZE_MAX_DIM = 1200;
   var ST_ACTORS = { user: true, ai: true, import: true };
   // Verbatim UI honesty line (doc §5) — pinned by tests; do not soften or reword
   // into an "AI detection" claim.
@@ -147,6 +149,39 @@
     var k = M / m;
     return { w: Math.max(1, Math.round(W * k)), h: Math.max(1, Math.round(H * k)) };
   }
+  function stImageWeightInfo(src, threshold) {
+    var s = String(src || '');
+    var t = Math.max(1, stFiniteNumber(threshold, ST_LARGE_IMAGE_SRC_LENGTH));
+    var comma = s.indexOf(',');
+    var payload = comma >= 0 ? s.slice(comma + 1).replace(/\s+/g, '') : s;
+    var approxBytes = payload.length;
+    if (/^data:[^,]+;base64,/i.test(s)) {
+      var padding = payload.slice(-2) === '==' ? 2 : payload.slice(-1) === '=' ? 1 : 0;
+      approxBytes = Math.max(0, Math.floor(payload.length * 3 / 4) - padding);
+    }
+    return {
+      srcLength: s.length,
+      approxBytes: approxBytes,
+      approxKb: Math.max(1, Math.round(approxBytes / 1024)),
+      threshold: t,
+      large: s.length > t,
+      canOptimize: s.indexOf('data:image/') === 0
+    };
+  }
+  function stOptimizedImagePatch(image, optimizedSrc, beforeInfo, afterInfo) {
+    var priorOrigin = (image && image.provenance && image.provenance.origin) || 'unknown';
+    var before = beforeInfo || stImageWeightInfo(image && image.src);
+    var after = afterInfo || stImageWeightInfo(optimizedSrc);
+    return {
+      src: String(optimizedSrc || ''),
+      provenance: {
+        origin: 'optimized',
+        prior: priorOrigin,
+        approxKbBefore: before.approxKb,
+        approxKbAfter: after.approxKb
+      }
+    };
+  }
 
   // Plan preview: apply ops to a DETACHED scene (no ledger, no real ids) so
   // the review panel can render before/after without touching the document.
@@ -178,8 +213,15 @@
 
   // Autosave payload (pure half — storage lives with the other localStorage
   // helpers). Restore only ever loads a payload that validates as a real doc.
+  function stDurableDoc(doc) {
+    var out = stClone(doc);
+    // `_redo` is session-only. It may contain full undone ops, including image
+    // bytes, so durable artifacts must only save the actual ledger state.
+    delete out._redo;
+    return out;
+  }
   function stAutosavePayload(doc, now) {
-    return { v: 1, savedAt: now || 0, title: (doc && doc.title) || 'Untitled', doc: stClone(doc) };
+    return { v: 1, savedAt: now || 0, title: (doc && doc.title) || 'Untitled', doc: stDurableDoc(doc) };
   }
   function stAutosaveValid(payload) {
     return !!(payload && payload.v === 1 && payload.doc && stValidateDoc(payload.doc).length === 0);
@@ -521,7 +563,7 @@
       var p = op.patch || {};
       if (p.runs) return 'Edited text';
       if (p._crop) return 'Cropped an image';
-      if (p.src) return (p.provenance && p.provenance.origin === 'ai-edited') ? 'AI edited an image' : 'Replaced an image';
+      if (p.src) return (p.provenance && p.provenance.origin === 'ai-edited') ? 'AI edited an image' : (p.provenance && p.provenance.origin === 'optimized') ? 'Optimized an image' : 'Replaced an image';
       if (Object.prototype.hasOwnProperty.call(p, 'alt')) return 'Updated alt text';
       if (Object.prototype.hasOwnProperty.call(p, 'decorative')) return p.decorative ? 'Marked an image decorative' : 'Marked an image as content';
       if (p.role) return 'Changed the text role';
@@ -546,7 +588,7 @@
       }
       if (o.type === 'image') {
         if (!o.src) issues.push({ id: o.id, type: 'empty-image', severity: 'review', title: 'Empty image frame', message: 'Add an image, remove the frame, or keep it as a placeholder while drafting.' });
-        else if (String(o.src).length > 1500000) issues.push({ id: o.id, type: 'large-image', severity: 'warning', title: 'Large image', message: 'This image may make the save file and exports heavy.' });
+        else if (stImageWeightInfo(o.src).large) issues.push({ id: o.id, type: 'large-image', severity: 'warning', title: 'Large image', message: 'This image may make the save file and exports heavy.' });
       } else if (o.type === 'text') {
         var run = (o.runs && o.runs[0]) || { text: '', style: {} };
         var s = run.style || {};
@@ -812,25 +854,44 @@
     return best;
   }
 
+  function stReadyActionForIssue(doc, issue) {
+    if (!issue) return null;
+    var action = { type: 'select', targetId: issue.id || null, issueType: issue.type, severity: issue.severity, title: issue.title, message: issue.message };
+    if (issue.type === 'alt') action.type = 'add-alt';
+    else if (issue.type === 'small-text') action.type = 'fix-small-text';
+    else if (issue.type === 'contrast') action.type = 'fix-contrast';
+    else if (issue.type === 'heading-order') action.type = 'review-heading';
+    else if (issue.type === 'reading-order') action.type = 'review-reading-order';
+    else if (issue.type === 'empty-image') action.type = 'select-image';
+    else if (issue.type === 'bounds') action.type = 'fix-bounds';
+    else if (issue.type === 'large-image') action.type = 'optimize-image';
+    if (action.type === 'fix-contrast' && issue.id && doc && Array.isArray(doc.objects)) {
+      var o = doc.objects.filter(function (obj) { return obj && obj.id === issue.id; })[0];
+      var suggestion = stSuggestTextColor(doc, o);
+      if (suggestion) action.suggestedColor = suggestion.color;
+    }
+    if (action.type === 'fix-bounds' && issue.id && doc && Array.isArray(doc.objects)) {
+      var bounded = doc.objects.filter(function (obj) { return obj && obj.id === issue.id; })[0];
+      if (bounded && bounded.frame) action.suggestedFrame = stClampFrame(bounded.frame, doc.canvas);
+    }
+    if (action.type === 'optimize-image' && issue.id && doc && Array.isArray(doc.objects)) {
+      var image = doc.objects.filter(function (obj) { return obj && obj.id === issue.id; })[0];
+      if (image && image.src) {
+        action.imageWeight = stImageWeightInfo(image.src);
+        action.optimizeMaxDim = ST_IMAGE_OPTIMIZE_MAX_DIM;
+      }
+    }
+    return action;
+  }
+
   function stBuildReadyActions(doc) {
     var analysis = stAnalyzeDoc(doc);
     var status = analysis.counts.error ? 'blocked' : ((analysis.counts.warning || analysis.counts.review) ? 'review' : 'ready');
     var actions = [];
     analysis.issues.forEach(function (issue) {
       if (actions.length >= 10) return;
-      var action = { type: 'select', targetId: issue.id || null, issueType: issue.type, severity: issue.severity, title: issue.title, message: issue.message };
-      if (issue.type === 'alt') action.type = 'add-alt';
-      else if (issue.type === 'small-text') action.type = 'fix-small-text';
-      else if (issue.type === 'contrast') action.type = 'fix-contrast';
-      else if (issue.type === 'heading-order') action.type = 'review-heading';
-      else if (issue.type === 'reading-order') action.type = 'review-reading-order';
-      else if (issue.type === 'empty-image') action.type = 'select-image';
-      if (action.type === 'fix-contrast' && issue.id && doc && Array.isArray(doc.objects)) {
-        var o = doc.objects.filter(function (obj) { return obj && obj.id === issue.id; })[0];
-        var suggestion = stSuggestTextColor(doc, o);
-        if (suggestion) action.suggestedColor = suggestion.color;
-      }
-      actions.push(action);
+      var action = stReadyActionForIssue(doc, issue);
+      if (action) actions.push(action);
     });
     return {
       status: status,
@@ -839,6 +900,14 @@
       title: status === 'ready' ? 'Ready to share' : status === 'blocked' ? 'Exports need attention' : 'Review before sharing',
       message: status === 'ready' ? 'No accessibility issues found.' : status === 'blocked' ? 'Fix required items before accessible export.' : 'A few quality checks could improve this artifact.'
     };
+  }
+
+  function stObjectReadyActions(doc, objectId) {
+    if (!doc || !objectId) return [];
+    return stAnalyzeDoc(doc).issues
+      .filter(function (issue) { return issue && issue.id === objectId; })
+      .map(function (issue) { return stReadyActionForIssue(doc, issue); })
+      .filter(Boolean);
   }
 
   function stBuildAccessibilityChecklist(analysis) {
@@ -863,6 +932,28 @@
         message: matches.length ? def.fix : def.pass
       };
     });
+  }
+
+  function stObjectIssueSummary(analysis) {
+    var issues = (analysis && Array.isArray(analysis.issues)) ? analysis.issues : [];
+    var rank = { error: 3, warning: 2, review: 1, pass: 0 };
+    var out = {};
+    issues.forEach(function (issue) {
+      if (!issue || !issue.id) return;
+      var id = String(issue.id);
+      if (!out[id]) out[id] = { id: id, count: 0, severity: 'pass', issues: [] };
+      out[id].count += 1;
+      out[id].issues.push(issue);
+      if (rank[issue.severity] > rank[out[id].severity]) out[id].severity = issue.severity;
+    });
+    Object.keys(out).forEach(function (id) {
+      var item = out[id];
+      var first = item.issues[0] || {};
+      item.title = first.title || 'Needs review';
+      item.message = first.message || '';
+      item.label = item.severity === 'error' ? 'Fix' : item.severity === 'warning' ? 'Check' : 'Review';
+    });
+    return out;
   }
 
   function stBuildA11yAutoFixPlan(doc) {
@@ -931,6 +1022,53 @@
       var dz = b.z - a.z;
       return dz || (b.readingIndex - a.readingIndex);
     });
+  }
+
+  function stReadingOrderSuggestion(doc) {
+    var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
+    var canvas = doc && doc.canvas;
+    var items = objects.map(function (o, i) {
+      var f = stClampFrame(o && o.frame, canvas);
+      return {
+        id: o && o.id,
+        type: o && o.type,
+        label: stObjectLabelForAgent(o),
+        currentIndex: i,
+        frame: f
+      };
+    }).filter(function (item) { return !!item.id; });
+    var suggested = items.slice().sort(function (a, b) {
+      var rowBand = Math.max(16, Math.min(72, Math.min(a.frame.h || 16, b.frame.h || 16) * 0.55));
+      var dy = a.frame.y - b.frame.y;
+      if (Math.abs(dy) > rowBand) return dy;
+      var dx = a.frame.x - b.frame.x;
+      if (Math.abs(dx) > 1) return dx;
+      return a.currentIndex - b.currentIndex;
+    }).map(function (item, i) {
+      return Object.assign({}, item, { suggestedIndex: i });
+    });
+    var byId = {};
+    suggested.forEach(function (item) { byId[item.id] = item; });
+    var currentIds = items.map(function (item) { return item.id; });
+    var suggestedIds = suggested.map(function (item) { return item.id; });
+    var changes = suggested.filter(function (item, i) { return currentIds[i] !== item.id; }).map(function (item) {
+      return {
+        id: item.id,
+        label: item.label,
+        type: item.type,
+        currentIndex: item.currentIndex,
+        suggestedIndex: item.suggestedIndex
+      };
+    });
+    return {
+      total: items.length,
+      changed: changes.length > 0,
+      currentIds: currentIds,
+      suggestedIds: suggestedIds,
+      suggested: suggested,
+      changes: changes,
+      itemForId: byId
+    };
   }
 
   function stStyleKits(brandProfile) {
@@ -2187,7 +2325,7 @@
   function stSaveRecentProject(doc, options) {
     options = options || {};
     var summary = stRecentProjectSummary(doc, options.now || Date.now());
-    var entry = Object.assign({}, summary, { doc: stClone(doc) });
+    var entry = Object.assign({}, summary, { doc: stDurableDoc(doc) });
     var existing = stReadRecentProjects().filter(function (candidate) {
       return candidate && candidate.id !== summary.id;
     });
@@ -2341,6 +2479,31 @@
     });
   }
 
+  function stOptimizeImageDataUrl(dataUrl, maxDim) {
+    return new Promise(function (resolve) {
+      try {
+        var original = String(dataUrl || '');
+        var im = new Image();
+        im.onload = function () {
+          try {
+            var naturalW = im.naturalWidth || im.width;
+            var naturalH = im.naturalHeight || im.height;
+            var dims = stDownscaleDims(naturalW, naturalH, maxDim || ST_IMAGE_OPTIMIZE_MAX_DIM) || { w: naturalW, h: naturalH };
+            if (!dims.w || !dims.h) { resolve(original); return; }
+            var c = document.createElement('canvas');
+            c.width = dims.w; c.height = dims.h;
+            c.getContext('2d').drawImage(im, 0, 0, dims.w, dims.h);
+            var isJpeg = /^data:image\/jpe?g/i.test(original);
+            var optimized = isJpeg ? c.toDataURL('image/jpeg', 0.82) : c.toDataURL('image/png');
+            resolve(optimized && optimized.length < original.length ? optimized : original);
+          } catch (_) { resolve(original); }
+        };
+        im.onerror = function () { resolve(original); };
+        im.src = original;
+      } catch (_) { resolve(dataUrl); }
+    });
+  }
+
   function stRenderPng(doc, scale) {
     scale = scale || 1;
     return new Promise(function (resolvePng, rejectPng) {
@@ -2455,6 +2618,7 @@
     var _recentTick = React.useState(0); var recentTick = _recentTick[0], setRecentTick = _recentTick[1];
     var _canvasZoom = React.useState(null); var canvasZoom = _canvasZoom[0], setCanvasZoom = _canvasZoom[1];
     var _navigatorMode = React.useState('reading'); var navigatorMode = _navigatorMode[0], setNavigatorMode = _navigatorMode[1];
+    var _orderAssistOpen = React.useState(false); var orderAssistOpen = _orderAssistOpen[0], setOrderAssistOpen = _orderAssistOpen[1];
     var _snapEnabled = React.useState(true); var snapEnabled = _snapEnabled[0], setSnapEnabled = _snapEnabled[1];
     var _snapGuides = React.useState([]); var snapGuides = _snapGuides[0], setSnapGuides = _snapGuides[1];
     var readViewport = function () {
@@ -2632,6 +2796,18 @@
     var accessibilityChecklist = stBuildAccessibilityChecklist(preflight);
     var ready = doc ? stBuildReadyActions(doc) : null;
     var a11yAutoFix = doc ? stBuildA11yAutoFixPlan(doc) : { ops: [], fixedTypes: [], reviewCount: 0 };
+    var readingSuggestion = doc ? stReadingOrderSuggestion(doc) : { total: 0, changed: false, currentIds: [], suggestedIds: [], suggested: [], changes: [] };
+    var applyReadingOrderSuggestion = function () {
+      if (!readingSuggestion.changed) return;
+      readingSuggestion.suggestedIds.forEach(function (id, idx) {
+        var live = _docRef.current;
+        var cur = live && Array.isArray(live.objects) ? live.objects.findIndex(function (o) { return o && o.id === id; }) : -1;
+        if (cur >= 0 && cur !== idx) dispatch({ type: 'object.reorder', target: id, toIndex: idx }, 'user');
+      });
+      setNavigatorMode('reading');
+      setOrderAssistOpen(false);
+      stAnnounce(TT('studio.a11y_order_applied', 'Reading order updated'));
+    };
     var historyItems = [];
     try {
       historyItems = Array.isArray(props.history) ? props.history : (Array.isArray(props.resourceHistory) ? props.resourceHistory : (Array.isArray(window.__alloflowHistory) ? window.__alloflowHistory : []));
@@ -2685,6 +2861,26 @@
       stAnnounce(TT('studio.resource_inserted_a11y', 'Resource inserted into Studio'));
       addToast(TT('studio.resource_inserted', 'Resource added as editable Studio objects.'), 'success');
     };
+    var readyActionLabel = function (action) {
+      if (!action) return '';
+      return action.type === 'fix-small-text' ? TT('studio.fix_small_text', 'Make text readable')
+        : action.type === 'fix-contrast' ? TT('studio.fix_contrast', 'Improve contrast')
+          : action.type === 'add-alt' ? TT('studio.add_alt', 'Add alt text')
+            : action.type === 'fix-bounds' ? TT('studio.fit_on_page', 'Fit on page')
+              : action.type === 'optimize-image' ? TT('studio.optimize_image', 'Optimize image')
+                : action.type === 'review-reading-order' ? TT('studio.review_order', 'Review reading order')
+                  : action.title;
+    };
+    var focusAltTextFor = function (targetId) {
+      setTimeout(function () {
+        try {
+          var nodes = document.querySelectorAll('[data-st-alt-input]');
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i].getAttribute('data-st-alt-input') === String(targetId)) { nodes[i].focus(); break; }
+          }
+        } catch (_) {}
+      }, 0);
+    };
     var applyReadyAction = function (action) {
       if (!action) return;
       if (action.targetId) selectOnly(action.targetId);
@@ -2710,16 +2906,52 @@
           return;
         }
       }
+      if (action.type === 'fix-bounds' && action.targetId) {
+        var bounded = doc.objects.filter(function (o) { return o && o.id === action.targetId; })[0];
+        var frame = action.suggestedFrame || (bounded && bounded.frame ? stClampFrame(bounded.frame, doc.canvas) : null);
+        if (bounded && frame) {
+          dispatch({ type: 'object.update', target: bounded.id, patch: { frame: frame } }, 'user');
+          stAnnounce(TT('studio.a11y_fit_on_page', 'Object moved onto the page'));
+          return;
+        }
+      }
+      if (action.type === 'add-alt' && action.targetId) {
+        focusAltTextFor(action.targetId);
+        stAnnounce(TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.'));
+        return;
+      }
+      if (action.type === 'optimize-image' && action.targetId) {
+        var heavy = doc.objects.filter(function (o) { return o && o.id === action.targetId; })[0];
+        if (!heavy || heavy.type !== 'image' || !heavy.src) return;
+        if (aiBusy) { addToast(TT('studio.optimize_busy', 'Another Studio action is running. Try again in a moment.'), 'info'); return; }
+        var beforeInfo = action.imageWeight || stImageWeightInfo(heavy.src);
+        if (!beforeInfo.canOptimize) { addToast(TT('studio.optimize_unavailable', 'This image cannot be optimized in the browser.'), 'info'); return; }
+        setAiBusy('optimize-image');
+        stOptimizeImageDataUrl(heavy.src, action.optimizeMaxDim || ST_IMAGE_OPTIMIZE_MAX_DIM).then(function (optimized) {
+          setAiBusy(null);
+          var live = _docRef.current && _docRef.current.objects ? _docRef.current.objects.filter(function (o) { return o && o.id === action.targetId; })[0] : null;
+          if (!live || live.type !== 'image') return;
+          if (!optimized || optimized.length >= String(live.src || '').length) {
+            addToast(TT('studio.optimize_no_gain', 'Image is already as small as Studio can make it safely.'), 'info');
+            return;
+          }
+          var afterInfo = stImageWeightInfo(optimized);
+          dispatch({ type: 'object.update', target: live.id, patch: stOptimizedImagePatch(live, optimized, beforeInfo, afterInfo) }, 'user');
+          stAnnounce(TT('studio.a11y_image_optimized', 'Image optimized'));
+          addToast(TT('studio.optimize_done', 'Image optimized.') + ' ' + beforeInfo.approxKb + ' KB → ' + afterInfo.approxKb + ' KB', 'success');
+        }).catch(function () {
+          setAiBusy(null);
+          addToast(TT('studio.optimize_failed', 'Could not optimize the image.'), 'error');
+        });
+        return;
+      }
       if (action.type === 'review-reading-order') {
+        setNavigatorMode('reading');
         stAnnounce(TT('studio.a11y_review_reading_order', 'Review the reading order list on the right'));
         addToast(TT('studio.review_reading_order', 'Use the reading-order list on the right to match the screen-reader order.'), 'info');
         return;
       }
-      if (action.type === 'add-alt') {
-        stAnnounce(TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.'));
-      } else {
-        stAnnounce(action.title || TT('studio.a11y_ready_action', 'Ready to share action selected'));
-      }
+      stAnnounce(action.title || TT('studio.a11y_ready_action', 'Ready to share action selected'));
     };
 
     // ── AI (Milestone B): generate image + suggest alt text ──
@@ -3312,7 +3544,7 @@
       addToast(TT('studio.exported_process', 'Process reflection downloaded.'), 'success');
     };
     var saveDoc = function () {
-      download(new Blob([JSON.stringify(doc, null, 1)], { type: 'application/json' }), safeName() + '.allostudio.json');
+      download(new Blob([JSON.stringify(stDurableDoc(doc), null, 1)], { type: 'application/json' }), safeName() + '.allostudio.json');
       var recent = stSaveRecentProject(doc);
       setRecentTick(function (n) { return n + 1; });
       stClearAutosave(); // the work is saved — don't offer a stale "unsaved work" restore
@@ -3584,11 +3816,19 @@
     // One-gesture rollback offer — only while the ledger tail IS an agent batch
     // (any manual op in between means the batch is no longer the tail).
     var lastAgentBatch = doc && canAgentEdit ? stLastAgentBatch(doc) : null;
+    var issueByObject = stObjectIssueSummary(preflight);
+    var issueToneFor = function (summary) {
+      if (!summary) return null;
+      return statusTone(summary.severity === 'error' ? 'error' : summary.severity === 'warning' ? 'warning' : 'review');
+    };
 
     function renderObject(o, scale, interactivity, extra, hh) {
       var f = interactivity ? liveFrameFor(o) : o.frame;
       var isSel = interactivity && (selectedId === o.id || selectionIds.indexOf(o.id) >= 0);
       var isAgentPending = interactivity && agentPendingIds.indexOf(o.id) >= 0;
+      var readingIndex = doc && Array.isArray(doc.objects) ? doc.objects.findIndex(function (item) { return item && item.id === o.id; }) + 1 : 0;
+      var issueSummary = issueByObject[o.id];
+      var issueTone = issueToneFor(issueSummary);
       var base = {
         position: 'absolute', left: f.x * scale + 'px', top: f.y * scale + 'px',
         width: f.w * scale + 'px', height: f.h * scale + 'px', zIndex: o.z || 1,
@@ -3610,9 +3850,10 @@
       }
       if (!interactivity) return hh('div', { key: o.id, style: base, 'aria-hidden': true }, inner);
       var labelText = o.type === 'text' ? ((o.runs && o.runs[0] && o.runs[0].text) || 'text').slice(0, 40) : o.type === 'image' ? (o.alt || TT('studio.image_no_alt', 'image without alt text')) : (o.shape || 'shape');
+      var objectA11yLabel = issueSummary ? ', ' + issueSummary.count + ' accessibility item' + (issueSummary.count === 1 ? '' : 's') : '';
       return hh('div', Object.assign({
         key: o.id, tabIndex: 0, role: 'group',
-        'aria-label': (isSel ? TT('studio.selected', 'Selected') + ' ' : '') + o.type + ': ' + labelText,
+        'aria-label': (isSel ? TT('studio.selected', 'Selected') + ' ' : '') + o.type + ': ' + labelText + (readingIndex ? ', reading order ' + readingIndex : '') + objectA11yLabel,
         style: base,
         onPointerDown: onObjectPointerDown(o, 'move'),
         onPointerMove: onCanvasPointerMove,
@@ -3625,6 +3866,15 @@
         },
       }, extra),
         inner,
+        readingIndex ? hh('span', { 'aria-hidden': true, style: { position: 'absolute', left: '4px', top: '4px', minWidth: '20px', height: '20px', borderRadius: '999px', background: C.headerBg, color: C.headerText, border: '1px solid ' + C.hBtnBorder, fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', boxShadow: '0 1px 4px rgba(15,23,42,0.25)', zIndex: 55 } }, readingIndex) : null,
+        issueSummary ? hh('button', {
+          type: 'button',
+          title: issueSummary.title + (issueSummary.message ? ': ' + issueSummary.message : ''),
+          'aria-label': issueSummary.label + ' accessibility item for ' + labelText,
+          onPointerDown: function (e) { e.stopPropagation(); },
+          onClick: function (e) { e.stopPropagation(); selectOnly(o.id); setPreflightOpen(true); stAnnounce(issueSummary.title); },
+          style: { position: 'absolute', right: '4px', top: '4px', border: '1px solid ' + issueTone.border, background: issueTone.bg, color: issueTone.fg, borderRadius: '999px', fontSize: '9px', fontWeight: 900, padding: '2px 6px', cursor: 'pointer', zIndex: 65, lineHeight: 1.3, boxShadow: '0 1px 4px rgba(15,23,42,0.22)' }
+        }, issueSummary.label + (issueSummary.count > 1 ? ' ' + issueSummary.count : '')) : null,
         isSel ? hh('div', {
           role: 'presentation',
           onPointerDown: onObjectPointerDown(o, 'resize'),
@@ -3687,10 +3937,13 @@
     };
     var orderList = doc.objects.map(function (o, i) {
       var text = objectSummary(o, 28);
+      var issueSummary = issueByObject[o.id];
+      var issueTone = issueToneFor(issueSummary);
       var icon = o.type === 'text' ? (o.role === 'body' ? '¶' : 'H') : o.type === 'image' ? '🖼️' : '⬛';
-      return h('div', { key: o.id, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 4px', borderRadius: '6px', background: selectionIds.indexOf(o.id) >= 0 ? C.selectedBg : C.panelAlt, border: '1px solid ' + C.border } },
-        h('button', { onClick: function () { selectOnly(o.id); }, style: { flex: 1, textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontSize: '11px', color: C.text, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }, 'aria-label': TT('studio.select_object', 'Select') + ' ' + o.type + ' ' + text },
+      return h('div', { key: o.id, style: { display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 4px', borderRadius: '6px', background: selectionIds.indexOf(o.id) >= 0 ? C.selectedBg : C.panelAlt, border: '1px solid ' + (issueTone ? issueTone.border : C.border) } },
+        h('button', { onClick: function () { selectOnly(o.id); }, style: { flex: 1, minWidth: 0, textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontSize: '11px', color: C.text, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }, 'aria-label': TT('studio.select_object', 'Select') + ' ' + o.type + ' ' + text },
           h('span', { 'aria-hidden': true }, icon + ' '), (i + 1) + '. ' + text),
+        issueSummary ? h('button', { type: 'button', onClick: function () { selectOnly(o.id); setPreflightOpen(true); stAnnounce(issueSummary.title); }, title: issueSummary.title + (issueSummary.message ? ': ' + issueSummary.message : ''), 'aria-label': issueSummary.label + ' accessibility item for ' + text, style: { border: '1px solid ' + issueTone.border, background: issueTone.bg, color: issueTone.fg, borderRadius: '999px', cursor: 'pointer', fontSize: '9px', fontWeight: 900, padding: '2px 5px', flex: '0 0 auto' } }, issueSummary.label + (issueSummary.count > 1 ? ' ' + issueSummary.count : '')) : null,
         h('button', { disabled: i === 0, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i - 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_earlier', 'Moved earlier in reading order')); }, title: TT('studio.reading_earlier', 'Read earlier'), 'aria-label': TT('studio.reading_earlier', 'Read earlier') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === 0 ? 'default' : 'pointer', fontSize: '10px', opacity: i === 0 ? 0.4 : 1 } }, '↑'),
         h('button', { disabled: i === doc.objects.length - 1, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i + 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_later', 'Moved later in reading order')); }, title: TT('studio.reading_later', 'Read later'), 'aria-label': TT('studio.reading_later', 'Read later') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === doc.objects.length - 1 ? 'default' : 'pointer', fontSize: '10px', opacity: i === doc.objects.length - 1 ? 0.4 : 1 } }, '↓'));
     });
@@ -3707,6 +3960,20 @@
           h('button', { style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: 'pointer', fontSize: '10px', padding: '2px 5px' }, onClick: function () { dispatch({ type: 'object.z', target: item.id, z: item.z + 1 }, 'user'); }, title: TT('studio.bring_forward', 'Bring forward (visual stacking only - reading order is the list)') }, '+z'),
           h('button', { style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: 'pointer', fontSize: '10px', padding: '2px 5px' }, onClick: function () { dispatch({ type: 'object.z', target: item.id, z: Math.max(0, item.z - 1) }, 'user'); }, title: TT('studio.send_back', 'Send backward') }, '-z')));
     });
+    var readingOrderTone = readingSuggestion.changed ? statusTone('review') : statusTone('success');
+    var readingOrderAssistant = (navigatorMode === 'reading' && readingSuggestion.total > 1) ? h('div', { style: { border: '1px solid ' + readingOrderTone.border, background: readingOrderTone.bg, color: readingOrderTone.fg, borderRadius: '8px', padding: '7px', fontSize: '10.5px', lineHeight: 1.35 } },
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '6px', alignItems: 'baseline' } },
+        h('strong', { style: { fontSize: '11px' } }, TT('studio.order_assist', 'Visual order')),
+        h('span', { style: { fontSize: '9px', fontWeight: 900, textTransform: 'uppercase' } }, readingSuggestion.changed ? TT('studio.a11y_review', 'Review') : TT('studio.a11y_pass', 'Pass'))),
+      h('div', { style: { marginTop: '4px' } }, readingSuggestion.changed ? TT('studio.order_assist_diff', 'Current reading order differs from the visual flow.') : TT('studio.order_assist_ok', 'Reading order matches the visual flow.')),
+      readingSuggestion.changed ? h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' } },
+        h('button', { type: 'button', style: { border: '1px solid ' + readingOrderTone.border, background: C.panel, color: C.text, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 800 }, onClick: function () { setOrderAssistOpen(!orderAssistOpen); } }, orderAssistOpen ? TT('studio.hide_suggestion', 'Hide suggestion') : TT('studio.review_suggestion', 'Review suggestion')),
+        h('button', { type: 'button', style: { border: '1px solid ' + readingOrderTone.border, background: readingOrderTone.bg, color: readingOrderTone.fg, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 900 }, onClick: applyReadingOrderSuggestion }, TT('studio.apply_order', 'Apply order'))) : null,
+      (readingSuggestion.changed && orderAssistOpen) ? h('ol', { style: { margin: '6px 0 0 18px', padding: 0 } },
+        readingSuggestion.suggested.slice(0, 8).map(function (item) {
+          return h('li', { key: item.id, style: { marginBottom: '2px', color: readingOrderTone.fg } }, item.label);
+        }),
+        readingSuggestion.suggested.length > 8 ? h('li', { key: 'more', style: { color: readingOrderTone.fg } }, '+' + (readingSuggestion.suggested.length - 8) + ' more') : null) : null) : null;
 
     var propPanel = null;
     if (selectedGroup.length > 1) {
@@ -3753,8 +4020,21 @@
         return runs;
       };
       var selectedTextStyle = (selected.runs && selected.runs[0] && selected.runs[0].style) || {};
+      var selectedIssueSummary = issueByObject[selected.id];
+      var selectedIssueTone = selectedIssueSummary ? issueToneFor(selectedIssueSummary) : statusTone('success');
+      var selectedA11yActions = stObjectReadyActions(doc, selected.id);
       propPanel = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         h('div', { style: S.label }, TT('studio.selection', 'Selection') + ' — ' + selected.type),
+        h('div', { style: { padding: '7px', border: '1px solid ' + selectedIssueTone.border, background: selectedIssueTone.bg, color: selectedIssueTone.fg, borderRadius: '8px', fontSize: '10.5px', lineHeight: 1.35 } },
+          selectedIssueSummary ? [
+            h('strong', { key: 'title', style: { display: 'block', fontSize: '11px' } }, selectedIssueSummary.label + ': ' + selectedIssueSummary.title),
+            h('span', { key: 'message' }, selectedIssueSummary.message),
+            selectedIssueSummary.count > 1 ? h('div', { key: 'count', style: { marginTop: '4px', fontWeight: 800 } }, selectedIssueSummary.count + ' items on this object') : null,
+            selectedA11yActions.length ? h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' } },
+              selectedA11yActions.slice(0, 3).map(function (action, idx) {
+                return h('button', { key: idx, type: 'button', onClick: function () { applyReadyAction(action); }, title: action.message, style: { border: '1px solid ' + selectedIssueTone.border, background: C.panel, color: C.text, borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 800, padding: '3px 6px', lineHeight: 1.2 } }, readyActionLabel(action));
+              })) : null
+          ] : h('strong', { style: { display: 'block', fontSize: '11px' } }, TT('studio.object_a11y_ok', 'No object-level accessibility items.'))),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } }, frameInput('x', 'X'), frameInput('y', 'Y'), frameInput('w', TT('studio.width', 'Width')), frameInput('h', TT('studio.height', 'Height'))),
         h('div', { style: S.label }, 'Layout'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' } },
@@ -3987,11 +4267,7 @@
           h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', flex: '1 1 100%' } },
             ready && ready.actions.length ? ready.actions.slice(0, 8).map(function (action, idx) {
               var tone = statusTone(action.severity === 'error' ? 'error' : action.severity === 'warning' ? 'warning' : 'review');
-              var label = action.type === 'fix-small-text' ? TT('studio.fix_small_text', 'Make text readable')
-                : action.type === 'fix-contrast' ? TT('studio.fix_contrast', 'Improve contrast')
-                  : action.type === 'add-alt' ? TT('studio.add_alt', 'Add alt text')
-                    : action.type === 'review-reading-order' ? TT('studio.review_order', 'Review reading order')
-                      : action.title;
+              var label = readyActionLabel(action);
               return h('button', { key: idx, style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '5px 8px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, textAlign: 'left' },
                 onClick: function () { applyReadyAction(action); },
                 title: action.message }, label);
@@ -4005,11 +4281,14 @@
           preflight.issues.length ? h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(auto-fit, minmax(210px, 1fr))', gap: '6px', flex: '1 1 100%' } },
             preflight.issues.slice(0, 10).map(function (issue, idx) {
               var tone = statusTone(issue.severity === 'error' ? 'error' : issue.severity === 'warning' ? 'warning' : 'review');
-              return h('button', { key: idx, style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '7px', textAlign: 'left', cursor: issue.id ? 'pointer' : 'default', fontSize: '11px' },
-                onClick: function () { if (issue.id) selectOnly(issue.id); else applyReadyAction({ type: 'review-reading-order', severity: issue.severity, title: issue.title, message: issue.message }); },
-                title: issue.message },
+              var issueAction = stReadyActionForIssue(doc, issue);
+              var actionLabel = readyActionLabel(issueAction);
+              return h('div', { key: idx, style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '7px', textAlign: 'left', fontSize: '11px' }, title: issue.message },
                 h('strong', { style: { display: 'block', marginBottom: '2px' } }, issue.title),
-                h('span', { style: { lineHeight: 1.25 } }, issue.message));
+                h('span', { style: { display: 'block', lineHeight: 1.25 } }, issue.message),
+                h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' } },
+                  issue.id ? h('button', { type: 'button', style: { border: '1px solid ' + tone.border, background: C.panel, color: C.text, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 800 }, onClick: function () { selectOnly(issue.id); } }, TT('studio.select', 'Select')) : null,
+                  issueAction ? h('button', { type: 'button', style: { border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '6px', padding: '3px 7px', cursor: 'pointer', fontSize: '10px', fontWeight: 900 }, onClick: function () { applyReadyAction(issueAction); } }, actionLabel) : null));
             })) : null) : null,
         // export panel
         exportOpen ? h('div', { style: { padding: '10px 14px', background: C.exportBg, color: C.text, borderBottom: '1px solid ' + C.exportBorder, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
@@ -4179,6 +4458,7 @@
               h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'reading' ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-pressed': navigatorMode === 'reading', onClick: function () { setNavigatorMode('reading'); } }, TT('studio.reading_order_short', 'Reading order')),
               h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'layers' ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-pressed': navigatorMode === 'layers', onClick: function () { setNavigatorMode('layers'); } }, TT('studio.layers', 'Layers'))),
             h('div', { style: { fontSize: '10px', color: C.soft, lineHeight: 1.3 } }, navigatorMode === 'layers' ? TT('studio.layers_hint', 'Visual stack only. Reading order stays in the other tab.') : TT('studio.reading_order_hint', 'This is what screen readers and tagged PDF follow.')),
+            readingOrderAssistant,
             h('div', { style: S.readingList }, navigatorMode === 'layers' ? layerList : orderList),
             propPanel || h('p', { style: { fontSize: '11px', color: C.soft } }, TT('studio.no_selection', 'Select an object on the canvas (or in the list above) to edit its properties.')))),
         h('input', { ref: fileRef, type: 'file', accept: 'image/*', style: { display: 'none' },
@@ -4252,11 +4532,14 @@
   AlloStudio.stObjectsFromResourceCue = stObjectsFromResourceCue;
   AlloStudio.stSuggestTextColor = stSuggestTextColor;
   AlloStudio.stBuildReadyActions = stBuildReadyActions;
+  AlloStudio.stObjectReadyActions = stObjectReadyActions;
   AlloStudio.stBuildAccessibilityChecklist = stBuildAccessibilityChecklist;
+  AlloStudio.stObjectIssueSummary = stObjectIssueSummary;
   AlloStudio.stBuildA11yAutoFixPlan = stBuildA11yAutoFixPlan;
   AlloStudio.stStyleKits = stStyleKits;
   AlloStudio.stStyleKitPatch = stStyleKitPatch;
   AlloStudio.stLayerItems = stLayerItems;
+  AlloStudio.stReadingOrderSuggestion = stReadingOrderSuggestion;
   AlloStudio.stSelectionBounds = stSelectionBounds;
   AlloStudio.stAlignFramesAsGroup = stAlignFramesAsGroup;
   AlloStudio.stDistributeFramesAsGroup = stDistributeFramesAsGroup;
@@ -4279,8 +4562,11 @@
   AlloStudio.stSafeFontFamily = stSafeFontFamily;
   AlloStudio.ST_FONT_STACKS = ST_FONT_STACKS;
   AlloStudio.stDownscaleDims = stDownscaleDims;
+  AlloStudio.stImageWeightInfo = stImageWeightInfo;
+  AlloStudio.stOptimizedImagePatch = stOptimizedImagePatch;
   AlloStudio.stPreviewScene = stPreviewScene;
   AlloStudio.stPrintCss = stPrintCss;
+  AlloStudio.stDurableDoc = stDurableDoc;
   AlloStudio.stAutosavePayload = stAutosavePayload;
   AlloStudio.stAutosaveValid = stAutosaveValid;
   AlloStudio.stReadAutosave = stReadAutosave;

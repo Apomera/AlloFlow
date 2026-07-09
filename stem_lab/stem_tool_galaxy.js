@@ -304,6 +304,9 @@ if (!window._galaxyHasLoadedOnce) {
           var activeRealSkySurvey = REAL_SKY_SURVEYS.find(function (x) { return x.id === realSkySurveyKey; }) || REAL_SKY_SURVEYS[0];
           var activeRealSkyCatalog = REAL_SKY_CATALOGS.find(function (x) { return x.id === realSkyCatalogKey; }) || REAL_SKY_CATALOGS[0];
           var activeAladinUrl = 'https://aladin.cds.unistra.fr/AladinLite/?target=' + encodeURIComponent(activeRealSkyTarget.target) + '&fov=' + encodeURIComponent(activeRealSkyTarget.fov);
+          var activeRealSkyUniverseStop = activeRealSkyTarget.key === 'm87' ? 'm87' : activeRealSkyTarget.key === 'm51' ? 'm51' : 'deep-field';
+          var activeRealSkyEvidenceThread = activeRealSkyTarget.key === 'm87' ? 'blackholes' : activeRealSkyTarget.key === 'm1' ? 'candles' : 'redshift';
+          var activeRealSkyUniverseTime = activeRealSkyEvidenceThread === 'candles' ? 8.8 : 13.8;
 
           function ensureGalaxyAladinLite(cb) {
             if (window.A && window.A.aladin) { cb(true); return; }
@@ -3862,8 +3865,8 @@ if (!window._galaxyHasLoadedOnce) {
                         setLabToolData(function (prev) { return Object.assign({}, prev, { astronomy: Object.assign({}, prev.astronomy || {}, { tab: 'observe', eyepieceTarget: activeRealSkyTarget.astronomyTarget || 'andromeda' }) }); });
                         setStemLabTool('astronomy');
                       } },
-                      { title: 'Place it in time', body: 'Jump to Universe to connect this object with cosmic history, redshift, galaxy formation, and deep-field scale.', action: 'Universe', onClick: function () {
-                        setLabToolData(function (prev) { return Object.assign({}, prev, { universe: Object.assign({}, prev.universe || {}, { showImages: true }) }); });
+                      { title: 'Place it in time', body: 'Jump to Universe with a matching real-data tour stop and evidence thread already selected.', action: 'Universe', onClick: function () {
+                        setLabToolData(function (prev) { return Object.assign({}, prev, { universe: Object.assign({}, prev.universe || {}, { showImages: true, wwtTourStop: activeRealSkyUniverseStop, cosmicEvidenceThread: activeRealSkyEvidenceThread, cosmicTime: activeRealSkyUniverseTime }) }); });
                         setStemLabTool('universe');
                       } },
                       { title: 'Analyze data', body: 'Use Data Lab for the next step: spectra, brightness, color, classification, and student research questions.', action: 'Data Lab', onClick: function () { setStemLabTool('dataLab'); } }

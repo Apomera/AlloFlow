@@ -140,6 +140,11 @@ describe('textLayoutClass — picture-book text layout', () => {
     expect(RL._textLayoutClass('4', 'Hi.')).toContain('text-xl');
     expect(RL._textLayoutClass('4', 'Hi.')).not.toContain('text-2xl');
   });
+  it('uses a quieter sustained-reading face for levels 5-6', () => {
+    expect(RL._textLayoutClass('5', 'word '.repeat(80))).toContain('text-base');
+    expect(RL._textLayoutClass('6', 'word '.repeat(80))).toContain('text-base');
+    expect(RL._textLayoutClass('6', 'word '.repeat(80))).not.toContain('text-xl');
+  });
   it('never emits text-left (would break RTL start alignment)', () => {
     expect(RL._textLayoutClass('4', 'word '.repeat(80))).not.toContain('text-left');
   });

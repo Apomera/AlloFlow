@@ -106,6 +106,18 @@ const COMIC_TRANSITION_OPTIONS = [
   { value: 'quiet', label: 'Quiet Beat' },
   { value: 'resolve', label: 'Resolve' },
 ];
+const COMIC_LETTERING_SPACE_OPTIONS = [
+  { value: '', label: 'Lettering space' },
+  { value: 'top', label: 'Top' },
+  { value: 'bottom', label: 'Bottom' },
+  { value: 'left', label: 'Left side' },
+  { value: 'right', label: 'Right side' },
+  { value: 'top-left', label: 'Top left' },
+  { value: 'top-right', label: 'Top right' },
+  { value: 'bottom-left', label: 'Bottom left' },
+  { value: 'bottom-right', label: 'Bottom right' },
+  { value: 'none', label: 'No bubble area' },
+];
 const COMIC_BUBBLE_WORD_WARNING = 20;
 const COMIC_BUBBLE_WORD_LIMIT = 28;
 const COMIC_DIRECTION_OPTIONS = {
@@ -131,6 +143,34 @@ const getComicDirectionLabel = (field, value) => {
   const match = (COMIC_DIRECTION_OPTIONS[field] || []).find(opt => opt.value === clean);
   return match ? match.label : '';
 };
+const normalizeComicLetteringSpace = (value) => {
+  const raw = String(value || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/_+/g, '-');
+  return COMIC_LETTERING_SPACE_OPTIONS.some(opt => opt.value && opt.value === raw) ? raw : '';
+};
+const getComicLetteringSpaceLabel = (value) => {
+  const clean = normalizeComicLetteringSpace(value);
+  const match = COMIC_LETTERING_SPACE_OPTIONS.find(opt => opt.value === clean);
+  return match ? match.label : '';
+};
+const getComicLetteringSpaceClass = (value) => {
+  const clean = normalizeComicLetteringSpace(value);
+  return clean ? `lettering-space-${clean}` : 'lettering-space-unset';
+};
+const getComicLetteringPreviewFlexClass = (value) => {
+  const clean = normalizeComicLetteringSpace(value);
+  const map = {
+    top: 'items-start justify-center',
+    bottom: 'items-end justify-center',
+    left: 'items-center justify-start',
+    right: 'items-center justify-end',
+    'top-left': 'items-start justify-start',
+    'top-right': 'items-start justify-end',
+    'bottom-left': 'items-end justify-start',
+    'bottom-right': 'items-end justify-end',
+  };
+  return map[clean] || 'items-start justify-center';
+};
+const getComicReadingOrderLabel = (layout) => layout === 'manga' ? 'Read right-to-left' : 'Read left-to-right';
 const countWords = (text) => String(text || '').trim().split(/\s+/).filter(Boolean).length;
 const getComicLetteringStats = (dialogue = {}) => {
   const speechWords = countWords(dialogue.speech);
@@ -216,6 +256,24 @@ const sanitizeComicContinuity = (obj) => {
     palette: typeof obj.palette === 'string' ? obj.palette.slice(0, 300) : '',
     styleNotes: typeof obj.styleNotes === 'string' ? obj.styleNotes.slice(0, 600) : '',
   };
+};
+
+const sanitizePanelThumbnails = (obj) => {
+  if (!obj || typeof obj !== 'object') return {};
+  const out = {};
+  Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((k) => {
+    const key = String(k || '').slice(0, 64);
+    const v = obj[k];
+    if (!key || !v || typeof v !== 'object') return;
+    const clean = {};
+    if (typeof v.focalPoint === 'string' && v.focalPoint.trim()) clean.focalPoint = v.focalPoint.slice(0, 180);
+    if (typeof v.composition === 'string' && v.composition.trim()) clean.composition = v.composition.slice(0, 240);
+    if (typeof v.sketchNote === 'string' && v.sketchNote.trim()) clean.sketchNote = v.sketchNote.slice(0, 260);
+    const space = normalizeComicLetteringSpace(v.letteringSpace);
+    if (space) clean.letteringSpace = space;
+    if (Object.keys(clean).length) out[key] = clean;
+  });
+  return out;
 };
 
 const sanitizePanelStickers = (obj) => {
@@ -841,6 +899,7 @@ const StoryForge = React.memo(({
   const [panelStickers, setPanelStickers] = useState({});
   const [panelDialogue, setPanelDialogue] = useState({}); // keyed by paragraph id: { speaker, speech, thought, sfx }
   const [panelDirections, setPanelDirections] = useState({}); // keyed by paragraph id: { shot, angle, mood, transition }
+  const [panelThumbnails, setPanelThumbnails] = useState({}); // keyed by paragraph id: { focalPoint, composition, letteringSpace, sketchNote }
   const [comicContinuity, setComicContinuity] = useState({ cast: '', setting: '', palette: '', styleNotes: '' });
   const updatePanelDialogue = (pId, field, value) => {
     setPanelDialogue(prev => ({ ...prev, [pId]: { ...(prev[pId] || {}), [field]: value } }));
@@ -850,6 +909,18 @@ const StoryForge = React.memo(({
       const next = { ...prev };
       const cleanValue = normalizeComicDirectionValue(field, value);
       const current = { ...(next[pId] || {}) };
+      if (cleanValue) current[field] = cleanValue;
+      else delete current[field];
+      if (Object.keys(current).length) next[pId] = current;
+      else delete next[pId];
+      return next;
+    });
+  };
+  const updatePanelThumbnail = (pId, field, value) => {
+    setPanelThumbnails(prev => {
+      const next = { ...prev };
+      const current = { ...(next[pId] || {}) };
+      const cleanValue = field === 'letteringSpace' ? normalizeComicLetteringSpace(value) : String(value || '').slice(0, 260);
       if (cleanValue) current[field] = cleanValue;
       else delete current[field];
       if (Object.keys(current).length) next[pId] = current;
@@ -867,6 +938,7 @@ const StoryForge = React.memo(({
     comicContinuity: sanitizeComicContinuity(comicContinuity),
     panelDialogue: sanitizePanelDialogue(panelDialogue),
     panelDirections: sanitizePanelDirections(panelDirections),
+    panelThumbnails: sanitizePanelThumbnails(panelThumbnails),
     panelStickers: sanitizePanelStickers(panelStickers),
   });
 
@@ -1306,7 +1378,7 @@ const StoryForge = React.memo(({
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicContinuity, panelDialogue, panelDirections, panelStickers]);
+  }, [isOpen, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelStickers]);
 
   // ── Focus management: move focus into the dialog on open, trap Tab inside it, and
   //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). ──
@@ -1358,7 +1430,7 @@ const StoryForge = React.memo(({
       } catch (e) { /* localStorage full or unavailable */ }
     }, 2000);
     return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicContinuity, panelDialogue, panelDirections, panelStickers]);
+  }, [storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelStickers]);
 
   // ── Load saved draft on mount ──
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
@@ -1401,6 +1473,7 @@ const StoryForge = React.memo(({
     setComicContinuity(sanitizeComicContinuity(d.comicContinuity));
     setPanelDialogue(sanitizePanelDialogue(d.panelDialogue));
     setPanelDirections(sanitizePanelDirections(d.panelDirections));
+    setPanelThumbnails(sanitizePanelThumbnails(d.panelThumbnails));
     setPanelStickers(sanitizePanelStickers(d.panelStickers));
     setShowRestorePrompt(false);
     if (addToast) addToast(t('toasts.draft_restored_2'), 'success');
@@ -1428,6 +1501,7 @@ const StoryForge = React.memo(({
       if (initialConfig.comicPageLayout && COMIC_PAGE_LAYOUTS[initialConfig.comicPageLayout]) setComicPageLayout(initialConfig.comicPageLayout);
       if (initialConfig.comicContinuity) setComicContinuity(sanitizeComicContinuity(initialConfig.comicContinuity));
       if (initialConfig.panelDirections) setPanelDirections(sanitizePanelDirections(initialConfig.panelDirections));
+      if (initialConfig.panelThumbnails) setPanelThumbnails(sanitizePanelThumbnails(initialConfig.panelThumbnails));
       if (initialConfig.minParagraphs) {
         setParagraphs(Array.from({ length: initialConfig.minParagraphs }, (_, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: '', plotBeat: '' })));
       }
@@ -1444,6 +1518,7 @@ const StoryForge = React.memo(({
       layoutMode, comicPageLayout,
       comicContinuity: sanitizeComicContinuity(comicContinuity),
       panelDirections: sanitizePanelDirections(panelDirections),
+      panelThumbnails: sanitizePanelThumbnails(panelThumbnails),
       minParagraphs: paragraphs.length,
       maxParagraphs: 8,
       scaffoldsGenerated,
@@ -1522,6 +1597,7 @@ const StoryForge = React.memo(({
       comicFlowReport: layoutMode === 'comic' ? comicFlowReport : null,
       panelDialogue: sanitizePanelDialogue(panelDialogue),
       panelDirections: sanitizePanelDirections(panelDirections),
+      panelThumbnails: sanitizePanelThumbnails(panelThumbnails),
       panelStickers: sanitizePanelStickers(panelStickers),
       paragraphs: paragraphs.map(p => ({ id: p.id, text: p.text, scaffoldFrame: p.scaffoldFrame, plotBeat: p.plotBeat || '' })),
       illustrations: Object.fromEntries(
@@ -1673,6 +1749,7 @@ const StoryForge = React.memo(({
       setIllustrations(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setPanelDialogue(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setPanelDirections(prev => { const n = { ...prev }; delete n[removedId]; return n; });
+      setPanelThumbnails(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setPanelStickers(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setGrammarResults(prev => { const n = { ...prev }; delete n[removedId]; return n; });
       setValenceByPara(prev => { const n = { ...prev }; delete n[removedId]; return n; });
@@ -1946,6 +2023,281 @@ Return ONLY JSON:
     }
   };
 
+  const tightenComicBubbles = async (targetIdx = null) => {
+    if (!onCallGemini) return;
+    const selectedPanels = paragraphs
+      .map((p, idx) => {
+        const dialogue = panelDialogue[p.id] || {};
+        return { p, idx, dialogue, lettering: getComicLetteringStats(dialogue) };
+      })
+      .filter(({ idx, lettering }) => {
+        if (typeof targetIdx === 'number') return idx === targetIdx && lettering.words > 0;
+        return lettering.words > COMIC_BUBBLE_WORD_WARNING;
+      });
+    if (selectedPanels.length === 0) {
+      if (addToast) addToast(typeof targetIdx === 'number' ? 'Add bubble text before tightening this panel.' : 'No crowded comic bubbles to tighten.', 'info');
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      const panelBrief = selectedPanels.map(({ p, idx, dialogue, lettering }) => ({
+        panel: idx + 1,
+        narration: (p.text || p.scaffoldFrame || '').slice(0, 700),
+        current: dialogue,
+        lettering: {
+          words: lettering.words,
+          speechWords: lettering.speechWords,
+          thoughtWords: lettering.thoughtWords,
+          sfxWords: lettering.sfxWords,
+          limit: lettering.limit,
+        },
+        currentDirection: panelDirections[p.id] || {},
+      }));
+      const prompt = `You are a comic lettering editor helping a ${gradeLevel || '5th grade'} student tighten crowded panels.
+Rewrite only the comic bubble fields: speaker, speech, thought, and sfx.
+Rules:
+- Preserve the panel's meaning, voice, and school-appropriate tone.
+- Do not rewrite narration captions or visual direction.
+- Keep each panel's total speech + thought + SFX under ${COMIC_BUBBLE_WORD_LIMIT} words when possible.
+- Prefer shorter natural phrasing over summaries.
+- Keep SFX to 1-2 punchy words.
+- Leave a field as "" only when it is no longer needed.
+${langInstruction}
+
+Panels:
+${JSON.stringify(panelBrief, null, 2)}
+
+Return ONLY JSON:
+{
+  "panels": [
+    { "panel": 1, "speaker": "", "speech": "", "thought": "", "sfx": "" }
+  ]
+}`;
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      const generated = Array.isArray(data.panels) ? data.panels : [];
+      const byPanel = new Map(generated.map(item => [Number(item.panel), item]));
+      const updates = {};
+      selectedPanels.forEach(({ p, idx, dialogue }) => {
+        const raw = byPanel.get(idx + 1);
+        if (!raw || typeof raw !== 'object') return;
+        const hasRaw = (key) => Object.prototype.hasOwnProperty.call(raw, key);
+        const hasRewrite = ['speaker', 'speech', 'dialogue', 'thought', 'sfx', 'soundEffect'].some(hasRaw);
+        if (!hasRewrite) return;
+        const normalized = {
+          speaker: hasRaw('speaker') && typeof raw.speaker === 'string' ? raw.speaker : (dialogue.speaker || ''),
+          speech: hasRaw('speech') && typeof raw.speech === 'string'
+            ? raw.speech
+            : (hasRaw('dialogue') && typeof raw.dialogue === 'string' ? raw.dialogue : (dialogue.speech || '')),
+          thought: hasRaw('thought') && typeof raw.thought === 'string' ? raw.thought : (dialogue.thought || ''),
+          sfx: hasRaw('sfx') && typeof raw.sfx === 'string'
+            ? raw.sfx
+            : (hasRaw('soundEffect') && typeof raw.soundEffect === 'string' ? raw.soundEffect : (dialogue.sfx || '')),
+        };
+        updates[p.id] = sanitizePanelDialogue({ [p.id]: normalized })[p.id] || {};
+      });
+      const applied = Object.keys(updates).length;
+      if (applied > 0) {
+        setPanelDialogue(prev => {
+          const next = { ...prev };
+          Object.keys(updates).forEach((id) => {
+            if (Object.keys(updates[id]).length) next[id] = updates[id];
+            else delete next[id];
+          });
+          return next;
+        });
+        setIsDirty(true);
+        awardXP(4, 'Tightened comic bubbles');
+        if (addToast) addToast(targetIdx === null ? `Tightened ${applied} crowded comic panel${applied === 1 ? '' : 's'}.` : `Panel ${targetIdx + 1} bubbles tightened.`, 'success');
+        sfAnnounce('Comic bubbles tightened');
+      } else if (addToast) {
+        addToast('No bubble tightening edits were returned. Try again with more dialogue.', 'info');
+      }
+    } catch (err) {
+      console.warn('Comic bubble tightening failed:', err);
+      if (addToast) addToast('Comic bubble tightening failed. Try again.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const draftComicCameraPass = async (targetIdx = null) => {
+    if (!onCallGemini) return;
+    const selectedPanels = paragraphs
+      .map((p, idx) => ({ p, idx }))
+      .filter(({ p, idx }) => (typeof targetIdx === 'number' ? idx === targetIdx : true) && ((p.text || p.scaffoldFrame || '').trim().length > 0));
+    if (selectedPanels.length === 0) {
+      if (addToast) addToast(typeof targetIdx === 'number' ? 'Add a caption before directing this panel.' : 'Add panel captions before running a camera pass.', 'info');
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      const panelBrief = selectedPanels.map(({ p, idx }) => {
+        const dialogue = panelDialogue[p.id] || {};
+        const lettering = getComicLetteringStats(dialogue);
+        return {
+          panel: idx + 1,
+          caption: (p.text || p.scaffoldFrame || '').slice(0, 700),
+          dialogue,
+          bubbleWords: lettering.words,
+          currentDirection: panelDirections[p.id] || {},
+          beat: p.plotBeat || '',
+        };
+      });
+      const prompt = `You are a comic storyboard artist planning camera rhythm for a ${gradeLevel || '5th grade'} student's short comic.
+Revise only visual direction: shot, angle, mood, and transition.
+Rules:
+- Do not rewrite captions, dialogue, thoughts, or SFX.
+- Choose clear, drawable directions that match each panel's story beat.
+- Across the sequence, create visual variety: establish place, push action, show reactions, reveal important details, and resolve cleanly.
+- Use close shots for emotion, wide shots for setting, detail shots for clues/objects, and reaction shots for consequences.
+- Keep the choices school-appropriate and easy for an image generator or student artist to follow.
+- If a current direction is already strong, you may keep it.
+- Return one direction set per panel.
+Allowed values:
+  shot: ${COMIC_SHOT_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')}
+  angle: ${COMIC_ANGLE_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')}
+  mood: ${COMIC_MOOD_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')}
+  transition: ${COMIC_TRANSITION_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')}
+${langInstruction}
+
+Panels:
+${JSON.stringify(panelBrief, null, 2)}
+
+Return ONLY JSON:
+{
+  "panels": [
+    { "panel": 1, "shot": "", "angle": "", "mood": "", "transition": "" }
+  ]
+}`;
+      const result = await onCallGemini(prompt, true);
+      const data = JSON.parse(cleanJson(result));
+      const generated = Array.isArray(data.panels) ? data.panels : [];
+      const byPanel = new Map(generated.map(item => [Number(item.panel), item]));
+      const directionUpdates = {};
+      selectedPanels.forEach(({ p, idx }) => {
+        const raw = byPanel.get(idx + 1);
+        if (!raw || typeof raw !== 'object') return;
+        const cleanDirection = sanitizePanelDirections({ [p.id]: {
+          shot: typeof raw.shot === 'string' ? raw.shot : (typeof raw.cameraShot === 'string' ? raw.cameraShot : ''),
+          angle: typeof raw.angle === 'string' ? raw.angle : (typeof raw.cameraAngle === 'string' ? raw.cameraAngle : ''),
+          mood: typeof raw.mood === 'string' ? raw.mood : (typeof raw.tone === 'string' ? raw.tone : ''),
+          transition: typeof raw.transition === 'string' ? raw.transition : (typeof raw.move === 'string' ? raw.move : ''),
+        } })[p.id];
+        if (cleanDirection) directionUpdates[p.id] = cleanDirection;
+      });
+      const applied = Object.keys(directionUpdates).length;
+      if (applied > 0) {
+        setPanelDirections(prev => {
+          const next = { ...prev };
+          Object.keys(directionUpdates).forEach((id) => { next[id] = { ...(next[id] || {}), ...directionUpdates[id] }; });
+          return next;
+        });
+        setComicFlowReport(null);
+        setIsDirty(true);
+        awardXP(5, 'Ran comic camera pass');
+        if (addToast) addToast(targetIdx === null ? `Camera pass updated ${applied} comic panel${applied === 1 ? '' : 's'}.` : `Panel ${targetIdx + 1} direction updated.`, 'success');
+        sfAnnounce('Comic camera pass applied');
+      } else if (addToast) {
+        addToast('No camera direction edits were returned. Try adding clearer captions.', 'info');
+      }
+    } catch (err) {
+      console.warn('Comic camera pass failed:', err);
+      if (addToast) addToast('Comic camera pass failed. Try again.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const draftComicThumbnailPass = async (targetIdx = null) => {
+    if (!onCallGemini) return;
+    const selectedPanels = paragraphs
+      .map((p, idx) => ({ p, idx }))
+      .filter(({ p, idx }) => (typeof targetIdx === 'number' ? idx === targetIdx : true) && ((p.text || p.scaffoldFrame || '').trim().length > 0));
+    if (selectedPanels.length === 0) {
+      if (addToast) addToast(typeof targetIdx === 'number' ? 'Add a caption before roughing this panel.' : 'Add panel captions before running thumbnail roughs.', 'info');
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      const panelBrief = selectedPanels.map(({ p, idx }) => {
+        const dialogue = panelDialogue[p.id] || {};
+        const lettering = getComicLetteringStats(dialogue);
+        return {
+          panel: idx + 1,
+          caption: (p.text || p.scaffoldFrame || '').slice(0, 700),
+          dialogue,
+          bubbleWords: lettering.words,
+          direction: panelDirections[p.id] || {},
+          currentRough: panelThumbnails[p.id] || {},
+        };
+      });
+      const result = await onCallGemini(
+        `You are a comic layout artist making thumbnail rough notes for a student comic.
+Create a quick composition plan for each panel before final art.
+
+Rules:
+- Do not rewrite captions, dialogue, or camera direction.
+- Pick one clear focal point the reader should notice first.
+- Describe the composition in practical visual terms: foreground/background, character placement, silhouette, motion, or negative space.
+- Reserve lettering space so speech/thought/SFX can fit without covering the focal point.
+- Keep sketch notes concise, drawable, and school-appropriate.
+- Use "none" for letteringSpace only if there are no bubbles or SFX.
+- Return one rough note per panel.
+
+Allowed letteringSpace values:
+${COMIC_LETTERING_SPACE_OPTIONS.filter(o => o.value).map(o => o.value).join(', ')}
+${langInstruction}
+
+Panels:
+${JSON.stringify(panelBrief, null, 2)}
+
+Return ONLY JSON:
+{
+  "panels": [
+    { "panel": 1, "focalPoint": "", "composition": "", "letteringSpace": "", "sketchNote": "" }
+  ]
+}`,
+        true
+      );
+      const data = JSON.parse(cleanJson(result));
+      const generated = Array.isArray(data.panels) ? data.panels : [];
+      const byPanel = new Map(generated.map(item => [Number(item.panel), item]));
+      const roughUpdates = {};
+      selectedPanels.forEach(({ p, idx }) => {
+        const raw = byPanel.get(idx + 1);
+        if (!raw || typeof raw !== 'object') return;
+        const clean = sanitizePanelThumbnails({ [p.id]: {
+          focalPoint: typeof raw.focalPoint === 'string' ? raw.focalPoint : (typeof raw.focus === 'string' ? raw.focus : ''),
+          composition: typeof raw.composition === 'string' ? raw.composition : (typeof raw.layout === 'string' ? raw.layout : ''),
+          letteringSpace: typeof raw.letteringSpace === 'string' ? raw.letteringSpace : (typeof raw.bubbleSpace === 'string' ? raw.bubbleSpace : ''),
+          sketchNote: typeof raw.sketchNote === 'string' ? raw.sketchNote : (typeof raw.note === 'string' ? raw.note : ''),
+        } })[p.id];
+        if (clean) roughUpdates[p.id] = clean;
+      });
+      const applied = Object.keys(roughUpdates).length;
+      if (applied > 0) {
+        setPanelThumbnails(prev => {
+          const next = { ...prev };
+          Object.keys(roughUpdates).forEach((id) => { next[id] = { ...(next[id] || {}), ...roughUpdates[id] }; });
+          return next;
+        });
+        setComicFlowReport(null);
+        setIsDirty(true);
+        awardXP(5, 'Ran comic thumbnail roughs');
+        if (addToast) addToast(targetIdx === null ? `Thumbnail roughs updated ${applied} panel${applied === 1 ? '' : 's'}.` : `Panel ${targetIdx + 1} thumbnail rough updated.`, 'success');
+        sfAnnounce('Comic thumbnail roughs applied');
+      } else if (addToast) {
+        addToast('No thumbnail roughs were returned. Try adding clearer panel captions.', 'info');
+      }
+    } catch (err) {
+      console.warn('Comic thumbnail rough pass failed:', err);
+      if (addToast) addToast('Comic thumbnail rough pass failed. Try again.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const checkGrammarAndStyle = async () => {
     if (!onCallGemini) return;
     setGrammarLoading(true);
@@ -2013,6 +2365,14 @@ Return ONLY JSON:
     if (notes.palette.trim()) lines.push(`Color palette: ${notes.palette.trim()}`);
     if (notes.styleNotes.trim()) lines.push(`Style rules: ${notes.styleNotes.trim()}`);
     return lines.join('\n');
+  };
+
+  const finalizeImagePrompt = (prompt) => {
+    const base = String(prompt || '').trim();
+    if (!base) return '';
+    return /NO TEXT/i.test(base) && /NO WORDS/i.test(base)
+      ? base
+      : `${base} STRICTLY NO TEXT, NO LABELS, NO WORDS IN THE IMAGE.`;
   };
 
   const draftComicContinuity = async () => {
@@ -2084,6 +2444,7 @@ Return ONLY JSON:
     if (layoutMode !== 'comic') return base;
     const bubble = panelDialogue[paragraph.id] || {};
     const direction = panelDirections[paragraph.id] || {};
+    const rough = panelThumbnails[paragraph.id] || {};
     const bubbleLines = [];
     const directionBits = [
       direction.shot ? `Shot: ${getComicDirectionLabel('shot', direction.shot)}` : '',
@@ -2095,27 +2456,121 @@ Return ONLY JSON:
     if (bubble.thought) bubbleLines.push(`Thought bubble: ${bubble.thought}`);
     if (bubble.sfx) bubbleLines.push(`Sound effect: ${bubble.sfx}`);
     if (directionBits.length) bubbleLines.push(`Visual direction: ${directionBits.join(', ')}`);
+    const roughBits = [
+      rough.focalPoint ? `Focal point: ${rough.focalPoint}` : '',
+      rough.composition ? `Composition: ${rough.composition}` : '',
+      rough.letteringSpace ? `Reserve lettering space: ${getComicLetteringSpaceLabel(rough.letteringSpace)}` : '',
+      rough.sketchNote ? `Thumbnail note: ${rough.sketchNote}` : '',
+    ].filter(Boolean);
+    if (roughBits.length) bubbleLines.push(`Thumbnail rough: ${roughBits.join('; ')}`);
     return [base, ...bubbleLines, getComicContinuityPrompt()].filter(Boolean).join('\n');
   };
 
   const generateImagePrompt = async (paragraphId, text, idx) => {
-    if (!onCallGemini) return;
-    const style = getStyleDesc();
     const panel = paragraphs.find(p => p.id === paragraphId);
     const sourceText = (text || '').trim() || getIllustrationSourceText(panel);
     if (!sourceText) return;
+    const savedPrompt = finalizeImagePrompt(illustrations[paragraphId]?.prompt);
+    if (savedPrompt) {
+      setPromptPreview({ paragraphId, text: sourceText, idx, prompt: savedPrompt });
+      return;
+    }
+    if (!onCallGemini) return;
+    const style = getStyleDesc();
     const sourceLimit = layoutMode === 'comic' ? 1100 : 700;
     const promptResult = await onCallGemini(
       `Given this ${layoutMode === 'comic' ? 'comic panel plan' : 'paragraph'} from a student's creative story:\n"${sourceText.substring(0, sourceLimit)}"\n\nWrite a concise image generation prompt (max 80 words) that captures the key visual scene described. Focus on the setting, characters, and action. Do NOT include any text, words, or letters in the image.\nArt style: ${style}.\nReturn ONLY the image prompt text, nothing else.`
     );
-    const imgPrompt = promptResult.trim() + ' STRICTLY NO TEXT, NO LABELS, NO WORDS IN THE IMAGE.';
+    const imgPrompt = finalizeImagePrompt(promptResult);
     setPromptPreview({ paragraphId, text: sourceText, idx, prompt: imgPrompt });
+  };
+
+  const draftComicArtPrompts = async (targetIdx = null) => {
+    if (layoutMode !== 'comic' || !onCallGemini) return;
+    const selectedPanels = paragraphs
+      .map((p, idx) => ({ p, idx, sourceText: getIllustrationSourceText(p) }))
+      .filter(({ idx, sourceText }) => (typeof targetIdx === 'number' ? idx === targetIdx : true) && sourceText.trim().length >= 20);
+    if (selectedPanels.length === 0) {
+      if (addToast) addToast(typeof targetIdx === 'number' ? 'Add more panel detail before drafting an art prompt.' : 'Add panel captions before drafting art prompts.', 'info');
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      const style = getStyleDesc();
+      const panelBrief = selectedPanels.map(({ p, idx, sourceText }) => ({
+        panel: idx + 1,
+        artBrief: sourceText.slice(0, 1100),
+        currentPrompt: illustrations[p.id]?.prompt || '',
+        hasImage: Boolean(illustrations[p.id]?.imageUrl),
+      }));
+      const result = await onCallGemini(
+        `You are an art director preparing consistent image-generation prompts for a short student comic.
+Write one concise, self-contained prompt for each panel.
+
+Art style:
+${style}
+
+Comic continuity:
+${getComicContinuityPrompt() || 'No continuity notes yet; infer only from the panels.'}
+
+Rules:
+- Max 80 words per prompt.
+- Focus on visible setting, characters, action, emotion, camera shot, angle, and lighting.
+- Use the provided camera direction and continuity notes when present.
+- Keep recurring characters and locations visually consistent across panels.
+- Do not include speech bubble text, captions, labels, letters, logos, signs, or readable words in the image.
+- Keep prompts school-appropriate.
+- If a current prompt is already strong, improve it only lightly.
+${langInstruction}
+
+Panels:
+${JSON.stringify(panelBrief, null, 2)}
+
+Return ONLY JSON:
+{
+  "panels": [
+    { "panel": 1, "prompt": "" }
+  ]
+}`,
+        true
+      );
+      const data = JSON.parse(cleanJson(result));
+      const generated = Array.isArray(data.panels) ? data.panels : [];
+      const byPanel = new Map(generated.map(item => [Number(item.panel), item]));
+      const promptUpdates = {};
+      selectedPanels.forEach(({ p, idx }) => {
+        const raw = byPanel.get(idx + 1);
+        const prompt = typeof raw?.prompt === 'string' ? finalizeImagePrompt(raw.prompt) : '';
+        if (prompt) promptUpdates[p.id] = prompt;
+      });
+      const applied = Object.keys(promptUpdates).length;
+      if (applied > 0) {
+        setIllustrations(prev => {
+          const next = { ...prev };
+          Object.keys(promptUpdates).forEach((id) => {
+            next[id] = { ...(next[id] || {}), prompt: promptUpdates[id], error: false };
+          });
+          return next;
+        });
+        setIsDirty(true);
+        awardXP(5, 'Drafted comic art prompts');
+        if (addToast) addToast(targetIdx === null ? `Art prompts drafted for ${applied} panel${applied === 1 ? '' : 's'}.` : `Panel ${targetIdx + 1} art prompt drafted.`, 'success');
+        sfAnnounce('Comic art prompts drafted');
+      } else if (addToast) {
+        addToast('No art prompts were returned. Try adding more visual direction.', 'info');
+      }
+    } catch (err) {
+      console.warn('Comic art prompt pass failed:', err);
+      if (addToast) addToast('Comic art prompt pass failed. Try again.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const confirmIllustration = async (customPrompt) => {
     if (!promptPreview || !onCallImagen) return;
     const { paragraphId, idx } = promptPreview;
-    const imgPrompt = customPrompt || promptPreview.prompt;
+    const imgPrompt = finalizeImagePrompt(customPrompt || promptPreview.prompt);
     setPromptPreview(null);
     setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: true } }));
     try {
@@ -2146,18 +2601,22 @@ Return ONLY JSON:
   };
 
   const illustrateParagraph = async (paragraphId, text, idx) => {
-    if (!onCallImagen || !onCallGemini) return;
+    if (!onCallImagen) return;
     setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: true } }));
     try {
       const style = getStyleDesc();
       const panel = paragraphs.find(p => p.id === paragraphId);
       const sourceText = (text || '').trim() || getIllustrationSourceText(panel);
       if (!sourceText) throw new Error('No illustration source text');
-      const sourceLimit = layoutMode === 'comic' ? 1100 : 700;
-      const promptResult = await onCallGemini(
-        `Given this ${layoutMode === 'comic' ? 'comic panel plan' : 'paragraph'} from a student's creative story:\n"${sourceText.substring(0, sourceLimit)}"\n\nWrite a concise image generation prompt (max 80 words) that captures the key visual scene described. Focus on the setting, characters, and action. Do NOT include any text, words, or letters in the image.\nArt style: ${style}.\nReturn ONLY the image prompt text, nothing else.`
-      );
-      const imgPrompt = promptResult.trim() + ' STRICTLY NO TEXT, NO LABELS, NO WORDS IN THE IMAGE.';
+      let imgPrompt = finalizeImagePrompt(illustrations[paragraphId]?.prompt);
+      if (!imgPrompt) {
+        if (!onCallGemini) throw new Error('No prompt writer available');
+        const sourceLimit = layoutMode === 'comic' ? 1100 : 700;
+        const promptResult = await onCallGemini(
+          `Given this ${layoutMode === 'comic' ? 'comic panel plan' : 'paragraph'} from a student's creative story:\n"${sourceText.substring(0, sourceLimit)}"\n\nWrite a concise image generation prompt (max 80 words) that captures the key visual scene described. Focus on the setting, characters, and action. Do NOT include any text, words, or letters in the image.\nArt style: ${style}.\nReturn ONLY the image prompt text, nothing else.`
+        );
+        imgPrompt = finalizeImagePrompt(promptResult);
+      }
       let imageUrl = await onCallImagen(imgPrompt, 400, 0.8);
 
       if (imageUrl && characterPortraitRef.current && idx > 0 && onCallGeminiImageEdit) {
@@ -2844,6 +3303,7 @@ Return ONLY JSON:
     const panelRows = paragraphs.map((p, idx) => {
       const bubble = panelDialogue[p.id] || {};
       const direction = panelDirections[p.id] || {};
+      const rough = panelThumbnails[p.id] || {};
       const caption = (p.text || p.scaffoldFrame || '').trim();
       const lettering = getComicLetteringStats(bubble);
       return {
@@ -2860,6 +3320,9 @@ Return ONLY JSON:
         transition: direction.transition || '',
         hasDirection: Boolean(direction.shot && direction.angle && direction.mood),
         hasTransition: Boolean(direction.transition),
+        hasThumbnailRough: Boolean(rough.focalPoint && rough.composition && rough.letteringSpace),
+        focalPoint: rough.focalPoint || '',
+        letteringSpace: rough.letteringSpace || '',
         beat: p.plotBeat || '',
       };
     });
@@ -2871,6 +3334,7 @@ Return ONLY JSON:
     const missingCaptionPanels = panelRows.filter(p => !p.hasCaption).map(p => p.panel);
     const missingDirectionPanels = panelRows.filter(p => !p.hasDirection).map(p => p.panel);
     const missingTransitionPanels = panelRows.filter(p => !p.hasTransition).map(p => p.panel);
+    const missingThumbnailPanels = panelRows.filter(p => !p.hasThumbnailRough).map(p => p.panel);
     const missingImagePanels = panelRows.filter(p => !p.hasImage).map(p => p.panel);
     const checks = [
       {
@@ -2902,6 +3366,13 @@ Return ONLY JSON:
         detail: missingTransitionPanels.length ? `Choose pacing moves for panels ${missingTransitionPanels.slice(0, 6).join(', ')}.` : `The page uses ${transitionSet.size} transition type${transitionSet.size === 1 ? '' : 's'}.`,
       },
       {
+        key: 'roughs',
+        label: 'Thumbnail roughs',
+        value: `${count(p => p.hasThumbnailRough)}/${total}`,
+        status: missingThumbnailPanels.length === 0 ? 'strong' : missingThumbnailPanels.length <= 2 ? 'watch' : 'needs-work',
+        detail: missingThumbnailPanels.length ? `Add focal point, composition, and lettering space to panels ${missingThumbnailPanels.slice(0, 6).join(', ')}.` : 'Every panel has a thumbnail composition plan.',
+      },
+      {
         key: 'lettering',
         label: 'Lettering load',
         value: heavyBubblePanels.length ? `${heavyBubblePanels.length} heavy` : 'clear',
@@ -2927,6 +3398,7 @@ Return ONLY JSON:
       missingCaptionPanels.length * 12 +
       missingDirectionPanels.length * 6 +
       missingTransitionPanels.length * 4 +
+      missingThumbnailPanels.length * 3 +
       missingImagePanels.length * 4 +
       heavyBubblePanels.length * 5 +
       (shotSet.size <= 1 && total > 2 ? 10 : 0) +
@@ -2938,6 +3410,7 @@ Return ONLY JSON:
     if (missingCaptionPanels.length) localSuggestions.push({ panel: missingCaptionPanels[0], issue: 'Missing caption', suggestion: 'Add one short narration caption that tells the reader what changes in this panel.', priority: 'high' });
     if (missingDirectionPanels.length) localSuggestions.push({ panel: missingDirectionPanels[0], issue: 'Missing direction', suggestion: 'Choose a shot, angle, and mood so the art prompt has a clear camera plan.', priority: 'high' });
     if (missingTransitionPanels.length) localSuggestions.push({ panel: missingTransitionPanels[0], issue: 'Missing pacing move', suggestion: 'Pick whether this panel establishes, advances action, shows a reaction, reveals information, turns the scene, or resolves the beat.', priority: 'medium' });
+    if (missingThumbnailPanels.length) localSuggestions.push({ panel: missingThumbnailPanels[0], issue: 'Missing thumbnail rough', suggestion: 'Add a focal point, composition note, and reserved lettering space before final art.', priority: 'medium' });
     if (shotSet.size <= 1 && total > 2) localSuggestions.push({ panel: null, issue: 'Repeated camera distance', suggestion: 'Use a wide shot to establish place, a close-up for emotion, and a detail shot for an important object or clue.', priority: 'medium' });
     if (transitionSet.size <= 1 && total > 3) localSuggestions.push({ panel: null, issue: 'Flat pacing pattern', suggestion: 'Vary panel moves: establish the scene, push action forward, pause for reaction, then reveal or resolve something.', priority: 'medium' });
     if (heavyBubblePanels.length) localSuggestions.push({ panel: heavyBubblePanels[0], issue: 'Bubble crowding', suggestion: 'Split the dialogue across panels or trim the bubble to one strong line.', priority: 'medium' });
@@ -2950,6 +3423,7 @@ Return ONLY JSON:
         captions: count(p => p.hasCaption),
         images: count(p => p.hasImage),
         directions: count(p => p.hasDirection),
+        thumbnailRoughs: count(p => p.hasThumbnailRough),
         shotTypes: shotSet.size,
         transitionTypes: transitionSet.size,
         bubblePanels: count(p => p.hasBubble),
@@ -3166,7 +3640,10 @@ Return ONLY JSON:
     let chaptersHtml = '';
     const isComic = layoutMode === 'comic';
     const comicLayout = COMIC_PAGE_LAYOUTS[comicPageLayout] ? comicPageLayout : 'grid';
-    if (isComic) chaptersHtml += `<div class="comic-grid comic-layout-${comicLayout}">`;
+    if (isComic) {
+      chaptersHtml += `<div class="comic-reading-guide">${escapeHtml(getComicReadingOrderLabel(comicLayout))} · Follow the numbered panels</div>`;
+      chaptersHtml += `<div class="comic-grid comic-layout-${comicLayout}">`;
+    }
     paragraphs.forEach((p, idx) => {
       const img = illustrations[p.id]?.imageUrl;
       const audio = audioSegments[p.id];
@@ -3178,14 +3655,24 @@ Return ONLY JSON:
         const safeSpeech = panel.speech ? escapeHtml(panel.speech) : '';
         const safeThought = panel.thought ? escapeHtml(panel.thought) : '';
         const safeSfx = panel.sfx ? escapeHtml(panel.sfx) : '';
+        const rough = panelThumbnails[p.id] || {};
+        const letteringSpace = normalizeComicLetteringSpace(rough.letteringSpace);
+        const spaceClass = getComicLetteringSpaceClass(letteringSpace);
+        const hasOverlayBubble = Boolean(img && safeSpeech && letteringSpace && letteringSpace !== 'none');
         const sticker = panelStickers[p.id] || '';
         chaptersHtml += `<article class="panel" aria-label="${escapeHtml(t("a11y.comic_panel", { n: idx + 1 }))}">`;
-        if (img) chaptersHtml += `<div class="panel-img-wrap">`;
+        chaptersHtml += `<span class="panel-order-badge" aria-hidden="true">${idx + 1}</span>`;
+        if (img) chaptersHtml += `<div class="panel-img-wrap ${escapeHtml(spaceClass)}">`;
         if (img) chaptersHtml += `<img src="${escapeHtml(img)}" class="panel-img" loading="lazy" alt="Comic panel ${idx + 1} illustration" />`;
         if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="${escapeHtml(t("a11y.sound_effect", { fx: panel.sfx }))}">${safeSfx}</span>`;
         if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
+        if (hasOverlayBubble) {
+          chaptersHtml += `<div class="lettering-overlay"><div class="dialogue-bubble overlay-bubble">`;
+          if (safeSpeaker) chaptersHtml += `<div class="dialogue-speaker">${safeSpeaker}:</div>`;
+          chaptersHtml += `<div class="dialogue-speech">${safeSpeech}</div></div></div>`;
+        }
         if (img) chaptersHtml += `</div>`;
-        if (safeSpeech) {
+        if (safeSpeech && !hasOverlayBubble) {
           chaptersHtml += `<div class="dialogue-bubble">`;
           if (safeSpeaker) chaptersHtml += `<div class="dialogue-speaker">${safeSpeaker}:</div>`;
           chaptersHtml += `<div class="dialogue-speech">${safeSpeech}</div>`;
@@ -3264,7 +3751,9 @@ main{display:block}
 .print-btn{position:fixed;top:16px;right:16px;padding:8px 20px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:0.9em;box-shadow:0 2px 8px rgba(79,70,229,0.3);z-index:100}
 .print-btn:hover{background:#4338ca}
 .print-btn:focus{outline:3px solid #fbbf24;outline-offset:2px}
+.comic-reading-guide{background:#0f172a;color:white;border-radius:8px 8px 0 0;padding:8px 12px;font-family:Arial,Helvetica,sans-serif;font-size:.78em;font-weight:900;text-transform:uppercase;letter-spacing:.06em;text-align:center}
 .comic-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:20px;background:#1e293b;border-radius:8px}
+.comic-reading-guide + .comic-grid{border-radius:0 0 8px 8px}
 .comic-layout-strip{grid-template-columns:1fr}
 .comic-layout-strip .panel-img{aspect-ratio:16/9}
 .comic-layout-splash .panel:first-child{grid-column:1/-1}
@@ -3272,9 +3761,22 @@ main{display:block}
 .comic-layout-manga{direction:rtl}
 .comic-layout-manga .panel{direction:ltr}
 .panel{background:white;border:3px solid #0f172a;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.panel-order-badge{position:absolute;top:8px;left:8px;z-index:6;width:26px;height:26px;border-radius:999px;background:#0f172a;color:white;border:2px solid white;display:flex;align-items:center;justify-content:center;font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:.8em;box-shadow:0 2px 6px rgba(15,23,42,.35)}
+.comic-layout-manga .panel-order-badge{left:auto;right:8px}
 .panel-img-wrap{position:relative}
 .panel-img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.lettering-overlay{position:absolute;left:8px;right:8px;top:8px;bottom:8px;display:flex;pointer-events:none;z-index:3}
+.lettering-overlay .overlay-bubble{max-width:72%;margin:0;box-shadow:0 2px 8px rgba(15,23,42,.18)}
+.lettering-space-top .lettering-overlay{align-items:flex-start;justify-content:center}
+.lettering-space-bottom .lettering-overlay{align-items:flex-end;justify-content:center}
+.lettering-space-left .lettering-overlay{align-items:center;justify-content:flex-start}
+.lettering-space-right .lettering-overlay{align-items:center;justify-content:flex-end}
+.lettering-space-top-left .lettering-overlay{align-items:flex-start;justify-content:flex-start}
+.lettering-space-top-right .lettering-overlay{align-items:flex-start;justify-content:flex-end}
+.lettering-space-bottom-left .lettering-overlay{align-items:flex-end;justify-content:flex-start}
+.lettering-space-bottom-right .lettering-overlay{align-items:flex-end;justify-content:flex-end}
 .sfx-tag{position:absolute;top:8px;right:8px;background:#fbbf24;color:#7c2d12;font-weight:900;font-style:italic;padding:4px 12px;border-radius:8px;border:2px solid #7c2d12;font-family:'Comic Sans MS','Marker Felt',sans-serif;font-size:0.95em;transform:rotate(-6deg);box-shadow:2px 2px 0 #7c2d12;text-transform:uppercase;letter-spacing:0.05em}
+.comic-layout-manga .sfx-tag{top:42px}
 .panel-sticker{position:absolute;bottom:8px;left:8px;font-size:2em;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))}
 .dialogue-bubble{margin:8px;padding:10px 14px;background:#fff;border:2px solid #1e293b;border-radius:14px;font-size:0.92em;line-height:1.4;position:relative}
 .dialogue-speaker{font-weight:bold;color:#1d4ed8;font-size:0.78em;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px}
@@ -3292,7 +3794,7 @@ main{display:block}
   ${coverArt ? `<img src="${escapeHtml(coverArt)}" style="max-width:300px;border-radius:12px;margin:0 auto 16px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.15)" alt="Cover illustration for ${title}" />` : ''}
   <h1 id="story-title">${title}</h1>
   <p class="meta">Written by ${author}</p>
-  <p class="meta">${escapeHtml(date)} · ${escapeHtml(GENRE_TEMPLATES[genre]?.label || 'Creative Writing')} · Art style: ${escapeHtml(artStyle)}${isComic ? ` · Layout: ${escapeHtml(COMIC_PAGE_LAYOUTS[comicLayout]?.label || 'Grid')}` : ''}</p>
+  <p class="meta">${escapeHtml(date)} · ${escapeHtml(GENRE_TEMPLATES[genre]?.label || 'Creative Writing')} · Art style: ${escapeHtml(artStyle)}${isComic ? ` · Layout: ${escapeHtml(COMIC_PAGE_LAYOUTS[comicLayout]?.label || 'Grid')} · ${escapeHtml(getComicReadingOrderLabel(comicLayout))}` : ''}</p>
 </header>
 <main id="story-content" role="main" aria-labelledby="story-title">
 ${chaptersHtml}
@@ -3337,6 +3839,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
     const panelsHtml = paragraphs.map((p, idx) => {
       const panel = panelDialogue[p.id] || {};
       const direction = panelDirections[p.id] || {};
+      const rough = panelThumbnails[p.id] || {};
       const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label || '';
       const caption = p.text || p.scaffoldFrame || '';
       const imagePrompt = illustrations[p.id]?.prompt || '';
@@ -3352,6 +3855,12 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
         <dl>
           <dt>Caption</dt><dd>${escapeHtml(caption).replace(/\n/g, '<br/>') || '<em>Not written yet</em>'}</dd>
           <dt>Visual Direction</dt><dd>${directionText ? escapeHtml(directionText) : '<em>None</em>'}</dd>
+          <dt>Thumbnail Rough</dt><dd>${rough.focalPoint || rough.composition || rough.letteringSpace || rough.sketchNote ? [
+            rough.focalPoint ? `Focal point: ${rough.focalPoint}` : '',
+            rough.composition ? `Composition: ${rough.composition}` : '',
+            rough.letteringSpace ? `Lettering space: ${getComicLetteringSpaceLabel(rough.letteringSpace)}` : '',
+            rough.sketchNote ? `Sketch note: ${rough.sketchNote}` : '',
+          ].filter(Boolean).map(escapeHtml).join('<br/>') : '<em>None</em>'}</dd>
           <dt>Speech</dt><dd>${panel.speech ? `${panel.speaker ? `<strong>${escapeHtml(panel.speaker)}:</strong> ` : ''}${escapeHtml(panel.speech)}` : '<em>None</em>'}</dd>
           <dt>Thought</dt><dd>${panel.thought ? escapeHtml(panel.thought) : '<em>None</em>'}</dd>
           <dt>SFX</dt><dd>${panel.sfx ? escapeHtml(panel.sfx) : '<em>None</em>'}</dd>
@@ -3366,7 +3875,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
 </style></head><body>
 <button class="print-btn" onclick="window.print()">Print</button>
 <h1>${title}</h1>
-<div class="meta">Comic script by ${author} · Layout: ${layoutLabel} · ${escapeHtml(new Date().toLocaleDateString())}</div>
+<div class="meta">Comic script by ${author} · Layout: ${layoutLabel} · ${escapeHtml(getComicReadingOrderLabel(comicLayout))} · ${escapeHtml(new Date().toLocaleDateString())}</div>
 ${continuityHtml}
 ${panelsHtml}
 </body></html>`;
@@ -3374,6 +3883,151 @@ ${panelsHtml}
       const w = window.open('', '_blank');
       if (w) { w.document.write(html); w.document.close(); }
       else if (addToast) addToast(t('toasts.pop_up_blocked_allow_pop_3'), 'error');
+    } catch (e) {
+      if (addToast) addToast(t('toasts.export_failed_2'), 'error');
+    }
+  };
+
+  const exportComicProductionPack = () => {
+    if (layoutMode !== 'comic') return;
+    if (!window.confirm(`Export this comic production pack as a file?\n\nThe pack is de-identified, but it contains the student's full comic captions, bubbles, art prompts, continuity notes, and production status. Save it to a school-approved location and handle it per your district's student-records policy.\n\nContinue?`)) return;
+    const title = escapeHtml(storyTitle || storyPrompt || sourceTopic || 'My Comic');
+    const author = escapeHtml(authorName || 'A Creative Student');
+    const comicLayout = COMIC_PAGE_LAYOUTS[comicPageLayout] ? comicPageLayout : 'grid';
+    const layoutLabel = COMIC_PAGE_LAYOUTS[comicLayout]?.label || 'Grid';
+    const continuity = sanitizeComicContinuity(comicContinuity);
+    const snapshot = buildComicFlowSnapshot();
+    const report = comicFlowReport && layoutMode === 'comic' ? { ...snapshot, ...comicFlowReport } : snapshot;
+    const continuityRows = [
+      ['Cast', continuity.cast],
+      ['Setting', continuity.setting],
+      ['Palette', continuity.palette],
+      ['Style Rules', continuity.styleNotes],
+    ];
+    const continuityHtml = continuityRows.map(([label, value]) => `
+      <div class="field ${value && value.trim() ? 'filled' : 'missing'}">
+        <strong>${escapeHtml(label)}</strong>
+        <span>${value && value.trim() ? escapeHtml(value).replace(/\n/g, '<br/>') : 'Missing'}</span>
+      </div>
+    `).join('');
+    const checksHtml = (report.checks || []).map((check) => `
+      <div class="check ${escapeHtml(check.status || 'watch')}">
+        <strong>${escapeHtml(check.label || 'Check')}</strong>
+        <span>${escapeHtml(check.value || '')}</span>
+        <p>${escapeHtml(check.detail || '')}</p>
+      </div>
+    `).join('');
+    const suggestions = (report.panelNotes && report.panelNotes.length > 0 ? report.panelNotes : report.suggestions || []).slice(0, 8);
+    const suggestionsHtml = suggestions.length ? suggestions.map((note) => `
+      <li>
+        <strong>${note.panel ? `Panel ${escapeHtml(note.panel)}` : 'Whole comic'}:</strong>
+        ${escapeHtml(note.issue || 'Production note')}
+        ${note.suggestion ? `<span>${escapeHtml(note.suggestion)}</span>` : ''}
+      </li>
+    `).join('') : '<li>No major production notes yet.</li>';
+    const globalHtml = (report.globalSuggestions || []).length ? `
+      <section class="pack-section">
+        <h2>Whole-Comic Notes</h2>
+        <ul>${report.globalSuggestions.slice(0, 6).map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ul>
+      </section>
+    ` : '';
+    const panelsHtml = paragraphs.map((p, idx) => {
+      const panel = panelDialogue[p.id] || {};
+      const direction = panelDirections[p.id] || {};
+      const rough = panelThumbnails[p.id] || {};
+      const caption = p.text || p.scaffoldFrame || '';
+      const lettering = getComicLetteringStats(panel);
+      const image = illustrations[p.id] || {};
+      const beatLabel = (PLOT_BEATS.find(b => b.value === p.plotBeat) || {}).label || '';
+      const directionRows = [
+        ['Move', getComicDirectionLabel('transition', direction.transition)],
+        ['Shot', getComicDirectionLabel('shot', direction.shot)],
+        ['Angle', getComicDirectionLabel('angle', direction.angle)],
+        ['Mood', getComicDirectionLabel('mood', direction.mood)],
+      ];
+      const missing = [];
+      if (!caption.trim()) missing.push('caption');
+      if (!direction.shot || !direction.angle || !direction.mood || !direction.transition) missing.push('direction');
+      if (!rough.focalPoint || !rough.composition || !rough.letteringSpace) missing.push('rough');
+      if (lettering.level === 'crowded') missing.push('lettering trim');
+      if (!image.imageUrl) missing.push('art');
+      const status = missing.length ? `Needs ${missing.join(', ')}` : 'Ready for production';
+      const artBrief = getIllustrationSourceText(p).slice(0, 1100);
+      return `
+        <section class="panel-card">
+          <header>
+            <div>
+              <h2>Panel ${idx + 1}</h2>
+              ${beatLabel ? `<span class="beat">${escapeHtml(beatLabel)}</span>` : ''}
+            </div>
+            <span class="status ${missing.length ? 'needs' : 'ready'}">${escapeHtml(status)}</span>
+          </header>
+          <div class="panel-grid">
+            <div class="thumb">
+              ${image.imageUrl ? `<img src="${escapeHtml(image.imageUrl)}" alt="Panel ${idx + 1} illustration" />` : '<div class="empty-art">No art yet</div>'}
+            </div>
+            <dl>
+              <dt>Caption</dt><dd>${caption ? escapeHtml(caption).replace(/\n/g, '<br/>') : '<em>Not written yet</em>'}</dd>
+              <dt>Direction</dt><dd>${directionRows.map(([label, value]) => `<span class="dir-chip">${escapeHtml(label)}: ${value ? escapeHtml(value) : 'Unset'}</span>`).join('')}</dd>
+              <dt>Thumbnail Rough</dt><dd>${rough.focalPoint || rough.composition || rough.letteringSpace || rough.sketchNote ? [
+                rough.focalPoint ? `Focal point: ${rough.focalPoint}` : '',
+                rough.composition ? `Composition: ${rough.composition}` : '',
+                rough.letteringSpace ? `Lettering space: ${getComicLetteringSpaceLabel(rough.letteringSpace)}` : '',
+                rough.sketchNote ? `Sketch note: ${rough.sketchNote}` : '',
+              ].filter(Boolean).map(escapeHtml).join('<br/>') : '<em>No thumbnail rough yet</em>'}</dd>
+              <dt>Speech</dt><dd>${panel.speech ? `${panel.speaker ? `<strong>${escapeHtml(panel.speaker)}:</strong> ` : ''}${escapeHtml(panel.speech)}` : '<em>None</em>'}</dd>
+              <dt>Thought</dt><dd>${panel.thought ? escapeHtml(panel.thought) : '<em>None</em>'}</dd>
+              <dt>SFX</dt><dd>${panel.sfx ? escapeHtml(panel.sfx) : '<em>None</em>'}</dd>
+              <dt>Lettering</dt><dd>${lettering.words}/${lettering.limit} words - ${escapeHtml(lettering.label)}. ${escapeHtml(lettering.detail)}</dd>
+              <dt>Art Brief</dt><dd>${artBrief ? escapeHtml(artBrief).replace(/\n/g, '<br/>') : '<em>No art brief yet</em>'}</dd>
+              <dt>Final Prompt</dt><dd>${image.prompt ? escapeHtml(image.prompt) : '<em>No generated prompt yet</em>'}</dd>
+            </dl>
+          </div>
+        </section>
+      `;
+    }).join('');
+    const html = `<!DOCTYPE html><html lang="${langBcp47}" dir="${isRtl(langBcp47) ? 'rtl' : 'ltr'}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} - Comic Production Pack</title>
+<style>
+*{box-sizing:border-box}body{font-family:Inter,Arial,Helvetica,sans-serif;line-height:1.45;color:#0f172a;max-width:1100px;margin:0 auto;padding:32px 20px;background:#f8fafc}h1{font-size:2rem;margin:0 0 6px}.meta{color:#475569;font-size:.92rem;margin-bottom:22px}.print-btn{position:fixed;top:16px;right:16px;padding:8px 16px;background:#0f172a;color:white;border:0;border-radius:8px;font-weight:800;cursor:pointer;z-index:10}.pack-section{background:white;border:2px solid #e2e8f0;border-radius:10px;margin:16px 0;padding:16px;break-inside:avoid}.pack-section h2{font-size:1rem;text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px;color:#1d4ed8}.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}.metric{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px}.metric strong{display:block;font-size:1.45rem;color:#1e40af}.metric span{font-size:.78rem;color:#475569;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.field{border:1px solid #e2e8f0;border-radius:8px;padding:10px;background:#f8fafc}.field strong{display:block;margin-bottom:5px}.field.missing span{color:#991b1b;font-style:italic}.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.check{border-radius:8px;padding:10px;border:1px solid #e2e8f0;background:#f8fafc}.check strong{display:block}.check span{font-weight:900;color:#0f172a}.check p{margin:5px 0 0;color:#475569;font-size:.86rem}.check.strong{border-color:#86efac;background:#f0fdf4}.check.watch{border-color:#fcd34d;background:#fffbeb}.check.needs-work{border-color:#fca5a5;background:#fef2f2}ul{margin:0;padding-left:20px}li{margin:7px 0}li span{display:block;color:#475569}.panel-card{background:white;border:2px solid #0f172a;border-radius:10px;margin:16px 0;overflow:hidden;break-inside:avoid}.panel-card header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#0f172a;color:white;padding:10px 14px}.panel-card h2{font-size:1rem;margin:0}.beat{display:inline-block;color:#fde68a;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}.status{font-size:.75rem;font-weight:900;border-radius:999px;padding:4px 10px;background:#e2e8f0;color:#0f172a}.status.ready{background:#bbf7d0;color:#14532d}.status.needs{background:#fed7aa;color:#7c2d12}.panel-grid{display:grid;grid-template-columns:220px 1fr;gap:0}.thumb{background:#f1f5f9;min-height:180px;display:flex;align-items:center;justify-content:center;border-right:1px solid #e2e8f0}.thumb img{width:100%;height:100%;max-height:260px;object-fit:cover;display:block}.empty-art{color:#64748b;font-weight:800;text-transform:uppercase;font-size:.8rem}dl{display:grid;grid-template-columns:120px 1fr;margin:0}dt{font-weight:900;background:#f8fafc;border-top:1px solid #e2e8f0;padding:8px 10px}dd{margin:0;border-top:1px solid #e2e8f0;padding:8px 10px}.dir-chip{display:inline-block;margin:0 5px 5px 0;padding:3px 8px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:.78rem;font-weight:800}em{color:#64748b}.footer{color:#64748b;text-align:center;font-size:.8rem;margin:28px 0 4px}@media(max-width:760px){.panel-grid{grid-template-columns:1fr}.thumb{border-right:0;border-bottom:1px solid #e2e8f0}.panel-card header{align-items:flex-start;flex-direction:column}dl{grid-template-columns:1fr}dt{padding-bottom:2px}dd{padding-top:2px}}@media print{body{background:white}.print-btn{display:none}.pack-section,.panel-card{break-inside:avoid}}
+</style></head><body>
+<button class="print-btn" onclick="window.print()">Print</button>
+<h1>${title}</h1>
+<div class="meta">Comic production pack by ${author} - Layout: ${escapeHtml(layoutLabel)} - ${escapeHtml(getComicReadingOrderLabel(comicLayout))} - ${escapeHtml(new Date().toLocaleDateString())}</div>
+<section class="pack-section">
+  <h2>Production Snapshot</h2>
+  <div class="summary-grid">
+    <div class="metric"><strong>${Math.round(Number(report.score) || 0)}</strong><span>Flow score</span></div>
+    <div class="metric"><strong>${escapeHtml(report.metrics?.panels || paragraphs.length)}</strong><span>Panels</span></div>
+    <div class="metric"><strong>${escapeHtml(report.metrics?.directions || 0)}</strong><span>Directed</span></div>
+    <div class="metric"><strong>${escapeHtml(report.metrics?.thumbnailRoughs || 0)}</strong><span>Roughed</span></div>
+    <div class="metric"><strong>${escapeHtml(report.metrics?.images || 0)}</strong><span>With art</span></div>
+    <div class="metric"><strong>${escapeHtml(report.metrics?.bubblePanels || 0)}</strong><span>With bubbles</span></div>
+  </div>
+  <p>${escapeHtml(report.summary || snapshot.summary || '')}</p>
+</section>
+<section class="pack-section">
+  <h2>Continuity Sheet</h2>
+  <div class="fields">${continuityHtml}</div>
+</section>
+<section class="pack-section">
+  <h2>Production Checks</h2>
+  <div class="checks">${checksHtml}</div>
+</section>
+${globalHtml}
+<section class="pack-section">
+  <h2>Priority Notes</h2>
+  <ul>${suggestionsHtml}</ul>
+</section>
+${panelsHtml}
+<div class="footer">Created with StoryForge - AlloFlow</div>
+</body></html>`;
+    try {
+      const w = window.open('', '_blank');
+      if (w) { w.document.write(html); w.document.close(); }
+      else if (addToast) addToast(t('toasts.pop_up_blocked_allow_pop_3'), 'error');
+      setHasExported(true);
+      awardXP(15, 'Exported comic production pack');
+      sfAnnounce('Comic production pack opened');
     } catch (e) {
       if (addToast) addToast(t('toasts.export_failed_2'), 'error');
     }
@@ -3493,6 +4147,7 @@ show();
       const title = storyTitle || storyPrompt || sourceTopic || 'My Story';
       const safePanelDialogue = sanitizePanelDialogue(panelDialogue);
       const safePanelDirections = sanitizePanelDirections(panelDirections);
+      const safePanelThumbnails = sanitizePanelThumbnails(panelThumbnails);
       const safePanelStickers = sanitizePanelStickers(panelStickers);
       await liveSession.push({
         type: 'storyforge',
@@ -3515,6 +4170,7 @@ show();
           illustration: illustrations[p.id]?.imageUrl || null,
           panelDialogue: safePanelDialogue[p.id] || null,
           panelDirection: safePanelDirections[p.id] || null,
+          panelThumbnail: safePanelThumbnails[p.id] || null,
           panelSticker: safePanelStickers[p.id] || null,
         })),
         gradingScore: gradingResult?.totalScore || null,
@@ -3548,6 +4204,7 @@ show();
       comicFlowReport: layoutMode === 'comic' ? comicFlowReport : null,
       panelDialogue: sanitizePanelDialogue(panelDialogue),
       panelDirections: sanitizePanelDirections(panelDirections),
+      panelThumbnails: sanitizePanelThumbnails(panelThumbnails),
       panelStickers: sanitizePanelStickers(panelStickers),
       illustrations: Object.fromEntries(
         Object.entries(illustrations).filter(([, v]) => v?.imageUrl).map(([k, v]) => [k, { imageUrl: v.imageUrl, prompt: v.prompt }])
@@ -3622,6 +4279,7 @@ show();
           if (d.comicFlowReport && typeof d.comicFlowReport === 'object') setComicFlowReport(d.comicFlowReport);
           setPanelDialogue(sanitizePanelDialogue(d.panelDialogue));
           setPanelDirections(sanitizePanelDirections(d.panelDirections));
+          setPanelThumbnails(sanitizePanelThumbnails(d.panelThumbnails));
           setPanelStickers(sanitizePanelStickers(d.panelStickers));
           { const cp = sanitizeParagraphs(d.paragraphs); if (cp) setParagraphs(cp); }
           if (d.scaffoldsGenerated) setScaffoldsGenerated(true);
@@ -4195,6 +4853,36 @@ show();
                       <Sparkles size={14} /> Draft Bubbles
                     </button>
                   )}
+                  {layoutMode === 'comic' && onCallGemini && (
+                    <button
+                      onClick={() => draftComicCameraPass()}
+                      disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)}
+                      className="px-4 py-2 bg-cyan-100 text-cyan-700 rounded-full text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2 disabled:opacity-50"
+                      title="Plan shot, angle, mood, and pacing moves across the comic"
+                    >
+                      <Sparkles size={14} /> Camera Pass
+                    </button>
+                  )}
+                  {layoutMode === 'comic' && onCallGemini && (
+                    <button
+                      onClick={() => draftComicThumbnailPass()}
+                      disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)}
+                      className="px-4 py-2 bg-teal-100 text-teal-700 rounded-full text-xs font-bold hover:bg-teal-200 transition-colors flex items-center gap-2 disabled:opacity-50"
+                      title="Draft thumbnail roughs with focal point, composition, and lettering space"
+                    >
+                      <Sparkles size={14} /> Thumbnail Pass
+                    </button>
+                  )}
+                  {layoutMode === 'comic' && onCallGemini && (
+                    <button
+                      onClick={() => tightenComicBubbles()}
+                      disabled={isProcessing || !paragraphs.some(p => getComicLetteringStats(panelDialogue[p.id] || {}).words > COMIC_BUBBLE_WORD_WARNING)}
+                      className="px-4 py-2 bg-amber-100 text-amber-700 rounded-full text-xs font-bold hover:bg-amber-200 transition-colors flex items-center gap-2 disabled:opacity-50"
+                      title="Tighten crowded comic bubbles without changing the panel beat"
+                    >
+                      <Sparkles size={14} /> Tighten Bubbles
+                    </button>
+                  )}
                   <button
                     onClick={generateScaffolds}
                     disabled={isProcessing}
@@ -4294,13 +4982,15 @@ show();
                     const panelSummaries = paragraphs.map((p, idx) => {
                       const direction = panelDirections[p.id] || {};
                       const dialogue = panelDialogue[p.id] || {};
+                      const rough = panelThumbnails[p.id] || {};
                       const lettering = getComicLetteringStats(dialogue);
                       const hasCaption = Boolean((p.text || p.scaffoldFrame || '').trim());
                       const hasDirection = Boolean(direction.shot && direction.angle && direction.mood && direction.transition);
+                      const hasRough = Boolean(rough.focalPoint && rough.composition && rough.letteringSpace);
                       const hasBubble = Boolean(dialogue.speech || dialogue.thought || dialogue.sfx);
                       const hasImage = Boolean(illustrations[p.id]?.imageUrl);
-                      const ready = hasCaption && hasDirection && lettering.level !== 'crowded';
-                      return { p, idx, direction, lettering, hasCaption, hasDirection, hasBubble, hasImage, ready };
+                      const ready = hasCaption && hasDirection && hasRough && lettering.level !== 'crowded';
+                      return { p, idx, direction, lettering, hasCaption, hasDirection, hasRough, hasBubble, hasImage, ready };
                     });
                     const readyCount = panelSummaries.filter(s => s.ready).length;
                     return (
@@ -4315,8 +5005,8 @@ show();
                           </div>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                          {panelSummaries.map(({ p, idx, direction, lettering, hasCaption, hasDirection, hasBubble, hasImage, ready }) => {
-                            const status = !hasCaption ? 'Needs caption' : lettering.level === 'crowded' ? 'Crowded' : !hasDirection ? 'Needs direction' : ready ? 'Ready' : 'Draft';
+                          {panelSummaries.map(({ p, idx, direction, lettering, hasCaption, hasDirection, hasRough, hasBubble, hasImage, ready }) => {
+                            const status = !hasCaption ? 'Needs caption' : lettering.level === 'crowded' ? 'Crowded' : !hasDirection ? 'Needs direction' : !hasRough ? 'Needs rough' : ready ? 'Ready' : 'Draft';
                             const statusClass = ready ? 'bg-green-100 text-green-700 border-green-200' : lettering.level === 'crowded' ? 'bg-red-100 text-red-700 border-red-200' : hasCaption ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200';
                             const jumpToPanel = () => {
                               setFocusParagraphIdx(idx);
@@ -4347,6 +5037,7 @@ show();
                                   {[
                                     ['Caption', hasCaption],
                                     ['Direction', hasDirection],
+                                    ['Rough', hasRough],
                                     ['Bubble', hasBubble],
                                     ['Art', hasImage],
                                   ].map(([label, ok]) => (
@@ -4521,7 +5212,20 @@ show();
                       </div>
                       {/* Narration caption — top yellow bar */}
                       <div className="rounded-lg border border-slate-200 bg-white p-2">
-                        <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">Panel Direction</div>
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Panel Direction</div>
+                          {onCallGemini && (
+                            <button
+                              type="button"
+                              onClick={() => draftComicCameraPass(idx)}
+                              disabled={isProcessing || !(p.text || p.scaffoldFrame || '').trim()}
+                              className="px-2 py-0.5 rounded-full text-[10px] font-black bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 disabled:opacity-40 transition-colors"
+                              title="Suggest camera direction for this panel"
+                            >
+                              Direct
+                            </button>
+                          )}
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                           {[
                             { field: 'shot', label: 'Shot', options: COMIC_SHOT_OPTIONS },
@@ -4544,6 +5248,58 @@ show();
                             </label>
                           ))}
                         </div>
+                      </div>
+                      <div className="rounded-lg border border-teal-100 bg-teal-50/40 p-2">
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="text-[10px] font-black text-teal-700 uppercase tracking-widest">Thumbnail Rough</div>
+                          {onCallGemini && (
+                            <button
+                              type="button"
+                              onClick={() => draftComicThumbnailPass(idx)}
+                              disabled={isProcessing || !(p.text || p.scaffoldFrame || '').trim()}
+                              className="px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-teal-700 border border-teal-200 hover:bg-teal-100 disabled:opacity-40 transition-colors"
+                              title="Suggest a thumbnail rough for this panel"
+                            >
+                              Rough
+                            </button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={(panelThumbnails[p.id] || {}).focalPoint || ''}
+                            onChange={(e) => updatePanelThumbnail(p.id, 'focalPoint', e.target.value)}
+                            className="w-full px-2 py-1.5 text-[11px] rounded-md border border-teal-100 bg-white text-slate-700 outline-none focus:border-teal-400"
+                            placeholder="Focal point"
+                            aria-label={`Panel ${idx + 1} focal point`}
+                          />
+                          <select
+                            value={(panelThumbnails[p.id] || {}).letteringSpace || ''}
+                            onChange={(e) => updatePanelThumbnail(p.id, 'letteringSpace', e.target.value)}
+                            className="w-full px-2 py-1.5 text-[11px] rounded-md border border-teal-100 bg-white text-slate-700 font-bold outline-none focus:border-teal-400"
+                            aria-label={`Panel ${idx + 1} lettering space`}
+                          >
+                            {COMIC_LETTERING_SPACE_OPTIONS.map(opt => (
+                              <option key={opt.value || 'lettering-space-none'} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <textarea
+                          value={(panelThumbnails[p.id] || {}).composition || ''}
+                          onChange={(e) => updatePanelThumbnail(p.id, 'composition', e.target.value)}
+                          className="mt-2 w-full p-2 text-[11px] resize-none outline-none border border-teal-100 rounded-lg bg-white focus:border-teal-400"
+                          style={{ minHeight: '38px' }}
+                          placeholder="Composition: foreground/background, negative space, character placement..."
+                          aria-label={`Panel ${idx + 1} composition rough`}
+                        />
+                        <textarea
+                          value={(panelThumbnails[p.id] || {}).sketchNote || ''}
+                          onChange={(e) => updatePanelThumbnail(p.id, 'sketchNote', e.target.value)}
+                          className="mt-2 w-full p-2 text-[11px] resize-none outline-none border border-teal-100 rounded-lg bg-white focus:border-teal-400"
+                          style={{ minHeight: '34px' }}
+                          placeholder="Sketch note: silhouette, motion, important prop, or staging reminder..."
+                          aria-label={`Panel ${idx + 1} thumbnail sketch note`}
+                        />
                       </div>
                       <div>
                         <label className="text-[11px] font-bold text-amber-600 uppercase tracking-widest flex items-center gap-1 mb-0.5">
@@ -4615,8 +5371,19 @@ show();
                         const textColor = lettering.level === 'crowded' ? 'text-red-700' : lettering.level === 'watch' ? 'text-amber-700' : 'text-green-700';
                         return (
                           <div className="rounded-lg border border-slate-200 bg-white p-2" aria-label={`Panel ${idx + 1} lettering budget`}>
-                            <div className="flex items-center justify-between gap-2 mb-1">
+                            <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                               <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Lettering Budget</span>
+                              {onCallGemini && lettering.words > COMIC_BUBBLE_WORD_WARNING && (
+                                <button
+                                  type="button"
+                                  onClick={() => tightenComicBubbles(idx)}
+                                  disabled={isProcessing}
+                                  className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 disabled:opacity-40 transition-colors"
+                                  title="Tighten this panel's bubbles"
+                                >
+                                  Tighten
+                                </button>
+                              )}
                               <span className={`text-[10px] font-black ${textColor}`}>{lettering.words}/{lettering.limit} words · {lettering.label}</span>
                             </div>
                             <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
@@ -4821,9 +5588,9 @@ show();
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">{t("ui_common.illustrate_story")}</h3>
-                  <p className="text-slate-600 text-sm mt-1">AI will create artwork for each paragraph</p>
+                  <p className="text-slate-600 text-sm mt-1">{layoutMode === 'comic' ? 'AI will create consistent artwork for each panel' : 'AI will create artwork for each paragraph'}</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 justify-end">
                   <button
                     onClick={generateCoverArt}
                     disabled={isProcessing || coverArtLoading}
@@ -4831,6 +5598,16 @@ show();
                   >
                     <Sparkles size={14} /> {coverArtLoading ? 'Generating...' : coverArt ? 'Redo Cover' : 'Cover Art'}
                   </button>
+                  {layoutMode === 'comic' && onCallGemini && (
+                    <button
+                      onClick={() => draftComicArtPrompts()}
+                      disabled={isProcessing || !paragraphs.some(p => getIllustrationSourceText(p).trim().length >= 20)}
+                      className="px-4 py-2 bg-fuchsia-100 text-fuchsia-700 rounded-full text-xs font-bold hover:bg-fuchsia-200 transition-colors flex items-center gap-2 disabled:opacity-50"
+                      title="Draft consistent image prompts for every comic panel"
+                    >
+                      <Sparkles size={14} /> Art Prompt Pass
+                    </button>
+                  )}
                   <button
                     onClick={illustrateAll}
                     disabled={isProcessing}
@@ -4926,6 +5703,17 @@ show();
                         <div className="mt-2 text-[11px] text-purple-700 italic truncate" title={illustrations[p.id].prompt}>
                           Prompt: {illustrations[p.id].prompt.substring(0, 80)}...
                         </div>
+                      )}
+                      {layoutMode === 'comic' && onCallGemini && (
+                        <button
+                          type="button"
+                          onClick={() => draftComicArtPrompts(idx)}
+                          disabled={isProcessing || getIllustrationSourceText(p).trim().length < 20}
+                          className="mt-2 px-2.5 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100 disabled:opacity-40 transition-colors inline-flex items-center gap-1"
+                          title="Draft a consistent art prompt for this panel"
+                        >
+                          <Sparkles size={10} /> Draft Art Prompt
+                        </button>
                       )}
                     </div>
                     <div className="w-48 shrink-0">
@@ -5622,6 +6410,7 @@ show();
                         ['Captions', `${comicFlowReport.metrics.captions}/${comicFlowReport.metrics.panels}`],
                         ['Art', `${comicFlowReport.metrics.images}/${comicFlowReport.metrics.panels}`],
                         ['Direction', `${comicFlowReport.metrics.directions}/${comicFlowReport.metrics.panels}`],
+                        ['Roughs', `${comicFlowReport.metrics.thumbnailRoughs || 0}/${comicFlowReport.metrics.panels}`],
                         ['Shots', comicFlowReport.metrics.shotTypes],
                         ['Moves', comicFlowReport.metrics.transitionTypes],
                         ['Bubbles', comicFlowReport.metrics.bubblePanels],
@@ -6037,21 +6826,51 @@ show();
 
                 {layoutMode === 'comic' ? (
                   /* ── Comic Panel Grid ── */
+                  <>
+                  <div className="bg-slate-950 text-white text-center text-[11px] font-black uppercase tracking-widest py-2">
+                    {getComicReadingOrderLabel(comicPageLayout)} · Follow the numbered panels
+                  </div>
                   <div className={`p-4 grid gap-3 bg-slate-900 ${comicPageLayout === 'strip' ? 'grid-cols-1' : 'grid-cols-2'}`} style={{ direction: comicPageLayout === 'manga' ? 'rtl' : 'ltr' }}>
                     {paragraphs.map((p, idx) => (
                       <div key={p.id} className={`bg-white rounded-lg overflow-hidden shadow-md relative ${comicPageLayout === 'splash' && idx === 0 ? 'col-span-2' : ''}`} style={{ border: '3px solid #1e293b', direction: 'ltr' }}>
-                        {illustrations[p.id]?.imageUrl && (
-                          <img src={illustrations[p.id].imageUrl} alt={`Panel ${idx + 1}`} className={`w-full object-cover ${comicPageLayout === 'strip' || (comicPageLayout === 'splash' && idx === 0) ? 'aspect-video' : 'aspect-square'}`} />
-                        )}
+                        <div className={`absolute top-2 ${comicPageLayout === 'manga' ? 'right-2' : 'left-2'} z-20 w-7 h-7 rounded-full bg-slate-950 text-white border-2 border-white shadow-md flex items-center justify-center text-xs font-black`}>
+                          {idx + 1}
+                        </div>
+                        {illustrations[p.id]?.imageUrl && (() => {
+                          const dialogue = panelDialogue[p.id] || {};
+                          const rough = panelThumbnails[p.id] || {};
+                          const space = normalizeComicLetteringSpace(rough.letteringSpace);
+                          const showPlacedSpeech = Boolean(dialogue.speech && space && space !== 'none');
+                          return (
+                            <div className="relative">
+                              <img src={illustrations[p.id].imageUrl} alt={`Panel ${idx + 1}`} className={`w-full object-cover ${comicPageLayout === 'strip' || (comicPageLayout === 'splash' && idx === 0) ? 'aspect-video' : 'aspect-square'}`} />
+                              {showPlacedSpeech && (
+                                <div className={`absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}`}>
+                                  <div className="max-w-[72%] bg-white border-2 border-slate-900 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed shadow-lg">
+                                    {dialogue.speaker && <div className="text-[10px] font-bold text-blue-600 mb-0.5">{dialogue.speaker}:</div>}
+                                    {dialogue.speech}
+                                  </div>
+                                </div>
+                              )}
+                              {space && !dialogue.speech && (
+                                <div className={`absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}`}>
+                                  <div className="border-2 border-dashed border-teal-300 bg-white/70 text-teal-700 rounded-xl px-2 py-1 text-[10px] font-black uppercase tracking-widest">
+                                    Bubble space
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                         {/* Sticker overlay */}
                         {panelStickers[p.id] && (
-                          <div className="absolute top-2 right-2 text-3xl drop-shadow-lg select-none pointer-events-none" style={{ transform: 'rotate(12deg)' }}>
+                          <div className={`absolute ${comicPageLayout === 'manga' ? 'top-11 right-2' : 'top-2 right-2'} text-3xl drop-shadow-lg select-none pointer-events-none`} style={{ transform: 'rotate(12deg)' }}>
                             {panelStickers[p.id]}
                           </div>
                         )}
                         {/* SFX overlay */}
                         {(panelDialogue[p.id] || {}).sfx && (
-                          <div className="absolute top-3 left-3 font-black text-red-500 text-lg drop-shadow-lg select-none pointer-events-none" style={{ transform: 'rotate(-8deg)', textShadow: '2px 2px 0 #fff, -1px -1px 0 #fff' }}>
+                          <div className={`absolute ${comicPageLayout === 'manga' ? 'top-3 left-3' : 'top-11 left-3'} font-black text-red-500 text-lg drop-shadow-lg select-none pointer-events-none`} style={{ transform: 'rotate(-8deg)', textShadow: '2px 2px 0 #fff, -1px -1px 0 #fff' }}>
                             {panelDialogue[p.id].sfx}
                           </div>
                         )}
@@ -6063,7 +6882,7 @@ show();
                             </div>
                           )}
                           {/* Speech bubble */}
-                          {(panelDialogue[p.id] || {}).speech && (
+                          {(panelDialogue[p.id] || {}).speech && (!illustrations[p.id]?.imageUrl || !normalizeComicLetteringSpace((panelThumbnails[p.id] || {}).letteringSpace) || normalizeComicLetteringSpace((panelThumbnails[p.id] || {}).letteringSpace) === 'none') && (
                             <div className="relative">
                               {(panelDialogue[p.id] || {}).speaker && (
                                 <div className="text-[11px] font-bold text-blue-600 mb-0.5">{panelDialogue[p.id].speaker}:</div>
@@ -6093,6 +6912,7 @@ show();
                       </div>
                     ))}
                   </div>
+                  </>
                 ) : (
                   /* ── Prose Layout ── */
                   <div className="p-6 space-y-6">
@@ -6140,6 +6960,14 @@ show();
                     className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center gap-2"
                   >
                     <Download size={18} /> Comic Script
+                  </button>
+                )}
+                {layoutMode === 'comic' && (
+                  <button
+                    onClick={exportComicProductionPack}
+                    className="px-6 py-3 bg-blue-700 text-white rounded-2xl text-sm font-bold hover:bg-blue-800 transition-all shadow-lg shadow-blue-200 flex items-center gap-2"
+                  >
+                    <Download size={18} /> Production Pack
                   </button>
                 )}
                 <button

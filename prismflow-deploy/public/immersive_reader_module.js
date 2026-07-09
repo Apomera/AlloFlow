@@ -821,6 +821,27 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
   const playTokenRef = useRef(0);
   const warmedRef = useRef(/* @__PURE__ */ new Set());
   const reducedMotion = typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
+  const scheduleCaptureForStorage = useCallback((sentenceText, url) => {
+    if (!isTeacher || !captureOn || !sentenceText || !url) return;
+    if (typeof window === "undefined" || typeof window.__alloCaptureKaraokeAudio !== "function") return;
+    const run = () => {
+      try {
+        const result = window.__alloCaptureKaraokeAudio(sentenceText, url);
+        if (result && typeof result.catch === "function") result.catch(() => {
+        });
+      } catch (e) {
+      }
+    };
+    try {
+      if (typeof window.requestIdleCallback === "function") {
+        window.requestIdleCallback(run, { timeout: 1200 });
+      } else {
+        setTimeout(run, 250);
+      }
+    } catch (e) {
+      setTimeout(run, 250);
+    }
+  }, [isTeacher, captureOn]);
   useEffect(() => {
     if (!text) {
       setSentences([]);
@@ -983,6 +1004,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       });
       try {
         await audio.play();
+        scheduleCaptureForStorage(sentenceText, url);
       } catch (e) {
         setIsPlaying(false);
       }
@@ -1032,7 +1054,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
       if (autoAdvance && idx < sentences.length - 1) setSentenceIdx(idx + 1);
       else setIsPlaying(false);
     }, 1500);
-  }, [sentences, getAudioUrl, autoAdvance, reducedMotion]);
+  }, [sentences, getAudioUrl, autoAdvance, reducedMotion, scheduleCaptureForStorage]);
   const regenerateCurrent = useCallback(async () => {
     const sentence = sentences[sentenceIdx];
     if (regenBusy || !sentence || typeof window.__alloRegenerateSentenceAudio !== "function") return;
@@ -1283,7 +1305,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     } catch (e) {
       return false;
     }
-  })() ? " \xB7 \u{1F3A4} your voice" : ""))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, isTeacher && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.teacher_audio_tools", "Read-aloud tools") }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1.5 cursor-pointer", title: safeT(t, "immersive.save_readaloud_tip", "Save each sentence as you listen (and the ones read ahead) into this resource, so students hear your vetted audio instantly on any device.") }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: captureOn, onChange: (e) => {
+  })() ? " \xB7 \u{1F3A4} your voice" : ""))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, isTeacher && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", role: "group", "aria-label": safeT(t, "immersive.teacher_audio_tools", "Read-aloud tools") }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1.5 cursor-pointer", title: safeT(t, "immersive.save_readaloud_tip", "Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.") }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: captureOn, onChange: (e) => {
     const v = e.target.checked;
     setCaptureOn(v);
     try {

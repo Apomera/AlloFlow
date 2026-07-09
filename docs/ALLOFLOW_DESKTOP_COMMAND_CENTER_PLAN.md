@@ -111,3 +111,28 @@ Desktop should be able to:
 - Do not pick final model files yet.
 - Do not require Ollama or LM Studio.
 - Do not split School Box into a separate product surface yet.
+
+## Parked Idea: Document Intelligence Pack
+
+Status: idea captured 2026-07-09; do not build yet.
+
+Docling looks promising as an optional local helper for advanced document import,
+but it should not be treated as a browser/CDN-only dependency. The likely product
+shape is an AlloFlow Desktop or School Box "Document Intelligence Pack" that runs
+on the user's own compute and exposes a local helper endpoint to the Canvas/app
+popup flow. AlloFlow would keep its existing remediation pipeline as the source
+of truth; Docling would only act as a stronger extraction/front-door layer for
+messy PDFs, Office files, EPUBs, scanned materials, tables, figures, and reading
+order metadata.
+
+Preferred constraints if revisited:
+
+- Optional pack, not part of the default Canvas payload.
+- Local-first: desktop, School Box, or district-hosted; no Aaron-owned document
+  processing cloud by default.
+- CPU-first with GPU awareness; keep the existing browser pipeline as fallback.
+- Treat output as provenance-rich input to `fixAndVerifyPdf`, not as a
+  replacement for deterministic WCAG fixes, surgical tools, tagged-PDF export, or
+  veraPDF validation.
+- Spike only when we have real "ugly document" test cases where import fidelity,
+  table recovery, or reading order are current blockers.

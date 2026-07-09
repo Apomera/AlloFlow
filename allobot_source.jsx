@@ -2431,6 +2431,39 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                             </g>
                         )}
+                        {effectiveAccessory === 'librarian-kit' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-500 origin-center">
+                            <g className="animate-allobot-float" style={{ animationDelay: '0.8s' }}>
+                                <g>
+                                    <circle cx="38" cy="48" r="8.5" fill="rgba(219, 234, 254, 0.22)" stroke="#334155" strokeWidth="1.5" />
+                                    <circle cx="62" cy="48" r="8.5" fill="rgba(219, 234, 254, 0.22)" stroke="#334155" strokeWidth="1.5" />
+                                    <path d="M46.5 48 Q50 45 53.5 48" stroke="#334155" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                                    <path d="M29.5 48 Q23 49 20 54" stroke="#334155" strokeWidth="1.1" fill="none" strokeLinecap="round" opacity="0.85" />
+                                    <path d="M70.5 48 Q77 49 80 54" stroke="#334155" strokeWidth="1.1" fill="none" strokeLinecap="round" opacity="0.85" />
+                                    <ellipse cx="35.5" cy="45.5" rx="2.2" ry="1.2" fill="white" opacity="0.55" />
+                                    <ellipse cx="59.5" cy="45.5" rx="2.2" ry="1.2" fill="white" opacity="0.55" />
+                                </g>
+                                <g transform="translate(70, 58) rotate(-7)">
+                                    <rect x="0" y="0" width="26" height="20" rx="2" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="1.3" />
+                                    <rect x="0" y="0" width="6" height="20" rx="1.5" fill="#6366F1" stroke="#4338CA" strokeWidth="0.8" />
+                                    <line x1="9" y1="6" x2="22" y2="6" stroke={colors.accInk} strokeWidth="1" opacity="0.65" />
+                                    <line x1="9" y1="10" x2="20" y2="10" stroke={colors.accInk} strokeWidth="1" opacity="0.45" />
+                                    <line x1="9" y1="14" x2="22" y2="14" stroke={colors.accInk} strokeWidth="1" opacity="0.45" />
+                                    <path d="M18 0 L22 0 L22 8 L20 6 L18 8 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="0.6" />
+                                </g>
+                                <g transform="translate(-27, 56) rotate(5)">
+                                    <rect x="0" y="0" width="30" height="22" rx="2" fill="#FFFBEB" stroke="#92400E" strokeWidth="1.2" />
+                                    <rect x="0" y="0" width="30" height="6" rx="2" fill="#FDE68A" stroke="#B45309" strokeWidth="0.7" />
+                                    <circle cx="6" cy="13" r="2.2" fill="#A78BFA" stroke="#6D28D9" strokeWidth="0.6" />
+                                    <line x1="12" y1="11" x2="25" y2="11" stroke="#92400E" strokeWidth="0.9" opacity="0.65" />
+                                    <line x1="12" y1="15" x2="23" y2="15" stroke="#92400E" strokeWidth="0.9" opacity="0.45" />
+                                    <line x1="5" y1="19" x2="25" y2="19" stroke="#92400E" strokeWidth="0.8" opacity="0.35" />
+                                </g>
+                                <path d="M36 76 Q50 84 64 76" stroke="#FDE68A" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.95" />
+                                <circle cx="50" cy="80" r="2.5" fill="#F59E0B" stroke="#92400E" strokeWidth="0.8" />
+                            </g>
+                            </g>
+                        )}
                         {effectiveAccessory === 'thinking-cap' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
                                 <path d="M 28 26 Q 25 8 50 6 Q 75 8 72 26 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="1.5" />

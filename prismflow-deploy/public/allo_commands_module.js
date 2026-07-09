@@ -20,6 +20,311 @@ const _mkT = (rawT) => (k, f) => {
   }
   return r && r !== k ? r : f || k;
 };
+const READING_STOPWORDS = new Set("a an and are as at be book books by can for from get give help i in into is it me my of on or read reading readings recommend right show some source sources story stories suggest text texts the to want what with learn about please".split(" "));
+const READING_LANGUAGE_HINTS = {
+  english: "English",
+  spanish: "Spanish",
+  french: "French",
+  hindi: "Hindi",
+  arabic: "Arabic",
+  portuguese: "Portuguese",
+  vietnamese: "Vietnamese",
+  urdu: "Urdu",
+  kiswahili: "Kiswahili",
+  swahili: "Kiswahili",
+  chinese: "Chinese (Simplified)",
+  mandarin: "Chinese (Simplified)",
+  bengali: "Bengali",
+  farsi: "Farsi",
+  persian: "Farsi",
+  nepali: "Nepali",
+  turkish: "Turkish"
+};
+const READING_SOURCE_HINTS = {
+  storyweaver: "storyweaver",
+  "story weave": "storyweaver",
+  pratham: "storyweaver",
+  gutenberg: "gutenberg",
+  "project gutenberg": "gutenberg",
+  frontiers: "frontiers",
+  "frontiers for young minds": "frontiers",
+  nasa: "nasa",
+  noaa: "noaa",
+  usgs: "usgs",
+  wikisource: "wikisource",
+  "wiki source": "wikisource",
+  "library of congress": "loc",
+  loc: "loc",
+  openstax: "openstax",
+  "open stax": "openstax"
+};
+function _compactReadingText(value) {
+  return String(value == null ? "" : value).replace(/\s+/g, " ").trim();
+}
+function _escapeReadingRegex(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function _stripReadingPhrase(text, phrase) {
+  if (!phrase) return text;
+  try {
+    const re = new RegExp("\\b" + _escapeReadingRegex(phrase).replace(/\s+/g, "\\s+") + "\\b", "ig");
+    return _compactReadingText(String(text || "").replace(re, " "));
+  } catch (_) {
+    return text;
+  }
+}
+function _readingWords(value) {
+  return _compactReadingText(value).toLowerCase().replace(/['"]/g, "").split(/[^a-z0-9\u00c0-\u024f]+/i).map((w) => w.trim()).filter((w) => w.length > 1 && !READING_STOPWORDS.has(w));
+}
+function _readingStem(word) {
+  const w = String(word || "").toLowerCase();
+  if (w.length > 5 && /(ing|ers|ies|ied)$/.test(w)) return w.replace(/(ing|ers|ies|ied)$/, "");
+  if (w.length > 4 && /(ed|es|s)$/.test(w)) return w.replace(/(ed|es|s)$/, "");
+  return w;
+}
+function _readingFieldText(book, fields) {
+  return fields.map((f) => {
+    const v = book && book[f];
+    if (Array.isArray(v)) return v.join(" ");
+    if (v && typeof v === "object") return Object.values(v).join(" ");
+    return v || "";
+  }).join(" ").toLowerCase();
+}
+function normalizeReadingRequest(params) {
+  const p = params && typeof params === "object" ? params : { topic: params };
+  let topic = _compactReadingText(p.topic || p.query || p.text || p.rawText || "");
+  const raw = topic;
+  let grade = p.grade ? String(p.grade).match(/\d{1,2}/) : null;
+  grade = grade ? grade[0] : null;
+  let language = p.language ? _compactReadingText(p.language) : null;
+  let source = p.source ? _compactReadingText(p.source).toLowerCase() : null;
+  let format = p.format || p.kind || null;
+  let audience = p.audience || null;
+  if (!grade) {
+    const gm = topic.match(/\b(?:for\s+)?(?:grade|gr\.?)\s*(\d{1,2})(?:st|nd|rd|th)?\b/i) || topic.match(/\b(\d{1,2})(?:st|nd|rd|th)\s+grade\b/i);
+    if (gm) {
+      grade = gm[1];
+      topic = _compactReadingText(topic.replace(gm[0], " "));
+    }
+  }
+  const rawLower = raw.toLowerCase();
+  const languageKeys = Object.keys(READING_LANGUAGE_HINTS).sort((a, b) => b.length - a.length);
+  for (const key of languageKeys) {
+    if (!language && new RegExp("\\b" + _escapeReadingRegex(key).replace(/\s+/g, "\\s+") + "\\b", "i").test(rawLower)) language = READING_LANGUAGE_HINTS[key];
+    if (language && READING_LANGUAGE_HINTS[key].toLowerCase() === String(language).toLowerCase()) topic = _stripReadingPhrase(topic, key);
+  }
+  const sourceKeys = Object.keys(READING_SOURCE_HINTS).sort((a, b) => b.length - a.length);
+  for (const key of sourceKeys) {
+    if (!source && new RegExp("\\b" + _escapeReadingRegex(key).replace(/\s+/g, "\\s+") + "\\b", "i").test(rawLower)) source = READING_SOURCE_HINTS[key];
+    if (source && READING_SOURCE_HINTS[key] === source) topic = _stripReadingPhrase(topic, key);
+  }
+  if (!format) {
+    if (/\b(primary source|primary sources|historical document|historical documents)\b/i.test(raw)) format = "primary_source";
+    else if (/\b(nonfiction|non-fiction|informational|informative)\b/i.test(raw)) format = "nonfiction";
+    else if (/\b(article|articles|science article|science articles)\b/i.test(raw)) format = "article";
+    else if (/\b(story|stories|picture book|picture books|read aloud|read-aloud)\b/i.test(raw)) format = "story";
+  }
+  if (!audience) {
+    if (/\b(older students?|middle school|high school|teen|teens|challenging|chapter book)\b/i.test(raw)) audience = "older";
+    else if (/\b(younger students?|young students?|little kids?|early reader|beginner|primary grades?|picture book|read aloud|read-aloud)\b/i.test(raw)) audience = "younger";
+  }
+  if (!grade && /\bmiddle school\b/i.test(raw)) grade = "6";
+  if (!grade && /\bhigh school\b/i.test(raw)) grade = "9";
+  if (!grade && /\belementary\b/i.test(raw)) grade = "3";
+  topic = _compactReadingText(topic.replace(/(?:\s+\b(?:in|from|for)\b)+\s*$/i, " ").replace(/\b(?:nonfiction|non-fiction|informational|informative|article|articles|primary source|primary sources|picture book|picture books|read aloud|read-aloud|older students?|younger students?|middle school|high school|elementary)\b/ig, " ").replace(/\b(?:book|books|reading|readings|story|stories|source|sources|text|texts|about|on|for|please|some|me|right)\b/ig, " "));
+  return { topic, grade, language: language || null, source: source || null, format: format || null, audience: audience || null, raw };
+}
+function _readingParams(rawTopic, rawGrade) {
+  return normalizeReadingRequest({ topic: rawTopic, grade: rawGrade });
+}
+function _readingLevelForGrade(grade) {
+  const g = Number(String(grade || "").match(/\d{1,2}/)?.[0] || 0);
+  if (!g) return null;
+  if (g <= 1) return 1;
+  if (g <= 2) return 2;
+  if (g <= 4) return 3;
+  if (g <= 5) return 4;
+  if (g <= 8) return 5;
+  return 6;
+}
+function _bookReadingLevel(book) {
+  const raw = Number(String(book && book.level || "").match(/\d+/)?.[0] || 0);
+  if (raw) return raw;
+  const wc = Number(book && book.wordCount || 0);
+  if (wc > 12e3) return 6;
+  if (wc > 3500) return 5;
+  if (wc > 1200) return 4;
+  if (wc > 500) return 3;
+  if (wc > 180) return 2;
+  return 1;
+}
+function _readingSourceLabel(book) {
+  if (book && book.source && book.source.name) return String(book.source.name);
+  const id = String(book && book.sourceId || "").toLowerCase();
+  const labels = {
+    storyweaver: "StoryWeaver",
+    frontiers: "Frontiers for Young Minds",
+    gutenberg: "Project Gutenberg",
+    nasa: "NASA",
+    noaa: "NOAA",
+    usgs: "USGS",
+    wikisource: "Wikisource",
+    loc: "Library of Congress",
+    openstax: "OpenStax"
+  };
+  return labels[id] || id || "";
+}
+function _pushUniqueReadingReason(out, text) {
+  const s = _compactReadingText(text);
+  if (s && out.indexOf(s) < 0) out.push(s);
+}
+function readingMatchReasons(matchOrBook, params = null) {
+  const match = matchOrBook && matchOrBook.book ? matchOrBook : { book: matchOrBook || {}, reasons: {} };
+  const book = match.book || {};
+  const meta = match.reasons || {};
+  const req = normalizeReadingRequest(params || meta.request || {});
+  const out = [];
+  const level = meta.level || _bookReadingLevel(book);
+  const desiredLevel = meta.desiredLevel || _readingLevelForGrade(req.grade);
+  const sourceId = String(book.sourceId || "").toLowerCase();
+  const contentType = String(book.contentType || "").toLowerCase();
+  const sourceLabel = _readingSourceLabel(book);
+  if (req.topic && (meta.hits || match.score)) _pushUniqueReadingReason(out, 'matches "' + req.topic + '"');
+  if (req.grade) {
+    const grade = String(req.grade).match(/\d{1,2}/)?.[0] || String(req.grade);
+    if (desiredLevel && level && Math.abs(level - desiredLevel) <= 1) _pushUniqueReadingReason(out, "near grade " + grade);
+    else if (level) _pushUniqueReadingReason(out, "reading level " + level);
+  } else if (req.audience === "older") {
+    _pushUniqueReadingReason(out, level >= 5 ? "good for older students" : "shorter bridge text");
+  } else if (req.audience === "younger") {
+    _pushUniqueReadingReason(out, level <= 3 ? "good for younger readers" : "supported reading practice");
+  }
+  if (req.language && book.language) _pushUniqueReadingReason(out, book.language);
+  else if (book.language && String(book.language).toLowerCase() !== "english") _pushUniqueReadingReason(out, book.language);
+  if (req.source && sourceLabel) _pushUniqueReadingReason(out, sourceLabel);
+  if (req.format === "primary_source" || meta.isPrimary) _pushUniqueReadingReason(out, "primary source");
+  else if (req.format === "article" || contentType === "article") _pushUniqueReadingReason(out, sourceId === "frontiers" ? "student science article" : "article format");
+  else if (req.format === "nonfiction" || meta.isNonfiction) _pushUniqueReadingReason(out, "nonfiction");
+  else if (req.format === "story" || contentType === "story") _pushUniqueReadingReason(out, "story format");
+  if (!out.length && sourceLabel) _pushUniqueReadingReason(out, sourceLabel);
+  return out.slice(0, 4);
+}
+function readingMatchWhyText(matchOrBook, params = null) {
+  return readingMatchReasons(matchOrBook, params).join(", ");
+}
+function findReadingMatches(catalog, params = {}, opts = {}) {
+  const books = Array.isArray(catalog) ? catalog : catalog && Array.isArray(catalog.books) ? catalog.books : [];
+  const req = normalizeReadingRequest(params);
+  const phrase = _compactReadingText(req.topic).toLowerCase();
+  const terms = _readingWords(req.topic);
+  const stems = terms.map(_readingStem);
+  const desiredLevel = _readingLevelForGrade(req.grade);
+  const hasConstraint = !!(terms.length || phrase || req.language || req.source || req.format || req.audience || desiredLevel);
+  if (!books.length || !hasConstraint) return [];
+  const limit = Math.max(1, Number(opts.limit || 5));
+  const out = [];
+  for (const book of books) {
+    if (!book || !book.title) continue;
+    const title = _readingFieldText(book, ["title"]);
+    const desc = _readingFieldText(book, ["description"]);
+    const subjects = _readingFieldText(book, ["subjects"]);
+    const meta = _readingFieldText(book, ["authors", "illustrators", "publisher", "source", "sourceId", "contentType", "language"]);
+    const all = title + " " + desc + " " + subjects + " " + meta;
+    const allWords = _readingWords(all);
+    const allStems = new Set(allWords.map(_readingStem));
+    let score = 0, hits = 0;
+    if (phrase && title.includes(phrase)) {
+      score += 42;
+      hits++;
+    }
+    if (phrase && subjects.includes(phrase)) {
+      score += 34;
+      hits++;
+    }
+    if (phrase && desc.includes(phrase)) {
+      score += 24;
+      hits++;
+    }
+    if (phrase && meta.includes(phrase)) {
+      score += 8;
+      hits++;
+    }
+    stems.forEach((stem, i) => {
+      const term = terms[i];
+      if (!term) return;
+      if (title.includes(term) || allStems.has(stem)) {
+        if (title.includes(term)) score += 14;
+        if (subjects.includes(term)) score += 12;
+        if (desc.includes(term)) score += 7;
+        if (meta.includes(term)) score += 3;
+        hits++;
+      }
+    });
+    if (req.language) {
+      const wanted = String(req.language).toLowerCase();
+      const got = String(book.language || book.langCode || "").toLowerCase();
+      if (got === wanted || got.includes(wanted) || wanted.includes(got)) score += 22;
+      else continue;
+    } else if (String(book.langCode || "").toLowerCase() === "en") score += 1;
+    if (req.source) {
+      if (String(book.sourceId || "").toLowerCase() === req.source) score += 20;
+      else continue;
+    }
+    const sourceId = String(book.sourceId || "").toLowerCase();
+    const contentType = String(book.contentType || "").toLowerCase();
+    const isStory = sourceId === "storyweaver" || contentType === "story";
+    const isScience = ["frontiers", "nasa", "noaa", "usgs", "openstax"].indexOf(sourceId) >= 0 || /\b(science|scientific|biology|earth|space|climate|weather|ocean|animal|energy|ecosystem)\b/.test(all);
+    const isPrimary = ["wikisource", "loc"].indexOf(sourceId) >= 0 || /primary source|document|speech|letter|archive/.test(all);
+    const isNonfiction = !isStory || isScience || isPrimary;
+    if (req.format === "story") score += isStory ? 18 : -12;
+    if (req.format === "article") score += isScience ? 18 : -8;
+    if (req.format === "nonfiction") score += isNonfiction ? 16 : -12;
+    if (req.format === "primary_source") score += isPrimary ? 22 : -10;
+    const level = _bookReadingLevel(book);
+    if (desiredLevel) score += Math.max(0, 16 - Math.abs(level - desiredLevel) * 5);
+    if (req.audience === "older") score += level >= 5 ? 12 : -8;
+    if (req.audience === "younger") score += level <= 3 ? 12 : -8;
+    if (book.file) score += 3;
+    if (book.cover) score += 1;
+    if (contentType === "source-card" && req.format !== "primary_source") score -= 2;
+    if (terms.length && hits === 0) continue;
+    if (score > 0) {
+      const reasons = { hits, level, desiredLevel, request: req, isStory, isScience, isPrimary, isNonfiction };
+      out.push({ book, score, reasons, why: readingMatchReasons({ book, score, reasons }, req) });
+    }
+  }
+  out.sort((a, b) => b.score - a.score || String(a.book.title || "").localeCompare(String(b.book.title || "")));
+  return out.slice(0, limit);
+}
+function readingRecommendationText(matches, params, t) {
+  const req = normalizeReadingRequest(params);
+  const topicText = req.topic ? " about " + req.topic : "";
+  if (!matches || !matches.length) {
+    return t("cmd.find_reading_none", "I opened the Reading Library, but I could not find a strong match yet") + topicText + ".";
+  }
+  const top = matches[0].book;
+  const bits = [String(top.title || "this book")];
+  if (top.language) bits.push(top.language);
+  if (top.source && top.source.name) bits.push(top.source.name);
+  else if (top.sourceId) bits.push(top.sourceId);
+  if (top.level) bits.push("level " + top.level);
+  let msg = t("cmd.find_reading_done", "I found a good match and opened it") + ': "' + bits[0] + '".';
+  const detail = bits.slice(1).join(", ");
+  if (detail) msg += " " + detail + ".";
+  const why = readingMatchWhyText(matches[0], req);
+  if (why) msg += " Why this fits: " + why + ".";
+  const alts = matches.slice(1, 4).map((x) => x.book && x.book.title).filter(Boolean);
+  if (alts.length) msg += " Other good fits: " + alts.join("; ") + ".";
+  return msg;
+}
+function runFindReadingCommand(c, params, t) {
+  if (c && typeof c.findReadingBooks === "function") return c.findReadingBooks(params || {});
+  const catalog = c && (c.readingLibraryIndex || c.readingBooks || c.catalog) || [];
+  const matches = findReadingMatches(catalog, params || {}, { limit: 4 });
+  if (matches.length && c && typeof c.openReadingBook === "function") c.openReadingBook(matches[0].book.slug);
+  else if (c && typeof c.openReadingLibrary === "function") c.openReadingLibrary();
+  return readingRecommendationText(matches, params || {}, t);
+}
 function buildAlloCommands(ctx) {
   const t = _mkT(ctx && ctx.t);
   const cmds = [
@@ -124,6 +429,7 @@ function buildAlloCommands(ctx) {
       c.openReadingLibrary();
       return t("cmd.open_reading_library_done", "Reading Library opened.");
     } },
+    { id: "find_reading", opensPanel: "readingLibrary", icon: "\u{1F4DA}", roles: "all", label: t("cmd.find_reading", "Find the right book"), aliases: ["find a book", "find books about", "recommend a book", "suggest a book", "book about", "books about", "reading about", "learn about", "science article about", "primary source about"], hint: t("cmd.find_reading_hint", "Ask by topic, grade, language, source, or type"), run: (c, params) => runFindReadingCommand(c, params || {}, t) },
     // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
     { id: "generate_quiz", icon: "\u{1F4DD}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_quiz", "Make a quiz from this"), aliases: ["make a quiz", "quiz me on this", "create a quiz", "comprehension questions", "generate quiz"], hint: t("cmd.generate_quiz_hint", "Generate a quiz from the current content"), run: (c) => {
       c.generateQuiz();
@@ -380,26 +686,23 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   const text = String(rawText || "").trim();
   if (!text || text.length > 200) return null;
   const t = _mkT(ctx && ctx.t);
+  const _looksLikeReadingFind = /^(?:find|recommend|suggest|show|get|help me find)\s+(?:me\s+)?(?:a\s+|some\s+|the\s+)?(?:books|book|readings|reading|stories|story|articles|article|sources|source|texts|text)\b/i.test(text);
   const _whereM = text.match(/^(?:where(?:'s| is| are)?|find|locate|show me where)\s+(?:the\s+|my\s+|is\s+|are\s+)?(.{2,60}?)\??$/i);
-  if (_whereM && !opts.preview && typeof ctx.whereIs === "function") {
+  if (_whereM && !_looksLikeReadingFind && !opts.preview && typeof ctx.whereIs === "function") {
     const narration = ctx.whereIs(_whereM[1].trim());
     if (narration) return { handled: true, narration, commandId: "where_is", via: "where-is" };
   }
   const _grammars = [
+    { id: "find_reading", re: /^(?:find|recommend|suggest|show|get|help me find)\s+(?:me\s+)?(?:a\s+|some\s+|the\s+)?(?:books|book|readings|reading|stories|story|articles|article|sources|source|texts|text)\s*(?:about|on|for)?\s*(.*?)\??$/i, params: (m) => _readingParams(m[1], null) },
+    { id: "find_reading", re: /^(?:i\s+want\s+to\s+(?:learn|read)\s+about|i'?m\s+looking\s+for\s+(?:a\s+)?(?:book|source|reading|article|text)\s+about|something\s+about|what\s+can\s+i\s+read\s+about)\s+(.+?)\??$/i, params: (m) => _readingParams(m[1], null) },
     { id: "create_lesson", re: /^(?:create|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || "").trim() || null, grade: m[2] || null }) },
     { id: "set_font_size", re: /^(?:set\s+)?(?:the\s+)?(?:text|font)\s*(?:size)?\s*(?:to)?\s*(\d{1,2})\s*\.?$/i, params: (m) => ({ size: m[1] }) },
     { id: "translate_document", re: /^translate\s+(?:this|the\s+document|document|it)?\s*(?:to|into)\s+([a-z\u00C0-\u024F\s()-]{2,40})\??$/i, params: (m) => ({ language: m[1].trim() }) },
     { id: "generate_simplified", re: /^(?:simplify|make (?:this|it) (?:easier|simpler)|lower the (?:reading )?level)(?:\s+(?:this|it))?(?:\s+(?:to|for)?\s*(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade)?)?\s*\??$/i, params: (m) => ({ grade: m[1] || null }) }
   ];
   let commands = buildAlloCommands(ctx);
-  // The bot chat (preview) must not PROPOSE commands flagged chatSkip — e.g.
-  // toggle_bot: hiding the bot from inside its own chat is pointless (the chat
-  // has an X), and a stray "bot"/"assistant" shouldn't even raise a confirm
-  // chip. They stay fully available via Ctrl+K / voice (non-preview).
   if (opts.preview) commands = commands.filter((c) => !c.chatSkip);
   const _runCmd = (cmd, via, params) => {
-    // preview mode (used by the bot chat): report the match WITHOUT running it,
-    // so the chat can ask the user to confirm before any side effect fires.
     if (opts.preview) return { handled: false, preview: true, commandId: cmd.id, label: cmd.label, params: params || {}, via, destructive: !!cmd.destructive };
     if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation \u2014 use Ctrl+K to run it."), commandId: cmd.id, via };
     if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
@@ -431,11 +734,7 @@ async function routeUtterance(ctx, rawText, opts = {}) {
       best = c;
     }
   }
-  // The Ctrl+K palette / voice loop accept a 60+ match. The bot CHAT (preview)
-  // demands a stronger 80+ match on a >=3 char utterance, so a stray "hi"/"a"
-  // opener can't be read as a command (it would only be proposed, but we still
-  // avoid the noise). AI-classified matches below still apply in preview.
-  if (bestScore >= 60 && (!opts.preview || (bestScore >= 80 && text.length >= 3))) return _runCmd(best, "deterministic");
+  if (bestScore >= 60 && (!opts.preview || bestScore >= 80 && text.length >= 3)) return _runCmd(best, "deterministic");
   if (!opts.allowAi || typeof ctx.callGemini !== "function") return null;
   if (text.split(/\s+/).length > 14) return null;
   try {
@@ -451,14 +750,12 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   }
   return null;
 }
-// Run a specific command by id (used by the bot chat AFTER the user confirms a
-// previewed match). Mirrors routeUtterance's _runCmd side-effect handling.
 function runCommandById(ctx, id, params, opts = {}) {
   const t = _mkT(ctx && ctx.t);
   const commands = buildAlloCommands(ctx);
   const cmd = commands.find((c) => c.id === id);
   if (!cmd) return null;
-  if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation — use Ctrl+K to run it."), commandId: cmd.id, via: "confirm" };
+  if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t("router.needs_confirm", "That action needs confirmation \u2014 use Ctrl+K to run it."), commandId: cmd.id, via: "confirm" };
   if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === "function") {
     try {
       ctx.closeOtherPanels(cmd.opensPanel);
@@ -469,7 +766,7 @@ function runCommandById(ctx, id, params, opts = {}) {
     const msg = cmd.run(ctx, params || {});
     return { handled: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via: "confirm" };
   } catch (e) {
-    return { handled: true, narration: t("router.failed", "That didn’t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: "confirm" };
+    return { handled: true, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: "confirm" };
   }
 }
 function createVoiceLoop(getCtx) {
@@ -645,6 +942,7 @@ const CMD_GROUP = {
   open_community_catalog: "tools",
   open_dynamic_assessment: "tools",
   open_reading_library: "tools",
+  find_reading: "tools",
   stop_reading: "accessibility",
   toggle_mute: "accessibility",
   line_spacing_more: "accessibility",
@@ -689,6 +987,7 @@ const CMD_CONTEXT = {
   generate_sentence_frames: ["content"],
   generate_analysis: ["content"],
   open_export_menu: ["content"],
+  find_reading: ["content", "learningHub", "reading"],
   read_this_page: ["learningHub", "symbolStudio", "stemLab", "content", "reading"],
   font_bigger: ["reading"],
   font_smaller: ["reading"],
@@ -926,6 +1225,6 @@ const AlloCommandPalette = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, runCommandById: runCommandById, createVoiceLoop: createVoiceLoop };
+  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop };
   console.log('[CDN] AlloCommands loaded');
 })();

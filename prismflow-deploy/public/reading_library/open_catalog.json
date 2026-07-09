@@ -290,10 +290,6 @@
       "file": "books/gutenberg-ebook-45-anne-of-green-gables.json"
     },
     {
-      "slug": "gutenberg-ebook-22788-the-federalist-papers",
-      "file": "books/gutenberg-ebook-22788-the-federalist-papers.json"
-    },
-    {
       "slug": "gutenberg-ebook-26315-shakespeare-s-family",
       "file": "books/gutenberg-ebook-26315-shakespeare-s-family.json"
     },
@@ -2354,10 +2350,6 @@
       "file": "books/gutenberg-ebook-28920-war-and-peace-book-01-1805.json"
     },
     {
-      "slug": "gutenberg-ebook-1404-the-federalist-papers",
-      "file": "books/gutenberg-ebook-1404-the-federalist-papers.json"
-    },
-    {
       "slug": "gutenberg-ebook-22460-new-york-times-current-history-the-european-war-vol-2-no-5-augus",
       "file": "books/gutenberg-ebook-22460-new-york-times-current-history-the-european-war-vol-2-no-5-augus.json"
     },
@@ -2814,10 +2806,6 @@
       "file": "books/gutenberg-ebook-25003-the-nicest-girl-in-the-school-a-story-of-school-life.json"
     },
     {
-      "slug": "gutenberg-ebook-17405-the-art-of-war",
-      "file": "books/gutenberg-ebook-17405-the-art-of-war.json"
-    },
-    {
       "slug": "gutenberg-ebook-23668-bell-s-cathedrals-the-cathedral-church-of-salisbury-a-descriptio",
       "file": "books/gutenberg-ebook-23668-bell-s-cathedrals-the-cathedral-church-of-salisbury-a-descriptio.json"
     },
@@ -3104,10 +3092,6 @@
     {
       "slug": "gutenberg-ebook-24862-letters-of-lt-col-george-brenton-laurie-commanding-1st-battn-roy",
       "file": "books/gutenberg-ebook-24862-letters-of-lt-col-george-brenton-laurie-commanding-1st-battn-roy.json"
-    },
-    {
-      "slug": "gutenberg-ebook-57037-the-prince",
-      "file": "books/gutenberg-ebook-57037-the-prince.json"
     },
     {
       "slug": "gutenberg-ebook-11937-the-symbolism-of-freemasonry-b-illustrating-and-explaining-its-s",
@@ -4000,6 +3984,22 @@
     {
       "slug": "gutenberg-ebook-20271-heidi",
       "file": "books/gutenberg-ebook-20271-heidi.json"
+    },
+    {
+      "slug": "gutenberg-ebook-11030-incidents-in-the-life-of-a-slave-girl-written-by-herself",
+      "file": "books/gutenberg-ebook-11030-incidents-in-the-life-of-a-slave-girl-written-by-herself.json"
+    },
+    {
+      "slug": "gutenberg-ebook-3420-a-vindication-of-the-rights-of-woman-with-strictures-on-politica",
+      "file": "books/gutenberg-ebook-3420-a-vindication-of-the-rights-of-woman-with-strictures-on-politica.json"
+    },
+    {
+      "slug": "gutenberg-ebook-1497-the-republic",
+      "file": "books/gutenberg-ebook-1497-the-republic.json"
+    },
+    {
+      "slug": "gutenberg-ebook-1974-the-poetics-of-aristotle",
+      "file": "books/gutenberg-ebook-1974-the-poetics-of-aristotle.json"
     }
   ]
 }

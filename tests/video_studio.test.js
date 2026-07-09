@@ -71,29 +71,85 @@ describe('Scene builder popup wiring', () => {
     expect(html).toContain('id="transcriptTrimAfterBtn"');
     expect(html).toContain('id="transcriptClipBtn"');
     expect(html).toContain('id="transcriptChapterBtn"');
+    expect(html).toContain('id="transcriptSelectMatchesBtn"');
+    expect(html).toContain('id="transcriptCopyPlanBtn"');
+    expect(html).toContain('id="transcriptDecisionPanel"');
+    expect(html).toContain('id="wordRipplePanel"');
+    expect(html).toContain('id="wordRippleCutBtn"');
+    expect(html).toContain('id="wordRippleClearBtn"');
     expect(html).toContain('function applyTranscriptMuteSelection');
+    expect(html).toContain('function selectTranscriptSearchMatches');
+    expect(html).toContain('function recordTranscriptDecision');
+    expect(html).toContain('function copyTranscriptEditPlan');
+    expect(html).toContain('function renderWordRipplePanel');
+    expect(html).toContain('function buildWordRippleCutScene');
     expect(html).toContain('function addClipFromTranscriptSelection');
     expect(html).toContain('Transcript clip added to the scene builder.');
     expect(html).toContain('vsTranscriptSelectionRange');
+    expect(html).toContain('vsBuildTranscriptEditDecision');
+    expect(html).toContain('vsTranscriptWordsFromCues');
+    expect(html).toContain('vsSanitizeTranscriptWords');
+    expect(html).toContain('vsTranscriptWordsForTake');
+    expect(html).toContain('vsCaptionCuesFromTranscriptWords');
+    expect(html).toContain('vsBuildRippleKeepSegments');
+    expect(html).toContain('transcript_edits.json');
+    expect(html).toContain('transcript_edits.txt');
+    expect(html).toContain('transcript_words.json');
+    expect(html).toContain('Using true word timestamps.');
     expect(html).toContain('source: \'transcript\'');
+    const moduleText = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
+    expect(moduleText).toContain('vsBuildTranscriptEditDecision');
+    expect(moduleText).toContain('vsSanitizeTranscriptEdits');
+    expect(moduleText).toContain('vsBuildTranscriptEditText');
+    expect(moduleText).toContain('vsTranscriptWordsFromCues');
+    expect(moduleText).toContain('vsSanitizeTranscriptWords');
+    expect(moduleText).toContain('vsTranscriptWordsForTake');
+    expect(moduleText).toContain('vsCaptionCuesFromTranscriptWords');
+    expect(moduleText).toContain('vsTranscriptWordSelectionRanges');
+    expect(moduleText).toContain('vsBuildRippleKeepSegments');
+    expect(moduleText).toContain('transcript_words.json');
   });
   it('keeps licensed media credit controls wired into exports', () => {
     const html = popup();
     const moduleText = readFileSync(resolve(process.cwd(), 'video_studio_module.js'), 'utf-8');
     expect(html).toContain('<h2>Licensed media credits</h2>');
+    expect(html).toContain('id="mediaFinderQuery"');
+    expect(html).toContain('id="mediaFinderSource"');
+    expect(html).toContain('id="mediaFinderSearchBtn"');
+    expect(html).toContain('id="mediaFinderUseBtn"');
+    expect(html).toContain('id="mediaFinderTargets"');
     expect(html).toContain('id="mediaCreditTitle"');
     expect(html).toContain('id="mediaCreditCreator"');
     expect(html).toContain('id="mediaCreditUrl"');
     expect(html).toContain('id="mediaCreditLicense"');
     expect(html).toContain('id="mediaCreditSource"');
     expect(html).toContain('id="mediaCreditAddBtn"');
+    expect(html).toContain('id="mediaCreditCopyBtn"');
+    expect(html).toContain('id="mediaCreditCardBtn"');
     expect(html).toContain('id="mediaCreditDownloadBtn"');
     expect(html).toContain('function addMediaCreditFromForm');
+    expect(html).toContain('function copyMediaCredits');
+    expect(html).toContain('function addMediaCreditsCard');
     expect(html).toContain('function downloadMediaCredits');
+    expect(html).toContain('function renderMediaFinderTargets');
+    expect(html).toContain('function useMediaFinderAsDraft');
+    expect(html).toContain('vsBuildMediaCreditsCard');
+    expect(html).toContain('Sending with ');
     expect(html).toContain('media_credits.json');
     expect(html).toContain('media_credits.txt');
     expect(moduleText).toContain('media_credits.json');
     expect(moduleText).toContain('vsBuildMediaCredits');
+    expect(moduleText).toContain('vsBuildMediaCreditsCard');
+  });
+  it('keeps local sound polish presets and permission audit controls visible', () => {
+    const html = popup();
+    expect(html).toContain('id="audioPolishPreset"');
+    expect(html).toContain('id="applyAudioPolishBtn"');
+    expect(html).toContain('id="audioPolishStatus"');
+    expect(html).toContain('function applyAudioPolishPreset');
+    expect(html).toContain('id="permissionAuditCard"');
+    expect(html).toContain('id="permissionAuditList"');
+    expect(html).toContain('function renderPermissionAudit');
   });
   it('documents optional media-source guardrails in About and notices', () => {
     const source = readFileSync(resolve(process.cwd(), 'view_info_modal_source.jsx'), 'utf-8');
@@ -592,6 +648,77 @@ describe('vsTranscriptSelectionRange', () => {
     expect(range.start).toBe(0);
     expect(range.end).toBe(5);
   });
+  it('builds auditable transcript edit decisions for document-style edits', () => {
+    const range = VS.vsTranscriptSelectionRange([
+      { start: 2, end: 3, text: 'Cut this aside.' },
+      { start: 3.1, end: 4, text: 'Return to fractions.' },
+    ], [0, 1], 10, 0);
+    const silence = VS.vsBuildTranscriptEditDecision('mute', range, { duration: 10 });
+    expect(silence).toMatchObject({
+      action: 'silence',
+      label: 'Silence selected audio',
+      targetLayer: 'Silences',
+      source: 'transcript',
+      lineCount: 2,
+      text: 'Cut this aside. Return to fractions.',
+    });
+    expect(silence.exportImpact).toContain('keeping the video length');
+    const trim = VS.vsBuildTranscriptEditDecision('trim_end', range, { duration: 10 });
+    expect(trim).toMatchObject({ action: 'trim_after', targetLayer: 'Trim' });
+    const safe = VS.vsSanitizeTranscriptEdits([
+      Object.assign({}, silence, { id: 'unsafe id<script>', createdAt: '2026-07-08T12:00:00Z' }),
+      { action: 'bogus', start: 1, end: 2, text: 'drop' },
+    ], 10);
+    expect(safe).toHaveLength(1);
+    expect(safe[0].id).toBe('unsafe-id-script');
+    const text = VS.vsBuildTranscriptEditText(safe, 'Fractions');
+    expect(text).toContain('Fractions transcript edit decisions');
+    expect(text).toContain('Silence selected audio');
+    expect(VS.vsBuildTranscriptEditDecision('bogus', range, { duration: 10 })).toBeNull();
+  });
+  it('approximates word-level timings and builds ripple keep segments', () => {
+    const words = VS.vsTranscriptWordsFromCues([
+      { start: 0, end: 2, text: 'Please remove this aside.' },
+      { start: 3, end: 5, text: 'Then continue the lesson.' },
+    ], 6);
+    expect(words.map((w) => w.text)).toEqual(['Please', 'remove', 'this', 'aside.', 'Then', 'continue', 'the', 'lesson.']);
+    expect(words[1]).toMatchObject({ cueIndex: 0, wordIndex: 1, normalized: 'remove', source: 'estimated' });
+    expect(words[1].start).toBeCloseTo(0.5);
+    const selection = VS.vsTranscriptWordSelectionRanges(words, [1, 2, 99], 6, 0);
+    expect(selection).toMatchObject({
+      wordCount: 2,
+      text: 'remove this',
+    });
+    expect(selection.ranges).toHaveLength(1);
+    const keep = VS.vsBuildRippleKeepSegments(6, selection.ranges, 0.1);
+    expect(keep).toEqual([
+      expect.objectContaining({ start: 0, end: 0.5, outputStart: 0 }),
+      expect.objectContaining({ start: 1.5, end: 6 }),
+    ]);
+    const ripple = VS.vsBuildTranscriptEditDecision('delete_words', selection, { duration: 6 });
+    expect(ripple).toMatchObject({ action: 'ripple_cut', targetLayer: 'Scene builder' });
+  });
+  it('prefers true word timestamps and groups them into readable captions', () => {
+    const raw = {
+      chunks: [
+        { text: ' Please', timestamp: [0.1, 0.32] },
+        { word: 'remove', start_time: 0.36, end_time: 0.72 },
+        { text: 'this aside.', start: 0.8, end: 1.4 },
+        { text: 'ignored', timestamp: [9.2, 9.8] },
+      ],
+    };
+    const words = VS.vsSanitizeTranscriptWords(raw, 2);
+    expect(words.map((w) => w.text)).toEqual(['Please', 'remove', 'this', 'aside.']);
+    expect(words[0]).toMatchObject({ start: 0.1, end: 0.32, source: 'true', normalized: 'please' });
+    expect(words[2].start).toBeCloseTo(0.8);
+    expect(words[3].end).toBeCloseTo(1.4);
+    const picked = VS.vsTranscriptWordsForTake([{ start: 0, end: 2, text: 'Fallback only' }], raw, 2);
+    expect(picked[0].source).toBe('true');
+    const fallback = VS.vsTranscriptWordsForTake([{ start: 0, end: 2, text: 'Fallback only' }], [], 2);
+    expect(fallback[0]).toMatchObject({ text: 'Fallback', source: 'estimated' });
+    const cues = VS.vsCaptionCuesFromTranscriptWords(words, 2);
+    expect(cues).toEqual([expect.objectContaining({ start: 0.1, end: expect.any(Number), text: 'Please remove this aside.' })]);
+  });
 });
 
 // ─── vsSanitizeAiSuggestions (untrusted model output → safe proposals) ──────
@@ -867,6 +994,17 @@ describe('caption polish, chapters, and teaching inserts', () => {
     expect(VS.vsMusicGainAt(music, 0.5, false)).toBeCloseTo(0.375, 3);
     expect(VS.vsMusicGainAt(music, 30, true)).toBeCloseTo(0.57, 3);
     expect(VS.vsMusicGainAt(music, 61, false)).toBe(0);
+    const preset = VS.vsAudioPolishPreset('quiet voice');
+    expect(preset).toMatchObject({ key: 'quiet_voice', audio: { volume: 1.25, removeAll: false } });
+    const applied = VS.vsApplyAudioPolishPreset({
+      audio: { volume: 0.9, removeAll: false, muteSpans: [{ start: 1, end: 2 }] },
+      musicBed: { start: 0, end: 60, volume: 0.8, fadeIn: 0, fadeOut: 0, duck: false, name: 'Loop' },
+      duration: 60,
+    }, 'music_under');
+    expect(applied.audio).toMatchObject({ volume: 1, removeAll: false });
+    expect(applied.audio.muteSpans).toHaveLength(1);
+    expect(applied.musicBed).toMatchObject({ volume: 0.16, fadeIn: 2, fadeOut: 3, duck: true });
+    expect(VS.vsApplyAudioPolishPreset({ audio: {}, duration: 20 }, 'voiceover_replace').audio.removeAll).toBe(true);
   });
   it('normalizes licensed media credits conservatively for AGPL sharing', () => {
     expect(VS.vsMediaLicenseProfile('CC0 1.0')).toMatchObject({
@@ -920,6 +1058,36 @@ describe('caption polish, chapters, and teaching inserts', () => {
     const text = VS.vsBuildMediaCredits(credits, 'Bell demo');
     expect(text).toContain('Bell demo media credits');
     expect(text).toContain('Role: sound effect');
+    const card = VS.vsBuildMediaCreditsCard(credits, 60);
+    expect(card).toMatchObject({
+      id: 'media-credits-card',
+      type: 'title_card',
+      start: 54,
+      end: 60,
+      text: 'Media credits',
+      theme: 'slate',
+      layout: 'center-card',
+      source: 'media_credits',
+    });
+    expect(card.note).toContain('Calm bell - A. Teacher (CC BY 4.0)');
+    expect(VS.vsBuildMediaCreditsCard([], 60)).toBeNull();
+    const targets = VS.vsMediaSearchTargets('calm bell', '');
+    expect(targets.map(t => t.id)).toEqual(['openverse', 'commons', 'freesound', 'pixabay']);
+    expect(targets[0].url).toContain('calm%20bell');
+    expect(VS.vsMediaSearchTargets('fraction wall', 'Freesound')).toEqual([
+      expect.objectContaining({ id: 'freesound', defaultLicense: 'CC BY 4.0' }),
+    ]);
+    const audit = VS.vsBuildPermissionAudit({
+      captionCount: 0,
+      privacyFlagCount: 1,
+      mediaCreditCount: 2,
+      mediaCreditWarningCount: 1,
+      localizationWarningCount: 1,
+    });
+    expect(audit.find(i => i.id === 'privacy')).toMatchObject({ status: 'warn', targetId: 'transcriptSearch' });
+    expect(audit.find(i => i.id === 'captions')).toMatchObject({ status: 'warn', targetId: 'autoCapBtn' });
+    expect(audit.find(i => i.id === 'media')).toMatchObject({ status: 'warn', targetId: 'mediaCreditTitle' });
+    expect(audit.find(i => i.id === 'localization')).toMatchObject({ status: 'warn', targetId: 'localizeBtn' });
   });
   it('builds searchable resource cues from pack history', () => {
     const cues = VS.vsBuildResourceCues([
@@ -1244,12 +1412,16 @@ describe('vsMakePackReference (pack-size guard)', () => {
     const ref = VS.vsMakePackReference({
       title: 'Fractions demo', duration: 93.6, size: 14680064,
       sha256: 'A'.repeat(64).toLowerCase(), fileName: 'fractions_demo.webm',
-      hasCaptions: true, hasVisualDescriptions: true, hasVisualPrompts: true, hasLocalizations: true, localizationCount: 2, hasVisualOverlays: true, hasMusicBed: true, hasMediaCredits: true, mediaCreditCount: 2, mediaCreditWarningCount: 1, resourceCueCount: 3, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
+      hasCaptions: true, hasTranscriptEdits: true, transcriptEditCount: 3, hasTranscriptWords: true, transcriptWordCount: 120, hasVisualDescriptions: true, hasVisualPrompts: true, hasLocalizations: true, localizationCount: 2, hasVisualOverlays: true, hasMusicBed: true, hasMediaCredits: true, mediaCreditCount: 2, mediaCreditWarningCount: 1, resourceCueCount: 3, thumb: 'data:image/jpeg;base64,abc', createdAt: '2026-07-02T12:00:00Z',
     });
     expect(ref.type).toBe('videoRef');
     expect(ref.durationSec).toBe(94);
     expect(ref.sizeBytes).toBe(14680064);
     expect(ref.hasCaptions).toBe(true);
+    expect(ref.hasTranscriptEdits).toBe(true);
+    expect(ref.transcriptEditCount).toBe(3);
+    expect(ref.hasTranscriptWords).toBe(true);
+    expect(ref.transcriptWordCount).toBe(120);
     expect(ref.hasVisualDescriptions).toBe(true);
     expect(ref.hasVisualPrompts).toBe(true);
     expect(ref.hasLocalizations).toBe(true);

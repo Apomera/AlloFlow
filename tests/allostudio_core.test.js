@@ -307,6 +307,76 @@ describe('accessibility preflight + workflow helpers', () => {
     expect(afterTypes).not.toContain('small-text');
     expect(afterTypes).not.toContain('contrast');
   });
+  it('summarizes object-level accessibility issues for canvas and list badges', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Badges', T0);
+    const image = ST.stAppend(d, { type: 'object.add', object: { type: 'image', src: 'data:image/png;base64,x', alt: '', decorative: false, frame: { x: 5, y: 5, w: 100, h: 80 }, z: 1 } }, 'import', T0).object.id;
+    const text = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 20, y: 20, w: 200, h: 24 }, z: 2, runs: [{ text: 'tiny pale', style: { size: 10, color: '#fefefe' } }] } }, 'user', T0).object.id;
+    const summary = ST.stObjectIssueSummary(ST.stAnalyzeDoc(d));
+    expect(summary[image].severity).toBe('error');
+    expect(summary[image].label).toBe('Fix');
+    expect(summary[text].count).toBeGreaterThanOrEqual(2);
+    expect(summary[text].severity).toBe('warning');
+    expect(summary.nope).toBeUndefined();
+  });
+  it('builds selected-object accessibility actions for the right panel', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Panel actions', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', fill: '#ffffff', decorative: true, frame: { x: 0, y: 0, w: 816, h: 1056 }, z: 1 } }, 'user', T0);
+    const text = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 20, y: 20, w: 200, h: 24 }, z: 2, runs: [{ text: 'tiny pale', style: { size: 10, color: '#fefefe' } }] } }, 'user', T0).object.id;
+    const image = addImage(d, 'data:image/png;base64,x', '').object.id;
+    const textActions = ST.stObjectReadyActions(d, text);
+    expect(textActions.map(a => a.type)).toEqual(expect.arrayContaining(['fix-small-text', 'fix-contrast']));
+    expect(textActions.every(a => a.targetId === text)).toBe(true);
+    expect(textActions.find(a => a.type === 'fix-contrast').suggestedColor).toMatch(/^#/);
+    expect(ST.stObjectReadyActions(d, image).map(a => a.type)).toEqual(['add-alt']);
+    expect(ST.stObjectReadyActions(d, 'missing')).toEqual([]);
+  });
+  it('builds optimize-image actions for large embedded images without changing alt or fit', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Large image', T0);
+    const largeSrc = 'data:image/png;base64,' + 'A'.repeat(1500001);
+    const image = ST.stAppend(d, { type: 'object.add', object: { type: 'image', src: largeSrc, alt: 'Detailed diagram', decorative: false, fit: 'contain', frame: { x: 5, y: 5, w: 100, h: 80 }, z: 1, provenance: { origin: 'upload' } } }, 'import', T0).object.id;
+    const actions = ST.stObjectReadyActions(d, image);
+    const optimize = actions.find(a => a.type === 'optimize-image');
+    expect(ST.stAnalyzeDoc(d).issues.map(i => i.type)).toContain('large-image');
+    expect(optimize).toMatchObject({ targetId: image, issueType: 'large-image', optimizeMaxDim: 1200 });
+    expect(optimize.imageWeight.large).toBe(true);
+    expect(optimize.imageWeight.approxKb).toBeGreaterThan(1000);
+
+    const patch = ST.stOptimizedImagePatch(d.objects[0], 'data:image/png;base64,SMALL', optimize.imageWeight, ST.stImageWeightInfo('data:image/png;base64,SMALL'));
+    expect(Object.keys(patch).sort()).toEqual(['provenance', 'src']);
+    expect(patch.provenance).toMatchObject({ origin: 'optimized', prior: 'upload' });
+    expect(patch.alt).toBeUndefined();
+    expect(patch.fit).toBeUndefined();
+    expect(ST.stDescribeOp({ type: 'object.update', patch })).toBe('Optimized an image');
+  });
+  it('offers a direct fit-on-page action for malformed off-page objects', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Bounds action', T0);
+    const shape = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', fill: '#dbeafe', decorative: true, frame: { x: 40, y: 40, w: 120, h: 80 }, z: 1 } }, 'user', T0).object.id;
+    d.objects[0].frame = { x: -60, y: 1200, w: 120, h: 80 };
+    const action = ST.stObjectReadyActions(d, shape).find(a => a.type === 'fix-bounds');
+    expect(action).toMatchObject({ targetId: shape, issueType: 'bounds', suggestedFrame: { x: 0, y: 976, w: 120, h: 80, rotation: 0 } });
+    expect(ST.stBuildReadyActions(d).actions.map(a => a.type)).toContain('fix-bounds');
+  });
+  it('suggests visual reading order without mutating the authored order', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Order assist', T0);
+    const bottom = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 40, y: 220, w: 220, h: 40 }, z: 1, runs: [{ text: 'Bottom paragraph', style: { size: 16 } }] } }, 'user', T0).object.id;
+    const topLeft = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'heading1', frame: { x: 40, y: 30, w: 260, h: 52 }, z: 1, runs: [{ text: 'Top title', style: { size: 34 } }] } }, 'user', T0).object.id;
+    const topRight = ST.stAppend(d, { type: 'object.add', object: { type: 'image', src: 'data:image/png;base64,x', alt: 'Top diagram', decorative: false, frame: { x: 360, y: 34, w: 160, h: 90 }, z: 1 } }, 'import', T0).object.id;
+    const suggestion = ST.stReadingOrderSuggestion(d);
+    expect(suggestion.currentIds).toEqual([bottom, topLeft, topRight]);
+    expect(suggestion.suggestedIds).toEqual([topLeft, topRight, bottom]);
+    expect(suggestion.changed).toBe(true);
+    expect(suggestion.changes.map(c => c.id)).toEqual([topLeft, topRight, bottom]);
+    expect(d.objects.map(o => o.id)).toEqual([bottom, topLeft, topRight]);
+  });
+  it('passes reading order when authored order already follows visual flow', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Order aligned', T0);
+    const top = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'heading1', frame: { x: 40, y: 30, w: 260, h: 52 }, z: 1, runs: [{ text: 'Top title', style: { size: 34 } }] } }, 'user', T0).object.id;
+    const body = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 40, y: 120, w: 320, h: 42 }, z: 1, runs: [{ text: 'Body paragraph', style: { size: 16 } }] } }, 'user', T0).object.id;
+    const suggestion = ST.stReadingOrderSuggestion(d);
+    expect(suggestion.suggestedIds).toEqual([top, body]);
+    expect(suggestion.changed).toBe(false);
+    expect(suggestion.changes).toEqual([]);
+  });
   it('multi-point sampling catches a caption that straddles a dark shape (center alone would pass)', () => {
     const d = ST.stCreateDoc('letter-portrait', 'Straddle', T0);
     // dark shape covering only the LEFT region (x 0..200), under the text
@@ -1083,6 +1153,26 @@ describe('autosave (crash recovery)', () => {
     expect(saved.doc.objects[0].runs[0].text).toBe('work');
     ST.stClearAutosave();
     expect(ST.stReadAutosave()).toBeNull();
+  });
+  it('durable saves strip redo history so undone image bytes do not persist', () => {
+    ST.stClearAutosave();
+    localStorage.removeItem('allostudio_recent_projects');
+    const d = ST.stCreateDoc('letter-portrait', 'Private crop', T0);
+    ST.stAppend(d, { type: 'object.add', object: { type: 'image', src: 'data:image/png;base64,SECRET_ORIGINAL', alt: 'private image', decorative: false, frame: { x: 10, y: 10, w: 100, h: 80 }, z: 1 } }, 'import', T0);
+    ST.stUndo(d);
+    expect(JSON.stringify(d)).toContain('SECRET_ORIGINAL');
+
+    const durable = ST.stDurableDoc(d);
+    expect(durable._redo).toBeUndefined();
+    expect(JSON.stringify(durable)).not.toContain('SECRET_ORIGINAL');
+
+    const payload = ST.stAutosavePayload(d, T0 + 5000);
+    expect(payload.doc._redo).toBeUndefined();
+    expect(JSON.stringify(payload)).not.toContain('SECRET_ORIGINAL');
+
+    const recent = ST.stSaveRecentProject(d, { now: T0 + 6000 });
+    expect(recent.entry.doc._redo).toBeUndefined();
+    expect(JSON.stringify(recent.entry)).not.toContain('SECRET_ORIGINAL');
   });
   it('refuses to restore garbage payloads', () => {
     expect(ST.stAutosaveValid(null)).toBe(false);

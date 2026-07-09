@@ -141,6 +141,95 @@ describe('routeUtterance preview mode (bot chat safety)', () => {
   });
 });
 
+describe('reading librarian command', () => {
+  const miniCatalog = {
+    books: [
+      {
+        slug: 'climate-frontiers',
+        title: 'Climate Change and Coral Reefs',
+        description: 'A science article about warming oceans, coral reefs, and climate change.',
+        language: 'English',
+        langCode: 'en',
+        level: '5',
+        sourceId: 'frontiers',
+        contentType: 'article',
+        subjects: ['climate', 'ocean', 'science'],
+        source: { name: 'Frontiers for Young Minds' },
+        file: 'books/climate-frontiers.json',
+      },
+      {
+        slug: 'dance-story',
+        title: 'Gappu Can Dance',
+        description: 'A joyful early-reader story about dancing and opposites.',
+        language: 'English',
+        langCode: 'en',
+        level: '1',
+        sourceId: 'storyweaver',
+        contentType: 'story',
+        subjects: ['dance'],
+        source: { name: 'StoryWeaver, Pratham Books' },
+        file: 'books/dance-story.json',
+      },
+      {
+        slug: 'clima-es',
+        title: 'El clima y los oceanos',
+        description: 'Una lectura sobre el clima y el oceano.',
+        language: 'Spanish',
+        langCode: 'es',
+        level: '4',
+        sourceId: 'storyweaver',
+        contentType: 'story',
+        subjects: ['climate', 'ocean'],
+        source: { name: 'StoryWeaver, Pratham Books' },
+        file: 'books/clima-es.json',
+      },
+    ],
+  };
+
+  it('normalizes topic, grade, language, and source hints', () => {
+    const req = AC.normalizeReadingRequest({ topic: 'climate change in Spanish from StoryWeaver for grade 5' });
+    expect(req).toMatchObject({ topic: 'climate change', grade: '5', language: 'Spanish', source: 'storyweaver' });
+  });
+
+  it('ranks catalog matches by topic, format, grade, and language', () => {
+    const article = AC.findReadingMatches(miniCatalog, { topic: 'climate change', grade: '6', format: 'article' }, { limit: 2 });
+    expect(article[0].book.slug).toBe('climate-frontiers');
+    expect(article[0].why).toEqual(expect.arrayContaining(['matches "climate change"', 'near grade 6', 'student science article']));
+    expect(AC.readingMatchWhyText(article[0], { topic: 'climate change', grade: '6', format: 'article' })).toContain('near grade 6');
+
+    const spanish = AC.findReadingMatches(miniCatalog, { topic: 'climate ocean', language: 'Spanish' }, { limit: 2 });
+    expect(spanish[0].book.slug).toBe('clima-es');
+    expect(spanish[0].why).toContain('Spanish');
+  });
+
+  it('includes a short why-this-book note when the command searches the catalog directly', () => {
+    const openReadingBook = vi.fn();
+    const run = AC.runCommandById(
+      { readingLibraryIndex: miniCatalog, openReadingBook },
+      'find_reading',
+      { topic: 'climate change', grade: '6', format: 'article' },
+      { confirmed: true }
+    );
+    expect(run.narration).toContain('Why this fits:');
+    expect(run.narration).toContain('near grade 6');
+    expect(run.narration).toContain('student science article');
+    expect(openReadingBook).toHaveBeenCalledWith('climate-frontiers');
+  });
+
+  it('previews a book-finding request, then runs only after confirmation', async () => {
+    const findReadingBooks = vi.fn(() => 'Opened a climate book.');
+    const r = await AC.routeUtterance({ findReadingBooks }, 'find books about climate change for grade 6', { preview: true, allowAi: false });
+    expect(r).toMatchObject({ preview: true, commandId: 'find_reading' });
+    expect(r.params).toMatchObject({ topic: 'climate change', grade: '6' });
+    expect(findReadingBooks).not.toHaveBeenCalled();
+
+    const run = AC.runCommandById({ findReadingBooks }, 'find_reading', r.params, { confirmed: true });
+    expect(run).toMatchObject({ handled: true, commandId: 'find_reading' });
+    expect(run.narration).toContain('climate');
+    expect(findReadingBooks).toHaveBeenCalledWith(expect.objectContaining({ topic: 'climate change', grade: '6' }));
+  });
+});
+
 describe('runCommandById (executes a confirmed, previewed command)', () => {
   it('runs the command by id', () => {
     const handleToggleIsBotVisible = vi.fn();

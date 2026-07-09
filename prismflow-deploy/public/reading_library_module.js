@@ -240,7 +240,8 @@
   // readability (also correct for RTL, which 'text-left' would break). Early
   // levels get a larger face.
   function textLayoutClass(level, text) {
-    var size = (String(level) === '1' || String(level) === '2') ? 'text-2xl' : 'text-xl';
+    var levelStr = String(level);
+    var size = (levelStr === '1' || levelStr === '2') ? 'text-2xl' : (levelStr === '5' || levelStr === '6') ? 'text-base sm:text-lg' : 'text-xl';
     var align = String(text || '').replace(/\s+/g, ' ').length <= 220 ? ' text-center' : '';
     return size + align;
   }

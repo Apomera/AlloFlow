@@ -84,9 +84,9 @@ exports[`AlloStudio golden exports > pins the pixel-faithful accessible HTML exp
   "h2": 1,
   "hidden": 2,
   "images": 1,
-  "length": 2328,
+  "length": 2332,
   "paragraphs": 2,
-  "sha": "d37e22c7ad1ff22d",
+  "sha": "71022d4d280b117e",
 }
 `;
 
@@ -351,6 +351,18 @@ exports[`AlloStudio golden readiness summaries > pins accessibility checklist an
         "targetId": "o8",
         "title": "Image: Chloroplast diagram",
       },
+      {
+        "after": "",
+        "before": "Instructions: answer the question using evidence",
+        "kind": "Text",
+        "notes": [
+          "Object removed",
+        ],
+        "objectLabel": "Instructions: answer the question using evidence",
+        "safety": "Undo restores it",
+        "targetId": "o4",
+        "title": "Remove: Instructions: answer the question using evidence",
+      },
     ],
     "ops": [
       {
@@ -377,10 +389,12 @@ exports[`AlloStudio golden readiness summaries > pins accessibility checklist an
         "target": "o8",
         "type": "object.update",
       },
+      {
+        "target": "o4",
+        "type": "object.remove",
+      },
     ],
-    "rejected": [
-      "Unsupported change type",
-    ],
+    "rejected": [],
     "summary": "Improve clarity and describe the visual",
   },
 }

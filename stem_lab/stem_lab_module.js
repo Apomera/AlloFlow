@@ -3766,7 +3766,7 @@
               },
               {
                 id: 'lifeSkills', icon: '\uD83E\uDDED', label: 'Life Skills Lab',
-                desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, records and paperwork, transportation planning, job readiness, communication skills, health insurance, dental care, body care ergonomics, sleep routines, medication labels, appointment prep, home safety, digital safety, food confidence, and applied science for daily life.',
+                desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, records and paperwork, transportation planning, job readiness, resume building, portfolio proof organization, communication skills, time management, health insurance, dental care, body care ergonomics, sleep routines, medication labels, appointment prep, home safety, digital safety, food confidence, and applied science for daily life.',
                 color: 'cyan', ready: true
               },
               {

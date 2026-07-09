@@ -69,7 +69,10 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Records');
     expect(html).toContain('Transportation');
     expect(html).toContain('Job Readiness');
+    expect(html).toContain('Resume Builder');
+    expect(html).toContain('Proof Locker');
     expect(html).toContain('Communication');
+    expect(html).toContain('Time Management');
     expect(html).toContain('Dental Care');
     expect(html).toContain('Body Care');
     expect(html).toContain('Sleep &amp; Energy');
@@ -94,7 +97,10 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Paperwork quick sort');
     expect(html).toContain('Trip plan check');
     expect(html).toContain('Job readiness check');
+    expect(html).toContain('Resume builder check');
+    expect(html).toContain('Proof locker check');
     expect(html).toContain('Communication reset');
+    expect(html).toContain('Time plan reset');
     expect(html).toContain('Body comfort reset');
     expect(html).toContain('Food confidence check');
     expect(html).toContain('Appointment prep');
@@ -243,6 +249,37 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Ask a clarifying question');
   });
 
+  it('renders the resume builder Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'resumebuilder' } });
+
+    expect(html).toContain('data-lifeskills-resume-builder="true"');
+    expect(html).toContain('Resume Builder &amp; Evidence Review Lab');
+    expect(html).toContain('Resume readiness checklist');
+    expect(html).toContain('Resume decisions');
+    expect(html).toContain('Evidence bullet builder');
+    expect(html).toContain('Resume section cards');
+    expect(html).toContain('Bullet examples');
+    expect(html).toContain('Literature review cards');
+    expect(html).toContain('NACE');
+    expect(html).toContain('O*NET');
+    expect(html).toContain('Applicant tracking system');
+  });
+
+  it('renders the proof locker Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'prooflocker' } });
+
+    expect(html).toContain('data-lifeskills-proof-locker="true"');
+    expect(html).toContain('Portfolio &amp; Proof Locker Lab');
+    expect(html).toContain('Proof locker checklist');
+    expect(html).toContain('Proof decisions');
+    expect(html).toContain('Proof item builder');
+    expect(html).toContain('Proof type cards');
+    expect(html).toContain('Proof quality cards');
+    expect(html).toContain('Share-level cards');
+    expect(html).toContain('Portfolio share packet');
+    expect(html).toContain('Privacy first');
+  });
+
   it('renders the communication and conflict Life Skills addition', () => {
     const html = renderLifeSkills({ lifeSkills: { tab: 'communication' } });
 
@@ -254,5 +291,18 @@ describe('Life Skills Lab visibility', () => {
     expect(html).toContain('Boundary and repair cards');
     expect(html).toContain('Conversation plan builder');
     expect(html).toContain('Get trusted support');
+  });
+
+  it('renders the time management Life Skills addition', () => {
+    const html = renderLifeSkills({ lifeSkills: { tab: 'timemanagement' } });
+
+    expect(html).toContain('data-lifeskills-time-management="true"');
+    expect(html).toContain('Time Management &amp; Planning Lab');
+    expect(html).toContain('Time management checklist');
+    expect(html).toContain('Planning and deadline decisions');
+    expect(html).toContain('Priority cards');
+    expect(html).toContain('Planning tool cards');
+    expect(html).toContain('Time plan builder');
+    expect(html).toContain('Next step plus recovery');
   });
 });

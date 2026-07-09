@@ -60,11 +60,22 @@ const shouldCaptureReadAloud = (contentId, mode, sentence, url) => {
 };
 const captureReadAloudClip = (contentId, mode, sentence, url) => {
   if (!shouldCaptureReadAloud(contentId, mode, sentence, url)) return;
+  const run = () => {
+    try {
+      const result = window.__alloCaptureKaraokeAudio(sentence, url);
+      if (result && typeof result.catch === "function") result.catch(() => {
+      });
+    } catch (_) {
+    }
+  };
   try {
-    const result = window.__alloCaptureKaraokeAudio(sentence, url);
-    if (result && typeof result.catch === "function") result.catch(() => {
-    });
+    if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(run, { timeout: 1200 });
+    } else {
+      setTimeout(run, 250);
+    }
   } catch (_) {
+    setTimeout(run, 250);
   }
 };
 const playSequence = async (index, sentences, sessionId, mode = "standard", voiceMap = {}, activeSpeaker = null, preloadedAudio = null, retryCount = 0, speakerName = null, deps, contentId = null) => {
@@ -301,9 +312,6 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       audio.playbackRate = playbackRateRef.current;
       audio.preload = "auto";
     }
-    if (!usingStoredReadAloud) {
-      captureReadAloudClip(contentId, mode, audioStoreSentence, audioUrl);
-    }
     if (audioRef.current && audioRef.current !== audio) {
       audioRef.current.pause();
       audioRef.current.onended = null;
@@ -469,6 +477,9 @@ const playSequence = async (index, sentences, sessionId, mode = "standard", voic
       playPromise.then(() => {
         if (!isPaused) setIsPlaying(true);
         setIsGeneratingAudio(false);
+        if (!usingStoredReadAloud) {
+          captureReadAloudClip(contentId, mode, audioStoreSentence, audioUrl);
+        }
         const duration = audio.duration;
         if (duration && isFinite(duration)) {
           const safeDuration = duration * 1e3 / playbackRateRef.current;

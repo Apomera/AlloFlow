@@ -2,17 +2,18 @@
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-1-the-declaration-of-independence-of-the-united-states-of-america",
   "title": "The Declaration of Independence of the United States of America",
-  "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+  "description": "A full in-app public-domain copy of the Declaration of Independence for civics and history study.",
   "language": "English",
   "langCode": "en",
   "isRtl": false,
   "level": "6",
   "orientation": "portrait",
   "sourceId": "gutenberg",
-  "contentType": "public-domain-catalog-card",
+  "contentType": "public-domain-full-text",
   "subjects": [
-    "United States -- History -- Revolution, 1775-1783 -- Sources",
-    "United States. Declaration of Independence"
+    "United States history",
+    "Civics",
+    "Primary sources"
   ],
   "authors": [
     "Jefferson, Thomas"
@@ -25,7 +26,8 @@
   "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/1"
+    "url": "https://www.gutenberg.org/ebooks/1",
+    "textUrl": "https://www.gutenberg.org/cache/epub/1/pg1.txt"
   },
   "cover": null,
   "audio": null,
@@ -33,21 +35,31 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"The Declaration of Independence of the United States of America\" by Jefferson, Thomas. Metadata tags include: United States -- History -- Revolution, 1775-1783 -- Sources; United States. Declaration of Independence."
+      "text": "Source note: this public-domain text is available inside AlloFlow for classroom reading. Use Open original for Project Gutenberg formats and the full Project Gutenberg license. Teacher note: historical texts can preserve dated language, assumptions, and viewpoints. Preview before assigning."
     },
     {
       "n": 2,
       "img": null,
-      "text": "This reader entry is a source card, not a full-text mirror. Use the official Project Gutenberg link for HTML, EPUB, Kindle, or plain-text reading options."
+      "text": "The United States Declaration of Independence was the first E-text released by Project Gutenberg, early in 1971. The title was stored in an emailed instruction set which required a tape or diskpack be hand mounted for retrieval. The disk pack was the size of a large cake in a cake carrier, cost $1500, and contained 5 megabytes, of which this file took 1-2%. Two tape backups were kept plus one on paper tape. The 10,000 files we hope to have online by the end of 2001 should take about 1-2% of a comparably priced drive in 2001.\n\nThis file was never copyrighted, Sharewared, etc., and is thus for all to use and copy in any manner they choose. Please feel free to make your own edition using this as a base.\n\nIn my research for creating this transcription of our first Etext, I have come across enough discrepancies [even within that official documentation provided by the United States] to conclude that even “facsimiles” of the Declaration of Independence are nary identical to the original, nor of other “facsimiles.” There is a plethora of variations in capitalizations, punctuation, and where names appear on the documents [which names I have left out].\n\nThe resulting document has several misspellings removed from those parchment “facsimiles” I used back in 1971, and which I should not be able to easily find at this time, including “Brittain.”\n\n[JT, Apr 2005: “Brittish” is spelled as in the original.]\n\n[RO, Aug 2025: Dr. Hart’s original fully-justified columns of text in the plain text version have been restored for the introduction. Minor text alterations were made to do so.]\n\nTranscribers’ Notes\n\nNOTE: This file contains the original contents of the\nvery first eBook in the Project Gutenberg collection,\nthe Declaration of Independence. This file previously\ncontained a compilation of etexts from #2 to #9. Also\nit contained a duplicate of the Declaration - as part\nof preserving the history of the contents which isn’t\nnecessary any longer. The historical variations of #1\nare included in the “old” subdirectory accessed under\nthe “More Files” listing in the landing page for this\nfile. No edits or changes have been made to them.\n\nAll of the original Project Gutenberg Etexts from the\n1970’s were produced in ALL CAPS, no lower case.  The\ncomputers we used then didn’t have lower case at all.\n\nTHE DECLARATION OF INDEPENDENCE OF THE UNITED STATES OF AMERICA\n\nIN CONGRESS, July 4, 1776\n\nThe unanimous Declaration of the thirteen united States of America\n\nWhen in the Course of human events, it becomes necessary for one people to dissolve the political bands which have connected them with another, and to assume, among the Powers of the earth, the separate and equal station to which the Laws of Nature and of Nature’s God entitle them, a decent respect to the opinions of mankind requires that they should declare the causes which impel them to the separation."
     },
     {
       "n": 3,
       "img": null,
-      "text": "Teacher note: public-domain texts can preserve historical language, assumptions, and viewpoints. Preview the full ebook before assigning it to students."
+      "text": "We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty, and the pursuit of Happiness. That to secure these rights, Governments are instituted among Men, deriving their just powers from the consent of the governed, That whenever any Form of Government becomes destructive of these ends, it is the Right of the People to alter or to abolish it, and to institute new Government, laying its foundation on such principles and organizing its powers in such form, as to them shall seem most likely to effect their Safety and Happiness. Prudence, indeed, will dictate that Governments long established should not be changed for light and transient causes; and accordingly all experience hath shown, that mankind are more disposed to suffer, while evils are sufferable, than to right themselves by abolishing the forms to which they are accustomed. But when a long train of abuses and usurpations, pursuing invariably the same Object evinces a design to reduce them under absolute Despotism, it is their right, it is their duty, to throw off such Government, and to provide new Guards for their future security. --Such has been the patient sufferance of these Colonies; and such is now the necessity which constrains them to alter their former Systems of Government. The history of the present King of Great Britain is a history of repeated injuries and usurpations, all having in direct object the establishment of an absolute Tyranny over these States. To prove this, let Facts be submitted to a candid world.\n\nHe has refused his Assent to Laws, the most wholesome and necessary for the public good.\n\nHe has forbidden his Governors to pass Laws of immediate and pressing importance, unless suspended in their operation till his Assent should be obtained; and when so suspended, he has utterly neglected to attend to them.\n\nHe has refused to pass other Laws for the accommodation of large districts of people, unless those people would relinquish the right of Representation in the Legislature, a right inestimable to them and formidable to tyrants only.\n\nHe has called together legislative bodies at places unusual, uncomfortable, and distant from the depository of their Public Records, for the sole purpose of fatiguing them into compliance with his measures.\n\nHe has dissolved Representative Houses repeatedly, for opposing with manly firmness his invasions on the rights of the people.\n\nHe has refused for a long time, after such dissolutions, to cause others to be elected; whereby the Legislative Powers, incapable of Annihilation, have returned to the People at large for their exercise; the State remaining in the mean time exposed to all the dangers of invasion from without, and convulsions within.\n\nHe has endeavoured to prevent the population of these States; for that purpose obstructing the Laws of Naturalization of Foreigners; refusing to pass others to encourage their migration hither, and raising the conditions of new Appropriations of Lands.\n\nHe has obstructed the Administration of Justice, by refusing his Assent to Laws for establishing Judiciary Powers."
+    },
+    {
+      "n": 4,
+      "img": null,
+      "text": "He has made judges dependent on his Will alone, for the tenure of their offices, and the amount and payment of their salaries.\n\nHe has erected a multitude of New Offices, and sent hither swarms of Officers to harass our People, and eat out their substance.\n\nHe has kept among us, in times of peace, Standing Armies without the Consent of our legislatures.\n\nHe has affected to render the Military independent of and superior to the Civil Power.\n\nHe has combined with others to subject us to a jurisdiction foreign to our constitution, and unacknowledged by our laws; giving his Assent to their Acts of pretended legislation:\n\nFor quartering large bodies of armed troops among us:\n\nFor protecting them, by a mock Trial, from Punishment for any Murders which they should commit on the Inhabitants of these States:\n\nFor cutting off our Trade with all parts of the world:\n\nFor imposing taxes on us without our Consent:\n\nFor depriving us, in many cases, of the benefits of Trial by Jury:\n\nFor transporting us beyond Seas to be tried for pretended offences:\n\nFor abolishing the free System of English Laws in a neighbouring Province, establishing therein an Arbitrary government, and enlarging its Boundaries so as to render it at once an example and fit instrument for introducing the same absolute rule into these Colonies:\n\nFor taking away our Charters, abolishing our most valuable Laws, and altering fundamentally the Forms of our Governments:\n\nFor suspending our own Legislatures, and declaring themselves invested with Power to legislate for us in all cases whatsoever.\n\nHe has abdicated Government here, by declaring us out of his Protection and waging War against us.\n\nHe has plundered our seas, ravaged our Coasts, burnt our towns, and destroyed the lives of our people.\n\nHe is at this time transporting large armies of foreign mercenaries to compleat the works of death, desolation and tyranny, already begun with circumstances of Cruelty & perfidy scarcely paralleled in the most barbarous ages, and totally unworthy of the Head of a civilized nation.\n\nHe has constrained our fellow Citizens taken Captive on the high Seas to bear Arms against their Country, to become the executioners of their friends and Brethren, or to fall themselves by their Hands.\n\nHe has excited domestic insurrections amongst us, and has endeavoured to bring on the inhabitants of our frontiers, the merciless Indian Savages, whose known rule of warfare, is an undistinguished destruction of all ages, sexes and conditions.\n\nIn every stage of these Oppressions We have Petitioned for Redress in the most humble terms: Our repeated Petitions have been answered only by repeated injury. A Prince, whose character is thus marked by every act which may define a Tyrant, is unfit to be the ruler of a free People."
+    },
+    {
+      "n": 5,
+      "img": null,
+      "text": "Nor have We been wanting in attention to our British brethren. We have warned them from time to time of attempts by their legislature to extend an unwarrantable jurisdiction over us. We have reminded them of the circumstances of our emigration and settlement here. We have appealed to their native justice and magnanimity, and we have conjured them by the ties of our common kindred to disavow these usurpations, which would inevitably interrupt our connections and correspondence. They too have been deaf to the voice of justice and of consanguinity. We must, therefore, acquiesce in the necessity, which denounces our Separation, and hold them, as we hold the rest of mankind, Enemies in War, in Peace Friends.\n\nWe, therefore, the Representatives of the United States of America, in General Congress, Assembled, appealing to the Supreme Judge of the world for the rectitude of our intentions, do, in the Name, and by the Authority of the good People of these Colonies, solemnly publish and declare, That these United Colonies are, and of Right ought to be Free and Independent States; that they are Absolved from all Allegiance to the British Crown, and that all political connection between them and the State of Great Britain, is and ought to be totally dissolved; and that as Free and Independent States, they have full Power to levy War, conclude Peace, contract Alliances, establish Commerce, and to do all other Acts and Things which Independent States may of right do. And for the support of this Declaration, with a firm reliance on the Protection of Divine Providence, we mutually pledge to each other our Lives, our Fortunes and our sacred Honor."
     }
   ],
   "stats": {
-    "pages": 3,
-    "words": 80
+    "pages": 5,
+    "words": 1778
   }
 }

@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════════════════
-// stem_tool_lifeskills.js — Life Skills Lab  v5.14
-// Enhanced STEM Lab tool — 29 sub-tools
+// stem_tool_lifeskills.js — Life Skills Lab  v5.17
+// Enhanced STEM Lab tool — 32 sub-tools
 // Start Here · Paycheck · Data Literacy · Decisions · Contracts
-// Records · Transportation · Job Readiness · Communication · Insurance · Applied Science · Car Care · Home Repair
+// Records · Transportation · Job Readiness · Resume Builder · Proof Locker · Communication · Time Management · Insurance · Applied Science · Car Care · Home Repair
 // Home Systems · Budget · Credit · Cooking · Laundry Lab
 // Dental Care · Challenge · Battle · Learn
 // ═══════════════════════════════════════════════════════
@@ -76,7 +76,10 @@ window.StemLab = window.StemLab || {
     { id: 'records',    icon: '\uD83D\uDCC1', label: 'Records' },
     { id: 'transport',  icon: '\uD83D\uDE8C', label: 'Transportation' },
     { id: 'workreadiness', icon: '\uD83D\uDCBC', label: 'Job Readiness' },
+    { id: 'resumebuilder', icon: '\uD83D\uDCC4', label: 'Resume Builder' },
+    { id: 'prooflocker', icon: '\uD83D\uDDC2\uFE0F', label: 'Proof Locker' },
     { id: 'communication', icon: '\uD83D\uDCAC', label: 'Communication' },
+    { id: 'timemanagement', icon: '\u23F3', label: 'Time Management' },
     { id: 'insurance',  icon: '\uD83C\uDFE5', label: 'Insurance' },
     { id: 'dental',     icon: '\uD83E\uDDB7', label: 'Dental Care' },
     { id: 'bodycare',   icon: '\uD83E\uDDCD', label: 'Body Care' },
@@ -100,9 +103,9 @@ window.StemLab = window.StemLab || {
   ];
 
   var LIFE_SKILL_PATHS = [
-    { id: 'money', icon: '\uD83D\uDCB0', title: 'Money basics', desc: 'Take-home pay, job readiness, budgets, credit, insurance, and smart borrowing.', start: 'paycheck', accent: '#059669', steps: ['Paycheck', 'Job Readiness', 'Budget', 'Credit', 'Insurance'] },
-    { id: 'choices', icon: '\uD83E\uDDE0', title: 'Better decisions', desc: 'Use evidence, spot misleading data, compare options, read fine print, organize records, plan transportation, prepare for work, communicate clearly, and stay safer online.', start: 'data', accent: '#2563eb', steps: ['Data', 'Decisions', 'Contracts', 'Records', 'Transportation', 'Job Readiness', 'Communication', 'Digital Safety'] },
-    { id: 'care', icon: '\uD83E\uDDCD', title: 'Health routines', desc: 'Practice body care, appointments, communication, transportation, sleep, medication labels, home safety, dental care, food confidence, and everyday prevention habits.', start: 'bodycare', accent: '#0f766e', steps: ['Body Care', 'Appointments', 'Communication', 'Transportation', 'Sleep', 'Meds', 'Home Safety', 'Dental', 'Food Confidence', 'Cooking', 'Insurance'] },
+    { id: 'money', icon: '\uD83D\uDCB0', title: 'Money basics', desc: 'Take-home pay, job readiness, resume building, proof organization, budgets, credit, insurance, and smart borrowing.', start: 'paycheck', accent: '#059669', steps: ['Paycheck', 'Job Readiness', 'Resume Builder', 'Proof Locker', 'Budget', 'Credit', 'Insurance'] },
+    { id: 'choices', icon: '\uD83E\uDDE0', title: 'Better decisions', desc: 'Use evidence, spot misleading data, compare options, read fine print, organize records, plan transportation, prepare for work, build resumes, gather proof, manage time, communicate clearly, and stay safer online.', start: 'data', accent: '#2563eb', steps: ['Data', 'Decisions', 'Contracts', 'Records', 'Transportation', 'Job Readiness', 'Resume Builder', 'Proof Locker', 'Time Management', 'Communication', 'Digital Safety'] },
+    { id: 'care', icon: '\uD83E\uDDCD', title: 'Health routines', desc: 'Practice body care, appointments, time planning, communication, transportation, sleep, medication labels, home safety, dental care, food confidence, and everyday prevention habits.', start: 'bodycare', accent: '#0f766e', steps: ['Body Care', 'Appointments', 'Time Management', 'Communication', 'Transportation', 'Sleep', 'Meds', 'Home Safety', 'Dental', 'Food Confidence', 'Cooking', 'Insurance'] },
     { id: 'home', icon: '\uD83C\uDFE0', title: 'Home confidence', desc: 'Understand repairs, home systems, car care, laundry, and applied science.', start: 'homerepair', accent: '#d97706', steps: ['Home Repair', 'Home Systems', 'Car Care', 'Laundry'] },
     { id: 'practice', icon: '\uD83C\uDFAF', title: 'Practice mode', desc: 'Build fluency with challenge questions and the Adulting Defense battle.', start: 'challenge', accent: '#7c3aed', steps: ['Challenge', 'Battle', 'Learn'] }
   ];
@@ -119,8 +122,14 @@ window.StemLab = window.StemLab || {
     { id: 'routeNavigator', icon: '\uD83E\uDDED', name: 'Route Navigator', desc: 'Practice 3 transportation decisions' },
     { id: 'jobReady', icon: '\uD83D\uDCBC', name: 'Job Ready', desc: 'Build a work readiness checklist' },
     { id: 'workplaceNavigator', icon: '\uD83D\uDDE3\uFE0F', name: 'Workplace Navigator', desc: 'Practice 3 work or interview decisions' },
+    { id: 'resumeReady', icon: '\uD83D\uDCC4', name: 'Resume Ready', desc: 'Build a resume readiness checklist' },
+    { id: 'bulletBuilder', icon: '\uD83C\uDFAF', name: 'Evidence Bullet Builder', desc: 'Practice 3 resume decisions or save an evidence bullet' },
+    { id: 'proofLockerReady', icon: '\uD83D\uDDC2\uFE0F', name: 'Proof Locker Ready', desc: 'Build a portfolio proof checklist' },
+    { id: 'portfolioCurator', icon: '\uD83D\uDDBC\uFE0F', name: 'Portfolio Curator', desc: 'Practice 3 proof or sharing decisions' },
     { id: 'communicationReady', icon: '\uD83D\uDCAC', name: 'Communication Ready', desc: 'Build a clear communication checklist' },
     { id: 'conflictNavigator', icon: '\uD83E\uDD1D', name: 'Conflict Navigator', desc: 'Practice 3 communication or conflict decisions' },
+    { id: 'timePlanner', icon: '\u23F3', name: 'Time Planner', desc: 'Build a realistic time-management checklist' },
+    { id: 'taskNavigator', icon: '\uD83D\uDCCB', name: 'Task Navigator', desc: 'Practice 3 planning or deadline decisions' },
     { id: 'insured',     icon: '\uD83C\uDFE5', name: 'Plan Analyst', desc: 'Compare health insurance plans' },
     { id: 'dentalReady', icon: '\uD83E\uDDB7', name: 'Dental Ready', desc: 'Build a daily oral-care plan' },
     { id: 'toothTriage', icon: '\uD83E\uDDB7', name: 'Tooth Trouble Solver', desc: 'Practice 3 dental care decisions' },
@@ -243,7 +252,10 @@ window.StemLab = window.StemLab || {
     { tier: 1, q: 'What should you keep for a return, warranty, or proof you paid?', a: 'receipt', h: 'It records what you bought and when.' },
     { tier: 1, q: 'What extra time do you add to a trip in case walking, traffic, or transit takes longer?', a: 'buffer', h: 'It gives your plan breathing room.' },
     { tier: 1, q: 'What short document lists your skills, experience, and contact information for a job?', a: 'resume', h: 'It helps employers understand what you can do.' },
+    { tier: 1, q: 'What short document summarizes skills, experience, and education for a job?', a: 'resume', h: 'It is usually shared with applications or interviews.' },
+    { tier: 1, q: 'What do you collect to support a resume claim: proof or guesses?', a: 'proof', h: 'Examples make claims easier to trust.' },
     { tier: 1, q: 'What should you do before replying when a message makes you upset?', a: 'pause', h: 'A short pause can prevent a bigger conflict.' },
+    { tier: 1, q: 'What do you call extra time added before a deadline or appointment?', a: 'buffer', h: 'It helps when something takes longer than expected.' },
     { tier: 1, q: 'Why should you empty pockets before washing clothes?', a: 'damage', h: 'Pens, coins, and tissues can damage clothing or the washer.' },
     { tier: 1, q: 'What is a credit score used for?', a: 'borrowing', h: 'Lenders check this before giving you a loan.' },
     { tier: 2, q: 'What is the #1 factor in your FICO credit score?', a: 'payment history', h: 'It accounts for 35% of your score.' },
@@ -258,7 +270,10 @@ window.StemLab = window.StemLab || {
     { tier: 2, q: 'If a form question is confusing or asks for private information, what should you do?', a: 'ask', h: 'Pause and ask a trusted helper or official source.' },
     { tier: 2, q: 'Before a bus, train, ride, walk, or drive, what should you check: route, time, fare, or all?', a: 'all', h: 'A trip plan needs more than one detail.' },
     { tier: 2, q: 'If a work schedule is unclear, what should you do before assuming?', a: 'clarify', h: 'Ask a supervisor, manager, or trusted work contact.' },
+    { tier: 2, q: 'What should a resume bullet usually connect: action, skill, and what?', a: 'result', h: 'Show what happened because of the action.' },
+    { tier: 2, q: 'Before sharing a portfolio item with someone else in it, what should you check?', a: 'permission', h: 'Consent and privacy matter.' },
     { tier: 2, q: 'What kind of statement starts with your own feeling or need instead of blaming?', a: 'i statement', h: 'Example: I feel confused when...' },
+    { tier: 2, q: 'What planning method sorts tasks into do now, schedule, delegate or ask help, and drop?', a: 'priority matrix', h: 'It separates urgency and importance.' },
     { tier: 2, q: 'A recipe makes 24 cookies. You want 36. What is the scaling factor?', a: '1.5', h: '36 / 24 = ?' },
     { tier: 2, q: 'What kind of detergent molecules help lift oil away from fabric?', a: 'surfactant', h: 'They have one water-loving end and one oil-loving end.' },
     { tier: 2, q: 'Credit utilization should be below what percentage for best scores?', a: '30', h: 'Below 10% is even better.' },
@@ -274,7 +289,10 @@ window.StemLab = window.StemLab || {
     { tier: 3, q: 'What word on a form means you agree or give permission?', a: 'consent', h: 'Consent should be understood before signing.' },
     { tier: 3, q: 'A bus leaves at 8:10. Walking to the stop takes 7 minutes and you want a 5-minute buffer. How many minutes before 8:10 should you leave?', a: '12', h: 'Walk time plus buffer time.' },
     { tier: 3, q: 'What interview method describes a situation, task, action, and result?', a: 'star', h: 'It helps answer behavior questions clearly.' },
+    { tier: 3, q: 'What public occupational database can help identify job tasks and skills?', a: 'o*net', h: 'It is run by the U.S. Department of Labor.' },
+    { tier: 3, q: 'What is the safest portfolio share setting for private documents: public or limited?', a: 'limited', h: 'Share only what the audience needs.' },
     { tier: 3, q: 'What repair step means recognizing your part and saying what you will do differently?', a: 'apology', h: 'A useful apology includes responsibility and a next step.' },
+    { tier: 3, q: 'If a task takes 25 minutes and you add a 10-minute buffer, how many minutes should you block?', a: '35', h: 'Task time plus buffer time.' },
     { tier: 3, q: 'Why can too much laundry detergent make clothes feel stiff or itchy?', a: 'residue', h: 'Extra detergent can stay in fabric when the rinse cannot remove it all.' },
     { tier: 3, q: 'Paying minimum ($25) on $5,000 at 24.99% APR \u2014 roughly how many years to pay off?', a: '30', h: 'Minimum payments are designed to maximize interest.' }
   ];
@@ -289,9 +307,15 @@ window.StemLab = window.StemLab || {
     { q: 'What extra time in a trip plan helps with delays?', a: 'buffer', h: 'Leave a little earlier than the perfect-case plan.' },
     { q: 'What should you make before traveling if your first route is delayed?', a: 'backup plan', h: 'A second route or trusted contact can reduce stress.' },
     { q: 'What job document summarizes skills and experience?', a: 'resume', h: 'Often used with job applications.' },
+    { q: 'What does ATS often stand for in hiring software?', a: 'applicant tracking system', h: 'Some employers use this software to organize applications.' },
+    { q: 'What should resume claims be based on: proof or made-up keywords?', a: 'proof', h: 'Truthful evidence is stronger and safer than keyword stuffing.' },
+    { q: 'What collection can hold projects, certificates, work samples, and links?', a: 'portfolio', h: 'It supports resume and interview claims.' },
+    { q: 'Should private IDs or personal records go in a public portfolio?', a: 'no', h: 'Keep private documents protected.' },
     { q: 'What should you do if workplace instructions are unclear?', a: 'ask', h: 'Clarifying early prevents mistakes.' },
     { q: 'What should you do before sending an angry reply?', a: 'pause', h: 'A pause helps you choose the next words.' },
     { q: 'What kind of statement says your own feeling or need clearly?', a: 'i statement', h: 'It avoids starting with blame.' },
+    { q: 'What extra time helps a plan survive delays?', a: 'buffer', h: 'Perfect-case timing is fragile.' },
+    { q: 'What should you do with a big task to make it easier to start?', a: 'break it down', h: 'Use smaller next steps.' },
     { q: 'What is the name for the amount you pay before insurance kicks in?', a: 'deductible', h: 'Your first out-of-pocket cost.' },
     { q: 'What gas law relates tire pressure and temperature?', a: 'gay-lussac', h: 'P1/T1 = P2/T2 at constant volume.' },
     { q: 'What is the rubber seal at the bottom of a toilet tank called?', a: 'flapper', h: 'Lifts when you flush.' },
@@ -368,11 +392,29 @@ window.StemLab = window.StemLab || {
       '6-8': 'Workplace basics include resumes, applications, schedules, interviews, communication, task lists, safety rules, and respectful help-seeking. A strong worker asks clarifying questions, tracks time, and knows when a situation needs adult or supervisor support.',
       '9-12': 'Job readiness includes application materials, interview practice, availability, transportation, workplace norms, wage and schedule records, reasonable accommodations, feedback, professionalism, and escalation when something feels unsafe, discriminatory, or unclear.'
     }},
+    { title: 'Resume Builder & Evidence Review', icon: '\uD83D\uDCC4', tryIt: 'resumebuilder', content: {
+      'K-2': 'A resume is a short document that tells helpers what you can do. Young learners can start by naming strengths, chores, class jobs, projects, and ways they help.',
+      '3-5': 'Resume practice means collecting truthful examples: skills, school projects, volunteer tasks, activities, and times you were dependable or helpful. Good examples say what you did and why it mattered.',
+      '6-8': 'Resume literacy connects job words to real evidence. A strong bullet uses an action, context, skill, and result. It stays truthful, easy to scan, and matched to the role without copying claims you cannot support.',
+      '9-12': 'Resume building combines career readiness evidence, occupational vocabulary, accessible formatting, review, and fairness awareness. Students should use sources like NACE competencies and O*NET tasks to translate real experience, while treating AI or ATS feedback as imperfect support rather than final judgment.'
+    }},
+    { title: 'Portfolio & Proof Locker', icon: '\uD83D\uDDC2\uFE0F', tryIt: 'prooflocker', content: {
+      'K-2': 'A proof locker is a safe place to remember projects, helper notes, pictures of work, and things you learned. It helps you tell true stories about what you can do.',
+      '3-5': 'Portfolio practice means saving examples you are allowed to share: a project, certificate, thank-you note, photo of work, or short reflection. Good proof says what happened, what skill it shows, and who can see it.',
+      '6-8': 'Proof literacy connects resume claims to artifacts. Learners choose relevant samples, describe the skill shown, check permission and privacy, and decide whether an item is public, limited, or private.',
+      '9-12': 'Portfolio curation turns scattered evidence into a share-ready packet for resumes, interviews, scholarships, internships, jobs, and accommodations. Strong proof is truthful, current, relevant, accessible, permission-aware, and organized by audience.'
+    }},
     { title: 'Communication & Conflict Basics', icon: '\uD83D\uDCAC', tryIt: 'communication', content: {
       'K-2': 'Communication means sharing ideas, listening, asking for help, and using words or tools that make needs clear. It is okay to pause and ask a trusted grown-up when a problem feels too big.',
       '3-5': 'Good communication uses clear words, listening, turn-taking, kind repair, and asking questions when something is confusing. Boundaries help people say what is okay and what is not okay.',
       '6-8': 'Communication skills include I-statements, active listening, tone-checking messages, setting boundaries, apologizing with a next step, and knowing when conflict needs a trusted adult, mediator, counselor, or other support.',
       '9-12': 'Communication literacy includes consent, boundaries, conflict de-escalation, digital tone, repair attempts, advocacy, documentation, emotional regulation, and support-seeking when there are threats, harassment, coercion, discrimination, or safety concerns.'
+    }},
+    { title: 'Time Management & Planning', icon: '\u23F3', tryIt: 'timemanagement', content: {
+      'K-2': 'Time planning means knowing what comes next, using reminders, and asking for help when a task feels too big. A small first step can make starting easier.',
+      '3-5': 'Time management skills include checking what is due, estimating how long tasks take, adding a little extra time, using reminders, and breaking big jobs into smaller steps.',
+      '6-8': 'Planning literacy includes priorities, deadlines, buffers, task chunking, routines, calendars, timers, and recovery plans when something takes longer than expected. The goal is not perfect productivity; it is realistic next steps.',
+      '9-12': 'Time management combines executive function, priority triage, time blocking, habit design, workload estimation, transition planning, deadline tracking, and self-advocacy when support, accommodations, or renegotiated timelines are needed.'
     }},
     { title: 'Budgeting & Saving', icon: '\uD83D\uDCB0', tryIt: 'budget', content: {
       'K-2': 'A budget is a plan for your money! Imagine you have 10 tokens \u2014 you need some for food, some for fun, and you should save some for later.',
@@ -1128,6 +1170,117 @@ window.StemLab = window.StemLab || {
     'If I am confused or unsafe at work, I can ask...'
   ];
 
+  var RESUME_CHECKS = [
+    { id: 'target', icon: '\uD83C\uDFAF', title: 'Target role', action: 'Name the job, volunteer role, internship, program, or opportunity the resume is for.', why: 'A target helps choose which skills and examples belong near the top.' },
+    { id: 'contact', icon: '\u260E\uFE0F', title: 'Contact basics', action: 'Use a reachable phone, email, city/state if useful, and a professional display name.', why: 'Employers need a clear way to contact you without extra private information.' },
+    { id: 'sections', icon: '\uD83D\uDCCB', title: 'Clear sections', action: 'Use simple headings such as Summary, Experience, Projects, Skills, Education, and Certifications.', why: 'Human reviewers and hiring systems both scan predictable headings more easily.' },
+    { id: 'evidence', icon: '\u2705', title: 'Evidence bullets', action: 'Turn tasks into action plus context plus skill plus result.', why: 'Evidence shows what you actually did instead of just naming traits.' },
+    { id: 'match', icon: '\uD83D\uDD0D', title: 'Skills match', action: 'Compare real skills and experiences to the role description or O*NET task language.', why: 'Matching vocabulary helps readers see relevance without inventing claims.' },
+    { id: 'review', icon: '\uD83D\uDEE1\uFE0F', title: 'Review and accessibility', action: 'Proofread, remove private details, keep formatting simple, and ask a trusted reviewer when possible.', why: 'A clean, truthful, readable resume is easier to use and safer to share.' }
+  ];
+
+  var RESUME_ACTIONS = [
+    { id: 'tailor', label: 'Tailor to the role', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'evidence', label: 'Add evidence', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'truth', label: 'Keep it truthful', tone: 'bg-amber-50 text-amber-900 border-amber-200' },
+    { id: 'support', label: 'Ask for review or support', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var RESUME_SCENARIOS = [
+    { prompt: 'A job post asks for customer service and punctuality. You have volunteer check-in experience and a steady after-school schedule.', best: 'tailor', explain: 'Choose examples that match the role: greeting people, tracking check-ins, arriving reliably, and asking questions when needed.' },
+    { prompt: 'A bullet says, "Helped a lot at the food pantry," but it does not show what you did.', best: 'evidence', explain: 'Add action, context, and result, such as sorting items, labeling shelves, helping visitors, or reducing wait time.' },
+    { prompt: 'You do not have paid work experience yet, but you have class projects, chores, activities, and volunteering.', best: 'evidence', explain: 'Real experience can come from school, home, clubs, volunteering, caregiving, and projects. Label it honestly.' },
+    { prompt: 'An AI tool suggests adding a skill you do not have because it matches the job keywords.', best: 'truth', explain: 'Do not claim unsupported skills. Use the tool to find wording for real evidence, then edit carefully.' },
+    { prompt: 'A resume draft includes your Social Security number, full birth date, and private health details.', best: 'support', explain: 'Remove private information and ask a trusted adult, counselor, teacher, or workforce helper before sharing.' },
+    { prompt: 'A website says your resume needs more keywords for an applicant tracking system.', best: 'truth', explain: 'Use clean headings and role language only when it connects to real experience. Keyword stuffing can make the resume less trustworthy.' }
+  ];
+
+  var RESUME_SECTION_CARDS = [
+    { id: 'header', icon: '\u260E\uFE0F', title: 'Header/contact', include: 'Name, reachable email or phone, city/state if helpful, and portfolio link only if appropriate.', avoid: 'Social Security number, full birth date, private IDs, or accounts that are not ready for employers.', prompt: 'Can someone contact me safely and clearly?' },
+    { id: 'summary', icon: '\uD83D\uDCDD', title: 'Summary/objective', include: 'One or two short lines naming the role, strengths, and work habit you can support with examples.', avoid: 'Generic claims like hard worker with no evidence.', prompt: 'What role am I aiming for and what evidence supports it?' },
+    { id: 'experience', icon: '\uD83D\uDCBC', title: 'Experience/projects', include: 'Paid work, volunteering, class projects, home responsibilities, clubs, activities, and caregiving tasks when relevant.', avoid: 'Pretending unpaid experience was paid or copying job-post language without proof.', prompt: 'What did I do, for whom, and what changed?' },
+    { id: 'skills', icon: '\uD83D\uDEE0\uFE0F', title: 'Skills', include: 'Tools, languages, certifications, communication, teamwork, safety, scheduling, customer service, or technical skills you can explain.', avoid: 'Long lists of skills you cannot demonstrate or define.', prompt: 'Could I give an example of each skill if asked?' },
+    { id: 'education', icon: '\uD83C\uDF93', title: 'Education/training', include: 'School, program, coursework, credentials, licenses, workshops, and relevant training.', avoid: 'Grades, personal details, or unfinished credentials unless the context asks for them.', prompt: 'Which learning or credential helps this opportunity?' }
+  ];
+
+  var RESUME_BULLET_EXAMPLES = [
+    { weak: 'Worked at food bank.', strong: 'Sorted and labeled 120+ pantry items per shift so visitors could find staples faster.', why: 'Action plus context plus measurable result.' },
+    { weak: 'Good with people.', strong: 'Greeted guests, answered routine questions, and asked a supervisor for help when a request was unclear.', why: 'Shows communication, judgment, and support-seeking.' },
+    { weak: 'Did a group project.', strong: 'Organized a shared checklist for a 4-person class project and helped the team finish before the deadline.', why: 'Connects teamwork, planning, and result.' },
+    { weak: 'Used computer stuff.', strong: 'Created a simple spreadsheet to track supplies, totals, and missing items for a school event.', why: 'Names the tool use and the purpose.' }
+  ];
+
+  var RESUME_RESEARCH_CARDS = [
+    { id: 'nace', source: 'NACE Career Readiness Competencies', title: 'Employers look for evidence of career-ready skills.', finding: 'NACE defines career readiness through competencies such as communication, critical thinking, professionalism, teamwork, technology, leadership, equity/inclusion, and career self-development. Resume bullets should show evidence of those skills in real situations.', apply: 'Translate experiences into examples: action, skill, context, and result.', url: 'https://www.naceweb.org/career-readiness/competencies/career-readiness-defined/' },
+    { id: 'onet', source: 'O*NET OnLine', title: 'Occupational vocabulary can make resumes more precise.', finding: 'O*NET organizes occupations by tasks, skills, knowledge, work activities, and context. It can help learners compare a role with their real experiences and choose accurate words.', apply: 'Use role language only when it matches something the learner can honestly explain.', url: 'https://www.onetonline.org/help/online/' },
+    { id: 'validity', source: 'LLM resume-screening validity research', title: 'Automated screening is imperfect.', finding: 'Recent studies of large language model resume screening report inconsistency, abstention problems, and validity concerns. A resume should still be clear for humans and not optimized only for an automated score.', apply: 'Treat AI feedback as a draft helper. Keep claims truthful, readable, and reviewable.', url: 'https://arxiv.org/abs/2602.18550' },
+    { id: 'bias', source: 'Bias in resume screening research', title: 'Fairness and bias matter.', finding: 'Research on language-model retrieval for resume screening has found gender, race, and intersectional bias signals in simulated screening. Resume education should include privacy, evidence, and human review rather than blind trust in automation.', apply: 'Avoid irrelevant personal details, save proof of experience, and ask for support if a process feels unfair.', url: 'https://arxiv.org/abs/2407.20371' }
+  ];
+
+  var RESUME_PLAN_PROMPTS = [
+    'The role or opportunity I am targeting is...',
+    'One real experience I can turn into evidence is...',
+    'One skill from the role that I can honestly show is...',
+    'One private or distracting detail I should remove is...',
+    'One trusted reviewer or support person I can ask is...'
+  ];
+
+  var PROOF_CHECKS = [
+    { id: 'gather', icon: '\uD83D\uDCC1', title: 'Gather examples', action: 'List projects, certificates, volunteer logs, work samples, awards, reflections, or links that show real experience.', why: 'Proof makes a resume bullet easier to explain in an interview.' },
+    { id: 'label', icon: '\uD83C\uDFF7\uFE0F', title: 'Label the skill', action: 'Name the skill each item shows, such as teamwork, planning, communication, safety, design, caregiving, or technology.', why: 'Labels help connect evidence to the role or opportunity.' },
+    { id: 'context', icon: '\uD83D\uDCDD', title: 'Add context', action: 'Write one sentence about what the item is, what you did, and what changed.', why: 'Context turns a random file or memory into usable proof.' },
+    { id: 'permission', icon: '\uD83E\uDD1D', title: 'Check permission', action: 'Ask before sharing photos, names, group work, client information, school records, or anything involving another person.', why: 'Portfolios should respect privacy, consent, and safety.' },
+    { id: 'organize', icon: '\uD83E\uDDF9', title: 'Organize by audience', action: 'Sort items for jobs, school, volunteering, scholarships, programs, or personal records.', why: 'Different audiences need different evidence.' },
+    { id: 'share', icon: '\uD83D\uDD12', title: 'Choose share level', action: 'Mark each item public, limited, private, or ask-before-sharing.', why: 'Not every good proof item belongs in a public portfolio.' }
+  ];
+
+  var PROOF_ACTIONS = [
+    { id: 'save', label: 'Save useful proof', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'describe', label: 'Describe the skill', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'protect', label: 'Protect privacy', tone: 'bg-amber-50 text-amber-900 border-amber-200' },
+    { id: 'review', label: 'Ask for review', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var PROOF_SCENARIOS = [
+    { prompt: 'You finished a class project that shows planning and teamwork, but it is not mentioned on your resume yet.', best: 'save', explain: 'Save the project title, your role, a short description, and the skill it supports.' },
+    { prompt: 'A photo of volunteer work includes other people and a sign-in sheet in the background.', best: 'protect', explain: 'Crop or blur private details, ask permission, or describe the work without sharing the photo.' },
+    { prompt: 'A certificate looks useful, but you are not sure which job skill it supports.', best: 'describe', explain: 'Add a plain-language note that connects the certificate to a skill or requirement.' },
+    { prompt: 'A portfolio link has old jokes, private posts, and unfinished work mixed with strong examples.', best: 'review', explain: 'Ask a trusted reviewer and separate professional examples from personal material before sharing.' },
+    { prompt: 'A resume bullet says you organized supplies, and you have a spreadsheet that proves the system.', best: 'save', explain: 'That spreadsheet can support the bullet if it has no private information and is okay to share.' },
+    { prompt: 'A recommendation note uses your full address and another person\u2019s phone number.', best: 'protect', explain: 'Keep the original private and create a share-safe version that removes unnecessary personal details.' }
+  ];
+
+  var PROOF_TYPE_CARDS = [
+    { id: 'project', icon: '\uD83D\uDEE0\uFE0F', title: 'Project sample', examples: 'Class project, build, design, presentation, spreadsheet, code, recipe, repair log, or art piece.', shows: 'Planning, creativity, technical skills, persistence, and problem solving.', share: 'Share a clean version, screenshot, link, or short summary.' },
+    { id: 'certificate', icon: '\uD83C\uDF93', title: 'Certificate or training', examples: 'CPR, food safety, first aid, software badge, course completion, license, or workshop.', shows: 'Preparation, safety, knowledge, and follow-through.', share: 'Check expiration dates and avoid exposing private ID numbers.' },
+    { id: 'service', icon: '\uD83E\uDD1D', title: 'Volunteer or service proof', examples: 'Hour log, thank-you note, event role, reflection, supervisor note, or photo with permission.', shows: 'Reliability, communication, teamwork, and community care.', share: 'Remove names, contact info, and photos of others unless permission is clear.' },
+    { id: 'work', icon: '\uD83D\uDCBC', title: 'Work sample', examples: 'Schedule record, task checklist, inventory sheet, customer script, safety checklist, or process note.', shows: 'Dependability, organization, customer service, accuracy, and workplace judgment.', share: 'Never share confidential employer, client, student, patient, or customer information.' },
+    { id: 'reference', icon: '\uD83D\uDDE3\uFE0F', title: 'Reference note', examples: 'Teacher, coach, supervisor, counselor, mentor, or helper note.', shows: 'How another person has seen your strengths in action.', share: 'Ask before listing someone as a reference or sharing their contact details.' }
+  ];
+
+  var PROOF_QUALITY_CARDS = [
+    { id: 'truthful', icon: '\u2705', title: 'Truthful', check: 'Could I explain exactly what I did?', fix: 'Rewrite vague claims as action plus context plus result.' },
+    { id: 'relevant', icon: '\uD83C\uDFAF', title: 'Relevant', check: 'Does this proof support the role, program, or interview question?', fix: 'Move less relevant items to a private archive.' },
+    { id: 'current', icon: '\u23F1\uFE0F', title: 'Current', check: 'Is this recent enough, or does it still show a real skill?', fix: 'Add a date, update the description, or pair it with newer proof.' },
+    { id: 'readable', icon: '\uD83D\uDC41\uFE0F', title: 'Readable', check: 'Can someone scan it quickly and understand what it shows?', fix: 'Add a short caption, clean title, alt text, or plain-language summary.' },
+    { id: 'shareSafe', icon: '\uD83D\uDD12', title: 'Share-safe', check: 'Does it remove private details and respect permission?', fix: 'Use limited sharing, redaction, cropping, or a private note instead.' }
+  ];
+
+  var PROOF_SHARE_LEVELS = [
+    { id: 'public', icon: '\uD83C\uDF10', title: 'Public', use: 'For polished work samples meant for anyone with the link.', guard: 'No private records, private addresses, student/client data, or unapproved photos.' },
+    { id: 'limited', icon: '\uD83D\uDD17', title: 'Limited link', use: 'For applications, interviews, scholarships, or a specific reviewer.', guard: 'Share only the items needed for that audience and review permissions first.' },
+    { id: 'private', icon: '\uD83D\uDD12', title: 'Private archive', use: 'For proof you may reference but should not show publicly.', guard: 'Keep originals safe, especially IDs, records, pay stubs, health, school, or employer documents.' },
+    { id: 'ask', icon: '\u2753', title: 'Ask first', use: 'For group work, photos with people, reference notes, or anything involving another person.', guard: 'Ask a trusted reviewer or the person involved before sharing.' }
+  ];
+
+  var PROOF_PLAN_PROMPTS = [
+    'One proof item I can collect is...',
+    'The skill this proof shows is...',
+    'The safe share level for this item is...',
+    'One private detail I should remove or protect is...',
+    'One person who can review my portfolio is...'
+  ];
+
   var COMMUNICATION_CHECKS = [
     { id: 'pause', icon: '\u23F8\uFE0F', title: 'Pause before reacting', action: 'Take a breath, wait, or draft first when emotions are high.', why: 'A pause makes it easier to choose words instead of escalating.' },
     { id: 'listen', icon: '\uD83D\uDC42', title: 'Listen and reflect', action: 'Repeat the main idea you heard before responding when the topic matters.', why: 'Reflection reduces misunderstandings and shows the other person was heard.' },
@@ -1175,6 +1328,54 @@ window.StemLab = window.StemLab || {
     'A boundary I may need to say is...',
     'If I need to repair harm, I can say...',
     'If the conflict feels unsafe, I can ask...'
+  ];
+
+  var TIME_CHECKS = [
+    { id: 'capture', icon: '\uD83D\uDCDD', title: 'Capture tasks', action: 'Write down tasks, deadlines, appointments, and reminders in one trusted place.', why: 'A visible list reduces the load of trying to remember everything.' },
+    { id: 'estimate', icon: '\u23F1\uFE0F', title: 'Estimate time', action: 'Guess how long the task will take, then add a buffer.', why: 'Most plans fail because they only use best-case timing.' },
+    { id: 'chunk', icon: '\uD83E\uDDF1', title: 'Break it down', action: 'Turn a big task into the next small visible step.', why: 'Small starts are easier than vague goals.' },
+    { id: 'priority', icon: '\uD83C\uDFAF', title: 'Choose priority', action: 'Separate urgent, important, helpful, and optional tasks.', why: 'Not every task deserves the same energy today.' },
+    { id: 'reminder', icon: '\u23F0', title: 'Use reminders', action: 'Set an alarm, calendar note, checklist, or visual cue before the task is due.', why: 'Reminders help future-you at the right time.' },
+    { id: 'recovery', icon: '\uD83D\uDD01', title: 'Recovery plan', action: 'Plan what to do if you miss a step, run late, or need more help.', why: 'A plan can bend without breaking.' }
+  ];
+
+  var TIME_ACTIONS = [
+    { id: 'capture', label: 'Write it down', tone: 'bg-blue-50 text-blue-800 border-blue-200' },
+    { id: 'chunk', label: 'Break into next step', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+    { id: 'prioritize', label: 'Choose the priority', tone: 'bg-amber-50 text-amber-900 border-amber-200' },
+    { id: 'ask', label: 'Ask or renegotiate', tone: 'bg-red-50 text-red-800 border-red-200' }
+  ];
+
+  var TIME_SCENARIOS = [
+    { prompt: 'You have three homework tasks, one appointment, and a chore floating around in your head.', best: 'capture', explain: 'Get the tasks out of memory and into one list or calendar before choosing what comes first.' },
+    { prompt: 'A project feels too big, so you keep avoiding it.', best: 'chunk', explain: 'Name the next tiny step: open the file, gather materials, write the title, or ask one question.' },
+    { prompt: 'Two tasks are due today, but one affects safety or an appointment and the other is optional.', best: 'prioritize', explain: 'Do the urgent and important task first, then schedule or shrink the optional one.' },
+    { prompt: 'You realize a deadline cannot be met even with focused work.', best: 'ask', explain: 'Ask early for help, a new timeline, or the minimum useful version instead of disappearing.' },
+    { prompt: 'You are always late because you leave exactly when the map says travel begins.', best: 'prioritize', explain: 'Build in transition and buffer time. Perfect-case timing is not a real plan.' },
+    { prompt: 'You finish a task but forget to submit or bring it.', best: 'capture', explain: 'Add a final reminder for the handoff step, not just the work step.' }
+  ];
+
+  var PRIORITY_CARDS = [
+    { id: 'now', icon: '\uD83D\uDEA8', title: 'Do now', clue: 'Urgent and important', move: 'Start or ask for immediate help.', example: 'Medication label question before taking medicine, leaving for an appointment, deadline today.' },
+    { id: 'schedule', icon: '\uD83D\uDCC5', title: 'Schedule', clue: 'Important but not immediate', move: 'Choose a time block and reminder.', example: 'Study plan, laundry before needed, meal prep, application draft.' },
+    { id: 'support', icon: '\uD83E\uDD1D', title: 'Ask support', clue: 'Needs another person, permission, or clarification', move: 'Send the question early.', example: 'Confusing form, unclear assignment, ride plan, work schedule question.' },
+    { id: 'shrink', icon: '\u2702\uFE0F', title: 'Shrink or drop', clue: 'Optional, too large, or low value today', move: 'Pick the smallest useful version or remove it.', example: 'Clean one surface instead of the whole room, draft instead of perfect final.' }
+  ];
+
+  var TIME_TOOL_CARDS = [
+    { id: 'timer', icon: '\u23F2\uFE0F', title: 'Focus timer', use: 'Try 10, 15, or 25 minutes of focus followed by a short reset.', goodFor: 'Starting, reducing overwhelm, and noticing how long tasks actually take.' },
+    { id: 'calendar', icon: '\uD83D\uDCC6', title: 'Calendar block', use: 'Put appointments, deadlines, travel, and reminders on a calendar.', goodFor: 'Seeing the week and catching conflicts early.' },
+    { id: 'checklist', icon: '\u2705', title: 'Checklist', use: 'List steps in the order they need to happen.', goodFor: 'Routines, packing, forms, chores, and first-day plans.' },
+    { id: 'launchpad', icon: '\uD83C\uDFC1', title: 'Launchpad', use: 'Put keys, forms, bag, clothes, or supplies in one ready place.', goodFor: 'Leaving on time and reducing morning search stress.' },
+    { id: 'bodydouble', icon: '\uD83D\uDC65', title: 'Body double', use: 'Work near someone else or check in at the start and finish.', goodFor: 'Getting started when attention, motivation, or anxiety makes tasks sticky.' }
+  ];
+
+  var TIME_PLAN_PROMPTS = [
+    'One task I need to capture is...',
+    'The next tiny step is...',
+    'A realistic time estimate plus buffer is...',
+    'A reminder or visual cue I can use is...',
+    'If the plan slips, my recovery step is...'
   ];
 
   function getGradeBand(ctx) {
@@ -1262,7 +1463,7 @@ window.StemLab = window.StemLab || {
   window.StemLab.registerTool('lifeSkills', {
     title: 'Life Skills Lab',
     icon: '\uD83E\uDDED',
-    description: 'Essential knowledge for adulting \u2014 taxes, data literacy, contracts, records, transportation, job readiness, communication, dental care, body care, sleep routines, medication labels, appointments, home safety, digital safety, food confidence, car care, laundry science, home systems, and critical thinking.',
+    description: 'Essential knowledge for adulting \u2014 taxes, data literacy, contracts, records, transportation, job readiness, resume building, portfolio proof organization, communication, time management, dental care, body care, sleep routines, medication labels, appointments, home safety, digital safety, food confidence, car care, laundry science, home systems, and critical thinking.',
     category: 'Life Skills',
     gradeRange: 'K-12',
     render: function(ctx) {
@@ -1998,6 +2199,96 @@ window.StemLab = window.StemLab || {
         if (correct && workScenarioScore + 1 >= 3) checkBadge('workplaceNavigator');
       }
 
+      // RESUME BUILDER & EVIDENCE REVIEW STATE
+      var resumeChecklist = d.resumeChecklist || {};
+      var resumeDone = RESUME_CHECKS.filter(function(step) { return !!resumeChecklist[step.id]; }).length;
+      var resumeScenarioIdx = d.resumeScenarioIdx || 0;
+      var resumeScenarioChoice = d.resumeScenarioChoice || '';
+      var resumeScenarioFb = d.resumeScenarioFb || '';
+      var resumeScenarioScore = d.resumeScenarioScore || 0;
+      var resumeCurrentScenario = RESUME_SCENARIOS[resumeScenarioIdx % RESUME_SCENARIOS.length];
+      var resumeSectionIdx = d.resumeSectionIdx || 0;
+      var resumeSectionCard = RESUME_SECTION_CARDS[resumeSectionIdx % RESUME_SECTION_CARDS.length];
+      var resumeBulletIdx = d.resumeBulletIdx || 0;
+      var resumeBulletCard = RESUME_BULLET_EXAMPLES[resumeBulletIdx % RESUME_BULLET_EXAMPLES.length];
+      var resumeResearchIdx = d.resumeResearchIdx || 0;
+      var resumeResearchCard = RESUME_RESEARCH_CARDS[resumeResearchIdx % RESUME_RESEARCH_CARDS.length];
+      var resumePlanIdx = d.resumePlanIdx || 0;
+      var resumePlanPrompt = RESUME_PLAN_PROMPTS[resumePlanIdx % RESUME_PLAN_PROMPTS.length];
+      var resumePlanNote = d.resumePlanNote || '';
+      var resumePlanMsg = d.resumePlanMsg || '';
+      var resumeRole = d.resumeRole || 'entry-level job, volunteer role, internship, or program';
+      var resumeAction = d.resumeAction || '';
+      var resumeContext = d.resumeContext || '';
+      var resumeSkill = d.resumeSkill || '';
+      var resumeResult = d.resumeResult || '';
+      var resumeBulletPreview = (resumeAction.trim() || 'Supported') + ' ' + (resumeContext.trim() || 'a real task') + (resumeSkill.trim() ? ' using ' + resumeSkill.trim() : '') + (resumeResult.trim() ? ' to ' + resumeResult.trim() : '') + '.';
+      var resumeBulletMsg = d.resumeBulletMsg || '';
+
+      function setResumeCheck(id, checked) {
+        var next = Object.assign({}, resumeChecklist);
+        next[id] = checked;
+        upd('resumeChecklist', next);
+        if (RESUME_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('resumeReady');
+      }
+
+      function answerResumeScenario(choice) {
+        var correct = choice === resumeCurrentScenario.best;
+        var action = RESUME_ACTIONS.find(function(a) { return a.id === resumeCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          resumeScenarioChoice: choice,
+          resumeScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : resumeCurrentScenario.best) + '. ') + resumeCurrentScenario.explain,
+          resumeScenarioScore: resumeScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && resumeScenarioScore + 1 >= 3) checkBadge('bulletBuilder');
+      }
+
+      // PORTFOLIO & PROOF LOCKER STATE
+      var proofChecklist = d.proofChecklist || {};
+      var proofDone = PROOF_CHECKS.filter(function(step) { return !!proofChecklist[step.id]; }).length;
+      var proofScenarioIdx = d.proofScenarioIdx || 0;
+      var proofScenarioChoice = d.proofScenarioChoice || '';
+      var proofScenarioFb = d.proofScenarioFb || '';
+      var proofScenarioScore = d.proofScenarioScore || 0;
+      var proofCurrentScenario = PROOF_SCENARIOS[proofScenarioIdx % PROOF_SCENARIOS.length];
+      var proofTypeIdx = d.proofTypeIdx || 0;
+      var proofTypeCard = PROOF_TYPE_CARDS[proofTypeIdx % PROOF_TYPE_CARDS.length];
+      var proofQualityIdx = d.proofQualityIdx || 0;
+      var proofQualityCard = PROOF_QUALITY_CARDS[proofQualityIdx % PROOF_QUALITY_CARDS.length];
+      var proofShareIdx = d.proofShareIdx || 0;
+      var proofShareCard = PROOF_SHARE_LEVELS[proofShareIdx % PROOF_SHARE_LEVELS.length];
+      var proofPlanIdx = d.proofPlanIdx || 0;
+      var proofPlanPrompt = PROOF_PLAN_PROMPTS[proofPlanIdx % PROOF_PLAN_PROMPTS.length];
+      var proofPlanNote = d.proofPlanNote || '';
+      var proofPlanMsg = d.proofPlanMsg || '';
+      var proofItemType = d.proofItemType || 'project sample';
+      var proofItemTitle = d.proofItemTitle || '';
+      var proofItemSkill = d.proofItemSkill || '';
+      var proofItemEvidence = d.proofItemEvidence || '';
+      var proofItemShare = d.proofItemShare || 'limited link';
+      var proofItemPreview = (proofItemTitle.trim() || 'Untitled proof item') + ' - ' + (proofItemType.trim() || 'proof') + ' showing ' + (proofItemSkill.trim() || 'a real skill') + '. Share level: ' + (proofItemShare.trim() || 'limited') + '.';
+      var proofItemMsg = d.proofItemMsg || '';
+
+      function setProofCheck(id, checked) {
+        var next = Object.assign({}, proofChecklist);
+        next[id] = checked;
+        upd('proofChecklist', next);
+        if (PROOF_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('proofLockerReady');
+      }
+
+      function answerProofScenario(choice) {
+        var correct = choice === proofCurrentScenario.best;
+        var action = PROOF_ACTIONS.find(function(a) { return a.id === proofCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          proofScenarioChoice: choice,
+          proofScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : proofCurrentScenario.best) + '. ') + proofCurrentScenario.explain,
+          proofScenarioScore: proofScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && proofScenarioScore + 1 >= 3) checkBadge('portfolioCurator');
+      }
+
       // COMMUNICATION & CONFLICT STATE
       var communicationChecklist = d.communicationChecklist || {};
       var communicationDone = COMMUNICATION_CHECKS.filter(function(step) { return !!communicationChecklist[step.id]; }).length;
@@ -2032,6 +2323,42 @@ window.StemLab = window.StemLab || {
           communicationScenarioScore: communicationScenarioScore + (correct ? 1 : 0)
         });
         if (correct && communicationScenarioScore + 1 >= 3) checkBadge('conflictNavigator');
+      }
+
+      // TIME MANAGEMENT & PLANNING STATE
+      var timeChecklist = d.timeChecklist || {};
+      var timeDone = TIME_CHECKS.filter(function(step) { return !!timeChecklist[step.id]; }).length;
+      var timeScenarioIdx = d.timeScenarioIdx || 0;
+      var timeScenarioChoice = d.timeScenarioChoice || '';
+      var timeScenarioFb = d.timeScenarioFb || '';
+      var timeScenarioScore = d.timeScenarioScore || 0;
+      var timeCurrentScenario = TIME_SCENARIOS[timeScenarioIdx % TIME_SCENARIOS.length];
+      var priorityCardIdx = d.priorityCardIdx || 0;
+      var priorityCard = PRIORITY_CARDS[priorityCardIdx % PRIORITY_CARDS.length];
+      var timeToolIdx = d.timeToolIdx || 0;
+      var timeToolCard = TIME_TOOL_CARDS[timeToolIdx % TIME_TOOL_CARDS.length];
+      var timePlanIdx = d.timePlanIdx || 0;
+      var timePlanPrompt = TIME_PLAN_PROMPTS[timePlanIdx % TIME_PLAN_PROMPTS.length];
+      var timePlanNote = d.timePlanNote || '';
+      var timePlanMsg = d.timePlanMsg || '';
+
+      function setTimeCheck(id, checked) {
+        var next = Object.assign({}, timeChecklist);
+        next[id] = checked;
+        upd('timeChecklist', next);
+        if (TIME_CHECKS.every(function(step) { return !!next[step.id]; })) checkBadge('timePlanner');
+      }
+
+      function answerTimeScenario(choice) {
+        var correct = choice === timeCurrentScenario.best;
+        var action = TIME_ACTIONS.find(function(a) { return a.id === timeCurrentScenario.best; });
+        stemBeep(correct);
+        updMulti({
+          timeScenarioChoice: choice,
+          timeScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : timeCurrentScenario.best) + '. ') + timeCurrentScenario.explain,
+          timeScenarioScore: timeScenarioScore + (correct ? 1 : 0)
+        });
+        if (correct && timeScenarioScore + 1 >= 3) checkBadge('taskNavigator');
       }
 
       // FOOD CONFIDENCE STATE
@@ -2133,7 +2460,7 @@ window.StemLab = window.StemLab || {
         updMulti({ battleActive: true, battleRound: 0, battlePlayerHP: 100, battleEnemyHP: 100, battleAnswer: '', battleFeedback: '', battleOver: false, battleWon: false, battleUseAI: !!useAI, battleOrder: order, battleAIQ: null, battleAILoading: false });
         if (useAI && callGemini) {
           upd('battleAILoading', true);
-          callGemini('Generate one life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, communication and conflict, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+          callGemini('Generate one life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, resume building and evidence bullets, portfolio proof organization and privacy, communication and conflict, time management and planning, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
             try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ battleAIQ: { q: p.q, a: p.a, h: p.h || 'Think practically!' }, battleAILoading: false }); } catch(e) { upd('battleAILoading', false); }
           }).catch(function() { upd('battleAILoading', false); });
         }
@@ -2234,7 +2561,10 @@ window.StemLab = window.StemLab || {
             records:    { accent: '#334155', soft: 'rgba(51,65,85,0.10)', icon: '\uD83D\uDCC1', title: __alloT('stem.lifeskills.records_paperwork', 'Records + paperwork'), hint: __alloT('stem.lifeskills.records_paperwork_hint', 'IDs, forms, receipts, health cards, deadlines, proof of payment, safe storage, and knowing when to ask before sharing or signing.') },
             transport:  { accent: '#0369a1', soft: 'rgba(3,105,161,0.10)', icon: '\uD83D\uDE8C', title: __alloT('stem.lifeskills.transportation_navigation', 'Transportation + navigation'), hint: __alloT('stem.lifeskills.transportation_navigation_hint', 'Route choices, stops, transfers, time buffers, fare/payment, accessibility, safer waiting, backup plans, and asking official or trusted help when a trip changes.') },
             workreadiness: { accent: '#4338ca', soft: 'rgba(67,56,202,0.10)', icon: '\uD83D\uDCBC', title: __alloT('stem.lifeskills.job_readiness', 'Job readiness + workplace basics'), hint: __alloT('stem.lifeskills.job_readiness_hint', 'Applications, resumes, availability, interviews, first-day plans, workplace communication, feedback, pay records, safety, respect, and asking clear questions.') },
+            resumebuilder: { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83D\uDCC4', title: __alloT('stem.lifeskills.resume_builder', 'Resume builder + evidence review'), hint: __alloT('stem.lifeskills.resume_builder_hint', 'Role matching, truthful evidence bullets, clean sections, O*NET vocabulary, NACE career-readiness skills, privacy checks, and cautious AI/ATS review.') },
+            prooflocker: { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\uD83D\uDDC2\uFE0F', title: __alloT('stem.lifeskills.proof_locker', 'Portfolio + proof locker'), hint: __alloT('stem.lifeskills.proof_locker_hint', 'Collect projects, certificates, work samples, volunteer proof, references, links, privacy checks, captions, and share-ready packets that support resume and interview claims.') },
             communication: { accent: '#7c2d12', soft: 'rgba(124,45,18,0.10)', icon: '\uD83D\uDCAC', title: __alloT('stem.lifeskills.communication_conflict', 'Communication + conflict'), hint: __alloT('stem.lifeskills.communication_conflict_hint', 'Pausing, listening, clarifying, I-statements, boundaries, message tone, repair attempts, apologies, and getting trusted support when conflict is unsafe or too big.') },
+            timemanagement: { accent: '#854d0e', soft: 'rgba(133,77,14,0.10)', icon: '\u23F3', title: __alloT('stem.lifeskills.time_management', 'Time management + planning'), hint: __alloT('stem.lifeskills.time_management_hint', 'Task capture, priorities, realistic estimates, buffers, reminders, calendars, checklists, focus tools, and recovery plans when the day changes.') },
             insurance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFE5', title: __alloT('stem.lifeskills.insurance_basics', 'Insurance basics'),        hint: __alloT('stem.lifeskills.premium_deductible_out_of_pocket_max_n', 'Premium / deductible / out-of-pocket max / network. Insurance protects against catastrophic loss \u2014 not against everyday cost. High-deductible plans + HSA can beat low-deductible for healthy people.') },
             dental:     { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)',  icon: '\uD83E\uDDB7', title: __alloT('stem.lifeskills.dental_care', 'Dental care'),              hint: __alloT('stem.lifeskills.daily_oral_health_habits', 'Daily prevention, brushing and between-teeth cleaning, snack choices, dental plan math, and knowing when symptoms need a dentist. Educational practice only - not a diagnosis.') },
             bodycare:   { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)',  icon: '\uD83E\uDDCD', title: __alloT('stem.lifeskills.body_care_ergonomics', 'Body care + ergonomics'), hint: __alloT('stem.lifeskills.body_care_fit_task', 'Comfort checks, workspace fit, movement resets, accessibility options, and knowing when to ask for support. The goal is flexible comfort, not one perfect posture.') },
@@ -2312,7 +2642,10 @@ window.StemLab = window.StemLab || {
               { title: 'Paperwork quick sort', icon: '\uD83D\uDCC1', body: 'Find IDs, forms, receipts, deadlines, and private records before they are needed.', tab: 'records' },
               { title: 'Trip plan check', icon: '\uD83D\uDE8C', body: 'Check route, stop, time buffer, fare, access needs, and backup plan.', tab: 'transport' },
               { title: 'Job readiness check', icon: '\uD83D\uDCBC', body: 'Practice applications, interviews, schedules, first-day plans, and workplace questions.', tab: 'workreadiness' },
+              { title: 'Resume builder check', icon: '\uD83D\uDCC4', body: 'Turn real experiences into truthful, role-matched evidence bullets.', tab: 'resumebuilder' },
+              { title: 'Proof locker check', icon: '\uD83D\uDDC2\uFE0F', body: 'Collect projects, certificates, work samples, and safe share notes behind resume claims.', tab: 'prooflocker' },
               { title: 'Communication reset', icon: '\uD83D\uDCAC', body: 'Practice pausing, clarifying, boundaries, repair, and trusted support.', tab: 'communication' },
+              { title: 'Time plan reset', icon: '\u23F3', body: 'Capture tasks, choose priorities, add buffers, reminders, and recovery steps.', tab: 'timemanagement' },
               { title: 'Body comfort reset', icon: '\uD83E\uDDCD', body: 'Check posture, setup, movement breaks, and access needs.', tab: 'bodycare' },
               { title: 'Food confidence check', icon: '\uD83E\uDD57', body: 'Plan leftovers, storage, labels, pantry meals, and safer choices.', tab: 'foodconfidence' },
               { title: 'Appointment prep', icon: '\uD83D\uDCC5', body: 'Prepare notes, questions, support needs, and follow-up steps.', tab: 'appointments' },
@@ -2982,6 +3315,392 @@ window.StemLab = window.StemLab || {
           )
         ),
 
+        tab === 'resumebuilder' && h('div', { className: 'space-y-4', 'data-lifeskills-resume-builder': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.resume_builder_lab', '\uD83D\uDCC4 Resume Builder & Evidence Review Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice naming strengths, helpful tasks, school projects, and ways you can show responsibility.',
+                  'Build a simple resume habit: collect real examples, name skills, and ask a trusted helper to review.',
+                  'Practice role matching, clean sections, action-result bullets, privacy checks, and truthful job vocabulary.',
+                  'Model resume building as evidence translation, career-readiness alignment, O*NET vocabulary use, accessible formatting, human review, and cautious AI/ATS literacy.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-teal-50 border border-teal-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-teal-800' }, 'Resume readiness'),
+                h('p', { className: 'text-2xl font-black text-teal-900 leading-none' }, Math.round(resumeDone / RESUME_CHECKS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-700 bg-teal-50 border border-teal-200 rounded-xl p-2 leading-relaxed' }, 'Practice only. A resume should be truthful, readable, and safe to share. Applicant tracking system tools may scan resumes, but human-readable evidence still matters. Remove private information, keep evidence you can explain, and ask a counselor, teacher, workforce helper, trusted adult, or accessibility support person for review when possible.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Resume readiness checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, resumeDone + '/' + RESUME_CHECKS.length + ' resume habits checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-200' }, 'Target, evidence, review')
+              ),
+              RESUME_CHECKS.map(function(step) {
+                var checked = !!resumeChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-teal-300') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setResumeCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-700 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-teal-800 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Resume decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200' }, 'Score ' + resumeScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, resumeCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                RESUME_ACTIONS.map(function(action) {
+                  var chosen = resumeScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerResumeScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all focus:outline-none focus:ring-2 focus:ring-teal-700 ' + (chosen ? action.tone + ' ring-2 ring-offset-1 ring-teal-700' : 'bg-white border-slate-300 text-slate-700 hover:border-teal-300') }, action.label);
+                })
+              ),
+              resumeScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (resumeScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, resumeScenarioFb),
+              h('button', { onClick: function() { updMulti({ resumeScenarioIdx: resumeScenarioIdx + 1, resumeScenarioChoice: '', resumeScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-teal-700 text-white hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-700' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Evidence bullet builder'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, 'Action + context + skill + result')
+              ),
+              h('span', { className: 'px-2 py-1 rounded-full bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-200' }, 'Truthful and specific')
+            ),
+            h('div', { className: 'grid md:grid-cols-2 xl:grid-cols-5 gap-3' },
+              h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Target role',
+                h('input', { type: 'text', value: resumeRole, onChange: function(e) { upd('resumeRole', e.target.value); }, className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Target role or opportunity' })
+              ),
+              h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Action verb',
+                h('input', { type: 'text', value: resumeAction, onChange: function(e) { upd('resumeAction', e.target.value); }, placeholder: 'Organized, greeted, tracked...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Resume action verb' })
+              ),
+              h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Context',
+                h('input', { type: 'text', value: resumeContext, onChange: function(e) { upd('resumeContext', e.target.value); }, placeholder: 'a project, shift, event...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Resume bullet context' })
+              ),
+              h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Skill',
+                h('input', { type: 'text', value: resumeSkill, onChange: function(e) { upd('resumeSkill', e.target.value); }, placeholder: 'communication, Excel...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Resume bullet skill' })
+              ),
+              h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Result',
+                h('input', { type: 'text', value: resumeResult, onChange: function(e) { upd('resumeResult', e.target.value); }, placeholder: 'finish faster, reduce errors...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Resume bullet result' })
+              )
+            ),
+            h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+              h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Draft for ' + resumeRole),
+              h('p', { className: 'text-sm font-black text-slate-800 leading-relaxed' }, resumeBulletPreview),
+              h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, 'Tip: If the result is hard to measure, use a clear outcome such as helped visitors find items, reduced confusion, finished before the deadline, or kept records accurate.')
+            ),
+            h('button', { onClick: function() {
+              if (!resumeAction.trim() || !resumeContext.trim()) { upd('resumeBulletMsg', 'Add at least an action and context before saving the bullet.'); return; }
+              updMulti({ resumeBulletMsg: 'Bullet saved: ' + resumeBulletPreview, resumeBulletSaved: Date.now() });
+              checkBadge('bulletBuilder');
+              announceToSR('Resume bullet saved');
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save evidence bullet'),
+            resumeBulletMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.resumeBulletSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, resumeBulletMsg)
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Resume section cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, resumeSectionCard.icon + ' ' + resumeSectionCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Include and avoid')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                RESUME_SECTION_CARDS.map(function(card, i) {
+                  var active = i === resumeSectionIdx % RESUME_SECTION_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('resumeSectionIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-teal-700 ' + (active ? 'bg-teal-700 text-white border-teal-700' : 'bg-white border-slate-300 text-slate-700 hover:border-teal-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Include'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, resumeSectionCard.include),
+                h('p', { className: 'text-xs font-black text-red-800 pt-2 border-t border-slate-100' }, 'Avoid'),
+                h('p', { className: 'text-[11px] text-red-800 font-medium leading-relaxed' }, resumeSectionCard.avoid),
+                h('p', { className: 'text-xs font-black text-teal-800 pt-2 border-t border-slate-100' }, 'Ask'),
+                h('p', { className: 'text-[11px] text-teal-800 leading-relaxed' }, resumeSectionCard.prompt)
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Bullet examples'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Weak to stronger')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-amber-50 text-amber-900 text-[11px] font-bold border border-amber-200' }, 'Evidence upgrade')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                RESUME_BULLET_EXAMPLES.map(function(card, i) {
+                  var active = i === resumeBulletIdx % RESUME_BULLET_EXAMPLES.length;
+                  return h('button', { key: card.weak, onClick: function() { upd('resumeBulletIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-teal-700 ' + (active ? 'bg-teal-700 text-white border-teal-700' : 'bg-white border-slate-300 text-slate-700 hover:border-teal-300') }, 'Example ' + (i + 1));
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-red-800' }, 'Before'),
+                h('p', { className: 'text-[11px] text-red-800 font-medium leading-relaxed' }, resumeBulletCard.weak),
+                h('p', { className: 'text-xs font-black text-emerald-800 pt-2 border-t border-slate-100' }, 'Try instead'),
+                h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, resumeBulletCard.strong),
+                h('p', { className: 'text-xs font-black text-slate-800 pt-2 border-t border-slate-100' }, 'Why it works'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, resumeBulletCard.why)
+              )
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Literature review cards'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, resumeResearchCard.title)
+              ),
+              h('a', { href: resumeResearchCard.url, target: '_blank', rel: 'noreferrer', className: 'px-2 py-1 rounded-full bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-200 hover:bg-teal-100' }, resumeResearchCard.source)
+            ),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              RESUME_RESEARCH_CARDS.map(function(card, i) {
+                var active = i === resumeResearchIdx % RESUME_RESEARCH_CARDS.length;
+                return h('button', { key: card.id, onClick: function() { upd('resumeResearchIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-teal-700 ' + (active ? 'bg-teal-700 text-white border-teal-700' : 'bg-white border-slate-300 text-slate-700 hover:border-teal-300') }, card.source);
+              })
+            ),
+            h('div', { className: 'grid md:grid-cols-2 gap-3' },
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Finding'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, resumeResearchCard.finding)
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-teal-800' }, 'Use this in the resume tool'),
+                h('p', { className: 'text-[11px] text-teal-800 leading-relaxed' }, resumeResearchCard.apply)
+              )
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Resume plan builder'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, resumePlanPrompt)
+              ),
+              h('span', { className: 'px-2 py-1 rounded-full bg-teal-50 text-teal-800 text-[11px] font-bold border border-teal-200' }, 'One review-ready next step')
+            ),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              RESUME_PLAN_PROMPTS.map(function(prompt, i) {
+                var active = i === resumePlanIdx % RESUME_PLAN_PROMPTS.length;
+                return h('button', { key: prompt, onClick: function() { updMulti({ resumePlanIdx: i, resumePlanNote: prompt, resumePlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-teal-700 text-white border-teal-700' : 'bg-white text-teal-800 border-teal-200 hover:border-teal-400') }, 'Plan ' + (i + 1));
+              })
+            ),
+            h('textarea', { value: resumePlanNote, onChange: function(e) { upd('resumePlanNote', e.target.value); }, rows: 4, placeholder: 'Write one resume target, evidence bullet, privacy check, or review step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Resume plan note' }),
+            h('button', { onClick: function() {
+              if (!resumePlanNote.trim()) { upd('resumePlanMsg', 'Write one resume step first.'); return; }
+              updMulti({ resumePlanMsg: 'Plan saved: ' + resumePlanNote.trim(), resumePlanSaved: Date.now() });
+              checkBadge('resumeReady');
+              announceToSR('Resume plan saved');
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save resume plan'),
+            resumePlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.resumePlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, resumePlanMsg)
+          )
+        ),
+
+        tab === 'prooflocker' && h('div', { className: 'space-y-4', 'data-lifeskills-proof-locker': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.proof_locker_lab', '\uD83D\uDDC2\uFE0F Portfolio & Proof Locker Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice saving examples of things you made, learned, helped with, or practiced safely.',
+                  'Collect projects, certificates, notes, and examples that show real skills while checking who can see them.',
+                  'Build proof habits for resumes and interviews: label skills, add context, protect privacy, and sort by audience.',
+                  'Model portfolio curation as evidence gathering, skill labeling, caption writing, permission checks, share-level decisions, and review-ready packets for jobs, programs, scholarships, and interviews.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-cyan-50 border border-cyan-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-cyan-800' }, 'Proof readiness'),
+                h('p', { className: 'text-2xl font-black text-cyan-900 leading-none' }, Math.round(proofDone / PROOF_CHECKS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-700 bg-cyan-50 border border-cyan-200 rounded-xl p-2 leading-relaxed' }, 'Practice only. The Proof Locker stores descriptions and planning notes, not uploaded files. Keep private IDs, health records, school records, employer information, and other people\u2019s details out of public portfolios unless a trusted reviewer says it is appropriate.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Proof locker checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, proofDone + '/' + PROOF_CHECKS.length + ' proof habits checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-cyan-50 text-cyan-800 text-[11px] font-bold border border-cyan-200' }, 'Collect, label, protect')
+              ),
+              PROOF_CHECKS.map(function(step) {
+                var checked = !!proofChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-cyan-300') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setProofCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-700 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-cyan-800 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Proof decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200' }, 'Score ' + proofScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, proofCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                PROOF_ACTIONS.map(function(action) {
+                  var chosen = proofScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerProofScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all focus:outline-none focus:ring-2 focus:ring-cyan-700 ' + (chosen ? action.tone + ' ring-2 ring-offset-1 ring-cyan-700' : 'bg-white border-slate-300 text-slate-700 hover:border-cyan-300') }, action.label);
+                })
+              ),
+              proofScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (proofScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, proofScenarioFb),
+              h('button', { onClick: function() { updMulti({ proofScenarioIdx: proofScenarioIdx + 1, proofScenarioChoice: '', proofScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-cyan-700 text-white hover:bg-cyan-800 focus:outline-none focus:ring-2 focus:ring-cyan-700' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Proof item builder'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, 'Item + skill + evidence + share level')
+              ),
+              h('span', { className: 'px-2 py-1 rounded-full bg-cyan-50 text-cyan-800 text-[11px] font-bold border border-cyan-200' }, 'No file upload needed')
+            ),
+            h('div', { className: 'grid md:grid-cols-2 xl:grid-cols-5 gap-3' },
+              h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Item type',
+                h('input', { type: 'text', value: proofItemType, onChange: function(e) { upd('proofItemType', e.target.value); }, className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Proof item type' })
+              ),
+              h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Title',
+                h('input', { type: 'text', value: proofItemTitle, onChange: function(e) { upd('proofItemTitle', e.target.value); }, placeholder: 'Food drive spreadsheet...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Proof item title' })
+              ),
+              h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Skill shown',
+                h('input', { type: 'text', value: proofItemSkill, onChange: function(e) { upd('proofItemSkill', e.target.value); }, placeholder: 'teamwork, planning...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Proof item skill' })
+              ),
+              h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Evidence note',
+                h('input', { type: 'text', value: proofItemEvidence, onChange: function(e) { upd('proofItemEvidence', e.target.value); }, placeholder: 'what it proves...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Proof item evidence note' })
+              ),
+              h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Share level',
+                h('input', { type: 'text', value: proofItemShare, onChange: function(e) { upd('proofItemShare', e.target.value); }, placeholder: 'public, limited, private...', className: 'mt-1 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-sm text-slate-800', 'aria-label': 'Proof item share level' })
+              )
+            ),
+            h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+              h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Locker preview'),
+              h('p', { className: 'text-sm font-black text-slate-800 leading-relaxed' }, proofItemPreview),
+              h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, 'Evidence note: ' + (proofItemEvidence.trim() || 'Add a short note about what this item proves and whether it is safe to share.'))
+            ),
+            h('button', { onClick: function() {
+              if (!proofItemTitle.trim() || !proofItemSkill.trim()) { upd('proofItemMsg', 'Add at least a title and skill before saving the proof item.'); return; }
+              updMulti({ proofItemMsg: 'Proof item saved: ' + proofItemPreview, proofItemSaved: Date.now() });
+              checkBadge('proofLockerReady');
+              announceToSR('Proof item saved');
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save proof item'),
+            proofItemMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.proofItemSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, proofItemMsg)
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Proof type cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, proofTypeCard.icon + ' ' + proofTypeCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Examples and sharing')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                PROOF_TYPE_CARDS.map(function(card, i) {
+                  var active = i === proofTypeIdx % PROOF_TYPE_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('proofTypeIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-cyan-700 ' + (active ? 'bg-cyan-700 text-white border-cyan-700' : 'bg-white border-slate-300 text-slate-700 hover:border-cyan-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Examples'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, proofTypeCard.examples),
+                h('p', { className: 'text-xs font-black text-cyan-800 pt-2 border-t border-slate-100' }, 'Shows'),
+                h('p', { className: 'text-[11px] text-cyan-800 leading-relaxed' }, proofTypeCard.shows),
+                h('p', { className: 'text-xs font-black text-red-800 pt-2 border-t border-slate-100' }, 'Share note'),
+                h('p', { className: 'text-[11px] text-red-800 font-medium leading-relaxed' }, proofTypeCard.share)
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Proof quality cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, proofQualityCard.icon + ' ' + proofQualityCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-amber-50 text-amber-900 text-[11px] font-bold border border-amber-200' }, 'Before sharing')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                PROOF_QUALITY_CARDS.map(function(card, i) {
+                  var active = i === proofQualityIdx % PROOF_QUALITY_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('proofQualityIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-cyan-700 ' + (active ? 'bg-cyan-700 text-white border-cyan-700' : 'bg-white border-slate-300 text-slate-700 hover:border-cyan-300') }, card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Check'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, proofQualityCard.check),
+                h('p', { className: 'text-xs font-black text-emerald-800 pt-2 border-t border-slate-100' }, 'Fix'),
+                h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, proofQualityCard.fix)
+              )
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Share-level cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, proofShareCard.icon + ' ' + proofShareCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-red-50 text-red-800 text-[11px] font-bold border border-red-200' }, 'Privacy first')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                PROOF_SHARE_LEVELS.map(function(card, i) {
+                  var active = i === proofShareIdx % PROOF_SHARE_LEVELS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('proofShareIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-cyan-700 ' + (active ? 'bg-cyan-700 text-white border-cyan-700' : 'bg-white border-slate-300 text-slate-700 hover:border-cyan-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Use for'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, proofShareCard.use),
+                h('p', { className: 'text-xs font-black text-red-800 pt-2 border-t border-slate-100' }, 'Guardrail'),
+                h('p', { className: 'text-[11px] text-red-800 font-medium leading-relaxed' }, proofShareCard.guard)
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Portfolio share packet'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, proofPlanPrompt)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-cyan-50 text-cyan-800 text-[11px] font-bold border border-cyan-200' }, 'Audience-ready')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                PROOF_PLAN_PROMPTS.map(function(prompt, i) {
+                  var active = i === proofPlanIdx % PROOF_PLAN_PROMPTS.length;
+                  return h('button', { key: prompt, onClick: function() { updMulti({ proofPlanIdx: i, proofPlanNote: prompt, proofPlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-cyan-700 text-white border-cyan-700' : 'bg-white text-cyan-800 border-cyan-200 hover:border-cyan-400') }, 'Plan ' + (i + 1));
+                })
+              ),
+              h('textarea', { value: proofPlanNote, onChange: function(e) { upd('proofPlanNote', e.target.value); }, rows: 4, placeholder: 'Write one proof item, skill label, privacy check, or review step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Proof locker plan note' }),
+              h('button', { onClick: function() {
+                if (!proofPlanNote.trim()) { upd('proofPlanMsg', 'Write one proof locker step first.'); return; }
+                updMulti({ proofPlanMsg: 'Plan saved: ' + proofPlanNote.trim(), proofPlanSaved: Date.now() });
+                checkBadge('portfolioCurator');
+                announceToSR('Proof locker plan saved');
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save proof plan'),
+              proofPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.proofPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, proofPlanMsg)
+            )
+          )
+        ),
+
         tab === 'communication' && h('div', { className: 'space-y-4', 'data-lifeskills-communication': 'true' },
           h('div', { className: glassCard + ' space-y-3' },
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
@@ -3109,6 +3828,136 @@ window.StemLab = window.StemLab || {
               announceToSR('Communication plan saved');
             }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save communication plan'),
             communicationPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.communicationPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, communicationPlanMsg)
+          )
+        ),
+
+        tab === 'timemanagement' && h('div', { className: 'space-y-4', 'data-lifeskills-time-management': 'true' },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.time_management_lab', '\u23F3 Time Management & Planning Lab')),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                  'Practice knowing what comes next, using reminders, and starting with one small step.',
+                  'Build planning habits for tasks, time estimates, reminders, priorities, and backup plans.',
+                  'Practice priorities, deadlines, buffers, focus tools, checklists, calendars, and recovery plans.',
+                  'Model time management as task capture, priority triage, time blocking, transition planning, realistic estimation, reminders, and self-advocacy when timelines need support.'))
+              ),
+              h('div', { className: 'px-3 py-2 rounded-xl bg-yellow-50 border border-yellow-200 text-right' },
+                h('p', { className: 'text-[10px] uppercase font-bold text-yellow-800' }, 'Planning readiness'),
+                h('p', { className: 'text-2xl font-black text-yellow-900 leading-none' }, Math.round(timeDone / TIME_CHECKS.length * 100) + '%')
+              )
+            ),
+            h('p', { className: 'text-[11px] text-slate-700 bg-yellow-50 border border-yellow-200 rounded-xl p-2 leading-relaxed' }, 'Practice only. Time tools are supports, not character tests. If deadlines, attention, stress, sleep, disability, or workload make planning hard, ask for support, accommodations, or a smaller next step.')
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Time management checklist'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, timeDone + '/' + TIME_CHECKS.length + ' planning habits checked')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-yellow-50 text-yellow-800 text-[11px] font-bold border border-yellow-200' }, 'Capture, choose, recover')
+              ),
+              TIME_CHECKS.map(function(step) {
+                var checked = !!timeChecklist[step.id];
+                return h('label', { key: step.id, className: 'flex gap-3 p-3 rounded-xl border cursor-pointer ' + (checked ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200 hover:border-yellow-300') },
+                  h('input', { type: 'checkbox', checked: checked, onChange: function(e) { setTimeCheck(step.id, e.target.checked); }, className: 'mt-1 w-4 h-4', 'aria-label': step.title }),
+                  h('span', { className: 'text-lg', 'aria-hidden': 'true' }, step.icon),
+                  h('span', { className: 'min-w-0' },
+                    h('span', { className: 'block text-xs font-black text-slate-800' }, step.title),
+                    h('span', { className: 'block text-[11px] text-slate-700 leading-relaxed' }, step.action),
+                    h('span', { className: 'block text-[11px] text-yellow-800 mt-1 font-medium' }, 'Why: ' + step.why)
+                  )
+                );
+              })
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Planning and deadline decisions'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'What is the best next step?')
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200' }, 'Score ' + timeScenarioScore)
+              ),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed bg-white border border-slate-200 rounded-xl p-3' }, timeCurrentScenario.prompt),
+              h('div', { className: 'grid gap-2' },
+                TIME_ACTIONS.map(function(action) {
+                  var chosen = timeScenarioChoice === action.id;
+                  return h('button', { key: action.id, onClick: function() { answerTimeScenario(action.id); }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all focus:outline-none focus:ring-2 focus:ring-yellow-700 ' + (chosen ? action.tone + ' ring-2 ring-offset-1 ring-yellow-700' : 'bg-white border-slate-300 text-slate-700 hover:border-yellow-300') }, action.label);
+                })
+              ),
+              timeScenarioFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (timeScenarioFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, timeScenarioFb),
+              h('button', { onClick: function() { updMulti({ timeScenarioIdx: timeScenarioIdx + 1, timeScenarioChoice: '', timeScenarioFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-yellow-700 text-white hover:bg-yellow-800 focus:outline-none focus:ring-2 focus:ring-yellow-700' }, 'Next scenario')
+            )
+          ),
+          h('div', { className: 'grid lg:grid-cols-2 gap-4' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Priority cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, priorityCard.icon + ' ' + priorityCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-[11px] font-bold border border-blue-200' }, 'Sort the task')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                PRIORITY_CARDS.map(function(card, i) {
+                  var active = i === priorityCardIdx % PRIORITY_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('priorityCardIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-yellow-700 ' + (active ? 'bg-yellow-700 text-white border-yellow-700' : 'bg-white border-slate-300 text-slate-700 hover:border-yellow-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Clue'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, priorityCard.clue),
+                h('p', { className: 'text-xs font-black text-yellow-800 pt-2 border-t border-slate-100' }, 'Move'),
+                h('p', { className: 'text-[11px] text-yellow-800 leading-relaxed' }, priorityCard.move),
+                h('p', { className: 'text-xs font-black text-slate-800 pt-2 border-t border-slate-100' }, 'Example'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, priorityCard.example)
+              )
+            ),
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Planning tool cards'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, timeToolCard.icon + ' ' + timeToolCard.title)
+                ),
+                h('span', { className: 'px-2 py-1 rounded-full bg-amber-50 text-amber-900 text-[11px] font-bold border border-amber-200' }, 'Pick a support')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                TIME_TOOL_CARDS.map(function(card, i) {
+                  var active = i === timeToolIdx % TIME_TOOL_CARDS.length;
+                  return h('button', { key: card.id, onClick: function() { upd('timeToolIdx', i); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border focus:outline-none focus:ring-2 focus:ring-yellow-700 ' + (active ? 'bg-yellow-700 text-white border-yellow-700' : 'bg-white border-slate-300 text-slate-700 hover:border-yellow-300') }, card.icon + ' ' + card.title);
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Use it'),
+                h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, timeToolCard.use),
+                h('p', { className: 'text-xs font-black text-emerald-800 pt-2 border-t border-slate-100' }, 'Good for'),
+                h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, timeToolCard.goodFor)
+              )
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Time plan builder'),
+                h('h5', { className: 'text-sm font-black text-slate-800' }, timePlanPrompt)
+              ),
+              h('span', { className: 'px-2 py-1 rounded-full bg-yellow-50 text-yellow-800 text-[11px] font-bold border border-yellow-200' }, 'Next step plus recovery')
+            ),
+            h('div', { className: 'flex flex-wrap gap-2' },
+              TIME_PLAN_PROMPTS.map(function(prompt, i) {
+                var active = i === timePlanIdx % TIME_PLAN_PROMPTS.length;
+                return h('button', { key: prompt, onClick: function() { updMulti({ timePlanIdx: i, timePlanNote: prompt, timePlanMsg: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-yellow-700 text-white border-yellow-700' : 'bg-white text-yellow-800 border-yellow-200 hover:border-yellow-400') }, 'Plan ' + (i + 1));
+              })
+            ),
+            h('textarea', { value: timePlanNote, onChange: function(e) { upd('timePlanNote', e.target.value); }, rows: 4, placeholder: 'Write one task, estimate, reminder, or recovery step.', className: 'w-full px-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': 'Time plan note' }),
+            h('button', { onClick: function() {
+              if (!timePlanNote.trim()) { upd('timePlanMsg', 'Write one time-management step first.'); return; }
+              updMulti({ timePlanMsg: 'Plan saved: ' + timePlanNote.trim(), timePlanSaved: Date.now() });
+              checkBadge('timePlanner');
+              announceToSR('Time plan saved');
+            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Save time plan'),
+            timePlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.timePlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, timePlanMsg)
           )
         ),
 
@@ -4941,7 +5790,7 @@ window.StemLab = window.StemLab || {
               callGemini && h('button', { onClick: function() {
                 upd('chalAILoading', true);
                 var tierLabel = chalTier === 1 ? 'easy' : chalTier === 2 ? 'medium' : 'hard';
-                callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, communication and conflict, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+                callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, resume building and evidence bullets, portfolio proof organization and privacy, communication and conflict, time management and planning, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
                   try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ chalAILoading: false, chalFeedback: '', chalAnswer: '', chalAIQ: p }); } catch(e) { updMulti({ chalAILoading: false }); }
                 }).catch(function() { upd('chalAILoading', false); });
               }, disabled: d.chalAILoading, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl disabled:opacity-50' }, d.chalAILoading ? '\uD83E\uDDE0...' : '\u2728 AI Next')
@@ -5040,5 +5889,5 @@ window.StemLab = window.StemLab || {
     }
   });
 
-  console.log('[StemLab] stem_tool_lifeskills.js v5.14 loaded');
+  console.log('[StemLab] stem_tool_lifeskills.js v5.17 loaded');
 })();

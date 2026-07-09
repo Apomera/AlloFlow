@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-08T22:17:05.605Z",
+ "generatedAt": "2026-07-08T23:33:25.784Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -45573,26 +45573,25 @@
   {
    "slug": "gutenberg-ebook-245-life-on-the-mississippi",
    "title": "Life on the Mississippi",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Life on the Mississippi for older-student reading and research.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Authors, American -- 19th century -- Biography",
-    "Mississippi River -- Description and travel",
-    "Mississippi River Valley -- Social life and customs -- 19th century",
-    "Pilots and pilotage -- Mississippi River",
-    "Twain, Mark, 1835-1910 -- Travel -- Mississippi River"
+    "Memoir",
+    "Travel writing",
+    "United States history"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/245"
+    "url": "https://www.gutenberg.org/ebooks/245",
+    "textUrl": "https://www.gutenberg.org/cache/epub/245/pg245.txt"
    },
    "cover": null,
    "authors": [
@@ -45601,8 +45600,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 90,
+   "pageCount": 327,
+   "wordCount": 144531,
    "file": "books/gutenberg-ebook-245-life-on-the-mississippi.json"
   },
   {
@@ -45644,25 +45643,25 @@
   {
    "slug": "gutenberg-ebook-23-narrative-of-the-life-of-frederick-douglass-an-american-slave",
    "title": "Narrative of the Life of Frederick Douglass, an American Slave",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Frederick Douglass's narrative for older-student reading and research.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Abolitionists -- United States -- Biography",
-    "African American abolitionists -- Biography",
-    "Douglass, Frederick, 1818-1895",
-    "Enslaved persons -- United States -- Biography"
+    "Abolition",
+    "Memoir",
+    "United States history"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/23"
+    "url": "https://www.gutenberg.org/ebooks/23",
+    "textUrl": "https://www.gutenberg.org/files/23/23-0.txt"
    },
    "cover": null,
    "authors": [
@@ -45671,8 +45670,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 87,
+   "pageCount": 99,
+   "wordCount": 40791,
    "file": "books/gutenberg-ebook-23-narrative-of-the-life-of-frederick-douglass-an-american-slave.json"
   },
   {
@@ -46417,24 +46416,25 @@
   {
    "slug": "gutenberg-ebook-15399-the-interesting-narrative-of-the-life-of-olaudah-equiano-or-gust",
    "title": "The Interesting Narrative of the Life of Olaudah Equiano, Or Gustavus Vassa, The African: Written By Himself",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Olaudah Equiano's narrative for older-student reading and research.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Enslaved persons -- Great Britain -- Biography",
-    "Enslaved persons -- United States -- Biography",
-    "Equiano, Olaudah, 1745-1797"
+    "Abolition",
+    "Memoir",
+    "Atlantic world history"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/15399"
+    "url": "https://www.gutenberg.org/ebooks/15399",
+    "textUrl": "https://www.gutenberg.org/files/15399/15399-0.txt"
    },
    "cover": null,
    "authors": [
@@ -46443,8 +46443,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 90,
+   "pageCount": 190,
+   "wordCount": 82617,
    "file": "books/gutenberg-ebook-15399-the-interesting-narrative-of-the-life-of-olaudah-equiano-or-gust.json"
   },
   {
@@ -46483,24 +46483,25 @@
   {
    "slug": "gutenberg-ebook-1232-the-prince",
    "title": "The Prince",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Prince for older-student political philosophy and history study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Political ethics -- Early works to 1800",
-    "Political science -- Philosophy -- Early works to 1800",
-    "State, The -- Early works to 1800"
+    "Political philosophy",
+    "World history",
+    "Primary sources"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/1232"
+    "url": "https://www.gutenberg.org/ebooks/1232",
+    "textUrl": "https://www.gutenberg.org/files/1232/1232-0.txt"
    },
    "cover": null,
    "authors": [
@@ -46509,8 +46510,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 81,
+   "pageCount": 121,
+   "wordCount": 50009,
    "file": "books/gutenberg-ebook-1232-the-prince.json"
   },
   {
@@ -47014,40 +47015,6 @@
    "file": "books/gutenberg-ebook-45-anne-of-green-gables.json"
   },
   {
-   "slug": "gutenberg-ebook-22788-the-federalist-papers",
-   "title": "The Federalist Papers",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Constitutional history -- United States -- Sources",
-    "Constitutional law -- United States"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/22788"
-   },
-   "cover": null,
-   "authors": [
-    "Hamilton, Alexander",
-    "Jay, John",
-    "Madison, James"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 75,
-   "file": "books/gutenberg-ebook-22788-the-federalist-papers.json"
-  },
-  {
    "slug": "gutenberg-ebook-26315-shakespeare-s-family",
    "title": "Shakespeare's family",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
@@ -47148,27 +47115,25 @@
   {
    "slug": "gutenberg-ebook-205-walden-and-on-the-duty-of-civil-disobedience",
    "title": "Walden, and On The Duty Of Civil Disobedience",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Walden and Civil Disobedience for older-student reading and research.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Authors, American -- 19th century -- Biography",
+    "Nature writing",
     "Civil disobedience",
-    "Government, Resistance to",
-    "Natural history -- Massachusetts -- Walden Woods",
-    "Solitude",
-    "Thoreau, Henry David, 1817-1862 -- Homes and haunts -- Massachusetts -- Walden Woods"
+    "American literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/205"
+    "url": "https://www.gutenberg.org/ebooks/205",
+    "textUrl": "https://www.gutenberg.org/cache/epub/205/pg205.txt"
    },
    "cover": null,
    "authors": [
@@ -47177,8 +47142,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 84,
+   "pageCount": 288,
+   "wordCount": 115856,
    "file": "books/gutenberg-ebook-205-walden-and-on-the-duty-of-civil-disobedience.json"
   },
   {
@@ -49534,23 +49499,25 @@
   {
    "slug": "gutenberg-ebook-132-the-art-of-war",
    "title": "The Art of War",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Art of War for older-student history and source-text study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Military art and science -- Early works to 1800",
-    "War -- Early works to 1800"
+    "World history",
+    "Strategy",
+    "Classical texts"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/132"
+    "url": "https://www.gutenberg.org/ebooks/132",
+    "textUrl": "https://www.gutenberg.org/files/132/132-0.txt"
    },
    "cover": null,
    "authors": [
@@ -49559,8 +49526,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 78,
+   "pageCount": 121,
+   "wordCount": 55160,
    "file": "books/gutenberg-ebook-132-the-art-of-war.json"
   },
   {
@@ -50544,24 +50511,25 @@
   {
    "slug": "gutenberg-ebook-7370-second-treatise-of-government",
    "title": "Second Treatise of Government",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Locke's Second Treatise of Government for older-student civics study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Liberty -- Early works to 1800",
-    "Political science -- Early works to 1800",
-    "Toleration -- Early works to 1800"
+    "Political philosophy",
+    "Government",
+    "Primary sources"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/7370"
+    "url": "https://www.gutenberg.org/ebooks/7370",
+    "textUrl": "https://www.gutenberg.org/files/7370/7370-0.txt"
    },
    "cover": null,
    "authors": [
@@ -50570,8 +50538,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 79,
+   "pageCount": 141,
+   "wordCount": 56556,
    "file": "books/gutenberg-ebook-7370-second-treatise-of-government.json"
   },
   {
@@ -51951,22 +51919,25 @@
   {
    "slug": "gutenberg-ebook-408-the-souls-of-black-folk",
    "title": "The Souls of Black Folk",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Souls of Black Folk for older-student reading and research.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "African Americans"
+    "Sociology",
+    "United States history",
+    "Essays"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/408"
+    "url": "https://www.gutenberg.org/ebooks/408",
+    "textUrl": "https://www.gutenberg.org/cache/epub/408/pg408.txt"
    },
    "cover": null,
    "authors": [
@@ -51975,8 +51946,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 69,
+   "pageCount": 171,
+   "wordCount": 68667,
    "file": "books/gutenberg-ebook-408-the-souls-of-black-folk.json"
   },
   {
@@ -56807,24 +56778,25 @@
   {
    "slug": "gutenberg-ebook-147-common-sense",
    "title": "Common Sense",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Thomas Paine's Common Sense for older-student history study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Monarchy -- Early works to 1800",
-    "Political science -- Early works to 1800",
-    "United States -- Politics and government -- 1775-1783"
+    "American Revolution",
+    "Political writing",
+    "Primary sources"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/147"
+    "url": "https://www.gutenberg.org/ebooks/147",
+    "textUrl": "https://www.gutenberg.org/cache/epub/147/pg147.txt"
    },
    "cover": null,
    "authors": [
@@ -56833,8 +56805,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 79,
+   "pageCount": 52,
+   "wordCount": 22038,
    "file": "books/gutenberg-ebook-147-common-sense.json"
   },
   {
@@ -63846,40 +63818,6 @@
    "file": "books/gutenberg-ebook-28920-war-and-peace-book-01-1805.json"
   },
   {
-   "slug": "gutenberg-ebook-1404-the-federalist-papers",
-   "title": "The Federalist Papers",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Constitutional history -- United States -- Sources",
-    "Constitutional law -- United States"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/1404"
-   },
-   "cover": null,
-   "authors": [
-    "Hamilton, Alexander",
-    "Jay, John",
-    "Madison, James"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 75,
-   "file": "books/gutenberg-ebook-1404-the-federalist-papers.json"
-  },
-  {
    "slug": "gutenberg-ebook-22460-new-york-times-current-history-the-european-war-vol-2-no-5-augus",
    "title": "New York Times Current History; The European War, Vol 2, No. 5, August, 1915",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
@@ -67554,38 +67492,6 @@
    "file": "books/gutenberg-ebook-25003-the-nicest-girl-in-the-school-a-story-of-school-life.json"
   },
   {
-   "slug": "gutenberg-ebook-17405-the-art-of-war",
-   "title": "The Art of War",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Military art and science -- Early works to 1800",
-    "War -- Early works to 1800"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/17405"
-   },
-   "cover": null,
-   "authors": [
-    "Sunzi, active 6th century B.C."
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 78,
-   "file": "books/gutenberg-ebook-17405-the-art-of-war.json"
-  },
-  {
    "slug": "gutenberg-ebook-23668-bell-s-cathedrals-the-cathedral-church-of-salisbury-a-descriptio",
    "title": "Bell's Cathedrals: The Cathedral Church of Salisbury: A Description of its Fabric and a Brief History of the See of Sarum",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
@@ -68783,23 +68689,25 @@
   {
    "slug": "gutenberg-ebook-1-the-declaration-of-independence-of-the-united-states-of-america",
    "title": "The Declaration of Independence of the United States of America",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of the Declaration of Independence for civics and history study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "United States -- History -- Revolution, 1775-1783 -- Sources",
-    "United States. Declaration of Independence"
+    "United States history",
+    "Civics",
+    "Primary sources"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/1"
+    "url": "https://www.gutenberg.org/ebooks/1",
+    "textUrl": "https://www.gutenberg.org/cache/epub/1/pg1.txt"
    },
    "cover": null,
    "authors": [
@@ -68808,8 +68716,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 80,
+   "pageCount": 5,
+   "wordCount": 1778,
    "file": "books/gutenberg-ebook-1-the-declaration-of-independence-of-the-united-states-of-america.json"
   },
   {
@@ -69919,39 +69827,6 @@
    "pageCount": 3,
    "wordCount": 83,
    "file": "books/gutenberg-ebook-24862-letters-of-lt-col-george-brenton-laurie-commanding-1st-battn-roy.json"
-  },
-  {
-   "slug": "gutenberg-ebook-57037-the-prince",
-   "title": "The Prince",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Political ethics -- Early works to 1800",
-    "Political science -- Philosophy -- Early works to 1800",
-    "State, The -- Early works to 1800"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/57037"
-   },
-   "cover": null,
-   "authors": [
-    "Machiavelli, Niccolò"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 81,
-   "file": "books/gutenberg-ebook-57037-the-prince.json"
   },
   {
    "slug": "gutenberg-ebook-11937-the-symbolism-of-freemasonry-b-illustrating-and-explaining-its-s",
@@ -75658,23 +75533,25 @@
   {
    "slug": "gutenberg-ebook-148-the-autobiography-of-benjamin-franklin",
    "title": "The Autobiography of Benjamin Franklin",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Benjamin Franklin's autobiography for older-student reading and research.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Franklin, Benjamin, 1706-1790",
-    "Statesmen -- United States -- Biography"
+    "Autobiography",
+    "United States history",
+    "Civic life"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/148"
+    "url": "https://www.gutenberg.org/ebooks/148",
+    "textUrl": "https://www.gutenberg.org/files/148/148-0.txt"
    },
    "cover": null,
    "authors": [
@@ -75683,8 +75560,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 70,
+   "pageCount": 162,
+   "wordCount": 67025,
    "file": "books/gutenberg-ebook-148-the-autobiography-of-benjamin-franklin.json"
   },
   {
@@ -75722,24 +75599,25 @@
   {
    "slug": "gutenberg-ebook-26095-the-athenian-constitution",
    "title": "The Athenian Constitution",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Athenian Constitution for older-student source-text study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Athens (Greece) -- Politics and government -- Early works to 1800",
-    "Classical literature",
-    "Constitutional history -- Greece -- Athens -- To 146 B.C."
+    "Ancient history",
+    "Government",
+    "Classical texts"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/26095"
+    "url": "https://www.gutenberg.org/ebooks/26095",
+    "textUrl": "https://www.gutenberg.org/files/26095/26095.txt"
    },
    "cover": null,
    "authors": [
@@ -75748,30 +75626,32 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 81,
+   "pageCount": 63,
+   "wordCount": 24752,
    "file": "books/gutenberg-ebook-26095-the-athenian-constitution.json"
   },
   {
    "slug": "gutenberg-ebook-5-the-united-states-constitution",
    "title": "The United States Constitution",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of the United States Constitution for civics and history study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "United States -- Politics and government -- 1783-1789 -- Sources",
-    "United States. Constitution"
+    "United States government",
+    "Civics",
+    "Primary sources"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/5"
+    "url": "https://www.gutenberg.org/ebooks/5",
+    "textUrl": "https://www.gutenberg.org/files/5/5-0.txt"
    },
    "cover": null,
    "authors": [
@@ -75780,8 +75660,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 73,
+   "pageCount": 12,
+   "wordCount": 4755,
    "file": "books/gutenberg-ebook-5-the-united-states-constitution.json"
   },
   {
@@ -76860,23 +76740,25 @@
   {
    "slug": "gutenberg-ebook-18-the-federalist-papers",
    "title": "The Federalist Papers",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Federalist Papers for civics and history study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Constitutional history -- United States -- Sources",
-    "Constitutional law -- United States"
+    "United States government",
+    "Political writing",
+    "Primary sources"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/18"
+    "url": "https://www.gutenberg.org/ebooks/18",
+    "textUrl": "https://www.gutenberg.org/files/18/18-0.txt"
    },
    "cover": null,
    "authors": [
@@ -76887,8 +76769,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 75,
+   "pageCount": 472,
+   "wordCount": 196490,
    "file": "books/gutenberg-ebook-18-the-federalist-papers.json"
   },
   {
@@ -77181,6 +77063,142 @@
    "pageCount": 3,
    "wordCount": 77,
    "file": "books/gutenberg-ebook-20271-heidi.json"
+  },
+  {
+   "slug": "gutenberg-ebook-11030-incidents-in-the-life-of-a-slave-girl-written-by-herself",
+   "title": "Incidents in the Life of a Slave Girl, Written by Herself",
+   "description": "A full in-app public-domain copy of Harriet Jacobs's memoir for older-student reading and research.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Abolition",
+    "Memoir",
+    "United States history"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/11030",
+    "textUrl": "https://www.gutenberg.org/files/11030/11030-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Jacobs, Harriet A. (Harriet Ann)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 196,
+   "wordCount": 83411,
+   "file": "books/gutenberg-ebook-11030-incidents-in-the-life-of-a-slave-girl-written-by-herself.json"
+  },
+  {
+   "slug": "gutenberg-ebook-3420-a-vindication-of-the-rights-of-woman-with-strictures-on-politica",
+   "title": "A Vindication of the Rights of Woman: With Strictures on Political and Moral Subjects",
+   "description": "A full in-app public-domain copy of A Vindication of the Rights of Woman for older-student reading and research.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Women's rights",
+    "Philosophy",
+    "Social history"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/3420",
+    "textUrl": "https://www.gutenberg.org/files/3420/3420.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Wollstonecraft, Mary"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 202,
+   "wordCount": 88780,
+   "file": "books/gutenberg-ebook-3420-a-vindication-of-the-rights-of-woman-with-strictures-on-politica.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1497-the-republic",
+   "title": "The Republic",
+   "description": "A full in-app public-domain copy of Plato's Republic for older-student philosophy and source-text study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Political philosophy",
+    "Classical texts",
+    "World history"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1497",
+    "textUrl": "https://www.gutenberg.org/cache/epub/1497/pg1497.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Plato"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 492,
+   "wordCount": 216345,
+   "file": "books/gutenberg-ebook-1497-the-republic.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1974-the-poetics-of-aristotle",
+   "title": "The Poetics of Aristotle",
+   "description": "A full in-app public-domain copy of Aristotle's Poetics for older-student humanities study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Literary criticism",
+    "Classical texts",
+    "World history"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1974",
+    "textUrl": "https://www.gutenberg.org/files/1974/1974.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Aristotle"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 35,
+   "wordCount": 15227,
+   "file": "books/gutenberg-ebook-1974-the-poetics-of-aristotle.json"
   }
  ]
 }

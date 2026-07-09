@@ -1,5 +1,4 @@
-(function(){"use strict";
-if(window.AlloModules&&window.AlloModules.GeminiAPI){console.log("[CDN] GeminiAPI already loaded, skipping"); return;}
+(function(){
 // gemini_api_source.jsx — Gemini HTTP wrappers for AlloFlow
 // Extracted from AlloFlowANTI.txt on 2026-04-24.
 // Pure HTTP orchestration — no React state, no module-level mutable state.
@@ -766,4 +765,5 @@ if (typeof window !== 'undefined') {
         window._upgradeGeminiAPI();
     }
 }
+
 })();

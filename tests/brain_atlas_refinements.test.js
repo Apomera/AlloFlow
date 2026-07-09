@@ -12,6 +12,10 @@ const VIEWS = [
   'homunculus',
   'visualPathway',
   'languageNetwork',
+  'strokeTerritories',
+  'cerebellumClinic',
+  'brainstemCrossSection',
+  'csfHydrocephalus',
   'neurotransmitters',
   'neuron',
   'synapses',
@@ -47,6 +51,7 @@ describe('brainAtlas refinement contracts', () => {
     expect(src).toContain('.theme-contrast .brainatlas-tool-shell');
     expect(src).toContain('.brainatlas-tool-shell .bg-white');
     expect(src).toContain('.brainatlas-detail-panel{border-radius:8px!important;background:var(--ba-surface)!important');
+    expect(src).toContain('.brainatlas-detail-takeaways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}');
   });
 
   it('gives every Brain Atlas canvas a visible text equivalent and teacher prompt', () => {
@@ -77,6 +82,8 @@ describe('brainAtlas refinement contracts', () => {
     const synapses = render({ view: 'synapses' });
     expect(synapses).toContain('width="780"');
     expect(synapses).toContain('height="620"');
+    expect(synapses).toMatch(/Synapse &amp; development - lifespan map/);
+    expect(synapses).toMatch(/uncluttered development map/);
 
     expect(src).toContain('function pulsePoint(pt, color, label)');
     expect(src).toContain('legendChip(x0 + 8, 66');
@@ -102,12 +109,21 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toContain('aria-pressed="true"');
     expect(html).toMatch(/Studying/);
     expect(html).toMatch(/Active state: Studying/);
+    expect(html).toContain('data-brainatlas-eeg-readout="true"');
+    expect(html).toMatch(/Studying readout/);
+    expect(html).toMatch(/Beta\/gamma increase with focus/);
+    expect(html).toMatch(/Interpretation caution/);
+    expect(html).toMatch(/stress, caffeine, and artifact/i);
     expect(src).toContain('var EEG_ACTIVITY_MODES = [');
+    expect(src).toContain('var EEG_STATE_READOUTS = {');
+    expect(src).toContain('activeEegReadout');
     expect(src).toContain("upd('eegActivity', mode.id)");
 
     const fallback = render({ view: 'eegWaves', eegActivity: 'studying' }, { t: () => undefined });
     expect(fallback).toContain('aria-label="EEG activity mode"');
+    expect(fallback).toContain('data-brainatlas-eeg-readout="true"');
     expect(fallback).toMatch(/Active state: Studying/);
+    expect(fallback).toMatch(/Studying readout/);
   });
 
   it('adds a labeled motor and sensory homunculus diagram', () => {
@@ -182,6 +198,84 @@ describe('brainAtlas refinement contracts', () => {
     const detail = render({ view: 'languageNetwork', selectedRegion: 'arcuate_language' });
     expect(detail).toMatch(/Arcuate Fasciculus/);
     expect(detail).toMatch(/conduction aphasia/i);
+  });
+
+  it('adds clinical localization maps for stroke, cerebellum, and brainstem cases', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+
+    const stroke = render({ view: 'strokeTerritories', viewGroup: 'clinical' });
+    expect(stroke).toContain('Stroke Territories');
+    expect(stroke).toContain('width="780"');
+    expect(stroke).toContain('height="620"');
+    expect(stroke).toMatch(/8 targets/);
+    expect(stroke).toMatch(/Clinical/);
+    expect(stroke).toMatch(/Stroke territories - clinical map/);
+    expect(stroke).toMatch(/ACA Territory/);
+    expect(stroke).toMatch(/Stroke Case Decoder/);
+    expect(src).toContain('currentView.isStrokeTerritory');
+    expect(src).toContain('Stroke territory localization');
+    expect(src).toContain('CASE MODE: deficit pattern -> likely territory');
+    expect(src).toContain('MCA superior');
+
+    const cerebellum = render({ view: 'cerebellumClinic', viewGroup: 'clinical' });
+    expect(cerebellum).toContain('Cerebellum Clinic');
+    expect(cerebellum).toContain('width="780"');
+    expect(cerebellum).toContain('height="620"');
+    expect(cerebellum).toMatch(/8 targets/);
+    expect(cerebellum).toMatch(/Cerebellum clinic - ataxia map/);
+    expect(cerebellum).toMatch(/PICA Territory/);
+    expect(cerebellum).toMatch(/Cerebellar Case Decoder/);
+    expect(src).toContain('currentView.isCerebellumClinic');
+    expect(src).toContain('Cerebellum clinic map');
+    expect(src).toContain('CASE MODE: sign -> cerebellar zone');
+    expect(src).toContain('same-side coordination signs');
+
+    const brainstem = render({ view: 'brainstemCrossSection', viewGroup: 'clinical' });
+    expect(brainstem).toContain('Brainstem Cross-Section');
+    expect(brainstem).toContain('width="780"');
+    expect(brainstem).toContain('height="620"');
+    expect(brainstem).toMatch(/8 targets/);
+    expect(brainstem).toMatch(/Brainstem - crossed findings/);
+    expect(brainstem).toMatch(/Crossed Findings Decoder/);
+    expect(src).toContain('currentView.isBrainstemCross');
+    expect(src).toContain('Brainstem crossed-findings map');
+    expect(src).toContain('CASE MODE: crossed finding -> level');
+    expect(src).toContain('ipsilateral cranial nerve signs');
+
+    const strokeDetail = render({ view: 'strokeTerritories', selectedRegion: 'stroke_case_decoder' });
+    expect(strokeDetail).toMatch(/Stroke Case Decoder/);
+    expect(strokeDetail).toMatch(/leg greater than arm/i);
+
+    const brainstemDetail = render({ view: 'brainstemCrossSection', selectedRegion: 'crossed_findings_decoder' });
+    expect(brainstemDetail).toMatch(/Crossed Findings Decoder/);
+    expect(brainstemDetail).toMatch(/ipsilateral cranial nerve/i);
+  });
+
+  it('adds a CSF flow and hydrocephalus decoder diagram', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const html = render({ view: 'csfHydrocephalus', viewGroup: 'clinical' });
+
+    expect(html).toContain('CSF Flow &amp; Hydrocephalus');
+    expect(html).toContain('width="780"');
+    expect(html).toContain('height="620"');
+    expect(html).toMatch(/8 targets/);
+    expect(html).toMatch(/CSF flow - hydrocephalus map/);
+    expect(html).toMatch(/Choroid Plexus/);
+    expect(html).toMatch(/Cerebral Aqueduct/);
+    expect(html).toMatch(/Hydrocephalus Decoder/);
+    expect(src).toContain('currentView.isCsfHydro');
+    expect(src).toContain('CSF flow and hydrocephalus map');
+    expect(src).toContain('CSF FLOW ROUTE');
+    expect(src).toContain('HYDROCEPHALUS DECODER');
+    expect(src).toContain('aqueduct bottleneck');
+    expect(src).toContain('NPH triad');
+
+    const detail = render({ view: 'csfHydrocephalus', selectedRegion: 'hydrocephalus_decoder_csf' });
+    expect(detail).toMatch(/Hydrocephalus Decoder/);
+    expect(detail).toMatch(/Obstructive hydrocephalus/i);
+    expect(detail).toMatch(/Normal pressure hydrocephalus/i);
   });
 
   it('adds a cranial nerves and Circle of Willis underside map', () => {
@@ -310,6 +404,54 @@ describe('brainAtlas refinement contracts', () => {
     expect(taskDetail).toMatch(/left hand can still choose/i);
   });
 
+  it('adds a sleep architecture decoder to the animated hypnogram', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const html = render({ view: 'sleepStages' });
+
+    expect(html).toContain('Sleep Stages');
+    expect(html).toContain('width="600"');
+    expect(html).toContain('height="500"');
+    expect(html).toMatch(/6 targets/);
+    expect(html).toMatch(/sleep-architecture decoder/i);
+    expect(src).toContain('sleep_architecture_decoder_sleep');
+    expect(src).toContain('SLEEP ARCHITECTURE DECODER');
+    expect(src).toContain('N3 early');
+    expect(src).toContain('REM late');
+    expect(src).toContain('Fragmented');
+
+    const decoder = render({ view: 'sleepStages', selectedRegion: 'sleep_architecture_decoder_sleep' });
+    expect(decoder).toMatch(/Sleep Architecture Decoder/);
+    expect(decoder).toMatch(/90 minutes/i);
+    expect(decoder).toMatch(/Fragmented sleep/i);
+    expect(decoder).toMatch(/glymphatic/i);
+  });
+
+  it('adds a Penfield stimulation response map to the Stimulation Lab', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const html = render({ view: 'stimulate', stimIdx: 0 });
+
+    expect(html).toContain('Stimulation Lab');
+    expect(html).toContain('width="600"');
+    expect(html).toContain('height="500"');
+    expect(html).toMatch(/7 targets/);
+    expect(html).toMatch(/Motor Response Zone/);
+    expect(html).toMatch(/Language Disruption Zone/);
+    expect(html).toMatch(/Electrode on:/);
+    expect(html).toMatch(/Stimulation Lab - Penfield response map/);
+    expect(html).not.toMatch(/Lateral view/);
+    expect(src).toContain('Penfield stimulation response map');
+    expect(src).toContain('CURRENT ELECTRODE TARGET');
+    expect(src).toContain('stimScenarioRegionId');
+    expect(src).toContain('Motor / sensory');
+
+    const detail = render({ view: 'stimulate', selectedRegion: 'stim_language_map' });
+    expect(detail).toMatch(/Language Disruption Zone/);
+    expect(detail).toMatch(/Broca-area stimulation/i);
+    expect(detail).toMatch(/Wernicke-area stimulation/i);
+  });
+
   it('keeps simulation views discoverable as one grouped visual-support path', () => {
     loadTool(FILE, 'brainAtlas');
     const html = render({ view: 'stimulate', viewGroup: 'simulations' });
@@ -334,6 +476,19 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toMatch(/Language Network/);
   });
 
+  it('keeps the clinical localization views discoverable in their own view group', () => {
+    loadTool(FILE, 'brainAtlas');
+    const html = render({ view: 'strokeTerritories', viewGroup: 'clinical' });
+
+    expect(html).toContain('data-brainatlas-active-group="clinical"');
+    expect(html).toContain('data-brainatlas-visible-group="clinical"');
+    expect(html).toMatch(/Stroke Territories/);
+    expect(html).toMatch(/Cerebellum Clinic/);
+    expect(html).toMatch(/Brainstem Cross-Section/);
+    expect(html).toMatch(/CSF Flow &amp; Hydrocephalus/);
+    expect(html).not.toMatch(/EEG Waves/);
+  });
+
   it('keeps the basal ganglia movement loop discoverable in the systems view group', () => {
     loadTool(FILE, 'brainAtlas');
     const html = render({ view: 'neurotransmitters', viewGroup: 'systems' });
@@ -348,6 +503,9 @@ describe('brainAtlas refinement contracts', () => {
 
     const plain = render({ view: 'neurotransmitters', selectedRegion: 'dopamine' });
     expect(plain).toContain('data-brainatlas-detail-mode="plain"');
+    expect(plain).toContain('data-brainatlas-detail-takeaways="true"');
+    expect(plain).toMatch(/Watch for/);
+    expect(plain).toMatch(/If damaged/);
     expect(plain).toMatch(/Student takeaway/);
     expect(plain).not.toMatch(/Synthesis Pathway/);
     expect(plain).not.toMatch(/Receptor Subtypes/);

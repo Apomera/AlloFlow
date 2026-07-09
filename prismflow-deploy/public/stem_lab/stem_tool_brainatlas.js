@@ -74,6 +74,10 @@
     '.brainatlas-detail-toggle{display:inline-flex;gap:4px;padding:3px;border:1px solid var(--ba-border);border-radius:8px;background:var(--ba-surface);}',
     '.brainatlas-detail-toggle button{border-radius:6px;padding:5px 8px;font-size:10px;font-weight:900;color:var(--ba-muted);}',
     '.brainatlas-detail-toggle button[aria-pressed="true"]{background:var(--ba-purple);color:#fff;}',
+    '.brainatlas-detail-takeaways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}',
+    '.brainatlas-detail-takeaway{border-left:3px solid var(--ba-purple);background:var(--ba-panel);border-radius:8px;padding:8px 10px;min-width:0;}',
+    '.brainatlas-detail-takeaway strong{display:block;font-size:10px;text-transform:uppercase;color:var(--ba-text);letter-spacing:0;margin-bottom:3px;}',
+    '.brainatlas-detail-takeaway span{display:block;font-size:11px;line-height:1.35;color:var(--ba-muted);}',
     '.brainatlas-plain-summary{border:1px solid var(--ba-border);border-radius:8px;background:var(--ba-panel);padding:10px 12px;}',
     '.brainatlas-plain-summary p{margin:0;color:var(--ba-muted);font-size:12px;line-height:1.5;}',
     '.brainatlas-tool-shell .bg-white{background:var(--ba-surface)!important;color:var(--ba-text)!important;}',
@@ -92,7 +96,7 @@
     '.theme-contrast .brainatlas-tool-shell button:not([aria-pressed="true"]){background:var(--ba-button)!important;color:var(--ba-button-text)!important;border-color:var(--ba-button-border)!important;}',
     '.theme-contrast .brainatlas-tool-shell button[aria-pressed="true"]{background:var(--ba-button-border)!important;color:#000!important;border-color:var(--ba-text)!important;}',
     '.theme-contrast .brainatlas-detail-toggle button[aria-pressed="true"],.theme-contrast .brainatlas-group-button[aria-pressed="true"]{outline:2px solid var(--ba-button-border);outline-offset:2px;}',
-    '@media (max-width:760px){.brainatlas-tool-shell{padding:0 2px;}.brainatlas-mission-inner{grid-template-columns:1fr;padding:14px;}.brainatlas-mission-title{font-size:19px;}.brainatlas-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.brainatlas-canvas-header{display:block;}.brainatlas-canvas-chip{display:inline-block;margin-top:8px;}.brainatlas-canvas-stage{padding:8px;}.brainatlas-view-rail{flex-wrap:nowrap;}}',
+    '@media (max-width:760px){.brainatlas-tool-shell{padding:0 2px;}.brainatlas-mission-inner{grid-template-columns:1fr;padding:14px;}.brainatlas-mission-title{font-size:19px;}.brainatlas-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.brainatlas-detail-takeaways{grid-template-columns:1fr;}.brainatlas-canvas-header{display:block;}.brainatlas-canvas-chip{display:inline-block;margin-top:8px;}.brainatlas-canvas-stage{padding:8px;}.brainatlas-view-rail{flex-wrap:nowrap;}}',
     '@media (max-width:460px){.brainatlas-metric-grid{grid-template-columns:1fr;}.brainatlas-action-row button{flex:1 1 100%;}.brainatlas-controls input{min-width:100%!important;}.brainatlas-study-strip{grid-template-columns:1fr;}}'
   ].join('');
   if (document.head) document.head.appendChild(st);
@@ -348,6 +352,90 @@ var d = labToolData.brainAtlas || {};
 
             },
 
+            strokeTerritories: {
+
+              name: t('stem.brainatlas.stroke_territories', 'Stroke Territories'), desc: t('stem.brainatlas.stroke_territories_desc', 'ACA, MCA, PCA, lacunar, watershed, and posterior-circulation stroke localization'),
+
+              isStrokeTerritory: true,
+
+              regions: [
+
+                { id: 'aca_stroke_territory', name: t('stem.brainatlas.aca_stroke_territory', 'ACA Territory'), x: 0.32, y: 0.30, w: 0.09, fn: 'Anterior cerebral artery territory supplies medial frontal and parietal cortex, including leg/foot motor and sensory cortex, supplementary motor area, and medial frontal motivation systems.', brodmann: 'Medial frontal/parietal cortex; leg area of BA 4 and BA 3/1/2', blood: 'Anterior cerebral artery.', conditions: 'ACA stroke often causes contralateral leg weakness or sensory loss greater than face/arm, abulia, grasp reflex, urinary incontinence, or gait initiation difficulty.', damage: 'Leg-predominant contralateral weakness/sensory loss plus frontal behavioral signs localizes toward ACA territory.' },
+                { id: 'mca_superior_stroke', name: t('stem.brainatlas.mca_superior_stroke', 'MCA Superior Division'), x: 0.48, y: 0.34, w: 0.09, fn: 'MCA superior division supplies lateral frontal cortex, face/arm motor cortex, frontal eye field, and Broca area in the dominant hemisphere.', brodmann: 'Lateral frontal motor/language cortex including BA 4, 6, 8, 44/45', blood: 'Middle cerebral artery superior division.', conditions: 'Dominant MCA superior stroke causes face/arm weakness plus Broca aphasia. Non-dominant stroke may cause motor neglect or attention deficits.', damage: 'Face/arm-predominant contralateral weakness, gaze preference toward lesion, and nonfluent aphasia if dominant.' },
+                { id: 'mca_inferior_stroke', name: t('stem.brainatlas.mca_inferior_stroke', 'MCA Inferior Division'), x: 0.58, y: 0.48, w: 0.09, fn: 'MCA inferior division supplies lateral temporal and inferior parietal association cortex, including Wernicke language cortex in the dominant hemisphere.', brodmann: 'Temporal/parietal association cortex including BA 22, 39, 40', blood: 'Middle cerebral artery inferior division.', conditions: 'Dominant MCA inferior stroke causes fluent aphasia with poor comprehension. Non-dominant stroke often causes hemispatial neglect, anosognosia, or visuospatial errors.', damage: 'Fluent but poorly meaningful speech if dominant; neglect and spatial inattention if non-dominant.' },
+                { id: 'pca_stroke_territory', name: t('stem.brainatlas.pca_stroke_territory', 'PCA Territory'), x: 0.76, y: 0.42, w: 0.09, fn: 'Posterior cerebral artery supplies occipital cortex, inferior/medial temporal cortex, thalamus, and parts of midbrain.', brodmann: 'Occipital V1/V2 and medial temporal cortex', blood: 'Posterior cerebral artery.', conditions: 'PCA stroke classically causes contralateral homonymous hemianopia, sometimes with macular sparing. Dominant PCA can cause alexia without agraphia; thalamic branches can cause sensory syndromes.', damage: 'Visual-field loss points to PCA/occipital territory, especially with preserved strength.' },
+                { id: 'deep_lacunar_stroke', name: t('stem.brainatlas.deep_lacunar_stroke', 'Deep Lacunar Territory'), x: 0.47, y: 0.58, w: 0.09, fn: 'Small penetrating arteries supply internal capsule, basal ganglia, thalamus, and pons. Tiny infarcts can cause dense symptoms because fibers are tightly packed.', brodmann: 'Deep white matter and subcortical nuclei', blood: 'Lenticulostriate, anterior choroidal, thalamoperforator, and pontine perforator arteries.', conditions: 'Classic lacunar syndromes include pure motor stroke, pure sensory stroke, ataxic hemiparesis, dysarthria-clumsy hand, and sensorimotor stroke.', damage: 'Pure motor or pure sensory findings without cortical signs suggest a deep lacunar localization.' },
+                { id: 'watershed_stroke', name: t('stem.brainatlas.watershed_stroke', 'Watershed / Border Zone'), x: 0.62, y: 0.24, w: 0.09, fn: 'Watershed zones sit between major arterial territories and are vulnerable to hypoperfusion, carotid stenosis, or shock.', brodmann: 'ACA-MCA and MCA-PCA border-zone cortex and white matter', blood: 'Border zones between ACA, MCA, and PCA territories.', conditions: 'Hypotension or severe carotid disease can cause proximal arm/leg weakness in a man-in-the-barrel pattern or patchy cortical deficits.', damage: 'Bilateral proximal weakness or border-zone patterns point toward hypoperfusion rather than one embolic branch.' },
+                { id: 'posterior_circulation_stroke', name: t('stem.brainatlas.posterior_circulation_stroke', 'Posterior Circulation'), x: 0.74, y: 0.68, w: 0.09, fn: 'Vertebral, basilar, and cerebellar arteries supply brainstem, cerebellum, thalamus, and occipital cortex. Symptoms often combine cranial nerve, long-tract, vestibular, visual, and coordination findings.', brodmann: 'Brainstem, cerebellum, thalamus, occipital cortex', blood: 'Vertebral arteries, basilar artery, PICA, AICA, SCA, PCA.', conditions: 'Posterior circulation stroke may cause vertigo, diplopia, dysarthria, dysphagia, ataxia, crossed findings, coma, or visual field loss.', damage: 'Brainstem or cerebellar signs with crossed sensory/motor findings raise concern for posterior circulation ischemia.' },
+                { id: 'stroke_case_decoder', name: t('stem.brainatlas.stroke_case_decoder', 'Stroke Case Decoder'), x: 0.50, y: 0.84, w: 0.12, fn: 'A quick case-mode decoder. Leg greater than arm suggests ACA. Face/arm weakness with Broca aphasia suggests MCA superior division. Fluent aphasia or neglect suggests MCA inferior division. Homonymous visual-field loss suggests PCA. Pure motor or pure sensory symptoms without cortical signs suggest lacunar stroke. Vertigo, diplopia, dysphagia, ataxia, or crossed findings suggest posterior circulation.', brodmann: 'Clinical pattern map across cortical, deep, and posterior circulation territories', blood: 'ACA, MCA, PCA, perforator, watershed, vertebrobasilar, PICA, AICA, and SCA territories.', conditions: 'Use time course and safety rules clinically: acute stroke symptoms require urgent emergency evaluation. This decoder is for learning localization patterns, not self-diagnosis.', damage: 'The symptom pattern narrows the likely vascular territory before imaging confirms the lesion.' }
+
+              ]
+
+            },
+
+            cerebellumClinic: {
+
+              name: t('stem.brainatlas.cerebellum_clinic', 'Cerebellum Clinic'), desc: t('stem.brainatlas.cerebellum_clinic_desc', 'Cerebellar functional zones, artery territories, and ipsilateral ataxia clues'),
+
+              isCerebellumClinic: true,
+
+              regions: [
+
+                { id: 'vermis_cerebellum_clinic', name: t('stem.brainatlas.cerebellum_vermis', 'Vermis / Truncal Zone'), x: 0.50, y: 0.38, w: 0.09, fn: 'The cerebellar vermis coordinates midline posture, gait, trunk balance, and eye-head stabilization. It is the midline stabilizer of the cerebellum.', brodmann: 'Cerebellar vermis', blood: 'PICA and SCA medial branches.', conditions: 'Vermis injury causes truncal ataxia, wide-based gait, titubation, and difficulty sitting or standing steadily.', damage: 'Midline wobble and gait instability localize more to vermis than lateral hemisphere.' },
+                { id: 'hemisphere_cerebellum_clinic', name: t('stem.brainatlas.cerebellum_hemisphere', 'Cerebellar Hemispheres'), x: 0.32, y: 0.52, w: 0.09, fn: 'Cerebellar hemispheres coordinate ipsilateral limb movement, timing, force scaling, and error correction. They refine movement rather than initiate it.', brodmann: 'Cerebellar hemisphere cortex and deep nuclei', blood: 'SCA, AICA, and PICA branches depending on region.', conditions: 'Hemisphere lesions cause ipsilateral dysmetria, intention tremor, dysdiadochokinesia, rebound, and limb ataxia.', damage: 'Finger-to-nose overshoot on the same side as the lesion is a classic cerebellar clue.' },
+                { id: 'flocculonodular_cerebellum', name: t('stem.brainatlas.cerebellum_flocculonodular', 'Flocculonodular / Vestibular Zone'), x: 0.68, y: 0.52, w: 0.09, fn: 'Flocculonodular lobe and vestibulocerebellum stabilize gaze, balance, vestibular reflexes, and eye movements.', brodmann: 'Vestibulocerebellum', blood: 'AICA and PICA-related vestibular/cerebellar supply.', conditions: 'Lesions cause nystagmus, vertigo, poor gaze holding, nausea, and balance trouble that can mimic inner-ear disease.', damage: 'Eye movement and vestibular signs point toward flocculonodular or brainstem vestibular systems.' },
+                { id: 'deep_nuclei_cerebellum', name: t('stem.brainatlas.cerebellum_deep_nuclei', 'Deep Cerebellar Nuclei'), x: 0.50, y: 0.58, w: 0.09, fn: 'Deep nuclei are the cerebellum output hubs. Dentate supports planned limb movement; interposed nuclei help ongoing correction; fastigial supports posture and eye/head control.', brodmann: 'Dentate, interposed, and fastigial nuclei', blood: 'SCA and PICA/AICA penetrating branches.', conditions: 'Deep nuclear injury can produce severe ataxia because it interrupts output even if cortex remains partly intact.', damage: 'Large output errors, tremor, and poor correction localize to deep cerebellar output systems.' },
+                { id: 'pica_cerebellum', name: t('stem.brainatlas.cerebellum_pica', 'PICA Territory'), x: 0.36, y: 0.75, w: 0.09, fn: 'PICA supplies inferior cerebellum, vermis, tonsil, and lateral medulla. It is high-yield because lateral medullary syndrome combines cerebellar and brainstem signs.', brodmann: 'Inferior cerebellum and lateral medulla', blood: 'Posterior inferior cerebellar artery.', conditions: 'PICA stroke can cause vertigo, nystagmus, ipsilateral ataxia, dysphagia, hoarseness, Horner syndrome, and crossed pain-temperature loss.', damage: 'Ataxia plus bulbar or crossed sensory signs suggests PICA/lateral medulla.' },
+                { id: 'aica_cerebellum', name: t('stem.brainatlas.cerebellum_aica', 'AICA Territory'), x: 0.50, y: 0.80, w: 0.09, fn: 'AICA supplies lateral pons, middle cerebellar peduncle, anterior inferior cerebellum, and often the labyrinthine artery to the inner ear.', brodmann: 'Lateral pons, middle cerebellar peduncle, anterior inferior cerebellum', blood: 'Anterior inferior cerebellar artery.', conditions: 'AICA stroke can produce facial weakness, reduced lacrimation/salivation, hearing loss, vertigo, ataxia, and lateral pontine signs.', damage: 'Ataxia plus facial weakness or hearing symptoms points toward AICA.' },
+                { id: 'sca_cerebellum', name: t('stem.brainatlas.cerebellum_sca', 'SCA Territory'), x: 0.64, y: 0.75, w: 0.09, fn: 'SCA supplies superior cerebellum, deep nuclei, superior peduncle, and parts of rostral pons/midbrain.', brodmann: 'Superior cerebellum and deep nuclei', blood: 'Superior cerebellar artery.', conditions: 'SCA stroke often causes ipsilateral limb ataxia, dysarthria, nausea, and sometimes contralateral pain-temperature loss or tremor.', damage: 'Prominent limb ataxia and dysarthria with fewer lower cranial nerve signs suggests SCA territory.' },
+                { id: 'cerebellar_case_decoder', name: t('stem.brainatlas.cerebellar_case_decoder', 'Cerebellar Case Decoder'), x: 0.50, y: 0.16, w: 0.12, fn: 'A case-mode shortcut. Truncal wobble points to vermis. Limb overshoot and intention tremor point to ipsilateral hemisphere. Vertigo plus nystagmus points to vestibulocerebellum or vestibular nuclei. Ataxia plus hoarseness/dysphagia points to PICA/lateral medulla. Ataxia plus hearing/facial weakness points to AICA. Ataxia plus dysarthria and superior cerebellar signs points to SCA.', brodmann: 'Clinical pattern map across cerebellar functional zones and artery territories', blood: 'PICA, AICA, and SCA territories.', conditions: 'Use HINTS-style acute vestibular reasoning clinically only with trained expertise; this tool is a learning map, not a diagnostic device.', damage: 'Cerebellar lesions are usually ipsilateral: same-side coordination deficits are the key localization clue.' }
+
+              ]
+
+            },
+
+            brainstemCrossSection: {
+
+              name: t('stem.brainatlas.brainstem_cross_section', 'Brainstem Cross-Section'), desc: t('stem.brainatlas.brainstem_cross_section_desc', 'Midbrain, pons, medulla, long tracts, cranial nerve nuclei, and crossed findings'),
+
+              isBrainstemCross: true,
+
+              regions: [
+
+                { id: 'midbrain_cross_section', name: t('stem.brainatlas.midbrain_cross_section', 'Midbrain Level'), x: 0.26, y: 0.36, w: 0.09, fn: 'Midbrain contains CN III/IV systems, cerebral peduncles, red nucleus, substantia nigra, superior/inferior colliculi, and ascending sensory pathways.', brodmann: 'Brainstem midbrain level', blood: 'PCA, SCA, basilar tip perforators.', conditions: 'Midbrain stroke can cause oculomotor palsy with contralateral weakness or tremor, vertical gaze problems, or altered consciousness depending on location.', damage: 'Ipsilateral CN III palsy plus contralateral body weakness localizes near ventral midbrain.' },
+                { id: 'pons_cross_section', name: t('stem.brainatlas.pons_cross_section', 'Pons Level'), x: 0.50, y: 0.42, w: 0.09, fn: 'Pons contains corticospinal tracts, pontine nuclei, middle cerebellar peduncles, facial/abducens/trigeminal systems, and gaze pathways.', brodmann: 'Brainstem pontine level', blood: 'Basilar paramedian and circumferential branches; AICA laterally.', conditions: 'Pontine lesions can cause facial weakness, horizontal gaze palsy, abducens palsy, trigeminal sensory findings, ataxia, or locked-in syndrome if ventral bilateral.', damage: 'Face or eye movement findings plus contralateral body signs often localize to pons.' },
+                { id: 'medulla_cross_section', name: t('stem.brainatlas.medulla_cross_section', 'Medulla Level'), x: 0.74, y: 0.49, w: 0.09, fn: 'Medulla contains pyramids, medial lemniscus, nucleus ambiguus, hypoglossal nucleus, vestibular nuclei, spinal trigeminal nucleus, inferior olive, and autonomic respiratory/cardiovascular centers.', brodmann: 'Brainstem medullary level', blood: 'Vertebral, anterior spinal, and PICA branches.', conditions: 'Lateral medullary syndrome causes dysphagia/hoarseness, vertigo, ataxia, ipsilateral face pain-temperature loss, contralateral body pain-temperature loss, and Horner syndrome.', damage: 'Bulbar symptoms plus crossed sensory signs localize strongly to medulla.' },
+                { id: 'corticospinal_brainstem', name: t('stem.brainatlas.corticospinal_brainstem', 'Corticospinal Tract'), x: 0.40, y: 0.66, w: 0.09, fn: 'Corticospinal motor fibers descend through cerebral peduncles, ventral pons, and medullary pyramids before crossing at the caudal medulla.', brodmann: 'Long descending motor tract', blood: 'Paramedian brainstem perforators and anterior spinal territory in medulla.', conditions: 'Brainstem corticospinal injury causes contralateral upper motor neuron weakness below the lesion; bilateral ventral pontine injury can cause locked-in syndrome.', damage: 'Contralateral weakness with nearby cranial nerve signs is the crossed-findings pattern.' },
+                { id: 'medial_lemniscus_brainstem', name: t('stem.brainatlas.medial_lemniscus_brainstem', 'Medial Lemniscus'), x: 0.50, y: 0.66, w: 0.09, fn: 'Medial lemniscus carries vibration, proprioception, and fine touch after crossing in the medulla.', brodmann: 'Ascending dorsal column-medial lemniscus tract', blood: 'Paramedian brainstem perforators.', conditions: 'Lesions cause contralateral loss of vibration/proprioception/fine touch below the face, often with motor tract signs if medial brainstem is involved.', damage: 'Loss of position/vibration with weakness suggests medial brainstem tract involvement.' },
+                { id: 'spinothalamic_brainstem', name: t('stem.brainatlas.spinothalamic_brainstem', 'Spinothalamic Tract'), x: 0.60, y: 0.66, w: 0.09, fn: 'Spinothalamic tract carries pain and temperature from the contralateral body after crossing in the spinal cord.', brodmann: 'Ascending anterolateral sensory tract', blood: 'Lateral brainstem territories including PICA/AICA/SCA regions.', conditions: 'Lateral brainstem lesions can cause contralateral body pain-temperature loss while nearby trigeminal pathways cause ipsilateral face pain-temperature loss.', damage: 'Contralateral body pain-temperature loss with ipsilateral facial sensory loss is a lateral brainstem clue.' },
+                { id: 'cranial_nuclei_brainstem', name: t('stem.brainatlas.cranial_nuclei_brainstem', 'Cranial Nerve Nuclei'), x: 0.50, y: 0.22, w: 0.09, fn: 'Cranial nerve nuclei create ipsilateral face, eye, swallowing, voice, tongue, and vestibular signs. Pairing them with long-tract findings localizes the brainstem level.', brodmann: 'CN III-XII nuclei distributed across midbrain, pons, and medulla', blood: 'Level-specific perforators and circumferential arteries.', conditions: 'CN III midbrain, CN VI/VII pons, and CN IX/X/XII medulla are common localization anchors.', damage: 'Ipsilateral cranial nerve sign plus contralateral body deficit is the classic crossed brainstem pattern.' },
+                { id: 'crossed_findings_decoder', name: t('stem.brainatlas.crossed_findings_decoder', 'Crossed Findings Decoder'), x: 0.50, y: 0.86, w: 0.12, fn: 'A case-mode rule for brainstem localization. Ipsilateral cranial nerve deficit plus contralateral body weakness or sensory loss means the lesion is in the brainstem on the cranial nerve side. CN III suggests midbrain, CN VI/VII/V suggests pons, and dysphagia/hoarseness/tongue signs suggest medulla. Add tract clues: corticospinal means weakness, medial lemniscus means vibration/proprioception, spinothalamic means pain-temperature.', brodmann: 'Clinical decoder across midbrain, pons, medulla, long tracts, and cranial nerve nuclei', blood: 'Vertebrobasilar perforators, circumferential branches, PICA, AICA, SCA, anterior spinal artery.', conditions: 'Crossed findings are high-stakes acute neurologic signs and require urgent evaluation in real life.', damage: 'The side of the cranial nerve deficit often marks the lesion side; the body deficit is usually opposite.' }
+
+              ]
+
+            },
+
+            csfHydrocephalus: {
+
+              name: t('stem.brainatlas.csf_flow_hydrocephalus', 'CSF Flow & Hydrocephalus'), desc: t('stem.brainatlas.csf_flow_hydrocephalus_desc', 'CSF production, ventricular flow, reabsorption, and hydrocephalus localization'),
+
+              isCsfHydro: true,
+
+              regions: [
+
+                { id: 'choroid_plexus_csf', name: t('stem.brainatlas.choroid_plexus_csf', 'Choroid Plexus'), x: 0.30, y: 0.30, w: 0.08, fn: 'Choroid plexus produces most cerebrospinal fluid inside the ventricles. CSF is continuously made, circulated, and reabsorbed, so blockage or poor absorption can enlarge ventricles.', brodmann: 'Ventricular vascular epithelium', blood: 'Anterior and posterior choroidal arteries.', conditions: 'Choroid plexus papilloma can overproduce CSF. Inflammation or hemorrhage can also disrupt CSF balance.', damage: 'Excess production is uncommon but can contribute to hydrocephalus when production exceeds absorption.' },
+                { id: 'lateral_ventricles_csf', name: t('stem.brainatlas.lateral_ventricles_csf', 'Lateral Ventricles'), x: 0.38, y: 0.38, w: 0.09, fn: 'The paired lateral ventricles are the largest CSF spaces. CSF flows from each lateral ventricle through the interventricular foramen of Monro into the third ventricle.', brodmann: 'Ventricular system', blood: 'Choroidal arteries and nearby deep venous drainage.', conditions: 'Hydrocephalus often enlarges the lateral ventricles. A colloid cyst at the foramen of Monro can obstruct outflow and cause episodic headache or acute hydrocephalus.', damage: 'Ventricular enlargement can stretch periventricular white matter, affecting gait, cognition, and urinary control.' },
+                { id: 'third_ventricle_csf', name: t('stem.brainatlas.third_ventricle_csf', 'Third Ventricle'), x: 0.50, y: 0.45, w: 0.08, fn: 'The third ventricle sits in the midline between the thalami and funnels CSF toward the cerebral aqueduct.', brodmann: 'Diencephalic ventricular space', blood: 'Deep perforators and choroidal branches nearby.', conditions: 'Masses near the third ventricle, colloid cysts, or hypothalamic/thalamic lesions can block flow or distort nearby structures.', damage: 'Midline obstruction can enlarge upstream lateral ventricles and produce signs of raised intracranial pressure.' },
+                { id: 'cerebral_aqueduct_csf', name: t('stem.brainatlas.cerebral_aqueduct_csf', 'Cerebral Aqueduct'), x: 0.58, y: 0.55, w: 0.08, fn: 'The cerebral aqueduct is a narrow channel through the midbrain from the third to the fourth ventricle. Because it is narrow, it is a classic obstructive hydrocephalus bottleneck.', brodmann: 'Midbrain aqueduct', blood: 'Posterior circulation perforators nearby.', conditions: 'Aqueductal stenosis blocks CSF flow and enlarges the lateral and third ventricles while the fourth ventricle may stay smaller.', damage: 'Aqueduct blockage causes non-communicating hydrocephalus with upstream ventricular enlargement and raised pressure.' },
+                { id: 'fourth_ventricle_csf', name: t('stem.brainatlas.fourth_ventricle_csf', 'Fourth Ventricle'), x: 0.62, y: 0.67, w: 0.08, fn: 'The fourth ventricle lies between the brainstem and cerebellum. CSF exits through the median and lateral apertures into the subarachnoid space.', brodmann: 'Hindbrain ventricular space', blood: 'Posterior circulation branches nearby.', conditions: 'Posterior fossa tumors, Chiari malformation, or outlet obstruction can block fourth ventricle outflow and cause hydrocephalus.', damage: 'Fourth ventricle compression can threaten brainstem function and raise intracranial pressure.' },
+                { id: 'subarachnoid_space_csf', name: t('stem.brainatlas.subarachnoid_space_csf', 'Subarachnoid Space'), x: 0.74, y: 0.52, w: 0.09, fn: 'CSF circulates around the brain and spinal cord in the subarachnoid space, cushioning neural tissue and helping clear metabolites.', brodmann: 'Meningeal CSF compartment', blood: 'Meningeal and cortical vessels run through this space.', conditions: 'Subarachnoid hemorrhage can impair CSF reabsorption and cause communicating hydrocephalus. Meningitis can also scar arachnoid pathways.', damage: 'Blood or inflammation in the subarachnoid space can block absorption even when the ventricular outlets remain open.' },
+                { id: 'arachnoid_granulations_csf', name: t('stem.brainatlas.arachnoid_granulations_csf', 'Arachnoid Granulations'), x: 0.58, y: 0.20, w: 0.08, fn: 'Arachnoid granulations return CSF to the dural venous sinuses, especially the superior sagittal sinus. This is the major reabsorption route.', brodmann: 'Arachnoid villi and dural venous sinus interface', blood: 'Drains into dural venous sinuses.', conditions: 'Communicating hydrocephalus occurs when CSF reaches the subarachnoid space but absorption is impaired, often after hemorrhage or meningitis.', damage: 'Poor absorption enlarges ventricles without one focal ventricular blockage.' },
+                { id: 'hydrocephalus_decoder_csf', name: t('stem.brainatlas.hydrocephalus_decoder_csf', 'Hydrocephalus Decoder'), x: 0.50, y: 0.86, w: 0.12, fn: 'A quick localization decoder. Obstructive hydrocephalus means CSF is blocked within the ventricular route, often at the aqueduct or fourth-ventricle outlets. Communicating hydrocephalus means CSF reaches subarachnoid space but is not absorbed well. Normal pressure hydrocephalus classically links gait trouble, cognitive decline, and urinary urgency or incontinence.', brodmann: 'Clinical CSF-flow pattern map', blood: 'Depends on the obstructed or inflamed structure; hemorrhage can impair arachnoid granulation absorption.', conditions: 'Raised intracranial pressure can cause headache, vomiting, papilledema, sixth nerve palsy, or decreased consciousness. This diagram is for learning patterns, not self-diagnosis.', damage: 'The pattern separates upstream obstruction, impaired absorption, and chronic pressure-related white-matter stretch.' }
+
+              ]
+
+            },
+
             homunculus: {
 
               name: t('stem.brainatlas.motor_sensory_homunculus', 'Motor/Sensory Homunculus'), desc: t('stem.brainatlas.homunculus_map_motor_sensory_cortex', 'Penfield-style body map across primary motor and primary somatosensory cortex'),
@@ -598,7 +686,15 @@ var d = labToolData.brainAtlas || {};
             stimulate: {
               name: t('stem.brainatlas.stimulation_lab', '\u26A1 Stimulation Lab'), desc: t('stem.brainatlas.predict_what_stimulating_each_region_d', 'Predict what stimulating each region does (how Penfield mapped the brain)'), 
               isStim: true,
-              regions: []
+              regions: [
+                { id: 'stim_motor_map', name: t('stem.brainatlas.stim_motor_map', 'Motor Response Zone'), x: 0.34, y: 0.25, w: 0.08, fn: 'Stimulation of primary motor cortex can trigger movement in the opposite side of the body. In Penfield-style mapping, hand, face, and leg areas can produce brief twitches or postures without the patient deciding to move.', conditions: 'Used during awake cortical mapping to avoid injuring essential motor cortex during surgery. Motor responses also help explain the motor homunculus.' },
+                { id: 'stim_sensory_map', name: t('stem.brainatlas.stim_sensory_map', 'Sensory Response Zone'), x: 0.46, y: 0.27, w: 0.08, fn: 'Stimulation of primary somatosensory cortex can produce tingling, buzzing, numbness, pressure, or other sensations in the opposite body part. It feels sensory, not voluntary movement.', conditions: 'Somatosensory mapping separates the postcentral gyrus from the nearby motor strip and helps preserve body sensation.' },
+                { id: 'stim_visual_map', name: t('stem.brainatlas.stim_visual_map', 'Visual Flash Zone'), x: 0.72, y: 0.40, w: 0.08, fn: 'Stimulation of primary visual cortex usually produces simple flashes, spots, or sparkles called phosphenes in the opposite visual field, not full scenes.', conditions: 'Visual stimulation findings connect directly to the retina-to-V1 visual pathway and experimental visual prosthesis research.' },
+                { id: 'stim_auditory_map', name: t('stem.brainatlas.stim_auditory_map', 'Auditory Sound Zone'), x: 0.58, y: 0.46, w: 0.08, fn: 'Stimulation of primary auditory cortex can produce simple sounds such as ringing, buzzing, humming, or tones. Association cortex is needed for meaningful speech and music interpretation.', conditions: 'Auditory mapping helps distinguish primary sensory response from language comprehension or memory associations.' },
+                { id: 'stim_language_map', name: t('stem.brainatlas.stim_language_map', 'Language Disruption Zone'), x: 0.29, y: 0.43, w: 0.08, fn: 'Stimulation of dominant-language cortex can briefly interrupt speech output, word finding, comprehension, reading, naming, or repetition. Broca-area stimulation often causes speech arrest; Wernicke-area stimulation can disrupt comprehension and produce jumbled output.', conditions: 'Awake language mapping protects essential speech and comprehension cortex during epilepsy and tumor surgery.' },
+                { id: 'stim_memory_emotion_map', name: t('stem.brainatlas.stim_memory_emotion_map', 'Memory and Emotion Zone'), x: 0.51, y: 0.59, w: 0.08, fn: 'Temporal-lobe and limbic stimulation can evoke experiential responses: deja vu, remembered songs, vivid scenes, fear, or body arousal. These effects are clues that memory and emotion are distributed across temporal and limbic circuits.', conditions: 'Penfield described experiential responses from temporal-lobe stimulation; amygdala stimulation can trigger fear and autonomic arousal.' },
+                { id: 'stim_autonomic_quiet_map', name: t('stem.brainatlas.stim_autonomic_quiet_map', 'Autonomic or Quiet Zone'), x: 0.35, y: 0.60, w: 0.08, fn: 'Some stimulation produces body-state changes such as heart-rate shifts, flushing, hunger, or temperature feelings, especially near hypothalamic/autonomic systems. Other association cortex may produce little obvious effect, which is still meaningful.', conditions: 'A quiet response does not mean the area is unimportant. Some regions support planning, attention, judgment, or integration without an immediate reportable sensation.' }
+              ]
             },
             sleepStages: {
 
@@ -616,7 +712,9 @@ var d = labToolData.brainAtlas || {};
 
                 { id: 'n3_sws', name: t('stem.brainatlas.stage_n3_deep_sws', 'Stage N3 (Deep/SWS)'), x: 0.70, y: 0.60, w: 0.08, fn: 'Slow-wave sleep (SWS): deepest sleep stage with high-amplitude delta waves (0.5\u20134 Hz, >75\u00B5V). Growth hormone peaks during first SWS episode. Glymphatic system maximally active \u2014 clears metabolic waste (amyloid-\u03B2) from brain. Declarative memory consolidation occurs. Parasomnias most likely: sleepwalking, night terrors, bedwetting. Very difficult to awaken; sleep inertia if woken.', conditions: 'SWS decreases with aging (near-absent in elderly). Reduced SWS linked to Alzheimer disease amyloid accumulation. Fibromyalgia: alpha-delta sleep (alpha waves intrude into delta). Night terrors and sleepwalking are NREM parasomnias occurring from N3.', damage: 'SWS deprivation causes impaired glucose tolerance, reduced growth hormone, weakened immune function, and accelerated amyloid-\u03B2 accumulation.' },
 
-                { id: 'rem_stage', name: t('stem.brainatlas.rem_sleep', 'REM Sleep'), x: 0.88, y: 0.28, w: 0.08, fn: 'Rapid Eye Movement sleep: vivid dreaming, emotional memory processing, and synaptic homeostasis. EEG resembles wakefulness (low-voltage, mixed frequency \u2014 "paradoxical sleep"). Complete skeletal muscle atonia except diaphragm and extraocular muscles. REM periods lengthen across the night (10 min \u2192 60 min). Pontine cholinergic neurons (LDT/PPT) drive REM; locus coeruleus and raphe nuclei are silent. PGO waves (ponto-geniculo-occipital) trigger eye movements.', conditions: 'REM behavior disorder (RBD): loss of atonia \u2192 acting out dreams, strong predictor of synucleinopathies (Parkinson, Lewy body dementia). Narcolepsy: SOREMPs, cataplexy (REM atonia intruding into wakefulness). PTSD: REM fragmentation, nightmares. Obstructive sleep apnea worsens in REM (hypotonia of upper airway).', damage: 'REM deprivation impairs emotional regulation, creative problem-solving, and procedural memory. REM rebound occurs with increased intensity and duration after deprivation.' }
+                { id: 'rem_stage', name: t('stem.brainatlas.rem_sleep', 'REM Sleep'), x: 0.88, y: 0.28, w: 0.08, fn: 'Rapid Eye Movement sleep: vivid dreaming, emotional memory processing, and synaptic homeostasis. EEG resembles wakefulness (low-voltage, mixed frequency \u2014 "paradoxical sleep"). Complete skeletal muscle atonia except diaphragm and extraocular muscles. REM periods lengthen across the night (10 min \u2192 60 min). Pontine cholinergic neurons (LDT/PPT) drive REM; locus coeruleus and raphe nuclei are silent. PGO waves (ponto-geniculo-occipital) trigger eye movements.', conditions: 'REM behavior disorder (RBD): loss of atonia \u2192 acting out dreams, strong predictor of synucleinopathies (Parkinson, Lewy body dementia). Narcolepsy: SOREMPs, cataplexy (REM atonia intruding into wakefulness). PTSD: REM fragmentation, nightmares. Obstructive sleep apnea worsens in REM (hypotonia of upper airway).', damage: 'REM deprivation impairs emotional regulation, creative problem-solving, and procedural memory. REM rebound occurs with increased intensity and duration after deprivation.' },
+
+                { id: 'sleep_architecture_decoder_sleep', name: t('stem.brainatlas.sleep_architecture_decoder', 'Sleep Architecture Decoder'), x: 0.50, y: 0.88, w: 0.12, fn: 'A practical shortcut for reading the hypnogram. Sleep cycles repeat about every 90 minutes. Early night is weighted toward N3 slow-wave sleep, which supports physical restoration, growth-hormone release, declarative memory consolidation, and glymphatic clearance. Later night is weighted toward longer REM periods, which support emotional memory processing, procedural learning, dreaming, and flexible problem solving. N2 is the largest share of total sleep and its spindles help memory transfer. Fragmented sleep breaks the architecture even if total time in bed looks adequate.', conditions: 'Insomnia, sleep apnea, circadian rhythm disorders, shift-work disorder, narcolepsy, REM behavior disorder, PTSD nightmares, sleep deprivation, and aging can all alter the shape of the hypnogram.', damage: 'Use the pattern: too little N3 means weak recovery and declarative-memory support; too little REM means poorer emotion/procedural processing; repeated awakenings fragment attention, mood regulation, and learning the next day.' }
 
               ]
 
@@ -751,6 +849,44 @@ var d = labToolData.brainAtlas || {};
           }
           var eegActivityMode = brainAtlasEegModeFor(d.eegActivity || 'resting').id;
           var activeEegMode = brainAtlasEegModeFor(eegActivityMode);
+          var EEG_STATE_READOUTS = {
+            resting: {
+              title: t('stem.brainatlas.eeg_resting_readout', 'Resting readout') || 'Resting readout',
+              dominant: t('stem.brainatlas.eeg_resting_dominant', 'Alpha leads; beta stays modest') || 'Alpha leads; beta stays modest',
+              pattern: t('stem.brainatlas.eeg_resting_pattern', 'Relaxed wakefulness often shows a posterior alpha rhythm that fades with eye opening or effort.') || 'Relaxed wakefulness often shows a posterior alpha rhythm that fades with eye opening or effort.',
+              caution: t('stem.brainatlas.eeg_resting_caution', 'Asymmetry or absent reactivity matters more than one pretty alpha trace.') || 'Asymmetry or absent reactivity matters more than one pretty alpha trace.',
+              color: '#22c55e'
+            },
+            sleeping: {
+              title: t('stem.brainatlas.eeg_sleeping_readout', 'Sleep readout') || 'Sleep readout',
+              dominant: t('stem.brainatlas.eeg_sleeping_dominant', 'Delta/theta rise; beta quiets') || 'Delta/theta rise; beta quiets',
+              pattern: t('stem.brainatlas.eeg_sleeping_pattern', 'Deep sleep shifts toward high-amplitude slow activity, while lighter sleep adds theta and stage-specific features.') || 'Deep sleep shifts toward high-amplitude slow activity, while lighter sleep adds theta and stage-specific features.',
+              caution: t('stem.brainatlas.eeg_sleeping_caution', 'Delta is healthy in N3 sleep but concerning if it dominates an awake adult.') || 'Delta is healthy in N3 sleep but concerning if it dominates an awake adult.',
+              color: '#4338ca'
+            },
+            studying: {
+              title: t('stem.brainatlas.eeg_studying_readout', 'Studying readout') || 'Studying readout',
+              dominant: t('stem.brainatlas.eeg_studying_dominant', 'Beta/gamma increase with focus') || 'Beta/gamma increase with focus',
+              pattern: t('stem.brainatlas.eeg_studying_pattern', 'Sustained attention tends to raise faster, lower-amplitude activity while alpha becomes less dominant.') || 'Sustained attention tends to raise faster, lower-amplitude activity while alpha becomes less dominant.',
+              caution: t('stem.brainatlas.eeg_studying_caution', 'More fast activity is not automatically better; stress, caffeine, and artifact can look similar.') || 'More fast activity is not automatically better; stress, caffeine, and artifact can look similar.',
+              color: '#ef4444'
+            },
+            exercise: {
+              title: t('stem.brainatlas.eeg_exercise_readout', 'Exercise readout') || 'Exercise readout',
+              dominant: t('stem.brainatlas.eeg_exercise_dominant', 'Arousal rises; artifact risk rises') || 'Arousal rises; artifact risk rises',
+              pattern: t('stem.brainatlas.eeg_exercise_pattern', 'Movement and alertness can increase beta-like activity, while muscle artifact can contaminate high-frequency channels.') || 'Movement and alertness can increase beta-like activity, while muscle artifact can contaminate high-frequency channels.',
+              caution: t('stem.brainatlas.eeg_exercise_caution', 'Always separate brain rhythm from muscle, blink, and movement artifact.') || 'Always separate brain rhythm from muscle, blink, and movement artifact.',
+              color: '#f59e0b'
+            },
+            meditating: {
+              title: t('stem.brainatlas.eeg_meditating_readout', 'Meditating readout') || 'Meditating readout',
+              dominant: t('stem.brainatlas.eeg_meditating_dominant', 'Alpha/theta settle into synchrony') || 'Alpha/theta settle into synchrony',
+              pattern: t('stem.brainatlas.eeg_meditating_pattern', 'Relaxed attention can strengthen alpha and theta while reducing high-arousal beta dominance.') || 'Relaxed attention can strengthen alpha and theta while reducing high-arousal beta dominance.',
+              caution: t('stem.brainatlas.eeg_meditating_caution', 'A calm-looking rhythm is a state clue, not a diagnosis or a personality readout.') || 'A calm-looking rhythm is a state clue, not a diagnosis or a personality readout.',
+              color: '#0ea5e9'
+            }
+          };
+          var activeEegReadout = EEG_STATE_READOUTS[eegActivityMode] || EEG_STATE_READOUTS.resting;
 
 
 
@@ -2405,6 +2541,519 @@ var d = labToolData.brainAtlas || {};
                 cwClueChip(W * 0.520, clueChipY, clueChipW, 'Hoarse + dysphagia', 'CN IX-X / medulla', nerveColor);
                 cwClueChip(W * 0.720, clueChipY, clueChipW, 'Thunderclap', 'SAH / aneurysm', arteryColor);
 
+              } else if (currentView.isStrokeTerritory) {
+                var stT = canvas._brainTick || 0;
+                var stPulse = brainMotionReduced ? 0.55 : (0.5 + 0.5 * Math.sin(stT * 0.055));
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#0f172a';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold ' + Math.round(18 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('Stroke territory localization', W * 0.5, H * 0.055);
+                ctx.fillStyle = '#64748b';
+                ctx.font = Math.round(10.5 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('Match the deficit pattern to ACA, MCA, PCA, perforator, watershed, or posterior circulation.', W * 0.5, H * 0.092);
+
+                function stActive(id) { return !!(sel && sel.id === id); }
+                function stBrainClip() {
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.19, H * 0.40);
+                  ctx.bezierCurveTo(W * 0.18, H * 0.22, W * 0.35, H * 0.14, W * 0.54, H * 0.17);
+                  ctx.bezierCurveTo(W * 0.75, H * 0.20, W * 0.86, H * 0.35, W * 0.82, H * 0.52);
+                  ctx.bezierCurveTo(W * 0.78, H * 0.70, W * 0.60, H * 0.77, W * 0.40, H * 0.72);
+                  ctx.bezierCurveTo(W * 0.24, H * 0.68, W * 0.18, H * 0.56, W * 0.19, H * 0.40);
+                }
+                ctx.save();
+                stBrainClip();
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fill();
+                ctx.clip();
+                function stTerritory(id, color, draw) {
+                  ctx.save();
+                  ctx.fillStyle = color;
+                  ctx.globalAlpha = stActive(id) ? 0.96 : 0.76;
+                  draw();
+                  ctx.fill();
+                  ctx.restore();
+                }
+                stTerritory('aca_stroke_territory', '#60a5fa', function () {
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.26, H * 0.28);
+                  ctx.bezierCurveTo(W * 0.34, H * 0.16, W * 0.54, H * 0.15, W * 0.66, H * 0.23);
+                  ctx.lineTo(W * 0.55, H * 0.38);
+                  ctx.lineTo(W * 0.30, H * 0.42);
+                  ctx.closePath();
+                });
+                stTerritory('mca_superior_stroke', '#f97316', function () {
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.29, H * 0.41);
+                  ctx.lineTo(W * 0.55, H * 0.38);
+                  ctx.lineTo(W * 0.68, H * 0.45);
+                  ctx.lineTo(W * 0.52, H * 0.56);
+                  ctx.lineTo(W * 0.28, H * 0.54);
+                  ctx.closePath();
+                });
+                stTerritory('mca_inferior_stroke', '#fb7185', function () {
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.33, H * 0.55);
+                  ctx.lineTo(W * 0.52, H * 0.56);
+                  ctx.lineTo(W * 0.72, H * 0.48);
+                  ctx.bezierCurveTo(W * 0.75, H * 0.62, W * 0.62, H * 0.72, W * 0.42, H * 0.69);
+                  ctx.bezierCurveTo(W * 0.32, H * 0.67, W * 0.27, H * 0.61, W * 0.33, H * 0.55);
+                });
+                stTerritory('pca_stroke_territory', '#8b5cf6', function () {
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.66, H * 0.23);
+                  ctx.bezierCurveTo(W * 0.82, H * 0.30, W * 0.87, H * 0.45, W * 0.75, H * 0.60);
+                  ctx.lineTo(W * 0.65, H * 0.50);
+                  ctx.lineTo(W * 0.68, H * 0.38);
+                  ctx.closePath();
+                });
+                stTerritory('watershed_stroke', '#facc15', function () {
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.55, H * 0.30);
+                  ctx.lineTo(W * 0.65, H * 0.25);
+                  ctx.lineTo(W * 0.68, H * 0.42);
+                  ctx.lineTo(W * 0.57, H * 0.39);
+                  ctx.closePath();
+                });
+                ctx.restore();
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 2;
+                stBrainClip();
+                ctx.stroke();
+                ctx.strokeStyle = 'rgba(71,85,105,0.25)';
+                ctx.lineWidth = 1.2;
+                [0.32, 0.43, 0.54, 0.66].forEach(function (gx) {
+                  ctx.beginPath();
+                  ctx.moveTo(W * gx, H * 0.22);
+                  ctx.bezierCurveTo(W * (gx + 0.05), H * 0.34, W * (gx - 0.08), H * 0.52, W * (gx + 0.02), H * 0.67);
+                  ctx.stroke();
+                });
+                ctx.save();
+                ctx.fillStyle = stActive('deep_lacunar_stroke') ? '#0f766e' : 'rgba(15,118,110,0.82)';
+                ctx.strokeStyle = '#0f766e';
+                ctx.lineWidth = stActive('deep_lacunar_stroke') ? 3 : 1.4;
+                ctx.beginPath(); ctx.ellipse(W * 0.47, H * 0.58, W * 0.06, H * 0.075, -0.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#fff'; ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('deep', W * 0.47, H * 0.585);
+                ctx.restore();
+                ctx.save();
+                ctx.fillStyle = stActive('posterior_circulation_stroke') ? '#dc2626' : 'rgba(220,38,38,0.86)';
+                ctx.strokeStyle = '#991b1b';
+                ctx.lineWidth = stActive('posterior_circulation_stroke') ? 3 : 1.5;
+                ctx.beginPath(); ctx.roundRect(W * 0.66, H * 0.64, W * 0.16, H * 0.08, 16); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#fff'; ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('vertebrobasilar', W * 0.74, H * 0.688);
+                ctx.restore();
+
+                function stLabel(id, text, x, y, color) {
+                  var active = stActive(id);
+                  ctx.save();
+                  ctx.fillStyle = active ? color : '#ffffff';
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = active ? 2.4 : 1.2;
+                  ctx.shadowColor = active ? color + '88' : 'rgba(15,23,42,0.10)';
+                  ctx.shadowBlur = active ? 14 : 5;
+                  ctx.beginPath(); ctx.roundRect(x - W * 0.065, y - H * 0.020, W * 0.13, H * 0.040, 8); ctx.fill(); ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = active ? '#fff' : color;
+                  ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(text, x, y + 3);
+                  ctx.restore();
+                }
+                stLabel('aca_stroke_territory', 'ACA: leg', W * 0.35, H * 0.25, '#2563eb');
+                stLabel('mca_superior_stroke', 'MCA sup: face/arm', W * 0.43, H * 0.45, '#ea580c');
+                stLabel('mca_inferior_stroke', 'MCA inf: language/neglect', W * 0.53, H * 0.62, '#be123c');
+                stLabel('pca_stroke_territory', 'PCA: visual field', W * 0.76, H * 0.39, '#7c3aed');
+                stLabel('watershed_stroke', 'watershed', W * 0.64, H * 0.30, '#b45309');
+
+                function stCase(x, y, w, title, clue, answer, color) {
+                  ctx.save();
+                  ctx.fillStyle = '#ffffff';
+                  ctx.strokeStyle = color + '99';
+                  ctx.lineWidth = 1.4;
+                  ctx.beginPath(); ctx.roundRect(x, y, w, H * 0.082, 9); ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = color; ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif'; ctx.textAlign = 'left';
+                  ctx.fillText(title, x + 9, y + H * 0.024);
+                  ctx.fillStyle = '#334155'; ctx.font = Math.round(7.6 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(clue, x + 9, y + H * 0.049);
+                  ctx.fillStyle = '#0f172a'; ctx.font = 'bold ' + Math.round(7.6 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(answer, x + 9, y + H * 0.070);
+                  ctx.restore();
+                }
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('CASE MODE: deficit pattern -> likely territory', W * 0.08, H * 0.785);
+                var stCardW = W * 0.205;
+                stCase(W * 0.08, H * 0.81, stCardW, 'Leg > arm', 'weak leg, abulia', 'ACA', '#2563eb');
+                stCase(W * 0.305, H * 0.81, stCardW, 'Broca + face/arm', 'nonfluent + weak arm', 'MCA superior', '#ea580c');
+                stCase(W * 0.53, H * 0.81, stCardW, 'Fluent/neglect', 'comprehension or space', 'MCA inferior', '#be123c');
+                stCase(W * 0.755, H * 0.81, stCardW, 'Visual field', 'homonymous loss', 'PCA', '#7c3aed');
+                if (!brainMotionReduced) {
+                  var sx = W * (0.20 + 0.62 * ((stT * 0.003) % 1));
+                  ctx.strokeStyle = 'rgba(15,23,42,0.18)';
+                  ctx.beginPath(); ctx.moveTo(sx, H * 0.14); ctx.lineTo(sx, H * 0.74); ctx.stroke();
+                }
+
+              } else if (currentView.isCerebellumClinic) {
+                var cbT = canvas._brainTick || 0;
+                var cbGlow = brainMotionReduced ? 0.55 : (0.5 + 0.5 * Math.sin(cbT * 0.06));
+                ctx.fillStyle = '#f7fee7';
+                ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#14532d';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold ' + Math.round(18 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('Cerebellum clinic map', W * 0.5, H * 0.055);
+                ctx.fillStyle = '#3f6212';
+                ctx.font = Math.round(10.5 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('Same-side coordination signs: zone + artery + bedside clue.', W * 0.5, H * 0.092);
+                function cbActive(id) { return !!(sel && sel.id === id); }
+                function cbLobe(id, x, y, rx, ry, color, label) {
+                  var active = cbActive(id);
+                  ctx.save();
+                  ctx.fillStyle = color;
+                  ctx.strokeStyle = active ? '#111827' : 'rgba(22,101,52,0.65)';
+                  ctx.lineWidth = active ? 3 : 1.5;
+                  ctx.shadowColor = color;
+                  ctx.shadowBlur = active ? 18 : 7;
+                  ctx.beginPath(); ctx.ellipse(x, y, rx + (active ? 3 : 0), ry + (active ? 3 : 0), 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = '#fff';
+                  ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(label, x, y + 3);
+                  ctx.restore();
+                }
+                cbLobe('hemisphere_cerebellum_clinic', W * 0.33, H * 0.47, W * 0.16, H * 0.15, '#22c55e', 'LEFT limb zone');
+                cbLobe('hemisphere_cerebellum_clinic', W * 0.67, H * 0.47, W * 0.16, H * 0.15, '#22c55e', 'RIGHT limb zone');
+                cbLobe('vermis_cerebellum_clinic', W * 0.50, H * 0.45, W * 0.07, H * 0.21, '#84cc16', 'VERMIS');
+                cbLobe('flocculonodular_cerebellum', W * 0.50, H * 0.64, W * 0.14, H * 0.06, '#14b8a6', 'vestibular');
+                ctx.save();
+                ctx.strokeStyle = 'rgba(63,98,18,0.32)';
+                ctx.lineWidth = 1.2;
+                for (var cbi = 0; cbi < 8; cbi++) {
+                  ctx.beginPath();
+                  ctx.ellipse(W * 0.50, H * (0.30 + cbi * 0.045), W * (0.10 + cbi * 0.018), H * 0.012, 0, 0, Math.PI * 2);
+                  ctx.stroke();
+                }
+                ctx.restore();
+                cbLobe('deep_nuclei_cerebellum', W * 0.50, H * 0.55, W * 0.055, H * 0.035, '#f59e0b', 'deep nuclei');
+                function arteryBand(id, label, x, y, w, color) {
+                  var active = cbActive(id);
+                  ctx.save();
+                  ctx.fillStyle = active ? color : '#fff';
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = active ? 2.5 : 1.2;
+                  ctx.shadowColor = active ? color + '88' : 'rgba(15,23,42,0.08)';
+                  ctx.shadowBlur = active ? 14 : 5;
+                  ctx.beginPath(); ctx.roundRect(x, y, w, H * 0.048, 8); ctx.fill(); ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = active ? '#fff' : color;
+                  ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(label, x + w / 2, y + H * 0.030);
+                  ctx.restore();
+                }
+                arteryBand('pica_cerebellum', 'PICA: inferior + medulla', W * 0.19, H * 0.74, W * 0.22, '#dc2626');
+                arteryBand('aica_cerebellum', 'AICA: face/hearing + pons', W * 0.39, H * 0.82, W * 0.22, '#2563eb');
+                arteryBand('sca_cerebellum', 'SCA: superior + dysarthria', W * 0.59, H * 0.74, W * 0.22, '#7c3aed');
+                ctx.strokeStyle = 'rgba(15,118,110,0.42)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath(); ctx.moveTo(W * 0.50, H * 0.20); ctx.lineTo(W * 0.50, H * 0.70); ctx.stroke();
+                ctx.setLineDash([]);
+                if (!brainMotionReduced) {
+                  ctx.fillStyle = 'rgba(250,204,21,' + (0.20 + cbGlow * 0.25) + ')';
+                  ctx.beginPath(); ctx.arc(W * 0.50, H * 0.55, W * 0.055 + cbGlow * 8, 0, Math.PI * 2); ctx.fill();
+                }
+                function cbCase(x, y, title, clue, answer, color) {
+                  ctx.save();
+                  ctx.fillStyle = '#ffffff';
+                  ctx.strokeStyle = color + '99';
+                  ctx.beginPath(); ctx.roundRect(x, y, W * 0.205, H * 0.082, 9); ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = color; ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif'; ctx.textAlign = 'left';
+                  ctx.fillText(title, x + 9, y + H * 0.024);
+                  ctx.fillStyle = '#334155'; ctx.font = Math.round(7.4 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(clue, x + 9, y + H * 0.049);
+                  ctx.fillStyle = '#0f172a'; ctx.font = 'bold ' + Math.round(7.4 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(answer, x + 9, y + H * 0.070);
+                  ctx.restore();
+                }
+                ctx.fillStyle = '#14532d'; ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif'; ctx.textAlign = 'left';
+                ctx.fillText('CASE MODE: sign -> cerebellar zone', W * 0.08, H * 0.145);
+                cbCase(W * 0.08, H * 0.165, 'Wide gait', 'trunk wobble', 'vermis', '#65a30d');
+                cbCase(W * 0.305, H * 0.165, 'Finger overshoot', 'same-side limb', 'hemisphere', '#16a34a');
+                cbCase(W * 0.53, H * 0.165, 'Vertigo + nystagmus', 'gaze unstable', 'vestibular zone', '#0f766e');
+                cbCase(W * 0.755, H * 0.165, 'Hoarse + ataxic', 'bulbar signs', 'PICA', '#dc2626');
+
+              } else if (currentView.isBrainstemCross) {
+                var bsT = canvas._brainTick || 0;
+                var bsPulse = brainMotionReduced ? 0.55 : (0.5 + 0.5 * Math.sin(bsT * 0.07));
+                ctx.fillStyle = '#f0f9ff';
+                ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#0f172a';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold ' + Math.round(18 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('Brainstem crossed-findings map', W * 0.5, H * 0.055);
+                ctx.fillStyle = '#475569';
+                ctx.font = Math.round(10.5 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('Cranial nerve side marks lesion side; body findings often cross.', W * 0.5, H * 0.092);
+                function bsActive(id) { return !!(sel && sel.id === id); }
+                function bsSection(id, x, y, w, h, color, title, cn) {
+                  var active = bsActive(id);
+                  ctx.save();
+                  ctx.fillStyle = active ? color : '#fff';
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = active ? 3 : 1.5;
+                  ctx.shadowColor = active ? color + '88' : 'rgba(15,23,42,0.08)';
+                  ctx.shadowBlur = active ? 16 : 6;
+                  ctx.beginPath(); ctx.ellipse(x, y, w / 2, h / 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = active ? '#fff' : color;
+                  ctx.font = 'bold ' + Math.round(10 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(title, x, y - h * 0.18);
+                  ctx.font = Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(cn, x, y + h * 0.20);
+                  ctx.restore();
+                }
+                bsSection('midbrain_cross_section', W * 0.26, H * 0.34, W * 0.20, H * 0.18, '#7c3aed', 'MIDBRAIN', 'CN III/IV');
+                bsSection('pons_cross_section', W * 0.50, H * 0.42, W * 0.24, H * 0.20, '#2563eb', 'PONS', 'CN V-VIII');
+                bsSection('medulla_cross_section', W * 0.74, H * 0.50, W * 0.20, H * 0.18, '#dc2626', 'MEDULLA', 'CN IX-XII');
+                function bsTract(id, y, color, label) {
+                  var active = bsActive(id);
+                  ctx.save();
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = active ? 5 : 3;
+                  ctx.lineCap = 'round';
+                  ctx.shadowColor = active ? color + '99' : color + '44';
+                  ctx.shadowBlur = active ? 14 : 6;
+                  ctx.beginPath();
+                  ctx.moveTo(W * 0.18, y);
+                  ctx.bezierCurveTo(W * 0.36, y - H * 0.035, W * 0.58, y + H * 0.035, W * 0.82, y);
+                  ctx.stroke();
+                  if (!brainMotionReduced) {
+                    var f = (bsT * 0.004 + (y / H)) % 1;
+                    var px = W * (0.18 + 0.64 * f);
+                    var py = y + Math.sin(f * Math.PI * 2) * H * 0.025;
+                    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(px, py, 5 + bsPulse * 2, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI * 2); ctx.fill();
+                  }
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = color;
+                  ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'left';
+                  ctx.fillText(label, W * 0.08, y + 3);
+                  ctx.restore();
+                }
+                bsTract('corticospinal_brainstem', H * 0.64, '#ef4444', 'motor');
+                bsTract('medial_lemniscus_brainstem', H * 0.70, '#0ea5e9', 'vibration/position');
+                bsTract('spinothalamic_brainstem', H * 0.76, '#f59e0b', 'pain/temp');
+                ctx.save();
+                ctx.fillStyle = bsActive('cranial_nuclei_brainstem') ? '#14b8a6' : '#ffffff';
+                ctx.strokeStyle = '#14b8a6';
+                ctx.lineWidth = bsActive('cranial_nuclei_brainstem') ? 3 : 1.4;
+                ctx.beginPath(); ctx.roundRect(W * 0.36, H * 0.18, W * 0.28, H * 0.075, 12); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = bsActive('cranial_nuclei_brainstem') ? '#fff' : '#0f766e';
+                ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('cranial nerve nuclei: ipsilateral clues', W * 0.50, H * 0.225);
+                ctx.restore();
+                function bsCase(x, y, title, clue, answer, color) {
+                  ctx.save();
+                  ctx.fillStyle = '#ffffff';
+                  ctx.strokeStyle = color + '99';
+                  ctx.beginPath(); ctx.roundRect(x, y, W * 0.205, H * 0.082, 9); ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = color; ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif'; ctx.textAlign = 'left';
+                  ctx.fillText(title, x + 9, y + H * 0.024);
+                  ctx.fillStyle = '#334155'; ctx.font = Math.round(7.3 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(clue, x + 9, y + H * 0.049);
+                  ctx.fillStyle = '#0f172a'; ctx.font = 'bold ' + Math.round(7.3 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(answer, x + 9, y + H * 0.070);
+                  ctx.restore();
+                }
+                ctx.fillStyle = '#0f172a'; ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif'; ctx.textAlign = 'left';
+                ctx.fillText('CASE MODE: crossed finding -> level', W * 0.08, H * 0.835);
+                bsCase(W * 0.08, H * 0.86, 'CN III + weak body', 'down/out eye + hemiparesis', 'midbrain', '#7c3aed');
+                bsCase(W * 0.305, H * 0.86, 'CN VI/VII + weakness', 'face/eye + body', 'pons', '#2563eb');
+                bsCase(W * 0.53, H * 0.86, 'Hoarse + crossed pain', 'nucleus ambiguus', 'medulla', '#dc2626');
+                bsCase(W * 0.755, H * 0.86, 'Pure tracts only', 'motor/sensory no cortex', 'long tracts', '#f59e0b');
+
+              } else if (currentView.isCsfHydro) {
+                var csfT = canvas._brainTick || 0;
+                var csfPulse = brainMotionReduced ? 0.55 : (0.5 + 0.5 * Math.sin(csfT * 0.06));
+                ctx.fillStyle = '#eff6ff';
+                ctx.fillRect(0, 0, W, H);
+                var csfGrad = ctx.createLinearGradient(0, 0, W, H);
+                csfGrad.addColorStop(0, 'rgba(14,165,233,0.16)');
+                csfGrad.addColorStop(0.55, 'rgba(255,255,255,0.92)');
+                csfGrad.addColorStop(1, 'rgba(37,99,235,0.12)');
+                ctx.fillStyle = csfGrad;
+                ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#0f172a';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold ' + Math.round(18 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('CSF flow and hydrocephalus map', W * 0.5, H * 0.055);
+                ctx.fillStyle = '#475569';
+                ctx.font = Math.round(10.5 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('Trace production, narrow bottlenecks, subarachnoid circulation, and venous reabsorption.', W * 0.5, H * 0.092);
+
+                function csfActive(id) { return !!(sel && sel.id === id); }
+                ctx.save();
+                ctx.strokeStyle = 'rgba(37,99,235,0.20)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(W * 0.50, H * 0.47, W * 0.34, H * 0.28, -0.08, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(255,255,255,0.50)';
+                ctx.fill();
+                ctx.restore();
+
+                function csfArrow(x1, y1, x2, y2, color, label) {
+                  var angle = Math.atan2(y2 - y1, x2 - x1);
+                  ctx.save();
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = 3;
+                  ctx.lineCap = 'round';
+                  ctx.shadowColor = color + '66';
+                  ctx.shadowBlur = 8;
+                  ctx.beginPath();
+                  ctx.moveTo(x1, y1);
+                  ctx.lineTo(x2, y2);
+                  ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = color;
+                  ctx.beginPath();
+                  ctx.moveTo(x2, y2);
+                  ctx.lineTo(x2 - Math.cos(angle - 0.45) * 12, y2 - Math.sin(angle - 0.45) * 12);
+                  ctx.lineTo(x2 - Math.cos(angle + 0.45) * 12, y2 - Math.sin(angle + 0.45) * 12);
+                  ctx.closePath();
+                  ctx.fill();
+                  if (label) {
+                    ctx.font = 'bold ' + Math.round(7.6 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(label, (x1 + x2) / 2, (y1 + y2) / 2 - H * 0.012);
+                  }
+                  ctx.restore();
+                }
+                function csfParticle(x1, y1, x2, y2, offset, color) {
+                  var f = brainMotionReduced ? offset : ((csfT * 0.004 + offset) % 1);
+                  var x = x1 + (x2 - x1) * f;
+                  var y = y1 + (y2 - y1) * f;
+                  ctx.save();
+                  ctx.fillStyle = '#ffffff';
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = 2;
+                  ctx.beginPath();
+                  ctx.arc(x, y, 4 + csfPulse * 1.5, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.stroke();
+                  ctx.restore();
+                }
+                function csfNode(id, x, y, w, h, color, label, sublabel) {
+                  var active = csfActive(id);
+                  ctx.save();
+                  ctx.fillStyle = active ? color : '#ffffff';
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = active ? 3 : 1.5;
+                  ctx.shadowColor = active ? color + '88' : 'rgba(15,23,42,0.08)';
+                  ctx.shadowBlur = active ? 16 : 6;
+                  ctx.beginPath();
+                  ctx.roundRect(x - w / 2, y - h / 2, w, h, 14);
+                  ctx.fill();
+                  ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.fillStyle = active ? '#ffffff' : color;
+                  ctx.font = 'bold ' + Math.round(8.5 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(label, x, y - h * 0.06);
+                  if (sublabel) {
+                    ctx.fillStyle = active ? 'rgba(255,255,255,0.82)' : '#475569';
+                    ctx.font = Math.round(7 * fontScale) + 'px Inter, system-ui, sans-serif';
+                    ctx.fillText(sublabel, x, y + h * 0.24);
+                  }
+                  ctx.restore();
+                }
+
+                var p1 = { x: W * 0.34, y: H * 0.33 };
+                var p2 = { x: W * 0.50, y: H * 0.43 };
+                var p3 = { x: W * 0.58, y: H * 0.54 };
+                var p4 = { x: W * 0.63, y: H * 0.66 };
+                var p5 = { x: W * 0.76, y: H * 0.52 };
+                var p6 = { x: W * 0.58, y: H * 0.20 };
+                csfArrow(p1.x, p1.y, p2.x - W * 0.05, p2.y, '#0ea5e9', 'Monro');
+                csfArrow(p2.x, p2.y + H * 0.04, p3.x, p3.y - H * 0.04, '#2563eb', 'aqueduct bottleneck');
+                csfArrow(p3.x, p3.y + H * 0.05, p4.x, p4.y - H * 0.05, '#2563eb', '');
+                csfArrow(p4.x + W * 0.04, p4.y - H * 0.02, p5.x - W * 0.05, p5.y, '#0891b2', 'outlets');
+                csfArrow(p5.x - W * 0.02, p5.y - H * 0.08, p6.x + W * 0.05, p6.y + H * 0.04, '#0284c7', 'reabsorb');
+                [0, 0.33, 0.66].forEach(function (off) {
+                  csfParticle(p1.x, p1.y, p2.x - W * 0.05, p2.y, off, '#0ea5e9');
+                  csfParticle(p2.x, p2.y + H * 0.04, p3.x, p3.y - H * 0.04, off + 0.15, '#2563eb');
+                  csfParticle(p4.x + W * 0.04, p4.y - H * 0.02, p5.x - W * 0.05, p5.y, off + 0.30, '#0891b2');
+                });
+
+                csfNode('lateral_ventricles_csf', W * 0.32, H * 0.35, W * 0.22, H * 0.095, '#0ea5e9', 'lateral ventricles', 'paired CSF spaces');
+                csfNode('third_ventricle_csf', W * 0.50, H * 0.43, W * 0.15, H * 0.080, '#2563eb', 'third ventricle', 'midline funnel');
+                csfNode('cerebral_aqueduct_csf', W * 0.58, H * 0.55, W * 0.13, H * 0.070, '#7c3aed', 'aqueduct', 'narrow channel');
+                csfNode('fourth_ventricle_csf', W * 0.64, H * 0.68, W * 0.16, H * 0.080, '#0891b2', 'fourth ventricle', 'outlets to cisterns');
+                csfNode('subarachnoid_space_csf', W * 0.77, H * 0.52, W * 0.17, H * 0.090, '#14b8a6', 'subarachnoid', 'around brain/spine');
+                csfNode('arachnoid_granulations_csf', W * 0.58, H * 0.20, W * 0.20, H * 0.072, '#0f766e', 'arachnoid granulations', 'venous sinus return');
+
+                ctx.save();
+                ctx.fillStyle = csfActive('choroid_plexus_csf') ? '#f97316' : '#fed7aa';
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = csfActive('choroid_plexus_csf') ? 3 : 1.4;
+                ctx.beginPath();
+                ctx.roundRect(W * 0.205, H * 0.275, W * 0.15, H * 0.052, 14);
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = csfActive('choroid_plexus_csf') ? '#ffffff' : '#9a3412';
+                ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('choroid plexus', W * 0.28, H * 0.307);
+                ctx.restore();
+
+                ctx.save();
+                ctx.strokeStyle = csfActive('cerebral_aqueduct_csf') ? '#dc2626' : 'rgba(220,38,38,0.72)';
+                ctx.lineWidth = csfActive('cerebral_aqueduct_csf') ? 4 : 2;
+                ctx.setLineDash([7, 5]);
+                ctx.beginPath();
+                ctx.arc(W * 0.58, H * 0.55, W * 0.095, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#dc2626';
+                ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('classic blockage point', W * 0.58, H * 0.62);
+                ctx.restore();
+
+                function csfCase(x, y, title, clue, answer, color) {
+                  ctx.save();
+                  ctx.fillStyle = '#ffffff';
+                  ctx.strokeStyle = color + '99';
+                  ctx.lineWidth = 1.4;
+                  ctx.beginPath(); ctx.roundRect(x, y, W * 0.205, H * 0.082, 9); ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = color; ctx.font = 'bold ' + Math.round(8 * fontScale) + 'px Inter, system-ui, sans-serif'; ctx.textAlign = 'left';
+                  ctx.fillText(title, x + 9, y + H * 0.024);
+                  ctx.fillStyle = '#334155'; ctx.font = Math.round(7.3 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(clue, x + 9, y + H * 0.049);
+                  ctx.fillStyle = '#0f172a'; ctx.font = 'bold ' + Math.round(7.3 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(answer, x + 9, y + H * 0.070);
+                  ctx.restore();
+                }
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold ' + Math.round(11 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('CSF FLOW ROUTE: choroid -> lateral -> third -> aqueduct -> fourth -> subarachnoid -> venous sinus', W * 0.07, H * 0.770);
+                ctx.fillText('HYDROCEPHALUS DECODER', W * 0.07, H * 0.812);
+                csfCase(W * 0.08, H * 0.835, 'Obstructive', 'blocked route', 'upstream ventricles', '#7c3aed');
+                csfCase(W * 0.305, H * 0.835, 'Communicating', 'absorption fails', 'all ventricles enlarge', '#0f766e');
+                csfCase(W * 0.53, H * 0.835, 'NPH triad', 'gait + cognition + urine', 'chronic stretch', '#f59e0b');
+                csfCase(W * 0.755, H * 0.835, 'Raised ICP', 'headache/vomit/CN VI', 'urgent pressure signs', '#dc2626');
+
               } else if (currentView.isHomunculus) {
 
                 // Penfield-style cortical body map: motor strip before the sulcus,
@@ -4033,26 +4682,141 @@ var d = labToolData.brainAtlas || {};
                 pulsePoint(pointOnCurve(sensoryPts, scan), '#22d3ee', 'sensory');
                 pulsePoint(pointOnCurve(prefrontalPts, (scan + 0.17) % 1), '#f59e0b', 'prefrontal');
               } else if (currentView.isStim) {
-                // ── Stimulation Lab: a stylized brain with a pulsing electrode ──
-                ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-                var bx = W * 0.5, by = H * 0.54, brw = W * 0.30, brh = H * 0.26;
-                ctx.fillStyle = '#fbcfe8'; ctx.strokeStyle = '#db2777'; ctx.lineWidth = 2.5;
-                ctx.beginPath(); ctx.ellipse(bx, by, brw, brh, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-                ctx.strokeStyle = '#f472b6'; ctx.lineWidth = 1.5;
-                [-0.45, -0.15, 0.2, 0.55].forEach(function (fx) { ctx.beginPath(); ctx.moveTo(bx + fx * brw, by - brh * 0.7); ctx.quadraticCurveTo(bx + fx * brw + 14, by, bx + fx * brw, by + brh * 0.7); ctx.stroke(); });
-                ctx.beginPath(); ctx.ellipse(bx + brw * 0.78, by + brh * 0.62, brw * 0.22, brh * 0.32, 0, 0, Math.PI * 2);
-                ctx.fillStyle = '#f9a8d4'; ctx.fill(); ctx.strokeStyle = '#db2777'; ctx.stroke();
-                ctx.fillStyle = '#f9a8d4'; ctx.fillRect(bx + brw * 0.45, by + brh * 0.7, 10, brh * 0.5);
-                var pulse = 0.5 + 0.5 * Math.sin((canvas._brainTick || 0) * 0.12);
-                var ex = bx - brw * 0.12, ey = by - brh * 0.72;
-                ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex, 36); ctx.stroke();
-                ctx.fillStyle = '#cbd5e1'; ctx.fillRect(ex - 6, 28, 12, 10);
-                ctx.fillStyle = 'rgba(250,204,21,' + (0.25 + 0.45 * pulse) + ')'; ctx.beginPath(); ctx.arc(ex, ey, 12 + 8 * pulse, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(ex, ey, 6, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#fde047'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
-                ctx.fillText('\u26A1 Stimulation Lab', bx, 24);
-                ctx.fillStyle = '#94a3b8'; ctx.font = '12px sans-serif';
-                ctx.fillText('Place the electrode, predict the effect', bx, H - 22);
+                var stimTick = canvas._brainTick || 0;
+                var stimPulse = brainMotionReduced ? 0.55 : (0.5 + 0.5 * Math.sin(stimTick * 0.095));
+                var stimSweep = brainMotionReduced ? 0.35 : ((stimTick * 0.004) % 1);
+                var activeStim = STIM_SCENARIOS && STIM_SCENARIOS.length ? STIM_SCENARIOS[(d.stimIdx || 0) % STIM_SCENARIOS.length] : { target: 'the primary motor cortex (hand area)' };
+                function stimScenarioRegionId(targetText) {
+                  var target = String(targetText || '').toLowerCase();
+                  if (target.indexOf('motor') >= 0) return 'stim_motor_map';
+                  if (target.indexOf('somatosensory') >= 0) return 'stim_sensory_map';
+                  if (target.indexOf('visual') >= 0) return 'stim_visual_map';
+                  if (target.indexOf('auditory') >= 0) return 'stim_auditory_map';
+                  if (target.indexOf('broca') >= 0 || target.indexOf('wernicke') >= 0) return 'stim_language_map';
+                  if (target.indexOf('temporal-lobe') >= 0 || target.indexOf('amygdala') >= 0) return 'stim_memory_emotion_map';
+                  return 'stim_autonomic_quiet_map';
+                }
+                var activeStimId = stimScenarioRegionId(activeStim.target);
+                var stimZones = [
+                  { id: 'stim_motor_map', x: W * 0.34, y: H * 0.25, color: '#22c55e', label: 'Motor', sub: 'movement' },
+                  { id: 'stim_sensory_map', x: W * 0.46, y: H * 0.27, color: '#0ea5e9', label: 'Sensory', sub: 'tingling' },
+                  { id: 'stim_visual_map', x: W * 0.72, y: H * 0.40, color: '#8b5cf6', label: 'Visual', sub: 'flashes' },
+                  { id: 'stim_auditory_map', x: W * 0.58, y: H * 0.46, color: '#f59e0b', label: 'Auditory', sub: 'sounds' },
+                  { id: 'stim_language_map', x: W * 0.29, y: H * 0.43, color: '#ef4444', label: 'Language', sub: 'speech clue' },
+                  { id: 'stim_memory_emotion_map', x: W * 0.51, y: H * 0.59, color: '#ec4899', label: 'Memory / emotion', sub: 'deja vu / fear' },
+                  { id: 'stim_autonomic_quiet_map', x: W * 0.35, y: H * 0.60, color: '#14b8a6', label: 'Autonomic / quiet', sub: 'body state' }
+                ];
+                var activeStimZone = stimZones.find(function (z) { return z.id === activeStimId; }) || stimZones[0];
+
+                ctx.fillStyle = '#fff7ed'; ctx.fillRect(0, 0, W, H);
+                ctx.fillStyle = '#7c2d12'; ctx.font = 'bold 18px Inter,system-ui,sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('Penfield stimulation response map', W / 2, 28);
+                ctx.fillStyle = '#9a3412'; ctx.font = '11px Inter,system-ui,sans-serif';
+                ctx.fillText('Tap a zone or use the scenario panel to predict the patient response.', W / 2, 48);
+
+                var skullX = W * 0.50, skullY = H * 0.43, skullW = W * 0.34, skullH = H * 0.27;
+                ctx.save();
+                ctx.shadowColor = 'rgba(251,146,60,0.25)'; ctx.shadowBlur = 18;
+                ctx.fillStyle = '#fed7aa'; ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 2.6;
+                ctx.beginPath();
+                ctx.ellipse(skullX - skullW * 0.13, skullY - skullH * 0.02, skullW * 0.64, skullH * 0.82, -0.05, 0, Math.PI * 2);
+                ctx.ellipse(skullX + skullW * 0.27, skullY + skullH * 0.06, skullW * 0.44, skullH * 0.62, 0.12, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+                ctx.restore();
+
+                ctx.strokeStyle = 'rgba(194,65,12,0.24)'; ctx.lineWidth = 1.5;
+                [-0.42, -0.21, 0.02, 0.22, 0.43].forEach(function (fx, idx) {
+                  ctx.beginPath();
+                  ctx.moveTo(skullX + fx * skullW, skullY - skullH * 0.58);
+                  ctx.bezierCurveTo(skullX + (fx + 0.10) * skullW, skullY - skullH * 0.25, skullX + (fx - 0.13) * skullW, skullY + skullH * 0.24, skullX + (fx + 0.04) * skullW, skullY + skullH * 0.62);
+                  ctx.stroke();
+                  if (idx < 4) {
+                    ctx.beginPath();
+                    ctx.moveTo(skullX - skullW * 0.56 + idx * skullW * 0.28, skullY - skullH * 0.18);
+                    ctx.quadraticCurveTo(skullX - skullW * 0.28 + idx * skullW * 0.24, skullY + skullH * 0.03, skullX - skullW * 0.45 + idx * skullW * 0.36, skullY + skullH * 0.28);
+                    ctx.stroke();
+                  }
+                });
+
+                var stimStartX = W * 0.52, stimStartY = 74;
+                ctx.strokeStyle = '#64748b'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(stimStartX, 44); ctx.lineTo(stimStartX, stimStartY); ctx.stroke();
+                ctx.fillStyle = '#e2e8f0'; ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.roundRect(stimStartX - 14, 34, 28, 15, 5); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#475569'; ctx.font = 'bold 8px Inter,system-ui,sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('stim', stimStartX, 45);
+
+                ctx.strokeStyle = 'rgba(245,158,11,0.72)'; ctx.lineWidth = 2.4;
+                ctx.setLineDash([6, 6]);
+                ctx.beginPath();
+                ctx.moveTo(stimStartX, stimStartY);
+                ctx.bezierCurveTo(stimStartX - 46, stimStartY + 38, activeStimZone.x + 42, activeStimZone.y - 42, activeStimZone.x, activeStimZone.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                stimZones.forEach(function (z) {
+                  var isActive = z.id === activeStimId;
+                  var isSelected = sel && sel.id === z.id;
+                  var radius = isActive ? 16 + stimPulse * 5 : 13;
+                  ctx.save();
+                  if (isActive || isSelected) {
+                    ctx.shadowColor = z.color; ctx.shadowBlur = isActive ? 18 : 10;
+                    ctx.fillStyle = z.color + (isActive ? '33' : '22');
+                    ctx.beginPath(); ctx.arc(z.x, z.y, radius + 8, 0, Math.PI * 2); ctx.fill();
+                  }
+                  ctx.fillStyle = z.color;
+                  ctx.beginPath(); ctx.arc(z.x, z.y, radius, 0, Math.PI * 2); ctx.fill();
+                  ctx.lineWidth = isSelected ? 3 : 2;
+                  ctx.strokeStyle = isSelected ? '#111827' : 'rgba(255,255,255,0.9)';
+                  ctx.stroke();
+                  ctx.fillStyle = '#ffffff'; ctx.font = 'bold 8px Inter,system-ui,sans-serif'; ctx.textAlign = 'center';
+                  ctx.fillText(z.label.split(' ')[0], z.x, z.y + 3);
+                  ctx.restore();
+
+                  var labelX = z.x + (z.x < W * 0.50 ? -44 : 46);
+                  var labelY = z.y + (z.y < H * 0.34 ? -28 : 30);
+                  ctx.strokeStyle = z.color + '88'; ctx.lineWidth = 1.1;
+                  ctx.beginPath(); ctx.moveTo(z.x, z.y); ctx.lineTo(labelX, labelY); ctx.stroke();
+                  ctx.fillStyle = '#fffaf0'; ctx.strokeStyle = z.color + '88';
+                  ctx.beginPath(); ctx.roundRect(labelX - 42, labelY - 17, 84, 31, 7); ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = '#7c2d12'; ctx.font = 'bold 9px Inter,system-ui,sans-serif'; ctx.textAlign = 'center';
+                  ctx.fillText(z.label, labelX, labelY - 3);
+                  ctx.fillStyle = '#9a3412'; ctx.font = '8px Inter,system-ui,sans-serif';
+                  ctx.fillText(z.sub, labelX, labelY + 9);
+                });
+
+                ctx.fillStyle = 'rgba(245,158,11,' + (0.18 + stimPulse * 0.24) + ')';
+                ctx.beginPath(); ctx.arc(activeStimZone.x, activeStimZone.y, 28 + stimPulse * 10, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath(); ctx.arc(activeStimZone.x, activeStimZone.y, 5, 0, Math.PI * 2); ctx.fill();
+
+                var readoutX = 30, readoutY = H - 104, readoutW = W - 60, readoutH = 47;
+                ctx.fillStyle = '#431407'; ctx.strokeStyle = '#fdba74'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.roundRect(readoutX, readoutY, readoutW, readoutH, 10); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#fed7aa'; ctx.font = 'bold 9px Inter,system-ui,sans-serif'; ctx.textAlign = 'left';
+                ctx.fillText('CURRENT ELECTRODE TARGET', readoutX + 14, readoutY + 17);
+                ctx.fillStyle = '#ffffff'; ctx.font = 'bold 12px Inter,system-ui,sans-serif';
+                ctx.fillText(activeStim.target.replace(/^the /, ''), readoutX + 14, readoutY + 35);
+                ctx.fillStyle = activeStimZone.color; ctx.textAlign = 'right'; ctx.font = 'bold 11px Inter,system-ui,sans-serif';
+                ctx.fillText(activeStimZone.label + ' -> ' + activeStimZone.sub, readoutX + readoutW - 14, readoutY + 31);
+
+                [
+                  ['Motor / sensory', 'move vs feel', '#22c55e'],
+                  ['Vision / hearing', 'flash vs sound', '#8b5cf6'],
+                  ['Language', 'speech/comprehension', '#ef4444'],
+                  ['Limbic / quiet', 'fear, body, or none', '#ec4899']
+                ].forEach(function (card, idx) {
+                  var cw = (W - 78) / 4, cx = 30 + idx * (cw + 6), cy = H - 44;
+                  ctx.fillStyle = '#ffffff'; ctx.strokeStyle = card[2] + '88'; ctx.lineWidth = 1.2;
+                  ctx.beginPath(); ctx.roundRect(cx, cy, cw, 27, 7); ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = card[2]; ctx.font = 'bold 8px Inter,system-ui,sans-serif'; ctx.textAlign = 'center';
+                  ctx.fillText(card[0], cx + cw / 2, cy + 11);
+                  ctx.fillStyle = '#78716c'; ctx.font = '8px Inter,system-ui,sans-serif';
+                  ctx.fillText(card[1], cx + cw / 2, cy + 22);
+                });
+
+                ctx.strokeStyle = 'rgba(234,88,12,0.28)'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(30 + stimSweep * (W - 60), 62); ctx.lineTo(30 + stimSweep * (W - 60), H - 16); ctx.stroke();
               } else if (currentView.isSleep) {
 
                 // ── Sleep Stages Hypnogram Animation ──
@@ -4094,7 +4858,7 @@ var d = labToolData.brainAtlas || {};
                 ];
 
                 // Graph area
-                var gxS = W * 0.14, gyS = H * 0.08, gwS = W * 0.80, ghS = H * 0.72;
+                var gxS = W * 0.14, gyS = H * 0.08, gwS = W * 0.80, ghS = H * 0.64;
 
                 // Background
                 ctx.save();
@@ -4209,7 +4973,7 @@ var d = labToolData.brainAtlas || {};
 
                 // Legend
                 ctx.font = 'bold ' + Math.round(9 * fontScale) + 'px Inter, system-ui, sans-serif';
-                var legendY = H * 0.92;
+                var legendY = H * 0.792;
                 var legendItems = [
                   {name:t('stem.brainatlas.awake_2', 'Awake'),c:'#94a3b8'},{name:'REM',c:'#a855f7'},{name:'N1',c:'#38bdf8'},{name:'N2',c:'#3b82f6'},{name:'N3/SWS',c:'#4338ca'}
                 ];
@@ -4221,6 +4985,53 @@ var d = labToolData.brainAtlas || {};
                   ctx.fillText(li.name, lx + 7, legendY + 3);
                   lx += ctx.measureText(li.name).width + 22;
                 });
+
+                function sleepDecoderChip(x, y, w, title, sub, color) {
+                  ctx.save();
+                  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+                  ctx.strokeStyle = color;
+                  ctx.lineWidth = 1.15;
+                  ctx.beginPath();
+                  ctx.roundRect(x, y, w, H * 0.047, 8);
+                  ctx.fill(); ctx.stroke();
+                  ctx.fillStyle = color;
+                  ctx.font = 'bold ' + Math.round(7.2 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(title, x + w / 2, y + H * 0.017);
+                  ctx.fillStyle = '#475569';
+                  ctx.font = Math.round(5.9 * fontScale) + 'px Inter, system-ui, sans-serif';
+                  ctx.fillText(sub, x + w / 2, y + H * 0.035);
+                  ctx.restore();
+                }
+
+                var sleepDecoderActive = !!(sel && sel.id === 'sleep_architecture_decoder_sleep');
+                var sleepDecoderX = W * 0.065;
+                var sleepDecoderY = H * 0.827;
+                var sleepDecoderW = W * 0.87;
+                var sleepDecoderH = H * 0.138;
+                ctx.save();
+                ctx.fillStyle = sleepDecoderActive ? 'rgba(99,102,241,0.16)' : 'rgba(15,23,42,0.88)';
+                ctx.strokeStyle = sleepDecoderActive ? '#6366f1' : 'rgba(15,23,42,0.22)';
+                ctx.lineWidth = sleepDecoderActive ? 2.4 : 1;
+                ctx.shadowColor = sleepDecoderActive ? 'rgba(99,102,241,0.24)' : 'rgba(15,23,42,0.10)';
+                ctx.shadowBlur = sleepDecoderActive ? 16 : 8;
+                ctx.beginPath(); ctx.roundRect(sleepDecoderX, sleepDecoderY, sleepDecoderW, sleepDecoderH, 12); ctx.fill(); ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#e2e8f0';
+                ctx.font = 'bold ' + Math.round(8.2 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText('SLEEP ARCHITECTURE DECODER', sleepDecoderX + W * 0.018, sleepDecoderY + H * 0.027);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = Math.round(6.1 * fontScale) + 'px Inter, system-ui, sans-serif';
+                ctx.fillText('early night N3 -> late night REM; fragmentation breaks the pattern', sleepDecoderX + W * 0.330, sleepDecoderY + H * 0.027);
+                ctx.restore();
+
+                var sleepChipY = H * 0.885;
+                var sleepChipW = W * 0.195;
+                sleepDecoderChip(W * 0.087, sleepChipY, sleepChipW, 'N1 / N2', 'transition + spindles', '#3b82f6');
+                sleepDecoderChip(W * 0.307, sleepChipY, sleepChipW, 'N3 early', 'restore + declarative memory', '#4338ca');
+                sleepDecoderChip(W * 0.527, sleepChipY, sleepChipW, 'REM late', 'emotion + procedure', '#a855f7');
+                sleepDecoderChip(W * 0.747, sleepChipY, sleepChipW, 'Fragmented', 'attention + mood cost', '#ef4444');
 
                 ctx.restore();
 
@@ -4762,7 +5573,7 @@ var d = labToolData.brainAtlas || {};
 
 
               // ── Enhanced Region Markers (anatomical views only) ──
-              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG && !currentView.isSynapse && !currentView.isStim && !currentView.isHomunculus && !currentView.isVisualPathway && !currentView.isLanguageNetwork && !currentView.isBasalGanglia && !currentView.isCranialWillis && !currentView.isLimbicPapez)
+              if (!currentView.isNeuron && !currentView.isNT && !currentView.isSleep && !currentView.isEEG && !currentView.isSynapse && !currentView.isStim && !currentView.isHomunculus && !currentView.isVisualPathway && !currentView.isLanguageNetwork && !currentView.isBasalGanglia && !currentView.isCranialWillis && !currentView.isLimbicPapez && !currentView.isStrokeTerritory && !currentView.isCerebellumClinic && !currentView.isBrainstemCross && !currentView.isCsfHydro)
               filtered.forEach(function (r) {
 
                 var px = r.x * W, py = r.y * H;
@@ -4963,7 +5774,7 @@ var d = labToolData.brainAtlas || {};
           var selectedLabel = sel && sel.name ? sel.name : (t('stem.brainatlas.none_selected', 'None selected') || 'None selected');
           selectedLabel = String(selectedLabel || 'None selected');
           var showNtInquiry = viewKey === 'neurotransmitters' || !!d.showNtInquiry;
-          var specialAtlasView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse || currentView.isHomunculus || currentView.isVisualPathway || currentView.isLanguageNetwork || currentView.isBasalGanglia || currentView.isCranialWillis || currentView.isLimbicPapez || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral);
+          var specialAtlasView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse || currentView.isHomunculus || currentView.isVisualPathway || currentView.isLanguageNetwork || currentView.isBasalGanglia || currentView.isCranialWillis || currentView.isLimbicPapez || currentView.isStrokeTerritory || currentView.isCerebellumClinic || currentView.isBrainstemCross || currentView.isCsfHydro || currentView.isStim || currentView.isSleep || currentView.isEEG || currentView.isCrossLateral);
           // Neurochemistry diagrams (synapse release, neuron anatomy, synapse
           // growth) pack many labels into a tall vertical stack and were
           // cramped / overlapping. Give them a larger canvas so the diagram
@@ -4971,7 +5782,7 @@ var d = labToolData.brainAtlas || {};
           // so the extra room becomes label SPACING, not bigger glyphs.
           // Safe: hit-testing is fraction-based [0,1], independent of canvas px.
           var neurochemView = !!(currentView.isNT || currentView.isNeuron || currentView.isSynapse);
-          var wideAtlasView = !!(currentView.isSynapse || currentView.isLanguageNetwork || currentView.isVisualPathway || currentView.isBasalGanglia || currentView.isLimbicPapez || currentView.isCranialWillis || currentView.isCrossLateral);
+          var wideAtlasView = !!(currentView.isSynapse || currentView.isLanguageNetwork || currentView.isVisualPathway || currentView.isBasalGanglia || currentView.isLimbicPapez || currentView.isCranialWillis || currentView.isStrokeTerritory || currentView.isCerebellumClinic || currentView.isBrainstemCross || currentView.isCsfHydro || currentView.isCrossLateral);
           var atlasW = currentView.isNeuron ? 820 : (wideAtlasView ? 780 : (currentView.isHomunculus ? 720 : (currentView.isNT ? 680 : (specialAtlasView ? 600 : 520))));
           var atlasH = currentView.isNeuron ? 760 : (currentView.isNT ? 660 : (wideAtlasView ? 620 : (currentView.isHomunculus ? 560 : (specialAtlasView ? 500 : 460))));
           var missionText = sel
@@ -4980,6 +5791,7 @@ var d = labToolData.brainAtlas || {};
           var quizScoreLabel = (d.quizCorrect || 0) + ' correct';
           var VIEW_GROUPS = [
             { id: 'atlas', label: t('stem.brainatlas.group_atlas', 'Atlas'), note: t('stem.brainatlas.group_atlas_note', 'Lobes, language, body maps, orientation, nerves, and vessels'), views: ['lateral', 'medial', 'superior', 'inferior', 'cranialNervesWillis', 'homunculus', 'visualPathway', 'languageNetwork'] },
+            { id: 'clinical', label: t('stem.brainatlas.group_clinical', 'Clinical'), note: t('stem.brainatlas.group_clinical_note', 'Stroke territories, cerebellar signs, brainstem tracts, CSF flow, and case clues'), views: ['strokeTerritories', 'cerebellumClinic', 'brainstemCrossSection', 'csfHydrocephalus'] },
             { id: 'systems', label: t('stem.brainatlas.group_systems', 'Systems'), note: t('stem.brainatlas.group_systems_note', 'Cells, synapses, chemistry, memory, emotion, and movement loops'), views: ['neurotransmitters', 'neuron', 'synapses', 'basalGangliaLoop', 'limbicPapezLoop'] },
             { id: 'simulations', label: t('stem.brainatlas.group_simulations', 'Simulations'), note: t('stem.brainatlas.group_simulations_note', 'Stimulation, sleep, rhythms, and wiring'), views: ['stimulate', 'sleepStages', 'eegWaves', 'crossLateral'] }
           ];
@@ -5014,6 +5826,10 @@ var d = labToolData.brainAtlas || {};
             if (currentView.isBasalGanglia) return t('stem.brainatlas.teacher_prompt_basal_ganglia', 'Ask students to trace the GO and NO-GO loops, then predict how dopamine loss changes movement.');
             if (currentView.isLimbicPapez) return t('stem.brainatlas.teacher_prompt_limbic_papez', 'Ask students to trace one memory signal around Papez circuit, then explain how amygdala output changes the body.');
             if (currentView.isCranialWillis) return t('stem.brainatlas.teacher_prompt_cranial_willis', 'Ask students to pick one nerve or vessel, then name the bedside clue that would localize a lesion there.');
+            if (currentView.isStrokeTerritory) return t('stem.brainatlas.teacher_prompt_stroke_territories', 'Give one stroke clue, then ask students to localize the likely vascular territory before checking the case cards.');
+            if (currentView.isCerebellumClinic) return t('stem.brainatlas.teacher_prompt_cerebellum_clinic', 'Ask students whether the sign is midline, limb, vestibular, or artery-pattern before naming the cerebellar target.');
+            if (currentView.isBrainstemCross) return t('stem.brainatlas.teacher_prompt_brainstem_cross', 'Ask students to identify the ipsilateral cranial nerve sign first, then pair it with the crossed body tract finding.');
+            if (currentView.isCsfHydro) return t('stem.brainatlas.teacher_prompt_csf_hydro', 'Ask students to trace one CSF drop from production to reabsorption, then predict which ventricles enlarge when a blockage occurs.');
             if (currentView.isStim) return t('stem.brainatlas.teacher_prompt_stim', 'Ask students to predict the patient response first, then revise their reasoning after feedback.');
             if (currentView.isSleep) return t('stem.brainatlas.teacher_prompt_sleep', 'Ask students to compare two sleep stages and connect each to memory, attention, or recovery.');
             if (currentView.isEEG) return t('stem.brainatlas.teacher_prompt_eeg', 'Ask students to match a brain-wave pattern to a state, then explain the clue they used.');
@@ -5031,9 +5847,13 @@ var d = labToolData.brainAtlas || {};
             if (currentView.isBasalGanglia) return t('stem.brainatlas.canvas_summary_basal_ganglia', 'Basal ganglia loop view showing direct GO and indirect NO-GO pathways, GPi/SNr thalamic braking, STN excitation, dopamine modulation from substantia nigra pars compacta, and a movement-disorder decoder for Parkinson disease, Huntington chorea, STN hemiballismus, and dyskinesia.');
             if (currentView.isLimbicPapez) return t('stem.brainatlas.canvas_summary_limbic_papez', 'Limbic and Papez loop view showing hippocampus, fornix, mammillary bodies, mammillothalamic tract, anterior thalamus, cingulate, cingulum, entorhinal cortex, amygdala, hypothalamus, prefrontal regulation, and a memory-emotion decoder for new amnesia, confabulation, fear tagging, and poor top-down regulation.');
             if (currentView.isCranialWillis) return t('stem.brainatlas.canvas_summary_cranial_willis', 'Cranial nerves and Circle of Willis view showing inferior brain anatomy, CN I, II, III, V, VI, VII/VIII, IX/X/XI, XII, AComm/ACA, PComm/ICA, basilar/vertebral arteries, and a bedside clue decoder for pupil-involving CN III palsy, bitemporal field loss, bulbar symptoms, and thunderclap headache.');
-            if (currentView.isStim) return t('stem.brainatlas.canvas_summary_stim', 'Stimulation Lab view for predicting what a patient may experience when different brain areas are gently stimulated.');
-            if (currentView.isSleep) return t('stem.brainatlas.canvas_summary_sleep', 'Sleep-stage view showing the cycle from light sleep through deep sleep and REM, with memory and recovery connections.');
-            if (currentView.isEEG) return (t('stem.brainatlas.canvas_summary_eeg_active', 'EEG rhythm view comparing delta, theta, alpha, beta, and gamma waves across different brain states. Active state: ') || 'EEG rhythm view comparing delta, theta, alpha, beta, and gamma waves across different brain states. Active state: ') + activeEegMode.label + '.';
+            if (currentView.isStrokeTerritory) return t('stem.brainatlas.canvas_summary_stroke_territories', 'Stroke territories view showing ACA, MCA superior, MCA inferior, PCA, deep lacunar, watershed, and posterior circulation maps with case cards for leg-predominant weakness, Broca aphasia with face-arm weakness, fluent aphasia or neglect, and homonymous visual-field loss.');
+            if (currentView.isCerebellumClinic) return t('stem.brainatlas.canvas_summary_cerebellum_clinic', 'Cerebellum clinic view showing vermis, cerebellar hemispheres, flocculonodular vestibular zone, deep nuclei, PICA, AICA, SCA, and case cards for wide gait, finger overshoot, vertigo with nystagmus, and hoarse ataxia.');
+            if (currentView.isBrainstemCross) return t('stem.brainatlas.canvas_summary_brainstem_cross', 'Brainstem cross-section view showing midbrain, pons, medulla, corticospinal tract, medial lemniscus, spinothalamic tract, cranial nerve nuclei, and a crossed-findings decoder for localizing ipsilateral cranial nerve signs with contralateral body deficits.');
+            if (currentView.isCsfHydro) return t('stem.brainatlas.canvas_summary_csf_hydro', 'CSF flow and hydrocephalus view showing choroid plexus production, lateral ventricles, third ventricle, cerebral aqueduct, fourth ventricle, subarachnoid space, arachnoid granulation reabsorption, and a hydrocephalus decoder for obstructive, communicating, normal-pressure, and raised-pressure patterns.');
+            if (currentView.isStim) return t('stem.brainatlas.canvas_summary_stim', 'Stimulation Lab view showing a Penfield-style response map for motor movement, sensory tingling, visual flashes, auditory sounds, language disruption, memory-emotion responses, autonomic body-state changes, and quiet association cortex while the current electrode target pulses.');
+            if (currentView.isSleep) return t('stem.brainatlas.canvas_summary_sleep', 'Sleep-stage view showing an animated overnight hypnogram, repeated 90-minute cycles, early-night N3 slow-wave sleep, later-night REM periods, N2 spindle sleep, and a sleep-architecture decoder for recovery, memory, emotion, attention, and fragmented sleep.');
+            if (currentView.isEEG) return (t('stem.brainatlas.canvas_summary_eeg_active', 'EEG rhythm view comparing delta, theta, alpha, beta, and gamma waves across different brain states. Active state: ') || 'EEG rhythm view comparing delta, theta, alpha, beta, and gamma waves across different brain states. Active state: ') + activeEegMode.label + '. ' + activeEegReadout.dominant + '. ' + activeEegReadout.caution;
             if (currentView.isCrossLateral) return t('stem.brainatlas.canvas_summary_cross', 'Cross-lateral wiring view showing motor, sensory, and visual crossing, language lateralization, corpus callosum transfer between hemispheres, and a split-brain fixation task where left visual field -> right hemisphere information cannot be verbally named but the left hand can pick the object.');
             return currentView.name + ': ' + brainAtlasShortText(currentView.desc, 170) + ' ' + filtered.length + ' selectable targets are available in this view.';
           }
@@ -5043,6 +5863,10 @@ var d = labToolData.brainAtlas || {};
             { id: 'lobes', view: 'lateral', badge: t('stem.brainatlas.route_badge_atlas', 'Atlas'), title: t('stem.brainatlas.route_lobes_title', 'Map the lobes'), copy: t('stem.brainatlas.route_lobes_copy', 'Start with the side view and connect each lobe to everyday function.'), color: '#7c3aed' },
             { id: 'deep', view: 'medial', badge: t('stem.brainatlas.route_badge_deep', 'Deep'), title: t('stem.brainatlas.route_deep_title', 'Find hidden systems'), copy: t('stem.brainatlas.route_deep_copy', 'Trace memory, emotion, homeostasis, and midline structures.'), color: '#0f766e' },
             { id: 'base', view: 'cranialNervesWillis', badge: t('stem.brainatlas.route_badge_base', 'Base'), title: t('stem.brainatlas.route_cranial_willis_title', 'Map nerves and vessels'), copy: t('stem.brainatlas.route_cranial_willis_copy', 'Use the underside map to connect nerve exits, blood supply, and classic lesion clues.'), color: '#dc2626' },
+            { id: 'stroke', view: 'strokeTerritories', badge: t('stem.brainatlas.route_badge_stroke', 'Stroke'), title: t('stem.brainatlas.route_stroke_title', 'Localize a stroke'), copy: t('stem.brainatlas.route_stroke_copy', 'Match deficit patterns to ACA, MCA, PCA, lacunar, watershed, and posterior circulation territories.'), color: '#ef4444' },
+            { id: 'cerebellar', view: 'cerebellumClinic', badge: t('stem.brainatlas.route_badge_cerebellum', 'Cerebellum'), title: t('stem.brainatlas.route_cerebellum_title', 'Read ataxia clues'), copy: t('stem.brainatlas.route_cerebellum_copy', 'Separate vermis, limb hemispheres, vestibular signs, and PICA/AICA/SCA patterns.'), color: '#16a34a' },
+            { id: 'brainstem', view: 'brainstemCrossSection', badge: t('stem.brainatlas.route_badge_brainstem', 'Brainstem'), title: t('stem.brainatlas.route_brainstem_title', 'Decode crossed findings'), copy: t('stem.brainatlas.route_brainstem_copy', 'Pair ipsilateral cranial nerve signs with contralateral body tract findings.'), color: '#2563eb' },
+            { id: 'csf', view: 'csfHydrocephalus', badge: t('stem.brainatlas.route_badge_csf', 'CSF'), title: t('stem.brainatlas.route_csf_title', 'Trace CSF flow'), copy: t('stem.brainatlas.route_csf_copy', 'Follow ventricular flow, aqueduct bottlenecks, reabsorption, and hydrocephalus patterns.'), color: '#0284c7' },
             { id: 'bodymap', view: 'homunculus', badge: t('stem.brainatlas.route_badge_map', 'Map'), title: t('stem.brainatlas.route_homunculus_title', 'Map the body'), copy: t('stem.brainatlas.route_homunculus_copy', 'Compare motor output and sensory input across the cortical homunculus.'), color: '#0ea5e9' },
             { id: 'vision', view: 'visualPathway', badge: t('stem.brainatlas.route_badge_vision', 'Vision'), title: t('stem.brainatlas.route_visual_pathway_title', 'Trace vision'), copy: t('stem.brainatlas.route_visual_pathway_copy', 'Follow retinal fibers through the chiasm and match each lesion to its field cut.'), color: '#2563eb' },
             { id: 'language', view: 'languageNetwork', badge: t('stem.brainatlas.route_badge_language', 'Language'), title: t('stem.brainatlas.route_language_network_title', 'Map language'), copy: t('stem.brainatlas.route_language_network_copy', 'Trace hearing, reading, comprehension, repetition, and speech output across the dominant-hemisphere network.'), color: '#7c3aed' },
@@ -5392,6 +6216,48 @@ var d = labToolData.brainAtlas || {};
                 eegWaves:          { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '📈', title: t('stem.brainatlas.eeg_waves_brain_rhythms', 'EEG waves — brain rhythms'),                    hint: t('stem.brainatlas.delta_deep_sleep_theta_drowsy_memory_a', 'Delta (deep sleep) → Theta (drowsy + memory) → Alpha (relaxed wakefulness) → Beta (active thinking) → Gamma (focused attention). Frequency rises with arousal level.') },
                 crossLateral:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '⚡', title: t('stem.brainatlas.cross_lateral_wiring_left_vs_right', 'Cross-lateral wiring — left vs right'),          hint: t('stem.brainatlas.each_hemisphere_controls_the_opposite_', 'Each hemisphere controls the OPPOSITE side of the body, while the corpus callosum transfers information between hemispheres. Split-brain studies make that bridge visible: what one hemisphere sees may not be verbally reportable unless information crosses.') }
               };
+              VIEW_META.synapses = {
+                accent: '#8b5cf6',
+                soft: 'rgba(139,92,246,0.10)',
+                icon: 'SD',
+                title: t('stem.brainatlas.synapse_development_lifespan_map', 'Synapse & development - lifespan map'),
+                hint: t('stem.brainatlas.synapse_development_lifespan_hint', 'Compare early synapse overproduction, sensory pruning, later prefrontal pruning, myelination, lifelong plasticity, and adolescent remodeling on one uncluttered development map.')
+              };
+              VIEW_META.stimulate = {
+                accent: '#ea580c',
+                soft: 'rgba(234,88,12,0.10)',
+                icon: 'ST',
+                title: t('stem.brainatlas.stimulation_lab_penfield_map', 'Stimulation Lab - Penfield response map'),
+                hint: t('stem.brainatlas.stimulation_lab_penfield_hint', 'Use the pulsing electrode target to predict whether stimulation should cause movement, tingling, flashes, sounds, language disruption, memory-emotion responses, body-state changes, or no obvious report.')
+              };
+              VIEW_META.strokeTerritories = {
+                accent: '#ef4444',
+                soft: 'rgba(239,68,68,0.10)',
+                icon: 'CV',
+                title: t('stem.brainatlas.stroke_territories_clinical_map', 'Stroke territories - clinical map'),
+                hint: t('stem.brainatlas.stroke_territories_hint', 'Match the deficit pattern to the vascular map: leg greater than arm for ACA, face/arm plus language or neglect for MCA, visual-field loss for PCA, pure motor or sensory signs for lacunar stroke, and crossed or vestibular clues for posterior circulation.')
+              };
+              VIEW_META.cerebellumClinic = {
+                accent: '#16a34a',
+                soft: 'rgba(22,163,74,0.10)',
+                icon: 'CB',
+                title: t('stem.brainatlas.cerebellum_clinic_map', 'Cerebellum clinic - ataxia map'),
+                hint: t('stem.brainatlas.cerebellum_clinic_hint', 'Use same-side coordination signs to separate vermis gait instability, limb hemisphere dysmetria, vestibular nystagmus, and PICA/AICA/SCA artery patterns.')
+              };
+              VIEW_META.brainstemCrossSection = {
+                accent: '#2563eb',
+                soft: 'rgba(37,99,235,0.10)',
+                icon: 'BS',
+                title: t('stem.brainatlas.brainstem_cross_findings_map', 'Brainstem - crossed findings'),
+                hint: t('stem.brainatlas.brainstem_cross_hint', 'Localize the brainstem by pairing ipsilateral cranial nerve signs with contralateral body tract findings: CN III for midbrain, CN V-VIII for pons, and bulbar/tongue signs for medulla.')
+              };
+              VIEW_META.csfHydrocephalus = {
+                accent: '#0284c7',
+                soft: 'rgba(2,132,199,0.10)',
+                icon: 'CSF',
+                title: t('stem.brainatlas.csf_flow_hydrocephalus_map', 'CSF flow - hydrocephalus map'),
+                hint: t('stem.brainatlas.csf_flow_hydrocephalus_hint', 'Follow CSF from choroid plexus through the lateral ventricles, third ventricle, aqueduct, fourth ventricle, subarachnoid space, and arachnoid granulations. The decoder separates obstructive, communicating, normal-pressure, and raised-pressure patterns.')
+              };
               var meta = VIEW_META[viewKey] || VIEW_META.lateral;
               if (viewKey === 'cranialNervesWillis') {
                 meta = {
@@ -5709,6 +6575,35 @@ var d = labToolData.brainAtlas || {};
 
                 })
 
+              ),
+
+              currentView.isEEG && React.createElement("div", {
+                className: "brainatlas-eeg-readout",
+                "data-brainatlas-eeg-readout": "true",
+                style: {
+                  border: '1px solid ' + activeEegReadout.color + '55',
+                  borderLeft: '4px solid ' + activeEegReadout.color,
+                  background: 'linear-gradient(135deg, ' + activeEegReadout.color + '12, rgba(255,255,255,0.96))',
+                  borderRadius: 8,
+                  padding: '10px 12px',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+                  gap: 10,
+                  alignItems: 'start'
+                }
+              },
+                React.createElement("div", null,
+                  React.createElement("p", { style: { margin: 0, color: activeEegReadout.color, fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0 } }, t('stem.brainatlas.eeg_state_readout', 'EEG state readout') || 'EEG state readout'),
+                  React.createElement("p", { style: { margin: '2px 0 0', color: '#0f172a', fontSize: 14, fontWeight: 900, lineHeight: 1.2 } }, activeEegReadout.title)
+                ),
+                React.createElement("div", null,
+                  React.createElement("p", { style: { margin: 0, color: '#334155', fontSize: 11, fontWeight: 900 } }, activeEegReadout.dominant),
+                  React.createElement("p", { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45 } }, activeEegReadout.pattern)
+                ),
+                React.createElement("div", null,
+                  React.createElement("p", { style: { margin: 0, color: '#be123c', fontSize: 11, fontWeight: 900 } }, t('stem.brainatlas.eeg_interpretation_caution', 'Interpretation caution') || 'Interpretation caution'),
+                  React.createElement("p", { style: { margin: '3px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, lineHeight: 1.45 } }, activeEegReadout.caution)
+                )
               ),
 
               // ─── Canvas ───
@@ -6404,6 +7299,38 @@ var d = labToolData.brainAtlas || {};
                           onClick: function () { upd('detailMode', 'advanced'); }
                         }, t('stem.brainatlas.advanced', 'Advanced'))
                       )
+                    ),
+
+                    React.createElement("div", {
+                      className: "brainatlas-detail-takeaways",
+                      "data-brainatlas-detail-takeaways": "true"
+                    },
+                      [
+                        {
+                          label: t('stem.brainatlas.quick_function', 'Function') || 'Function',
+                          text: brainAtlasShortText(sel.fn, 116),
+                          color: '#7c3aed'
+                        },
+                        {
+                          label: t('stem.brainatlas.quick_watch_for', 'Watch for') || 'Watch for',
+                          text: brainAtlasShortText(sel.conditions || sel.blood || sel.category || currentView.desc, 116),
+                          color: '#d97706'
+                        },
+                        {
+                          label: t('stem.brainatlas.quick_if_damaged', 'If damaged') || 'If damaged',
+                          text: brainAtlasShortText(sel.damage || t('stem.brainatlas.damage_depends_on_circuit', 'Effects depend on the connected circuit and task being tested.'), 116),
+                          color: '#e11d48'
+                        }
+                      ].map(function (item) {
+                        return React.createElement("div", {
+                          key: item.label,
+                          className: "brainatlas-detail-takeaway",
+                          style: { borderLeftColor: item.color }
+                        },
+                          React.createElement("strong", null, item.label),
+                          React.createElement("span", null, item.text)
+                        );
+                      })
                     ),
 
                     React.createElement("div", { className: "space-y-2.5" },
