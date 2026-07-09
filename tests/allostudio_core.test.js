@@ -60,6 +60,35 @@ describe('doc creation + validation', () => {
     const scene = ST.stReplay(revived, 1);
     expect(scene.objects.length).toBe(1);
   });
+  it('rejects scene-history drift, unsafe image URLs, and broken sequences', () => {
+    const drift = ST.stCreateDoc('letter-portrait', 'Drift', T0);
+    addText(drift, 'Recorded text');
+    drift.objects[0].runs[0].text = 'Canvas-only text';
+    expect(ST.stValidateDoc(drift)).toContain('Current scene does not match the process history');
+
+    const remote = ST.stCreateDoc('letter-portrait', 'Remote', T0);
+    ST.stAppend(remote, { type: 'object.add', object: { type: 'image', src: 'https://example.com/track.png?student=123', alt: 'Remote', decorative: false, frame: { x: 0, y: 0, w: 100, h: 80 }, z: 1 } }, 'import', T0);
+    expect(ST.stValidateDoc(remote).some(e => /unsafe or oversized image source/i.test(e))).toBe(true);
+    expect(ST.stExportHtml(remote, { lang: 'en' })).not.toContain('example.com');
+
+    const sequence = ST.stCreateDoc('letter-portrait', 'Sequence', T0);
+    addText(sequence, 'Step');
+    sequence.ledger.ops[0].seq = 2;
+    expect(ST.stValidateDoc(sequence).some(e => /non-contiguous sequence/i.test(e))).toBe(true);
+
+    expect(ST.stIsSafeDataImage('data:image/png;base64,abc')).toBe(true);
+    expect(ST.stIsSafeDataImage('data:image/svg+xml;base64,abc')).toBe(false);
+    expect(ST.stIsSafeDataImage('https://example.com/x.png')).toBe(false);
+  });
+  it('canonicalizes valid loaded documents from ledger truth and rebuilds caches', () => {
+    const d = ST.stCreateDoc('square', 'Canonical', T0);
+    addText(d, 'Truth');
+    d._redo = [{ type: 'object.remove', target: 'o1' }];
+    const canonical = ST.stCanonicalizeDoc(d);
+    expect(canonical._redo).toEqual([]);
+    expect(canonical.objects[0].runs[0].text).toBe('Truth');
+    expect(ST.stValidateDoc(canonical)).toEqual([]);
+  });
 });
 
 describe('ledger: append, actor set, id minting', () => {
@@ -235,6 +264,23 @@ describe('undo / redo = ledger navigation', () => {
   it('undo on an empty ledger is a safe no-op', () => {
     const d = ST.stCreateDoc('letter-portrait', 'URe', T0);
     expect(ST.stUndo(d)).toBe(false);
+  });
+  it('undoes and redoes a multi-object gesture atomically', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Gesture', T0);
+    addText(d, 'A');
+    const second = addText(d, 'B');
+    ST.stAppend(d, { type: 'object.move', target: second.object.id, x: 40, y: 10 }, 'user', T0 + 1);
+    const before = d.objects.map(o => o.frame.x);
+    const patches = ST.stMoveFramesAsGroup(d.objects, ['o1', 'o2'], 100, 0, d.canvas)
+      .map(p => ({ type: 'object.update', target: p.id, patch: { frame: p.frame } }));
+    const applied = ST.stAppendGesture(d, patches, 'user', T0 + 2, { label: 'Move objects' });
+    expect(new Set(applied.map(op => op.gesture.id)).size).toBe(1);
+    expect(d.objects.map(o => o.frame.x)).toEqual(before.map(x => x + 100));
+
+    expect(ST.stUndo(d)).toBe(true);
+    expect(d.objects.map(o => o.frame.x)).toEqual(before);
+    expect(ST.stRedo(d)).toBe(true);
+    expect(d.objects.map(o => o.frame.x)).toEqual(before.map(x => x + 100));
   });
 });
 
@@ -497,6 +543,14 @@ describe('accessibility preflight + workflow helpers', () => {
     ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 150, y: 0, w: 200, h: 60 }, z: 2, runs: [{ text: 'hard to read on the left', style: { size: 14, color: '#000000' } }] } }, 'user', T0);
     const types = ST.stAnalyzeDoc(d).issues.map(i => i.type);
     expect(types).toContain('contrast');
+  });
+  it('requires human contrast review whenever text overlaps an image', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Image contrast', T0);
+    addImage(d, 'data:image/png;base64,BLACK', 'Dark image');
+    ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 20, y: 20, w: 200, h: 40 }, z: 2, runs: [{ text: 'Text over image', style: { size: 16, color: '#000000' } }] } }, 'user', T0 + 1);
+    const analysis = ST.stAnalyzeDoc(d);
+    expect(analysis.issues.some(i => i.type === 'image-contrast' && i.severity === 'review')).toBe(true);
+    expect(ST.stBuildAccessibilityChecklist(analysis).find(c => c.key === 'contrast').status).toBe('review');
   });
   it('flags a skipped heading level and a missing H1', () => {
     const d = ST.stCreateDoc('letter-portrait', 'Headings', T0);

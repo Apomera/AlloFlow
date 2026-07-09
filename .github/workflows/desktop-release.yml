@@ -48,10 +48,10 @@ jobs:
             desktop/package-lock.json
       - name: Install web app dependencies (react-scripts for the bundle build)
         working-directory: prismflow-deploy
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Install desktop dependencies (electron, electron-builder)
         working-directory: desktop
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Use prerelease version for beta channel
         if: github.event_name == 'workflow_dispatch' && inputs.channel == 'beta'
         working-directory: desktop
@@ -59,12 +59,18 @@ jobs:
         run: |
           $base = node -p "require('./package.json').version.replace(/-.*/, '')"
           npm version --no-git-tag-version "$base-beta.$env:GITHUB_RUN_NUMBER"
+      - name: Verify desktop sources and runtime
+        working-directory: desktop
+        run: npm run verify:release
       - name: Build Windows x64 and ARM64 installers
         working-directory: desktop
-        run: npm run package:win:ci
+        shell: pwsh
+        run: |
+          if (-not $env:CSC_LINK) { Remove-Item Env:CSC_LINK,Env:CSC_KEY_PASSWORD -ErrorAction SilentlyContinue }
+          npm run package:win:ci
       - name: Verify desktop artifacts
         working-directory: desktop
-        run: npm run verify:artifacts
+        run: npm run verify:artifacts:win
       - uses: actions/upload-artifact@v4
         with:
           name: alloflow-desktop-windows
@@ -97,16 +103,19 @@ jobs:
             desktop/package-lock.json
       - name: Install web app dependencies (react-scripts for the bundle build)
         working-directory: prismflow-deploy
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Install desktop dependencies (electron, electron-builder)
         working-directory: desktop
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Use prerelease version for beta channel
         if: github.event_name == 'workflow_dispatch' && inputs.channel == 'beta'
         working-directory: desktop
         run: |
           BASE="$(node -p "require('./package.json').version.replace(/-.*/, '')")"
           npm version --no-git-tag-version "$BASE-beta.$GITHUB_RUN_NUMBER"
+      - name: Verify desktop sources and runtime
+        working-directory: desktop
+        run: npm run verify:release
       - name: Build macOS x64 and ARM64 packages
         working-directory: desktop
         env:
@@ -117,6 +126,9 @@ jobs:
           # empty CSC_LINK as a real path and dies with "<projectDir> not a file".
           if [ -z "$CSC_LINK" ]; then unset CSC_LINK CSC_KEY_PASSWORD; fi
           npm run package:mac:ci
+      - name: Verify desktop artifacts
+        working-directory: desktop
+        run: npm run verify:artifacts:mac
       - uses: actions/upload-artifact@v4
         with:
           name: alloflow-desktop-macos

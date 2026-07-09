@@ -17837,6 +17837,84 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       r.readAsDataURL(blob);
     } catch (e) { reject(e); }
   });
+  // The karaoke store module arrives asynchronously. Resolve the active
+  // resource's store lazily at every entry point so Save TTS is never required
+  // merely to initialize it, and hydrate persisted clips before the first play.
+  const _ensureKaraokeStore = (lane) => {
+    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+    if (!KS || typeof KS.createStore !== 'function') return null;
+    const studentLane = lane === 'student';
+    const slot = studentLane ? 'studentCurrent' : 'current';
+    const idSlot = studentLane ? 'studentCurrentResourceId' : 'currentResourceId';
+    const payloadField = studentLane ? 'karaokeStudentAudio' : 'karaokeAudio';
+    const resourceId = (generatedContent && generatedContent.id) || null;
+    if (!KS[slot] || KS[idSlot] !== resourceId) {
+      const st = KS.createStore();
+      const payload = generatedContent && generatedContent[payloadField];
+      if (payload) {
+        try { st.hydrate(payload); } catch (_) {}
+      }
+      KS[slot] = st;
+      KS[idSlot] = resourceId;
+    }
+    return KS[slot];
+  };
+  // MediaRecorder commonly produces Opus/WebM. Normalize teacher/student
+  // sentence takes to the same compact 24 kHz mono MP3 used by generated
+  // karaoke clips. If this browser cannot decode or encode the recording,
+  // preserve the original take with its honest MIME type rather than lose it.
+  const _normalizeRecordedAudioForStore = async (blob) => {
+    const originalMime = (blob && blob.type) || 'audio/webm';
+    if (!blob) return null;
+    if (/^audio\/(?:mpeg|mp3)$/i.test(originalMime)) {
+      return { b64: await _blobToBase64(blob), mime: 'audio/mpeg' };
+    }
+    const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!window.lamejs || !_ah || typeof _ah.pcmToMp3 !== 'function' || !AudioCtx) {
+      return { b64: await _blobToBase64(blob), mime: originalMime };
+    }
+    let ctx = null;
+    try {
+      ctx = new AudioCtx();
+      const sourceBuffer = await blob.arrayBuffer();
+      const decoded = await ctx.decodeAudioData(sourceBuffer.slice(0));
+      const targetRate = 24000;
+      const sourceRate = decoded.sampleRate || targetRate;
+      const channelCount = Math.max(1, decoded.numberOfChannels || 1);
+      const channels = [];
+      for (let c = 0; c < channelCount; c++) channels.push(decoded.getChannelData(c));
+      const frameCount = Math.max(1, Math.round((decoded.duration || (decoded.length / sourceRate)) * targetRate));
+      const pcm16 = new Int16Array(frameCount);
+      const ratio = sourceRate / targetRate;
+      for (let i = 0; i < frameCount; i++) {
+        const sourcePos = i * ratio;
+        const i0 = Math.min(decoded.length - 1, Math.floor(sourcePos));
+        const i1 = Math.min(decoded.length - 1, i0 + 1);
+        const frac = sourcePos - i0;
+        let sample = 0;
+        for (let c = 0; c < channelCount; c++) {
+          const data = channels[c];
+          sample += ((data[i0] || 0) * (1 - frac)) + ((data[i1] || 0) * frac);
+        }
+        sample = Math.max(-1, Math.min(1, sample / channelCount));
+        pcm16[i] = sample < 0 ? Math.round(sample * 32768) : Math.round(sample * 32767);
+      }
+      await new Promise(resolve => {
+        try {
+          if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(resolve, { timeout: 750 });
+          else setTimeout(resolve, 0);
+        } catch (_) { setTimeout(resolve, 0); }
+      });
+      const mp3Blob = _ah.pcmToMp3(new Uint8Array(pcm16.buffer), targetRate, 64);
+      return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg' };
+    } catch (e) {
+      warnLog('[Karaoke audio] Microphone MP3 normalization failed; preserving original recording:', e && e.message ? e.message : e);
+      return { b64: await _blobToBase64(blob), mime: originalMime };
+    } finally {
+      try { if (ctx && typeof ctx.close === 'function') await ctx.close(); } catch (_) {}
+    }
+  };
   // Synthesize ONE sentence to { b64, mime }. Prefer cloud PCM -> MP3 (small);
   // fall back to whatever callTTS yields (Kokoro WAV, keyless) so it works
   // everywhere. Uses the currently selected voice.
@@ -17844,7 +17922,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     try {
       const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
       if (window.lamejs && _ah && typeof _ah.pcmToMp3 === 'function') {
-        const r = await fetchTTSBytes(sentence, selectedVoice);
+        const r = await fetchTTSBytes(sentence, selectedVoice, voiceSpeed || 1, leveledTextLanguage || currentUiLanguage || 'English');
         if (r && r.bytes) {
           // 64 kbps mono is transparent for 24 kHz speech and halves the
           // embedded-JSON weight vs the 128 kbps download default.
@@ -17854,7 +17932,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
     } catch (_) {}
     try {
-      const url = await callTTS(sentence).catch(() => null);
+      const url = await callTTS(sentence, selectedVoice, voiceSpeed || 1, { language: leveledTextLanguage || currentUiLanguage || 'English' }).catch(() => null);
       if (!url) return null;
       const blob = await (await fetch(url)).blob();
       return { b64: await _blobToBase64(blob), mime: blob.type || 'audio/wav' };
@@ -17883,10 +17961,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // Regenerate (or first-generate) ONE sentence; store it + persist into the
   // active resource. Returns the new blob URL or null.
   window.__alloRegenerateSentenceAudio = async (sentence) => {
-    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
-    if (!KS) return null;
-    if (!KS.current) KS.current = KS.createStore();
-    const st = KS.current;
+    const st = _ensureKaraokeStore('reference');
+    if (!st) return null;
     const resourceId = generatedContent && generatedContent.id;
     const out = await _synthSentenceForStore(sentence);
     if (!out || !out.b64) return null;
@@ -17899,9 +17975,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // respects the TTS queue and can be stopped via __alloPrepareReadAloudCancel.
   window.__alloPrepareReadAloud = async (sentences, onProgress) => {
     const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
-    if (!KS) return { ok: false };
-    if (!KS.current) KS.current = KS.createStore();
-    const st = KS.current;
+    const st = _ensureKaraokeStore('reference');
+    if (!KS || !st) return { ok: false };
     const resourceId = generatedContent && generatedContent.id;
     const list = (Array.isArray(sentences) ? sentences : []).filter(Boolean);
     try {
@@ -17917,18 +17992,22 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     } catch (_) {}
     const todo = st.missing(list);
     let n = 0;
+    let generatedCount = 0;
     // A Stop click that landed after the previous run finished must not
     // cancel this run's first sentence.
     window.__alloPrepareReadAloudCancel = false;
     for (let i = 0; i < todo.length; i++) {
       if (window.__alloPrepareReadAloudCancel) { window.__alloPrepareReadAloudCancel = false; break; }
       const out = await _synthSentenceForStore(todo[i]);
-      if (out && out.b64) st.put(todo[i], out.b64, out.mime);
+      if (out && out.b64) {
+        st.put(todo[i], out.b64, out.mime);
+        generatedCount++;
+      }
       n++;
       try { if (typeof onProgress === 'function') onProgress(n, todo.length, todo[i]); } catch (_) {}
     }
     _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
-    return { ok: true, generated: n, total: todo.length, bytes: st.estimateBytes() };
+    return { ok: generatedCount === todo.length, generated: generatedCount, attempted: n, total: todo.length, bytes: st.estimateBytes() };
   };
   const _notifyKaraokeAudioCapture = (sentence, status, resourceId, extra) => {
     try {
@@ -17945,9 +18024,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // header) to keep the resource small; stores the raw clip if conversion
   // isn't possible. Persists into the resource like regenerate does.
   window.__alloCaptureKaraokeAudio = async (sentence, url) => {
-    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
-    if (!KS || !KS.current || !sentence || !url) return false;
-    const st = KS.current;
+    if (!sentence || !url) return false;
+    const st = _ensureKaraokeStore('reference');
+    if (!st) return false;
     const resourceId = generatedContent && generatedContent.id;
     if (st.has(sentence)) return false;
     _notifyKaraokeAudioCapture(sentence, 'saving', resourceId);
@@ -17994,28 +18073,45 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // into its own resource field so it rides the student->teacher save without
   // touching the teacher reference the student can always fall back on.
   window.__alloStoreStudentSentenceAudio = async (sentence, blob) => {
-    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
-    if (!KS || !KS.studentCurrent || !sentence || !blob) return false;
-    const st = KS.studentCurrent;
+    if (!sentence || !blob) return false;
+    const st = _ensureKaraokeStore('student');
+    if (!st) return false;
     const resourceId = generatedContent && generatedContent.id;
     try {
-      const b64 = await _blobToBase64(blob);
-      st.put(sentence, b64, blob.type || 'audio/webm', 'human-student');
+      const normalized = await _normalizeRecordedAudioForStore(blob);
+      if (!normalized || !normalized.b64) return false;
+      st.put(sentence, normalized.b64, normalized.mime, 'human-student');
       _persistKaraokeAudioField('karaokeStudentAudio', st.serialize(), resourceId);
       return true;
     } catch (_) { return false; }
   };
   window.__alloStoreRecordedSentenceAudio = async (sentence, blob, source) => {
-    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
-    if (!KS || !KS.current || !sentence || !blob) return false;
-    const st = KS.current;
+    if (!sentence || !blob) return false;
+    const st = _ensureKaraokeStore('reference');
+    if (!st) return false;
     const resourceId = generatedContent && generatedContent.id;
     try {
-      const b64 = await _blobToBase64(blob);
-      st.put(sentence, b64, blob.type || 'audio/webm', source || 'human-teacher');
+      const normalized = await _normalizeRecordedAudioForStore(blob);
+      if (!normalized || !normalized.b64) return false;
+      st.put(sentence, normalized.b64, normalized.mime, source || 'human-teacher');
       _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
       return true;
     } catch (_) { return false; }
+  };
+  // Explicit Audio Editor removal. Persist immediately so a deleted take does
+  // not reappear after navigating away, saving the project, or joining a session.
+  window.__alloRemoveSentenceAudio = (sentence) => {
+    if (!sentence) return false;
+    const st = _ensureKaraokeStore('reference');
+    if (!st || !st.has(sentence)) return false;
+    const resourceId = generatedContent && generatedContent.id;
+    try {
+      st.remove(sentence);
+      _persistKaraokeAudioField('karaokeAudio', st.serialize(), resourceId);
+      return true;
+    } catch (_) {
+      return false;
+    }
   };
   const STYLE_SEEDS = (window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.STYLE_SEEDS) || {
     professional: { name: 'Professional', emoji: '💼', wcagLevel: 'AA', cssVars: { bodyFont: "'Inter', system-ui, sans-serif", headingColor: '#1e3a5f', accentColor: '#2563eb', bgColor: '#ffffff', cardBg: '#f8fafc', cardBorder: '#e2e8f0', headerBg: 'linear-gradient(135deg, #1e3a5f, #2563eb)', headerText: '#ffffff' } },
@@ -18119,19 +18215,26 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // and the teacher's regenerate has a store to write into. Keyed on resource
   // id: a same-id karaokeAudio update (from regenerate) must NOT re-hydrate.
   React.useEffect(() => {
-    const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
-    if (!KS) return;
-    const st = KS.createStore();
-    if (generatedContent && generatedContent.karaokeAudio) {
-      try { st.hydrate(generatedContent.karaokeAudio); } catch (_) {}
-    }
-    KS.current = st;
-    // Student practice lane (separate field, separate store).
-    const stStudent = KS.createStore();
-    if (generatedContent && generatedContent.karaokeStudentAudio) {
-      try { stStudent.hydrate(generatedContent.karaokeStudentAudio); } catch (_) {}
-    }
-    KS.studentCurrent = stStudent;
+    let cancelled = false;
+    let retryTimer = null;
+    let attempts = 0;
+    const attachStores = () => {
+      if (cancelled) return;
+      const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
+      if (!KS) {
+        // CDN modules load after the App's first effects. Retry module readiness
+        // so an already-open/restored resource is hydrated without Save TTS.
+        if (attempts++ < 300) retryTimer = setTimeout(attachStores, 100);
+        return;
+      }
+      _ensureKaraokeStore('reference');
+      _ensureKaraokeStore('student');
+    };
+    attachStores();
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+    };
   }, [generatedContent && generatedContent.id]);
   React.useEffect(() => { pdfFixResultRef.current = pdfFixResult; }, [pdfFixResult]);
 
@@ -30062,7 +30165,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     definitionData, phonicsData, revisionData, selectionMenu,
                     isCustomReviseOpen, customReviseInstruction,
                     latestGlossary, history, complexityLevel, saveOriginalOnAdjust,
-                    playbackState, playbackRate, voiceSpeed,
+                    playbackState, playbackRate, voiceSpeed, selectedVoice,
                     lineHeight, letterSpacing, readingTheme, theme,
                     isTeacherToolbarExpanded, downloadingContentId,
                     isClozeComplete, isSideBySide, cursorStyles,

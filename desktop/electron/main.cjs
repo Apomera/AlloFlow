@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { app, BrowserWindow, ipcMain, safeStorage, shell } = require('electron');
 const runtime = require('../runtime/alloflow-desktop-runtime.cjs');
+const { assertTrustedIpcSender, isSameOrigin } = require('./security.cjs');
 
 let autoUpdater = null;
 let electronLog = null;
@@ -426,7 +427,7 @@ function createMainWindow() {
   });
 
   mainWindow.webContents.on('will-navigate', (event, url) => {
-    if (!url.startsWith(getCommandCenterUrl())) {
+    if (!isSameOrigin(url, getCommandCenterUrl())) {
       event.preventDefault();
       openExternalIfSafe(url);
     }
@@ -435,7 +436,14 @@ function createMainWindow() {
   mainWindow.loadURL(getCommandCenterUrl());
 }
 
-ipcMain.handle('alloflow-desktop:runtime-info', async () => ({
+function handleTrustedIpc(channel, handler) {
+  ipcMain.handle(channel, (event, ...args) => {
+    assertTrustedIpcSender(event, getCommandCenterUrl());
+    return handler(event, ...args);
+  });
+}
+
+handleTrustedIpc('alloflow-desktop:runtime-info', async () => ({
   commandCenterUrl: getCommandCenterUrl(),
   version: runtime.VERSION,
   configPath: runtime.getConfigPath(),
@@ -443,9 +451,9 @@ ipcMain.handle('alloflow-desktop:runtime-info', async () => ({
   logPath: getLogPath(),
 }));
 
-ipcMain.handle('alloflow-desktop:update-status', async () => configureUpdates());
+handleTrustedIpc('alloflow-desktop:update-status', async () => configureUpdates());
 
-ipcMain.handle('alloflow-desktop:set-update-channel', async (_event, channel) => {
+handleTrustedIpc('alloflow-desktop:set-update-channel', async (_event, channel) => {
   const normalized = String(channel || 'latest').toLowerCase() === 'beta' ? 'beta' : 'latest';
   const config = runtime.readConfig();
   runtime.writeConfig({
@@ -458,7 +466,7 @@ ipcMain.handle('alloflow-desktop:set-update-channel', async (_event, channel) =>
   return configureUpdates(true);
 });
 
-ipcMain.handle('alloflow-desktop:check-for-updates', async () => {
+handleTrustedIpc('alloflow-desktop:check-for-updates', async () => {
   configureUpdates();
   if (!autoUpdater || !updateState.configured) {
     return publishUpdateState({
@@ -479,7 +487,7 @@ ipcMain.handle('alloflow-desktop:check-for-updates', async () => {
   return publishUpdateState();
 });
 
-ipcMain.handle('alloflow-desktop:download-update', async () => {
+handleTrustedIpc('alloflow-desktop:download-update', async () => {
   configureUpdates();
   if (!autoUpdater || !updateState.configured) {
     return publishUpdateState({ message: 'Updates are not configured for this build.' });
@@ -500,7 +508,7 @@ ipcMain.handle('alloflow-desktop:download-update', async () => {
   return publishUpdateState();
 });
 
-ipcMain.handle('alloflow-desktop:install-update', async () => {
+handleTrustedIpc('alloflow-desktop:install-update', async () => {
   configureUpdates();
   if (!autoUpdater || !updateState.downloaded) {
     return publishUpdateState({ message: 'No downloaded update is ready to install.' });
@@ -512,13 +520,13 @@ ipcMain.handle('alloflow-desktop:install-update', async () => {
   return publishUpdateState();
 });
 
-ipcMain.handle('alloflow-desktop:set-full-screen', async (_event, enabled) => {
+handleTrustedIpc('alloflow-desktop:set-full-screen', async (_event, enabled) => {
   if (!mainWindow) return false;
   mainWindow.setFullScreen(Boolean(enabled));
   return mainWindow.isFullScreen();
 });
 
-ipcMain.handle('alloflow-desktop:is-full-screen', async () => (
+handleTrustedIpc('alloflow-desktop:is-full-screen', async () => (
   mainWindow ? mainWindow.isFullScreen() : false
 ));
 

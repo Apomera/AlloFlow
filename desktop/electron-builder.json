@@ -10,6 +10,9 @@
     "**/*",
     "package.json",
     "!.local/**",
+    "!app-build/**",
+    "!schoolbox/**",
+    "!build-resources/**",
     "!dist/**"
   ],
   "extraResources": [

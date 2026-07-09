@@ -9,18 +9,21 @@
     "electron:check": "node electron/check.cjs",
     "icon:build": "node scripts/build-allobot-icon.cjs",
     "web:build": "node scripts/build-desktop-web.cjs",
-    "package:win": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --win nsis --x64 --arm64",
+    "package:win": "npm run web:build && electron-builder --config electron-builder.json --win nsis --x64 --arm64",
     "package:win:ci": "npm run web:build && electron-builder --config electron-builder.json --win nsis --x64 --arm64 --publish never",
     "package:mac:ci": "npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --x64 --arm64 --publish never",
-    "package:win-arm64": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --win nsis --arm64",
-    "package:win-x64": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --win nsis --x64",
-    "package:mac": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --x64 --arm64",
-    "package:mac-arm64": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --arm64",
-    "package:mac-x64": "npm run icon:build && npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --x64",
+    "package:win-arm64": "npm run web:build && electron-builder --config electron-builder.json --win nsis --arm64",
+    "package:win-x64": "npm run web:build && electron-builder --config electron-builder.json --win nsis --x64",
+    "package:mac": "npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --x64 --arm64",
+    "package:mac-arm64": "npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --arm64",
+    "package:mac-x64": "npm run web:build && electron-builder --config electron-builder.json --mac dmg zip --x64",
     "verify": "npm run electron:check && npm run verify:contract",
+    "verify:release": "npm run verify && npm run runtime:smoke",
     "verify:contract": "node scripts/check-runtime-contract.cjs",
     "runtime:smoke": "node runtime/alloflow-desktop-runtime.cjs --smoke --port 0",
-    "verify:artifacts": "node scripts/verify-desktop-artifacts.cjs"
+    "verify:artifacts": "node scripts/verify-desktop-artifacts.cjs",
+    "verify:artifacts:win": "node scripts/verify-desktop-artifacts.cjs --platform win",
+    "verify:artifacts:mac": "node scripts/verify-desktop-artifacts.cjs --platform mac"
   },
   "dependencies": {
     "electron-log": "^5.4.4",
@@ -30,7 +33,8 @@
     "@ffmpeg/core": "^0.12.10",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "electron": "^37.4.0",
-    "electron-builder": "^26.15.3"
+    "electron-builder": "^26.15.3",
+    "playwright": "^1.59.1"
   },
   "author": "AlloFlow"
 }

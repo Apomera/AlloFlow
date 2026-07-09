@@ -77,6 +77,10 @@
   var ST_MIN_SIZE = 8;
   var ST_LARGE_IMAGE_SRC_LENGTH = 1500000;
   var ST_IMAGE_OPTIMIZE_MAX_DIM = 1200;
+  var ST_MAX_IMAGE_SRC_LENGTH = 20000000;
+  var ST_MAX_CANVAS_DIM = 10000;
+  var ST_MAX_OBJECTS = 2000;
+  var ST_MAX_LEDGER_OPS = 50000;
   var ST_ACTORS = { user: true, ai: true, import: true };
   // Verbatim UI honesty line (doc §5) — pinned by tests; do not soften or reword
   // into an "AI detection" claim.
@@ -99,7 +103,11 @@
   }
   function stSafeDataImage(v, maxLen) {
     var s = String(v || '').trim();
-    return (s.indexOf('data:image/') === 0 && s.length <= (maxLen || 1200000)) ? s : '';
+    var allowed = /^data:image\/(?:png|jpe?g|webp|gif);base64,[a-z0-9+/_=\s-]+$/i.test(s);
+    return (allowed && s.length <= (maxLen || 1200000)) ? s : '';
+  }
+  function stIsSafeDataImage(v, maxLen) {
+    return !!stSafeDataImage(v, maxLen || ST_MAX_IMAGE_SRC_LENGTH);
   }
   function stFiniteNumber(v, fallback) {
     if (v === null || v === undefined || v === '') return fallback;
@@ -193,7 +201,7 @@
     };
   }
   function stUploadedImagePatch(image, src) {
-    var patch = { src: String(src || ''), provenance: { origin: 'upload' } };
+    var patch = { src: stSafeDataImage(src, ST_MAX_IMAGE_SRC_LENGTH), provenance: { origin: 'upload' } };
     if (image && image.type === 'image' && !image.src) patch.decorative = false;
     return patch;
   }
@@ -283,6 +291,25 @@
   function stFrameContainsPoint(frame, x, y) {
     return !!frame && x >= frame.x && x <= frame.x + frame.w && y >= frame.y && y <= frame.y + frame.h;
   }
+  function stFramesOverlap(a, b) {
+    return !!a && !!b && a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+  function stDeepEqual(a, b) {
+    if (a === b) return true;
+    if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+    if (Array.isArray(a) !== Array.isArray(b)) return false;
+    if (Array.isArray(a)) {
+      if (a.length !== b.length) return false;
+      for (var i = 0; i < a.length; i++) { if (!stDeepEqual(a[i], b[i])) return false; }
+      return true;
+    }
+    var ak = Object.keys(a).sort(), bk = Object.keys(b).sort();
+    if (ak.length !== bk.length) return false;
+    for (var j = 0; j < ak.length; j++) {
+      if (ak[j] !== bk[j] || !stDeepEqual(a[ak[j]], b[bk[j]])) return false;
+    }
+    return true;
+  }
   // Effective background(s) under a text box, sampled at a 3×3 grid — NOT just
   // the center. A caption that straddles a dark shape and the white page yields
   // BOTH colors, so the preflight can score the worst-case contrast instead of
@@ -305,6 +332,15 @@
       }
     }
     return out;
+  }
+  function stTextOverlapsImage(doc, textObj) {
+    if (!doc || !textObj || !Array.isArray(doc.objects)) return false;
+    var textFrame = stClampFrame(textObj.frame, doc.canvas);
+    return doc.objects.some(function (o) {
+      return o && o.id !== textObj.id && o.type === 'image'
+        && stIsSafeDataImage(o.src, ST_MAX_IMAGE_SRC_LENGTH)
+        && stFramesOverlap(textFrame, stClampFrame(o.frame, doc.canvas));
+    });
   }
   function stAlignFrame(frame, canvas, mode) {
     var f = stClampFrame(frame, canvas);
@@ -433,59 +469,108 @@
     return op;
   }
 
+  function stOpGestureId(op) {
+    return op && op.gesture && typeof op.gesture.id === 'string' ? op.gesture.id : '';
+  }
+  function stAppendGesture(doc, opBodies, actor, now, options) {
+    var list = Array.isArray(opBodies) ? opBodies.filter(Boolean) : [];
+    if (!list.length) return [];
+    options = options || {};
+    var last = doc.ledger.ops.length ? doc.ledger.ops[doc.ledger.ops.length - 1].seq : 0;
+    var gestureId = stCleanText(options.id || ('g' + (last + 1)), 80);
+    var label = stCleanText(options.label || 'Grouped edit', 80);
+    return list.map(function (body) {
+      var stamped = stClone(body);
+      stamped.gesture = { id: gestureId, label: label };
+      return stAppend(doc, stamped, actor, now);
+    });
+  }
   // Undo/redo = ledger navigation. Undo pops the last op onto the redo stack and
   // recomputes the scene by replay; redo re-appends the SAME op object (its seq
   // and ts are preserved — the op happened once; navigation doesn't re-stamp it).
   function stUndo(doc) {
     if (!doc.ledger.ops.length) return false;
-    var op = doc.ledger.ops.pop();
-    doc._redo.push(op);
+    if (!Array.isArray(doc._redo)) doc._redo = [];
+    var first = doc.ledger.ops[doc.ledger.ops.length - 1];
+    var gestureId = stOpGestureId(first);
+    do {
+      doc._redo.push(doc.ledger.ops.pop());
+    } while (gestureId && doc.ledger.ops.length && stOpGestureId(doc.ledger.ops[doc.ledger.ops.length - 1]) === gestureId);
     var lastSeq = doc.ledger.ops.length ? doc.ledger.ops[doc.ledger.ops.length - 1].seq : 0;
-    doc.ledger.checkpoints = doc.ledger.checkpoints.filter(function (c) { return c.atSeq <= lastSeq; });
+    doc.ledger.checkpoints = (doc.ledger.checkpoints || []).filter(function (c) { return c.atSeq <= lastSeq; });
     var scene = stReplay(doc, lastSeq);
     doc.title = scene.title; doc.canvas = scene.canvas; doc.objects = scene.objects;
     return true;
   }
   function stRedo(doc) {
-    if (!doc._redo.length) return false;
-    var op = doc._redo.pop();
-    doc.ledger.ops.push(op);
-    var next = stApplyOp({ title: doc.title, canvas: doc.canvas, objects: doc.objects }, op);
-    doc.title = next.title; doc.canvas = next.canvas; doc.objects = next.objects;
-    if (op.seq % ST_CHECKPOINT_EVERY === 0) {
-      doc.ledger.checkpoints.push({ atSeq: op.seq, title: doc.title, canvas: stClone(doc.canvas), objects: stClone(doc.objects) });
-    }
+    if (!Array.isArray(doc._redo) || !doc._redo.length) return false;
+    var first = doc._redo[doc._redo.length - 1];
+    var gestureId = stOpGestureId(first);
+    do {
+      var op = doc._redo.pop();
+      doc.ledger.ops.push(op);
+      var next = stApplyOp({ title: doc.title, canvas: doc.canvas, objects: doc.objects }, op);
+      doc.title = next.title; doc.canvas = next.canvas; doc.objects = next.objects;
+      if (op.seq % ST_CHECKPOINT_EVERY === 0) {
+        doc.ledger.checkpoints.push({ atSeq: op.seq, title: doc.title, canvas: stClone(doc.canvas), objects: stClone(doc.objects) });
+      }
+    } while (gestureId && doc._redo.length && stOpGestureId(doc._redo[doc._redo.length - 1]) === gestureId);
     return true;
   }
-
-  // Reconstruct the scene at seq ≤ toSeq: seek the nearest checkpoint, then apply
-  // the ops after it. stReplay(doc, lastSeq) === the live scene — pinned by tests.
-  function stReplay(doc, toSeq) {
-    // Canvas SIZE at creation is the base; canvas.resize ops re-establish it
-    // during replay (mirrors _baseTitle). Older saves without _baseCanvas fall
-    // back to the current canvas — they carry no resize ops, so it is exact.
+  // Reconstruct the scene at seq <= toSeq. Checkpoints are caches only; loaded
+  // documents are verified against a checkpoint-free fold before they are used.
+  function stReplayBase(doc) {
     var bc = doc._baseCanvas && stIsFiniteNumber(doc._baseCanvas.w) && stIsFiniteNumber(doc._baseCanvas.h) ? doc._baseCanvas : doc.canvas;
-    var base = { title: doc.title, canvas: { preset: bc.preset, w: bc.w, h: bc.h, background: { fill: '#ffffff' } }, objects: [] };
-    // The doc's ORIGINAL title/background are recoverable only via ops, so start
-    // neutral: retitle/background ops re-establish them during replay. Title at
-    // creation is not an op — carry it as the base.
-    base.title = doc._baseTitle !== undefined ? doc._baseTitle : doc.title;
-    var start = base;
+    return {
+      title: doc._baseTitle !== undefined ? doc._baseTitle : doc.title,
+      canvas: { preset: bc.preset, w: bc.w, h: bc.h, background: { fill: '#ffffff' } },
+      objects: []
+    };
+  }
+  function stReplayWithCheckpoints(doc, toSeq, checkpoints) {
+    var start = stReplayBase(doc);
     var fromSeq = 0;
-    for (var i = doc.ledger.checkpoints.length - 1; i >= 0; i--) {
-      var c = doc.ledger.checkpoints[i];
-      if (c.atSeq <= toSeq) { start = { title: c.title, canvas: stClone(c.canvas), objects: stClone(c.objects) }; fromSeq = c.atSeq; break; }
+    var cache = Array.isArray(checkpoints) ? checkpoints : [];
+    for (var i = cache.length - 1; i >= 0; i--) {
+      var c = cache[i];
+      if (c && c.atSeq <= toSeq) {
+        start = { title: c.title, canvas: stClone(c.canvas), objects: stClone(c.objects) };
+        fromSeq = c.atSeq;
+        break;
+      }
     }
-    var scene = { title: start.title, canvas: start.canvas, objects: start.objects.slice() };
-    for (var j = 0; j < doc.ledger.ops.length; j++) {
-      var op = doc.ledger.ops[j];
+    var scene = { title: start.title, canvas: stClone(start.canvas), objects: stClone(start.objects) };
+    var ops = doc && doc.ledger && Array.isArray(doc.ledger.ops) ? doc.ledger.ops : [];
+    for (var j = 0; j < ops.length; j++) {
+      var op = ops[j];
       if (op.seq <= fromSeq) continue;
       if (op.seq > toSeq) break;
       scene = stApplyOp(scene, op);
     }
     return scene;
   }
-
+  function stReplay(doc, toSeq) {
+    return stReplayWithCheckpoints(doc, toSeq, doc && doc.ledger && doc.ledger.checkpoints);
+  }
+  function stReplayCanonical(doc, toSeq) {
+    return stReplayWithCheckpoints(doc, toSeq, []);
+  }
+  function stCanonicalizeDoc(doc) {
+    var out = stClone(doc);
+    out._redo = [];
+    out.ledger.checkpoints = [];
+    var scene = stReplayBase(out);
+    out.ledger.ops.forEach(function (op) {
+      scene = stApplyOp(scene, op);
+      if (op.seq % ST_CHECKPOINT_EVERY === 0) {
+        out.ledger.checkpoints.push({ atSeq: op.seq, title: scene.title, canvas: stClone(scene.canvas), objects: stClone(scene.objects) });
+      }
+    });
+    out.title = scene.title;
+    out.canvas = scene.canvas;
+    out.objects = scene.objects;
+    return out;
+  }
   // Per-actor summary for the Process tab. activeMs sums gaps under 5 minutes —
   // an honest "time in editor" floor, not surveillance-grade timing.
   function stActorSummary(ops) {
@@ -521,43 +606,97 @@
     var errs = [];
     if (!doc || typeof doc !== 'object') return ['Not an object'];
     if (doc.format !== ST_FORMAT) errs.push('Not an AlloStudio file (format "' + doc.format + '")');
-    if (typeof doc.version !== 'number' || doc.version > ST_DOC_VERSION) errs.push('Newer save version (' + doc.version + ') than this build understands (' + ST_DOC_VERSION + ')');
-    if (!doc.canvas || !stIsFiniteNumber(doc.canvas.w) || !stIsFiniteNumber(doc.canvas.h) || !(doc.canvas.w > 0) || !(doc.canvas.h > 0)) errs.push('Missing canvas');
+    if (!Number.isInteger(doc.version) || doc.version < 1) errs.push('Unsupported save version (' + doc.version + ')');
+    else if (doc.version > ST_DOC_VERSION) errs.push('Newer save version (' + doc.version + ') than this build understands (' + ST_DOC_VERSION + ')');
+    if (typeof doc.title !== 'string') errs.push('Missing document title');
+    if (!doc.canvas || !stIsFiniteNumber(doc.canvas.w) || !stIsFiniteNumber(doc.canvas.h) || !(doc.canvas.w > 0) || !(doc.canvas.h > 0)) {
+      errs.push('Missing canvas');
+    } else if (doc.canvas.w > ST_MAX_CANVAS_DIM || doc.canvas.h > ST_MAX_CANVAS_DIM) {
+      errs.push('Canvas is too large');
+    }
+
+    function validateObject(o, label) {
+      if (!o || typeof o !== 'object') { errs.push(label + ' is malformed'); return; }
+      if (!o.id || typeof o.id !== 'string') errs.push(label + ' is missing an id');
+      if (o.type !== 'text' && o.type !== 'image' && o.type !== 'shape') errs.push(label + ' has an unknown type');
+      if (!stFrameIsFinite(o.frame) || o.frame.w <= 0 || o.frame.h <= 0) errs.push(label + ' has an invalid frame');
+      if (o.type === 'text') {
+        if (!Array.isArray(o.runs) || !o.runs[0] || typeof o.runs[0].text !== 'string') errs.push(label + ' has invalid text');
+      } else if (o.type === 'image') {
+        if (o.src != null && typeof o.src !== 'string') errs.push(label + ' has an invalid image source');
+        else if (o.src && !stIsSafeDataImage(o.src, ST_MAX_IMAGE_SRC_LENGTH)) errs.push(label + ' has an unsafe or oversized image source');
+        if (o.alt != null && typeof o.alt !== 'string') errs.push(label + ' has invalid alt text');
+        if (o.fit != null && o.fit !== 'cover' && o.fit !== 'contain') errs.push(label + ' has an invalid image fit');
+      } else if (o.type === 'shape') {
+        if (o.shape !== 'rect' && o.shape !== 'ellipse') errs.push(label + ' has an unknown shape');
+      }
+    }
+
     if (!Array.isArray(doc.objects)) {
       errs.push('Missing objects');
     } else {
+      if (doc.objects.length > ST_MAX_OBJECTS) errs.push('Too many objects');
+      var objectIds = {};
       doc.objects.forEach(function (o, i) {
         var label = 'Object #' + (i + 1);
-        if (!o || typeof o !== 'object') { errs.push(label + ' is malformed'); return; }
-        if (!o.id || typeof o.id !== 'string') errs.push(label + ' is missing an id');
-        if (o.type !== 'text' && o.type !== 'image' && o.type !== 'shape') errs.push(label + ' has an unknown type');
-        if (!stFrameIsFinite(o.frame) || o.frame.w <= 0 || o.frame.h <= 0) errs.push(label + ' has an invalid frame');
-        if (o.type === 'text') {
-          if (!Array.isArray(o.runs) || !o.runs[0] || typeof o.runs[0].text !== 'string') errs.push(label + ' has invalid text');
-        } else if (o.type === 'image') {
-          if (o.src != null && typeof o.src !== 'string') errs.push(label + ' has an invalid image source');
-          if (o.alt != null && typeof o.alt !== 'string') errs.push(label + ' has invalid alt text');
-          if (o.fit != null && o.fit !== 'cover' && o.fit !== 'contain') errs.push(label + ' has an invalid image fit');
-        } else if (o.type === 'shape') {
-          if (o.shape !== 'rect' && o.shape !== 'ellipse') errs.push(label + ' has an unknown shape');
+        validateObject(o, label);
+        if (o && typeof o.id === 'string') {
+          if (objectIds[o.id]) errs.push(label + ' duplicates object id "' + o.id + '"');
+          objectIds[o.id] = true;
         }
       });
     }
+
     if (!doc.ledger || !Array.isArray(doc.ledger.ops)) {
       errs.push('Missing ledger');
     } else {
+      if (doc.ledger.ops.length > ST_MAX_LEDGER_OPS) errs.push('Process history is too large');
+      var addedIds = {};
       doc.ledger.ops.forEach(function (op, i) {
         var label = 'Step #' + (i + 1);
         if (!op || typeof op !== 'object') { errs.push(label + ' is malformed'); return; }
         if (!ST_ACTORS[op.actor]) errs.push(label + ' has an unknown actor');
-        if (!stIsFiniteNumber(op.seq)) errs.push(label + ' has an invalid sequence');
+        if (!Number.isInteger(op.seq) || op.seq !== i + 1) errs.push(label + ' has a non-contiguous sequence');
+        if (!stIsFiniteNumber(op.ts)) errs.push(label + ' has an invalid timestamp');
         if (typeof op.type !== 'string') errs.push(label + ' has an invalid type');
+        if (op.target != null && typeof op.target !== 'string') errs.push(label + ' has an invalid target');
+        if (op.type === 'object.add') {
+          validateObject(op.object, label + ' object');
+          if (op.object && typeof op.object.id === 'string') {
+            if (addedIds[op.object.id]) errs.push(label + ' reuses object id "' + op.object.id + '"');
+            addedIds[op.object.id] = true;
+          }
+        }
+        if (op.type === 'object.update' && op.patch && Object.prototype.hasOwnProperty.call(op.patch, 'src')) {
+          if (op.patch.src && !stIsSafeDataImage(op.patch.src, ST_MAX_IMAGE_SRC_LENGTH)) errs.push(label + ' has an unsafe or oversized image source');
+        }
       });
-      if (doc.ledger.checkpoints && !Array.isArray(doc.ledger.checkpoints)) errs.push('Malformed checkpoints');
+      if (!Array.isArray(doc.ledger.checkpoints)) {
+        errs.push('Malformed checkpoints');
+      } else {
+        doc.ledger.checkpoints.forEach(function (checkpoint, ci) {
+          var label = 'Checkpoint #' + (ci + 1);
+          if (!checkpoint || !Number.isInteger(checkpoint.atSeq) || checkpoint.atSeq < 1 || checkpoint.atSeq > doc.ledger.ops.length || !Array.isArray(checkpoint.objects)) {
+            errs.push(label + ' is malformed');
+            return;
+          }
+          checkpoint.objects.forEach(function (o, oi) { validateObject(o, label + ' object #' + (oi + 1)); });
+        });
+      }
+    }
+
+    if (doc.canvas && Array.isArray(doc.objects) && doc.ledger && Array.isArray(doc.ledger.ops)) {
+      try {
+        var lastSeq = doc.ledger.ops.length ? doc.ledger.ops[doc.ledger.ops.length - 1].seq : 0;
+        var canonical = stReplayCanonical(doc, lastSeq);
+        var live = { title: doc.title, canvas: doc.canvas, objects: doc.objects };
+        if (!stDeepEqual(live, canonical)) errs.push('Current scene does not match the process history');
+      } catch (e) {
+        errs.push('Process history could not be replayed');
+      }
     }
     return errs;
   }
-
   // Process-tab step label. Ops applied from an agent plan carry the teacher's
   // request (op.agent.prompt on the batch's first op) — surfacing it here keeps
   // the timeline honest about WHY the AI changed something, not just that it did.
@@ -630,6 +769,9 @@
           var required = large ? 3 : 4.5;
           if (ratio < required) {
             issues.push({ id: o.id, type: 'contrast', severity: 'warning', title: 'Low text contrast', message: 'Text contrast is ' + ratio.toFixed(2) + ':1. Aim for at least ' + required + ':1.' });
+          }
+          if (stTextOverlapsImage(doc, o)) {
+            issues.push({ id: o.id, type: 'image-contrast', severity: 'review', title: 'Review text over image', message: 'Image colors vary. Confirm this text stays readable across the image and that the visual stacking is intentional.' });
           }
         }
       }
@@ -1098,7 +1240,7 @@
     var rank = { error: 3, warning: 2, review: 1, pass: 0 };
     var defs = [
       { key: 'alt', name: 'Alt text', types: ['alt'], pass: 'Content images are described or marked decorative.', fix: 'Some images need alt text before accessible export.' },
-      { key: 'contrast', name: 'Contrast', types: ['contrast'], pass: 'Text contrast meets the current checks.', fix: 'Some text needs stronger contrast.' },
+      { key: 'contrast', name: 'Contrast', types: ['contrast', 'image-contrast'], pass: 'Text contrast meets the current checks.', fix: 'Some text needs stronger contrast or an image-background review.' },
       { key: 'text', name: 'Readable text', types: ['small-text', 'empty-text'], pass: 'Text is present and readable.', fix: 'Some text is tiny or empty.' },
       { key: 'structure', name: 'Structure', types: ['heading-order', 'reading-order'], pass: 'Headings and reading order look ready.', fix: 'Review headings or reading order before sharing.' },
       { key: 'objects', name: 'Objects', types: ['bounds', 'empty-image', 'large-image'], pass: 'Objects are inside the page and export-friendly.', fix: 'Some objects need layout or file-size attention.' }
@@ -1814,6 +1956,12 @@
   function stUndoAgentBatch(doc) {
     var info = stLastAgentBatch(doc);
     if (!info) return 0;
+    var before = doc.ledger.ops.length;
+    var tail = doc.ledger.ops[before - 1];
+    if (stOpGestureId(tail)) {
+      stUndo(doc);
+      return before - doc.ledger.ops.length;
+    }
     var undone = 0;
     while (undone < info.count && stUndo(doc)) undone++;
     return undone;
@@ -2053,7 +2201,7 @@
     return { type: 'shape', shape: shape, frame: frame, z: 1, fill: fill || '#dbeafe', decorative: true };
   }
   function stMakeImage(src, alt, frame, origin) {
-    return { type: 'image', src: src || '', alt: alt || '', decorative: false, frame: frame, z: 5, fit: 'cover',
+    return { type: 'image', src: stSafeDataImage(src, ST_MAX_IMAGE_SRC_LENGTH), alt: alt || '', decorative: false, frame: frame, z: 5, fit: 'cover',
       provenance: { origin: origin || 'upload' } };
   }
 
@@ -2413,12 +2561,13 @@
         var style = pos + 'font-size:' + size + 'px;color:' + stSafeCssColor(s.color, '#111827') + ';font-weight:' + (s.bold ? '700' : '400') + ';text-align:' + stSafeAlign(s.align) + ';white-space:pre-wrap;line-height:1.25;font-family:' + stSafeFontFamily(s.font) + ';overflow-wrap:break-word;';
         parts.push('<' + tag + ' style="' + style + '">' + stEscapeHtml(run.text) + '</' + tag + '>');
       } else if (o.type === 'image') {
-        if (!o.src) continue; // empty frame — nothing to show OR announce
+        var safeImageSrc = stSafeDataImage(o.src, ST_MAX_IMAGE_SRC_LENGTH);
+        if (!safeImageSrc) continue; // empty or unsafe frame - nothing to show or request
         var fit = o.fit === 'contain' ? 'contain' : 'cover';
         if (o.decorative) {
-          parts.push('<img src="' + stEscapeHtml(o.src) + '" alt="" role="presentation" style="' + pos + 'object-fit:' + fit + ';">');
+          parts.push('<img src="' + stEscapeHtml(safeImageSrc) + '" alt="" role="presentation" style="' + pos + 'object-fit:' + fit + ';">');
         } else {
-          parts.push('<img src="' + stEscapeHtml(o.src) + '" alt="' + stEscapeHtml(o.alt) + '" style="' + pos + 'object-fit:' + fit + ';">');
+          parts.push('<img src="' + stEscapeHtml(safeImageSrc) + '" alt="' + stEscapeHtml(o.alt) + '" style="' + pos + 'object-fit:' + fit + ';">');
         }
       } else if (o.type === 'shape') {
         var radius = stSafeShape(o.shape) === 'ellipse' ? 'border-radius:50%;' : 'border-radius:8px;';
@@ -2530,7 +2679,9 @@
       var raw = localStorage.getItem(ST_AUTOSAVE_KEY);
       if (!raw) return null;
       var parsed = JSON.parse(raw);
-      return stAutosaveValid(parsed) ? parsed : null;
+      if (!stAutosaveValid(parsed)) return null;
+      parsed.doc = stCanonicalizeDoc(parsed.doc);
+      return parsed;
     } catch (_) { return null; }
   }
   function stWriteAutosave(doc, now) {
@@ -2644,24 +2795,30 @@
   function stImportImageDataUrl(dataUrl, maxDim) {
     return new Promise(function (resolve) {
       try {
+        var original = String(dataUrl || '');
+        if (original.indexOf('data:image/') !== 0) { resolve(''); return; }
         var im = new Image();
         im.onload = function () {
-          var dims = stDownscaleDims(im.naturalWidth || im.width, im.naturalHeight || im.height, maxDim || 1600);
-          if (!dims) { resolve(dataUrl); return; }
           try {
+            var naturalW = im.naturalWidth || im.width;
+            var naturalH = im.naturalHeight || im.height;
+            var dims = stDownscaleDims(naturalW, naturalH, maxDim || 1600);
+            if (!dims && stIsSafeDataImage(original, ST_MAX_IMAGE_SRC_LENGTH)) { resolve(original); return; }
+            var target = dims || { w: naturalW, h: naturalH };
+            if (!target.w || !target.h) { resolve(''); return; }
             var c = document.createElement('canvas');
-            c.width = dims.w; c.height = dims.h;
-            c.getContext('2d').drawImage(im, 0, 0, dims.w, dims.h);
-            var isJpeg = /^data:image\/jpe?g/i.test(String(dataUrl));
-            resolve(isJpeg ? c.toDataURL('image/jpeg', 0.88) : c.toDataURL('image/png'));
-          } catch (_) { resolve(dataUrl); }
+            c.width = target.w; c.height = target.h;
+            c.getContext('2d').drawImage(im, 0, 0, target.w, target.h);
+            var isJpeg = /^data:image\/jpe?g;base64,/i.test(original);
+            var normalized = isJpeg ? c.toDataURL('image/jpeg', 0.88) : c.toDataURL('image/png');
+            resolve(stSafeDataImage(normalized, ST_MAX_IMAGE_SRC_LENGTH));
+          } catch (_) { resolve(''); }
         };
-        im.onerror = function () { resolve(dataUrl); };
-        im.src = dataUrl;
-      } catch (_) { resolve(dataUrl); }
+        im.onerror = function () { resolve(''); };
+        im.src = original;
+      } catch (_) { resolve(''); }
     });
   }
-
   function stOptimizeImageDataUrl(dataUrl, maxDim) {
     return new Promise(function (resolve) {
       try {
@@ -2701,13 +2858,16 @@
         var pending = [];
         byZ.forEach(function (o) {
           if (!o || typeof o !== 'object') return;
-          if (o.type === 'image' && o.src) {
-            pending.push(new Promise(function (res) {
-              var im = new Image();
-              im.onload = function () { res({ o: o, im: im }); };
-              im.onerror = function () { res(null); };
-              im.src = o.src;
-            }));
+          if (o.type === 'image') {
+            var safePendingSrc = stSafeDataImage(o.src, ST_MAX_IMAGE_SRC_LENGTH);
+            if (safePendingSrc) {
+              pending.push(new Promise(function (res) {
+                var im = new Image();
+                im.onload = function () { res({ o: o, im: im }); };
+                im.onerror = function () { res(null); };
+                im.src = safePendingSrc;
+              }));
+            }
           }
         });
         Promise.all(pending).then(function (loaded) {
@@ -2834,17 +2994,24 @@
       try { window.addEventListener('resize', update); } catch (_) {}
       return function () { try { window.removeEventListener('resize', update); } catch (_) {} };
     }, []);
-    var trapTab = function (ev) {
-      if (ev.key !== 'Tab') return;
-      var root = _shellRef.current; if (!root) return;
+    var trapTabWithin = function (root, ev) {
+      if (ev.key !== 'Tab' || !root) return;
       var nodes = root.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
       var list = Array.prototype.filter.call(nodes, function (n) { return n.offsetParent !== null || n === document.activeElement; });
-      if (!list.length) return;
+      if (!list.length) { ev.preventDefault(); root.focus(); return; }
       var first = list[0], last = list[list.length - 1], active = document.activeElement;
-      if (ev.shiftKey) { if (active === first || !root.contains(active)) { ev.preventDefault(); try { last.focus(); } catch (_) {} } }
-      else { if (active === last || !root.contains(active)) { ev.preventDefault(); try { first.focus(); } catch (_) {} } }
+      if (active === root) {
+        ev.preventDefault();
+        try { (ev.shiftKey ? last : first).focus(); } catch (_) {}
+      } else if (ev.shiftKey) {
+        if (active === first || !root.contains(active)) { ev.preventDefault(); try { last.focus(); } catch (_) {} }
+      } else if (active === last || !root.contains(active)) {
+        ev.preventDefault(); try { first.focus(); } catch (_) {}
+      }
     };
-    // AI (Milestone B) — optional capabilities. The buttons only appear when the
+    var trapTab = function (ev) {
+      trapTabWithin(_shellRef.current, ev);
+    };    // AI (Milestone B) — optional capabilities. The buttons only appear when the
     // host app wires the callbacks, so older wiring degrades cleanly. Every AI
     // result enters the ledger as actor 'ai' (provenance by construction).
     var canGenerateImage = typeof props.onGenerateImage === 'function';
@@ -2906,6 +3073,22 @@
     var _cropRect = React.useState(null); var cropRect = _cropRect[0], setCropRect = _cropRect[1];
     var _cropImgRef = React.useRef(null);
     var _cropDrag = React.useRef(null);
+    var _cropDialogRef = React.useRef(null);
+    var _cropReturnFocusRef = React.useRef(null);
+    React.useEffect(function () {
+      if (!cropId) return undefined;
+      try { _cropReturnFocusRef.current = document.activeElement; } catch (_) {}
+      var timer = setTimeout(function () {
+        try { if (_cropDialogRef.current) _cropDialogRef.current.focus(); } catch (_) {}
+      }, 0);
+      return function () {
+        clearTimeout(timer);
+        try {
+          var prior = _cropReturnFocusRef.current;
+          if (prior && typeof prior.focus === 'function' && document.contains(prior)) prior.focus();
+        } catch (_) {}
+      };
+    }, [cropId]);
     var student = role === 'student';
     var propTheme = ['light', 'dark', 'contrast'].indexOf(props.theme) >= 0 ? props.theme : null;
     var themeName = propTheme || (function () {
@@ -2939,6 +3122,14 @@
         return op;
       } catch (err) { addToast('AlloStudio: ' + (err && err.message || 'op failed'), 'error'); }
       return null;
+    };
+    var dispatchGesture = function (opBodies, actor, label, gestureId) {
+      try {
+        var applied = stAppendGesture(_docRef.current, opBodies, actor || 'user', Date.now(), { label: label || 'Grouped edit', id: gestureId });
+        if (applied.length) bump();
+        return applied;
+      } catch (err) { addToast('AlloStudio: ' + (err && err.message || 'grouped edit failed'), 'error'); }
+      return [];
     };
     var clearSelection = function () { setSelectedId(null); setSelectedIds([]); };
     var selectOnly = function (id) { setSelectedId(id || null); setSelectedIds(id ? [id] : []); };
@@ -2989,11 +3180,17 @@
     var readingSuggestion = doc ? stReadingOrderSuggestion(doc) : { total: 0, changed: false, currentIds: [], suggestedIds: [], suggested: [], changes: [] };
     var applyReadingOrderSuggestion = function () {
       if (!readingSuggestion.changed) return;
+      var reorderOps = [];
+      var working = { title: doc.title, canvas: doc.canvas, objects: stClone(doc.objects) };
       readingSuggestion.suggestedIds.forEach(function (id, idx) {
-        var live = _docRef.current;
-        var cur = live && Array.isArray(live.objects) ? live.objects.findIndex(function (o) { return o && o.id === id; }) : -1;
-        if (cur >= 0 && cur !== idx) dispatch({ type: 'object.reorder', target: id, toIndex: idx }, 'user');
+        var cur = working.objects.findIndex(function (o) { return o && o.id === id; });
+        if (cur >= 0 && cur !== idx) {
+          var body = { type: 'object.reorder', target: id, toIndex: idx };
+          reorderOps.push(body);
+          working = stApplyOp(working, body);
+        }
       });
+      dispatchGesture(reorderOps, 'user', 'Apply reading order');
       setNavigatorMode('reading');
       setOrderAssistOpen(false);
       stAnnounce(TT('studio.a11y_order_applied', 'Reading order updated'));
@@ -3033,6 +3230,7 @@
         // labels it honestly (we cannot see inside an uploaded image).
         // Downscaled first so a camera photo doesn't bloat the save file.
         stImportImageDataUrl(e.target.result, 1600).then(function (src) {
+          if (!src) { addToast(TT('studio.image_import_failed', 'That file could not be imported as an image.'), 'error'); return; }
           selectFromOp(dispatch({ type: 'object.add', object: stMakeImage(src, '', { x: 100, y: 100, w: 320, h: 240 }, 'upload') }, 'import'));
           addToast(TT('studio.image_added', '🖼️ Image added — give it alt text (or mark it decorative) before exporting.'), 'info');
         });
@@ -3043,10 +3241,8 @@
       if (!doc || !cue) return;
       var y = 72 + (doc.objects.length % 7) * 28;
       var objects = stObjectsFromResourceCue(cue, { canvas: doc.canvas, x: 56, y: y, w: Math.max(220, doc.canvas.w - 112) });
-      var last = null;
-      objects.forEach(function (obj) {
-        last = dispatch({ type: 'object.add', object: obj }, 'import') || last;
-      });
+      var applied = dispatchGesture(objects.map(function (obj) { return { type: 'object.add', object: obj }; }), 'import', 'Insert resource');
+      var last = applied.length ? applied[applied.length - 1] : null;
       if (last && last.object && last.object.id) selectOnly(last.object.id);
       stAnnounce(TT('studio.resource_inserted_a11y', 'Resource inserted into Studio'));
       addToast(TT('studio.resource_inserted', 'Resource added as editable Studio objects.'), 'success');
@@ -3207,7 +3403,7 @@
         addToast(TT('studio.a11y_no_quick_fixes', 'No simple accessibility fixes are available. Review the remaining items.'), 'info');
         return;
       }
-      plan.ops.forEach(function (op) { dispatch(op, 'user'); });
+      dispatchGesture(plan.ops, 'user', 'Fix accessibility');
       stAnnounce(TT('studio.a11y_quick_fixed', 'Simple accessibility fixes applied'));
       addToast(TT('studio.a11y_quick_fixed', 'Simple accessibility fixes applied') + ' (' + plan.fixedTypes.length + ')', 'success');
     };
@@ -3219,7 +3415,7 @@
       setAiBusy('generate');
       Promise.resolve(props.onGenerateImage(prompt)).then(function (dataUrl) {
         setAiBusy(null);
-        if (!dataUrl || String(dataUrl).indexOf('data:') !== 0) { addToast(TT('studio.ai_gen_failed', 'Could not generate an image.'), 'error'); return; }
+        if (!stIsSafeDataImage(dataUrl, ST_MAX_IMAGE_SRC_LENGTH)) { addToast(TT('studio.ai_gen_failed', 'Could not generate an image.'), 'error'); return; }
         // actor 'ai': the pixels came from a model through our own API seam. The
         // prompt lives in provenance. Alt stays EMPTY — a generation prompt is
         // not screen-reader alt text, so the gate still makes the teacher (or
@@ -3309,6 +3505,7 @@
       var dispatchAgent = function (op) {
         var body = stClone(op);
         body.agent = stamped ? { batch: batch } : { batch: batch, prompt: promptText };
+        body.gesture = { id: 'ai-' + batch, label: 'AI edit' };
         var applied = dispatch(body, 'ai');
         if (!applied) return null;
         stamped = true;
@@ -3346,7 +3543,7 @@
         if (!queue.length) { setAiBusy(null); finish(failedImages); return; }
         var req = queue.shift();
         Promise.resolve(props.onGenerateImage(req.prompt)).then(function (dataUrl) {
-          if (dataUrl && String(dataUrl).indexOf('data:') === 0) {
+          if (stIsSafeDataImage(dataUrl, ST_MAX_IMAGE_SRC_LENGTH)) {
             var obj = stMakeImage(dataUrl, '', req.frame, 'ai-generated');
             obj.provenance = { origin: 'ai-generated', prompt: req.prompt };
             dispatchAgent({ type: 'object.add', object: obj });
@@ -3381,7 +3578,7 @@
       setAiBusy('img-edit');
       Promise.resolve(props.onEditImage(selected.src, instruction)).then(function (dataUrl) {
         setAiBusy(null);
-        if (!dataUrl || String(dataUrl).indexOf('data:') !== 0) { addToast(TT('studio.ai_edit_failed', 'Could not edit the image.'), 'error'); return; }
+        if (!stIsSafeDataImage(dataUrl, ST_MAX_IMAGE_SRC_LENGTH)) { addToast(TT('studio.ai_edit_failed', 'Could not edit the image.'), 'error'); return; }
         dispatch({ type: 'object.update', target: id, patch: { src: dataUrl, provenance: { origin: 'ai-edited', prompt: instruction, prior: priorOrigin } } }, 'ai');
         setImgEditPrompt('');
         setImgEditOpen(false);
@@ -3637,16 +3834,17 @@
           ev.preventDefault(); ev.stopPropagation();
           var d = moves[ev.key];
           if (!ev.shiftKey && selectionIds.length > 1 && selectionIds.indexOf(o.id) >= 0) {
-            stMoveFramesAsGroup(doc.objects, selectionIds, d[0], d[1], doc.canvas).forEach(function (p) {
-              dispatch({ type: 'object.update', target: p.id, patch: { frame: p.frame } }, 'user');
+            var groupOps = stMoveFramesAsGroup(doc.objects, selectionIds, d[0], d[1], doc.canvas).map(function (p) {
+              return { type: 'object.update', target: p.id, patch: { frame: p.frame } };
             });
+            dispatchGesture(groupOps, 'user', 'Move objects');
             stAnnounce(TT('studio.a11y_group_moved', 'Selected objects moved'));
           } else if (ev.shiftKey) dispatch({ type: 'object.resize', target: o.id, w: f.w + d[0], h: f.h + d[1] }, 'user');
           else dispatch({ type: 'object.move', target: o.id, x: f.x + d[0], y: f.y + d[1] }, 'user');
         } else if (ev.key === 'Delete' || ev.key === 'Backspace') {
           ev.preventDefault(); ev.stopPropagation();
           var removeIds = selectionIds.length > 1 && selectionIds.indexOf(o.id) >= 0 ? selectionIds : [o.id];
-          removeIds.forEach(function (id) { dispatch({ type: 'object.remove', target: id }, 'user'); });
+          dispatchGesture(removeIds.map(function (id) { return { type: 'object.remove', target: id }; }), 'user', 'Remove objects');
           clearSelection();
           stAnnounce(TT('studio.a11y_removed', 'Object removed'));
         } else if (ev.key === 'Escape') {
@@ -3683,35 +3881,37 @@
     var removeSelectedObjects = function () {
       var ids = selectionIds.length ? selectionIds.slice() : (selectedId ? [selectedId] : []);
       if (!ids.length) return;
-      ids.forEach(function (id) { dispatch({ type: 'object.remove', target: id }, 'user'); });
+      dispatchGesture(ids.map(function (id) { return { type: 'object.remove', target: id }; }), 'user', 'Remove objects');
       clearSelection();
       stAnnounce(TT('studio.a11y_removed', 'Object removed'));
     };
     var alignSelectedGroup = function (mode) {
       if (selectedGroup.length < 2) return;
-      stAlignFramesAsGroup(doc.objects, selectionIds, mode).forEach(function (p) {
-        dispatch({ type: 'object.update', target: p.id, patch: { frame: stClampFrame(p.frame, doc.canvas) } }, 'user');
+      var ops = stAlignFramesAsGroup(doc.objects, selectionIds, mode).map(function (p) {
+        return { type: 'object.update', target: p.id, patch: { frame: stClampFrame(p.frame, doc.canvas) } };
       });
+      dispatchGesture(ops, 'user', 'Align objects');
       stAnnounce(TT('studio.a11y_group_aligned', 'Selected objects aligned'));
     };
     var distributeSelectedGroup = function (axis) {
       if (selectedGroup.length < 3) return;
-      stDistributeFramesAsGroup(doc.objects, selectionIds, axis).forEach(function (p) {
-        dispatch({ type: 'object.update', target: p.id, patch: { frame: stClampFrame(p.frame, doc.canvas) } }, 'user');
+      var ops = stDistributeFramesAsGroup(doc.objects, selectionIds, axis).map(function (p) {
+        return { type: 'object.update', target: p.id, patch: { frame: stClampFrame(p.frame, doc.canvas) } };
       });
+      dispatchGesture(ops, 'user', 'Distribute objects');
       stAnnounce(TT('studio.a11y_group_distributed', 'Selected objects distributed'));
     };
     var duplicateSelectedGroup = function () {
       if (selectedGroup.length < 2) return;
-      var newIds = [];
-      selectedGroup.forEach(function (o, idx) {
+      var bodies = selectedGroup.map(function (o, idx) {
         var copy = stClone(o);
         delete copy.id;
         copy.frame = stClampFrame(Object.assign({}, copy.frame, { x: copy.frame.x + 24, y: copy.frame.y + 24 }), doc.canvas);
         copy.z = stFiniteNumber(copy.z, 1) + 1 + idx;
-        var op = dispatch({ type: 'object.add', object: copy }, 'user');
-        if (op && op.object && op.object.id) newIds.push(op.object.id);
+        return { type: 'object.add', object: copy };
       });
+      var applied = dispatchGesture(bodies, 'user', 'Duplicate objects');
+      var newIds = applied.map(function (op) { return op && op.object && op.object.id; }).filter(Boolean);
       if (newIds.length) { setSelectedIds(newIds); setSelectedId(newIds[newIds.length - 1]); }
     };
     var altFailures = doc ? stAltGate(doc.objects) : [];
@@ -3813,8 +4013,10 @@
     };
     var applyStyleKit = function (key) {
       var plan = stStyleKitPatch(doc, key, brandProfile);
-      dispatch({ type: 'canvas.background', fill: plan.canvasFill }, 'user');
-      plan.patches.forEach(function (p) { dispatch({ type: 'object.update', target: p.id, patch: p.patch }, 'user'); });
+      var ops = [{ type: 'canvas.background', fill: plan.canvasFill }].concat(plan.patches.map(function (p) {
+        return { type: 'object.update', target: p.id, patch: p.patch };
+      }));
+      dispatchGesture(ops, 'user', 'Apply style kit');
       addToast(TT('studio.style_applied', 'Style kit applied') + ': ' + plan.name, 'success');
     };
     var onLoadFile = function (ev) {
@@ -3827,8 +4029,7 @@
           var parsed = JSON.parse(e.target.result);
           var errs = stValidateDoc(parsed);
           if (errs.length) { addToast(TT('studio.load_failed', 'Could not open: ') + errs[0], 'error'); return; }
-          if (!parsed._redo) parsed._redo = [];
-          _docRef.current = parsed;
+          _docRef.current = stCanonicalizeDoc(parsed);
           setView('edit'); clearSelection(); bump();
           addToast(TT('studio.loaded', '📂 Opened — process history intact.'), 'success');
         } catch (_) { addToast(TT('studio.load_failed', 'Could not open: ') + 'not valid JSON', 'error'); }
@@ -3898,8 +4099,7 @@
       if (!entry || !entry.doc) return;
       var errs = stValidateDoc(entry.doc);
       if (errs.length) { addToast(TT('studio.recent_invalid', 'That recent project could not be reopened.'), 'error'); return; }
-      _docRef.current = stClone(entry.doc);
-      if (!_docRef.current._redo) _docRef.current._redo = [];
+      _docRef.current = stCanonicalizeDoc(entry.doc);
       setView('edit'); clearSelection(); bump();
       addToast(TT('studio.recent_opened', 'Recent project opened.'), 'success');
     };
@@ -4128,8 +4328,9 @@
         var s = run.style || {};
         inner = hh('div', { style: { fontSize: (s.size || 16) * scale + 'px', color: s.color || '#111827', fontWeight: s.bold ? 700 : 400, textAlign: s.align || 'left', whiteSpace: 'pre-wrap', lineHeight: 1.25, overflow: 'hidden', width: '100%', height: '100%', overflowWrap: 'break-word', fontFamily: stSafeFontFamily(s.font) } }, run.text);
       } else if (o.type === 'image') {
-        if (o.src) {
-          inner = hh('img', { src: o.src, alt: '', draggable: false, style: { width: '100%', height: '100%', objectFit: o.fit === 'contain' ? 'contain' : 'cover', pointerEvents: 'none' } });
+        var safeRenderSrc = stSafeDataImage(o.src, ST_MAX_IMAGE_SRC_LENGTH);
+        if (safeRenderSrc) {
+          inner = hh('img', { src: safeRenderSrc, alt: '', draggable: false, style: { width: '100%', height: '100%', objectFit: o.fit === 'contain' ? 'contain' : 'cover', pointerEvents: 'none' } });
         } else {
           var placeholderTone = frameState && frameState.key === 'kept-placeholder' ? statusTone('success') : statusTone('review');
           inner = hh('div', { style: { width: '100%', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '3px', textAlign: 'center', background: placeholderTone.bg, border: '2px dashed ' + placeholderTone.border, borderRadius: '8px', fontSize: Math.max(9, 12 * scale) + 'px', color: placeholderTone.fg, fontWeight: 800, pointerEvents: 'none', padding: '6px', overflow: 'hidden' } },
@@ -4325,6 +4526,7 @@
         return runs;
       };
       var selectedTextStyle = (selected.runs && selected.runs[0] && selected.runs[0].style) || {};
+      var selectedTextValue = (selected.runs && selected.runs[0] && selected.runs[0].text) || '';
       var selectedIssueSummary = issueByObject[selected.id];
       var selectedIssueTone = selectedIssueSummary ? issueToneFor(selectedIssueSummary) : statusTone('success');
       var selectedA11yActions = stObjectReadyActions(doc, selected.id);
@@ -4357,7 +4559,7 @@
           h('select', { value: selected.role, style: S.input, onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { role: e.target.value } }, 'user'); } },
             h('option', { value: 'heading1' }, 'Heading 1'), h('option', { value: 'heading2' }, 'Heading 2'), h('option', { value: 'heading3' }, 'Heading 3'), h('option', { value: 'body' }, TT('studio.body_text', 'Body text')))) : null,
         selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_content', 'Text'),
-          h('textarea', { key: 'text-' + selected.id, defaultValue: (selected.runs && selected.runs[0] && selected.runs[0].text) || '', rows: selected.role === 'body' ? 4 : 2, style: Object.assign({}, S.input, { resize: 'vertical' }), 'aria-label': TT('studio.text_content', 'Text'),
+          h('textarea', { key: 'text-' + selected.id + '-' + selectedTextValue, defaultValue: selectedTextValue, rows: selected.role === 'body' ? 4 : 2, style: Object.assign({}, S.input, { resize: 'vertical' }), 'aria-label': TT('studio.text_content', 'Text'),
             onKeyDown: function (e) { e.stopPropagation(); },
             onBlur: function (e) { commitTextEdit(selected, e.target.value); } })) : null,
         selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.font_size', 'Font size'),
@@ -4417,7 +4619,7 @@
             // key by object id AND altNonce: switching selection OR an AI draft
             // remounts with the right defaultValue; commit-on-blur = ONE
             // object.update op per edit.
-            h('textarea', { key: 'alt-' + selected.id + '-' + altNonce, defaultValue: selected.alt || '', rows: 3, style: Object.assign({}, S.input, { resize: 'vertical' }), 'data-st-alt-input': selected.id,
+            h('textarea', { key: 'alt-' + selected.id + '-' + altNonce + '-' + (selected.alt || ''), defaultValue: selected.alt || '', rows: 3, style: Object.assign({}, S.input, { resize: 'vertical' }), 'data-st-alt-input': selected.id,
               onKeyDown: function (e) { e.stopPropagation(); },
               onBlur: function (e) {
                 if (e.target.value !== (selected.alt || '')) {
@@ -4563,7 +4765,7 @@
           h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
           // Uncontrolled + commit-on-blur: one clean doc.retitle op instead of
           // an op per keystroke polluting the process timeline.
-          h('input', { defaultValue: doc.title, 'aria-label': TT('studio.doc_title', 'Document title'), style: S.titleInput,
+          h('input', { key: 'title-' + ((doc && doc.createdAt) || 0) + '-' + doc.title, defaultValue: doc.title, 'aria-label': TT('studio.doc_title', 'Document title'), style: S.titleInput,
             onBlur: function (e) { if (e.target.value !== doc.title) dispatch({ type: 'doc.retitle', title: e.target.value }, 'user'); },
             onKeyDown: function (e) { if (e.key === 'Enter') e.target.blur(); } }),
           h('button', { style: Object.assign({}, S.hBtn, ops.length ? null : { opacity: 0.45, cursor: 'default' }), disabled: !ops.length, onClick: function () { if (stUndo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
@@ -4847,6 +5049,7 @@
             var r2 = new FileReader();
             r2.onload = function (e2) {
               stImportImageDataUrl(e2.target.result, 1600).then(function (src2) {
+                if (!src2) { addToast(TT('studio.image_import_failed', 'That file could not be imported as an image.'), 'error'); return; }
                 var liveReplace = _docRef.current && _docRef.current.objects ? _docRef.current.objects.filter(function (o) { return o && o.id === replaceId; })[0] : null;
                 var beforeReplaceImage = stAnalyzeDoc(_docRef.current);
                 dispatch({ type: 'object.update', target: replaceId, patch: stUploadedImagePatch(liveReplace, src2) }, 'import');
@@ -4861,8 +5064,8 @@
           var co = doc.objects.filter(function (x) { return x.id === cropId; })[0];
           if (!co || !co.src) return null;
           var r = cropRect || { x: 0, y: 0, w: 0, h: 0 };
-          return h('div', { style: { position: 'fixed', inset: 0, zIndex: 9500, background: 'rgba(2,6,23,0.82)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px' }, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.crop_title', 'Crop image'),
-            onKeyDown: function (e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setCropId(null); setCropRect(null); } } },
+          return h('div', { ref: _cropDialogRef, tabIndex: -1, style: { position: 'fixed', inset: 0, zIndex: 9500, background: 'rgba(2,6,23,0.82)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px' }, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.crop_title', 'Crop image'),
+            onKeyDown: function (e) { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); setCropId(null); setCropRect(null); return; } trapTabWithin(_cropDialogRef.current, e); } },
             h('div', { style: { color: '#fff', fontSize: '13px', fontWeight: 700, marginBottom: '8px', maxWidth: '80vw', textAlign: 'center' } }, '✂ ' + TT('studio.crop_drag', 'Drag on the image to choose the area to keep.'),
               h('div', { style: { fontSize: '11px', fontWeight: 400, color: '#fca5a5', marginTop: '2px' } }, TT('studio.crop_permanent', 'The trimmed-away pixels are permanently removed — including from your saved file.'))),
             h('div', { style: { position: 'relative', maxWidth: '80vw', maxHeight: '68vh', touchAction: 'none' }, onPointerMove: cropPointerMove, onPointerUp: cropPointerUp },
@@ -4888,9 +5091,12 @@
   AlloStudio.stCreateDoc = stCreateDoc;
   AlloStudio.stApplyOp = stApplyOp;
   AlloStudio.stAppend = stAppend;
+  AlloStudio.stAppendGesture = stAppendGesture;
   AlloStudio.stUndo = stUndo;
   AlloStudio.stRedo = stRedo;
   AlloStudio.stReplay = stReplay;
+  AlloStudio.stReplayCanonical = stReplayCanonical;
+  AlloStudio.stCanonicalizeDoc = stCanonicalizeDoc;
   AlloStudio.stActorSummary = stActorSummary;
   AlloStudio.stAltGate = stAltGate;
   AlloStudio.stValidateDoc = stValidateDoc;
@@ -4898,6 +5104,7 @@
   AlloStudio.stTemplates = stTemplates;
   AlloStudio.stExportHtml = stExportHtml;
   AlloStudio.stEscapeHtml = stEscapeHtml;
+  AlloStudio.stIsSafeDataImage = stIsSafeDataImage;
   AlloStudio.stClampFrame = stClampFrame;
   AlloStudio.stAlignFrame = stAlignFrame;
   AlloStudio.stAnalyzeDoc = stAnalyzeDoc;

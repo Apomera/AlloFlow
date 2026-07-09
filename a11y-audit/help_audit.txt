@@ -2,14 +2,53 @@
   HELP MODE COVERAGE AUDIT
 ====================================================
 
-Files scanned: 371
-Defined help keys (help_strings.js): 905
-Referenced help keys (data-help-key attrs): 882
-  - With definition: 882
-  - MISSING definition: 0
-Dead entries (defined but never referenced): 23
+Files scanned: 547
+Defined help keys (help_strings.js): 904
+Referenced help keys (data-help-key attrs): 892
+  - With definition: 878
+  - MISSING definition: 14
+Dead entries (defined but never referenced): 26
 
 --- MISSING help strings (referenced, no definition) ---
+  educator_hub_allo_studio_card  [3x in 3 file(s)]
+     - desktop/app-build/view_educator_hub_modal_module.js
+     - view_educator_hub_modal_module.js
+  educator_hub_video_studio_card  [3x in 3 file(s)]
+     - desktop/app-build/view_educator_hub_modal_module.js
+     - view_educator_hub_modal_module.js
+  educator_hub_whiteboard_card  [2x in 2 file(s)]
+     - view_educator_hub_modal_module.js
+     - view_educator_hub_modal_source.jsx
+  homework_qr  [2x in 2 file(s)]
+     - view_header_module.js
+     - view_header_source.jsx
+  pdf_audit_view_sanitized_rebuild_btn  [3x in 3 file(s)]
+     - desktop/app-build/view_pdf_audit_module.js
+     - view_pdf_audit_module.js
+  readinglib-aa  [1x in 1 file(s)]
+     - reading_library_module.js
+  readinglib-tools  [1x in 1 file(s)]
+     - reading_library_module.js
+  simplified_save_tts  [2x in 2 file(s)]
+     - view_simplified_module.js
+     - view_simplified_source.jsx
+  source_books_btn  [1x in 1 file(s)]
+     - AlloFlowANTI.txt
+  video_studio_cinematic_entry  [2x in 2 file(s)]
+     - desktop/app-build/video_studio_module.js
+     - video_studio_module.js
+  video_studio_open_button  [2x in 2 file(s)]
+     - desktop/app-build/video_studio_module.js
+     - video_studio_module.js
+  wizard_storybook_source  [3x in 3 file(s)]
+     - desktop/app-build/quickstart_module.js
+     - quickstart_module.js
+  ws_gen_mode_assessment  [3x in 3 file(s)]
+     - desktop/app-build/word_sounds_setup_module.js
+     - word_sounds_setup_module.js
+  ws_gen_mode_practice  [3x in 3 file(s)]
+     - desktop/app-build/word_sounds_setup_module.js
+     - word_sounds_setup_module.js
 
 --- DEAD entries (defined but never used) ---
   alignment_generate_button
@@ -19,6 +58,8 @@ Dead entries (defined but never referenced): 23
   brainstorm_step_count_detailed
   bridge_mode_button
   concept_sort_input
+  educator_hub_bridge_card
+  educator_hub_cinematic_studio_card
   header_actions
   header_settings
   header_support
@@ -35,5 +76,16 @@ Dead entries (defined but never referenced): 23
   timeline_topic_detailed
   visuals_low_quality
   wizard_close_btn
+  wizard_url_source
 
 --- Top sections of MISSING keys (by snake_case prefix) ---
+     3  educator
+     2  video
+     2  ws
+     1  homework
+     1  pdf
+     1  readinglib-aa
+     1  readinglib-tools
+     1  simplified
+     1  source
+     1  wizard

@@ -58,13 +58,19 @@ Native shell:
 
 ```powershell
 Set-Location desktop
-npm.cmd run electron:check
+npm.cmd run verify:release
 npm.cmd run start
 ```
 
 The native shell and packaging scripts live in `desktop/package.json` and require the `desktop/node_modules` dependencies.
 
 Electron is currently pinned to the 37.x line because Electron 43's installer hit a Windows ARM64 native extraction issue in this workspace.
+
+The packaging commands use the version-controlled build-resources/icon.ico. Regenerate it only when allobot.svg changes:
+
+    Set-Location desktop
+    npx playwright install chromium
+    npm.cmd run icon:build
 
 Build the bundled desktop web app:
 
@@ -83,7 +89,8 @@ npm.cmd run package:win-x64
 npm.cmd run package:mac
 npm.cmd run package:mac-arm64
 npm.cmd run package:mac-x64
-npm.cmd run verify:artifacts
+npm.cmd run verify:artifacts:win
+# On macOS: npm run verify:artifacts:mac
 ```
 
 Artifacts are written to `desktop/dist/`. Windows ARM64 is supported by the local Electron runtime in this workspace. Mac artifacts should be produced on macOS or in a macOS CI runner before signing/notarization.

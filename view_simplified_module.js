@@ -159,6 +159,12 @@ var ImageIcon = _lazyIcon('ImageIcon');
 var Sparkles = _lazyIcon('Sparkles');
 var AlertCircle = _lazyIcon('AlertCircle');
 var ArrowRight = _lazyIcon('ArrowRight');
+var Play = _lazyIcon('Play');
+var Pause = _lazyIcon('Pause');
+var StopCircle = _lazyIcon('StopCircle');
+var Trash2 = _lazyIcon('Trash2');
+var ChevronDown = _lazyIcon('ChevronDown');
+var ChevronUp = _lazyIcon('ChevronUp');
 function SimplifiedView(props) {
   // State reads
   var t = props.t;
@@ -209,6 +215,7 @@ function SimplifiedView(props) {
   var saveOriginalOnAdjust = props.saveOriginalOnAdjust;
   var playbackState = props.playbackState;
   var playbackRate = props.playbackRate;
+  var selectedVoice = props.selectedVoice;
   var voiceSpeed = props.voiceSpeed;
   var lineHeight = props.lineHeight;
   var letterSpacing = props.letterSpacing;
@@ -337,6 +344,49 @@ function SimplifiedView(props) {
   var regenAudioKey = regenAudioKey_state[0];
   var setRegenAudioKey = regenAudioKey_state[1];
   var setAudioStatusTick = React.useState(0)[1];
+  var editAudioOpen_state = React.useState(false);
+  var editAudioOpen = editAudioOpen_state[0];
+  var setEditAudioOpen = editAudioOpen_state[1];
+  var editAudioPlayingKey_state = React.useState(null);
+  var editAudioPlayingKey = editAudioPlayingKey_state[0];
+  var setEditAudioPlayingKey = editAudioPlayingKey_state[1];
+  var editAudioLoadingKey_state = React.useState(null);
+  var editAudioLoadingKey = editAudioLoadingKey_state[0];
+  var setEditAudioLoadingKey = editAudioLoadingKey_state[1];
+  var editAudioMicRequestKey_state = React.useState(null);
+  var editAudioMicRequestKey = editAudioMicRequestKey_state[0];
+  var setEditAudioMicRequestKey = editAudioMicRequestKey_state[1];
+  var editAudioRecordingKey_state = React.useState(null);
+  var editAudioRecordingKey = editAudioRecordingKey_state[0];
+  var setEditAudioRecordingKey = editAudioRecordingKey_state[1];
+  var editAudioRecordingSaveKey_state = React.useState(null);
+  var editAudioRecordingSaveKey = editAudioRecordingSaveKey_state[0];
+  var setEditAudioRecordingSaveKey = editAudioRecordingSaveKey_state[1];
+  var removeAudioKey_state = React.useState(null);
+  var removeAudioKey = removeAudioKey_state[0];
+  var setRemoveAudioKey = removeAudioKey_state[1];
+  var editAudioNotice_state = React.useState('');
+  var editAudioNotice = editAudioNotice_state[0];
+  var setEditAudioNotice = editAudioNotice_state[1];
+  var editAudioPlayerRef = React.useRef(null);
+  var editAudioPlayTokenRef = React.useRef(0);
+  var editAudioRecordTokenRef = React.useRef(0);
+  var editAudioMediaRecorderRef = React.useRef(null);
+  var editAudioMediaStreamRef = React.useRef(null);
+  var editAudioChunksRef = React.useRef([]);
+  var stopEditAudioPlayback = function () {
+    editAudioPlayTokenRef.current += 1;
+    try {
+      if (editAudioPlayerRef.current) {
+        editAudioPlayerRef.current.onended = null;
+        editAudioPlayerRef.current.onerror = null;
+        editAudioPlayerRef.current.pause();
+      }
+    } catch (_) {}
+    editAudioPlayerRef.current = null;
+    setEditAudioPlayingKey(null);
+    setEditAudioLoadingKey(null);
+  };
   var getReadAloudAudioKey = function (sentence) {
     try {
       var KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
@@ -390,6 +440,53 @@ function SimplifiedView(props) {
   React.useEffect(function () {
     setSavingAudioKeys({});
   }, [generatedContent && generatedContent.id]);
+  React.useEffect(function () {
+    if (isEditingLeveledText) return;
+    setEditAudioOpen(false);
+    stopEditAudioPlayback();
+    editAudioRecordTokenRef.current += 1;
+    var recorder = editAudioMediaRecorderRef.current;
+    try {
+      if (recorder && recorder.state !== 'inactive') recorder.stop();
+    } catch (_) {}
+  }, [isEditingLeveledText]);
+  React.useEffect(function () {
+    setEditAudioOpen(false);
+    stopEditAudioPlayback();
+    setEditAudioMicRequestKey(null);
+    setEditAudioRecordingKey(null);
+    setEditAudioRecordingSaveKey(null);
+    setRemoveAudioKey(null);
+    setEditAudioNotice('');
+    return function () {
+      editAudioPlayTokenRef.current += 1;
+      editAudioRecordTokenRef.current += 1;
+      try {
+        if (editAudioPlayerRef.current) {
+          editAudioPlayerRef.current.onended = null;
+          editAudioPlayerRef.current.onerror = null;
+          editAudioPlayerRef.current.pause();
+        }
+      } catch (_) {}
+      editAudioPlayerRef.current = null;
+      var recorder = editAudioMediaRecorderRef.current;
+      try {
+        if (recorder && recorder.state !== 'inactive') {
+          recorder.onstop = null;
+          recorder.stop();
+        }
+      } catch (_) {}
+      editAudioMediaRecorderRef.current = null;
+      var stream = editAudioMediaStreamRef.current;
+      try {
+        if (stream) stream.getTracks().forEach(function (track) {
+          track.stop();
+        });
+      } catch (_) {}
+      editAudioMediaStreamRef.current = null;
+      editAudioChunksRef.current = [];
+    };
+  }, [generatedContent && generatedContent.id]);
   var cleanSentenceForAudio = function (sentence) {
     // Must mirror playSequence's textToSpeak cleaning (phase_k) — the store
     // key is derived from the cleaned sentence on BOTH sides, so a rule
@@ -402,6 +499,45 @@ function SimplifiedView(props) {
     } catch (_) {
       return null;
     }
+  };
+  var getKaraokeAudioUrl = React.useCallback(function (sentenceText) {
+    try {
+      var st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
+      var storedUrl = st && st.get(sentenceText);
+      if (storedUrl) return Promise.resolve(storedUrl);
+    } catch (_) {}
+    if (typeof callTTS !== 'function') return Promise.resolve(null);
+    var voice = selectedVoice || typeof window !== 'undefined' && window.__alloSelectedVoice || 'Puck';
+    var speed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
+    var language = leveledTextLanguage || 'English';
+    return Promise.resolve(callTTS(sentenceText, voice, speed, {
+      language: language
+    }, language)).catch(function () {
+      return null;
+    });
+  }, [callTTS, selectedVoice, voiceSpeed, leveledTextLanguage]);
+  var getReadAloudAudioProvenance = function (sentence) {
+    var st = getReadAloudStore();
+    var source = null;
+    try {
+      if (st && typeof st.sourceOf === 'function') source = st.sourceOf(sentence);
+    } catch (_) {}
+    if (source === 'human-teacher') return {
+      source: source,
+      label: 'Teacher recording'
+    };
+    if (source === 'human-student') return {
+      source: source,
+      label: 'Student recording'
+    };
+    if (source && String(source).indexOf('human') === 0) return {
+      source: source,
+      label: 'Human recording'
+    };
+    return {
+      source: source || 'ai',
+      label: 'AI voice'
+    };
   };
   var hasStoredReadAloudAudio = function (sentence) {
     var st = getReadAloudStore();
@@ -464,14 +600,249 @@ function SimplifiedView(props) {
       });
     }
   };
-  var handleRegenerateReadAloudSentence = async function (sentence, key) {
-    if (!sentence || regenAudioKey || typeof window.__alloRegenerateSentenceAudio !== 'function') return;
+  var handleRegenerateReadAloudSentence = async function (sentence, key, sentenceNumber) {
+    if (!sentence || regenAudioKey) return;
+    if (typeof window.__alloRegenerateSentenceAudio !== 'function') {
+      setEditAudioNotice('Sentence audio tools are still loading. Please try again.');
+      return;
+    }
+    var wasSaved = hasStoredReadAloudAudio(sentence);
+    if (editAudioPlayerRef.current && editAudioPlayerRef.current._alloSentenceKey === key) stopEditAudioPlayback();
     setRegenAudioKey(key);
+    setEditAudioNotice((wasSaved ? 'Regenerating' : 'Generating') + ' sentence ' + sentenceNumber + ' audio...');
     try {
-      await window.__alloRegenerateSentenceAudio(sentence);
+      var url = await window.__alloRegenerateSentenceAudio(sentence);
+      if (!url) throw new Error('No audio was returned');
+      setAudioStatusTick(function (n) {
+        return n + 1;
+      });
+      setEditAudioNotice((wasSaved ? 'Regenerated' : 'Generated') + ' audio for sentence ' + sentenceNumber + '.');
+    } catch (_) {
+      setEditAudioNotice('Could not generate audio for sentence ' + sentenceNumber + '. Please try again.');
     } finally {
       setRegenAudioKey(null);
     }
+  };
+  var handlePlayEditAudioSentence = async function (sentence, key, sentenceNumber) {
+    if (!sentence || editAudioLoadingKey) return;
+    var current = editAudioPlayerRef.current;
+    if (current && current._alloSentenceKey === key) {
+      if (!current.paused) {
+        try {
+          current.pause();
+        } catch (_) {}
+        setEditAudioPlayingKey(null);
+        setEditAudioNotice('Paused sentence ' + sentenceNumber + '.');
+        return;
+      }
+      try {
+        if (isFinite(current.duration) && current.currentTime >= current.duration) current.currentTime = 0;
+        await current.play();
+        setEditAudioPlayingKey(key);
+        setEditAudioNotice('Playing sentence ' + sentenceNumber + '.');
+      } catch (_) {
+        setEditAudioNotice('Audio playback was blocked. Press Play again.');
+      }
+      return;
+    }
+    if (!hasStoredReadAloudAudio(sentence)) {
+      setEditAudioNotice('Generate or record audio for sentence ' + sentenceNumber + ' before playing it.');
+      return;
+    }
+    stopEditAudioPlayback();
+    var token = ++editAudioPlayTokenRef.current;
+    setEditAudioLoadingKey(key);
+    setEditAudioNotice('Loading sentence ' + sentenceNumber + ' audio...');
+    try {
+      var url = await getKaraokeAudioUrl(sentence);
+      if (token !== editAudioPlayTokenRef.current) return;
+      if (!url) throw new Error('No saved audio URL');
+      var audio = new Audio(url);
+      audio._alloSentenceKey = key;
+      audio.preload = 'auto';
+      // Preview the stored artifact exactly as students receive it.
+      audio.playbackRate = 1;
+      audio.onended = function () {
+        if (editAudioPlayerRef.current === audio) {
+          setEditAudioPlayingKey(null);
+          setEditAudioNotice('Finished sentence ' + sentenceNumber + '.');
+        }
+      };
+      audio.onerror = function () {
+        if (editAudioPlayerRef.current === audio) {
+          setEditAudioPlayingKey(null);
+          setEditAudioNotice('Could not play sentence ' + sentenceNumber + ' audio.');
+        }
+      };
+      editAudioPlayerRef.current = audio;
+      await audio.play();
+      if (token !== editAudioPlayTokenRef.current) {
+        try {
+          audio.pause();
+        } catch (_) {}
+        return;
+      }
+      setEditAudioPlayingKey(key);
+      setEditAudioNotice('Playing sentence ' + sentenceNumber + '.');
+    } catch (_) {
+      if (token === editAudioPlayTokenRef.current) {
+        editAudioPlayerRef.current = null;
+        setEditAudioPlayingKey(null);
+        setEditAudioNotice('Could not play sentence ' + sentenceNumber + ' audio.');
+      }
+    } finally {
+      if (token === editAudioPlayTokenRef.current) setEditAudioLoadingKey(null);
+    }
+  };
+  var releaseEditAudioStream = function () {
+    var stream = editAudioMediaStreamRef.current;
+    try {
+      if (stream) stream.getTracks().forEach(function (track) {
+        track.stop();
+      });
+    } catch (_) {}
+    editAudioMediaStreamRef.current = null;
+  };
+  var handleRecordEditAudioSentence = async function (sentence, key, sentenceNumber) {
+    var activeRecorder = editAudioMediaRecorderRef.current;
+    if (activeRecorder && activeRecorder._alloSentenceKey === key && activeRecorder.state !== 'inactive') {
+      try {
+        activeRecorder.stop();
+        setEditAudioNotice('Finishing the recording for sentence ' + sentenceNumber + '...');
+      } catch (_) {}
+      return;
+    }
+    if (!sentence || editAudioRecordingKey || editAudioMicRequestKey || editAudioRecordingSaveKey) return;
+    if (typeof window.__alloStoreRecordedSentenceAudio !== 'function') {
+      setEditAudioNotice('Recorded-audio storage is still loading. Please try again.');
+      return;
+    }
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function' || typeof window.MediaRecorder === 'undefined') {
+      setEditAudioNotice('Microphone recording is not supported in this browser.');
+      return;
+    }
+    stopEditAudioPlayback();
+    var requestToken = ++editAudioRecordTokenRef.current;
+    setEditAudioMicRequestKey(key);
+    setEditAudioNotice('Opening the microphone for sentence ' + sentenceNumber + '...');
+    var stream = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: true
+      });
+      if (requestToken !== editAudioRecordTokenRef.current) {
+        try {
+          stream.getTracks().forEach(function (track) {
+            track.stop();
+          });
+        } catch (_) {}
+        return;
+      }
+      editAudioMediaStreamRef.current = stream;
+      var MediaRecorderCtor = window.MediaRecorder;
+      var preferredTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'];
+      var mimeType = '';
+      if (typeof MediaRecorderCtor.isTypeSupported === 'function') {
+        for (var typeIdx = 0; typeIdx < preferredTypes.length; typeIdx++) {
+          if (MediaRecorderCtor.isTypeSupported(preferredTypes[typeIdx])) {
+            mimeType = preferredTypes[typeIdx];
+            break;
+          }
+        }
+      }
+      var recorder = mimeType ? new MediaRecorderCtor(stream, {
+        mimeType: mimeType
+      }) : new MediaRecorderCtor(stream);
+      recorder._alloSentenceKey = key;
+      editAudioChunksRef.current = [];
+      recorder.ondataavailable = function (event) {
+        if (event && event.data && event.data.size > 0) editAudioChunksRef.current.push(event.data);
+      };
+      recorder.onerror = function () {
+        setEditAudioNotice('The microphone stopped unexpectedly. Please record sentence ' + sentenceNumber + ' again.');
+      };
+      recorder.onstop = async function () {
+        var chunks = editAudioChunksRef.current.slice();
+        editAudioChunksRef.current = [];
+        if (editAudioMediaRecorderRef.current === recorder) editAudioMediaRecorderRef.current = null;
+        releaseEditAudioStream();
+        setEditAudioRecordingKey(null);
+        if (!chunks.length) {
+          setEditAudioNotice('No audio was captured for sentence ' + sentenceNumber + '.');
+          return;
+        }
+        var recordedBlob = new Blob(chunks, {
+          type: recorder.mimeType || mimeType || 'audio/webm'
+        });
+        setEditAudioRecordingSaveKey(key);
+        setEditAudioNotice('Saving the teacher recording for sentence ' + sentenceNumber + ' as MP3...');
+        try {
+          var saved = await window.__alloStoreRecordedSentenceAudio(sentence, recordedBlob, 'human-teacher');
+          if (saved === false) throw new Error('Recording was not saved');
+          setAudioStatusTick(function (n) {
+            return n + 1;
+          });
+          setEditAudioNotice('Teacher recording saved for sentence ' + sentenceNumber + '.');
+        } catch (_) {
+          setEditAudioNotice('Could not save the recording for sentence ' + sentenceNumber + '. Please try again.');
+        } finally {
+          setEditAudioRecordingSaveKey(null);
+        }
+      };
+      editAudioMediaRecorderRef.current = recorder;
+      recorder.start(250);
+      setEditAudioMicRequestKey(null);
+      setEditAudioRecordingKey(key);
+      setEditAudioNotice('Recording sentence ' + sentenceNumber + '. Press Stop when finished.');
+    } catch (_) {
+      if (stream) {
+        try {
+          stream.getTracks().forEach(function (track) {
+            track.stop();
+          });
+        } catch (_err) {}
+      }
+      if (requestToken === editAudioRecordTokenRef.current) {
+        setEditAudioMicRequestKey(null);
+        setEditAudioRecordingKey(null);
+        setEditAudioNotice('Microphone access was not available. Check permission and try again.');
+      }
+    }
+  };
+  var handleRemoveReadAloudSentence = async function (sentence, key, sentenceNumber) {
+    if (!sentence || removeAudioKey) return;
+    if (typeof window.__alloRemoveSentenceAudio !== 'function') {
+      setEditAudioNotice('Sentence audio removal is still loading. Please try again.');
+      return;
+    }
+    if (editAudioPlayerRef.current && editAudioPlayerRef.current._alloSentenceKey === key) stopEditAudioPlayback();
+    setRemoveAudioKey(key);
+    setEditAudioNotice('Removing saved audio for sentence ' + sentenceNumber + '...');
+    try {
+      var removed = await window.__alloRemoveSentenceAudio(sentence);
+      if (removed === false) throw new Error('Audio was not removed');
+      setAudioStatusTick(function (n) {
+        return n + 1;
+      });
+      setEditAudioNotice('Saved audio removed from sentence ' + sentenceNumber + '.');
+    } catch (_) {
+      setEditAudioNotice('Could not remove the audio for sentence ' + sentenceNumber + '.');
+    } finally {
+      setRemoveAudioKey(null);
+    }
+  };
+  var handleToggleEditAudioPanel = function () {
+    var next = !editAudioOpen;
+    if (!next) {
+      stopEditAudioPlayback();
+      editAudioRecordTokenRef.current += 1;
+      setEditAudioMicRequestKey(null);
+      var recorder = editAudioMediaRecorderRef.current;
+      try {
+        if (recorder && recorder.state !== 'inactive') recorder.stop();
+      } catch (_) {}
+    }
+    setEditAudioOpen(next);
   };
   var renderEditAudioSentenceTools = function () {
     if (!isTeacherMode || !isEditingLeveledText) return null;
@@ -479,52 +850,177 @@ function SimplifiedView(props) {
     if (!sentences.length) return null;
     var summary = getReadAloudAudioSummary(sentences);
     var savingCount = Object.keys(savingAudioKeys || {}).length;
+    var panelId = 'allo-edit-audio-' + String(generatedContent && generatedContent.id || 'current').replace(/[^a-z0-9_-]/gi, '-');
+    var anyRecordingWork = !!editAudioMicRequestKey || !!editAudioRecordingKey || !!editAudioRecordingSaveKey;
     return /*#__PURE__*/React.createElement("div", {
-      className: "flex flex-wrap gap-1.5 p-2 bg-orange-50 border-t border-orange-100 max-h-36 overflow-y-auto"
+      className: "border-t border-orange-100 bg-orange-50/80"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "w-full flex items-center justify-between gap-2 text-[11px] font-bold uppercase tracking-wide text-orange-700 pb-1"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-2 flex-wrap"
-    }, /*#__PURE__*/React.createElement("span", null, "TTS ", summary.saved, "/", summary.total, " saved"), savingCount > 0 && /*#__PURE__*/React.createElement("span", {
-      className: "inline-flex items-center gap-1 normal-case text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-0.5"
+      className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: handleToggleEditAudioPanel,
+      "aria-expanded": editAudioOpen,
+      "aria-controls": panelId,
+      "aria-label": `Edit audio. ${summary.saved} of ${summary.total} sentences saved.`,
+      className: "inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-white text-orange-800 border border-orange-200 hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 transition-colors"
+    }, /*#__PURE__*/React.createElement(Volume2, {
+      size: 14
+    }), /*#__PURE__*/React.createElement("span", null, "Edit audio"), /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 normal-case"
+    }, summary.saved, "/", summary.total, " saved"), editAudioOpen ? /*#__PURE__*/React.createElement(ChevronUp, {
+      size: 14
+    }) : /*#__PURE__*/React.createElement(ChevronDown, {
+      size: 14
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-center sm:justify-end gap-2 flex-wrap"
+    }, savingCount > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full px-2 py-1"
     }, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 10,
       className: "animate-spin"
-    }), " Saving ", savingCount)), /*#__PURE__*/React.createElement("label", {
-      className: "inline-flex items-center gap-1.5 text-slate-600 normal-case font-semibold cursor-pointer"
+    }), " Saving ", savingCount), /*#__PURE__*/React.createElement("label", {
+      className: "inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
       checked: saveTtsAsPlayed,
-      onChange: function (e) {
-        setSaveTtsAsPlayedEnabled(e.target.checked);
+      onChange: function (event) {
+        setSaveTtsAsPlayedEnabled(event.target.checked);
       },
       className: "accent-orange-600",
       "aria-label": "Save played TTS into this resource"
-    }), /*#__PURE__*/React.createElement("span", null, "Save played TTS"))), /*#__PURE__*/React.createElement("div", {
-      className: "w-full text-[11px] text-slate-500 font-semibold -mt-1 mb-0.5"
-    }, "Click a sentence to regenerate. Played TTS saves only when the checkbox is on."), sentences.map(function (sentence, i) {
+    }), /*#__PURE__*/React.createElement("span", null, "Save played TTS")))), editAudioOpen && /*#__PURE__*/React.createElement("div", {
+      id: panelId,
+      role: "region",
+      "aria-label": "Sentence audio editor",
+      className: "border-t border-orange-100 bg-white p-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start gap-2 mb-3 text-xs text-slate-600"
+    }, /*#__PURE__*/React.createElement(Mic, {
+      size: 14,
+      className: "mt-0.5 shrink-0 text-orange-700"
+    }), /*#__PURE__*/React.createElement("p", null, "Preview saved audio, generate a new AI voice, or record your own teacher narration for each sentence. Recordings replace that sentence only.")), editAudioNotice && /*#__PURE__*/React.createElement("div", {
+      role: "status",
+      "aria-live": "polite",
+      className: "mb-3 rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-800"
+    }, editAudioNotice), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-2 max-h-[34rem] overflow-y-auto pr-1 custom-scrollbar"
+    }, sentences.map(function (sentence, i) {
       var key = 'simplified-' + i;
+      var sentenceNumber = i + 1;
       var audioKey = getReadAloudAudioKey(sentence);
-      var busy = regenAudioKey === key;
       var isSaving = !!savingAudioKeys[audioKey];
       var isSaved = hasStoredReadAloudAudio(sentence);
-      return /*#__PURE__*/React.createElement("button", {
+      var provenance = isSaved ? getReadAloudAudioProvenance(sentence) : {
+        source: null,
+        label: 'No saved source'
+      };
+      var isGenerating = regenAudioKey === key;
+      var isLoading = editAudioLoadingKey === key;
+      var isPlayingSentence = editAudioPlayingKey === key;
+      var isMicRequest = editAudioMicRequestKey === key;
+      var isRecording = editAudioRecordingKey === key;
+      var isRecordingSave = editAudioRecordingSaveKey === key;
+      var isRemoving = removeAudioKey === key;
+      var statusLabel = isMicRequest ? 'Opening microphone' : isRecording ? 'Recording' : isRecordingSave ? 'Saving recording' : isGenerating ? isSaved ? 'Regenerating' : 'Generating' : isRemoving ? 'Removing' : isSaving ? 'Caching played TTS' : isSaved ? 'Ready' : 'Missing audio';
+      var statusClass = isRecording ? 'bg-red-50 text-red-700 border-red-200' : isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200';
+      var controlsBlocked = isSaving || isGenerating || isRemoving || ttsPrepState.busy;
+      var recordDisabled = !isRecording && (anyRecordingWork || !!regenAudioKey || !!removeAudioKey || isSaving || ttsPrepState.busy);
+      var actionClass = 'inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-45 disabled:cursor-not-allowed';
+      return /*#__PURE__*/React.createElement("div", {
         key: key,
+        className: "rounded-xl border border-slate-200 bg-slate-50/70 p-3"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex items-start gap-2"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-black text-orange-800",
+        "aria-hidden": "true"
+      }, sentenceNumber), /*#__PURE__*/React.createElement("div", {
+        className: "min-w-0 flex-1"
+      }, /*#__PURE__*/React.createElement("p", {
+        dir: "auto",
+        className: "text-sm font-medium leading-relaxed text-slate-800"
+      }, sentence), /*#__PURE__*/React.createElement("div", {
+        className: "mt-1.5 flex items-center gap-1.5 flex-wrap",
+        "aria-label": `Sentence ${sentenceNumber} audio status: ${statusLabel}. Source: ${provenance.label}.`
+      }, /*#__PURE__*/React.createElement("span", {
+        className: `inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`
+      }, isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? /*#__PURE__*/React.createElement(RefreshCw, {
+        size: 9,
+        className: "animate-spin"
+      }) : isRecording ? /*#__PURE__*/React.createElement("span", {
+        className: "h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"
+      }) : isSaved ? /*#__PURE__*/React.createElement(CheckCircle2, {
+        size: 9
+      }) : /*#__PURE__*/React.createElement(AlertCircle, {
+        size: 9
+      }), statusLabel), /*#__PURE__*/React.createElement("span", {
+        className: "text-[10px] font-semibold text-slate-500"
+      }, provenance.label)))), /*#__PURE__*/React.createElement("div", {
+        role: "group",
+        "aria-label": `Audio actions for sentence ${sentenceNumber}`,
+        className: "mt-2.5 flex items-center gap-1.5 flex-wrap"
+      }, /*#__PURE__*/React.createElement("button", {
         type: "button",
-        onClick: () => handleRegenerateReadAloudSentence(sentence, key),
-        disabled: !!regenAudioKey || isSaving,
-        className: `inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${isSaving ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'}`,
-        title: `${isSaving ? 'TTS saving' : isSaved ? 'TTS saved' : 'TTS missing'} - ${t('immersive.regenerate_sentence_tip') || 'Regenerate sentence audio'}: ${sentence.slice(0, 90)}`,
-        "aria-label": `${isSaving ? 'Saving TTS' : isSaved ? 'Saved TTS' : 'Missing TTS'} for sentence ${i + 1}. Regenerate audio.`
-      }, busy || isSaving ? /*#__PURE__*/React.createElement(RefreshCw, {
+        onClick: function () {
+          handlePlayEditAudioSentence(sentence, key, sentenceNumber);
+        },
+        disabled: !isSaved || isLoading || controlsBlocked || anyRecordingWork || !!editAudioLoadingKey && !isLoading,
+        "aria-pressed": isPlayingSentence,
+        "aria-label": `${isPlayingSentence ? 'Pause' : 'Play'} audio for sentence ${sentenceNumber}`,
+        title: !isSaved ? 'Generate or record audio first' : isPlayingSentence ? 'Pause sentence audio' : 'Play sentence audio',
+        className: `${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`
+      }, isLoading ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
         className: "animate-spin"
-      }) : isSaved ? /*#__PURE__*/React.createElement(CheckCircle2, {
+      }) : isPlayingSentence ? /*#__PURE__*/React.createElement(Pause, {
         size: 12
+      }) : /*#__PURE__*/React.createElement(Play, {
+        size: 12
+      }), /*#__PURE__*/React.createElement("span", null, isLoading ? 'Loading' : isPlayingSentence ? 'Pause' : 'Play')), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: function () {
+          handleRegenerateReadAloudSentence(sentence, key, sentenceNumber);
+        },
+        disabled: !!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy,
+        "aria-label": `${isSaved ? 'Regenerate' : 'Generate'} audio for sentence ${sentenceNumber}`,
+        className: `${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`
+      }, isGenerating ? /*#__PURE__*/React.createElement(RefreshCw, {
+        size: 12,
+        className: "animate-spin"
       }) : /*#__PURE__*/React.createElement(Volume2, {
         size: 12
-      }), /*#__PURE__*/React.createElement("span", null, i + 1));
-    }));
+      }), /*#__PURE__*/React.createElement("span", null, isGenerating ? isSaved ? 'Regenerating' : 'Generating' : isSaved ? 'Regenerate' : 'Generate')), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: function () {
+          handleRecordEditAudioSentence(sentence, key, sentenceNumber);
+        },
+        disabled: recordDisabled,
+        "aria-pressed": isRecording,
+        "aria-label": `${isRecording ? 'Stop recording' : 'Record teacher audio'} for sentence ${sentenceNumber}`,
+        title: isRecording ? 'Stop and save this recording' : isSaved ? 'Record a teacher voice replacement' : 'Record teacher audio',
+        className: `${actionClass} ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`
+      }, isMicRequest || isRecordingSave ? /*#__PURE__*/React.createElement(RefreshCw, {
+        size: 12,
+        className: "animate-spin"
+      }) : isRecording ? /*#__PURE__*/React.createElement(StopCircle, {
+        size: 12
+      }) : /*#__PURE__*/React.createElement(Mic, {
+        size: 12
+      }), /*#__PURE__*/React.createElement("span", null, isMicRequest ? 'Opening mic' : isRecording ? 'Stop' : isRecordingSave ? 'Saving' : 'Record')), isSaved && /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: function () {
+          handleRemoveReadAloudSentence(sentence, key, sentenceNumber);
+        },
+        disabled: !!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy,
+        "aria-label": `Remove saved audio for sentence ${sentenceNumber}`,
+        className: `${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`
+      }, isRemoving ? /*#__PURE__*/React.createElement(RefreshCw, {
+        size: 12,
+        className: "animate-spin"
+      }) : /*#__PURE__*/React.createElement(Trash2, {
+        size: 12
+      }), /*#__PURE__*/React.createElement("span", null, isRemoving ? 'Removing' : 'Remove'))));
+    }))));
   };
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
@@ -612,12 +1108,7 @@ function SimplifiedView(props) {
     isOpen: isKaraokeOverlayActive,
     isTeacher: isTeacherMode,
     onClose: () => setIsKaraokeOverlayActive(false),
-    getAudioUrl: sentenceText => {
-      const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current;
-      const _u = _st && _st.get(sentenceText);
-      if (_u) return Promise.resolve(_u);
-      return callTTS(sentenceText).catch(() => null);
-    },
+    getAudioUrl: getKaraokeAudioUrl,
     text: (generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')
   })), immersiveSettings.lineFocus && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out",

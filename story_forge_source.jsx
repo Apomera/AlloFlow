@@ -202,7 +202,14 @@ const clampComicLetteringPercent = (value, fallback = 50) => {
   const safe = Number.isFinite(n) ? n : fallback;
   return Math.max(8, Math.min(92, Math.round(safe * 10) / 10));
 };
-const hasComicLetteringPosition = (rough = {}) => Number.isFinite(Number(rough.letteringX)) && Number.isFinite(Number(rough.letteringY));
+const clampComicLetteringWidth = (value, fallback = 72) => {
+  const n = value === null || value === '' ? NaN : Number(value);
+  const safe = Number.isFinite(n) ? n : fallback;
+  return Math.max(28, Math.min(86, Math.round(safe * 10) / 10));
+};
+const isFiniteComicLetteringValue = (value) => value !== null && value !== '' && Number.isFinite(Number(value));
+const hasComicLetteringPosition = (rough = {}) => isFiniteComicLetteringValue(rough.letteringX) && isFiniteComicLetteringValue(rough.letteringY);
+const hasComicLetteringWidth = (rough = {}) => isFiniteComicLetteringValue(rough.letteringWidth);
 const getComicLetteringPosition = (rough = {}, space = 'top') => {
   if (hasComicLetteringPosition(rough)) {
     return {
@@ -231,6 +238,12 @@ const getComicLetteringPositionStyleText = (rough = {}, space = 'top') => {
   const pos = getComicLetteringPosition(rough, space);
   return `left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,-50%);`;
 };
+const getComicLetteringWidthStyle = (rough = {}) => hasComicLetteringWidth(rough)
+  ? { width: `${clampComicLetteringWidth(rough.letteringWidth)}%`, maxWidth: `${clampComicLetteringWidth(rough.letteringWidth)}%` }
+  : {};
+const getComicLetteringWidthStyleText = (rough = {}) => hasComicLetteringWidth(rough)
+  ? `width:${clampComicLetteringWidth(rough.letteringWidth)}%;max-width:${clampComicLetteringWidth(rough.letteringWidth)}%;`
+  : '';
 const getComicReadingOrderLabel = (layout) => layout === 'manga' ? 'Read right-to-left' : 'Read left-to-right';
 const normalizeComicPageTurn = (value) => {
   const raw = String(value || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/_+/g, '-');
@@ -474,7 +487,8 @@ const sanitizePanelThumbnails = (obj) => {
     if (typeof v.sketchNote === 'string' && v.sketchNote.trim()) clean.sketchNote = v.sketchNote.slice(0, 260);
     const space = normalizeComicLetteringSpace(v.letteringSpace);
     if (space) clean.letteringSpace = space;
-    if (Number.isFinite(Number(v.letteringX)) && Number.isFinite(Number(v.letteringY))) {
+    if (isFiniteComicLetteringValue(v.letteringWidth)) clean.letteringWidth = clampComicLetteringWidth(v.letteringWidth);
+    if (isFiniteComicLetteringValue(v.letteringX) && isFiniteComicLetteringValue(v.letteringY)) {
       clean.letteringX = clampComicLetteringPercent(v.letteringX);
       clean.letteringY = clampComicLetteringPercent(v.letteringY);
     }
@@ -1169,7 +1183,7 @@ const StoryForge = React.memo(({
   const [panelStickers, setPanelStickers] = useState({});
   const [panelDialogue, setPanelDialogue] = useState({}); // keyed by paragraph id: { speaker, speech, thought, sfx }
   const [panelDirections, setPanelDirections] = useState({}); // keyed by paragraph id: { shot, angle, mood, transition }
-  const [panelThumbnails, setPanelThumbnails] = useState({}); // keyed by paragraph id: { focalPoint, composition, letteringSpace, letteringX, letteringY, sketchNote }
+  const [panelThumbnails, setPanelThumbnails] = useState({}); // keyed by paragraph id: { focalPoint, composition, letteringSpace, letteringX, letteringY, letteringWidth, sketchNote }
   const [panelLayouts, setPanelLayouts] = useState({}); // keyed by paragraph id: { frame, colSpan, rowSpan }
   const [panelResizeDrag, setPanelResizeDrag] = useState(null);
   const [bubbleDrag, setBubbleDrag] = useState(null);
@@ -1207,9 +1221,14 @@ const StoryForge = React.memo(({
       } else if (field === 'letteringX' || field === 'letteringY') {
         if (Number.isFinite(Number(value))) current[field] = clampComicLetteringPercent(value);
         else delete current[field];
+      } else if (field === 'letteringWidth') {
+        if (isFiniteComicLetteringValue(value)) current.letteringWidth = clampComicLetteringWidth(value);
+        else delete current.letteringWidth;
       } else if (field === 'resetLetteringPosition') {
         delete current.letteringX;
         delete current.letteringY;
+      } else if (field === 'resetLetteringWidth') {
+        delete current.letteringWidth;
       } else {
         const cleanValue = String(value || '').slice(0, 260);
         if (cleanValue) current[field] = cleanValue;
@@ -1219,6 +1238,7 @@ const StoryForge = React.memo(({
       else delete next[pId];
       return next;
     });
+    if (!isDirty) setIsDirty(true);
   };
   const updatePanelLayout = (pId, field, value) => {
     setPanelLayouts(prev => {
@@ -1240,6 +1260,7 @@ const StoryForge = React.memo(({
       else delete next[pId];
       return next;
     });
+    if (!isDirty) setIsDirty(true);
   };
   const startPanelResizeDrag = (event, pId, idx, pageLayout = comicPageLayout, pageIndex = idx) => {
     event.preventDefault();
@@ -1275,9 +1296,9 @@ const StoryForge = React.memo(({
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     setPanelResizeDrag(null);
   };
-  const getBubblePositionFromPointer = (rect, event) => ({
-    x: clampComicLetteringPercent(((event.clientX - rect.left) / Math.max(1, rect.width)) * 100),
-    y: clampComicLetteringPercent(((event.clientY - rect.top) / Math.max(1, rect.height)) * 100),
+  const getBubblePositionFromPointer = (rect, event, offsetX = 0, offsetY = 0) => ({
+    x: clampComicLetteringPercent((((event.clientX - offsetX) - rect.left) / Math.max(1, rect.width)) * 100),
+    y: clampComicLetteringPercent((((event.clientY - offsetY) - rect.top) / Math.max(1, rect.height)) * 100),
   });
   const updatePanelLetteringPosition = (pId, position) => {
     setPanelThumbnails(prev => {
@@ -1291,28 +1312,126 @@ const StoryForge = React.memo(({
     });
     if (!isDirty) setIsDirty(true);
   };
+  const updatePanelLetteringWidth = (pId, width) => {
+    setPanelThumbnails(prev => {
+      const next = { ...prev };
+      const current = { ...(next[pId] || {}) };
+      if (!normalizeComicLetteringSpace(current.letteringSpace)) current.letteringSpace = 'top';
+      current.letteringWidth = clampComicLetteringWidth(width);
+      next[pId] = current;
+      return next;
+    });
+    if (!isDirty) setIsDirty(true);
+  };
+  const getBubbleResizeBehavior = (rough = {}, space = 'top') => {
+    const cleanSpace = normalizeComicLetteringSpace(space);
+    const resizeFromLeft = !hasComicLetteringPosition(rough) && (cleanSpace === 'right' || cleanSpace.endsWith('-right'));
+    const centered = hasComicLetteringPosition(rough) || cleanSpace === 'top' || cleanSpace === 'bottom' || !cleanSpace;
+    return {
+      resizeFromLeft,
+      resizeDirection: resizeFromLeft ? -1 : 1,
+      resizeScale: centered ? 2 : 1,
+    };
+  };
   const startBubbleDrag = (event, pId) => {
     event.preventDefault();
     event.stopPropagation();
     const artLayer = event.currentTarget.closest('[data-sf-comic-art-layer="true"]');
+    const bubbleTarget = event.currentTarget.closest('.sf-bubble-drag-target');
     const rect = artLayer?.getBoundingClientRect?.();
-    if (!rect) return;
+    const bubbleRect = bubbleTarget?.getBoundingClientRect?.();
+    if (!rect || !bubbleRect) return;
     const dragRect = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
     event.currentTarget.setPointerCapture?.(event.pointerId);
-    setBubbleDrag({ pId, pointerId: event.pointerId, rect: dragRect });
-    updatePanelLetteringPosition(pId, getBubblePositionFromPointer(dragRect, event));
+    setBubbleDrag({
+      mode: 'move',
+      pId,
+      pointerId: event.pointerId,
+      rect: dragRect,
+      offsetX: event.clientX - (bubbleRect.left + (bubbleRect.width / 2)),
+      offsetY: event.clientY - (bubbleRect.top + (bubbleRect.height / 2)),
+    });
   };
   const updateBubbleDrag = (event) => {
-    if (!bubbleDrag || event.pointerId !== bubbleDrag.pointerId) return;
+    if (!bubbleDrag || bubbleDrag.mode !== 'move' || event.pointerId !== bubbleDrag.pointerId) return;
     event.preventDefault();
-    updatePanelLetteringPosition(bubbleDrag.pId, getBubblePositionFromPointer(bubbleDrag.rect, event));
+    updatePanelLetteringPosition(
+      bubbleDrag.pId,
+      getBubblePositionFromPointer(bubbleDrag.rect, event, bubbleDrag.offsetX, bubbleDrag.offsetY),
+    );
   };
   const endBubbleDrag = (event) => {
-    if (!bubbleDrag || event.pointerId !== bubbleDrag.pointerId) return;
+    if (!bubbleDrag || bubbleDrag.mode !== 'move' || event.pointerId !== bubbleDrag.pointerId) return;
     event.preventDefault();
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     setBubbleDrag(null);
     sfAnnounce('Speech bubble position updated');
+  };
+  const startBubbleResize = (event, pId) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const artLayer = event.currentTarget.closest('[data-sf-comic-art-layer="true"]');
+    const bubbleTarget = event.currentTarget.closest('.sf-bubble-drag-target');
+    const rect = artLayer?.getBoundingClientRect?.();
+    const bubbleRect = bubbleTarget?.getBoundingClientRect?.();
+    if (!rect || !bubbleRect) return;
+    const rough = panelThumbnails[pId] || {};
+    const behavior = getBubbleResizeBehavior(rough, rough.letteringSpace);
+    const measuredWidth = (bubbleRect.width / Math.max(1, rect.width)) * 100;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    setBubbleDrag({
+      mode: 'resize',
+      pId,
+      pointerId: event.pointerId,
+      rect: { width: rect.width },
+      startX: event.clientX,
+      startWidth: hasComicLetteringWidth(rough) ? clampComicLetteringWidth(rough.letteringWidth) : clampComicLetteringWidth(measuredWidth),
+      resizeDirection: behavior.resizeDirection,
+      resizeScale: behavior.resizeScale,
+    });
+  };
+  const updateBubbleResize = (event) => {
+    if (!bubbleDrag || bubbleDrag.mode !== 'resize' || event.pointerId !== bubbleDrag.pointerId) return;
+    event.preventDefault();
+    const deltaPercent = ((event.clientX - bubbleDrag.startX) / Math.max(1, bubbleDrag.rect.width))
+      * 100 * bubbleDrag.resizeDirection * bubbleDrag.resizeScale;
+    updatePanelLetteringWidth(bubbleDrag.pId, bubbleDrag.startWidth + deltaPercent);
+  };
+  const endBubbleResize = (event) => {
+    if (!bubbleDrag || bubbleDrag.mode !== 'resize' || event.pointerId !== bubbleDrag.pointerId) return;
+    event.preventDefault();
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    setBubbleDrag(null);
+    sfAnnounce('Speech bubble width updated');
+  };
+  const handleBubbleControlKeyDown = (event, pId, mode) => {
+    const moveKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+    const resizeKeys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+    if (mode === 'resize' ? !resizeKeys.includes(event.key) : !moveKeys.includes(event.key)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const rough = panelThumbnails[pId] || {};
+    const step = event.shiftKey ? 5 : 2;
+    if (mode === 'resize') {
+      const currentWidth = hasComicLetteringWidth(rough) ? clampComicLetteringWidth(rough.letteringWidth) : 72;
+      const nextWidth = event.key === 'Home'
+        ? 28
+        : event.key === 'End'
+          ? 86
+          : currentWidth + (event.key === 'ArrowRight' ? step : -step);
+      const width = clampComicLetteringWidth(nextWidth);
+      updatePanelLetteringWidth(pId, width);
+      sfAnnounce(`Speech bubble width ${width} percent`);
+      return;
+    }
+    const currentPosition = getComicLetteringPosition(rough, rough.letteringSpace);
+    const nextPosition = { ...currentPosition };
+    if (event.key === 'ArrowLeft') nextPosition.x -= step;
+    if (event.key === 'ArrowRight') nextPosition.x += step;
+    if (event.key === 'ArrowUp') nextPosition.y -= step;
+    if (event.key === 'ArrowDown') nextPosition.y += step;
+    updatePanelLetteringPosition(pId, nextPosition);
+    sfAnnounce(`Speech bubble position ${Math.round(nextPosition.x)}, ${Math.round(nextPosition.y)} percent`);
   };
   const updateComicContinuity = (field, value) => {
     setComicContinuity(prev => sanitizeComicContinuity({ ...prev, [field]: value }));
@@ -4322,7 +4441,8 @@ Return ONLY JSON:
         const spaceClass = getComicLetteringSpaceClass(letteringSpace);
         const hasOverlayBubble = Boolean(img && safeSpeech && letteringSpace && letteringSpace !== 'none');
         const customLetteringPosition = hasComicLetteringPosition(rough);
-        const customLetteringStyle = customLetteringPosition ? getComicLetteringPositionStyleText(rough, letteringSpace) : '';
+        const customLetteringWidth = hasComicLetteringWidth(rough);
+        const customLetteringStyle = `${customLetteringPosition ? getComicLetteringPositionStyleText(rough, letteringSpace) : ''}${customLetteringWidth ? getComicLetteringWidthStyleText(rough) : ''}`;
         const sticker = panelStickers[p.id] || '';
         chaptersHtml += `<article class="panel ${escapeHtml(getComicPanelFrameClass(panelLayout.frame))}" style="${escapeHtml(getComicPanelGridStyleText(panelLayout, panelPageLayout, panelPageIndex))}" aria-label="${escapeHtml(t("a11y.comic_panel", { n: idx + 1 }))}">`;
         chaptersHtml += `<span class="panel-order-badge" aria-hidden="true">${idx + 1}</span>`;
@@ -4331,7 +4451,7 @@ Return ONLY JSON:
         if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="${escapeHtml(t("a11y.sound_effect", { fx: panel.sfx }))}">${safeSfx}</span>`;
         if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
         if (hasOverlayBubble) {
-          chaptersHtml += `<div class="lettering-overlay${customLetteringPosition ? ' lettering-overlay-custom' : ''}"><div class="dialogue-bubble overlay-bubble"${customLetteringPosition ? ` style="${escapeHtml(customLetteringStyle)}"` : ''}>`;
+          chaptersHtml += `<div class="lettering-overlay${customLetteringPosition ? ' lettering-overlay-custom' : ''}"><div class="dialogue-bubble overlay-bubble"${customLetteringStyle ? ` style="${escapeHtml(customLetteringStyle)}"` : ''}>`;
           if (safeSpeaker) chaptersHtml += `<div class="dialogue-speaker">${safeSpeaker}:</div>`;
           chaptersHtml += `<div class="dialogue-speech">${safeSpeech}</div></div></div>`;
         }
@@ -4471,7 +4591,7 @@ main{display:block}
 .sfx-tag{position:absolute;top:8px;right:8px;background:#fbbf24;color:#7c2d12;font-weight:900;font-style:italic;padding:4px 12px;border-radius:8px;border:2px solid #7c2d12;font-family:'Comic Sans MS','Marker Felt',sans-serif;font-size:0.95em;transform:rotate(-6deg);box-shadow:2px 2px 0 #7c2d12;text-transform:uppercase;letter-spacing:0.05em}
 .comic-layout-manga .sfx-tag{top:42px}
 .panel-sticker{position:absolute;bottom:8px;left:8px;font-size:2em;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))}
-.dialogue-bubble{margin:8px;padding:10px 14px;background:#fff;border:2px solid #1e293b;border-radius:14px;font-size:0.92em;line-height:1.4;position:relative}
+.dialogue-bubble{margin:8px;padding:10px 14px;background:#fff;border:2px solid #1e293b;border-radius:14px;font-size:0.92em;line-height:1.4;position:relative;overflow-wrap:anywhere}
 .dialogue-speaker{font-weight:bold;color:#1d4ed8;font-size:0.78em;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px}
 .dialogue-speech{color:#1e293b}
 .thought-bubble{margin:8px;padding:8px 12px;background:#f0f9ff;border:2px dashed #7c3aed;border-radius:14px;color:#5b21b6;font-style:italic;font-size:0.88em;line-height:1.4}
@@ -5124,49 +5244,57 @@ show();
           const space = normalizeComicLetteringSpace(rough.letteringSpace);
           const showPlacedSpeech = Boolean(dialogue.speech && space && space !== 'none');
           const customLetteringPosition = hasComicLetteringPosition(rough);
-          const draggingSpeechBubble = bubbleDrag?.pId === p.id;
+          const customLetteringWidth = hasComicLetteringWidth(rough);
+          const bubbleDragMode = bubbleDrag?.pId === p.id ? bubbleDrag.mode : '';
+          const resizeBehavior = getBubbleResizeBehavior(rough, space);
+          const speechBubble = showPlacedSpeech ? (
+            <div
+              className={`sf-bubble-drag-target ${customLetteringPosition ? 'absolute' : 'relative'} max-w-[72%] break-words bg-white border-2 border-slate-900 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed shadow-lg ${bubbleDragMode === 'move' ? 'ring-4 ring-fuchsia-300' : bubbleDragMode === 'resize' ? 'ring-4 ring-teal-300' : ''}`}
+              style={{ ...(customLetteringPosition ? getComicLetteringPositionStyle(rough, space) : {}), ...getComicLetteringWidthStyle(rough) }}
+              data-sf-bubble-width={customLetteringWidth ? clampComicLetteringWidth(rough.letteringWidth) : 'auto'}
+            >
+              {dialogue.speaker && <div className="text-[10px] font-bold text-blue-600 mb-0.5">{dialogue.speaker}:</div>}
+              {dialogue.speech}
+              <button
+                type="button"
+                onPointerDown={(e) => startBubbleDrag(e, p.id)}
+                onPointerMove={updateBubbleDrag}
+                onPointerUp={endBubbleDrag}
+                onPointerCancel={endBubbleDrag}
+                onKeyDown={(e) => handleBubbleControlKeyDown(e, p.id, 'move')}
+                className={`sf-bubble-drag-handle sf-bubble-move-handle absolute ${resizeBehavior.resizeFromLeft ? '-bottom-3 -right-3' : '-bottom-3 -left-3'} pointer-events-auto w-7 h-7 flex items-center justify-center rounded-full border-2 border-slate-900 bg-white text-slate-900 shadow-md cursor-move touch-none`}
+                title="Move bubble"
+                aria-label={`Move speech bubble for panel ${idx + 1}. Use arrow keys for precise movement.`}
+                data-sf-bubble-control="move"
+                data-sf-focusable
+              >
+                <Move size={13} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onPointerDown={(e) => startBubbleResize(e, p.id)}
+                onPointerMove={updateBubbleResize}
+                onPointerUp={endBubbleResize}
+                onPointerCancel={endBubbleResize}
+                onKeyDown={(e) => handleBubbleControlKeyDown(e, p.id, 'resize')}
+                className={`sf-bubble-drag-handle sf-bubble-resize-handle absolute ${resizeBehavior.resizeFromLeft ? '-bottom-3 -left-3' : '-bottom-3 -right-3'} pointer-events-auto w-7 h-7 flex items-center justify-center rounded-full border-2 border-slate-900 bg-white text-slate-900 shadow-md cursor-ew-resize touch-none`}
+                title="Resize bubble"
+                aria-label={`Resize speech bubble for panel ${idx + 1}. Use left and right arrow keys for precise sizing.`}
+                data-sf-bubble-control="resize"
+                data-sf-focusable
+              >
+                <Maximize2 size={13} aria-hidden="true" />
+              </button>
+            </div>
+          ) : null;
           return (
             <div className="relative" data-sf-comic-art-layer="true">
               <img src={illustrations[p.id].imageUrl} alt={`Panel ${idx + 1}`} className={`w-full object-cover ${isComicPanelWideFrame(layoutFrame, previewLayout, pageIndex) ? 'aspect-video' : 'aspect-square'}`} />
               {showPlacedSpeech && (
                 customLetteringPosition ? (
-                  <div className="absolute inset-2 z-10 pointer-events-none">
-                    <div className={`sf-bubble-drag-target absolute max-w-[72%] bg-white border-2 border-slate-900 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed shadow-lg ${draggingSpeechBubble ? 'ring-4 ring-fuchsia-300' : ''}`} style={getComicLetteringPositionStyle(rough, space)}>
-                      {dialogue.speaker && <div className="text-[10px] font-bold text-blue-600 mb-0.5">{dialogue.speaker}:</div>}
-                      {dialogue.speech}
-                      <button
-                        type="button"
-                        onPointerDown={(e) => startBubbleDrag(e, p.id)}
-                        onPointerMove={updateBubbleDrag}
-                        onPointerUp={endBubbleDrag}
-                        onPointerCancel={endBubbleDrag}
-                        className="sf-bubble-drag-handle absolute -bottom-3 -right-3 pointer-events-auto rounded-full border-2 border-slate-900 bg-white text-[9px] font-black text-slate-900 px-2 py-0.5 shadow-md cursor-move touch-none"
-                        title="Drag bubble"
-                        aria-label={`Drag speech bubble for panel ${idx + 1}`}
-                      >
-                        Drag
-                      </button>
-                    </div>
-                  </div>
+                  <div className="absolute inset-2 z-10 pointer-events-none">{speechBubble}</div>
                 ) : (
-                  <div className={`absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}`}>
-                    <div className={`sf-bubble-drag-target relative max-w-[72%] bg-white border-2 border-slate-900 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed shadow-lg ${draggingSpeechBubble ? 'ring-4 ring-fuchsia-300' : ''}`}>
-                      {dialogue.speaker && <div className="text-[10px] font-bold text-blue-600 mb-0.5">{dialogue.speaker}:</div>}
-                      {dialogue.speech}
-                      <button
-                        type="button"
-                        onPointerDown={(e) => startBubbleDrag(e, p.id)}
-                        onPointerMove={updateBubbleDrag}
-                        onPointerUp={endBubbleDrag}
-                        onPointerCancel={endBubbleDrag}
-                        className="sf-bubble-drag-handle absolute -bottom-3 -right-3 pointer-events-auto rounded-full border-2 border-slate-900 bg-white text-[9px] font-black text-slate-900 px-2 py-0.5 shadow-md cursor-move touch-none"
-                        title="Drag bubble"
-                        aria-label={`Drag speech bubble for panel ${idx + 1}`}
-                      >
-                        Drag
-                      </button>
-                    </div>
-                  </div>
+                  <div className={`absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}`}>{speechBubble}</div>
                 )
               )}
               {space && !dialogue.speech && (
@@ -5196,10 +5324,11 @@ show();
           onPointerUp={endPanelResizeDrag}
           onPointerCancel={endPanelResizeDrag}
           className={`sf-resize-handle absolute bottom-2 right-2 z-30 w-8 h-8 rounded-lg border-2 border-slate-900 bg-white/95 text-slate-900 shadow-lg flex items-center justify-center text-base font-black cursor-nwse-resize touch-none transition-transform ${resizingPanel ? 'scale-110 ring-4 ring-fuchsia-300' : 'hover:scale-105'}`}
-          title="Drag to resize panel"
-          aria-label={`Drag to resize panel ${idx + 1}`}
+          title="Resize panel"
+          aria-label={`Resize panel ${idx + 1}`}
+          data-sf-focusable
         >
-          â†˜
+          <Maximize2 size={15} aria-hidden="true" />
         </button>
         <div className="p-2.5 relative space-y-1.5">
           {(p.text || p.scaffoldFrame || '').trim() && (
@@ -5262,6 +5391,8 @@ show();
         .sf-modal-root.theme-dark .sf-comic-preview-shell{background:#0f172a!important;border-color:#475569!important}
         .sf-modal-root.theme-dark .sf-comic-tool-card{box-shadow:0 18px 40px rgba(2,6,23,.22)}
         .sf-modal-root.theme-dark .sf-comic-layout-row{background:#1e1b4b!important;border-color:#7e22ce!important}
+        .sf-modal-root.theme-dark .sf-comic-layout-row select{background:#0f172a!important;color:#f8fafc!important;border-color:#a21caf!important}
+        .sf-modal-root.theme-dark .sf-comic-layout-row .text-slate-800,.sf-modal-root.theme-dark .sf-comic-layout-row .text-slate-700,.sf-modal-root.theme-dark .sf-comic-layout-row .text-slate-600,.sf-modal-root.theme-dark .sf-comic-layout-row .text-slate-500{color:#e2e8f0!important}
         .sf-modal-root.theme-dark .sf-comic-page-row{background:#172554!important;border-color:#2563eb!important}
         .sf-modal-root.theme-dark .sf-comic-page-row select,.sf-modal-root.theme-dark .sf-comic-page-row input{background:#0f172a!important;color:#f8fafc!important;border-color:#2563eb!important}
         .sf-modal-root.theme-dark .sf-comic-page-row .text-slate-800,.sf-modal-root.theme-dark .sf-comic-page-row .text-slate-700,.sf-modal-root.theme-dark .sf-comic-page-row .text-slate-600,.sf-modal-root.theme-dark .sf-comic-page-row .text-slate-500{color:#e2e8f0!important}
@@ -5280,12 +5411,16 @@ show();
         .sf-modal-root.theme-dark .sf-comic-page-panel .text-blue-600{color:#2563eb!important}
         .sf-modal-root.theme-dark .sf-resize-handle{background:#f8fafc!important;color:#0f172a!important;border-color:#0f172a!important}
         .sf-modal-root.theme-dark .sf-bubble-drag-handle{background:#f8fafc!important;color:#0f172a!important;border-color:#0f172a!important}
+        .sf-modal-root.theme-dark .sf-bubble-width-slider{accent-color:#d946ef}
         .sf-modal-root.theme-contrast .sf-dialog-card{background:#000!important;color:#ff0!important;border:2px solid #ff0!important}
         .sf-modal-root.theme-contrast .sf-comic-preview-shell,.sf-modal-root.theme-contrast .sf-comic-tool-card,.sf-modal-root.theme-contrast .sf-comic-layout-row,.sf-modal-root.theme-contrast .sf-comic-page-row{background:#000!important;color:#ff0!important;border-color:#ff0!important}
+        .sf-modal-root.theme-contrast .sf-comic-layout-row select{background:#000!important;color:#ff0!important;border-color:#ff0!important}
+        .sf-modal-root.theme-contrast .sf-comic-layout-row .text-slate-800,.sf-modal-root.theme-contrast .sf-comic-layout-row .text-slate-700,.sf-modal-root.theme-contrast .sf-comic-layout-row .text-slate-600,.sf-modal-root.theme-contrast .sf-comic-layout-row .text-slate-500{color:#ff0!important}
         .sf-modal-root.theme-contrast .sf-comic-toolbar{background:#000!important;border:2px solid #ff0!important;border-radius:10px;padding:4px}
         .sf-modal-root.theme-contrast .sf-comic-page-row select,.sf-modal-root.theme-contrast .sf-comic-page-row input{background:#000!important;color:#ff0!important;border-color:#ff0!important}
         .sf-modal-root.theme-contrast .sf-comic-action,.sf-modal-root.theme-contrast .sf-comic-frame-choice,.sf-modal-root.theme-contrast .sf-resize-handle,.sf-modal-root.theme-contrast .sf-bubble-drag-handle{background:#000!important;color:#0f0!important;border-color:#0f0!important;box-shadow:none!important}
         .sf-modal-root.theme-contrast .sf-comic-status-pill,.sf-modal-root.theme-contrast .sf-comic-frame-choice-active{background:#000!important;color:#ff0!important;border-color:#ff0!important}
+        .sf-modal-root.theme-contrast .sf-bubble-width-slider{accent-color:#0f0}
       `}</style>
 
       {/* â”€â”€ Restore Draft Prompt â”€â”€ */}
@@ -7932,8 +8067,11 @@ show();
                       const layoutFrame = panelLayouts[p.id] || {};
                       const frame = layoutFrame.frame || '';
                       const hasCustomSpans = layoutFrame.colSpan !== undefined || layoutFrame.rowSpan !== undefined;
-                      const letteringSpace = (panelThumbnails[p.id] || {}).letteringSpace || '';
-                      const hasCustomBubblePosition = hasComicLetteringPosition(panelThumbnails[p.id] || {});
+                      const panelThumbnail = panelThumbnails[p.id] || {};
+                      const letteringSpace = panelThumbnail.letteringSpace || '';
+                      const hasCustomBubblePosition = hasComicLetteringPosition(panelThumbnail);
+                      const hasCustomBubbleWidth = hasComicLetteringWidth(panelThumbnail);
+                      const customBubbleWidth = hasCustomBubbleWidth ? clampComicLetteringWidth(panelThumbnail.letteringWidth) : 72;
                       return (
                         <div key={p.id} className="sf-comic-layout-row border border-fuchsia-100 rounded-lg p-3 bg-fuchsia-50/40">
                           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
@@ -8014,6 +8152,39 @@ show();
                                 <option key={option.value || 'unset'} value={option.value}>{option.label}</option>
                               ))}
                             </select>
+                          </label>
+                          <label className="mt-3 block">
+                            <span className="flex items-center justify-between gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
+                              <span>Bubble width</span>
+                              <span>{hasCustomBubbleWidth ? `${customBubbleWidth}%` : 'Auto'}</span>
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="range"
+                                min="28"
+                                max="86"
+                                step="1"
+                                value={customBubbleWidth}
+                                onChange={(e) => updatePanelThumbnail(p.id, 'letteringWidth', e.target.value)}
+                                className="sf-bubble-width-slider flex-1 accent-fuchsia-700"
+                                aria-label={`Panel ${idx + 1} bubble width`}
+                                aria-valuetext={hasCustomBubbleWidth ? `${customBubbleWidth} percent` : 'Auto fit'}
+                                data-sf-bubble-width-slider={p.id}
+                                data-sf-focusable
+                              />
+                              {hasCustomBubbleWidth && (
+                                <button
+                                  type="button"
+                                  onClick={() => updatePanelThumbnail(p.id, 'resetLetteringWidth')}
+                                  className="sf-comic-action h-8 px-2 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300 flex items-center gap-1"
+                                  title="Reset bubble width to auto"
+                                  aria-label={`Reset panel ${idx + 1} bubble width to auto`}
+                                  data-sf-focusable
+                                >
+                                  <RefreshCw size={11} aria-hidden="true" /> Auto
+                                </button>
+                              )}
+                            </div>
                           </label>
                           <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                             <span className="text-[10px] font-bold text-slate-500">

@@ -8,9 +8,11 @@ const desktopRoot = path.resolve(__dirname, '..');
 const runtimePath = path.join(desktopRoot, 'runtime', 'alloflow-desktop-runtime.cjs');
 const electronMainPath = path.join(desktopRoot, 'electron', 'main.cjs');
 const contractPath = path.join(desktopRoot, 'contracts', 'runtime-contract.json');
+const packagePath = path.join(desktopRoot, 'package.json');
 
 const runtime = require(runtimePath);
 const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'));
+const desktopPackage = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 const runtimeSource = fs.readFileSync(runtimePath, 'utf8');
 const electronMainSource = fs.readFileSync(electronMainPath, 'utf8');
 
@@ -39,7 +41,10 @@ function assertRoutePresent(routePath, source, label) {
   }
 }
 
-expectEqual('contract.version', contract.version, runtime.VERSION);
+if (!contract.version || typeof contract.version !== 'string') {
+  fail('contract.version must identify the API contract schema.');
+}
+expectEqual('runtime.VERSION', runtime.VERSION, desktopPackage.version);
 expectEqual('defaultPorts.alloflowLocalEngine', contract.defaultPorts.alloflowLocalEngine, runtime.DEFAULT_CONFIG.localEngine.port);
 expectEqual('defaultPorts.schoolBoxHost', contract.defaultPorts.schoolBoxHost, runtime.DEFAULT_CONFIG.schoolBox.port);
 expectEqual('defaultPorts.lanShare', contract.defaultPorts.lanShare, runtime.DEFAULT_CONFIG.liveSession.lan.sharePort);

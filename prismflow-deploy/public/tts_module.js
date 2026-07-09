@@ -332,6 +332,11 @@ const createTTS = deps => {
       return raw;
     }
   };
+  // De-dupe identical, non-cancellable cloud requests that arrive before the
+  // first one has populated urlCache (for example, karaoke playback racing a
+  // look-ahead warm). Requests carrying an AbortSignal stay independent so
+  // one caller can never cancel audio another caller is awaiting.
+  const callTTSInFlight = new Map();
   const callTTS = async (text, voiceName = "Puck", speed = 1, maxRetriesOrOpts = 2, languageArg) => {
     if (isGlobalMuted()) {
       return null;
@@ -368,17 +373,45 @@ const createTTS = deps => {
       if (_isKokoroVoice) {
         console.log('[Canvas TTS] Kokoro voice selected (' + voiceName + ') — skipping Gemini, using Kokoro directly');
       }
+      // Match the non-Canvas cache key exactly, including language. The
+      // previous Canvas branch wrote a shorter key and never read it, so
+      // a warmed sentence was synthesized again when playback asked.
+      const canvasCacheKey = (text || '').toLowerCase().trim() + '__' + voiceName + '__' + speed + '__' + (_language || 'English');
+      if (!_isKokoroVoice && state.urlCache.has(canvasCacheKey)) {
+        debugLog('callTTS Canvas cache HIT:', text?.substring(0, 30));
+        return state.urlCache.get(canvasCacheKey);
+      }
       if (_isKokoroVoice) {
         // Intentional fall-through to Kokoro/Piper block below.
       } else if (Date.now() >= state.rateLimitedUntil) {
         const canvasMaxAttempts = 3;
         let canvasLastErr = null;
+        const fetchCanvasTTSBytes = async () => {
+          if (_signal) return fetchTTSBytes(text, voiceName, speed, _language, _signal);
+          let inFlight = callTTSInFlight.get(canvasCacheKey);
+          if (!inFlight) {
+            inFlight = fetchTTSBytes(text, voiceName, speed, _language, null);
+            callTTSInFlight.set(canvasCacheKey, inFlight);
+          } else {
+            debugLog('callTTS Canvas in-flight JOIN:', text?.substring(0, 30));
+          }
+          try {
+            return await inFlight;
+          } finally {
+            if (callTTSInFlight.get(canvasCacheKey) === inFlight) {
+              callTTSInFlight.delete(canvasCacheKey);
+            }
+          }
+        };
         for (let canvasAttempt = 0; canvasAttempt < canvasMaxAttempts; canvasAttempt++) {
           try {
             console.log(`[Canvas TTS] Attempting Gemini TTS${canvasAttempt > 0 ? ` (retry ${canvasAttempt})` : ''} for:`, text?.substring(0, 40), 'voice:', voiceName);
-            const ttsResult = await fetchTTSBytes(text, voiceName, speed, _language, _signal);
+            const ttsResult = await fetchCanvasTTSBytes();
             console.log('[Canvas TTS] fetchTTSBytes result:', ttsResult ? 'got audio (' + (ttsResult.bytes?.length || 0) + ' bytes)' : 'null');
             if (ttsResult) {
+              // A joined caller may resume after the owner already
+              // converted these bytes and populated the URL cache.
+              if (state.urlCache.has(canvasCacheKey)) return state.urlCache.get(canvasCacheKey);
               const {
                 bytes: pcmBytes
               } = ttsResult;
@@ -387,8 +420,7 @@ const createTTS = deps => {
                 type: 'audio/wav'
               });
               const url = URL.createObjectURL(blob);
-              const cacheKey = `${(text || '').toLowerCase().trim()}__${voiceName}__${speed}`;
-              state.urlCache.set(cacheKey, url);
+              state.urlCache.set(canvasCacheKey, url);
               console.log('[Canvas TTS] ✅ Gemini TTS succeeded!');
               return url;
             }

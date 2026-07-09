@@ -8,15 +8,18 @@ Use the combined architecture scripts for release candidates:
 
 ```powershell
 Set-Location desktop
+npm.cmd run verify:release
 npm.cmd run package:win
-npm.cmd run verify:artifacts
+npm.cmd run verify:artifacts:win
 ```
 
 macOS artifacts should be built on macOS or in the `desktop-release` GitHub workflow:
 
 ```bash
 cd desktop
+npm run verify:release
 npm run package:mac
+npm run verify:artifacts:mac
 ```
 
 The separate architecture scripts are useful for local testing:

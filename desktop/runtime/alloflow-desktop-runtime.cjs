@@ -12,7 +12,10 @@ const { spawn, spawnSync } = require('child_process');
 const DESKTOP_ROOT = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(DESKTOP_ROOT, '..');
 const COMMAND_CENTER_DIR = path.join(DESKTOP_ROOT, 'command-center');
-const STATIC_APP_DIR = path.join(DESKTOP_ROOT, 'app-build');
+function resolveStaticAppDir(resourcesPath = process.resourcesPath) {
+  return resourcesPath ? path.join(resourcesPath, 'app-build') : path.join(DESKTOP_ROOT, 'app-build');
+}
+const STATIC_APP_DIR = resolveStaticAppDir();
 function readDesktopRuntimeVersion() {
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(DESKTOP_ROOT, 'package.json'), 'utf8'));
@@ -573,11 +576,11 @@ function isAllowedPrivateHost(hostname) {
   return Boolean(bind) && bind !== '0.0.0.0' && bind !== '::' && bind === hostname;
 }
 
-function isLoopbackOrigin(originHeader) {
+function isSamePrivateOrigin(req, originHeader) {
   const value = String(originHeader || '');
   if (!value || value === 'null') return false;
   try {
-    return isLoopbackHostname(new URL(value).hostname.toLowerCase());
+    return new URL(value).origin === new URL(getRequestOrigin(req)).origin;
   } catch (_) {
     return false;
   }
@@ -591,7 +594,7 @@ function privateApiGuardRejection(req) {
   const method = String((req && req.method) || 'GET').toUpperCase();
   if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
     const originHeader = req.headers && req.headers.origin;
-    if (originHeader && !isLoopbackOrigin(originHeader)) {
+    if (originHeader && !isSamePrivateOrigin(req, originHeader)) {
       return { status: 403, error: 'Cross-origin request rejected.' };
     }
   }
@@ -4139,6 +4142,14 @@ async function runSmoke(args) {
       body: '{}',
     }).then((response) => response.status);
     if (csrfStatus !== 403) throw new Error('Private API accepted a cross-origin POST (got ' + csrfStatus + ').');
+    const otherLoopbackStatus = await fetch(baseUrl + '/api/lan-sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain', Origin: 'http://localhost:9999' },
+      body: JSON.stringify({ code: 'NOPE2', session: { mode: 'sync' } }),
+    }).then((response) => response.status);
+    if (otherLoopbackStatus !== 403) {
+      throw new Error('Private API accepted a POST from another loopback origin (got ' + otherLoopbackStatus + ').');
+    }
     const rebindStatus = await new Promise((resolve, reject) => {
       const request = http.request(
         { host: '127.0.0.1', port: address.port, path: '/api/config', method: 'GET', headers: { Host: 'attacker.example' } },
@@ -4230,6 +4241,7 @@ function maybeAutostartEngine(config = readConfig()) {
 module.exports = {
   VERSION,
   PROVIDER_PRESETS,
+  resolveStaticAppDir,
   DEFAULT_CONFIG,
   createLanShareServer,
   createServer,

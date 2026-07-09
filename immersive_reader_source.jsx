@@ -979,6 +979,8 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     const _recRef = useRef(null);
     const [sweepPct, setSweepPct] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+    const [currentAudioReadyIdx, setCurrentAudioReadyIdx] = useState(-1);
     const [autoAdvance, setAutoAdvance] = useState(true);
     const [theme, setTheme] = useState('warm');
     // Playback speed multiplier applied to both Gemini audio (audio.playbackRate)
@@ -1010,6 +1012,10 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     // starting and resolving, the token increments and the stale promise bails
     // instead of playing phantom audio over the current sentence.
     const playTokenRef = useRef(0);
+    // Parent capture/status renders may replace the callback. Keep playback
+    // keyed to sentence/state changes, while always calling the latest resolver.
+    const getAudioUrlRef = useRef(getAudioUrl);
+    getAudioUrlRef.current = getAudioUrl;
     // Sentences whose audio has already been pre-warmed this session (indices).
     // callTTS caches on the shared urlCache, so a warmed sentence is an instant
     // cache hit when the player later requests it — zero perceived latency.
@@ -1017,6 +1023,15 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     const reducedMotion = typeof window !== 'undefined' && window.matchMedia
         ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
         : false;
+    const hardStop = useCallback(() => {
+        playTokenRef.current++;
+        setIsGeneratingAudio(false);
+        setCurrentAudioReadyIdx(-1);
+        try { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } } catch (e) {}
+        if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+        try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+    }, []);
+
 
     // Capture is not teacher-gated: a student's played clips persist only into
     // the student's OWN copy of the resource (sharing is teacher→student, never
@@ -1044,6 +1059,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
 
     // Split text into sentences once (self-contained — parent's splitTextToSentences isn't exported)
     useEffect(() => {
+        setCurrentAudioReadyIdx(-1);
         if (!text) { setSentences([]); return; }
         const cleaned = String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
         // Prefer the SHARED splitter (KaraokeAudioStore) so stored/vetted
@@ -1092,7 +1108,9 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     //    on-device) the whole text ends up warm within a sentence or two.
     //  • Deduped via warmedRef; cancelled on close/advance.
     useEffect(() => {
-        if (!isOpen || typeof getAudioUrl !== 'function' || sentences.length === 0) return;
+        if (!isOpen || !isPlaying || currentAudioReadyIdx !== sentenceIdx || sentences.length === 0) return;
+        const resolver = getAudioUrlRef.current;
+        if (typeof resolver !== 'function') return;
         let cancelled = false;
         const LOOKAHEAD = 3;
         const run = async () => {
@@ -1103,7 +1121,10 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                 // Fire through the player's own audio resolver; we ignore the
                 // returned URL — the point is the cache side-effect. A failure
                 // clears the mark so a later pass can retry.
-                try { await getAudioUrl(sentences[i]); }
+                try {
+                    const warmedUrl = await resolver(sentences[i]);
+                    if (!warmedUrl) warmedRef.current.delete(i);
+                }
                 catch (e) { warmedRef.current.delete(i); }
             }
         };
@@ -1111,7 +1132,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         // the queue; pre-warm fills in behind it.
         const timer = setTimeout(run, 200);
         return () => { cancelled = true; clearTimeout(timer); };
-    }, [isOpen, sentences, sentenceIdx, getAudioUrl]);
+    }, [isOpen, isPlaying, sentences, sentenceIdx, currentAudioReadyIdx]);
 
     // Hard teardown when the overlay closes or the component unmounts
     useEffect(() => {
@@ -1122,6 +1143,8 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
             if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
             try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
             setIsPlaying(false);
+            setIsGeneratingAudio(false);
+            setCurrentAudioReadyIdx(-1);
             setSweepPct(0);
         }
         return () => {
@@ -1146,18 +1169,33 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
         try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
         setSweepPct(0);
+        setIsGeneratingAudio(false);
+        setCurrentAudioReadyIdx(-1);
         const sentenceText = sentences[idx];
         const token = ++playTokenRef.current;
 
         // Try parent-provided audio (Gemini)
         let url = null;
-        if (typeof getAudioUrl === 'function') {
-            try { url = await getAudioUrl(sentenceText); } catch (e) { url = null; }
+        const resolver = getAudioUrlRef.current;
+        if (typeof resolver === 'function') {
+            setIsGeneratingAudio(true);
+            try {
+                url = await resolver(sentenceText);
+            } catch (e) {
+                url = null;
+                console.warn('[Karaoke] Generated audio request failed; using browser fallback.', e?.message || e);
+            } finally {
+                if (token === playTokenRef.current) {
+                    setIsGeneratingAudio(false);
+                    if (url) setCurrentAudioReadyIdx(idx);
+                }
+            }
         }
         // If the user advanced / closed / reopened during the await, bail.
         if (token !== playTokenRef.current) return;
 
         if (url) {
+            scheduleCaptureForStorage(sentenceText, url);
             const audio = new Audio(url);
             audio.playbackRate = playbackSpeedRef.current || 1;
             audioRef.current = audio;
@@ -1183,13 +1221,21 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                     setIsPlaying(false);
                 }
             });
-            audio.addEventListener('error', () => { setIsPlaying(false); });
+            audio.addEventListener('error', () => {
+                if (token === playTokenRef.current) {
+                    console.warn('[Karaoke] Generated audio element reported a playback error.');
+                    setIsPlaying(false);
+                }
+            });
             try {
                 await audio.play();
-                scheduleCaptureForStorage(sentenceText, url);
+                return;
+            } catch (e) {
+                if (token !== playTokenRef.current) return;
+                console.warn('[Karaoke] Generated audio could not start; using browser speech fallback.', e?.message || e);
+                try { audio.pause(); } catch (_) {}
+                if (audioRef.current === audio) audioRef.current = null;
             }
-            catch (e) { setIsPlaying(false); }
-            return;
         }
 
         // Browser TTS fallback with estimated duration
@@ -1232,7 +1278,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
             if (autoAdvance && idx < sentences.length - 1) setSentenceIdx(idx + 1);
             else setIsPlaying(false);
         }, 1500);
-    }, [sentences, getAudioUrl, autoAdvance, reducedMotion, scheduleCaptureForStorage]);
+    }, [sentences, autoAdvance, reducedMotion, scheduleCaptureForStorage]);
 
     // ── Teacher vetting handlers ────────────────────────────────────────
     // Regenerate the CURRENT sentence's audio, then replay so the teacher hears
@@ -1400,11 +1446,6 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         );
     };
 
-    const hardStop = () => {
-        try { if (audioRef.current) audioRef.current.pause(); } catch (e) {}
-        try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
-        if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
-    };
 
     const hasStudentTake = studentTakeTick >= 0 && (() => { try { const st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.studentCurrent; return !!(st && st.has(sentences[sentenceIdx])); } catch (e) { return false; } })();
     return (
@@ -1417,6 +1458,9 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                     <div className="flex flex-col">
                         <span className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</span>
                         <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep{(() => { try { const _st = window.AlloModules && window.AlloModules.KaraokeAudioStore && window.AlloModules.KaraokeAudioStore.current; return _st && _st.sourceOf(sentences[sentenceIdx]) === 'human-teacher'; } catch (e) { return false; } })() ? ' · \uD83C\uDFA4 your voice' : ''}</span>
+                        {isGeneratingAudio && (
+                            <span className="text-xs font-semibold" role="status" aria-live="polite" style={{ color: c.sweep }}>Generating audio...</span>
+                        )}
                     </div>
                 </div>
                 <div className="flex items-center gap-4 flex-wrap text-xs font-bold">
@@ -1517,7 +1561,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                         </select>
                     </label>
                     <button onClick={() => { if (isPlaying) { hardStop(); setIsPlaying(false); } else { setIsPlaying(true); } }}
-                        aria-label={isPlaying ? 'Pause' : 'Play'} aria-pressed={isPlaying}
+                        aria-label={isGeneratingAudio ? 'Stop generating audio' : isPlaying ? 'Pause' : 'Play'} aria-pressed={isPlaying} aria-busy={isGeneratingAudio}
                         className="px-3 py-1.5 rounded-full" style={{ background: c.accent, color: c.ink }}>
                         {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                     </button>

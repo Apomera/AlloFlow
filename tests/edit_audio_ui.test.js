@@ -1,0 +1,185 @@
+// Edit Audio mode regression coverage.
+//
+// Mounts the real SimplifiedView in teacher text-edit mode and exercises the
+// per-sentence audio lifecycle against an in-memory KaraokeAudioStore. No live
+// TTS provider, microphone, or network access is used.
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
+import { loadAlloModule } from './setup.js';
+
+const require = createRequire(import.meta.url);
+const MODULES_DIR = resolve(process.cwd(), 'prismflow-deploy/node_modules');
+
+let React;
+let ReactDOMClient;
+let act;
+let SimplifiedView;
+let root;
+let host;
+let audioInstances;
+
+class FakeAudio {
+  constructor(src) {
+    this.src = src;
+    this.currentTime = 0;
+    this.duration = 1;
+    this.paused = true;
+    this.playbackRate = 1;
+    this.play = vi.fn(async () => { this.paused = false; });
+    this.pause = vi.fn(() => { this.paused = true; });
+    audioInstances.push(this);
+  }
+}
+
+beforeAll(() => {
+  React = require(resolve(MODULES_DIR, 'react'));
+  ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
+  ({ act } = require(resolve(MODULES_DIR, 'react-dom/test-utils')));
+  global.React = window.React = React;
+  global.IS_REACT_ACT_ENVIRONMENT = true;
+  loadAlloModule('view_simplified_module.js');
+  SimplifiedView = window.AlloModules.SimplifiedView;
+  if (!SimplifiedView) throw new Error('SimplifiedView did not register');
+});
+
+afterEach(() => {
+  if (root) {
+    try { act(() => root.unmount()); } catch (_) {}
+    root = null;
+  }
+  if (host) {
+    host.remove();
+    host = null;
+  }
+  vi.restoreAllMocks();
+  delete window.__alloRegenerateSentenceAudio;
+  delete window.__alloRemoveSentenceAudio;
+  delete window.__alloStoreRecordedSentenceAudio;
+  if (window.AlloModules) delete window.AlloModules.KaraokeAudioStore;
+});
+
+const splitSentences = (text) =>
+  String(text || '').match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map((part) => part.trim()).filter(Boolean) || [];
+
+function baseProps(overrides = {}) {
+  const noop = () => {};
+  return {
+    t: (key) => key,
+    generatedContent: {
+      id: 'resource-edit-audio',
+      type: 'simplified',
+      data: 'First sentence. Second sentence.',
+    },
+    inputText: '',
+    gradeLevel: '5',
+    leveledTextLanguage: 'English',
+    selectedVoice: 'Kore',
+    voiceSpeed: 1,
+    isTeacherMode: true,
+    isEditingLeveledText: true,
+    isImmersiveReaderActive: false,
+    isCompareMode: false,
+    isSideBySide: false,
+    isZenMode: true,
+    isProcessing: false,
+    isPlaying: false,
+    interactionMode: 'read',
+    history: [],
+    textEditorRef: React.createRef(),
+    splitTextToSentences: splitSentences,
+    getSideBySideContent: () => null,
+    handleFormatText: noop,
+    handleSimplifiedTextChange: noop,
+    callTTS: vi.fn(),
+    ...overrides,
+  };
+}
+
+function mount(props) {
+  host = document.createElement('div');
+  document.body.appendChild(host);
+  root = ReactDOMClient.createRoot(host);
+  act(() => { root.render(React.createElement(SimplifiedView, props)); });
+}
+
+function button(label) {
+  return host.querySelector(`button[aria-label="${label}"]`);
+}
+
+describe('SimplifiedView Edit Audio mode', () => {
+  it('opens sentence tools and supports generate, play, and remove for one sentence', async () => {
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+
+    const saved = new Set();
+    const urlFor = (sentence) => `blob:${sentence.replace(/\W+/g, '-').toLowerCase()}`;
+    const store = {
+      keyFor: (sentence) => String(sentence).toLowerCase(),
+      has: (sentence) => saved.has(sentence),
+      get: (sentence) => saved.has(sentence) ? urlFor(sentence) : null,
+      sourceOf: (sentence) => saved.has(sentence) ? 'ai' : null,
+    };
+    window.AlloModules.KaraokeAudioStore = {
+      current: store,
+      keyFor: store.keyFor,
+    };
+
+    window.__alloRegenerateSentenceAudio = vi.fn(async (sentence) => {
+      saved.add(sentence);
+      return urlFor(sentence);
+    });
+    window.__alloRemoveSentenceAudio = vi.fn(async (sentence) => {
+      saved.delete(sentence);
+      return true;
+    });
+    window.__alloStoreRecordedSentenceAudio = vi.fn(async () => true);
+
+    mount(baseProps());
+
+    const toggle = host.querySelector('button[aria-label^="Edit audio."]');
+    expect(toggle).toBeTruthy();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(host.querySelector('[role="region"][aria-label="Sentence audio editor"]')).toBeNull();
+
+    act(() => { toggle.click(); });
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(host.querySelector('[role="region"][aria-label="Sentence audio editor"]')).toBeTruthy();
+
+    const missingPlay = button('Play audio for sentence 1');
+    expect(missingPlay).toBeTruthy();
+    expect(missingPlay.disabled).toBe(true);
+    expect(button('Generate audio for sentence 1')).toBeTruthy();
+    expect(button('Record teacher audio for sentence 1')).toBeTruthy();
+    expect(button('Remove saved audio for sentence 1')).toBeNull();
+
+    await act(async () => {
+      button('Generate audio for sentence 1').click();
+      await Promise.resolve();
+    });
+
+    expect(window.__alloRegenerateSentenceAudio).toHaveBeenCalledWith('First sentence.');
+    expect(button('Regenerate audio for sentence 1')).toBeTruthy();
+    expect(button('Remove saved audio for sentence 1')).toBeTruthy();
+    expect(button('Play audio for sentence 1').disabled).toBe(false);
+
+    await act(async () => {
+      button('Play audio for sentence 1').click();
+      await Promise.resolve();
+    });
+    expect(audioInstances).toHaveLength(1);
+    expect(audioInstances[0].src).toBe(urlFor('First sentence.'));
+    expect(audioInstances[0].play).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      button('Remove saved audio for sentence 1').click();
+      await Promise.resolve();
+    });
+
+    expect(window.__alloRemoveSentenceAudio).toHaveBeenCalledWith('First sentence.');
+    expect(audioInstances[0].pause).toHaveBeenCalled();
+    expect(button('Generate audio for sentence 1')).toBeTruthy();
+    expect(button('Play audio for sentence 1').disabled).toBe(true);
+    expect(button('Remove saved audio for sentence 1')).toBeNull();
+  });
+});
