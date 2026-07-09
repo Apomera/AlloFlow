@@ -632,6 +632,22 @@
       </div>
     </section>
 
+    <section aria-labelledby="scaffoldTitle">
+      <h2 id="scaffoldTitle">Learner support</h2>
+      <label for="scaffoldSelect">Scaffold level</label>
+      <select id="scaffoldSelect">
+        <option value="guided">Guided scaffold</option>
+        <option value="standard" selected>Standard support</option>
+        <option value="independent">Independent inquiry</option>
+        <option value="extension">Extension challenge</option>
+      </select>
+      <div id="scaffoldOutput" class="coachbox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyScaffoldBtn" type="button">Copy scaffold</button>
+        <span class="status" id="scaffoldStatus" role="status"></span>
+      </div>
+    </section>
+
     <section aria-labelledby="routeTitle">
       <h2 id="routeTitle">Choose your route</h2>
       <label for="routeSelect">Learning path</label>
@@ -1308,6 +1324,48 @@
       ]
     }
   };
+  var SCAFFOLD_LEVELS = {
+    guided: {
+      label: 'Guided scaffold',
+      purpose: 'Reduce cognitive load while keeping the core claim-evidence-limit reasoning intact.',
+      directions: 'Use the sentence frame, inspect one assigned feature, and complete one claim, one evidence line, and one limit with teacher or partner support.',
+      evidence: 'One source or confidence clue plus one visible feature is enough for a first draft.',
+      teacherMove: 'Model the first observation aloud, point students to the accessible summary, and pause before the claim so evidence is named first.',
+      accessibility: 'Offer vocabulary before viewing, read prompts aloud, allow oral or drawn responses, and keep color/3D position from being the only evidence signal.',
+      feedback: 'Ask: "What did you observe? What evidence supports that? What can the model not prove yet?"',
+      extension: 'After the first draft, revise one certainty word into cautious model language.'
+    },
+    standard: {
+      label: 'Standard support',
+      purpose: 'Support grade-level investigation with a clear structure but room for student reasoning.',
+      directions: 'Choose the public example, inspect source and structure evidence, then write and revise a claim-evidence-limit response.',
+      evidence: 'Use source, confidence, one structure feature, and one limit or next test.',
+      teacherMove: 'Use the local claim review and rubric as checkpoints before students submit.',
+      accessibility: 'Keep copied directions, accessible summary, vocabulary, and sentence frames available as optional supports.',
+      feedback: 'Ask: "Which part of your evidence is observation, and which part is inference?"',
+      extension: 'Add a reference comparison or explain why a different claim is not supported.'
+    },
+    independent: {
+      label: 'Independent inquiry',
+      purpose: 'Let students make more decisions while maintaining privacy and evidence standards.',
+      directions: 'Select or confirm a public protein, decide which structure evidence matters, and justify the final claim with a limit or validation plan.',
+      evidence: 'Use multiple evidence types such as source, confidence, domain/surface/pocket clues, PAE when available, and a reference check.',
+      teacherMove: 'Conference with questions instead of step-by-step prompts; ask students to defend why their evidence fits the claim.',
+      accessibility: 'Offer text-first and visual routes as equivalent options and let students choose the artifact format that best shows reasoning.',
+      feedback: 'Ask: "What evidence would change your mind or make this claim stronger?"',
+      extension: 'Compare two possible claims and explain which one the model supports better.'
+    },
+    extension: {
+      label: 'Extension challenge',
+      purpose: 'Push advanced students toward validation, uncertainty, and evidence hierarchy.',
+      directions: 'Use the model as one evidence source, compare it with a database, reference, or class reading, and identify what remains untested.',
+      evidence: 'Distinguish model confidence, database annotation, literature/reference comparison, and experimental validation.',
+      teacherMove: 'Require students to name one claim the model supports, one claim it does not support, and one validation step.',
+      accessibility: 'Require a plain-language summary after technical analysis so reasoning is inspectable by peers using different access paths.',
+      feedback: 'Ask: "Which evidence source is strongest here, and what uncertainty remains?"',
+      extension: 'Create a short peer-review note that flags overclaiming, missing evidence, or unclear validation.'
+    }
+  };
 
   var viewer = null;
   var viewerPromise = null;
@@ -1372,6 +1430,10 @@
   var copyLmsAssignmentBtn = document.getElementById('copyLmsAssignmentBtn');
   var copyLmsRubricBtn = document.getElementById('copyLmsRubricBtn');
   var lmsAssignmentStatus = document.getElementById('lmsAssignmentStatus');
+  var scaffoldSelect = document.getElementById('scaffoldSelect');
+  var scaffoldOutput = document.getElementById('scaffoldOutput');
+  var copyScaffoldBtn = document.getElementById('copyScaffoldBtn');
+  var scaffoldStatus = document.getElementById('scaffoldStatus');
   var routeSelect = document.getElementById('routeSelect');
   var routeOutput = document.getElementById('routeOutput');
   var readyPredictionInput = document.getElementById('readyPredictionInput');
@@ -1433,6 +1495,7 @@
       'Lesson sequence: ' + currentLessonLength().label,
       'Biology context: ' + currentBiologyContext().label,
       'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
       'Selected route: ' + currentRoute().label,
       'Student workflow: load a public record, inspect shape and confidence, write one cautious claim, cite evidence, and name a limit or next test.',
       'Careful wording: predictions are useful models, not final proof, diagnosis, treatment guidance, ancestry interpretation, or personal genetic analysis.',
@@ -1494,6 +1557,14 @@
     return ASSIGNMENT_FORMATS[currentAssignmentFormatKey()] || ASSIGNMENT_FORMATS.lab;
   }
 
+  function currentScaffoldKey() {
+    return scaffoldSelect ? scaffoldSelect.value : 'standard';
+  }
+
+  function currentScaffold() {
+    return SCAFFOLD_LEVELS[currentScaffoldKey()] || SCAFFOLD_LEVELS.standard;
+  }
+
   function gradeTutorialText() {
     var t = currentGradeTutorial();
     var lines = [
@@ -1525,6 +1596,7 @@
     renderLessonPlan();
     renderBiologyContext();
     renderLmsAssignment();
+    renderScaffold();
     renderActivityCard();
     renderAccessibleSummary();
   }
@@ -1565,6 +1637,7 @@
       'Class time: ' + length.label,
       'Biology context: ' + bio.label,
       'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
       'Suggested public example: ' + bio.example + ' (' + bio.accession + ')',
       'Learning goal: ' + tutorial.objective,
       'AlphaFold purpose: ' + tutorial.use,
@@ -1585,6 +1658,7 @@
       'Context evidence focus: ' + bio.evidence,
       'Accessibility and UDL supports: ' + tutorial.access,
       'Context accessibility move: ' + bio.access,
+      'Scaffold support: ' + currentScaffold().teacherMove,
       'Misconception to watch for: ' + tutorial.misconception,
       'Context caution: ' + bio.caution,
       'Assessment look-for: ' + length.assessment,
@@ -1604,6 +1678,7 @@
       'Time: ' + length.label,
       'Biology context: ' + bio.label,
       'Submission format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
       'Public example: ' + bio.example + ' (' + bio.accession + ')',
       'Goal: ' + tutorial.objective,
       'Anchor question: ' + bio.anchor,
@@ -1613,6 +1688,7 @@
       '4. Use this frame: ' + tutorial.frame,
       '5. Add one limit, question, reference, or next test before you finish.',
       'Evidence focus: ' + bio.evidence,
+      'Support: ' + currentScaffold().directions,
       'What to turn in: ' + length.artifact,
       'Exit ticket: ' + tutorial.exit,
       'Privacy: Do not enter personal, family, patient, ancestry, private genetic-test, diagnosis, treatment, or disease-risk information.'
@@ -1660,11 +1736,13 @@
       'Grade band: ' + tutorial.label,
       'Suggested public example: ' + bio.example + ' (' + bio.accession + ')',
       'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
       'Anchor question: ' + bio.anchor,
       'Student task: ' + bio.task,
       'Evidence focus: ' + bio.evidence,
       'Sentence frame: ' + tutorial.frame,
       'Accessibility support: ' + bio.access,
+      'Scaffold support: ' + currentScaffold().accessibility,
       'Caution: ' + bio.caution,
       'Extension: ' + bio.extension,
       'Lesson sequence: ' + currentLessonLength().label,
@@ -1701,11 +1779,13 @@
     var length = currentLessonLength();
     var bio = currentBiologyContext();
     var format = currentAssignmentFormat();
+    var scaffold = currentScaffold();
     return [
       format.title,
       'Grade band: ' + tutorial.label,
       'Estimated time: ' + length.label,
       'Biology context: ' + bio.label,
+      'Learner support: ' + scaffold.label,
       'Public example: ' + bio.example + ' (' + bio.accession + ')',
       '',
       'Purpose',
@@ -1725,15 +1805,18 @@
       '3. Use this sentence frame: ' + tutorial.frame,
       '4. Add evidence from the model or source: ' + bio.evidence,
       '5. Add a limitation, question, reference, or next test before submitting.',
+      'Support level: ' + scaffold.directions,
       '',
       'Submission',
       format.submission,
       'Expected length: ' + format.length,
       'Collaboration: ' + format.collaboration,
+      'Evidence expectation: ' + scaffold.evidence,
       '',
       'Accessibility options',
       tutorial.access,
       bio.access,
+      scaffold.accessibility,
       'You may use a copied accessible summary, typed note, drawing, oral explanation, or teacher-approved equivalent format when that better shows your reasoning.',
       '',
       'Success criteria',
@@ -1744,6 +1827,9 @@
       'Caution',
       bio.caution,
       '',
+      'Teacher feedback question',
+      scaffold.feedback,
+      '',
       'Extension',
       bio.extension
     ].join('\n');
@@ -1753,11 +1839,13 @@
     var format = currentAssignmentFormat();
     var tutorial = currentGradeTutorial();
     var bio = currentBiologyContext();
+    var scaffold = currentScaffold();
     return [
       'AlphaFold assignment rubric',
       'Assignment: ' + format.title,
       'Grade band: ' + tutorial.label,
       'Biology context: ' + bio.label,
+      'Learner support: ' + scaffold.label,
       '4 - Strong: The response uses cautious model language, names specific structure/source/confidence evidence, and explains a meaningful limitation or validation step.',
       '3 - Ready: The response includes a cautious claim, relevant evidence, and a limit, with minor gaps in specificity.',
       '2 - Revise: The response has a claim but needs clearer evidence, better caution, or a stronger connection to the public record.',
@@ -1766,6 +1854,7 @@
       '1. ' + format.rubric[0],
       '2. ' + format.rubric[1],
       '3. ' + format.rubric[2],
+      'Scaffold evidence expectation: ' + scaffold.evidence,
       'Privacy: Public, synthetic, or teacher-approved classroom samples only.'
     ].join('\n');
   }
@@ -1798,6 +1887,48 @@
       });
     } else {
       setStatus(lmsAssignmentStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function scaffoldText() {
+    var scaffold = currentScaffold();
+    var tutorial = currentGradeTutorial();
+    var bio = currentBiologyContext();
+    var format = currentAssignmentFormat();
+    return [
+      'AlphaFold learner support scaffold',
+      'Scaffold level: ' + scaffold.label,
+      'Grade band: ' + tutorial.label,
+      'Biology context: ' + bio.label,
+      'Assignment format: ' + format.label,
+      'Purpose: ' + scaffold.purpose,
+      'Student directions: ' + scaffold.directions,
+      'Evidence expectation: ' + scaffold.evidence,
+      'Teacher move: ' + scaffold.teacherMove,
+      'Accessibility support: ' + scaffold.accessibility,
+      'Feedback question: ' + scaffold.feedback,
+      'Stretch option: ' + scaffold.extension,
+      'Sentence frame: ' + tutorial.frame,
+      'Anchor question: ' + bio.anchor,
+      'Privacy: Use public, synthetic, or teacher-approved classroom samples only.'
+    ].join('\n');
+  }
+
+  function renderScaffold() {
+    scaffoldOutput.textContent = scaffoldText();
+    setStatus(scaffoldStatus, '', '');
+  }
+
+  function copyScaffold() {
+    var text = scaffoldText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(scaffoldStatus, 'Scaffold copied.', 'ok');
+      }).catch(function () {
+        setStatus(scaffoldStatus, 'Copy failed. Select the scaffold text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(scaffoldStatus, 'Clipboard is unavailable in this browser.', 'warn');
     }
   }
 
@@ -1862,6 +1993,7 @@
     renderGlossary();
     renderAccessibleSummary();
     renderLmsAssignment();
+    renderScaffold();
     renderGuide();
   }
 
@@ -1876,6 +2008,7 @@
       'Lesson sequence: ' + currentLessonLength().label,
       'Biology context: ' + bio.label,
       'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
       'Suggested public example: ' + bio.example + ' (' + bio.accession + ')',
       'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + ctx.label,
@@ -1889,6 +2022,7 @@
       'Grade-level frame: ' + tutorial.frame,
       'Context evidence focus: ' + bio.evidence,
       'Accessibility support: ' + tutorial.access,
+      'Scaffold support: ' + currentScaffold().teacherMove,
       'Claim routine: Students should write one cautious claim, one evidence line, and one limit or next test.',
       'Privacy: Use public, synthetic, or teacher-approved classroom samples only.'
     ].join('\n');
@@ -1940,6 +2074,7 @@
       'Lesson sequence: ' + currentLessonLength().label,
       'Biology context: ' + bio.label,
       'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
       'Anchor question: ' + bio.anchor,
       'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + ctx.label,
@@ -1960,6 +2095,7 @@
       'Context guidance: ' + ctx.next,
       'Context evidence focus: ' + bio.evidence,
       'Grade-level support: ' + tutorial.access,
+      'Scaffold support: ' + currentScaffold().accessibility,
       'Privacy: This summary excludes raw sequence text.'
     ];
     return lines.join('\n');
@@ -2181,6 +2317,7 @@
       'Grade band: ' + tutorial.label,
       'Biology context: ' + bio.label,
       'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
       'Anchor question: ' + bio.anchor,
       'Tutorial frame: ' + tutorial.frame,
       GUIDE_PROMPTS[guideIndex % GUIDE_PROMPTS.length],
@@ -2279,6 +2416,8 @@
       investigationBrief: biologyBriefText(),
       assignmentFormat: currentAssignmentFormat().label,
       lmsAssignment: lmsAssignmentText(),
+      scaffoldLevel: currentScaffold().label,
+      scaffoldSupport: scaffoldText(),
       learningContext: ctx.label,
       accessibilityFocus: ctx.focus,
       contextGuidance: ctx.guide,
@@ -2781,6 +2920,7 @@
       'Lesson sequence: ' + currentLessonLength().label,
       'Biology context: ' + bio.label,
       'Assignment format: ' + currentAssignmentFormat().label,
+      'Learner support: ' + currentScaffold().label,
       'Anchor question: ' + bio.anchor,
       'Tutorial focus: ' + tutorial.objective,
       'Learning context: ' + currentContext().label,
@@ -2798,6 +2938,7 @@
       'Claim review: ' + claimReviewSummary(),
       'Rubric feedback: ' + rubricRating(),
       'Grade-level support: ' + tutorial.access,
+      'Scaffold support: ' + currentScaffold().accessibility,
       'Misconception check: ' + misconceptionPrompt().replace(/^Misconception check:\s*/, ''),
       'Context caution: ' + bio.caution,
       'Claim check: Cite the record, inspect confidence or PAE when available, and compare with experimental/reference evidence before treating a prediction as settled.'
@@ -2928,6 +3069,7 @@
     renderLessonPlan();
     renderBiologyContext();
     renderLmsAssignment();
+    renderScaffold();
     renderActivityCard();
     renderAccessibleSummary();
     renderGuide();
@@ -2938,6 +3080,7 @@
     renderBiologyContext();
     renderLessonPlan();
     renderLmsAssignment();
+    renderScaffold();
     renderActivityCard();
     renderAccessibleSummary();
     renderGuide();
@@ -2948,12 +3091,23 @@
     renderLmsAssignment();
     renderLessonPlan();
     renderBiologyContext();
+    renderScaffold();
     renderActivityCard();
     renderAccessibleSummary();
     renderGuide();
   });
   copyLmsAssignmentBtn.addEventListener('click', copyLmsAssignment);
   copyLmsRubricBtn.addEventListener('click', copyLmsRubric);
+  scaffoldSelect.addEventListener('change', function () {
+    renderScaffold();
+    renderLmsAssignment();
+    renderLessonPlan();
+    renderBiologyContext();
+    renderActivityCard();
+    renderAccessibleSummary();
+    renderGuide();
+  });
+  copyScaffoldBtn.addEventListener('click', copyScaffold);
   routeSelect.addEventListener('change', function () { renderRoute(); renderLmsAssignment(); renderGuide(); });
   readyPredictionInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
   readyEvidenceInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
