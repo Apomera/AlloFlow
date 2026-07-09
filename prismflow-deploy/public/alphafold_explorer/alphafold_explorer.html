@@ -128,6 +128,28 @@
     line-height: 1.45;
     font-size: 12.5px;
   }
+  .flowNav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .flowNav button {
+    min-height: 34px;
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+    background: #111a2c;
+    color: var(--soft);
+    font: inherit;
+    font-size: 11.5px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+  .flowNav button[aria-pressed="true"] {
+    color: white;
+    background: var(--teal2);
+    border-color: var(--teal);
+  }
+  .flowHidden { display: none; }
   .examples { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   button.example, button.primary, button.secondary {
     width: 100%;
@@ -512,6 +534,36 @@
     line-height: 1.45;
   }
   .checklist li { margin: 5px 0; }
+  .legendGrid {
+    display: grid;
+    gap: 7px;
+    margin-top: 8px;
+  }
+  .legendItem {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px;
+    background: rgba(15, 23, 42, 0.42);
+    color: var(--soft);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .legendSwatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    margin-top: 1px;
+  }
+  .legendItem b {
+    display: block;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
   @media (max-width: 860px) {
     header { align-items: flex-start; flex-direction: column; }
     .links { justify-content: flex-start; }
@@ -519,6 +571,7 @@
     aside { border-right: 0; border-bottom: 1px solid var(--line); max-height: none; }
     main { min-height: 620px; }
     .facts { grid-template-columns: 1fr; }
+    .flowNav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 </style>
 </head>
@@ -544,7 +597,19 @@
       Use public, synthetic, or teacher-approved classroom sample sequences only. Do not enter sequences from yourself, classmates, family members, patients, private genetic tests, ancestry services, or medical reports.
     </section>
 
-    <section aria-labelledby="tutorialTitle">
+    <section aria-labelledby="flowTitle">
+      <h2 id="flowTitle">Workflow view</h2>
+      <div class="flowNav" role="group" aria-label="AlphaFold workflow view">
+        <button type="button" data-flow-mode="all" aria-pressed="true">All</button>
+        <button type="button" data-flow-mode="teach" aria-pressed="false">Teach</button>
+        <button type="button" data-flow-mode="explore" aria-pressed="false">Explore</button>
+        <button type="button" data-flow-mode="submit" aria-pressed="false">Submit</button>
+        <button type="button" data-flow-mode="support" aria-pressed="false">Support</button>
+      </div>
+      <p class="help">Use a focused view when launching in Canvas, or keep All for full planning.</p>
+    </section>
+
+    <section aria-labelledby="tutorialTitle" data-flow="teach explore submit support">
       <h2 id="tutorialTitle">Start here</h2>
       <div class="summaryBox">
         AlphaFold is an AI system that predicts a protein's 3D shape from its amino acid sequence. AlphaFold DB provides public predicted structures; this explorer helps students inspect those predictions, prepare safe classroom inputs, and write cautious claims from evidence.
@@ -561,7 +626,25 @@
       </div>
     </section>
 
-    <section aria-labelledby="gradeTutorialTitle">
+    <section aria-labelledby="presetTitle" data-flow="teach support">
+      <h2 id="presetTitle">Classroom presets</h2>
+      <label for="presetSelect">Preset</label>
+      <select id="presetSelect">
+        <option value="middleModel">Middle school model literacy</option>
+        <option value="highEnzyme">High school enzyme evidence</option>
+        <option value="apValidation">AP validation investigation</option>
+        <option value="textFirst">Text-first accessibility launch</option>
+        <option value="teacherCanvas">Teacher Canvas-ready packet</option>
+      </select>
+      <div id="presetOutput" class="summaryBox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="applyPresetBtn" type="button">Apply preset</button>
+        <button class="secondary" id="copyPresetBtn" type="button">Copy preset summary</button>
+        <span class="status" id="presetStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="gradeTutorialTitle" data-flow="teach support">
       <h2 id="gradeTutorialTitle">Grade-level tutorial</h2>
       <label for="gradeTutorialSelect">Grade band</label>
       <select id="gradeTutorialSelect">
@@ -580,7 +663,7 @@
       </div>
     </section>
 
-    <section aria-labelledby="lessonPlanTitle">
+    <section aria-labelledby="lessonPlanTitle" data-flow="teach submit">
       <h2 id="lessonPlanTitle">Lesson sequence</h2>
       <label for="lessonLengthSelect">Class time</label>
       <select id="lessonLengthSelect">
@@ -596,7 +679,7 @@
       </div>
     </section>
 
-    <section aria-labelledby="bioContextTitle">
+    <section aria-labelledby="bioContextTitle" data-flow="teach explore">
       <h2 id="bioContextTitle">Biology context</h2>
       <label for="bioContextSelect">Unit or phenomenon</label>
       <select id="bioContextSelect">
@@ -615,7 +698,7 @@
       </div>
     </section>
 
-    <section aria-labelledby="lmsAssignmentTitle">
+    <section aria-labelledby="lmsAssignmentTitle" data-flow="submit teach">
       <h2 id="lmsAssignmentTitle">Canvas/LMS assignment</h2>
       <label for="assignmentFormatSelect">Submission format</label>
       <select id="assignmentFormatSelect">
@@ -632,7 +715,7 @@
       </div>
     </section>
 
-    <section aria-labelledby="scaffoldTitle">
+    <section aria-labelledby="scaffoldTitle" data-flow="support submit">
       <h2 id="scaffoldTitle">Learner support</h2>
       <label for="scaffoldSelect">Scaffold level</label>
       <select id="scaffoldSelect">
@@ -648,7 +731,16 @@
       </div>
     </section>
 
-    <section aria-labelledby="routeTitle">
+    <section aria-labelledby="studentPacketTitle" data-flow="submit support">
+      <h2 id="studentPacketTitle">Student packet</h2>
+      <div id="studentPacketOutput" class="summaryBox" aria-live="polite"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyStudentPacketBtn" type="button">Copy student packet</button>
+        <span class="status" id="studentPacketStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="routeTitle" data-flow="explore teach">
       <h2 id="routeTitle">Choose your route</h2>
       <label for="routeSelect">Learning path</label>
       <select id="routeSelect">
@@ -676,7 +768,7 @@
       <p class="status" id="readinessStatus" role="status"></p>
     </section>
 
-    <section aria-labelledby="contextTitle">
+    <section aria-labelledby="contextTitle" data-flow="support teach">
       <h2 id="contextTitle">Learning context</h2>
       <label for="contextSelect">Context lens</label>
       <select id="contextSelect">
@@ -695,13 +787,13 @@
       </div>
     </section>
 
-    <section aria-labelledby="examplesTitle">
+    <section aria-labelledby="examplesTitle" data-flow="explore">
       <h2 id="examplesTitle">Curated public examples</h2>
       <div class="examples" id="examples"></div>
       <p class="help">These examples are public UniProt proteins with AlphaFold DB predictions.</p>
     </section>
 
-    <section aria-labelledby="lookupTitle">
+    <section aria-labelledby="lookupTitle" data-flow="explore">
       <h2 id="lookupTitle">AlphaFold DB lookup</h2>
       <label for="accessionInput">UniProt or AlphaFold accession</label>
       <div class="row">
@@ -712,14 +804,14 @@
       <p class="status" id="lookupStatus" role="status"></p>
     </section>
 
-    <section aria-labelledby="importTitle">
+    <section aria-labelledby="importTitle" data-flow="explore">
       <h2 id="importTitle">Import result file</h2>
       <input id="fileInput" type="file" accept=".cif,.mmcif,.bcif,.pdb,.ent">
       <p class="help">Open a downloaded AlphaFold/PDB structure file locally. Files stay in this browser window.</p>
       <p class="status" id="fileStatus" role="status"></p>
     </section>
 
-    <section aria-labelledby="sequenceTitle">
+    <section aria-labelledby="sequenceTitle" data-flow="explore">
       <h2 id="sequenceTitle">Prepare AlphaFold input</h2>
       <label for="jobNameInput">Job name</label>
       <input id="jobNameInput" type="text" autocomplete="off" placeholder="Example: class_insulin_model">
@@ -809,7 +901,7 @@
       </div>
     </section>
 
-    <section aria-labelledby="evidenceTitle">
+    <section aria-labelledby="evidenceTitle" data-flow="explore support">
       <h2 id="evidenceTitle">Evidence checklist</h2>
       <ul class="checklist">
         <li>Use pLDDT/confidence to separate stronger regions from uncertain loops or tails.</li>
@@ -818,12 +910,22 @@
       </ul>
     </section>
 
-    <section aria-labelledby="vocabTitle">
+    <section aria-labelledby="confidenceTitle" data-flow="explore support submit">
+      <h2 id="confidenceTitle">Confidence and PAE guide</h2>
+      <div id="confidenceGuideOutput" class="summaryBox" aria-live="polite"></div>
+      <div class="legendGrid" id="confidenceLegend" aria-label="AlphaFold confidence legend"></div>
+      <div class="activityActions">
+        <button class="secondary" id="copyConfidenceGuideBtn" type="button">Copy confidence guide</button>
+        <span class="status" id="confidenceGuideStatus" role="status"></span>
+      </div>
+    </section>
+
+    <section aria-labelledby="vocabTitle" data-flow="support explore">
       <h2 id="vocabTitle">Vocabulary supports</h2>
       <div class="glossary" id="glossaryList"></div>
     </section>
 
-    <section aria-labelledby="guideTitle">
+    <section aria-labelledby="guideTitle" data-flow="explore support submit">
       <h2 id="guideTitle">Guided investigation</h2>
       <div class="guideSteps" id="guideSteps"></div>
       <div id="guidePrompt" class="coachbox"></div>
@@ -848,7 +950,7 @@
       <div id="guideAiOutput" class="coachbox" hidden></div>
     </section>
 
-    <section aria-labelledby="coachTitle">
+    <section aria-labelledby="coachTitle" data-flow="explore support">
       <h2 id="coachTitle">Inspection coach</h2>
       <p class="help" id="aiState">Connecting to AlloFlow...</p>
       <label for="noteInput">What do you notice or wonder?</label>
@@ -906,6 +1008,100 @@
     'Compare the compact parts with any loose-looking parts. Which part would you trust most, and why?',
     'If you changed the viewer style or color scheme, what new feature became easier to notice?',
     'What evidence would you want from a lab experiment before treating this prediction as settled?'
+  ];
+  var CLASSROOM_PRESETS = {
+    middleModel: {
+      label: 'Middle school model literacy',
+      grade: 'middle',
+      lesson: 'guided',
+      biology: 'model',
+      assignment: 'exit',
+      scaffold: 'guided',
+      context: 'middle',
+      route: 'public',
+      accession: 'P0CG47',
+      note: 'Short, safe launch focused on model limits, observation, and cautious wording.'
+    },
+    highEnzyme: {
+      label: 'High school enzyme evidence',
+      grade: 'high',
+      lesson: 'investigation',
+      biology: 'enzyme',
+      assignment: 'lab',
+      scaffold: 'standard',
+      context: 'high',
+      route: 'public',
+      accession: 'P61626',
+      note: 'Structure-function investigation using a public enzyme example and explicit evidence limits.'
+    },
+    apValidation: {
+      label: 'AP validation investigation',
+      grade: 'ap',
+      lesson: 'investigation',
+      biology: 'bioinformatics',
+      assignment: 'project',
+      scaffold: 'extension',
+      context: 'ap',
+      route: 'public',
+      accession: 'P69905',
+      note: 'Advanced workflow emphasizing pLDDT, PAE, evidence hierarchy, and validation planning.'
+    },
+    textFirst: {
+      label: 'Text-first accessibility launch',
+      grade: 'upper',
+      lesson: 'launch',
+      biology: 'model',
+      assignment: 'exit',
+      scaffold: 'guided',
+      context: 'screen',
+      route: 'text',
+      accession: 'P0CG47',
+      note: 'Uses the accessible summary, vocabulary, and non-color evidence cues before 3D navigation.'
+    },
+    teacherCanvas: {
+      label: 'Teacher Canvas-ready packet',
+      grade: 'teacher',
+      lesson: 'guided',
+      biology: 'homeostasis',
+      assignment: 'discussion',
+      scaffold: 'standard',
+      context: 'teacher',
+      route: 'teacher',
+      accession: 'P01308',
+      note: 'A ready-to-copy teacher packet with privacy language, discussion directions, and rubric criteria.'
+    }
+  };
+  var CONFIDENCE_BANDS = [
+    {
+      label: 'Very high local confidence',
+      range: 'pLDDT 90-100',
+      color: '#1d4ed8',
+      text: 'Often reasonable for local backbone/side-chain shape claims, while still needing source and validation context.'
+    },
+    {
+      label: 'Confident local model',
+      range: 'pLDDT 70-90',
+      color: '#38bdf8',
+      text: 'Useful for cautious structure observations, especially when the claim stays local and evidence is named.'
+    },
+    {
+      label: 'Low confidence',
+      range: 'pLDDT 50-70',
+      color: '#facc15',
+      text: 'Treat as uncertain or flexible-looking; avoid precise geometry or mechanism claims from this region alone.'
+    },
+    {
+      label: 'Very low confidence',
+      range: 'pLDDT below 50',
+      color: '#f97316',
+      text: 'May represent disorder or unreliable local structure; use mainly as a limit or next-question signal.'
+    },
+    {
+      label: 'PAE relationship check',
+      range: 'PAE lower is better',
+      color: '#a78bfa',
+      text: 'PAE helps judge whether domain positions or chain/interface relationships are reliable; high PAE means be cautious about relative placement.'
+    }
   ];
   var GUIDE_STEPS = [
     { key: 'source', label: 'Source', text: 'Use a public record, local result file, or confirmed classroom input.' },
@@ -1468,6 +1664,20 @@
   var loadmsg = document.getElementById('loadmsg');
   var detailTitle = document.getElementById('detailTitle');
   var facts = document.getElementById('facts');
+  var flowButtons = Array.prototype.slice.call(document.querySelectorAll('[data-flow-mode]'));
+  var flowMode = 'all';
+  var presetSelect = document.getElementById('presetSelect');
+  var presetOutput = document.getElementById('presetOutput');
+  var applyPresetBtn = document.getElementById('applyPresetBtn');
+  var copyPresetBtn = document.getElementById('copyPresetBtn');
+  var presetStatus = document.getElementById('presetStatus');
+  var studentPacketOutput = document.getElementById('studentPacketOutput');
+  var copyStudentPacketBtn = document.getElementById('copyStudentPacketBtn');
+  var studentPacketStatus = document.getElementById('studentPacketStatus');
+  var confidenceGuideOutput = document.getElementById('confidenceGuideOutput');
+  var confidenceLegend = document.getElementById('confidenceLegend');
+  var copyConfidenceGuideBtn = document.getElementById('copyConfidenceGuideBtn');
+  var confidenceGuideStatus = document.getElementById('confidenceGuideStatus');
 
   function el(tag, attrs, text) {
     var node = document.createElement(tag);
@@ -1483,6 +1693,29 @@
 
   function hasText(node, min) {
     return String((node && node.value) || '').trim().length >= (min || 8);
+  }
+
+  function setSelectValue(node, value) {
+    if (!node || value == null) return;
+    var exists = Array.prototype.some.call(node.options || [], function (opt) { return opt.value === value; });
+    if (exists) node.value = value;
+  }
+
+  function renderFlowMode() {
+    flowButtons.forEach(function (btn) {
+      var active = btn.getAttribute('data-flow-mode') === flowMode;
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    Array.prototype.slice.call(document.querySelectorAll('aside section[data-flow]')).forEach(function (section) {
+      var modes = String(section.getAttribute('data-flow') || '').split(/\s+/);
+      var show = flowMode === 'all' || modes.indexOf(flowMode) >= 0;
+      section.classList.toggle('flowHidden', !show);
+    });
+  }
+
+  function setFlowMode(mode) {
+    flowMode = mode || 'all';
+    renderFlowMode();
   }
 
   function tutorialText() {
@@ -1565,6 +1798,70 @@
     return SCAFFOLD_LEVELS[currentScaffoldKey()] || SCAFFOLD_LEVELS.standard;
   }
 
+  function currentPresetKey() {
+    return presetSelect ? presetSelect.value : 'middleModel';
+  }
+
+  function currentPreset() {
+    return CLASSROOM_PRESETS[currentPresetKey()] || CLASSROOM_PRESETS.middleModel;
+  }
+
+  function presetSummaryText() {
+    var preset = currentPreset();
+    return [
+      'AlphaFold classroom preset',
+      'Preset: ' + preset.label,
+      'Grade band: ' + GRADE_TUTORIALS[preset.grade].label,
+      'Lesson length: ' + LESSON_LENGTHS[preset.lesson].label,
+      'Biology context: ' + BIOLOGY_CONTEXTS[preset.biology].label,
+      'Assignment: ' + ASSIGNMENT_FORMATS[preset.assignment].label,
+      'Learner support: ' + SCAFFOLD_LEVELS[preset.scaffold].label,
+      'Support lens: ' + CONTEXT_LAYERS[preset.context].label,
+      'Learning route: ' + ROUTES[preset.route].label,
+      'Suggested public accession: ' + preset.accession,
+      'Why use it: ' + preset.note,
+      'Privacy: Use only public, synthetic, or teacher-approved classroom samples.'
+    ].join('\n');
+  }
+
+  function renderPresetSummary() {
+    presetOutput.textContent = presetSummaryText();
+    setStatus(presetStatus, '', '');
+  }
+
+  function applyPreset() {
+    var preset = currentPreset();
+    setSelectValue(gradeTutorialSelect, preset.grade);
+    setSelectValue(lessonLengthSelect, preset.lesson);
+    setSelectValue(bioContextSelect, preset.biology);
+    setSelectValue(assignmentFormatSelect, preset.assignment);
+    setSelectValue(scaffoldSelect, preset.scaffold);
+    setSelectValue(contextSelect, preset.context);
+    setSelectValue(routeSelect, preset.route);
+    accessionInput.value = preset.accession;
+    renderRoute();
+    renderContextLayer();
+    renderPresetSummary();
+    renderGradeTutorial();
+    renderConfidenceGuide();
+    renderStudentPacket();
+    renderGuide();
+    setStatus(presetStatus, 'Preset applied. Suggested accession set; press Load when ready.', 'ok');
+  }
+
+  function copyPresetSummary() {
+    var text = presetSummaryText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(presetStatus, 'Preset summary copied.', 'ok');
+      }).catch(function () {
+        setStatus(presetStatus, 'Copy failed. Select the preset text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(presetStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
   function gradeTutorialText() {
     var t = currentGradeTutorial();
     var lines = [
@@ -1597,6 +1894,8 @@
     renderBiologyContext();
     renderLmsAssignment();
     renderScaffold();
+    renderConfidenceGuide();
+    renderStudentPacket();
     renderActivityCard();
     renderAccessibleSummary();
   }
@@ -1819,6 +2118,9 @@
       scaffold.accessibility,
       'You may use a copied accessible summary, typed note, drawing, oral explanation, or teacher-approved equivalent format when that better shows your reasoning.',
       '',
+      'Confidence and PAE expectation',
+      'Use pLDDT/confidence to decide which local regions can support an observation. Use PAE when available before claiming domain placement or interface relationships.',
+      '',
       'Success criteria',
       '1. ' + format.rubric[0],
       '2. ' + format.rubric[1],
@@ -1932,6 +2234,110 @@
     }
   }
 
+  function confidenceGuideText() {
+    var lines = [
+      'AlphaFold confidence and visual-accessibility guide',
+      'Use confidence as evidence about the model, not as proof of biological function.',
+      'pLDDT is a local confidence signal: it helps judge whether a region may support a local structure observation.',
+      'PAE is a relationship/placement uncertainty signal: it helps judge whether domain positions, chains, or interfaces should be trusted.',
+      'Non-color cue: ask students to name the score band, source, and region, not just "blue" or "yellow."',
+      'Text-first cue: a claim should still make sense if the 3D colors are unavailable.',
+      'Bands:'
+    ];
+    CONFIDENCE_BANDS.forEach(function (band) {
+      lines.push('- ' + band.range + ' / ' + band.label + ': ' + band.text);
+    });
+    return lines.concat([
+      'Claim routine: source -> score/region -> observation -> cautious claim -> limitation or validation.',
+      'Limit: high confidence can support local structure reasoning, but it does not prove function, mechanism, diagnosis, treatment, or personal meaning.'
+    ]).join('\n');
+  }
+
+  function renderConfidenceGuide() {
+    confidenceGuideOutput.textContent = confidenceGuideText();
+    confidenceLegend.innerHTML = '';
+    CONFIDENCE_BANDS.forEach(function (band) {
+      var wrap = el('div', { class: 'legendItem' });
+      var swatch = el('span', { class: 'legendSwatch', 'aria-hidden': 'true' });
+      swatch.style.background = band.color;
+      var body = el('div');
+      body.appendChild(el('b', null, band.range + ' - ' + band.label));
+      body.appendChild(el('span', null, band.text));
+      wrap.appendChild(swatch);
+      wrap.appendChild(body);
+      confidenceLegend.appendChild(wrap);
+    });
+    setStatus(confidenceGuideStatus, '', '');
+  }
+
+  function copyConfidenceGuide() {
+    var text = confidenceGuideText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(confidenceGuideStatus, 'Confidence guide copied.', 'ok');
+      }).catch(function () {
+        setStatus(confidenceGuideStatus, 'Copy failed. Select the guide text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(confidenceGuideStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
+  function diagnosticSummaryText() {
+    var review = claimReviewItems();
+    var items = review.items.map(function (item) { return item.label + ': ' + item.text; });
+    var priorities = [];
+    if (review.items.some(function (item) { return item.level === 'guard'; })) priorities.push('Remove privacy/medical/personal-genetics language before continuing.');
+    if (review.items.some(function (item) { return item.label === 'Claim needed' || item.label === 'Overclaim check'; })) priorities.push('Revise the claim into cautious model language.');
+    if (review.items.some(function (item) { return item.label === 'Evidence needed' || item.label === 'Evidence specificity'; })) priorities.push('Add a specific source, confidence, PAE, domain, pocket, surface, interface, or flexible-region evidence clue.');
+    if (review.items.some(function (item) { return item.label === 'Limit needed' || item.label === 'Limit specificity'; })) priorities.push('Name a limit, reference comparison, experiment, validation check, or next test.');
+    if (!priorities.length) priorities.push('Ready for discussion: evidence, limitation, and privacy guardrail are visible.');
+    return [
+      'AlphaFold diagnostic guidance',
+      'Overall: ' + review.rating,
+      'Priority next step: ' + priorities[0],
+      'All checks: ' + items.join(' | ')
+    ].join('\n');
+  }
+
+  function studentPacketText() {
+    return [
+      'AlphaFold student packet',
+      '',
+      studentDirectionsText(),
+      '',
+      scaffoldText(),
+      '',
+      confidenceGuideText(),
+      '',
+      'Claim review checklist',
+      '1. Does the claim use cautious model language?',
+      '2. Does the evidence name source, score/region, structure feature, or PAE when relevant?',
+      '3. Does the response state what the model cannot prove yet?',
+      '4. Does the response avoid personal, family, patient, ancestry, diagnosis, treatment, disease-risk, and private genetic-test information?',
+      '',
+      lmsRubricText()
+    ].join('\n');
+  }
+
+  function renderStudentPacket() {
+    studentPacketOutput.textContent = studentPacketText();
+    setStatus(studentPacketStatus, '', '');
+  }
+
+  function copyStudentPacket() {
+    var text = studentPacketText();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        setStatus(studentPacketStatus, 'Student packet copied.', 'ok');
+      }).catch(function () {
+        setStatus(studentPacketStatus, 'Copy failed. Select the packet text and copy manually.', 'warn');
+      });
+    } else {
+      setStatus(studentPacketStatus, 'Clipboard is unavailable in this browser.', 'warn');
+    }
+  }
+
   function currentRoute() {
     var key = routeSelect ? routeSelect.value : 'public';
     return ROUTES[key] || ROUTES.public;
@@ -1994,6 +2400,21 @@
     renderAccessibleSummary();
     renderLmsAssignment();
     renderScaffold();
+    renderConfidenceGuide();
+    renderStudentPacket();
+    renderGuide();
+  }
+
+  function refreshLearningOutputs() {
+    renderPresetSummary();
+    renderLessonPlan();
+    renderBiologyContext();
+    renderLmsAssignment();
+    renderScaffold();
+    renderConfidenceGuide();
+    renderStudentPacket();
+    renderActivityCard();
+    renderAccessibleSummary();
     renderGuide();
   }
 
@@ -2021,6 +2442,7 @@
       moves[3],
       'Grade-level frame: ' + tutorial.frame,
       'Context evidence focus: ' + bio.evidence,
+      'Confidence/PAE focus: Use pLDDT for local confidence and PAE for domain/interface placement uncertainty when available.',
       'Accessibility support: ' + tutorial.access,
       'Scaffold support: ' + currentScaffold().teacherMove,
       'Claim routine: Students should write one cautious claim, one evidence line, and one limit or next test.',
@@ -2094,6 +2516,7 @@
       'Rubric feedback: ' + rubricRating(),
       'Context guidance: ' + ctx.next,
       'Context evidence focus: ' + bio.evidence,
+      'Confidence/PAE guide: pLDDT supports cautious local structure observations; PAE helps judge domain or interface placement when available.',
       'Grade-level support: ' + tutorial.access,
       'Scaffold support: ' + currentScaffold().accessibility,
       'Privacy: This summary excludes raw sequence text.'
@@ -2418,6 +2841,8 @@
       lmsAssignment: lmsAssignmentText(),
       scaffoldLevel: currentScaffold().label,
       scaffoldSupport: scaffoldText(),
+      confidenceGuide: confidenceGuideText(),
+      diagnostic: diagnosticSummaryText(),
       learningContext: ctx.label,
       accessibilityFocus: ctx.focus,
       contextGuidance: ctx.guide,
@@ -2939,6 +3364,8 @@
       'Rubric feedback: ' + rubricRating(),
       'Grade-level support: ' + tutorial.access,
       'Scaffold support: ' + currentScaffold().accessibility,
+      'Science interpretation: Use pLDDT/confidence for local region reliability and PAE when available for domain or interface placement uncertainty.',
+      'Diagnostic next step: ' + diagnosticSummaryText().split('\n')[2].replace(/^Priority next step:\s*/, ''),
       'Misconception check: ' + misconceptionPrompt().replace(/^Misconception check:\s*/, ''),
       'Context caution: ' + bio.caution,
       'Claim check: Cite the record, inspect confidence or PAE when available, and compare with experimental/reference evidence before treating a prediction as settled.'
@@ -3062,52 +3489,28 @@
   ionCountInput.addEventListener('input', updateSequenceStatus);
   safetyConfirmInput.addEventListener('change', updateSequenceStatus);
   copyTutorialBtn.addEventListener('click', copyTutorial);
+  flowButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () { setFlowMode(btn.getAttribute('data-flow-mode')); });
+  });
+  presetSelect.addEventListener('change', function () { renderPresetSummary(); });
+  applyPresetBtn.addEventListener('click', applyPreset);
+  copyPresetBtn.addEventListener('click', copyPresetSummary);
   gradeTutorialSelect.addEventListener('change', function () { renderGradeTutorial(); renderGuide(); });
   applyGradeTutorialBtn.addEventListener('click', applyGradeTutorial);
   copyGradeTutorialBtn.addEventListener('click', copyGradeTutorial);
-  lessonLengthSelect.addEventListener('change', function () {
-    renderLessonPlan();
-    renderBiologyContext();
-    renderLmsAssignment();
-    renderScaffold();
-    renderActivityCard();
-    renderAccessibleSummary();
-    renderGuide();
-  });
+  lessonLengthSelect.addEventListener('change', refreshLearningOutputs);
   copyLessonPlanBtn.addEventListener('click', copyLessonPlan);
   copyStudentDirectionsBtn.addEventListener('click', copyStudentDirections);
-  bioContextSelect.addEventListener('change', function () {
-    renderBiologyContext();
-    renderLessonPlan();
-    renderLmsAssignment();
-    renderScaffold();
-    renderActivityCard();
-    renderAccessibleSummary();
-    renderGuide();
-  });
+  bioContextSelect.addEventListener('change', refreshLearningOutputs);
   setBioExampleBtn.addEventListener('click', setBiologyExample);
   copyBioBriefBtn.addEventListener('click', copyBiologyBrief);
-  assignmentFormatSelect.addEventListener('change', function () {
-    renderLmsAssignment();
-    renderLessonPlan();
-    renderBiologyContext();
-    renderScaffold();
-    renderActivityCard();
-    renderAccessibleSummary();
-    renderGuide();
-  });
+  assignmentFormatSelect.addEventListener('change', refreshLearningOutputs);
   copyLmsAssignmentBtn.addEventListener('click', copyLmsAssignment);
   copyLmsRubricBtn.addEventListener('click', copyLmsRubric);
-  scaffoldSelect.addEventListener('change', function () {
-    renderScaffold();
-    renderLmsAssignment();
-    renderLessonPlan();
-    renderBiologyContext();
-    renderActivityCard();
-    renderAccessibleSummary();
-    renderGuide();
-  });
+  scaffoldSelect.addEventListener('change', refreshLearningOutputs);
   copyScaffoldBtn.addEventListener('click', copyScaffold);
+  copyStudentPacketBtn.addEventListener('click', copyStudentPacket);
+  copyConfidenceGuideBtn.addEventListener('click', copyConfidenceGuide);
   routeSelect.addEventListener('change', function () { renderRoute(); renderLmsAssignment(); renderGuide(); });
   readyPredictionInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
   readyEvidenceInput.addEventListener('change', function () { renderReadiness(); renderGuide(); });
@@ -3134,6 +3537,8 @@
   var params = new URLSearchParams(window.location.search);
   var requested = normalizeAccession(params.get('accession') || params.get('uniprot') || '');
   if (requested) lookup(requested);
+  renderFlowMode();
+  renderPresetSummary();
   renderGradeTutorial();
   renderRoute();
   renderContextLayer();
