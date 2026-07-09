@@ -434,23 +434,23 @@ function buildAlloCommands(ctx) {
     { id: "generate_quiz", icon: "\u{1F4DD}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_quiz", "Make a quiz from this"), aliases: ["make a quiz", "quiz me on this", "create a quiz", "comprehension questions", "generate quiz"], hint: t("cmd.generate_quiz_hint", "Generate a quiz from the current content"), run: (c) => {
       c.generateQuiz();
       return t("cmd.generate_quiz_done", "Generating a quiz from this content\u2026");
-    } },
+    }, runAsync: (c) => Promise.resolve(c.generateQuiz()).then(() => t("cmd.generate_quiz_ready", "Quiz ready \u2014 it\u2019s in the output panel.")) },
     { id: "generate_glossary", icon: "\u{1F4D6}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_glossary", "Make a vocabulary glossary"), aliases: ["glossary", "vocabulary", "vocab", "key terms", "word list"], hint: t("cmd.generate_glossary_hint", "Generate a glossary from the current content"), run: (c) => {
       c.generateGlossary();
       return t("cmd.generate_glossary_done", "Generating a glossary\u2026");
-    } },
+    }, runAsync: (c) => Promise.resolve(c.generateGlossary()).then(() => t("cmd.generate_glossary_ready", "Glossary ready.")) },
     { id: "generate_simplified", icon: "\u{1F4C9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_simplified", "Simplify this text"), aliases: ["simplify", "simplify this", "make it easier", "lower the reading level", "leveled text", "easier version"], hint: t("cmd.generate_simplified_hint", "Generate a simpler reading level \u2014 say \u201Cto grade N\u201D for a target"), run: (c, params) => {
       c.generateSimplified(params && params.grade ? { grade: params.grade } : {});
       return t("cmd.generate_simplified_done", "Generating a simpler version\u2026");
-    } },
+    }, runAsync: (c, params) => Promise.resolve(c.generateSimplified(params && params.grade ? { grade: params.grade } : {})).then(() => t("cmd.generate_simplified_ready", "Simpler version ready.")) },
     { id: "generate_sentence_frames", icon: "\u{1F9E9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_sentence_frames", "Make sentence frames"), aliases: ["sentence frames", "sentence starters", "scaffolds", "language support"], hint: t("cmd.generate_sentence_frames_hint", "Generate sentence frames from the current content"), run: (c) => {
       c.generateSentenceFrames();
       return t("cmd.generate_sentence_frames_done", "Generating sentence frames\u2026");
-    } },
+    }, runAsync: (c) => Promise.resolve(c.generateSentenceFrames()).then(() => t("cmd.generate_sentence_frames_ready", "Sentence frames ready.")) },
     { id: "generate_analysis", icon: "\u{1F52C}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis, label: t("cmd.generate_analysis", "Analyze this source"), aliases: ["analyze", "analysis", "source analysis", "analyze this"], hint: t("cmd.generate_analysis_hint", "Run a source analysis on the current content"), run: (c) => {
       c.generateAnalysis();
       return t("cmd.generate_analysis_done", "Analyzing this source\u2026");
-    } },
+    }, runAsync: (c) => Promise.resolve(c.generateAnalysis()).then(() => t("cmd.generate_analysis_ready", "Source analysis ready.")) },
     { id: "submit_work", icon: "\u{1F4E8}", roles: "all", when: (c) => !c.isTeacherMode, label: t("cmd.submit_work", "Submit my work"), aliases: ["submit", "submit my work", "hand it in", "turn in"], hint: t("cmd.submit_work_hint", "Send your work to your teacher"), run: (c) => {
       c.submitWork();
       return t("cmd.submit_work_done", "Opening the submit dialog\u2026");
@@ -762,12 +762,116 @@ function runCommandById(ctx, id, params, opts = {}) {
     } catch (_) {
     }
   }
+  if (opts.awaitCompletion && typeof cmd.runAsync === "function") {
+    const timeoutMs = opts.timeoutMs || 18e4;
+    let p;
+    try {
+      p = Promise.resolve(cmd.runAsync(ctx, params || {}));
+    } catch (e) {
+      return Promise.resolve({ handled: true, ok: false, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: opts.via || "plan" });
+    }
+    let timerId = null;
+    const timer = new Promise((res) => {
+      timerId = setTimeout(() => res({ __alloTimeout: true }), timeoutMs);
+    });
+    const clearTimer = () => {
+      if (timerId != null) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
+    };
+    return Promise.race([p, timer]).then((msg) => {
+      clearTimer();
+      return msg && msg.__alloTimeout ? { handled: true, ok: true, timedOut: true, narration: t("router.still_working", "Still working \u2014 it will finish in the background."), commandId: cmd.id, via: opts.via || "plan" } : { handled: true, ok: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via: opts.via || "plan" };
+    }).catch((e) => {
+      clearTimer();
+      return { handled: true, ok: false, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: opts.via || "plan" };
+    });
+  }
   try {
     const msg = cmd.run(ctx, params || {});
-    return { handled: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via: "confirm" };
+    return { handled: true, narration: msg || t("router.done", "Done."), commandId: cmd.id, via: opts.via || "confirm" };
   } catch (e) {
-    return { handled: true, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: "confirm" };
+    return { handled: true, ok: false, narration: t("router.failed", "That didn\u2019t work: ") + (e && e.message || "unknown"), commandId: cmd.id, via: opts.via || "confirm" };
   }
+}
+function looksMultiStep(rawText) {
+  const text = String(rawText || "").trim();
+  if (text.length < 12) return false;
+  if (/\b(then|after that|and then|followed by|once (?:that|it)'?s? done|next,)\b/i.test(text)) return true;
+  if (/^\s*1[.)]/.test(text) && /\n\s*2[.)]/.test(text)) return true;
+  return false;
+}
+async function planUtterance(ctx, rawText) {
+  const text = String(rawText || "").trim();
+  if (!text || text.length > 400) return null;
+  if (!ctx || typeof ctx.callGemini !== "function") return null;
+  const commands = buildAlloCommands(ctx).filter((c) => !c.chatSkip);
+  if (!commands.length) return null;
+  const menu = commands.map((c) => c.id + ": " + c.label).join("\n");
+  try {
+    const out = await ctx.callGemini("A teacher asked an education app's assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n" + menu + '\n\nTask: "' + text.replace(/"/g, "'") + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. 2 to 6 steps. params carries values the user stated (e.g. {"topic": "volcanoes", "grade": "5"} or {"language": "Spanish"}); use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).');
+    const m = String(out || "").match(/\{[\s\S]*\}/);
+    const j = JSON.parse(m ? m[0] : String(out));
+    if (!j || !Array.isArray(j.steps) || typeof j.confidence !== "number" || j.confidence < 0.7) return null;
+    const known = new Set(commands.map((c) => c.id));
+    const steps = j.steps.filter((s) => s && typeof s.commandId === "string").slice(0, 6);
+    if (steps.length < 2) return null;
+    if (steps.some((s) => !known.has(s.commandId))) return null;
+    return steps.map((s) => ({
+      commandId: s.commandId,
+      params: s.params && typeof s.params === "object" && !Array.isArray(s.params) ? s.params : {},
+      why: typeof s.why === "string" ? s.why.slice(0, 120) : ""
+    }));
+  } catch (_) {
+    return null;
+  }
+}
+async function runPlan(ctxOrGet, steps, opts = {}) {
+  const getCtx = typeof ctxOrGet === "function" ? ctxOrGet : () => ctxOrGet;
+  const t = _mkT((getCtx() || {}).t);
+  const list = (Array.isArray(steps) ? steps : []).slice(0, 6);
+  const results = [];
+  if (!list.length) return { ok: false, failedStep: 0, results, reason: t("plan.empty", "There were no steps to run.") };
+  for (let i = 0; i < list.length; i++) {
+    if (opts.shouldStop && opts.shouldStop()) return { ok: false, stopped: true, failedStep: i, results, reason: t("plan.stopped", "Stopped before step ") + (i + 1) + "." };
+    const s = list[i] || {};
+    const ctx = getCtx();
+    const cmd = buildAlloCommands(ctx).find((c) => c.id === s.commandId);
+    if (!cmd) return { ok: false, failedStep: i, results, reason: t("plan.unavailable", "Step ") + (i + 1) + " (" + (s.commandId || "?") + ")" + t("plan.unavailable2", " isn\u2019t available right now \u2014 it may need something an earlier step didn\u2019t produce.") };
+    if (cmd.destructive) {
+      let allowed = false;
+      if (typeof opts.confirmDestructive === "function") {
+        try {
+          allowed = !!await opts.confirmDestructive(cmd, s, i);
+        } catch (_) {
+          allowed = false;
+        }
+      }
+      if (!allowed) return { ok: false, failedStep: i, results, reason: (cmd.label || s.commandId) + t("plan.needs_confirm", " needs its own confirmation \u2014 run it from the Ctrl+K menu.") };
+    }
+    if (typeof opts.onStep === "function") {
+      try {
+        opts.onStep(i, "start", cmd, null);
+      } catch (_) {
+      }
+    }
+    let r = null;
+    try {
+      r = await runCommandById(ctx, s.commandId, s.params || {}, { confirmed: true, awaitCompletion: true, via: "plan", timeoutMs: opts.timeoutMs });
+    } catch (e) {
+      r = { handled: false, narration: e && e.message || "unknown" };
+    }
+    results.push(r);
+    if (!r || !r.handled || r.ok === false) return { ok: false, failedStep: i, results, reason: r && r.narration || t("plan.step_failed", "That step didn\u2019t work.") };
+    if (typeof opts.onStep === "function") {
+      try {
+        opts.onStep(i, "done", cmd, r.narration);
+      } catch (_) {
+      }
+    }
+  }
+  return { ok: true, results };
 }
 function createVoiceLoop(getCtx) {
   let rec = null, active = false, errStreak = 0;
@@ -1225,6 +1329,6 @@ const AlloCommandPalette = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop };
+  window.AlloModules.AlloCommands = { AlloCommandPalette: AlloCommandPalette, buildAlloCommands: buildAlloCommands, scoreCommand: scoreCommand, routeUtterance: routeUtterance, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, planUtterance: planUtterance, runPlan: runPlan };
   console.log('[CDN] AlloCommands loaded');
 })();

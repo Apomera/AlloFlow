@@ -379,11 +379,11 @@ function buildAlloCommands(ctx) {
     { id: 'find_reading', opensPanel: 'readingLibrary', icon: '📚', roles: 'all', label: t('cmd.find_reading', 'Find the right book'), aliases: ['find a book', 'find books about', 'recommend a book', 'suggest a book', 'book about', 'books about', 'reading about', 'learn about', 'science article about', 'primary source about'], hint: t('cmd.find_reading_hint', 'Ask by topic, grade, language, source, or type'), run: (c, params) => runFindReadingCommand(c, params || {}, t) },
 
     // ── Create from this content (teacher) + submit (student) — added 2026-06-13 (Slice 2) ──
-    { id: 'generate_quiz', icon: '📝', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_quiz', 'Make a quiz from this'), aliases: ['make a quiz', 'quiz me on this', 'create a quiz', 'comprehension questions', 'generate quiz'], hint: t('cmd.generate_quiz_hint', 'Generate a quiz from the current content'), run: (c) => { c.generateQuiz(); return t('cmd.generate_quiz_done', 'Generating a quiz from this content…'); } },
-    { id: 'generate_glossary', icon: '📖', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_glossary', 'Make a vocabulary glossary'), aliases: ['glossary', 'vocabulary', 'vocab', 'key terms', 'word list'], hint: t('cmd.generate_glossary_hint', 'Generate a glossary from the current content'), run: (c) => { c.generateGlossary(); return t('cmd.generate_glossary_done', 'Generating a glossary…'); } },
-    { id: 'generate_simplified', icon: '📉', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_simplified', 'Simplify this text'), aliases: ['simplify', 'simplify this', 'make it easier', 'lower the reading level', 'leveled text', 'easier version'], hint: t('cmd.generate_simplified_hint', 'Generate a simpler reading level — say “to grade N” for a target'), run: (c, params) => { c.generateSimplified(params && params.grade ? { grade: params.grade } : {}); return t('cmd.generate_simplified_done', 'Generating a simpler version…'); } },
-    { id: 'generate_sentence_frames', icon: '🧩', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_sentence_frames', 'Make sentence frames'), aliases: ['sentence frames', 'sentence starters', 'scaffolds', 'language support'], hint: t('cmd.generate_sentence_frames_hint', 'Generate sentence frames from the current content'), run: (c) => { c.generateSentenceFrames(); return t('cmd.generate_sentence_frames_done', 'Generating sentence frames…'); } },
-    { id: 'generate_analysis', icon: '🔬', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_analysis', 'Analyze this source'), aliases: ['analyze', 'analysis', 'source analysis', 'analyze this'], hint: t('cmd.generate_analysis_hint', 'Run a source analysis on the current content'), run: (c) => { c.generateAnalysis(); return t('cmd.generate_analysis_done', 'Analyzing this source…'); } },
+    { id: 'generate_quiz', icon: '📝', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_quiz', 'Make a quiz from this'), aliases: ['make a quiz', 'quiz me on this', 'create a quiz', 'comprehension questions', 'generate quiz'], hint: t('cmd.generate_quiz_hint', 'Generate a quiz from the current content'), run: (c) => { c.generateQuiz(); return t('cmd.generate_quiz_done', 'Generating a quiz from this content…'); }, runAsync: (c) => Promise.resolve(c.generateQuiz()).then(() => t('cmd.generate_quiz_ready', 'Quiz ready — it’s in the output panel.')) },
+    { id: 'generate_glossary', icon: '📖', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_glossary', 'Make a vocabulary glossary'), aliases: ['glossary', 'vocabulary', 'vocab', 'key terms', 'word list'], hint: t('cmd.generate_glossary_hint', 'Generate a glossary from the current content'), run: (c) => { c.generateGlossary(); return t('cmd.generate_glossary_done', 'Generating a glossary…'); }, runAsync: (c) => Promise.resolve(c.generateGlossary()).then(() => t('cmd.generate_glossary_ready', 'Glossary ready.')) },
+    { id: 'generate_simplified', icon: '📉', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_simplified', 'Simplify this text'), aliases: ['simplify', 'simplify this', 'make it easier', 'lower the reading level', 'leveled text', 'easier version'], hint: t('cmd.generate_simplified_hint', 'Generate a simpler reading level — say “to grade N” for a target'), run: (c, params) => { c.generateSimplified(params && params.grade ? { grade: params.grade } : {}); return t('cmd.generate_simplified_done', 'Generating a simpler version…'); }, runAsync: (c, params) => Promise.resolve(c.generateSimplified(params && params.grade ? { grade: params.grade } : {})).then(() => t('cmd.generate_simplified_ready', 'Simpler version ready.')) },
+    { id: 'generate_sentence_frames', icon: '🧩', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_sentence_frames', 'Make sentence frames'), aliases: ['sentence frames', 'sentence starters', 'scaffolds', 'language support'], hint: t('cmd.generate_sentence_frames_hint', 'Generate sentence frames from the current content'), run: (c) => { c.generateSentenceFrames(); return t('cmd.generate_sentence_frames_done', 'Generating sentence frames…'); }, runAsync: (c) => Promise.resolve(c.generateSentenceFrames()).then(() => t('cmd.generate_sentence_frames_ready', 'Sentence frames ready.')) },
+    { id: 'generate_analysis', icon: '🔬', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis, label: t('cmd.generate_analysis', 'Analyze this source'), aliases: ['analyze', 'analysis', 'source analysis', 'analyze this'], hint: t('cmd.generate_analysis_hint', 'Run a source analysis on the current content'), run: (c) => { c.generateAnalysis(); return t('cmd.generate_analysis_done', 'Analyzing this source…'); }, runAsync: (c) => Promise.resolve(c.generateAnalysis()).then(() => t('cmd.generate_analysis_ready', 'Source analysis ready.')) },
     { id: 'submit_work', icon: '📨', roles: 'all', when: (c) => !c.isTeacherMode, label: t('cmd.submit_work', 'Submit my work'), aliases: ['submit', 'submit my work', 'hand it in', 'turn in'], hint: t('cmd.submit_work_hint', 'Send your work to your teacher'), run: (c) => { c.submitWork(); return t('cmd.submit_work_done', 'Opening the submit dialog…'); } },
 
     // ── Accessibility self-service (available in every mode) ──
@@ -546,8 +546,102 @@ function runCommandById(ctx, id, params, opts = {}) {
   if (!cmd) return null;
   if (cmd.destructive && !opts.confirmed) return { handled: true, narration: t('router.needs_confirm', 'That action needs confirmation — use Ctrl+K to run it.'), commandId: cmd.id, via: 'confirm' };
   if (cmd.opensPanel && ctx && typeof ctx.closeOtherPanels === 'function') { try { ctx.closeOtherPanels(cmd.opensPanel); } catch (_) {} }
-  try { const msg = cmd.run(ctx, params || {}); return { handled: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via: 'confirm' }; }
-  catch (e) { return { handled: true, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via: 'confirm' }; }
+  // Phase A (agentic plans): with awaitCompletion, a command that exposes
+  // runAsync is executed through it and we resolve when the underlying
+  // action FINISHES (handleGenerate is async, so the generate_* wrappers
+  // already return completion promises — run: just discards them). A
+  // timeout race keeps a hung generation from wedging a plan; the action
+  // itself continues in the background either way. Sync commands and the
+  // palette/voice/chip callers (no awaitCompletion) are untouched.
+  if (opts.awaitCompletion && typeof cmd.runAsync === 'function') {
+    const timeoutMs = opts.timeoutMs || 180000;
+    let p;
+    try { p = Promise.resolve(cmd.runAsync(ctx, params || {})); }
+    catch (e) { return Promise.resolve({ handled: true, ok: false, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via: opts.via || 'plan' }); }
+    let timerId = null;
+    const timer = new Promise((res) => { timerId = setTimeout(() => res({ __alloTimeout: true }), timeoutMs); });
+    const clearTimer = () => { if (timerId != null) { clearTimeout(timerId); timerId = null; } };
+    return Promise.race([p, timer]).then((msg) => { clearTimer(); return (msg && msg.__alloTimeout)
+      ? { handled: true, ok: true, timedOut: true, narration: t('router.still_working', 'Still working — it will finish in the background.'), commandId: cmd.id, via: opts.via || 'plan' }
+      : { handled: true, ok: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via: opts.via || 'plan' }; })
+      .catch((e) => { clearTimer(); return { handled: true, ok: false, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via: opts.via || 'plan' }; });
+  }
+  try { const msg = cmd.run(ctx, params || {}); return { handled: true, narration: msg || t('router.done', 'Done.'), commandId: cmd.id, via: opts.via || 'confirm' }; }
+  catch (e) { return { handled: true, ok: false, narration: t('router.failed', 'That didn’t work: ') + ((e && e.message) || 'unknown'), commandId: cmd.id, via: opts.via || 'confirm' }; }
+}
+
+// ── Agentic plans (Phase B/C, 2026-07-07 — docs/AGENTIC_ALLOBOT_DESIGN.md) ──
+// looksMultiStep: cheap deterministic smell test so the planner's Gemini
+// call only fires on utterances that read as a SEQUENCE. Conservative on
+// purpose — a miss just means the bot chats normally.
+function looksMultiStep(rawText) {
+  const text = String(rawText || '').trim();
+  if (text.length < 12) return false;
+  if (/\b(then|after that|and then|followed by|once (?:that|it)'?s? done|next,)\b/i.test(text)) return true;
+  if (/^\s*1[.)]/.test(text) && /\n\s*2[.)]/.test(text)) return true; // pasted numbered list
+  return false;
+}
+
+// planUtterance: ONE Gemini call mapping a multi-step request to an
+// ordered list of registry commands. Returns [{commandId, params, why}]
+// (2–6 steps, every id validated against the CURRENT role-filtered menu)
+// or null. Nothing here executes — the caller must confirm + runPlan.
+async function planUtterance(ctx, rawText) {
+  const text = String(rawText || '').trim();
+  if (!text || text.length > 400) return null;
+  if (!ctx || typeof ctx.callGemini !== 'function') return null;
+  const commands = buildAlloCommands(ctx).filter((c) => !c.chatSkip);
+  if (!commands.length) return null;
+  const menu = commands.map((c) => c.id + ': ' + c.label).join('\n');
+  try {
+    const out = await ctx.callGemini('A teacher asked an education app\'s assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n' + menu + '\n\nTask: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. 2 to 6 steps. params carries values the user stated (e.g. {"topic": "volcanoes", "grade": "5"} or {"language": "Spanish"}); use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).');
+    const m = String(out || '').match(/\{[\s\S]*\}/);
+    const j = JSON.parse(m ? m[0] : String(out));
+    if (!j || !Array.isArray(j.steps) || typeof j.confidence !== 'number' || j.confidence < 0.7) return null;
+    const known = new Set(commands.map((c) => c.id));
+    const steps = j.steps.filter((s) => s && typeof s.commandId === 'string').slice(0, 6);
+    if (steps.length < 2) return null; // single-step asks stay on routeUtterance
+    if (steps.some((s) => !known.has(s.commandId))) return null;
+    return steps.map((s) => ({
+      commandId: s.commandId,
+      params: (s.params && typeof s.params === 'object' && !Array.isArray(s.params)) ? s.params : {},
+      why: typeof s.why === 'string' ? s.why.slice(0, 120) : ''
+    }));
+  } catch (_) { return null; }
+}
+
+// runPlan: sequential executor. Fresh ctx per step (state mirrors like
+// hasSourceOrAnalysis change as steps land), `when:` availability is
+// re-checked at RUN time via the rebuilt menu, destructive steps never
+// auto-run (opts.confirmDestructive may allow one explicitly), and each
+// step is awaited through runCommandById's awaitCompletion path. Stops
+// on the first failure and reports which step, keeping prior results.
+async function runPlan(ctxOrGet, steps, opts = {}) {
+  const getCtx = (typeof ctxOrGet === 'function') ? ctxOrGet : () => ctxOrGet;
+  const t = _mkT((getCtx() || {}).t);
+  const list = (Array.isArray(steps) ? steps : []).slice(0, 6);
+  const results = [];
+  if (!list.length) return { ok: false, failedStep: 0, results, reason: t('plan.empty', 'There were no steps to run.') };
+  for (let i = 0; i < list.length; i++) {
+    if (opts.shouldStop && opts.shouldStop()) return { ok: false, stopped: true, failedStep: i, results, reason: t('plan.stopped', 'Stopped before step ') + (i + 1) + '.' };
+    const s = list[i] || {};
+    const ctx = getCtx();
+    const cmd = buildAlloCommands(ctx).find((c) => c.id === s.commandId);
+    if (!cmd) return { ok: false, failedStep: i, results, reason: t('plan.unavailable', 'Step ') + (i + 1) + ' (' + (s.commandId || '?') + ')' + t('plan.unavailable2', ' isn’t available right now — it may need something an earlier step didn’t produce.') };
+    if (cmd.destructive) {
+      let allowed = false;
+      if (typeof opts.confirmDestructive === 'function') { try { allowed = !!(await opts.confirmDestructive(cmd, s, i)); } catch (_) { allowed = false; } }
+      if (!allowed) return { ok: false, failedStep: i, results, reason: (cmd.label || s.commandId) + t('plan.needs_confirm', ' needs its own confirmation — run it from the Ctrl+K menu.') };
+    }
+    if (typeof opts.onStep === 'function') { try { opts.onStep(i, 'start', cmd, null); } catch (_) {} }
+    let r = null;
+    try { r = await runCommandById(ctx, s.commandId, s.params || {}, { confirmed: true, awaitCompletion: true, via: 'plan', timeoutMs: opts.timeoutMs }); }
+    catch (e) { r = { handled: false, narration: (e && e.message) || 'unknown' }; }
+    results.push(r);
+    if (!r || !r.handled || r.ok === false) return { ok: false, failedStep: i, results, reason: (r && r.narration) || t('plan.step_failed', 'That step didn’t work.') };
+    if (typeof opts.onStep === 'function') { try { opts.onStep(i, 'done', cmd, r.narration); } catch (_) {} }
+  }
+  return { ok: true, results };
 }
 // ── S2: the opt-in voice loop ──
 // One singleton SpeechRecognition session; every FINAL transcript routes
