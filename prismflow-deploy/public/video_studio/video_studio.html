@@ -495,6 +495,7 @@
             </select>
             <button class="quiet" id="refreshResourceCuesBtn">Refresh pack cues</button>
           </div>
+          <label class="status" style="margin-top:0"><input type="checkbox" id="insertsPrivacyAck"> AI can receive sampled video frames (Lesson assistant sends a contact sheet; From current frame sends one frame) — I checked that no student faces or records are visible</label>
           <div class="status" id="insertStatus">Inserts render into the exported video as editable overlays. Use them for section breaks, pause-and-think moments, labels, and tiny GIF-style emphasis.</div>
           <div id="resourceCueList" style="margin-top:8px"></div>
           <div id="insertList" style="margin-top:8px"></div>
@@ -620,6 +621,7 @@
               <option value="Leda">Voice: Leda (youthful)</option>
             </select>
           </div>
+          <label class="status" style="margin-top:0"><input type="checkbox" id="narratePrivacyAck"> AI can receive sampled video frames (one contact sheet, never the raw video) — I checked that no student faces or records are visible</label>
           <div class="status" id="aiNarrStatus"></div>
           <div id="aiNarrList" style="margin-top:8px"></div>
           <div class="row" id="aiNarrActions" hidden style="margin-top:8px">
@@ -642,6 +644,7 @@
               <option value="16">16</option>
             </select>
           </div>
+          <label class="status" style="margin-top:0"><input type="checkbox" id="describePrivacyAck"> AI can receive sampled video frames (one contact sheet, never the raw video) — I checked that no student faces or records are visible</label>
           <div class="status" id="visualStatus">Use this for silent footage, demonstrations, nature-documentary style narration, or visual accessibility. It describes what is visible; spoken captions stay in the Captions panel.</div>
           <div id="visualList" style="margin-top:8px"></div>
           <div class="row" id="visualActions" hidden style="margin-top:8px">
@@ -3984,10 +3987,29 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     tabs.forEach(function (t) {
       var on = t[0] === which;
       $(t[0]).setAttribute('aria-selected', String(on));
+      // Roving tabindex: Tab lands on the active tab only; arrows move within.
+      $(t[0]).tabIndex = on ? 0 : -1;
       $(t[1]).hidden = !on;
     });
   }
   tabs.forEach(function (t) { $(t[0]).addEventListener('click', function () { showTab(t[0]); }); });
+  showTab('tabRecord');
+  // WAI-ARIA tabs keyboard pattern: Left/Right cycle, Home/End jump; selection
+  // follows focus. Without this the tablist was pointer-only.
+  document.querySelector('.tabs').addEventListener('keydown', function (ev) {
+    var order = tabs.map(function (t) { return t[0]; });
+    var idx = order.indexOf(document.activeElement && document.activeElement.id);
+    if (idx < 0) return;
+    var next = null;
+    if (ev.key === 'ArrowRight') next = (idx + 1) % order.length;
+    else if (ev.key === 'ArrowLeft') next = (idx + order.length - 1) % order.length;
+    else if (ev.key === 'Home') next = 0;
+    else if (ev.key === 'End') next = order.length - 1;
+    if (next === null) return;
+    ev.preventDefault();
+    showTab(order[next]);
+    $(order[next]).focus();
+  });
   function focusStudioTarget(tabId, targetId) {
     if (tabId && $(tabId)) showTab(tabId);
     setTimeout(function () {
@@ -5887,6 +5909,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var t = currentTake();
     if (!t) { setStatus($('insertStatus'), 'Record or import a video first.', 'warn'); return; }
     if (!opener || opener.closed) { setStatus($('insertStatus'), 'Lesson assistant needs the AlloFlow window.', 'warn'); return; }
+    if (!framePrivacyOk('insertsPrivacyAck', $('insertStatus'))) return;
     var btn = $('lessonAssistBtn');
     btn.disabled = true;
     try {
@@ -5946,6 +5969,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var prompt = $('visualPromptInput').value.trim();
     if (!t) { setStatus($('insertStatus'), 'Record or import a video first.', 'warn'); return; }
     if (!opener || opener.closed) { setStatus($('insertStatus'), 'Frame visual cards need the AlloFlow window.', 'warn'); return; }
+    if (!framePrivacyOk('insertsPrivacyAck', $('insertStatus'), 'the current video frame')) return;
     var btn = $('frameVisualCardBtn');
     btn.disabled = true;
     try {
@@ -6651,6 +6675,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // Sample N frames into one labeled grid image so ONE vision call can "see"
   // the whole video. Timestamps are burned into each cell so the model can
   // reference real times instead of guessing.
+  // Consent gate for every tool that sends RENDERED VIDEO PIXELS (contact
+  // sheets or single frames) to Gemini — same explicit opt-in the Localize
+  // panel already requires for text metadata. Frames can carry student faces,
+  // names on screen, or an open gradebook; a tooltip is not consent.
+  function framePrivacyOk(ackId, statusEl, what) {
+    if ($(ackId) && $(ackId).checked) return true;
+    setStatus(statusEl, 'Check the privacy box first. This tool sends ' + (what || 'sampled video frames (a contact sheet)') + ' to Gemini through AlloFlow — confirm no student faces or records are visible.', 'warn');
+    try { if ($(ackId)) $(ackId).focus(); } catch (_) {}
+    return false;
+  }
   function buildContactSheet(t, count) {
     return new Promise(function (resolve, reject) {
       var v = document.createElement('video');
@@ -7111,6 +7145,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var t = currentTake();
     if (!t) { setStatus($('visualStatus'), 'Record or import a video first.', 'warn'); return; }
     if (!opener || opener.closed) { setStatus($('visualStatus'), 'Visual description needs the AlloFlow window (it uses the app AI connection).', 'warn'); return; }
+    if (!framePrivacyOk('describePrivacyAck', $('visualStatus'))) return;
     var btn = $('visualDescribeBtn');
     btn.disabled = true;
     try {
@@ -7180,6 +7215,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var t = currentTake();
     if (!t) { setStatus($('aiNarrStatus'), 'Record or import a video first.', 'warn'); return; }
     if (!opener || opener.closed) { setStatus($('aiNarrStatus'), 'AI narration needs the AlloFlow window (it uses the app’s Gemini connection).', 'warn'); return; }
+    if (!framePrivacyOk('narratePrivacyAck', $('aiNarrStatus'))) return;
     var btn = $('aiNarrateBtn');
     btn.disabled = true;
     try {
@@ -7735,6 +7771,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Delete'; del.setAttribute('aria-label', 'Delete ' + t.name);
       del.addEventListener('click', function (ev) {
         ev.stopPropagation();
+        // Deleting a take also discards its draft — confirm like every other
+        // destructive replace in this file does.
+        var sure = true;
+        try { sure = window.confirm('Delete "' + t.name + '"? This removes the take and its saved draft from this device. Files you already exported or bundled are not affected.'); } catch (_) {}
+        if (!sure) return;
         takes = takes.filter(function (x) { return x.id !== t.id; });
         deleteDraft(t.id);
         removeSceneItemsForTake(t.id);

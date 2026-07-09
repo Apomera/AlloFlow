@@ -2723,9 +2723,18 @@ function vsPcmToWav(pcmBytes, sampleRate) {
 
   // ─── Component ─────────────────────────────────────────────────────────────
   function VideoStudio(props) {
+    // Live props: the message receiver and action callbacks mount with []
+    // deps, so reading `props` directly inside them freezes first-render
+    // values (stale history for resource cues, stale AI fns, stale language
+    // for toasts). Everything inside those closures must go through propsRef.
+    var propsRef = useRef(props);
+    propsRef.current = props;
     var onClose = props.onClose || function () {};
-    var addToast = props.addToast || function () {};
-    var T = makeT(props.t);
+    var addToast = function (msg, kind) {
+      var f = propsRef.current.addToast;
+      if (typeof f === 'function') { try { f(msg, kind); } catch (_) {} }
+    };
+    var T = function (key, fallback) { return makeT(propsRef.current.t)(key, fallback); };
 
     var _st = useState('closed'); var studioState = _st[0], setStudioState = _st[1]; // closed | opening | open | blocked
     var _vd = useState([]); var videos = _vd[0], setVideos = _vd[1];
@@ -2764,7 +2773,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var respond = function (payload) {
             postToStudio(replyTo, Object.assign({ type: 'allostudio-ai-response', id: req.id }, payload));
           };
-          if (typeof props.callGemini !== 'function') { respond({ error: 'ai-unavailable' }); return; }
+          if (typeof propsRef.current.callGemini !== 'function') { respond({ error: 'ai-unavailable' }); return; }
           var durSec = Math.max(1, Math.round(Number(req.duration) || 0));
           var prompt = 'You are reviewing the transcript of a teacher\'s instructional video to suggest a FEW high-value edits.\n' +
             'Respond with ONLY a JSON array (no prose, no markdown fences). Each item has "type", "reason" (short, plain), and type-specific fields:\n' +
@@ -2775,7 +2784,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             'Rules: at most 8 suggestions; only clearly beneficial ones; an empty array [] is a good answer for a clean video; never invent timestamps outside 0-' + durSec + 's.\n' +
             'Video duration: ' + durSec + ' seconds. Current title: ' + String(req.title || '(none)').slice(0, 120) + '\n' +
             'Transcript with [start-end] second markers:\n' + String(req.transcript || '').slice(0, 24000);
-          Promise.resolve().then(function () { return props.callGemini(prompt, false, true); }).then(function (res) {
+          Promise.resolve().then(function () { return propsRef.current.callGemini(prompt, false, true); }).then(function (res) {
             var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
             var parsed = null;
             try { parsed = JSON.parse(text); } catch (_) {
@@ -2885,8 +2894,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             Promise.resolve().then(function () { return lessonVisionFn(lPrompt, lreq.imageBase64, lreq.mimeType || 'image/jpeg'); }).then(parseLesson).catch(function (e) {
               lRespond({ error: String((e && e.message) || e).slice(0, 200) });
             });
-          } else if (typeof props.callGemini === 'function') {
-            Promise.resolve().then(function () { return props.callGemini(lPrompt, false, true); }).then(parseLesson).catch(function (e) {
+          } else if (typeof propsRef.current.callGemini === 'function') {
+            Promise.resolve().then(function () { return propsRef.current.callGemini(lPrompt, false, true); }).then(parseLesson).catch(function (e) {
               lRespond({ error: String((e && e.message) || e).slice(0, 200) });
             });
           } else {
@@ -2901,7 +2910,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var locRespond = function (payload) {
             postToStudio(locReplyTo, Object.assign({ type: 'allostudio-localize-response', id: locReq.id }, payload));
           };
-          if (typeof props.callGemini !== 'function') { locRespond({ error: 'ai-unavailable' }); return; }
+          if (typeof propsRef.current.callGemini !== 'function') { locRespond({ error: 'ai-unavailable' }); return; }
           var locDur = Math.max(1, Math.round(Number(locReq.duration) || 0));
           var locTarget = String(locReq.targetLanguage || 'target language').slice(0, 80);
           var locStyle = String(locReq.style || 'natural').slice(0, 60);
@@ -2922,7 +2931,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             '{"targetLanguage":"...","style":"literal|natural|interpreter|family|bilingual","title":"translated title","speakerMap":[{"speaker":"Teacher","translatedLabel":"..."}],"captions":[{"start":S,"end":E,"speaker":"...","originalText":"...","text":"translated subtitle"}],"chapters":[{"start":S,"title":"translated chapter"}],"inserts":[{"type":"title_card|pause_prompt|callout|sticker|visual_card","start":S,"duration":D,"text":"translated overlay","note":"optional translated support","theme":"blue|green|amber|pink|slate"}],"visualDescriptions":[{"start":S,"end":E,"description":"translated visual description","basis":"observed|inferred|source-supported|needs-review","confidence":"high|medium|low","checked":true}],"narration":[{"start":S,"end":E,"speaker":"Interpreter","originalText":"...","text":"spoken interpreted line"}],"reviewNotes":["short teacher checks"]}\n' +
             'Interpret speaker intent naturally for the target language. Preserve meaning, examples, quantities, math/science terms, names, and safety/privacy boundaries. Do not invent new facts, identities, visuals, or curriculum claims. If speaker identity is unclear, use "Speaker". If bilingual style is requested, include concise original + translated subtitle text in each caption. Keep narration short enough to speak in its timestamp window. Translate all provided chapters, overlays, visual descriptions, and captions. Respect glossary locks exactly.\n' +
             'Source payload JSON:\n' + JSON.stringify(locPayload).slice(0, 28000);
-          Promise.resolve().then(function () { return props.callGemini(locPrompt, false, true); }).then(function (res) {
+          Promise.resolve().then(function () { return propsRef.current.callGemini(locPrompt, false, true); }).then(function (res) {
             var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
             var parsed = null;
             try { parsed = JSON.parse(text); } catch (_) {
@@ -2942,7 +2951,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var iRespond = function (payload) {
             postToStudio(iReplyTo, Object.assign({ type: 'allostudio-teaching-inserts-response', id: ireq.id }, payload));
           };
-          if (typeof props.callGemini !== 'function') { iRespond({ error: 'ai-unavailable' }); return; }
+          if (typeof propsRef.current.callGemini !== 'function') { iRespond({ error: 'ai-unavailable' }); return; }
           var iDur = Math.max(1, Math.round(Number(ireq.duration) || 0));
           var iPrompt = 'You are helping a teacher add simple educational finishing touches to an instructional video.\n' +
             'Use ONLY the transcript text and timestamps below. Do not invent visual facts. Suggest a small set of editable overlays that improve learning: section title cards, pause-and-think prompts, callout labels, or tiny animated stickers.\n' +
@@ -2954,7 +2963,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             'Rules: at most 10 inserts; keep text classroom-friendly; timestamps must be within 0-' + iDur + 's; prefer fewer, useful inserts over decoration.\n' +
             'Current title: ' + String(ireq.title || '(none)').slice(0, 120) + '\n' +
             'Transcript with [start-end] second markers:\n' + String(ireq.transcript || '').slice(0, 24000);
-          Promise.resolve().then(function () { return props.callGemini(iPrompt, false, true); }).then(function (res) {
+          Promise.resolve().then(function () { return propsRef.current.callGemini(iPrompt, false, true); }).then(function (res) {
             var text = (typeof res === 'string') ? res : ((res && (res.text || res.output)) || JSON.stringify(res));
             var parsed = null;
             try { parsed = JSON.parse(text); } catch (_) {
@@ -2973,7 +2982,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var gRespond = function (payload) {
             postToStudio(gReplyTo, Object.assign({ type: 'allostudio-imagen-response', id: greq.id }, payload));
           };
-          var imagenFn = props.callImagen || (typeof window !== 'undefined' ? window.callImagen : null);
+          var imagenFn = propsRef.current.callImagen || (typeof window !== 'undefined' ? window.callImagen : null);
           if (typeof imagenFn !== 'function') { gRespond({ error: 'imagen-unavailable' }); return; }
           var gPrompt = 'Create a clean classroom-friendly still illustration or diagram card for an educational video. No text unless explicitly requested. Prompt: ' + String(greq.prompt || '').slice(0, 900);
           Promise.resolve().then(function () { return imagenFn(gPrompt); }).then(function (res) {
@@ -2994,8 +3003,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var fRespond = function (payload) {
             postToStudio(fReplyTo, Object.assign({ type: 'allostudio-frame-image-response', id: freq.id }, payload));
           };
-          var editFn = props.callGeminiImageEdit || (typeof window !== 'undefined' ? window.callGeminiImageEdit : null);
-          var frameImagenFn = props.callImagen || (typeof window !== 'undefined' ? window.callImagen : null);
+          var editFn = propsRef.current.callGeminiImageEdit || (typeof window !== 'undefined' ? window.callGeminiImageEdit : null);
+          var frameImagenFn = propsRef.current.callImagen || (typeof window !== 'undefined' ? window.callImagen : null);
           var frameVisionFn = (typeof window !== 'undefined') ? window.callGeminiVision : null;
           var fPrompt = 'Create a clean classroom-friendly still visual card from this video frame. Preserve the instructional idea, simplify clutter, remove private information and accidental names, and avoid decorative text unless explicitly requested. Teacher request: ' + String(freq.prompt || '').slice(0, 800);
           var normalizeFrameImage = function (res) {
@@ -3027,8 +3036,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           var cRespond = function (payload) {
             postToStudio(cReplyTo, Object.assign({ type: 'allostudio-resource-cues-response', id: creq.id }, payload));
           };
-          var hist = Array.isArray(props.history) ? props.history : (Array.isArray(props.resourceHistory) ? props.resourceHistory : []);
-          if (!hist.length && typeof window !== 'undefined' && Array.isArray(window.__alloflowHistory)) hist = window.__alloflowHistory;
+          // propsRef keeps this LIVE: resources added after the panel opened
+          // still reach the popup's cue browser. (A global-variable fallback
+          // used to sit here — nothing in the app ever assigned it.)
+          var hist = Array.isArray(propsRef.current.history) ? propsRef.current.history : (Array.isArray(propsRef.current.resourceHistory) ? propsRef.current.resourceHistory : []);
           var cues = vsBuildResourceCues(hist, { limit: 140 });
           cRespond({ cues: cues, count: cues.length });
         } else if (ev.data.type === 'allostudio-transcript') {
@@ -3038,7 +3049,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             postToStudio(txReplyTo, Object.assign({ type: 'allostudio-transcript-ack', id: txReq.id }, payload));
           };
           var txResource = vsBuildTranscriptResource(txReq.payload || {});
-          var txFn = props.onSendTranscriptToFlow || props.onAddTranscriptResource || props.onAddResource || props.addResource || (typeof window !== 'undefined' ? window.__alloflowAddResource : null);
+          var txFn = propsRef.current.onSendTranscriptToFlow || propsRef.current.onAddTranscriptResource || propsRef.current.onAddResource || propsRef.current.addResource || (typeof window !== 'undefined' ? window.__alloflowAddResource : null);
           if (typeof txFn === 'function') {
             Promise.resolve().then(function () { return txFn(txResource); }).then(function (res) {
               addToast(T('video_studio.transcript_sent', 'Transcript sent to AlloFlow Source and saved in history.'), 'success');
@@ -3074,8 +3085,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             tRespond({ error: String((e && e.message) || e).slice(0, 200) });
           });
         } else if (ev.data.type === 'allostudio-open-cinematic') {
-          if (props.onOpenCinematicStudio) {
-            try { props.onOpenCinematicStudio(); } catch (_) {}
+          if (propsRef.current.onOpenCinematicStudio) {
+            try { propsRef.current.onOpenCinematicStudio(); } catch (_) {}
             addToast(T('video_studio.cinematic_opened', 'Cinematic Studio opened from Video Studio.'), 'success');
           } else {
             addToast(T('video_studio.cinematic_unavailable', 'Cinematic Studio is not available from this view.'), 'error');
@@ -3172,9 +3183,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       }
       studioWinRef.current = w;
       vsTakeStore.studioWin = w;
-      // Watchdog: if no ready handshake, surface guidance instead of hanging.
+      // Watchdog: an honest verdict, not a hopeful one. It used to flip
+      // 'opening' straight to 'open' even when the ready handshake never
+      // arrived, so a popup that failed to load read as healthy.
       setTimeout(function () {
-        setStudioState(function (cur) { return cur === 'opening' ? 'open' : cur; });
+        setStudioState(function (cur) {
+          if (cur !== 'opening') return cur;
+          var w2 = studioWinRef.current;
+          if (!w2 || w2.closed) return 'closed';
+          return 'stalled';
+        });
       }, 15000);
     }, []);
 
@@ -3324,7 +3342,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         return;
       }
       var resource = vsBuildTranscriptResource({ title: v.title || 'Teacher video', cues: cues, chapters: v.chapters || [], duration: v.duration || 0 });
-      var fn = props.onSendTranscriptToFlow || props.onAddTranscriptResource || props.onAddResource || props.addResource || (typeof window !== 'undefined' ? window.__alloflowAddResource : null);
+      var fn = propsRef.current.onSendTranscriptToFlow || propsRef.current.onAddTranscriptResource || propsRef.current.onAddResource || propsRef.current.addResource || (typeof window !== 'undefined' ? window.__alloflowAddResource : null);
       if (typeof fn === 'function') {
         Promise.resolve().then(function () { return fn(resource); }).then(function () {
           addToast(T('video_studio.transcript_sent', 'Transcript sent to AlloFlow Source and saved in history.'), 'success');
@@ -3393,6 +3411,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var statusLine = studioState === 'open' ? T('video_studio.status_open', 'Studio window is open — record there, then press “Send to AlloFlow”.')
       : studioState === 'opening' ? T('video_studio.status_opening', 'Opening the Studio window…')
       : studioState === 'blocked' ? T('video_studio.status_blocked', 'Pop-up blocked. Allow pop-ups for this site and press the button again.')
+      : studioState === 'stalled' ? T('video_studio.status_stalled', 'The Studio window opened but has not reported in yet. Check that it finished loading (it connects on its own once it does), or close it and open it again.')
       : T('video_studio.status_closed', 'The Studio opens in its own window so screen recording works even inside Gemini Canvas.');
 
     return h('div', {
@@ -3432,11 +3451,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           // Cinematic Studio lives HERE now (its hub card was removed 2026-07-02):
           // it is the prompt-craft companion for NotebookLM and other AI video
           // GENERATORS, while this panel records/edits real footage.
-          props.onOpenCinematicStudio && h('div', { className: 'rounded-xl border border-rose-200 bg-rose-50/60 p-3 mb-4 flex items-center justify-between gap-3 flex-wrap' },
+          propsRef.current.onOpenCinematicStudio && h('div', { className: 'rounded-xl border border-rose-200 bg-rose-50/60 p-3 mb-4 flex items-center justify-between gap-3 flex-wrap' },
             h('p', { className: 'text-xs text-slate-600 flex-1', style: { minWidth: '200px' } },
               T('video_studio.cinematic_hint', 'Generating a video with AI instead of recording one? Cinematic Studio helps you craft and debug prompts for NotebookLM Video Overviews and other AI video generators — and caption their output.')),
             h('button', {
-              onClick: function () { try { props.onOpenCinematicStudio(); } catch (_) {} },
+              onClick: function () { try { propsRef.current.onOpenCinematicStudio(); } catch (_) {} },
               className: 'px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 shrink-0',
               'data-help-key': 'video_studio_cinematic_entry'
             }, T('video_studio.cinematic_open', '🎬 Cinematic Studio'))

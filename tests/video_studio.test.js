@@ -1790,6 +1790,41 @@ describe('take persistence + export hardening wiring', () => {
     expect(m).toContain("T('video_studio.gallery_note'");
     expect(m).toContain('removeTake: function (id)');
   });
+  it('frame-sending AI tools are consent-gated like localization (batch 2)', () => {
+    const html = popup();
+    // One opt-in checkbox per card, mirroring localizePrivacyAck.
+    expect(html).toContain('id="insertsPrivacyAck"');
+    expect(html).toContain('id="narratePrivacyAck"');
+    expect(html).toContain('id="describePrivacyAck"');
+    expect(html).toContain('function framePrivacyOk(ackId, statusEl, what)');
+    // All four frame senders pass through the gate.
+    expect(html).toContain("framePrivacyOk('insertsPrivacyAck', $('insertStatus'))");
+    expect(html).toContain("framePrivacyOk('insertsPrivacyAck', $('insertStatus'), 'the current video frame')");
+    expect(html).toContain("framePrivacyOk('narratePrivacyAck', $('aiNarrStatus'))");
+    expect(html).toContain("framePrivacyOk('describePrivacyAck', $('visualStatus'))");
+  });
+  it('popup tablist follows the WAI-ARIA keyboard pattern (batch 2)', () => {
+    const html = popup();
+    expect(html).toContain('$(t[0]).tabIndex = on ? 0 : -1;');
+    expect(html).toContain("document.querySelector('.tabs').addEventListener('keydown'");
+    expect(html).toContain("showTab('tabRecord');");
+  });
+  it('popup take deletion asks for confirmation (batch 2)', () => {
+    const html = popup();
+    expect(html).toContain('This removes the take and its saved draft from this device.');
+  });
+  it('module reads live props via propsRef and reports a stalled popup honestly (batch 2)', () => {
+    const m = moduleText();
+    expect(m).toContain('propsRef.current = props;');
+    expect(m).toContain('propsRef.current.callGemini');
+    expect(m).toContain('Array.isArray(propsRef.current.history)');
+    // The never-assigned fallback is gone.
+    expect(m).not.toContain('window.__alloflowHistory');
+    // Watchdog no longer flips 'opening' straight to 'open'.
+    expect(m).not.toContain("return cur === 'opening' ? 'open' : cur;");
+    expect(m).toContain("return 'stalled';");
+    expect(m).toContain("T('video_studio.status_stalled'");
+  });
   it('popup re-encode cleans up on every exit and is cancelable', () => {
     const html = popup();
     expect(html).toContain('function exportAbortError(message)');
