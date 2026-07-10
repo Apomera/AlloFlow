@@ -1915,6 +1915,13 @@ function PdfAuditView(props) {
   const [resumableBatch, setResumableBatch] = useState(null);
   const [lastTaggedValidation, setLastTaggedValidation] = useState(null);
   const VERAPDF_VALIDATOR_URL = "https://alloflow-cdn.pages.dev/verapdf/verapdf_validator.html";
+  const VERAPDF_ORIGIN = (() => {
+    try {
+      return new URL(VERAPDF_VALIDATOR_URL).origin;
+    } catch (_) {
+      return "*";
+    }
+  })();
   const [veraPdfResult, setVeraPdfResult] = useState(null);
   const [veraPdfBusy, setVeraPdfBusy] = useState(false);
   const [veraPdfFixing, setVeraPdfFixing] = useState(false);
@@ -2009,6 +2016,7 @@ function PdfAuditView(props) {
     }
   }, [pdfAutoVeraPdf]);
   const _lastTaggedBytesRef = useRef(null);
+  const _lastTaggedDeliveryRef = useRef(null);
   const _taggedModDateRef = useRef({ result: null, date: null });
   const _stableModDate = (result) => {
     if (!result) return void 0;
@@ -2031,13 +2039,16 @@ function PdfAuditView(props) {
         return;
       }
       _lastTaggedBytesRef.current = taggedBytes;
+      _lastTaggedDeliveryRef.current = null;
       setLastTaggedValidation((prev) => prev ? { ...prev, veraPdf: null, veraPdfAt: null, veraPdfBytesHash: null } : prev);
       const _rt = _result && _result.roundTrip || null;
       if (_rt && _rt.ok === false) {
+        _lastTaggedDeliveryRef.current = { withheld: true, reason: "typeset post-save structure check failed" };
         addToast("\u26A0 " + (t("toasts.typeset_failed_check") || "The typeset tagged PDF failed its post-save structure check \u2014 use the Word or HTML download instead."), "error");
         return;
       }
       safeDownloadBlob(new Blob([taggedBytes], { type: "application/pdf" }), (pendingPdfFile?.name || "document").replace(/\.(docx|pptx|pdf)$/i, "") + (_sanitized ? "-tagged-clean.pdf" : "-tagged-typeset.pdf"));
+      _lastTaggedDeliveryRef.current = { withheld: false };
       const _s = _result && _result.summary || {};
       if (_s.typesetFont) {
         addToast("\u{1F233} " + (t("toasts.typeset_unicode_font") || "Non-Latin text detected \u2014 embedded ") + _s.typesetFont.family + (t("toasts.typeset_unicode_font2") || " so the PDF keeps the real characters (script: ") + _s.typesetFont.script + ").", "info");
@@ -2117,12 +2128,13 @@ function PdfAuditView(props) {
       window.removeEventListener("message", onMsg);
     }
     function onMsg(ev) {
-      const d = ev && ev.data || {};
+      if (!ev || ev.source !== win) return;
+      const d = ev.data || {};
       if (d.type === "verapdf-ready") {
         gotReady = true;
         clearTimeout(readyTimer);
         try {
-          win.postMessage({ type: "verapdf-validate", bytes }, "*");
+          win.postMessage({ type: "verapdf-validate", bytes }, VERAPDF_ORIGIN);
         } catch (e) {
         }
       } else if (d.type === "verapdf-result") {
@@ -2182,12 +2194,13 @@ function PdfAuditView(props) {
       window.removeEventListener("message", onMsg);
     }
     function onMsg(ev) {
-      const d = ev && ev.data || {};
+      if (!ev || ev.source !== win) return;
+      const d = ev.data || {};
       if (d.type === "verapdf-ready") {
         gotReady = true;
         clearTimeout(readyTimer);
         try {
-          win.postMessage({ type: "verapdf-remediate", bytes, maxIters: 5 }, "*");
+          win.postMessage({ type: "verapdf-remediate", bytes, maxIters: 5 }, VERAPDF_ORIGIN);
         } catch (e) {
         }
       } else if (d.type === "verapdf-remediate-result") {
@@ -2213,7 +2226,8 @@ function PdfAuditView(props) {
     const handle = { win, warmed: false };
     handle.ready = new Promise((resolve) => {
       const onReady = (ev) => {
-        const d = ev && ev.data || {};
+        if (!ev || ev.source !== win) return;
+        const d = ev.data || {};
         if (d.type === "verapdf-ready") {
           handle.warmed = true;
           window.removeEventListener("message", onReady);
@@ -2253,7 +2267,8 @@ function PdfAuditView(props) {
       window.removeEventListener("message", onMsg);
     }
     function onMsg(ev) {
-      const d = ev && ev.data || {};
+      if (!ev || ev.source !== win) return;
+      const d = ev.data || {};
       if (d.type === "verapdf-result") {
         done = true;
         cleanup();
@@ -2277,7 +2292,7 @@ function PdfAuditView(props) {
         return;
       }
       try {
-        win.postMessage({ type: "verapdf-validate", bytes }, "*");
+        win.postMessage({ type: "verapdf-validate", bytes }, VERAPDF_ORIGIN);
       } catch (e) {
         cleanup();
         reject(e);
@@ -2367,7 +2382,7 @@ function PdfAuditView(props) {
         return;
       }
       try {
-        cw.postMessage({ type: "verapdf-validate", bytes }, "*");
+        cw.postMessage({ type: "verapdf-validate", bytes }, VERAPDF_ORIGIN);
       } catch (e) {
         cleanup();
         reject(e);
@@ -4412,6 +4427,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         pdfAutoContinueAbortRef.current = false;
       } catch (_) {
       }
+      try {
+        setLastTaggedValidation(null);
+        setVeraPdfResult(null);
+      } catch (_) {
+      }
       let _veraWarm = null;
       let _veraIframe = null;
       try {
@@ -4788,6 +4808,7 @@ Return ONLY JSON:
                 return;
               }
               _lastTaggedBytesRef.current = taggedBytes;
+              _lastTaggedDeliveryRef.current = null;
               setLastTaggedValidation((prev) => prev ? { ...prev, veraPdf: null, veraPdfAt: null, veraPdfBytesHash: null } : prev);
               const _blRoundTrip = _result && _result.roundTrip || null;
               if (_blRoundTrip && _blRoundTrip.ok === false) {
@@ -4796,12 +4817,14 @@ Return ONLY JSON:
                 addToast("\u26A0 Baseline post-save structure check FAILED: " + _blMsg + ".", "error");
                 const _blProceed = typeof window !== "undefined" && typeof window.confirm === "function" ? window.confirm("The baseline tagged PDF FAILED its post-save structure check:\n\n" + _blMsg + "\n\nDownload the unverified file anyway?") : false;
                 if (!_blProceed) {
+                  _lastTaggedDeliveryRef.current = { withheld: true, reason: "baseline post-save structure check failed (declined)" };
                   addToast("Download cancelled \u2014 the baseline tagged PDF did not pass verification.", "info");
                   return;
                 }
               }
               const blob = new Blob([taggedBytes], { type: "application/pdf" });
               safeDownloadBlob(blob, baseTitle + "-tagged-baseline.pdf");
+              _lastTaggedDeliveryRef.current = { withheld: false };
               if (summary) {
                 const parts = [];
                 if (summary.headings) parts.push(summary.headings + (summary.headings === 1 ? " heading" : " headings"));
@@ -4875,6 +4898,9 @@ Return ONLY JSON:
             }
             if (project.extractedText && typeof setInputText === "function") setInputText(project.extractedText);
             setPdfFixResult(null);
+            setLastTaggedValidation(null);
+            setVeraPdfResult(null);
+            _lastTaggedBytesRef.current = null;
             try {
               if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === "function") setPdfRunHistory(project.runHistory.slice(-200));
               const _pp = project.prefs || {};
@@ -4948,6 +4974,8 @@ Return ONLY JSON:
           setPendingPdfFile({ name: project.fileName || "loaded-project.pdf" });
           _paletteSnapshotRef.current = null;
           _lastTaggedBytesRef.current = null;
+          setLastTaggedValidation(null);
+          setVeraPdfResult(null);
           setAppliedPalette(null);
           setPaletteIntent("");
           _setIssueEdit({});
@@ -6585,7 +6613,13 @@ Return ONLY JSON:
             setPdfFixLoading(true);
             setPdfFixStep(t("pdf_audit.verification.waiting_for_checker") || "Waiting for the AI checker to settle...");
             try {
-              if (_docPipeline && typeof _docPipeline.waitForGeminiCalm === "function") await _docPipeline.waitForGeminiCalm({ maxWaitMs: 24e4 });
+              if (_docPipeline && typeof _docPipeline.waitForGeminiCalm === "function") await _docPipeline.waitForGeminiCalm({ maxWaitMs: 24e4, onTick: (w) => {
+                try {
+                  const _ws = Math.max(1, Math.ceil((w && w.cooldownRemainingMs || 5e3) / 1e3));
+                  setPdfFixStep((t("pdf_audit.verification.waiting_for_checker") || "Waiting for the AI checker to settle...") + " (" + (w && w.probing ? t("pdf_audit.verification.probing") || "testing with one small call\u2026" : "~" + _ws + "s") + ", " + Math.round((w && w.waitedMs || 0) / 1e3) + "s waited)");
+                } catch (_) {
+                }
+              } });
             } catch (_) {
             }
             setPdfFixStep(t("pdf_audit.verification.reauditing") || "Completing final audit...");
@@ -7441,6 +7475,7 @@ Return ONLY JSON:
         const g2 = _taggedGateBytesRef.current;
         if (g2) {
           safeDownloadBlob(new Blob([g2.bytes], { type: "application/pdf" }), g2.fileName);
+          _lastTaggedDeliveryRef.current = { withheld: false };
           addToast(t("toasts.unverified_downloaded") || "\u26A0 Unverified tagged PDF downloaded (filename marked) \u2014 verify in PAC 2024 or a screen reader before distributing.", "warning");
         }
       } catch (_) {
@@ -7464,6 +7499,7 @@ Return ONLY JSON:
         const g2 = _fidelityGateBytesRef.current;
         if (g2) {
           safeDownloadBlob(new Blob([g2.bytes], { type: "application/pdf" }), g2.fileName);
+          _lastTaggedDeliveryRef.current = { withheld: false };
           addToast(t("toasts.fidelity_downloaded") || "\u26A0 Downloaded (filename marked) \u2014 verify the content against the source before distributing.", "warning");
         }
       } catch (_) {
@@ -7566,6 +7602,7 @@ Return ONLY JSON:
               return;
             }
             _lastTaggedBytesRef.current = taggedBytes;
+            _lastTaggedDeliveryRef.current = null;
             setLastTaggedValidation((prev) => prev ? { ...prev, veraPdf: null, veraPdfAt: null, veraPdfBytesHash: null } : prev);
             {
               const _covSev = typeof pdfFixResult.integrityCoverage === "number" && pdfFixResult.integrityCoverage < 80;
@@ -7573,6 +7610,7 @@ Return ONLY JSON:
               if (_covSev || _refusalSev) {
                 const _why = _refusalSev ? "AI refusal/meta text was detected in the output" : "only " + pdfFixResult.integrityCoverage + "% of the source text was preserved";
                 _fidelityGateBytesRef.current = { bytes: taggedBytes, fileName: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged-REVIEW-CONTENT.pdf" };
+                _lastTaggedDeliveryRef.current = { withheld: true, reason: "content-fidelity gate (" + _why + ")" };
                 setFidelityGateIssue(_why);
                 addToast(t("toasts.fidelity_gate_pinned") || "\u26A0 This document may be missing source content \u2014 your options are pinned above the download buttons.", "warning");
                 return;
@@ -7582,12 +7620,14 @@ Return ONLY JSON:
               const _rtFails = (roundTrip.checks || []).filter((c) => c && c.status === "fail").map((c) => c.rule);
               const _rtMsg = _rtFails.length ? _rtFails.join("; ") : (roundTrip.warnings || []).join("; ") || "structure may not have survived serialization";
               _taggedGateBytesRef.current = { bytes: taggedBytes, fileName: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged-UNVERIFIED.pdf" };
+              _lastTaggedDeliveryRef.current = { withheld: true, reason: "post-save structure check failed (" + _rtMsg + ")" };
               setTaggedGateIssue(_rtMsg);
               addToast(t("toasts.tagged_gate_pinned") || "\u26A0 The tagged PDF failed its post-save structure check \u2014 your options are pinned above the download buttons.", "warning");
               return;
             }
             const blob = new Blob([taggedBytes], { type: "application/pdf" });
             safeDownloadBlob(blob, (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-tagged.pdf");
+            _lastTaggedDeliveryRef.current = { withheld: false };
             const _rpt = [];
             if (_autoRestoreLine) _rpt.push(_autoRestoreLine);
             if (ocrTextLayer && typeof ocrTextLayer.coveragePct === "number" && (ocrTextLayer.coveragePct < 100 || ocrTextLayer.nonLatinDropped)) {
@@ -8127,7 +8167,17 @@ Return ONLY JSON:
             pageCount: pdfFixResult.pageCount || pdfAuditResult?.pageCount || null,
             imageCount: pdfFixResult.imageCount || 0,
             fingerprint: docFingerprint ? { algo: "SHA-256", hash: docFingerprint } : null,
-            shippedFingerprint: shippedFingerprint ? { algo: "SHA-256", hash: shippedFingerprint, note: "SHA-256 of the remediated tagged-PDF bytes AlloFlow produced (the artifact actually shipped to readers)" } : null
+            // M14 (deep dive 2026-07-09): a download gate (fidelity / post-save structure) can
+            // withhold the produced file — the trail then fingerprinted bytes labeled "actually
+            // shipped" that no reader received (unmatchable to any distributed file, and a
+            // provenance misstatement). The note now says which it was.
+            shippedFingerprint: shippedFingerprint ? {
+              algo: "SHA-256",
+              hash: shippedFingerprint,
+              withheldByGate: !!(_lastTaggedDeliveryRef.current && _lastTaggedDeliveryRef.current.withheld),
+              withheldReason: _lastTaggedDeliveryRef.current && _lastTaggedDeliveryRef.current.withheld ? _lastTaggedDeliveryRef.current.reason || "download gate" : void 0,
+              note: _lastTaggedDeliveryRef.current && _lastTaggedDeliveryRef.current.withheld ? "SHA-256 of the remediated tagged-PDF bytes AlloFlow produced. NOTE: a download gate withheld this file in this session (" + (_lastTaggedDeliveryRef.current.reason || "see gate") + ") and it was NOT handed over \u2014 this fingerprint identifies the produced artifact, not a distributed one." : "SHA-256 of the remediated tagged-PDF bytes AlloFlow produced (the artifact actually shipped to readers)"
+            } : null
           },
           validation: {
             pdfUA: veraPdfTrail,
@@ -8192,7 +8242,7 @@ Return ONLY JSON:
     <dt style="font-weight:bold">Generated</dt><dd>${nowISO}</dd>
     <dt style="font-weight:bold">Pipeline</dt><dd>AlloFlow @ ${pipelineHash}</dd>
     <dt style="font-weight:bold">Source fingerprint</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all">${docFingerprint || "(PDF not attached at sign time)"}</dd>
-    <dt style="font-weight:bold">Shipped PDF fingerprint</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all">${shippedFingerprint || "(no tagged PDF produced in this session \u2014 run Fix &amp; Verify / download first)"}</dd>
+    <dt style="font-weight:bold">Shipped PDF fingerprint</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all">${shippedFingerprint ? shippedFingerprint + (_lastTaggedDeliveryRef.current && _lastTaggedDeliveryRef.current.withheld ? ' <span style="font-family:system-ui,sans-serif;color:#d97706;font-weight:bold">(\u26A0 withheld by a download gate \u2014 produced but NOT handed over in this session)</span>' : "") : "(no tagged PDF produced in this session \u2014 run Fix &amp; Verify / download first)"}</dd>
     <dt style="font-weight:bold">PDF/UA (veraPDF)</dt><dd>${_veraSummaryHtml}</dd>
     <dt style="font-weight:bold">Payload hash (SHA-256)</dt><dd style="font-family:ui-monospace,monospace;word-break:break-all" id="aat-stored-hash">${hashHex}</dd>
   </dl>
@@ -8332,6 +8382,8 @@ Return ONLY JSON:
           });
           _paletteSnapshotRef.current = null;
           _lastTaggedBytesRef.current = null;
+          setLastTaggedValidation(null);
+          setVeraPdfResult(null);
           setAppliedPalette(null);
           setPaletteIntent("");
           _setIssueEdit({});

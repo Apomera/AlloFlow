@@ -13,11 +13,19 @@
 //       they can never push a FINISHED remediation past the batch per-file wall.
 // M6  — the circle-back ticks the visible status (updateProgress) instead of freezing the last
 //       pass-4 message for up to 10 minutes, and stops spending when the run generation goes stale.
+// View chunk (M12/M13/M14 + M6-view):
+// M12 — the PDF/UA badge/panel state (lastTaggedValidation/veraPdfResult) survived document swaps:
+//       doc A's "veraPDF: passes" rendered for doc B. Cleared at run entry + all three loaders.
+// M13 — the popup veraPDF transports accepted 'verapdf-result' from ANY window (verdict forgery)
+//       and posted student-document bytes with targetOrigin '*'. Source-filtered + origin-pinned.
+// M14 — the signed trail fingerprinted withheld bytes as "the artifact actually shipped to
+//       readers". A delivery ref now records gate-withholding and the trail says which it was.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
+const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
 
 describe('M16 — un-escape only after a REAL JSON unwrap (behavioral slice)', () => {
   const start = dp.indexOf('const _safeStripJsonWrapper = (chunkStr, chunkIdx) => {');
@@ -79,5 +87,46 @@ describe('M1/M2/M6 — circle-back covers null audits, respects the wall, and ke
     expect(dp).toContain("const _genStale = () => (!_silentMode && typeof window !== 'undefined' && (window.__alloPdfRunGen || 0) !== _myRunGen);");
     expect(dp).toContain("onTick: (w) => { try { updateProgress(4, 'AI re-reading '");
     expect(dp).toContain("if (Date.now() >= _deferHardStop || _genStale()) break;");
+  });
+  it('M6 (view): the manual re-audit wait ticks a countdown instead of a static line', () => {
+    expect(view).toContain('await _docPipeline.waitForGeminiCalm({ maxWaitMs: 240000, onTick:');
+    expect(view).toContain("'s waited)'");
+  });
+});
+
+describe('M12 — the PDF/UA badge never wears another document\'s verdict', () => {
+  it('cleared at RUN ENTRY (covers fresh uploads that bypass the loaders)', () => {
+    expect(view).toContain('try { setLastTaggedValidation(null); setVeraPdfResult(null); } catch (_) {}');
+  });
+  it('cleared in all three doc-swap loaders (start-screen, sidebar, resume-incomplete)', () => {
+    // each loader clears BOTH state slices; the resume loader also drops the bytes ref
+    const clears = view.match(/setLastTaggedValidation\(null\);\s*\n\s*setVeraPdfResult\(null\);/g) || [];
+    expect(clears.length).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe('M13 — veraPDF popup transports are source-filtered and origin-pinned', () => {
+  it('every popup listener requires ev.source === its own window', () => {
+    const filtered = view.match(/if \(!ev \|\| ev\.source !== win\) return;/g) || [];
+    expect(filtered.length).toBeGreaterThanOrEqual(4); // validate, remediate, warm-ready, warm-validate
+  });
+  it('byte-bearing postMessages pin the validator origin — no \'*\' remains on verapdf sends', () => {
+    expect(view).toContain("const VERAPDF_ORIGIN = (() => { try { return new URL(VERAPDF_VALIDATOR_URL).origin; } catch (_) { return '*'; } })();");
+    expect(view).not.toMatch(/postMessage\(\{ type: 'verapdf-(?:validate|remediate)', bytes: bytes[^}]*\}, '\*'\)/);
+  });
+});
+
+describe('M14 — the signed trail never claims withheld bytes were shipped', () => {
+  it('a delivery ref records gate-withholding and real hand-overs', () => {
+    expect(view).toContain('const _lastTaggedDeliveryRef = useRef(null);');
+    const withheld = view.match(/_lastTaggedDeliveryRef\.current = \{ withheld: true, reason:/g) || [];
+    expect(withheld.length).toBeGreaterThanOrEqual(4); // fidelity gate, structure gate, typeset gate, baseline decline
+    const delivered = view.match(/_lastTaggedDeliveryRef\.current = \{ withheld: false \};/g) || [];
+    expect(delivered.length).toBeGreaterThanOrEqual(4); // main download, both gate "download anyway" buttons, typeset, baseline
+  });
+  it('the trail payload and its HTML rendering disclose the withheld state', () => {
+    expect(view).toContain('withheldByGate: !!(_lastTaggedDeliveryRef.current && _lastTaggedDeliveryRef.current.withheld),');
+    expect(view).toContain('this fingerprint identifies the produced artifact, not a distributed one');
+    expect(view).toContain('withheld by a download gate — produced but NOT handed over in this session');
   });
 });
