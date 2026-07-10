@@ -583,7 +583,29 @@ function looksMultiStep(rawText) {
   if (text.length < 12) return false;
   if (/\b(then|after that|and then|followed by|once (?:that|it)'?s? done|next,)\b/i.test(text)) return true;
   if (/^\s*1[.)]/.test(text) && /\n\s*2[.)]/.test(text)) return true; // pasted numbered list
+  // and-chains without "then": a conjunction plus ≥2 command-ish verbs
+  // ("simplify this and make a quiz"). A false positive only costs one
+  // planner call that the confidence gate then rejects.
+  if (/\b(and|,)\s/i.test(text)) {
+    const verbs = text.match(/\b(make|create|generate|build|simplify|translate|open|start|export|download|analyz[es]|read|quiz|glossary|summari[sz]e)\b/gi);
+    if (verbs && verbs.length >= 2) return true;
+  }
   return false;
+}
+
+// Plan params come back from the model — keep only flat primitives with
+// bounded size so no handler ever sees a nested object, huge string, or
+// oddball key blob it didn't expect.
+function _cleanPlanParams(p) {
+  const out = {};
+  if (!p || typeof p !== 'object' || Array.isArray(p)) return out;
+  for (const k of Object.keys(p).slice(0, 8)) {
+    const v = p[k];
+    if (typeof v === 'string') { const s = v.trim().slice(0, 200); if (s) out[k] = s; }
+    else if (typeof v === 'number' && isFinite(v)) out[k] = v;
+    else if (typeof v === 'boolean') out[k] = v;
+  }
+  return out;
 }
 
 // planUtterance: ONE Gemini call mapping a multi-step request to an
@@ -598,7 +620,10 @@ async function planUtterance(ctx, rawText) {
   // ("create a lesson, THEN quiz it") — the default when-filtered menu would
   // hide generate_quiz before content exists and make those chains
   // unplannable. Availability is still enforced per step at RUN time.
-  const commands = buildAlloCommands(ctx, { includeGated: true }).filter((c) => !c.chatSkip);
+  // Destructive commands are excluded from plans outright (not just paused):
+  // they belong on the explicitly-confirmed single-command surfaces, and a
+  // proposed plan that would stop dead at its own step is a UX lie.
+  const commands = buildAlloCommands(ctx, { includeGated: true }).filter((c) => !c.chatSkip && !c.destructive);
   if (!commands.length) return null;
   const _gatedNow = (c) => { if (!c.when) return false; try { return !c.when(ctx); } catch (_) { return true; } };
   const menu = commands.map((c) => c.id + ': ' + c.label + (_gatedNow(c) ? ' [not available yet — an earlier step must first create what it needs]' : '')).join('\n');
@@ -613,7 +638,7 @@ async function planUtterance(ctx, rawText) {
     if (steps.some((s) => !known.has(s.commandId))) return null;
     return steps.map((s) => ({
       commandId: s.commandId,
-      params: (s.params && typeof s.params === 'object' && !Array.isArray(s.params)) ? s.params : {},
+      params: _cleanPlanParams(s.params),
       why: typeof s.why === 'string' ? s.why.slice(0, 120) : ''
     }));
   } catch (_) { return null; }

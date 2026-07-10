@@ -61,6 +61,10 @@ describe('looksMultiStep', () => {
     expect(AC.looksMultiStep('make a quiz')).toBe(false);
     expect(AC.looksMultiStep('hi')).toBe(false);
   });
+  it('flags and-chains with two command verbs, not conversational ands', () => {
+    expect(AC.looksMultiStep('simplify this and make a quiz')).toBe(true);
+    expect(AC.looksMultiStep('what makes volcanoes erupt and why')).toBe(false);
+  });
 });
 
 describe('planUtterance', () => {
@@ -113,6 +117,44 @@ describe('planUtterance', () => {
     const steps = await AC.planUtterance(ctx, 'create a lesson about volcanoes then make a quiz');
     expect(steps).toHaveLength(2);
     expect(steps[1].commandId).toBe('generate_quiz');
+  });
+
+  // Hardening (2026-07-10): destructive commands are excluded from plans
+  // outright — they belong on explicitly-confirmed single-command surfaces.
+  it('never shows destructive commands to the planner, and rejects plans using them', async () => {
+    const { ctx } = mkCtx({
+      callGemini: async (prompt) => {
+        expect(prompt).not.toContain('clear_workspace');
+        return JSON.stringify({
+          steps: [{ commandId: 'clear_workspace', params: {} }, { commandId: 'generate_quiz', params: {} }],
+          confidence: 0.95,
+        });
+      },
+    });
+    expect(await AC.planUtterance(ctx, 'clear everything then make a quiz')).toBeNull();
+  });
+
+  // Hardening (2026-07-10): model-returned params are sanitized to flat,
+  // bounded primitives — no handler ever sees a nested object or huge string.
+  it('sanitizes plan params to flat bounded primitives', async () => {
+    const { ctx } = mkCtx({
+      callGemini: async () => JSON.stringify({
+        steps: [
+          { commandId: 'generate_simplified', params: { grade: '3', junk: { nested: true }, list: [1, 2], big: 'x'.repeat(500), n: 7, flag: true, bad: Infinity } },
+          { commandId: 'generate_quiz', params: null },
+        ],
+        confidence: 0.9,
+      }),
+    });
+    const steps = await AC.planUtterance(ctx, 'simplify this then make a quiz');
+    expect(steps[0].params.grade).toBe('3');
+    expect(steps[0].params.junk).toBeUndefined();
+    expect(steps[0].params.list).toBeUndefined();
+    expect(steps[0].params.bad).toBeUndefined();
+    expect(steps[0].params.big).toHaveLength(200);
+    expect(steps[0].params.n).toBe(7);
+    expect(steps[0].params.flag).toBe(true);
+    expect(steps[1].params).toEqual({});
   });
 });
 

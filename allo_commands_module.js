@@ -800,13 +800,30 @@ function looksMultiStep(rawText) {
   if (text.length < 12) return false;
   if (/\b(then|after that|and then|followed by|once (?:that|it)'?s? done|next,)\b/i.test(text)) return true;
   if (/^\s*1[.)]/.test(text) && /\n\s*2[.)]/.test(text)) return true;
+  if (/\b(and|,)\s/i.test(text)) {
+    const verbs = text.match(/\b(make|create|generate|build|simplify|translate|open|start|export|download|analyz[es]|read|quiz|glossary|summari[sz]e)\b/gi);
+    if (verbs && verbs.length >= 2) return true;
+  }
   return false;
+}
+function _cleanPlanParams(p) {
+  const out = {};
+  if (!p || typeof p !== "object" || Array.isArray(p)) return out;
+  for (const k of Object.keys(p).slice(0, 8)) {
+    const v = p[k];
+    if (typeof v === "string") {
+      const s = v.trim().slice(0, 200);
+      if (s) out[k] = s;
+    } else if (typeof v === "number" && isFinite(v)) out[k] = v;
+    else if (typeof v === "boolean") out[k] = v;
+  }
+  return out;
 }
 async function planUtterance(ctx, rawText) {
   const text = String(rawText || "").trim();
   if (!text || text.length > 400) return null;
   if (!ctx || typeof ctx.callGemini !== "function") return null;
-  const commands = buildAlloCommands(ctx, { includeGated: true }).filter((c) => !c.chatSkip);
+  const commands = buildAlloCommands(ctx, { includeGated: true }).filter((c) => !c.chatSkip && !c.destructive);
   if (!commands.length) return null;
   const _gatedNow = (c) => {
     if (!c.when) return false;
@@ -828,7 +845,7 @@ async function planUtterance(ctx, rawText) {
     if (steps.some((s) => !known.has(s.commandId))) return null;
     return steps.map((s) => ({
       commandId: s.commandId,
-      params: s.params && typeof s.params === "object" && !Array.isArray(s.params) ? s.params : {},
+      params: _cleanPlanParams(s.params),
       why: typeof s.why === "string" ? s.why.slice(0, 120) : ""
     }));
   } catch (_) {
