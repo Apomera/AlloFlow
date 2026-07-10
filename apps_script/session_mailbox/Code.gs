@@ -23,11 +23,13 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 5;
+var VERSION = 6;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
 var MAX_MSG_CHARS = 90 * 1024;          // CacheService value limit is 100KB
+var MAX_DOC_CHARS = 85 * 1024;          // session document / signaling doc ceiling
+var MAX_DGET_DOCS = 12;                 // watched docs per poll
 var MAX_PACK_CHARS = 8 * 1024 * 1024;   // ~8MB assembled pack ceiling
 var GET_PART_CHARS = 150 * 1024;        // pack download slice size
 var MAX_RECV_MSGS = 50;                 // per box per poll
@@ -92,6 +94,9 @@ function handle(p) {
     var code = String(p.c || '').toUpperCase();
     if (!/^[A-Z0-9]{4,8}$/.test(code) || !isToken(p.k)) return out({ ok: false, e: 'bad-request' });
     cache.put('s:' + code, String(p.k), SESSION_TTL_SEC);
+    // A reused code must not resurface a previous class's session document.
+    cache.remove('d:' + code + ':s');
+    cache.remove('dw:' + code);
     // Durable copy: CacheService is best-effort and can evict a live session
     // marker under memory pressure, kicking the whole class out mid-lesson.
     // PropertiesService survives; lookups rewarm the cache from it.
@@ -108,8 +113,28 @@ function handle(p) {
     if (a === 'send') return send(cache, sc, p);
     if (a === 'recv') return recv(cache, sc, p);
     cache.remove('s:' + sc);
+    cache.remove('d:' + sc + ':s');
+    cache.remove('dw:' + sc);
     try { props.deleteProperty('sess_' + sc); } catch (e2) {}
     return out({ ok: true });
+  }
+
+  // Session document store (v6): a tiny Firestore stand-in scoped to one live
+  // session, so the SAME session UI (roster, polls, quiz, pictionary
+  // signaling) runs unchanged over the mailbox. Documents are JSON envelopes
+  // {w: version, d: data} under short path tokens the client chooses ('s' =
+  // the session doc, 'g:<sig>:<uid>' = a signaling doc, 'c:<sig>' = a
+  // collection index of {id: version}). dget doubles as the delta poll: a doc
+  // whose version still matches the caller's known one comes back without its
+  // body. Everything lives in CacheService only (live-session posture — same
+  // as boxes); the teacher client re-seeds the session doc after an eviction.
+  if (a === 'dget' || a === 'dset' || a === 'dpatch' || a === 'ddel') {
+    var dcode = String(p.c || '').toUpperCase();
+    var dsecret = sessionSecretFor(dcode, cache, props);
+    if (!dsecret) return out({ ok: false, e: 'no-session' });
+    if (String(p.k || '') !== dsecret) return out({ ok: false, e: 'denied' });
+    if (a === 'dget') return docGet(cache, dcode, p);
+    return docWrite(cache, dcode, a, p);
   }
 
   // Server-side session recovery (v5): the durable sess_<code> markers ARE
@@ -229,6 +254,128 @@ function recv(cache, code, p) {
     result[box] = { n: Math.max(cursor, since), m: msgs, latest: latest };
   }
   return out({ ok: true, b: result, t: Date.now() });
+}
+
+// ── Session document store (v6) ─────────────────────────────────────────────
+
+function cleanDocPath(v) {
+  var s = String(v || '');
+  return /^[A-Za-z0-9_.:-]{1,80}$/.test(s) ? s : '';
+}
+
+function readDocEnvelope(cache, code, p) {
+  var raw = cache.get('d:' + code + ':' + p);
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (e) { return null; }
+}
+
+function writeDocEnvelope(cache, code, p, env) {
+  var text = JSON.stringify(env);
+  if (text.length > MAX_DOC_CHARS) return false;
+  // The session doc lives as long as the session; signaling docs are
+  // handshake-transient and ride the message TTL.
+  cache.put('d:' + code + ':' + p, text, p === 's' ? SESSION_TTL_SEC : MESSAGE_TTL_SEC);
+  return true;
+}
+
+function nextDocVersion(cache, code) {
+  var key = 'dw:' + code;
+  var w = (parseInt(cache.get(key), 10) || 0) + 1;
+  cache.put(key, String(w), SESSION_TTL_SEC);
+  return w;
+}
+
+// Collection membership index: a doc at the collection's own path token whose
+// data is {childId: version}. Watching a collection = watching this doc.
+function bumpDocIndex(cache, code, col, id, w, removed) {
+  if (!col || !id) return;
+  var env = readDocEnvelope(cache, code, col);
+  if (!env || !env.d || typeof env.d !== 'object') env = { w: 0, d: {} };
+  if (removed) delete env.d[id];
+  else env.d[id] = w;
+  env.w = nextDocVersion(cache, code);
+  writeDocEnvelope(cache, code, col, env);
+}
+
+// Firestore updateDoc parity: dot-separated paths address nested fields and
+// {__op:'deleteField'} removes one. Arrays are replaced wholesale, like
+// Firestore.
+function applyDocUpdates(target, updates) {
+  Object.keys(updates || {}).forEach(function(key) {
+    var value = updates[key];
+    var segs = String(key).split('.');
+    var node = target;
+    for (var i = 0; i < segs.length - 1; i++) {
+      var s = segs[i];
+      if (!node[s] || typeof node[s] !== 'object' || Array.isArray(node[s])) node[s] = {};
+      node = node[s];
+    }
+    var leaf = segs[segs.length - 1];
+    if (value && typeof value === 'object' && value.__op === 'deleteField') delete node[leaf];
+    else node[leaf] = value;
+  });
+  return target;
+}
+
+function docGet(cache, code, p) {
+  var entries = Array.isArray(p.ps) ? p.ps : [];
+  var docs = [];
+  for (var i = 0; i < entries.length && i < MAX_DGET_DOCS; i++) {
+    var tok = cleanDocPath(entries[i] && entries[i].p);
+    if (!tok) continue;
+    var known = parseInt(entries[i] && entries[i].w, 10) || 0;
+    var env = readDocEnvelope(cache, code, tok);
+    if (!env) { docs.push({ p: tok, w: 0, missing: true }); continue; }
+    if (env.w > known) docs.push({ p: tok, w: env.w, d: env.d });
+    else docs.push({ p: tok, w: env.w });
+  }
+  return out({ ok: true, docs: docs, t: Date.now() });
+}
+
+function docWrite(cache, code, action, p) {
+  var tok = cleanDocPath(p.p);
+  if (!tok) return out({ ok: false, e: 'bad-path' });
+  var col = cleanDocPath(p.col);
+  var id = String(p.id || '').slice(0, 80);
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return out({ ok: false, e: 'busy' });
+  try {
+    // Doc writes share the session's flood posture (their own rolling bucket,
+    // same ceiling): a leaked QR can scribble on this session, not drown the
+    // script.
+    var rKey = 'r:' + code + ':doc';
+    var used = (parseInt(cache.get(rKey), 10) || 0) + 1;
+    if (used > RATE_LIMIT_MSGS) return out({ ok: false, e: 'rate-limited' });
+    cache.put(rKey, String(used), RATE_LIMIT_TTL_SEC);
+    if (action === 'ddel') {
+      cache.remove('d:' + code + ':' + tok);
+      bumpDocIndex(cache, code, col, id, 0, true);
+      return out({ ok: true, t: Date.now() });
+    }
+    if (action === 'dset') {
+      var data = p.d === undefined ? null : p.d;
+      if (p.merge) {
+        var prev = readDocEnvelope(cache, code, tok);
+        if (prev && prev.d && typeof prev.d === 'object' && data && typeof data === 'object') {
+          var mergedData = prev.d;
+          Object.keys(data).forEach(function(k2) { mergedData[k2] = data[k2]; });
+          data = mergedData;
+        }
+      }
+      var env = { w: nextDocVersion(cache, code), d: data };
+      if (!writeDocEnvelope(cache, code, tok, env)) return out({ ok: false, e: 'too-big' });
+      bumpDocIndex(cache, code, col, id, env.w, false);
+      return out({ ok: true, w: env.w, t: Date.now() });
+    }
+    // dpatch — rejects on a missing doc, exactly like Firestore updateDoc.
+    var existing = readDocEnvelope(cache, code, tok);
+    if (!existing || !existing.d || typeof existing.d !== 'object') return out({ ok: false, e: 'no-doc' });
+    var patched = applyDocUpdates(existing.d, p.u && typeof p.u === 'object' ? p.u : {});
+    var env2 = { w: nextDocVersion(cache, code), d: patched };
+    if (!writeDocEnvelope(cache, code, tok, env2)) return out({ ok: false, e: 'too-big' });
+    bumpDocIndex(cache, code, col, id, env2.w, false);
+    return out({ ok: true, w: env2.w, d: env2.d, t: Date.now() });
+  } finally { lock.releaseLock(); }
 }
 
 function packFolder() {

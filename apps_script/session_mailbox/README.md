@@ -32,6 +32,12 @@ infrastructure the school doesn't already trust.
 **Updating later:** paste new code, then Deploy → **Manage deployments** →
 pencil icon → Version: New version → Deploy. The URL stays the same.
 
+> **v6 (recommended update):** adds the session document store that powers
+> roster, polls, quick-checks, live quiz, groups and Concept Pictionary over
+> the mailbox — the same class features Firestore-backed sessions have. Older
+> script versions keep working (resource push + hand-raise only); AlloFlow
+> detects the version automatically.
+
 ## What it stores
 
 | Data | Where | Lifetime |
@@ -85,3 +91,19 @@ Designed for classroom scale: one poll every ~2.5 s per connected device
 executions). Hosted homework packs are capped at ~8 MB each (a full
 image-rich lesson compresses well under that). Live messages cap at 90 KB
 each; AlloFlow chunks bigger payloads automatically.
+
+## Two-device smoke test (after deploying or updating the script)
+
+1. Teacher: connect the mailbox, start a live session, scan the QR with a
+   phone, pick a codename — the student should appear in the roster within a
+   few seconds and gain the ⚡ badge within ~10–30 s on open networks.
+2. Push a resource — it should appear on the phone; raise a hand on the
+   phone — it should appear next to the codename.
+3. With a v6 script: open a Quick Check or Live Poll from the Live Session
+   Center — the question should reach the phone and the answer should come
+   back to the teacher dashboard.
+4. **Mid-session, refresh the teacher tab** — you should land back in your
+   running session with the roster repopulating within a few seconds and
+   students' ⚡ returning within ~15–30 s (no student action needed).
+5. **Lock the student phone for a minute, then wake it** — it should
+   reconnect on its own within ~30 s, without any taps.

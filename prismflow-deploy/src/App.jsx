@@ -241,6 +241,437 @@ function _applyLanSessionAdapter() {
 }
 _applyLanSessionAdapter(); // Boot wrap; re-applied after every _alloShimInit upgrade.
 
+// ── Class Mailbox session-document bridge (Phase C: single-pathway unification) ──
+// WHY THIS EXISTS: mailbox live sessions (teacher-owned Apps Script, no student
+// accounts) previously spoke their own protocol (presence heartbeats + chunked
+// resource packs), so session features built on the Firestore session document
+// (roster panel, groups, democracy voting, live quiz state, Live Polling /
+// Concept Pictionary WebRTC signaling) simply didn't exist there. This bridge
+// makes the mailbox a second SESSION-DOCUMENT backend, exactly like the LAN
+// adapter above: while a bridge is installed (teacher starts / resumes a
+// mailbox session, or a student arrives via ?allo_mb), the top-level
+// doc/setDoc/updateDoc/getDoc/deleteDoc/onSnapshot/collection bindings reroute
+// (1) the session doc artifacts/{appId}/public/data/sessions/{code} and
+// (2) WebRTC signaling docs artifacts/{appId}/public/data/{*-signaling}/{code}/peers/{uid}
+// to the mailbox's v6 doc store (dget/dset/dpatch/ddel — see
+// apps_script/session_mailbox/Code.gs). Every session call site and CDN module
+// (window.__alloFirebase) inherits the reroute, so polls, quiz, pictionary and
+// the whole SessionModal run UNCHANGED over the mailbox. onSnapshot is emulated
+// by a version-delta poll pump (dget returns bodies only for changed docs) plus
+// an instant {kind:'sdocv'} nudge over the existing mailbox RTC data channels.
+// Resources deliberately do NOT ride the session doc here (85KB doc ceiling);
+// the proven chunked pack channel remains the mailbox resource transport, so
+// the adapter strips `resources` writes and the pack auto-sync keeps covering
+// content delivery. session_assets writes are no-ops for the same reason.
+const ALLO_MB_SIG_RE = /^(?:[a-z0-9_-]+-)?signaling$/;
+let _alloMbBridgeState = null;
+function _alloMbBridgeActive() { return !!_alloMbBridgeState; }
+function _alloMbInstallBridge(cfg) {
+  const code = cfg && cfg.code ? String(cfg.code).toUpperCase() : null;
+  _alloMbBridgeState = {
+    url: cfg.url,
+    code,
+    secret: String(cfg.secret || ''),
+    admin: String(cfg.admin || ''),
+    uid: String(cfg.uid || ('T-' + Math.random().toString(36).slice(2, 10))),
+    isTeacher: !!cfg.isTeacher,
+    watchers: new Map(),      // path token -> Set({cb, errCb, ref})
+    colWatchers: new Map(),   // 'c:<sig>' -> { sig, known: Map(id->w), cbs: Set }
+    docs: new Map(),          // path token -> { w, d, missing }
+    lastSessionDoc: null,     // teacher-side re-seed source after cache eviction
+    reseedAt: 0,
+    endedFired: false,
+    openPromise: null,
+    pumpTimer: null,
+    pumpBusy: false,
+    lastChangeAt: Date.now(),
+    sendNudge: null,          // set by the teacher/student RTC plumbing
+  };
+  _alloMbSchedulePump(200);
+  return _alloMbBridgeState;
+}
+function _alloMbTeardownBridge() {
+  const st = _alloMbBridgeState;
+  if (!st) return;
+  if (st.pumpTimer) { try { clearTimeout(st.pumpTimer); } catch (_) {} }
+  _alloMbBridgeState = null;
+}
+function _alloMbSetNudgeSender(fn) {
+  if (_alloMbBridgeState) _alloMbBridgeState.sendNudge = (typeof fn === 'function') ? fn : null;
+}
+function _alloMbSendNudge() {
+  const st = _alloMbBridgeState;
+  if (st && typeof st.sendNudge === 'function') { try { st.sendNudge(); } catch (_) {} }
+}
+// Synthetic identity for backend-free shells: the unified join/session flows
+// need a uid, not a Firebase account. Only consulted when real auth is
+// unavailable (placeholder config) or fails while a bridge is installed.
+function _alloMbBridgeUser() {
+  const st = _alloMbBridgeState;
+  if (!st || !st.uid) return null;
+  return { uid: st.uid, isAnonymous: true, __alloMailboxUser: true, getIdToken: async () => '' };
+}
+function _alloMbRefFromDocArgs(args) {
+  const st = _alloMbBridgeState;
+  if (!st) return null;
+  if (args.length === 7) {
+    if (args[1] !== 'artifacts' || args[3] !== 'public' || args[4] !== 'data') return null;
+    if (args[5] === 'sessions') {
+      const code = String(args[6] == null ? '' : args[6]).toUpperCase();
+      if (!/^[A-Z0-9]{4,8}$/.test(code)) return null;
+      if (st.code) { if (code !== st.code) return null; }
+      else if (!st.isTeacher) return null; // students always know their code
+      return { __alloMbRef: 'session', p: 's', code, id: code };
+    }
+    if (args[5] === 'session_assets') return { __alloMbRef: 'asset', p: '', id: String(args[6] == null ? '' : args[6]) };
+    return null;
+  }
+  if (args.length === 9) {
+    if (args[1] !== 'artifacts' || args[3] !== 'public' || args[4] !== 'data' || args[7] !== 'peers') return null;
+    const sig = String(args[5] || '');
+    if (!ALLO_MB_SIG_RE.test(sig)) return null;
+    const code = String(args[6] == null ? '' : args[6]).toUpperCase();
+    if (!st.code || code !== st.code) return null;
+    const peerUid = String(args[8] == null ? '' : args[8]);
+    if (!/^[A-Za-z0-9_-]{1,80}$/.test(peerUid)) return null;
+    return _alloMbMakePeerRef(sig, peerUid);
+  }
+  return null;
+}
+function _alloMbMakePeerRef(sig, peerUid) {
+  return { __alloMbRef: 'peer', p: 'g:' + sig + ':' + peerUid, col: 'c:' + sig, id: peerUid };
+}
+function _alloMbColFromArgs(args) {
+  const st = _alloMbBridgeState;
+  if (!st || !st.code || args.length !== 8) return null;
+  if (args[1] !== 'artifacts' || args[3] !== 'public' || args[4] !== 'data' || args[7] !== 'peers') return null;
+  const sig = String(args[5] || '');
+  if (!ALLO_MB_SIG_RE.test(sig)) return null;
+  if (String(args[6] == null ? '' : args[6]).toUpperCase() !== st.code) return null;
+  return { __alloMbCol: sig, p: 'c:' + sig };
+}
+function _alloMbSnap(ref, data, exists) {
+  return {
+    id: (ref && (ref.id || (ref.p === 's' && _alloMbBridgeState ? _alloMbBridgeState.code : ''))) || '',
+    ref,
+    exists: () => !!exists,
+    data: () => (exists ? data : undefined),
+  };
+}
+async function _alloMbDocCall(payload, useRetry) {
+  const st = _alloMbBridgeState;
+  if (!st || !st.code) {
+    const err = new Error('Mailbox session bridge is not configured');
+    err.code = 'allo/mailbox-bridge-missing';
+    throw err;
+  }
+  const body = Object.assign({ c: st.code, k: st.secret }, payload);
+  return useRetry ? _alloMailboxCallWithRetry(st.url, body) : _alloMailboxCall(st.url, body);
+}
+// Teacher adopt-on-create: the FIRST session-doc setDoc (from the standard
+// startClassSession) claims the generated code on the mailbox before the doc
+// is written, so the whole create flow stays single-pathway.
+async function _alloMbEnsureOpened(code) {
+  const st = _alloMbBridgeState;
+  if (!st) throw new Error('Mailbox session bridge is not configured');
+  if (st.code) return;
+  if (!st.admin) {
+    const err = new Error('Mailbox bridge cannot open a session without the admin token');
+    err.code = 'allo/mailbox-not-admin';
+    throw err;
+  }
+  if (!st.openPromise) {
+    st.openPromise = _alloMailboxCallWithRetry(st.url, { a: 'open', admin: st.admin, c: code, k: st.secret })
+      .then(() => { st.code = code; });
+  }
+  try { await st.openPromise; } finally { st.openPromise = null; }
+}
+function _alloMbStoreAndFire(pathToken, entry) {
+  const st = _alloMbBridgeState;
+  if (!st) return;
+  st.docs.set(pathToken, entry);
+  if (pathToken === 's' && !entry.missing) st.lastSessionDoc = entry.d;
+  const set = st.watchers.get(pathToken);
+  if (!set) return;
+  set.forEach((w) => {
+    try { w.cb(_alloMbSnap(w.ref, entry.d, !entry.missing)); }
+    catch (e) { console.warn('[MB bridge] snapshot callback failed', e); }
+  });
+}
+function _alloMbFireSessionEnded() {
+  const st = _alloMbBridgeState;
+  if (!st || st.endedFired) return;
+  st.endedFired = true;
+  const set = st.watchers.get('s');
+  if (set) {
+    set.forEach((w) => {
+      try { w.cb(_alloMbSnap(w.ref, undefined, false)); }
+      catch (e) { console.warn('[MB bridge] ended callback failed', e); }
+    });
+  }
+}
+function _alloMbSchedulePump(ms) {
+  const st = _alloMbBridgeState;
+  if (!st) return;
+  if (st.pumpTimer) { try { clearTimeout(st.pumpTimer); } catch (_) {} }
+  st.pumpTimer = setTimeout(() => {
+    if (_alloMbBridgeState === st) { st.pumpTimer = null; _alloMbPumpTick(st); }
+  }, ms);
+}
+async function _alloMbPumpTick(st) {
+  if (!st || _alloMbBridgeState !== st || st.endedFired) return;
+  if (st.pumpBusy) { _alloMbSchedulePump(800); return; }
+  if (!st.code || (st.watchers.size === 0 && st.colWatchers.size === 0)) { _alloMbSchedulePump(1500); return; }
+  st.pumpBusy = true;
+  const hidden = (typeof document !== 'undefined') && document.hidden;
+  let delay = hidden ? 6000 : ((Date.now() - st.lastChangeAt < 45000) ? 1800 : 3500);
+  try {
+    const ps = [];
+    st.watchers.forEach((_set, p) => {
+      const known = st.docs.get(p);
+      ps.push({ p, w: (known && known.w) || 0 });
+    });
+    st.colWatchers.forEach((_watch, token) => {
+      const known = st.docs.get(token);
+      ps.push({ p: token, w: (known && known.w) || 0 });
+    });
+    const res = await _alloMbDocCall({ a: 'dget', ps: ps.slice(0, 12) });
+    if (_alloMbBridgeState !== st) return;
+    const changedCols = [];
+    (Array.isArray(res.docs) ? res.docs : []).forEach((entry) => {
+      if (!entry || !entry.p) return;
+      const isCol = st.colWatchers.has(entry.p);
+      if (entry.missing) {
+        // Cache eviction is not "session ended": the teacher re-seeds the
+        // session doc from its last known state; students just keep waiting.
+        if (entry.p === 's' && st.isTeacher && st.lastSessionDoc && Date.now() - st.reseedAt > 8000) {
+          st.reseedAt = Date.now();
+          _alloMbDocCall({ a: 'dset', p: 's', d: st.lastSessionDoc }, true)
+            .then((r) => { if (_alloMbBridgeState === st && r && r.w) st.docs.set('s', { w: r.w, d: st.lastSessionDoc, missing: false }); })
+            .catch((e) => console.warn('[MB bridge] session doc re-seed failed', e && e.message));
+        }
+        return;
+      }
+      if (entry.d === undefined) return; // unchanged (version matched)
+      st.lastChangeAt = Date.now();
+      delay = 1800;
+      if (isCol) {
+        st.docs.set(entry.p, { w: entry.w, d: entry.d, missing: false });
+        changedCols.push(entry.p);
+      } else {
+        _alloMbStoreAndFire(entry.p, { w: entry.w, d: entry.d, missing: false });
+      }
+    });
+    for (const token of changedCols) {
+      const watch = st.colWatchers.get(token);
+      if (!watch) continue;
+      const indexEntry = st.docs.get(token);
+      const index = (indexEntry && indexEntry.d && typeof indexEntry.d === 'object') ? indexEntry.d : {};
+      const changes = [];
+      const fetchIds = [];
+      Object.keys(index).forEach((id) => {
+        const w = index[id];
+        const knownW = watch.known.get(id);
+        if (knownW === undefined) { changes.push({ type: 'added', id }); fetchIds.push(id); }
+        else if (knownW !== w) { changes.push({ type: 'modified', id }); fetchIds.push(id); }
+      });
+      watch.known.forEach((_w, id) => {
+        if (!(id in index)) changes.push({ type: 'removed', id });
+      });
+      if (!changes.length) continue;
+      if (fetchIds.length) {
+        try {
+          const childPs = fetchIds.slice(0, 12).map((id) => {
+            const p = 'g:' + watch.sig + ':' + id;
+            const known = st.docs.get(p);
+            return { p, w: (known && known.w) || 0 };
+          });
+          const childRes = await _alloMbDocCall({ a: 'dget', ps: childPs });
+          (Array.isArray(childRes.docs) ? childRes.docs : []).forEach((entry) => {
+            if (entry && entry.p && entry.d !== undefined && !entry.missing) {
+              st.docs.set(entry.p, { w: entry.w, d: entry.d, missing: false });
+            }
+          });
+        } catch (childErr) { console.warn('[MB bridge] signaling child fetch failed', childErr && childErr.message); }
+      }
+      watch.known = new Map(Object.entries(index));
+      const snap = _alloMbColSnap(st, watch, changes);
+      watch.cbs.forEach((cb) => {
+        try { cb(snap); } catch (e) { console.warn('[MB bridge] collection callback failed', e); }
+      });
+    }
+  } catch (e) {
+    const codeStr = String((e && e.code) || '');
+    if (codeStr.includes('no-session')) {
+      // The mailbox forgot the session (ended or 6h TTL): exit through the
+      // standard "session ended" pathway and stop pumping.
+      _alloMbFireSessionEnded();
+      st.pumpBusy = false;
+      return;
+    }
+    if (codeStr.includes('bad-action')) {
+      // Pre-v6 mailbox script: no doc store. Stop pumping quietly — the
+      // legacy pack/presence flows continue to carry the session.
+      st.pumpBusy = false;
+      return;
+    }
+    delay = 8000;
+  }
+  st.pumpBusy = false;
+  if (_alloMbBridgeState === st && !st.endedFired) _alloMbSchedulePump(delay);
+}
+function _alloMbColSnap(st, watch, changes) {
+  const mkDoc = (id) => {
+    const cached = st.docs.get('g:' + watch.sig + ':' + id);
+    const data = cached && !cached.missing ? cached.d : {};
+    return { id, ref: _alloMbMakePeerRef(watch.sig, id), data: () => (data || {}) };
+  };
+  const currentDocs = Array.from(watch.known.keys()).map(mkDoc);
+  return {
+    docChanges: () => changes.map((ch) => ({ type: ch.type, doc: mkDoc(ch.id) })),
+    docs: currentDocs,
+    size: currentDocs.length,
+    forEach: (fn) => currentDocs.forEach((d) => fn(d)),
+  };
+}
+function _applyMbSessionAdapter() {
+  if (doc.__alloMbWrapped) return;
+  const baseDoc = doc, baseGetDoc = getDoc, baseSetDoc = setDoc, baseUpdateDoc = updateDoc,
+    baseDeleteDoc = deleteDoc, baseOnSnapshot = onSnapshot, baseCollection = collection;
+  doc = (...args) => _alloMbRefFromDocArgs(args) || baseDoc(...args);
+  doc.__alloMbWrapped = true;
+  collection = (...args) => _alloMbColFromArgs(args) || baseCollection(...args);
+  getDoc = async (ref) => {
+    if (!ref || !ref.__alloMbRef) return baseGetDoc(ref);
+    if (ref.__alloMbRef === 'asset') return _alloMbSnap(ref, undefined, false);
+    const res = await _alloMbDocCall({ a: 'dget', ps: [{ p: ref.p }] });
+    const st = _alloMbBridgeState;
+    const entry = (Array.isArray(res.docs) ? res.docs : []).find((d) => d && d.p === ref.p);
+    if (!entry || entry.missing) {
+      if (st) st.docs.set(ref.p, { w: 0, d: undefined, missing: true });
+      return _alloMbSnap(ref, undefined, false);
+    }
+    if (st) {
+      st.docs.set(ref.p, { w: entry.w, d: entry.d, missing: false });
+      if (ref.p === 's') st.lastSessionDoc = entry.d;
+    }
+    return _alloMbSnap(ref, entry.d, true);
+  };
+  setDoc = async (ref, data, opts) => {
+    if (!ref || !ref.__alloMbRef) return baseSetDoc(ref, data, opts);
+    if (ref.__alloMbRef === 'asset') return undefined; // packs carry resource content on the mailbox
+    const merge = !!(opts && opts.merge);
+    let payloadData = data;
+    if (ref.__alloMbRef === 'session') {
+      await _alloMbEnsureOpened(ref.code);
+      payloadData = Object.assign({}, data);
+      delete payloadData.resources; // pack channel is the mailbox resource transport
+    }
+    const call = { a: 'dset', p: ref.p, d: payloadData };
+    if (merge) call.merge = 1;
+    if (ref.col) { call.col = ref.col; call.id = ref.id; }
+    const res = await _alloMbDocCall(call, true);
+    const st = _alloMbBridgeState;
+    if (st) {
+      if (merge) { st.docs.delete(ref.p); _alloMbSchedulePump(150); }
+      else _alloMbStoreAndFire(ref.p, { w: (res && res.w) || 0, d: payloadData, missing: false });
+    }
+    _alloMbSendNudge();
+    return undefined;
+  };
+  updateDoc = async (ref, payload) => {
+    if (!ref || !ref.__alloMbRef) return baseUpdateDoc(ref, payload);
+    if (ref.__alloMbRef === 'asset') return undefined;
+    const updates = {};
+    Object.keys(payload || {}).forEach((key) => {
+      const value = payload[key];
+      if (value === undefined) return;
+      if (ref.__alloMbRef === 'session' && (key === 'resources' || key.indexOf('resources.') === 0)) return;
+      updates[key] = _alloLanIsDeleteSentinel(value) ? { __op: 'deleteField' } : value;
+    });
+    if (Object.keys(updates).length === 0) return undefined;
+    const call = { a: 'dpatch', p: ref.p, u: updates };
+    if (ref.col) { call.col = ref.col; call.id = ref.id; }
+    const res = await _alloMbDocCall(call, true);
+    if (res && res.d !== undefined) _alloMbStoreAndFire(ref.p, { w: res.w, d: res.d, missing: false });
+    _alloMbSendNudge();
+    return undefined;
+  };
+  deleteDoc = async (ref) => {
+    if (!ref || !ref.__alloMbRef) return baseDeleteDoc(ref);
+    if (ref.__alloMbRef === 'asset') return undefined;
+    const call = { a: 'ddel', p: ref.p };
+    if (ref.col) { call.col = ref.col; call.id = ref.id; }
+    await _alloMbDocCall(call, true);
+    const st = _alloMbBridgeState;
+    if (st) _alloMbStoreAndFire(ref.p, { w: 0, d: undefined, missing: true });
+    _alloMbSendNudge();
+    return undefined;
+  };
+  onSnapshot = (target, cb, errCb) => {
+    if (target && target.__alloMbRef) {
+      const st = _alloMbBridgeState;
+      if (!st) {
+        if (errCb) { try { errCb(new Error('Mailbox session bridge is not configured')); } catch (_) {} }
+        return () => {};
+      }
+      let set = st.watchers.get(target.p);
+      if (!set) { set = new Set(); st.watchers.set(target.p, set); }
+      const entry = { cb, errCb, ref: target };
+      set.add(entry);
+      const known = st.docs.get(target.p);
+      if (known && !known.missing) {
+        try { cb(_alloMbSnap(target, known.d, true)); } catch (e) { console.warn('[MB bridge] snapshot callback failed', e); }
+      }
+      _alloMbSchedulePump(80);
+      return () => {
+        set.delete(entry);
+        if (set.size === 0 && _alloMbBridgeState === st) st.watchers.delete(target.p);
+      };
+    }
+    if (target && target.__alloMbCol) {
+      const st = _alloMbBridgeState;
+      if (!st) {
+        if (errCb) { try { errCb(new Error('Mailbox session bridge is not configured')); } catch (_) {} }
+        return () => {};
+      }
+      let watch = st.colWatchers.get(target.p);
+      if (!watch) { watch = { sig: target.__alloMbCol, known: new Map(), cbs: new Set() }; st.colWatchers.set(target.p, watch); }
+      watch.cbs.add(cb);
+      if (watch.known.size > 0) {
+        // Firestore parity: a fresh listener sees the current membership as
+        // 'added' changes (from cache; the pump corrects any staleness).
+        const initial = Array.from(watch.known.keys()).map((id) => ({ type: 'added', id }));
+        Promise.resolve().then(() => {
+          if (_alloMbBridgeState === st && watch.cbs.has(cb)) {
+            try { cb(_alloMbColSnap(st, watch, initial)); } catch (e) { console.warn('[MB bridge] collection callback failed', e); }
+          }
+        });
+      }
+      _alloMbSchedulePump(80);
+      return () => {
+        watch.cbs.delete(cb);
+        if (watch.cbs.size === 0 && _alloMbBridgeState === st) st.colWatchers.delete(target.p);
+      };
+    }
+    return baseOnSnapshot(target, cb, errCb);
+  };
+  // Refresh the window mirrors + the CDN modules' handle so every consumer
+  // (module_scope_extras, LivePolling, ConceptPictionary, PhaseOHandlers)
+  // inherits the bridge routing, exactly like the LAN adapter does.
+  if (typeof window !== 'undefined' && window.doc) {
+    window.doc = doc; window.setDoc = setDoc; window.getDoc = getDoc;
+    window._fbDoc = doc; window._fbUpdateDoc = updateDoc;
+  }
+  if (typeof window !== 'undefined' && window.__alloFirebase) {
+    Object.assign(window.__alloFirebase, { doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection });
+  }
+  if (typeof window !== 'undefined') {
+    window.__alloMbBridgeNudge = () => _alloMbSchedulePump(120);
+  }
+}
+_applyMbSessionAdapter(); // Boot wrap; must wrap AFTER the LAN adapter so mailbox refs outrank it.
+
 
 let WebSearchProvider = null;
 let AIProvider = null;
@@ -280,6 +711,7 @@ function _upgradeAIBackend() {
         limit = s.limit; writeBatch = s.writeBatch; signInAnonymously = s.signInAnonymously;
         onAuthStateChanged = s.onAuthStateChanged;
         _applyLanSessionAdapter(); // LAN adapter must outrank whichever backend just landed
+        _applyMbSessionAdapter();  // …and the mailbox bridge must outrank the LAN adapter
         console.log("[AI Backend] Shim functions upgraded from CDN module");
     }
     if (window.WebSearchProvider) WebSearchProvider = window.WebSearchProvider;
@@ -1369,6 +1801,10 @@ async function _alloEnsureAuthenticatedUser() {
     throw error;
   }
   if (_alloFirebaseIsPlaceholder) {
+    // Mailbox-bridged sessions need no Firebase: the unified join/session
+    // flows run on the bridge's synthetic identity (backend-free shell).
+    const mbUser = _alloMbBridgeUser();
+    if (mbUser) return mbUser;
     const error = new Error('No Firebase backend is configured for this pathway.');
     error.code = 'allo/no-backend-configured';
     throw error;
@@ -1392,6 +1828,12 @@ async function _alloEnsureAuthenticatedUser() {
   const attempt = _alloAuthSignInPromise;
   try {
     return await attempt;
+  } catch (authError) {
+    // A mailbox session must not die on a broken Firebase project: fall back
+    // to the bridge's synthetic identity while one is installed.
+    const mbUser = _alloMbBridgeUser();
+    if (mbUser) return mbUser;
+    throw authError;
   } finally {
     if (_alloAuthSignInPromise === attempt) _alloAuthSignInPromise = null;
   }
@@ -12179,6 +12621,24 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const mbHandRef = useRef(false);
   const mbAnnounceRef = useRef(null);
   const mbPollNowRef = useRef(null);
+  // Phase C (single pathway): the mailbox start flow calls the SAME
+  // startClassSession as Firestore. It is re-declared every render (plain
+  // const), so callbacks reach it through a render-fresh ref instead of a
+  // stale useCallback capture.
+  const startClassSessionRef = useRef(null);
+  useEffect(() => { startClassSessionRef.current = startClassSession; });
+  // Canonical empty session doc (matches PhaseOHandlers.startClassSession) for
+  // resource-less mailbox starts and post-eviction resumes.
+  const _mbEmptySessionShape = () => stripUndefined({
+      resources: [],
+      mode: 'sync',
+      currentResourceId: null,
+      createdAt: new Date().toISOString(),
+      hostId: (user && user.uid) || (_alloMbBridgeState && _alloMbBridgeState.uid) || 'teacher',
+      roster: {},
+      democracy: { isActive: false, phase: 'idle', votingContext: 'custom', activeOptions: [], votes: {}, suggestions: {} },
+      quizState: { isActive: false, mode: 'live-pulse', currentQuestionIndex: 0, phase: 'idle', responses: {}, bossStats: { maxHP: 1000, currentHP: 1000, classHP: 100, name: "The Knowledge Keeper", lastDamage: 0 }, teams: {} },
+  });
   useEffect(() => {
       window.__alloMailboxLive = () => setMbPanelOpen(true);
       return () => { try { delete window.__alloMailboxLive; } catch (_) {} };
@@ -12252,9 +12712,28 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       setMbBusy(true);
       setMbStatus('Opening live session…');
       try {
-          const code = generateSessionCode();
           const secret = _alloRandomToken(16);
-          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'open', admin: mbConfig.admin, c: code, k: secret });
+          // Phase C — single pathway: install the session-doc bridge FIRST,
+          // then run the SAME startClassSession as Firestore sessions. Its
+          // session-doc setDoc is rerouted by the bridge, which claims the
+          // generated code on the mailbox (adopt-on-create). Roster, polls,
+          // quiz, groups and pictionary all ride that one session doc.
+          _alloMbInstallBridge({ url: mbConfig.url, admin: mbConfig.admin, secret, isTeacher: true });
+          const hasResources = Array.isArray(history) && history.some(h => h && h.id);
+          if (hasResources && typeof startClassSessionRef.current === 'function') {
+              await startClassSessionRef.current();
+          }
+          let code = (_alloMbBridgeState && _alloMbBridgeState.code) || null;
+          if (!code) {
+              // Resource-less start (mailbox classes may begin empty and push
+              // later): create the canonical empty session doc directly.
+              const freshCode = generateSessionCode();
+              const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', freshCode);
+              await setDoc(sessionRef, _mbEmptySessionShape());
+              setActiveSessionCode(freshCode);
+              setShowSessionModal(true);
+              code = (_alloMbBridgeState && _alloMbBridgeState.code) || freshCode;
+          }
           const joinUrl = _buildAlloMailboxEntryUrl('allo_mb', { u: mbConfig.url, c: code, k: secret });
           if (!joinUrl) throw new Error('no student app URL is configured for the QR');
           mbUpCursorRef.current = 0;
@@ -12267,15 +12746,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setMbStatus('');
       } catch (e) {
           warnLog('Mailbox live start failed', e);
+          if (!(_alloMbBridgeState && _alloMbBridgeState.code)) _alloMbTeardownBridge();
           setMbStatus('Could not start: ' + (e?.message || e));
       }
       setMbBusy(false);
-  }, [mbConfig]);
+  }, [mbConfig, history, activeSessionAppId, user]);
   // Rejoin an already-open session the server remembered (post-refresh, or a
   // fresh Canvas). Rebuilds the join URL/QR and re-arms the roster+pack loops;
   // the roster repopulates from students' heartbeats within ~60s and the pack
   // re-syncs from the teacher's current history via the auto-sync effect.
-  const resumeMailboxLiveSession = useCallback((session) => {
+  const resumeMailboxLiveSession = useCallback(async (session) => {
       if (!session?.c || !session?.k || !mbConfig?.url) return;
       const code = String(session.c).toUpperCase();
       const secret = String(session.k);
@@ -12286,10 +12766,45 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       mbPackItemsRef.current = [];
       setMbResumable([]);
       setMbRoster({});
+      // Phase C — unified resume: reattach the standard session pathway to
+      // the server-held session doc, so the roster and any live quiz/poll
+      // state repopulate immediately after a refresh (not on the next
+      // heartbeat). Recreate the doc if the mailbox evicted it or the
+      // teacher's script pre-dates v6.
+      _alloMbInstallBridge({ url: mbConfig.url, admin: mbConfig.admin || '', secret, code, isTeacher: true });
+      try {
+          const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', code);
+          const snap = await getDoc(sessionRef);
+          if (!snap.exists()) await setDoc(sessionRef, _mbEmptySessionShape());
+          setActiveSessionCode(code);
+      } catch (reattachErr) {
+          warnLog('Mailbox resume: session doc reattach failed (legacy pack flow still runs):', reattachErr?.message);
+      }
       try { localStorage.setItem(ALLO_MB_LIVE_KEY, JSON.stringify({ code, secret, joinUrl })); } catch (_) {}
       setMbLive({ code, secret, joinUrl });
       setMbStatus('Resumed session ' + code + '. Students are still connected.');
-  }, [mbConfig]);
+  }, [mbConfig, activeSessionAppId, user]);
+  // Non-Canvas refresh fast path: mbLive rehydrates from localStorage before
+  // any server round-trip — reattach the unified session pathway there too
+  // (the Canvas path arrives via resumeMailboxLiveSession instead).
+  useEffect(() => {
+      if (!isTeacherMode || !mbLive?.code || !mbLive?.secret || !mbConfig?.url) return;
+      if (_alloMbBridgeActive() || activeSessionCode) return;
+      _alloMbInstallBridge({ url: mbConfig.url, admin: mbConfig.admin || '', secret: mbLive.secret, code: mbLive.code, isTeacher: true });
+      let cancelled = false;
+      (async () => {
+          try {
+              const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', mbLive.code);
+              const snap = await getDoc(sessionRef);
+              if (cancelled) return;
+              if (!snap.exists()) await setDoc(sessionRef, _mbEmptySessionShape());
+              if (!cancelled) setActiveSessionCode(mbLive.code);
+          } catch (reattachErr) {
+              warnLog('Mailbox reattach skipped (legacy pack flow still runs):', reattachErr?.message);
+          }
+      })();
+      return () => { cancelled = true; };
+  }, [mbLive, mbConfig, isTeacherMode, activeSessionCode, activeSessionAppId]);
   const _mbCloseTeacherPeers = useCallback(() => {
       Object.values(mbPeersRef.current || {}).forEach(peer => {
           try { peer.dc?.close(); } catch (_) {}
@@ -12304,10 +12819,35 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       try { localStorage.removeItem(ALLO_MB_LIVE_KEY); } catch (_) {}
       _mbCloseTeacherPeers();
       if (live && mbConfig?.url) {
+          // Soft-end the session doc first so bridged students exit through
+          // the standard ended-session path before the marker disappears.
+          if (_alloMbBridgeActive()) {
+              try {
+                  const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', live.code);
+                  await updateDoc(sessionRef, { isActive: false, status: 'ended' });
+              } catch (_) {}
+          }
           try { await _alloMailboxCall(mbConfig.url, { a: 'send', c: live.code, k: live.secret, from: 'teacher', box: 'down', v: { kind: 'end' } }); } catch (_) {}
           try { await _alloMailboxCall(mbConfig.url, { a: 'end', c: live.code, k: live.secret }); } catch (_) {}
       }
-  }, [mbLive, mbConfig, _mbCloseTeacherPeers]);
+      _alloMbTeardownBridge();
+      if (live && activeSessionCode === live.code) {
+          setActiveSessionCode(null);
+          setSessionData(null);
+      }
+  }, [mbLive, mbConfig, _mbCloseTeacherPeers, activeSessionCode, activeSessionAppId]);
+  // One END regardless of which button ended it: if the standard session
+  // pathway exits (SessionModal "End Session", or a server-side expiry the
+  // bridge pump surfaced) while a mailbox session is still marked live,
+  // finish the mailbox teardown too.
+  const mbSawSessionRef = useRef(false);
+  useEffect(() => {
+      if (activeSessionCode && mbLive && activeSessionCode === mbLive.code) { mbSawSessionRef.current = true; return; }
+      if (!activeSessionCode && mbSawSessionRef.current) {
+          mbSawSessionRef.current = false;
+          if (mbLive) endMailboxLiveSession();
+      }
+  }, [activeSessionCode, mbLive, endMailboxLiveSession]);
   // Chunk-send core shared by single pushes, auto-follow, and full-pack
   // sharing. Real-time channels get chunks instantly; the mailbox ALWAYS gets
   // a copy (replay log for late joiners + delivery when P2P is blocked) and
@@ -12435,7 +12975,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               pc.ondatachannel = (ev) => {
                   peer.dc = ev.channel;
                   peer.dc.onmessage = (msgEv) => {
-                      try { applyStudentUpdate(JSON.parse(msgEv.data), Date.now()); } catch (_) {}
+                      try {
+                          const parsed = JSON.parse(msgEv.data);
+                          // Bridge nudge: a student just wrote to the session
+                          // doc store — pull it now, not on the next poll.
+                          if (parsed && parsed.kind === 'sdocv') { _alloMbSchedulePump(120); return; }
+                          applyStudentUpdate(parsed, Date.now());
+                      } catch (_) {}
                   };
                   peer.dc.onopen = () => {
                       setMbRoster(prev => (prev[uid] ? { ...prev, [uid]: { ...prev[uid], rtc: true, at: Date.now() } } : prev));
@@ -12515,10 +13061,20 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }
       };
       try { document.addEventListener('visibilitychange', onVisible); } catch (_) {}
+      // Bridge nudge fan-out: the teacher's own session-doc writes ping every
+      // connected student's channel so their pumps pull immediately.
+      _alloMbSetNudgeSender(() => {
+          Object.values(mbPeersRef.current || {}).forEach(peer => {
+              if (peer.dc && peer.dc.readyState === 'open') {
+                  try { peer.dc.send(JSON.stringify({ kind: 'sdocv' })); } catch (_) {}
+              }
+          });
+      });
       poll();
       return () => {
           cancelled = true;
           if (timer) clearTimeout(timer);
+          _alloMbSetNudgeSender(null);
           try { document.removeEventListener('visibilitychange', onVisible); } catch (_) {}
           _mbCloseTeacherPeers();
       };
@@ -12652,6 +13208,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // channel copy + mailbox replay copy) converge to a single render.
   const applyMbDownPayload = useCallback(async (v) => {
       if (!v) return;
+      if (v.kind === 'sdocv') {
+          // Bridge nudge over the data channel: the teacher just wrote to the
+          // session doc store — pull it now instead of on the next poll tick.
+          _alloMbSchedulePump(120);
+          return;
+      }
       if (v.kind === 'end') {
           addToast('The teacher ended this live session.', 'info');
           setMbStudent(null);
@@ -21866,7 +22428,36 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setHistory([]);
       setGeneratedContent(null);
       setMbStudent({ url: entry.u, code: String(entry.c).toUpperCase(), secret: String(entry.k), uid });
-      return undefined;
+      // Phase C — unified session pathway: install the session-doc bridge and
+      // run the SAME joinClassSession as Firestore QR joins (roster entry +
+      // session-doc subscription), which is what makes polls, quiz, groups
+      // and pictionary work over the mailbox. Pre-v6 mailbox scripts have no
+      // doc store; the probe detects that and leaves the legacy pack flow as
+      // the whole experience, exactly as before.
+      const mbJoinCode = String(entry.c).toUpperCase();
+      _alloMbInstallBridge({ url: entry.u, code: mbJoinCode, secret: String(entry.k), isTeacher: false, uid });
+      let mbJoinCancelled = false;
+      (async () => {
+          for (let attempt = 0; attempt < 6 && !mbJoinCancelled; attempt += 1) {
+              try {
+                  const probe = await _alloMailboxCall(entry.u, { a: 'dget', c: mbJoinCode, k: String(entry.k), ps: [{ p: 's' }] });
+                  const sdoc = Array.isArray(probe.docs) ? probe.docs.find(d => d && d.p === 's') : null;
+                  if (sdoc && !sdoc.missing) {
+                      if (!mbJoinCancelled) joinClassSession(mbJoinCode);
+                      return;
+                  }
+              } catch (probeErr) {
+                  const probeCode = String(probeErr?.code || '');
+                  if (probeCode.includes('bad-action')) return; // v5 script: legacy flow only
+                  if (probeCode.includes('no-session')) return; // marker gone; the poll loop surfaces it
+              }
+              await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+          }
+      })();
+      return () => {
+          mbJoinCancelled = true;
+          _alloMbTeardownBridge();
+      };
   }, []);
   // Keep the announced nickname current without restarting the poll/RTC loops.
   // No connected-gate here: the codename picker often commits BEFORE the first
@@ -21900,6 +22491,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', c: mbStudent.code, k: mbStudent.secret, from: mbStudent.uid, box: 'up', v: presence });
       };
       mbAnnounceRef.current = () => { announce().catch(e => warnLog('Mailbox announce failed', e)); };
+      // Bridge nudge: our own session-doc writes (poll answers, hand signals,
+      // roster updates) ping the teacher's channel so their pump pulls now.
+      _alloMbSetNudgeSender(() => {
+          const dc = mbRtcRef.current?.dc;
+          if (dc && dc.readyState === 'open') {
+              try { dc.send(JSON.stringify({ kind: 'sdocv' })); } catch (_) {}
+          }
+      });
       const poll = async () => {
           try {
               const res = await _alloMailboxCall(mbStudent.url, { a: 'recv', c: mbStudent.code, k: mbStudent.secret, box: 'down', since: String(mbStudentCursorRef.current) });
@@ -21958,6 +22557,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           if (timer) clearTimeout(timer);
           mbAnnounceRef.current = null;
           mbPollNowRef.current = null;
+          _alloMbSetNudgeSender(null);
           try { document.removeEventListener('visibilitychange', onVisible); } catch (_) {}
       };
   }, [mbStudent, applyMbDownPayload]);
