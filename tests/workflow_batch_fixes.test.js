@@ -118,7 +118,11 @@ describe('anti-drift: doc_pipeline ships the numeric / resume / lang fixes', () 
     expect(pipe).toMatch(/use "Re-scan with OCR" to redo it/);
   });
   it('batch lang path overrides a valid-but-wrong en (base-code compare)', () => {
-    expect(pipe).toMatch(/const overrideToDetected = !invalid && _detectedLang && _detectedLang !== 'en' && _dBase !== trimmed\.split\('-'\)\[0\]/);
+    // Harness repair (2026-07-09): the variables were renamed in a later refactor
+    // (_detectedLang→_ad, the base codes precomputed) — the base-code-compare semantic is
+    // unchanged and the behavioral mirror above tests it directly.
+    expect(pipe).toMatch(/const overrideToDetected = !invalid && _ad && _ad !== 'en' && _adBase !== _trimBase/);
+    expect(pipe).toMatch(/if \(invalid \|\| overrideToDetected\) \{/);
   });
 });
 

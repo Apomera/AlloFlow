@@ -19,24 +19,29 @@ const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8
 describe('source-pins: B — cooldown-aware deferred final re-audit', () => {
   // Slice the B block so the pins are scoped (the block is right after the final-audit try/catch).
   const bIdx = dp.indexOf('cooldown-aware deferred final re-audit');
-  const bBlock = dp.slice(bIdx, bIdx + 4000); // R3 + R5 added the throttle flag + batch-deadline guard inside B
-  it('gates on a PARTIAL final audit AND a throttle signal (confirmed GeminiGate vars)', () => {
+  const bBlock = dp.slice(bIdx, bIdx + 14000); // widened: the circle-back loop + M1/M2/M6 grew the block
+  it('gates on a PARTIAL final audit OR an absent-under-throttle one, with a throttle signal (confirmed GeminiGate vars)', () => {
     expect(bIdx).toBeGreaterThan(-1);
     expect(bBlock).toContain('verification._partialAudit');
+    expect(bBlock).toContain('_finalAuditThrottled && !_finalAuditHadUsableScore'); // M1: null/thrown audits circle back too
     expect(bBlock).toContain('_geminiCooldownUntil > Date.now()');
     expect(bBlock).toContain('_geminiCap < _geminiEffectiveMax'); // R7: cap suppressed below the run ceiling = storm
     expect(bBlock).not.toContain('authThrottles'); // the non-existent field the design first suggested
   });
-  it('bounded wait, then re-audits ONCE and adopts only if coverage increased', () => {
-    expect(bBlock).toContain('Date.now() + 45000'); // bounded deadline — never wait out a true outage
-    expect(bBlock).toContain('_pulsePipelineWatchdog()'); // a deliberate wait is activity, not a stall
-    expect(bBlock).toContain('await auditOutputAccessibility(accessibleHtml)');
-    expect(bBlock).toMatch(/_reFinalAudit\.chunksAudited\s*\|\|\s*0\)\s*>\s*\(verification\.chunksAudited/);
-    // fail-soft: keep the partial result on any error
+  it('bounded LOOP (superseded the one-shot ≤45s wait, 2026-07-07 + M1/M2 2026-07-09): circles back until coverage completes, clamped to the budget', () => {
+    // The one-shot design (Date.now() + 45000, re-audit ONCE) was replaced by the maintainer-asked
+    // circle-back loop: wait-for-calm → re-audit, repeating until FULL AI coverage, a genuine
+    // failure, or the bounded cap (~10 min single-file / the batch per-file wall − 30s).
+    expect(bBlock).toContain('Date.now() + 600000,');
+    expect(bBlock).toContain('_perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity');
+    expect(bBlock).toContain('await _withTimeout(waitForGeminiCalm({'); // M2: budget-clamped wait (pulses the watchdog internally)
+    expect(bBlock).toContain('_reFinalAudit = await _withTimeout(auditOutputAccessibility(accessibleHtml)');
+    // fail-soft: keep the best result on any error (incl. a budget timeout)
     expect(bBlock).toMatch(/catch\s*\(_reErr\)/);
   });
-  it('re-audits only if the window actually eased (no re-call under an active cooldown)', () => {
-    expect(bBlock).toContain('if (!(typeof _geminiCooldownUntil === \'number\' && _geminiCooldownUntil > Date.now()))');
+  it('adopts only equal-or-better coverage and stops when a CALM round recovers nothing new', () => {
+    expect(bBlock).toContain('if (_reFinalAudit && (_reFinalAudit.chunksAudited || 0) >= _prevAudited) {');
+    expect(bBlock).toContain('const _stormNow = _geminiThrottleInfo().storming;');
   });
 });
 

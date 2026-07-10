@@ -98,7 +98,11 @@ describe('OCR accuracy — pipeline wiring', () => {
     expect(dp).toMatch(/catch \(_oaErr\) \{ ocrAccuracy = null; \}/);
   });
   it('the fix result carries the ocrAccuracy field', () => {
-    expect(dp).toMatch(/integrityWarning,\s*\n\s*\/\/[\s\S]*?\n\s*ocrAccuracy,/);
+    // Harness repair (2026-07-09): @9f59569a6 removed the duplicate `integrityWarning,` shorthand
+    // from the result opening (esbuild duplicate-key warning; the later M5-defaulted key won anyway) —
+    // ocrAccuracy now follows integrityCoverage. The field still ships (that's the real assertion).
+    expect(dp).toMatch(/integrityCoverage,\s*\n[\s\S]{0,600}?\n\s*ocrAccuracy,/);
+    expect(dp).toMatch(/\n\s*integrityWarning: integrityWarning \|\| null,/);
   });
   it('the fix UI renders a disclosed OCR-quality chip (band + ~% + heuristic disclaimer) for scanned docs', () => {
     expect(vp).toMatch(/pdfFixResult\.ocrAccuracy && typeof pdfFixResult\.ocrAccuracy\.score === 'number'/);

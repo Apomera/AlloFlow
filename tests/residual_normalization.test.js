@@ -9,11 +9,14 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
-const _s = dp.indexOf('const _normTokenForDiff = (t) => String(t');
-const _tail = ".replace(/\\s+/g, '');";
+// Harness repair (2026-07-09): S7 (@34018900) single-sourced the normalizer — the inline
+// `const _normTokenForDiff = (t) => …` became an alias to the module-level canonical
+// `_alloNormTokenForDiff`. Extract THAT; the behavior under test is identical.
+const _s = dp.indexOf('var _alloNormTokenForDiff = function (t) {');
+const _tail = ".replace(/\\s+/g, '');\n};";
 const _e = dp.indexOf(_tail, _s) + _tail.length;
-if (_s === -1 || _e < _tail.length) throw new Error('extraction markers for _normTokenForDiff missing');
-const norm = new Function(dp.slice(_s, _e) + '\nreturn _normTokenForDiff;')();
+if (_s === -1 || _e < _tail.length) throw new Error('extraction markers for _alloNormTokenForDiff missing');
+const norm = new Function(dp.slice(_s, _e) + '\nreturn _alloNormTokenForDiff;')();
 const C = (n) => String.fromCharCode(n);
 
 describe('_normTokenForDiff folds cosmetic rendering variants (shrinks FALSE residuals)', () => {
@@ -47,16 +50,18 @@ describe('_normTokenForDiff does NOT merge genuinely distinct tokens (the delibe
   });
 });
 
-describe('anti-drift: the folds use \\u escapes (no fragile invisible literals) on the live path', () => {
+describe('anti-drift: the single-source wiring holds (S7) and dashes stay unfolded', () => {
   const fn = dp.slice(_s, _e);
-  it('ligature + zero-width + smart-quote + hyphen-variant folds are present as \\u escapes', () => {
-    expect(fn).toMatch(/\\ufb01/); expect(fn).toMatch(/\\ufb04/); // ligatures
-    expect(fn).toMatch(/\\u200b/); expect(fn).toMatch(/\\ufeff/); // zero-width + BOM
-    expect(fn).toMatch(/\\u2018\\u2019/);                          // smart quotes
-    expect(fn).toMatch(/\\u00ad\\u2010\\u2011/);                   // hyphen variants in the fold class
+  // Harness repair (2026-07-09): the old pin asserted \u-escape spelling on the INLINE copy;
+  // S7's module-level canonical uses raw literals (legal chars — the escape rule exists for
+  // NONCHARACTERS like U+FFFF, not ligatures). The behavioral folds above are the real guard;
+  // here we pin only the alias wiring and the deliberate non-folds.
+  it('the diff path aliases the canonical normalizer (no second copy to drift)', () => {
+    expect(dp).toContain('const _normTokenForDiff = _alloNormTokenForDiff; // S7: single-sourced (module-level canonical copy)');
   });
-  it('deliberately does NOT fold en/em-dash or numeric separators', () => {
-    expect(fn).not.toMatch(/\\u2013/); // en-dash
-    expect(fn).not.toMatch(/\\u2014/); // em-dash
+  it('deliberately does NOT fold en/em-dash (resign vs re-sign class)', () => {
+    expect(norm('re–sign')).not.toBe(norm('resign')); // en-dash kept distinct
+    expect(norm('re—sign')).not.toBe(norm('resign')); // em-dash kept distinct
+    expect(fn).not.toMatch(/[–—]/); // the fold classes never include them
   });
 });

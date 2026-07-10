@@ -63,7 +63,10 @@ describe('anti-drift: doc_pipeline ships both fixes', () => {
     expect(pipeSrc).toMatch(/_extractBodyContent\(_rangeHtml\(r\)\)/);
   });
   it('the save fingerprint keys on real file size + the full-doc page count', () => {
-    expect(pipeSrc).toMatch(/fileSize: \(pendingPdfFile && pendingPdfFile\.size\) \|\| 0/);
+    // Harness repair (2026-07-09): S1 snapshotted the size at run entry (_runFileSize = the real
+    // pendingPdfFile.size captured before any concurrent upload can swap the bound var) — the
+    // fingerprint still keys on REAL bytes, just via the snapshot.
+    expect(pipeSrc).toMatch(/fileSize: _runFileSize \|\| 0/);
     expect(pipeSrc).toMatch(/pageCount: fullPageCount/);
   });
 });

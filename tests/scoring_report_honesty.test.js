@@ -59,8 +59,10 @@ describe('(2026-06-22) Content Audit Score cards read before→after, not revers
   // before→after progression. Cards now read PRE → POST (before on the left, the result emphasized
   // on the right), keeping the → arrow (flipping it would be wrong).
   it('Pre-Remediation card renders BEFORE the Post-Remediation card', () => {
+    // Harness repair (2026-07-09): the post card's label became a template (it reads
+    // "Post-Remediation (pending final AI)" when the final audit is incomplete).
     const pre = dp.indexOf('text-transform:uppercase">Pre-Remediation');
-    const post = dp.indexOf('text-transform:uppercase">Post-Remediation');
+    const post = dp.indexOf("'Post-Remediation (pending final AI)' : 'Post-Remediation'");
     expect(pre).toBeGreaterThan(-1);
     expect(post).toBeGreaterThan(-1);
     expect(pre).toBeLessThan(post);
@@ -77,8 +79,10 @@ describe('(2026-06-22) marginal #64748b footer/meta hardened to a comfortable AA
   // AFTER the contrast pass, so it never got checked). The distributed-doc footer + the report's own meta
   // line are bumped to #475569 (~7.6:1) so they're no longer borderline / re-flagged.
   it('the export remediation footer uses #475569, not the borderline #64748b', () => {
-    expect(dp).toMatch(/remediationFooter = `<footer role="contentinfo"[^`]*color:#475569/);
-    expect(dp).not.toMatch(/remediationFooter = `<footer role="contentinfo"[^`]*color:#64748b/);
+    // Harness repair (2026-07-09): the footer moved from a `remediationFooter` variable into the
+    // export template inline — same footer, same contract.
+    expect(dp).toMatch(/<footer role="contentinfo" style="[^"]*color:#475569;?"/);
+    expect(dp).not.toMatch(/<footer role="contentinfo" style="[^"]*color:#64748b/);
   });
   it('the conformance-report Document meta line uses #475569', () => {
     expect(dp).toMatch(/<p style="color:#475569;font-size:13px">Document:/);

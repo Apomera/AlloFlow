@@ -12,7 +12,8 @@ import { resolve } from 'path';
 
 const SRC = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 const junkM = SRC.match(/var _ocrJunkRatio = function[\s\S]*?\r?\n};/);
-const commonM = SRC.match(/var _ALLO_OCR_COMMON_EN = \('[\s\S]*?\.filter\(Boolean\);/);
+// Harness repair (2026-07-09): tolerate reformatting around the '=' (the space vanished at HEAD).
+const commonM = SRC.match(/var _ALLO_OCR_COMMON_EN\s*=\s*\('[\s\S]*?\.filter\(Boolean\);/);
 const accM = SRC.match(/var _alloOcrAccuracy = function[\s\S]*?\r?\n\s*return _result;\r?\n};/);
 if (!junkM || !commonM || !accM) throw new Error('could not extract accuracy functions from source');
 const acc = new Function(junkM[0] + '\n' + commonM[0] + '\n' + accM[0] + '\n; return _alloOcrAccuracy;')();

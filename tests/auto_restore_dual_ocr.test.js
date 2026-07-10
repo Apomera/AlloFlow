@@ -85,8 +85,15 @@ const start = src.indexOf('const applyWordRestoration = (html, missingList, sour
 const end = src.indexOf('\n  // ── Stage A: Gemini-targeted sentence re-insertion ──', start);
 if (start === -1 || end === -1) throw new Error('extraction markers for applyWordRestoration missing');
 const fnSrc = src.slice(start, end);
-// jsdom provides DOMParser/NodeFilter; warnLog is the only free identifier.
-const applyWordRestoration = new Function('warnLog', fnSrc + '\n; return applyWordRestoration;')(() => {});
+// Harness repair (2026-07-09): @38bf59600 made applyWordRestoration call the module static
+// _stripRestoreMarkdown (restore-scope markdown strip) — inject the REAL one (same fix the
+// sentence_restore_fallback harness needed; warnLog stays a stub).
+const _srmStart = src.indexOf('var _stripRestoreMarkdown = function');
+const _srmEnd = src.indexOf('\n};', _srmStart) + 3;
+if (_srmStart === -1) throw new Error('extraction markers for _stripRestoreMarkdown missing');
+const _stripRestoreMarkdown = new Function(src.slice(_srmStart, _srmEnd) + '\n; return _stripRestoreMarkdown;')();
+// jsdom provides DOMParser/NodeFilter; warnLog + _stripRestoreMarkdown are the injected free identifiers.
+const applyWordRestoration = new Function('warnLog', '_stripRestoreMarkdown', fnSrc + '\n; return applyWordRestoration;')(() => {}, _stripRestoreMarkdown);
 
 const htmlText = (html) => {
   const d = new DOMParser().parseFromString(html, 'text/html');

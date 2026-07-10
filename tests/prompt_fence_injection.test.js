@@ -109,7 +109,9 @@ describe('anti-drift: judge prompts are fence-hardened, transform prompts are NO
   it('each judge site interpolates through the neutralizer', () => {
     const wrapped = [
       '_neutralizePromptFence(chunk.substring(0, 5000))',              // SurgicalThenAI diagnosis
-      '_neutralizePromptFence(sampleHtml(accessibleHtml, 9000))',      // surgical diagnosis (x2)
+      // (the `sampleHtml(accessibleHtml, 9000)` surgical-diagnosis pair lived in the DEAD legacy
+      //  batch loop deleted @3a5d9280 (S4, 2026-07-02) — same dead-loop-orphan class the deep dive
+      //  repointed two other suites for; harness repair 2026-07-09)
       '_neutralizePromptFence(sampleHtml(extractedText, 4000))',       // extraction-quality verifier
       '_neutralizePromptFence(sampleHtml)}"""',                        // single-doc audit
       '"""${_neutralizePromptFence(chunk)}"""',                        // chunked audit
@@ -124,7 +126,9 @@ describe('anti-drift: judge prompts are fence-hardened, transform prompts are NO
 
   it('transform prompts keep RAW interpolation (a real """ in document content must survive verbatim)', () => {
     // These outputs BECOME the document — neutralizing them would corrupt e.g. a Python docstring.
-    expect(src.includes('TEXT CONTENT TO TRANSFORM:\n"""\n${chunkText}\n"""')).toBe(true);
+    // (Harness repair 2026-07-09: the old 'TEXT CONTENT TO TRANSFORM' text-interpolating prompt was
+    //  replaced by the Vision-direct block-JSON transform, which sends the PDF itself — no text
+    //  interpolation left to protect there. The HTML fix prompt remains the raw-interpolation site.)
     expect(src.includes('${currentHtml}\n"""')).toBe(true);
     expect(src.includes('_neutralizePromptFence(chunkText)')).toBe(false);
     expect(src.includes('_neutralizePromptFence(currentHtml)')).toBe(false);

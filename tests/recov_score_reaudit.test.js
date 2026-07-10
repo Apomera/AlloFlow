@@ -13,9 +13,14 @@ import { resolve } from 'node:path';
 const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
 // Extract the real applyWordRestoration (anti-drift, same slice as auto_restore_dual_ocr).
+// Harness repair (2026-07-09): inject the REAL _stripRestoreMarkdown — @38bf59600 made the
+// restorer call it (same fix auto_restore_dual_ocr + sentence_restore_fallback needed).
 const arStart = src.indexOf('const applyWordRestoration = (html, missingList, sourceText) => {');
 const arEnd = src.indexOf('\n  // ── Stage A: Gemini-targeted sentence re-insertion ──', arStart);
-const applyWordRestoration = new Function('warnLog', src.slice(arStart, arEnd) + '\n; return applyWordRestoration;')(() => {});
+const _srmStart = src.indexOf('var _stripRestoreMarkdown = function');
+const _srmEnd = src.indexOf('\n};', _srmStart) + 3;
+const _stripRestoreMarkdown = new Function(src.slice(_srmStart, _srmEnd) + '\n; return _stripRestoreMarkdown;')();
+const applyWordRestoration = new Function('warnLog', '_stripRestoreMarkdown', src.slice(arStart, arEnd) + '\n; return applyWordRestoration;')(() => {}, _stripRestoreMarkdown);
 
 // Mirror of the consensus + headline the re-audit uses (weakest-layer-governs: min, not mean).
 const reBlend = (ai, axe, ea) => {
