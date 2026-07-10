@@ -8714,20 +8714,37 @@ var createDocPipeline = function(deps) {
         await _ocrWorkerRelease();
       }
     }
+    // M17 (deep dive 2026-07-09): these attempts used to call the STATIC Tesseract.recognize with
+    // { blocks: true } as a 4th argument — tesseract.js v5's static API is (image, langs, options)
+    // and silently ignores it, so every fresh-spawn attempt returned text WITHOUT the word
+    // hierarchy: the tagged PDF's positioned searchable layer degraded to the top-left block
+    // exactly when the self-healing chain mattered (worker boot timeout, missing traineddata,
+    // shared-path OOM) — and the b:false "plain" rung was byte-identical dead weight. Spawn a real
+    // worker per attempt (same output form as the shared path: blocks + text), terminate it either
+    // way; the b:false rungs remain as genuine plain-text retries.
     const attempts = [{ l: useLang, b: true }, { l: useLang, b: false }];
     if (useLang !== 'eng') attempts.push({ l: 'eng', b: true }, { l: 'eng', b: false });
     let lastErr = null;
     for (let i = 0; i < attempts.length; i++) {
       const a = attempts[i];
+      let _w = null, _cancelled = false;
       try {
         const res = await _withTimeout(
-          window.Tesseract.recognize(canvas, a.l, undefined, a.b ? { blocks: true } : undefined),
+          (async () => {
+            const _wk = await window.Tesseract.createWorker(a.l);
+            // The outer timeout may have already given up while createWorker booted — don't
+            // leave an orphaned worker running in that case.
+            if (_cancelled) { try { _wk.terminate(); } catch (_) {} throw new Error('fresh-spawn attempt superseded'); }
+            _w = _wk;
+            return _wk.recognize(canvas, undefined, a.b ? { blocks: true, text: true } : { text: true });
+          })(),
           i === 0 ? _OCR_RECOGNIZE_TIMEOUT_FIRST_MS : _OCR_RECOGNIZE_TIMEOUT_NEXT_MS,
-          'Tesseract.recognize (' + (label || '?') + ' lang=' + a.l + (a.b ? ' +blocks' : '') + ')'
+          'Tesseract fresh-spawn (' + (label || '?') + ' lang=' + a.l + (a.b ? ' +blocks' : '') + ')'
         );
         if (i > 0) { try { warnLog('[Tesseract] recognize recovered on attempt ' + (i + 1) + '/' + attempts.length + ' (lang=' + a.l + ', ' + (label || '?') + ')'); } catch (_) {} }
         return res;
       } catch (e) { lastErr = e; }
+      finally { _cancelled = true; if (_w) { try { await _w.terminate(); } catch (_) {} } }
     }
     throw lastErr || new Error('Tesseract.recognize failed (all attempts exhausted)');
   };
@@ -16352,10 +16369,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       //   (5) the stripped header span is less than 50% of the chunk length
       // Every decision (strip OR skip) is pushed onto __lastVisionStripTrail with
       // a first-80-char preview so the user can spot tuning issues during the pilot.
+      // M16 (deep dive 2026-07-09): returns { text, stripped } instead of a bare string. The callers'
+      // follow-on `\n`/`\"`/`\t` un-escape rewrites exist ONLY for double-escaped model output inside a
+      // JSON wrapper — running them unconditionally corrupted literal backslash sequences in PLAIN-TEXT
+      // chunks (LaTeX `\theta` → TAB+"heta", `\neq` → newline+"eq", Windows paths), poisoning the OCR
+      // ground truth that the body, AutoRestore, and the integrity denominator all inherit. Gating on
+      // `stripped` finishes what the b0d24ae3 fix started.
       const _safeStripJsonWrapper = (chunkStr, chunkIdx) => {
-        if (typeof chunkStr !== 'string') return chunkStr;
+        if (typeof chunkStr !== 'string') return { text: chunkStr, stripped: false };
         const trimmed = chunkStr.trimStart();
-        if (trimmed[0] !== '{') return chunkStr;
+        if (trimmed[0] !== '{') return { text: chunkStr, stripped: false };
         // Brace-depth scan respecting string literals (so `"foo":"bar{ baz}"` doesn't confuse us)
         let depth = 0, inStr = false, esc = false, end = -1;
         for (let i = 0; i < trimmed.length; i++) {
@@ -16369,34 +16392,34 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         }
         if (end === -1) {
           try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: false, reason: 'unbalanced-braces', preview: trimmed.slice(0, 80) }); } catch (_) {}
-          return chunkStr;
+          return { text: chunkStr, stripped: false };
         }
         const headerSpan = trimmed.slice(0, end + 1);
         let parsed;
         try { parsed = JSON.parse(headerSpan); }
         catch (_pe) {
           try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: false, reason: 'parse-failed', preview: headerSpan.slice(0, 80) }); } catch (_) {}
-          return chunkStr;
+          return { text: chunkStr, stripped: false };
         }
         if (!parsed || typeof parsed !== 'object') {
           try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: false, reason: 'not-object', preview: headerSpan.slice(0, 80) }); } catch (_) {}
-          return chunkStr;
+          return { text: chunkStr, stripped: false };
         }
         const hasText = Object.prototype.hasOwnProperty.call(parsed, 'text') && typeof parsed.text === 'string';
         const hasContent = Object.prototype.hasOwnProperty.call(parsed, 'content') && typeof parsed.content === 'string';
         if (!hasText && !hasContent) {
           try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: false, reason: 'no-text-or-content-key', preview: headerSpan.slice(0, 80) }); } catch (_) {}
-          return chunkStr;
+          return { text: chunkStr, stripped: false };
         }
         if (headerSpan.length > chunkStr.length * 0.5) {
           try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: false, reason: 'header-span-too-large', length: headerSpan.length, totalLength: chunkStr.length, preview: headerSpan.slice(0, 80) }); } catch (_) {}
-          return chunkStr;
+          return { text: chunkStr, stripped: false };
         }
         // Conservative success: extract just the text/content value as the chunk body.
         const body = hasText ? parsed.text : parsed.content;
         const keyMatched = hasText ? 'text' : 'content';
         try { window.__lastVisionStripTrail.push({ chunkIdx, stripped: true, reason: 'json-parsed', keyMatched, headerLength: headerSpan.length, preview: headerSpan.slice(0, 80) }); } catch (_) {}
-        return body;
+        return { text: body, stripped: true };
       };
       // Determine chunk strategy based on page count
       // If audit didn't return pageCount, estimate from base64 size (rough: ~3KB base64 per page)
@@ -16628,7 +16651,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             // with a text/content key — otherwise leaves the chunk intact (was the
             // categoHistoryHistory / b0d24ae3 silent-erase pattern before).
             const unwrapped = _safeStripJsonWrapper(fenced, i);
-            return unwrapped
+            // M16: the un-escape exists only for double-escaped text INSIDE a JSON wrapper — on a
+            // plain-text chunk it corrupted literal backslashes (LaTeX, file paths) in the ground truth.
+            if (!unwrapped.stripped) return unwrapped.text;
+            return unwrapped.text
               .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
           });
           // Per-page split for reconciliation. H9 (deep dive 2026-07-02): prefer the model-emitted
@@ -16788,7 +16814,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const fenced = chunk.trim()
             .replace(/^\s*```[\w]*\n?/g, '').replace(/\n?```\s*$/g, '');
           const unwrapped = _safeStripJsonWrapper(fenced, i);
-          return unwrapped
+          // M16: un-escape only when a JSON wrapper was actually stripped (see the scanned path above).
+          if (!unwrapped.stripped) return unwrapped.text;
+          return unwrapped.text
             .replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\t/g, '\t');
         });
         extractedText = chunks.join('\n\n---\n\n');
@@ -18981,8 +19009,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // match byte-for-byte.
       // R3 (2026-07-03): remember whether the final partial was THROTTLE-caused, so D's reframe below
       // attributes the shortfall to a rate-limit ONLY when that was true (not for a malformed-JSON partial).
-      if (verification && verification._partialAudit) {
-        const _throttleCaused = (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
+      // M1 (deep dive 2026-07-09): the circle-back used to fire ONLY for a PARTIAL final audit. A final
+      // audit that returned NULL or THREW under the same storm (every chunk failed at the peak) shipped
+      // the degraded outcome immediately — zero seconds waited, the whole 10-minute budget unused. The
+      // WORST throttle outcome got the LEAST resilience. Now the absent-under-throttle shape circles
+      // back too (_finalAuditThrottled was already breaker-derived at the null/throw sites above).
+      const _reAuditNeeded = (verification && verification._partialAudit)
+        || (_finalAuditThrottled && !_finalAuditHadUsableScore);
+      if (_reAuditNeeded) {
+        const _throttleCaused = _finalAuditThrottled
+          || (typeof _geminiCooldownUntil === 'number' && _geminiCooldownUntil > Date.now())
           || (_geminiCap < _geminiEffectiveMax); // R7: cap forced BELOW the run ceiling = a storm (robust vs pacing-to-1)
         if (_throttleCaused) {
           _finalAuditThrottled = true;
@@ -19008,20 +19044,43 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
               _perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity  // batch: stay inside the per-file wall, leaving export/integrity headroom
             );
             let _reRound = 0;
-            while (verification && verification._partialAudit && Date.now() < _deferHardStop) {
+            // M6 (deep dive 2026-07-09): a superseded run (watchdog fired, teacher started a new doc →
+            // gen bump) must stop SPENDING here, not just discard its result at the write — the old loop
+            // kept waiting/probing/re-auditing to the cap. Checked at the loop top and inside the wait.
+            const _genStale = () => (!_silentMode && typeof window !== 'undefined' && (window.__alloPdfRunGen || 0) !== _myRunGen);
+            const _skippedN = () => {
+              const _req = (verification && verification.chunksRequested) || 0;
+              const _aud = (verification && verification.chunksAudited) || 0;
+              return _req > _aud ? (_req - _aud) : 0;
+            };
+            while ((!verification || verification._partialAudit || !_finalAuditHadUsableScore) && Date.now() < _deferHardStop) {
+              if (_genStale()) { warnLog('[PDF Fix] Deferred re-audit: run superseded (gen bump) — stopping the circle-back immediately.'); break; }
               _reRound++;
-              const _prevAudited = verification.chunksAudited || 0;
+              const _prevAudited = (verification && verification.chunksAudited) || 0;
               // Wait out the active storm before spending calls (wait-not-stop; bounded by the remaining
               // defer budget). Pulses the idle watchdog internally, so a long wait never reads as a stall.
-              try { await waitForGeminiCalm({ maxWaitMs: Math.max(0, _deferHardStop - Date.now()) }); } catch (_) {}
-              if (Date.now() >= _deferHardStop) break;
+              // M6: onTick keeps the VISIBLE step honest too — this used to freeze the status line on the
+              // last pass-4 message ("typically ~30-60s per pass") for up to 10 minutes. M2: the whole
+              // wait is additionally _withTimeout-clamped to the budget — the probe call it may launch
+              // just inside the bound could otherwise overshoot a batch file's wall by minutes and get a
+              // FINISHED remediation discarded by the outer Promise.race (the R5 class, re-opened).
+              const _roundNow = _reRound;
+              try {
+                await _withTimeout(waitForGeminiCalm({
+                  maxWaitMs: Math.max(0, _deferHardStop - Date.now()),
+                  shouldAbort: _genStale,
+                  onTick: (w) => { try { updateProgress(4, 'AI re-reading ' + (_skippedN() || 'the') + ' skipped section(s) once the rate limit eases — rechecking in ~' + Math.max(1, Math.ceil((((w && w.cooldownRemainingMs) || 5000)) / 1000)) + 's (round ' + _roundNow + '; nothing is skipped, the run just takes longer)'); } catch (_) {} },
+                }), Math.max(1000, _deferHardStop - Date.now() + 5000), 'deferred re-audit wait');
+              } catch (_) {}
+              if (Date.now() >= _deferHardStop || _genStale()) break;
+              try { updateProgress(4, 'AI re-reading ' + (_skippedN() || 'the') + ' skipped section(s) (deferred re-audit round ' + _roundNow + ')...'); } catch (_) {}
               let _reFinalAudit = null;
-              try { _reFinalAudit = await auditOutputAccessibility(accessibleHtml); }
-              catch (_reErr) { break; /* fail-soft: keep the best partial we have */ }
+              try { _reFinalAudit = await _withTimeout(auditOutputAccessibility(accessibleHtml), Math.max(5000, _deferHardStop - Date.now()), 'deferred re-audit round ' + _roundNow); }
+              catch (_reErr) { break; /* fail-soft (incl. budget timeout): keep the best result we have — never let the re-audit push a finished remediation past the batch wall */ }
               if (_reFinalAudit && (_reFinalAudit.chunksAudited || 0) >= _prevAudited) {
                 const _grew = (_reFinalAudit.chunksAudited || 0) > _prevAudited || !_reFinalAudit._partialAudit;
                 if (_grew) warnLog('[PDF Fix] Deferred re-audit round ' + _reRound + ': coverage '
-                  + _prevAudited + '/' + (verification.chunksRequested || '?') + ' → '
+                  + _prevAudited + '/' + ((verification && verification.chunksRequested) || '?') + ' → '
                   + (_reFinalAudit.chunksAudited || 0) + '/' + _reFinalAudit.chunksRequested
                   + (_reFinalAudit._partialAudit ? ' (still partial — circling back)' : ' (full coverage restored)'));
                 verification = _reFinalAudit;
@@ -19032,7 +19091,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
               // genuine content/parse failure, not a rate-limit — more rounds can't help. (An active storm
               // ⇒ keep circling; it just hasn't eased yet, and waitForGeminiCalm will pace the next attempt.)
               const _stormNow = _geminiThrottleInfo().storming;
-              if ((verification.chunksAudited || 0) <= _prevAudited && !_stormNow) break;
+              if (((verification && verification.chunksAudited) || 0) <= _prevAudited && !_stormNow) break;
             }
             if (verification && verification._partialAudit) {
               warnLog('[PDF Fix] Deferred re-audit hit its safety cap still partial ('

@@ -62,10 +62,17 @@ describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections unti
   // deferred re-audit WAITED once (<=45s) and re-audited ONCE, so a sustained storm could leave a
   // section un-read forever. It now LOOPS (wait-for-calm -> re-audit) until FULL AI coverage, a genuine
   // non-throttle failure, or a bounded safety cap. Purely AI re-auditing — no deterministic/scoring change.
-  it('loops (not one-shot): re-audits while _partialAudit, gated on waitForGeminiCalm', () => {
-    expect(dp).toContain('while (verification && verification._partialAudit && Date.now() < _deferHardStop) {');
-    expect(dp).toContain('await waitForGeminiCalm({ maxWaitMs: Math.max(0, _deferHardStop - Date.now()) });');
-    expect(dp).toContain('_reFinalAudit = await auditOutputAccessibility(accessibleHtml);');
+  it('loops (not one-shot): re-audits while partial OR score-less, gated on waitForGeminiCalm', () => {
+    // M1 (2026-07-09): the loop also covers a NULL/thrown final audit under the same storm — the
+    // worst throttle outcome used to ship degraded immediately with the whole wait budget unused.
+    expect(dp).toContain('while ((!verification || verification._partialAudit || !_finalAuditHadUsableScore) && Date.now() < _deferHardStop) {');
+    // M2 (2026-07-09): the wait AND each re-audit are _withTimeout-clamped to the remaining budget so
+    // a probe/re-audit launched just inside the bound can never push a FINISHED remediation past the
+    // batch per-file wall (the R5 class). M6: the wait ticks the visible step + aborts on a gen bump.
+    expect(dp).toContain('await _withTimeout(waitForGeminiCalm({');
+    expect(dp).toContain('maxWaitMs: Math.max(0, _deferHardStop - Date.now()),');
+    expect(dp).toContain('shouldAbort: _genStale,');
+    expect(dp).toContain("_reFinalAudit = await _withTimeout(auditOutputAccessibility(accessibleHtml), Math.max(5000, _deferHardStop - Date.now()), 'deferred re-audit round ' + _roundNow);");
   });
   it('re-runs the AI audit (auditOutputAccessibility), NOT a deterministic substitute', () => {
     // the loop body must call the AI audit and must not swap in axe/EA as the coverage source
@@ -82,7 +89,9 @@ describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections unti
   });
   it('stop-improving guard: a CALM round with no new section is a genuine failure → break (not an infinite loop)', () => {
     expect(dp).toContain('const _stormNow = _geminiThrottleInfo().storming;');
-    expect(dp).toContain('if ((verification.chunksAudited || 0) <= _prevAudited && !_stormNow) break;');
+    // M1 (2026-07-09): null-tolerant — verification can be absent when both the loop verify and the
+    // final audit failed at the storm peak (the exact shape the loop now covers).
+    expect(dp).toContain('if (((verification && verification.chunksAudited) || 0) <= _prevAudited && !_stormNow) break;');
   });
   it('bounded: a single-file safety cap + the batch per-file wall (never an unbounded hang)', () => {
     expect(dp).toContain('Date.now() + 600000,');
