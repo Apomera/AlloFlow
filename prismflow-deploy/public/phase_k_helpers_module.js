@@ -1235,7 +1235,7 @@ const executeSaveFile = async (deps) => {
       responses: studentResponses,
       settings: {
         ...studentProjectSettings,
-        researchMode,
+        researchMode: Boolean(studentProjectSettings && studentProjectSettings.researchMode),
         defaultAdventureConfig: {
           difficulty: adventureDifficulty,
           mode: adventureInputMode,

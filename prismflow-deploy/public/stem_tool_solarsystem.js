@@ -19482,42 +19482,75 @@ const d = labToolData.solarSystem || {};
                 React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.obafgkm_spectral_classes', "⭐ OBAFGKM Spectral Classes")),
                   React.createElement('button', {
+                    type: 'button',
                     onClick: function() { upd("showSpS", !d.showSpS); },
+                    'aria-expanded': !!d.showSpS,
+                    'aria-controls': 'obafgkm-panel',
+                    'aria-label': (d.showSpS ? 'Close' : 'Open') + ' OBAFGKM Spectral Classes',
                     className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSpS ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700 hover:bg-amber-200')
                   }, d.showSpS ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.click_each_spectral_class_to_see_its_t', "Click each spectral class to see its temperature, color, and example stars.")),
-                d.showSpS && React.createElement('div', { className: 'mt-2' },
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.compare_spectral_classes_temperature_fingerprints', "Compare surface-temperature classes and the spectral fingerprints that define them.")),
+                d.showSpS && React.createElement('div', { id: 'obafgkm-panel', className: 'mt-2' },
                   (function() {
-                                      var idx = d.spsClass != null ? d.spsClass : 3;
-                                      var CLASSES = ['O', 'B', 'A', 'F', 'G', 'K', 'M'];
-                                      var TEMP = [40000, 25000, 9000, 7000, 5800, 4500, 3000];
-                                      var COL = ['#3b82f6', '#7dd3fc', '#fff', '#fef3c7', '#fde047', '#f97316', '#dc2626'];
-                                      var EX = ['Mintaka, Naos', 'Rigel, Spica', 'Sirius, Vega', 'Procyon, Canopus', 'Sun, Alpha Centauri A', 'Arcturus, Aldebaran', 'Proxima, Betelgeuse'];
-                                      var c = CLASSES[idx], t = TEMP[idx], col = COL[idx], ex = EX[idx];
+                                      var CLASSES = [
+                                        { cls: 'O', range: '30,000-50,000+ K', color: '#8fb8ff', colorName: 'blue', feature: 'Ionized helium lines stand out; visible hydrogen lines are relatively weak.', examples: '10 Lac (O9 V), Naos (O4 If)' },
+                                        { cls: 'B', range: '10,000-30,000 K', color: '#b8ccff', colorName: 'blue-white', feature: 'Neutral helium appears and hydrogen Balmer lines strengthen toward cooler B subclasses.', examples: 'Spica A (B1 V), Rigel (B8 Ia)' },
+                                        { cls: 'A', range: '7,500-10,000 K', color: '#e2edff', colorName: 'white', feature: 'Hydrogen Balmer absorption is strongest around Class A.', examples: 'Vega (A0 V), Sirius A (A1 V)' },
+                                        { cls: 'F', range: '6,000-7,500 K', color: '#fff4dc', colorName: 'yellow-white', feature: 'Hydrogen weakens while ionized calcium and metal lines become more prominent.', examples: 'Procyon A (F5 IV-V), Polaris (F7 Ib-II)' },
+                                        { cls: 'G', range: '5,200-6,000 K', color: '#ffe9a8', colorName: 'yellow-white', feature: 'Ionized calcium and many neutral-metal lines are prominent; hydrogen is weaker than in A stars.', examples: 'Sun (G2 V), Capella (G3 III)' },
+                                        { cls: 'K', range: '3,700-5,200 K', color: '#ffc477', colorName: 'orange', feature: 'Neutral-metal lines are strong and molecular features begin appearing in cooler subclasses.', examples: 'Alpha Centauri B (K1 V), Arcturus (K1.5 III)' },
+                                        { cls: 'M', range: '2,400-3,700 K', color: '#ff8a72', colorName: 'red-orange', feature: 'Broad molecular bands, especially titanium oxide in oxygen-rich stars, shape the spectrum.', examples: 'Proxima Centauri (M5.5 V), Betelgeuse (M1-2 Ia-ab)' }
+                                      ];
+                                      var idx = typeof d.spsClass === 'number' ? Math.max(0, Math.min(CLASSES.length - 1, Math.round(d.spsClass))) : 4;
+                                      var selected = CLASSES[idx];
+                                      var accessibleSummary = 'O through M spectral sequence from hottest to coolest. Selected Class ' + selected.cls + ', ' + selected.range + ', approximately ' + selected.colorName + '. ' + selected.feature + ' Examples: ' + selected.examples + '. Circle size is not encoded because spectral class alone does not determine stellar radius or luminosity.';
                                       return React.createElement('div', null,
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: 'radial-gradient(ellipse at center, #0a0a18 0%, #000000 100%)' } },
-                                            React.createElement('circle', { cx: 200, cy: 100, r: 45 + idx * 4, fill: col, opacity: 0.3 }),
-                                            React.createElement('circle', { cx: 200, cy: 100, r: 28 - idx * 2, fill: col }),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 18, fontWeight: 'bold' }, 'Class ' + c),
-                                            React.createElement('text', { x: 200, y: 180, textAnchor: 'middle', fill: col, fontSize: 11 }, t.toLocaleString() + ' K • ' + ex)
+                                          React.createElement('svg', { viewBox: '0 0 400 160', role: 'img', 'aria-label': accessibleSummary, style: { width: '100%', display: 'block', background: '#020617' } },
+                                            React.createElement('title', null, 'OBAFGKM surface-temperature sequence'),
+                                            React.createElement('desc', null, accessibleSummary),
+                                            React.createElement('text', { x: 30, y: 22, fill: '#cbd5e1', fontSize: 9, fontWeight: 'bold' }, __alloT('stem.solarsystem.hotter', 'Hotter')),
+                                            React.createElement('text', { x: 370, y: 22, textAnchor: 'end', fill: '#cbd5e1', fontSize: 9, fontWeight: 'bold' }, __alloT('stem.solarsystem.cooler', 'Cooler')),
+                                            React.createElement('line', { x1: 44, y1: 34, x2: 356, y2: 34, stroke: '#64748b', strokeWidth: 1.5 }),
+                                            React.createElement('polygon', { points: '356,34 348,30 348,38', fill: '#94a3b8' }),
+                                            CLASSES.map(function(item, ci) {
+                                              var x = 44 + ci * 52;
+                                              var active = ci === idx;
+                                              return React.createElement('g', { key: item.cls },
+                                                active && React.createElement('circle', { cx: x, cy: 73, r: 20, fill: 'none', stroke: '#f8fafc', strokeWidth: 2 }),
+                                                React.createElement('circle', { cx: x, cy: 73, r: 13, fill: item.color, stroke: active ? '#f8fafc' : '#475569', strokeWidth: active ? 1.5 : 1 }),
+                                                React.createElement('text', { x: x, y: 111, textAnchor: 'middle', fill: active ? '#f8fafc' : '#cbd5e1', fontSize: active ? 13 : 11, fontWeight: 'bold' }, item.cls)
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 200, y: 145, textAnchor: 'middle', fill: selected.color, fontSize: 11, fontWeight: 'bold' }, 'Class ' + selected.cls + ' | ' + selected.range + ' | ' + selected.colorName)
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 grid grid-cols-7 gap-1' },
-                                          CLASSES.map(function(cl, ci) {
-                                            return React.createElement('button', { key: cl, onClick: function() { upd('spsClass', ci); }, className: 'p-2 rounded font-bold text-sm ' + (idx === ci ? 'bg-amber-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, cl);
+                                        React.createElement('div', { className: 'mt-2 grid grid-cols-7 gap-1', role: 'group', 'aria-label': 'Choose a spectral class' },
+                                          CLASSES.map(function(item, ci) {
+                                            var active = idx === ci;
+                                            return React.createElement('button', {
+                                              key: item.cls,
+                                              type: 'button',
+                                              onClick: function() { upd('spsClass', ci); },
+                                              'aria-pressed': active,
+                                              'aria-label': 'Select Class ' + item.cls + ', ' + item.range + ', ' + item.colorName,
+                                              className: 'p-2 rounded font-bold text-sm ' + (active ? 'bg-amber-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700'))
+                                            }, item.cls);
                                           })
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.obafgkm_oh_be_a_fine_guy_girl_kiss_me_', 'OBAFGKM — "Oh Be A Fine Guy/Girl, Kiss Me!" Hottest to coolest. O stars: massive, blue, brief. M stars: tiny, red, eternal. Sun is G2V — yellow main sequence dwarf.')
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), 'aria-live': 'polite' },
+                                          React.createElement('div', { className: 'font-bold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, 'Class ' + selected.cls + ' | ' + selected.range + ' | ' + selected.colorName),
+                                          React.createElement('div', { className: 'mt-1' }, React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.spectral_fingerprint', 'Spectral fingerprint: ')), selected.feature),
+                                          React.createElement('div', { className: 'mt-1' }, React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.examples', 'Examples: ')), selected.examples),
+                                          React.createElement('div', { className: 'mt-1 ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, __alloT('stem.solarsystem.spectral_class_size_caution', 'Circle sizes are intentionally equal. Spectral class describes temperature and line patterns, not radius or luminosity by itself; luminosity class V means main sequence, III means giant, and I means supergiant.')),
+                                          React.createElement('div', { className: 'mt-1 ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, __alloT('stem.solarsystem.m_class_dwarf_supergiant_note', 'The same letter can span very different stars: Proxima Centauri is an M dwarf, while Betelgeuse is an M supergiant. The Sun is G2 V.'))
                                         )
                                       );
                                     })()
                 )
               ),
-
               // === MINI-TOOL: MARS VS EARTH ATMOSPHERE ===
               React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
                 React.createElement('div', { className: 'flex items-center justify-between mb-2' },
