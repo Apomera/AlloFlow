@@ -25420,7 +25420,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               setUdlMessages(prev => [...prev, { role: 'model', text: '🎉 ' + (t('chat_guide.plan_done') || 'All steps finished.') }]);
               try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_done') || 'All steps finished.'); } catch (_) {}
             } else {
-              setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_hint') || 'The finished steps are kept — tell me to continue with the rest when you’re ready.') }]);
+              setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_hint') || 'The finished steps are kept. To do the rest, just ask again for what’s left — for example “make a glossary, then translate it to Spanish”.') }]);
             }
           } catch (_) {
             setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_failed') || 'The plan stopped early.') }]);

@@ -342,7 +342,7 @@ function runFindReadingCommand(c, params, t) {
   return readingRecommendationText(matches, params || {}, t);
 }
 
-function buildAlloCommands(ctx) {
+function buildAlloCommands(ctx, opts = {}) {
   const t = _mkT(ctx && ctx.t);
   const cmds = [
     // ── Navigate ──
@@ -456,7 +456,11 @@ function buildAlloCommands(ctx) {
     { id: 'pipeline_new_doc', icon: '🆕', roles: 'teacher', destructive: true, when: (c) => !!c.pipelineOpen, label: t('cmd.pipeline_new_doc', 'Start over with a new document'), aliases: ['new document', 'new pdf', 'another document', 'clear pipeline', 'upload new'], hint: t('cmd.pipeline_new_doc_hint', 'Clear this result and upload a new file'), run: (c) => { c.startNewPdfAudit(); return t('cmd.pipeline_new_doc_done', 'Cleared — upload a new document to begin.'); } },
   ];
   const isStudentish = !!(ctx.isStudentLinkMode || ctx.isIndependentMode);
-  return cmds.filter((c) => ((c.roles === 'all') || !isStudentish) && (!c.when || (() => { try { return !!c.when(ctx); } catch (_) { return false; } })()));
+  // opts.includeGated (agentic plans): keep when-gated commands in the list —
+  // the PLANNER must see commands an earlier step will unlock (create lesson →
+  // generate quiz), while every EXECUTION surface keeps the default filter and
+  // runPlan re-checks availability at run time. Role filtering always applies.
+  return cmds.filter((c) => ((c.roles === 'all') || !isStudentish) && (opts.includeGated || !c.when || (() => { try { return !!c.when(ctx); } catch (_) { return false; } })()));
 }
 
 // ── S1: the hybrid utterance router (bot chat + voice share it) ──
@@ -590,11 +594,16 @@ async function planUtterance(ctx, rawText) {
   const text = String(rawText || '').trim();
   if (!text || text.length > 400) return null;
   if (!ctx || typeof ctx.callGemini !== 'function') return null;
-  const commands = buildAlloCommands(ctx).filter((c) => !c.chatSkip);
+  // includeGated: the plan's whole point is that step N unlocks step N+1
+  // ("create a lesson, THEN quiz it") — the default when-filtered menu would
+  // hide generate_quiz before content exists and make those chains
+  // unplannable. Availability is still enforced per step at RUN time.
+  const commands = buildAlloCommands(ctx, { includeGated: true }).filter((c) => !c.chatSkip);
   if (!commands.length) return null;
-  const menu = commands.map((c) => c.id + ': ' + c.label).join('\n');
+  const _gatedNow = (c) => { if (!c.when) return false; try { return !c.when(ctx); } catch (_) { return true; } };
+  const menu = commands.map((c) => c.id + ': ' + c.label + (_gatedNow(c) ? ' [not available yet — an earlier step must first create what it needs]' : '')).join('\n');
   try {
-    const out = await ctx.callGemini('A teacher asked an education app\'s assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n' + menu + '\n\nTask: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. 2 to 6 steps. params carries values the user stated (e.g. {"topic": "volcanoes", "grade": "5"} or {"language": "Spanish"}); use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).');
+    const out = await ctx.callGemini('A teacher asked an education app\'s assistant to do a multi-step task. Break it into an ORDERED list of app commands chosen ONLY from this menu:\n' + menu + '\n\nTask: "' + text.replace(/"/g, '\'') + '"\n\nReturn ONLY JSON: {"steps": [{"commandId": string, "params": object, "why": string}], "confidence": number between 0 and 1}. 2 to 6 steps. A command marked [not available yet — an earlier step must first create what it needs] may only appear AFTER a step that produces its prerequisite (e.g. create_lesson before generate_quiz). params carries values the user stated (e.g. {"topic": "volcanoes", "grade": "5"} or {"language": "Spanish"}); use {} if none. "why" is a short phrase. Return {"steps": [], "confidence": 0} unless the task CLEARLY maps to a sequence of these app actions (not a content question).');
     const m = String(out || '').match(/\{[\s\S]*\}/);
     const j = JSON.parse(m ? m[0] : String(out));
     if (!j || !Array.isArray(j.steps) || typeof j.confidence !== 'number' || j.confidence < 0.7) return null;
@@ -639,6 +648,10 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
     catch (e) { r = { handled: false, narration: (e && e.message) || 'unknown' }; }
     results.push(r);
     if (!r || !r.handled || r.ok === false) return { ok: false, failedStep: i, results, reason: (r && r.narration) || t('plan.step_failed', 'That step didn’t work.') };
+    // A timed-out step is still RUNNING in the background — starting the next
+    // step now would race it (two concurrent generations fighting over shared
+    // state). Hold the remainder instead; nothing failed, so say so honestly.
+    if (r.timedOut) return { ok: false, timedOut: true, failedStep: i, results, reason: (cmd.label || s.commandId) + t('plan.step_timeout', ' is taking a while and is still working in the background. I’ve held the remaining steps — once it finishes, ask me again for the rest.') };
     if (typeof opts.onStep === 'function') { try { opts.onStep(i, 'done', cmd, r.narration); } catch (_) {} }
   }
   return { ok: true, results };
