@@ -10,7 +10,7 @@
 // IMPORTANT: CACHE_VERSION is auto-replaced by build.js on each deploy.
 // Do not change the format of the next line.
 
-const CACHE_NAME = 'alloflow-student-shell-v1783658407326';
+const CACHE_NAME = 'alloflow-student-shell-v1783661966207';
 
 // Install: pre-cache index.html so stale-while-revalidate always has content
 // CRITICAL: Without pre-caching, the first load after install falls back to
