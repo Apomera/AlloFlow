@@ -3264,7 +3264,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
               Object.keys(s.params).slice(0, 8).forEach(function (k) {
                 var pv = s.params[k];
                 if (typeof pv === 'string') params[String(k).slice(0, 40)] = pv.slice(0, 200);
-                else if (typeof pv === 'number' || typeof pv === 'boolean') params[String(k).slice(0, 40)] = pv;
+                else if ((typeof pv === 'number' && isFinite(pv)) || typeof pv === 'boolean') params[String(k).slice(0, 40)] = pv;
               });
             }
             return { commandId: String((s && s.commandId) || '').slice(0, 60), params: params };

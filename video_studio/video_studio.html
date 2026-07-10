@@ -4746,6 +4746,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
 
   function stopRecording() {
     if (!rec || rec.state === 'inactive') return;
+    // Any way the recording ends mid-demo (Stop button, the browser's
+    // "Stop sharing" bar via the track-ended handler, auto-stop) must also
+    // halt the app's self-driving — otherwise AlloFlow keeps clicking
+    // through the rest of the plan with nothing being recorded.
+    if (demoState.running) {
+      try { postToOpener({ type: 'allostudio-demostop' }); } catch (_) {}
+      setStatus($('demoStatus'), 'Recording stopped — asking AlloFlow to stop the demo after the current step.', 'warn');
+    }
     stopCaptions();
     clearInterval(tickTimer);
     try { rec.stop(); } catch (_) {}
@@ -4773,6 +4781,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('startBtn').disabled = false; $('startBtn').textContent = '⏺ Start recording';
     $('pauseBtn').textContent = '⏸ Pause';
     if (!raw.size || dur < 0.4) {
+      // Consume demo state here too — leaking demoState.active past this
+      // early return would rename and caption the NEXT unrelated take.
+      if (demoState.active) {
+        demoState.active = false; demoState.events = [];
+        setStatus($('demoStatus'), 'The demo take was empty — nothing was captured.', 'warn');
+      }
       setStatus($('recStatus'), 'That take was empty — nothing was captured.', 'warn');
       return;
     }
@@ -10181,7 +10195,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // AlloBot (when-guards rechecked per step, destructive commands never
   // auto-run) while this window records the tab. Step events arrive over the
   // bridge stamped with the recording clock and become caption cues.
-  var demoState = { steps: null, active: false, events: [], running: false };
+  var demoState = { steps: null, active: false, events: [], running: false, abandoned: false };
   function approvedDemoSteps() {
     if (!demoState.steps) return [];
     var boxes = $('demoPlanList').querySelectorAll('input[type="checkbox"]');
@@ -10252,9 +10266,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         return;
       }
       $('demoStopBtn').hidden = false;
+      // Liveness watchdog: if the AlloFlow tab closes or reloads mid-run, its
+      // response never comes — recover locally instead of wedging the panel
+      // until the bridge timeout.
+      var aliveTimer = setInterval(function () {
+        if (!demoState.running) { clearInterval(aliveTimer); return; }
+        if (!opener || opener.closed) {
+          clearInterval(aliveTimer);
+          demoRecoverLocal('The AlloFlow window closed mid-demo');
+        }
+      }, 1500);
       var resp = await bridgeRequest('allostudio-demorun-request', { steps: steps }, 1800000);
+      clearInterval(aliveTimer);
+      if (demoState.abandoned) { demoState.abandoned = false; return; }
       if (resp.error) setStatus($('demoStatus'), 'Demo problem: ' + resp.error + ' — the recording is still yours; stop it when you’re ready.', 'warn');
-      else if (resp.ok) setStatus($('demoStatus'), 'Demo finished (' + (resp.completed != null ? resp.completed : steps.length) + ' steps). Stopping the recording…', 'ok');
+      else if (resp.ok) setStatus($('demoStatus'), 'Demo finished (' + (resp.completed != null ? resp.completed : steps.length) + ' steps).' + ((rec && rec.state !== 'inactive') ? ' Stopping the recording…' : ''), 'ok');
       else setStatus($('demoStatus'), 'Demo stopped early' + (resp.reason ? ': ' + resp.reason : '') + '. Captions cover the steps that ran.', 'warn');
       setTimeout(function () { if (rec && rec.state !== 'inactive') stopRecording(); }, 1600);
     } catch (e) {
@@ -10265,9 +10291,24 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       $('demoStartBtn').disabled = !(demoState.steps && demoState.steps.length);
     }
   });
+  // Local recovery when the app can't confirm (tab closed, or a Stop that was
+  // never acknowledged): end the recording here — finalizeTake still attaches
+  // captions for the steps that ran — and free the demo controls.
+  function demoRecoverLocal(reason) {
+    if (!demoState.running) return;
+    demoState.abandoned = true;
+    demoState.running = false;
+    if (rec && rec.state !== 'inactive') stopRecording();
+    $('demoStopBtn').hidden = true;
+    $('demoStartBtn').disabled = !(demoState.steps && demoState.steps.length);
+    setStatus($('demoStatus'), reason + ' — the recording was stopped here; the take keeps captions for the steps that ran.', 'warn');
+  }
   $('demoStopBtn').addEventListener('click', function () {
     postToOpener({ type: 'allostudio-demostop' });
     setStatus($('demoStatus'), 'Stopping after the current step…', 'warn');
+    // Grace period: if AlloFlow never confirms the stop (tab dead/stuck),
+    // recover locally rather than leaving the panel wedged.
+    setTimeout(function () { demoRecoverLocal('AlloFlow did not confirm the stop'); }, 8000);
   });
 
   // ── Export ──

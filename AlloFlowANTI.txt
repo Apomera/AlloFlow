@@ -35243,9 +35243,23 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     // the live command registry (goal TEXT only goes to Gemini).
                     const AC = window.AlloModules && window.AlloModules.AlloCommands;
                     if (!AC || typeof AC.planUtterance !== 'function' || typeof AC.buildAlloCommands !== 'function') {
-                        throw new Error('The command planner has not loaded yet — open AlloBot or the Ctrl+K palette once, then try again.');
+                        // AlloCommands loads eagerly at app boot — if it's absent the
+                        // script is still arriving (or the CDN failed), so waiting is
+                        // the honest remedy.
+                        throw new Error('The command planner is still loading — wait a moment and try again.');
                     }
-                    const steps = await AC.planUtterance(_alloCmdCtx(), String(goal || '').slice(0, 300));
+                    const cleanGoal = String(goal || '').slice(0, 300);
+                    let steps = await AC.planUtterance(_alloCmdCtx(), cleanGoal);
+                    if ((!steps || !steps.length) && typeof AC.routeUtterance === 'function') {
+                        // Single-action demos are legitimate ("show how to open the
+                        // reading library") but planUtterance requires 2+ steps — an
+                        // AlloBot rule we shouldn't loosen globally. Fall back to the
+                        // single-command router and wrap its match as a 1-step plan.
+                        try {
+                            const m = await AC.routeUtterance(_alloCmdCtx(), cleanGoal, { allowAi: true, preview: true });
+                            if (m && m.commandId) steps = [{ commandId: m.commandId, params: m.params || {}, why: '' }];
+                        } catch (_) {}
+                    }
                     if (!steps || !steps.length) return { steps: [] };
                     const cmds = AC.buildAlloCommands(_alloCmdCtx(), { includeGated: true });
                     return { steps: steps.map(s => {

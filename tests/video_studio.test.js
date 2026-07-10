@@ -1992,6 +1992,25 @@ describe('take persistence + export hardening wiring', () => {
     expect(anti).toContain("throw new Error('AlloBot is already running a plan — stop it first.');");
     expect(anti).toContain("document.visibilityState !== 'visible'");
   });
+  it('Demo Autopilot hardening: every stop path halts the app, no stuck states', () => {
+    const html = popup();
+    // Ordinary Stop / browser "Stop sharing" also halts the app's self-driving.
+    expect(html).toMatch(/function stopRecording\(\) \{[\s\S]{0,700}allostudio-demostop/);
+    // Empty takes consume demo state instead of contaminating the next take.
+    expect(html).toContain('leaking demoState.active past this');
+    // App-death watchdog + unconfirmed-stop grace recover the panel locally.
+    expect(html).toContain('function demoRecoverLocal(reason)');
+    expect(html).toContain('var aliveTimer = setInterval(');
+    expect(html).toContain('if (demoState.abandoned) { demoState.abandoned = false; return; }');
+    expect(html).toContain("setTimeout(function () { demoRecoverLocal('AlloFlow did not confirm the stop'); }, 8000);");
+    // Module clamp drops non-finite numbers.
+    const m = moduleText();
+    expect(m).toContain("(typeof pv === 'number' && isFinite(pv)) || typeof pv === 'boolean'");
+    // Single-step demos plan via the single-command router fallback.
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+    expect(anti).toContain('AC.routeUtterance(_alloCmdCtx(), cleanGoal, { allowAi: true, preview: true })');
+    expect(anti).toContain('The command planner is still loading — wait a moment and try again.');
+  });
   it('popup re-encode cleans up on every exit and is cancelable', () => {
     const html = popup();
     expect(html).toContain('function exportAbortError(message)');
