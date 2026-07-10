@@ -1527,7 +1527,7 @@ function onTitrKey(e) {
 
 // ── Main Lab Render (after safety check passed) ──
 return React.createElement("div", {
-  className: "space-y-4 max-w-4xl mx-auto",
+  className: "space-y-4 max-w-5xl mx-auto",
   style: { animation:'safetyFadeUp 0.4s ease' },
   role: "region",
   "aria-label": __alloT('stem.titration.titration_lab_keyboard_shortcuts_1_thr', "Titration Lab. Keyboard shortcuts: 1 through 5 switch tabs."),
@@ -1659,6 +1659,29 @@ return React.createElement("div", {
   ),
 
   // ── Tab Navigation ──
+  React.createElement("section", { "data-titration-command": true, className: "relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/70 via-slate-900 to-indigo-950/60 p-4 sm:p-5", "aria-labelledby": "titration-command-title" },
+    React.createElement("div", { className: "absolute -right-5 -top-8 text-8xl opacity-[0.06]", "aria-hidden": true }, "🧪"),
+    React.createElement("div", { className: "relative grid gap-4 lg:grid-cols-[1.1fr_.9fr]" },
+      React.createElement("div", null,
+        React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.15em] text-cyan-300" }, "Experiment command"),
+        React.createElement("h2", { id: "titration-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-white" }, volumeAdded === 0 ? "Prepare a controlled first addition" : pastEquivalence ? "Endpoint passed — evaluate error" : Math.abs(volumeAdded - Veq) <= 2 ? "Approach equivalence drop by drop" : "Build the titration curve"),
+        React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed" }, volumeAdded === 0 ? "Confirm the preset and indicator, then add titrant while watching both color and pH." : pastEquivalence ? "Compare the observed endpoint with the stoichiometric equivalence volume before resetting." : Math.abs(volumeAdded - Veq) <= 2 ? "The curve is steep here. Use the smallest additions and swirl after every drop." : "Add measured volumes, observe the response, and predict where the sharp change will occur."),
+        React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4", "aria-label": "Live titration metrics" },
+          [[volumeAdded.toFixed(1) + ' mL', 'Titrant'], [currentPH.toFixed(2), preset.redox ? 'Reaction index' : 'Current pH'], [Veq.toFixed(1) + ' mL', 'Equivalence'], [indicatorStatus, 'Indicator']].map(function(metric) {
+            return React.createElement("div", { key: metric[1], className: "rounded-xl border border-white/10 bg-white/5 p-3" }, React.createElement("div", { className: "text-base font-black text-white truncate" }, metric[0]), React.createElement("div", { className: "mt-1 text-[10px] font-bold text-slate-400" }, metric[1]));
+          })
+        )
+      ),
+      React.createElement("aside", { className: "rounded-xl border border-cyan-500/20 bg-black/20 p-4", "aria-label": "Equivalence progress" },
+        React.createElement("div", { className: "flex items-center justify-between gap-3" }, React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wide text-cyan-300" }, "Equivalence progress"), React.createElement("span", { className: "text-lg font-black text-white" }, Math.min(100, Math.round(volumeAdded / Math.max(0.1, Veq) * 100)) + "%")),
+        React.createElement("div", { className: "mt-3 h-2 overflow-hidden rounded-full bg-slate-800", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": Math.min(100, Math.round(volumeAdded / Math.max(0.1, Veq) * 100)), "aria-label": "Progress toward equivalence volume" }, React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all", style: { width: Math.min(100, volumeAdded / Math.max(0.1, Veq) * 100) + '%' } })),
+        React.createElement("ol", { className: "mt-4 space-y-2 text-[11px] text-slate-300" }, ["Measure volume precisely", "Track color and pH together", "Distinguish endpoint from equivalence"].map(function(step, i) {
+          return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-cyan-400" }, (i + 1) + "."), React.createElement("span", null, step));
+        }))
+      )
+    )
+  ),
+
   React.createElement("div", { className: "flex gap-1 justify-center border-b border-slate-700 pb-2", role: "tablist" },
     [
       { id: 'titrate', label: __alloT('stem.titration.titrate', '\uD83E\uDDEA Titrate'), color: '#38bdf8' },
@@ -2972,6 +2995,9 @@ return React.createElement("div", {
       React.createElement("div", { className: "rounded-xl overflow-hidden border border-emerald-200", style: { background: '#020210', aspectRatio: '16/6' } },
         React.createElement("canvas", {
           'data-titration-anim': 'true',
+          role: 'img',
+          tabIndex: 0,
+          'aria-label': 'Animated titration curve showing the pH change and equivalence-point region as titrant is added.',
           ref: function(cvEl) {
             if (!cvEl) {
               try { if (window.__alloTitrationAnimCleanup) window.__alloTitrationAnimCleanup(); } catch (e) {}
