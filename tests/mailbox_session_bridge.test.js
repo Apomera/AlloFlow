@@ -350,6 +350,23 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
         } finally { api.teardown(); }
     });
 
+    it('sheds the quiz fallback store and retries when a patch hits the doc size ceiling', async () => {
+        const { api, sb } = makeBridge();
+        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {}, quizState: { isActive: true, allResponses: { filler: 'x'.repeat(60 * 1024) } } } });
+        api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, admin: sb.admin, isTeacher: true });
+        try {
+            const ref = api.doc(...sessionArgs(sb.code));
+            // This patch pushes the doc past 85KB; the adapter must shed
+            // quizState.allResponses (P2P carries answers normally) and retry
+            // instead of leaving every subsequent session write failing.
+            await api.updateDoc(ref, { 'quizState.bigField': 'y'.repeat(40 * 1024), 'quizState.phase': 'answering' });
+            const stored = sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's' }] }).docs[0];
+            expect(stored.d.quizState.phase).toBe('answering');
+            expect(stored.d.quizState.bigField.length).toBe(40 * 1024);
+            expect(Object.keys(stored.d.quizState.allResponses || {})).toEqual([]);
+        } finally { api.teardown(); }
+    });
+
     it('only session-scoped refs reroute; foreign codes and other collections stay on Firestore', () => {
         const { api, sb } = makeBridge();
         api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, isTeacher: false, uid: 'mb-stu1' });
@@ -389,6 +406,38 @@ describe('three-copy sync pins (Phase C sections)', () => {
             expect(source).toContain('joinClassSession(mbJoinCode)');
             expect(source).toContain('await startClassSessionRef.current();');
             expect(source).toContain("updateDoc(sessionRef, { isActive: false, status: 'ended' })");
+        });
+    });
+    it('every copy jitters class-wide nudges and re-pumps on visibility wake', () => {
+        copies.forEach(source => {
+            expect(source).toContain('function _alloMbNudgeDelay()');
+            // Student-side nudge (whole class at once) is jittered; the
+            // teacher-side one (single client) stays immediate.
+            expect(source).toContain("_alloMbSchedulePump(_alloMbNudgeDelay());\n          return;");
+            expect(source).toContain('__alloMbVisWakeWired');
+            expect(source).toContain("document.addEventListener('visibilitychange', () => {\n          if (!document.hidden) _alloMbSchedulePump(_alloMbNudgeDelay());");
+        });
+    });
+    it('every copy routes Canvas/backend-free homework QRs away from the dead Firestore read', () => {
+        copies.forEach(source => {
+            const fn = sliceBetween(source, 'const createHomeworkAssignmentLink = useCallback', 'const [includeSourceCitations');
+            const gate = fn.indexOf('if (_isCanvasEnv || _alloFirebaseIsPlaceholder)');
+            const hosted = fn.indexOf('await hostPackOnMailbox()');
+            const selfContained = fn.indexOf('return createSelfContainedHomeworkLink();');
+            const cloudWrite = fn.indexOf("'HW-' + generateUUID()");
+            expect(gate).toBeGreaterThanOrEqual(0);
+            expect(hosted).toBeGreaterThan(gate);
+            expect(selfContained).toBeGreaterThan(hosted);
+            // The gate must run BEFORE the cloud path ever starts.
+            expect(gate).toBeLessThan(cloudWrite);
+        });
+    });
+    it('every copy self-heals a bridged student roster entry dropped by a re-seed', () => {
+        copies.forEach(source => {
+            const heal = sliceBetween(source, '// Mailbox-bridge roster self-heal', '// Delivery acknowledgment');
+            expect(heal).toContain('if (!_alloMbBridgeActive()) return;');
+            expect(heal).toContain('sessionData.roster[user.uid]) return;');
+            expect(heal).toContain('[`roster.${user.uid}`]');
         });
     });
 });

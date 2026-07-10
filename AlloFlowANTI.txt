@@ -596,7 +596,25 @@ function _applyMbSessionAdapter() {
     if (Object.keys(updates).length === 0) return undefined;
     const call = { a: 'dpatch', p: ref.p, u: updates };
     if (ref.col) { call.col = ref.col; call.id = ref.id; }
-    const res = await _alloMbDocCall(call, true);
+    let res;
+    try {
+      res = await _alloMbDocCall(call, true);
+    } catch (patchErr) {
+      // 85KB doc ceiling: the only unbounded session-doc field is the quiz
+      // answer FALLBACK store (the P2P channel carries answers normally).
+      // Shed it once and retry, so a big class's quiz keeps advancing
+      // instead of every subsequent session write failing silently.
+      const errCode = String((patchErr && patchErr.code) || '');
+      const st2 = _alloMbBridgeState;
+      if (ref.p === 's' && errCode.includes('too-big') && st2 && Date.now() - (st2.overflowShedAt || 0) > 30000) {
+        st2.overflowShedAt = Date.now();
+        console.warn('[MB bridge] session doc hit the size ceiling — shedding the quizState.allResponses fallback and retrying');
+        try { await _alloMbDocCall({ a: 'dpatch', p: 's', u: { 'quizState.allResponses': {} } }, true); } catch (_) {}
+        res = await _alloMbDocCall(call, true);
+      } else {
+        throw patchErr;
+      }
+    }
     if (res && res.d !== undefined) _alloMbStoreAndFire(ref.p, { w: res.w, d: res.d, missing: false });
     _alloMbSendNudge();
     return undefined;
@@ -671,7 +689,18 @@ function _applyMbSessionAdapter() {
     Object.assign(window.__alloFirebase, { doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection });
   }
   if (typeof window !== 'undefined') {
-    window.__alloMbBridgeNudge = () => _alloMbSchedulePump(120);
+    window.__alloMbBridgeNudge = () => _alloMbSchedulePump(_alloMbNudgeDelay());
+    // Wake fast: phones freeze timers while locked. The mailbox recv loops
+    // already re-poll on visibility; the session-doc pump must too, or
+    // poll/quiz state lags the pack channel for several seconds after wake.
+    if (!window.__alloMbVisWakeWired) {
+      window.__alloMbVisWakeWired = true;
+      try {
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) _alloMbSchedulePump(_alloMbNudgeDelay());
+        });
+      } catch (_) {}
+    }
   }
 }
 _applyMbSessionAdapter(); // Boot wrap; must wrap AFTER the LAN adapter so mailbox refs outrank it.
@@ -12016,6 +12045,29 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           updateDoc(sessionRef, updateData).catch(e => warnLog("Roster sync skipped", e));
       }
   }, [globalPoints, activeSessionCode, isTeacherMode, user, studentNickname, activeSessionAppId]);
+  // Mailbox-bridge roster self-heal: a cache eviction makes the teacher
+  // re-seed the session doc from their last snapshot, which can drop a
+  // student who joined in the final seconds before the eviction — and that
+  // student would stay invisible until their XP next changed. If our roster
+  // entry vanishes while we are connected, idempotently re-write it (the
+  // same shape joinClassSession writes; settles on the next snapshot).
+  useEffect(() => {
+      if (isTeacherMode || !activeSessionCode || !user?.uid) return;
+      if (!_alloMbBridgeActive()) return;
+      if (!sessionData || !sessionData.roster || sessionData.roster[user.uid]) return;
+      try {
+          const targetAppId = activeSessionAppId || appId;
+          const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+          updateDoc(sessionRef, {
+              [`roster.${user.uid}`]: {
+                  uid: user.uid,
+                  name: studentNickname || 'Student',
+                  joinedAt: new Date().toISOString(),
+                  status: 'active',
+              },
+          }).catch(e => warnLog('Roster self-heal skipped', e));
+      } catch (_) { /* best-effort */ }
+  }, [sessionData, activeSessionCode, isTeacherMode, user, studentNickname, activeSessionAppId]);
   // Delivery acknowledgment (spec §4.1 / roadmap #10): students report WHICH
   // resource id they are viewing (id-only, Tier-1) so the teacher's Live
   // Session Center can show who actually landed on a pushed resource. The ref
@@ -13259,8 +13311,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (!v) return;
       if (v.kind === 'sdocv') {
           // Bridge nudge over the data channel: the teacher just wrote to the
-          // session doc store — pull it now instead of on the next poll tick.
-          _alloMbSchedulePump(120);
+          // session doc store — pull it soon (jittered: the nudge reaches the
+          // whole class at once, and simultaneous pulls collide with Apps
+          // Script's concurrency ceiling).
+          _alloMbSchedulePump(_alloMbNudgeDelay());
           return;
       }
       if (v.kind === 'end') {
