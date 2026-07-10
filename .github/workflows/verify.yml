@@ -142,6 +142,13 @@ jobs:
         run: npx playwright test tests/e2e/typeset_tagged_golden.spec.ts
       - name: Transcript-format golden (audio/video as first-class input)
         run: npx playwright test tests/e2e/transcript_golden.spec.ts
+      # PROMOTED TO BLOCKING 2026-07-10 (ChatGPT-review CI item): the two strongest
+      # whole-pipeline behavioral suites ran only locally. Both are scripted-Gemini
+      # (zero AI network) + the same about:blank/CDN pdf-lib pattern as this job.
+      - name: Fault-injection goldens (scheduled model failures → honest degraded results)
+        run: npx playwright test tests/e2e/remediation_fault_injection_golden.spec.ts
+      - name: Remediation corpus (real bytes end-to-end + tagged structural-invariant sweep)
+        run: npx playwright test tests/e2e/remediation_corpus_golden.spec.ts
 
   verapdf:
     name: veraPDF ISO 14289-1 ground-truth gate (independent validator)

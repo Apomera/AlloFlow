@@ -260,6 +260,23 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
 // fallback copy is drift-sentinel-tested). SAFE fold classes only: ligatures, zero-width/BOM,
 // smart quotes, line-break hyphenation — never en/em-dashes or numeric separators (they can
 // join genuinely distinct tokens: resign/re-sign).
+// WCAG Success-Criterion normalization (ChatGPT review 2026-07-10, finding 14): axe ships compact
+// tags (wcag111, wcag412, wcag1412); the UI's SC-report parser expects dotted text (1.1.1) — the
+// mismatch left the "WCAG Success Criteria Report" permanently EMPTY even with full pass/fail data.
+// Compact → dotted: first digit = principle, second = guideline, remainder = criterion
+// (111 → 1.1.1, 412 → 4.1.2, 1412 → 1.4.12). Conformance-level tags (wcag2a, wcag21aa) and
+// non-wcag tags are excluded. Returns EVERY criterion a rule maps to, deduped.
+var _alloWcagScFromTags = function (tags) {
+  var out = [];
+  (tags || []).forEach(function (t) {
+    var m = /^wcag(\d{3,4})$/.exec(String(t || '').toLowerCase());
+    if (!m) return;
+    var d = m[1];
+    var sc = d[0] + '.' + d[1] + '.' + d.slice(2);
+    if (out.indexOf(sc) === -1) out.push(sc);
+  });
+  return out;
+};
 var _alloNormTokenForDiff = function (t) {
   return String(t || '')
     .toLowerCase()
@@ -3804,15 +3821,29 @@ var createDocPipeline = function(deps) {
     return 'chunk_' + Math.abs(hash).toString(36);
   };
 
+  // Per-session WRITE CHAIN (ChatGPT review 2026-07-10, finding 11): the per-chunk checkpoint
+  // saves were fire-and-forget and the final delete wasn't awaited against them — a slow earlier
+  // put could complete AFTER the delete and RESURRECT a supposedly finished checkpoint (the next
+  // load then resumes a run that already completed). Every write/delete for a session id now
+  // queues behind the previous one; ordering is guaranteed even when callers don't await.
+  var _chunkWriteChains = new Map();
+  var _chainChunkWrite = function (sessionId, fn) {
+    var prev = _chunkWriteChains.get(sessionId) || Promise.resolve();
+    var next = prev.catch(function () {}).then(fn);
+    _chunkWriteChains.set(sessionId, next);
+    return next;
+  };
   var saveChunkProgress = function(sessionId, data) {
-    return _openChunkDB().then(function(db) {
-      return new Promise(function(resolve, reject) {
-        var tx = db.transaction(_CHUNK_STORE, 'readwrite');
-        tx.objectStore(_CHUNK_STORE).put(data, sessionId);
-        tx.oncomplete = function() { resolve(); };
-        tx.onerror = function() { reject(tx.error); };
-      });
-    }).catch(function(e) { warnLog('[ChunkProgress] Save failed:', e.message); });
+    return _chainChunkWrite(sessionId, function () {
+      return _openChunkDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+          var tx = db.transaction(_CHUNK_STORE, 'readwrite');
+          tx.objectStore(_CHUNK_STORE).put(data, sessionId);
+          tx.oncomplete = function() { resolve(); };
+          tx.onerror = function() { reject(tx.error); };
+        });
+      }).catch(function(e) { warnLog('[ChunkProgress] Save failed:', e.message); });
+    });
   };
 
   var loadChunkProgress = function(sessionId) {
@@ -3827,14 +3858,16 @@ var createDocPipeline = function(deps) {
   };
 
   var clearChunkProgress = function(sessionId) {
-    return _openChunkDB().then(function(db) {
-      return new Promise(function(resolve, reject) {
-        var tx = db.transaction(_CHUNK_STORE, 'readwrite');
-        tx.objectStore(_CHUNK_STORE).delete(sessionId);
-        tx.oncomplete = function() { resolve(); };
-        tx.onerror = function() { reject(tx.error); };
-      });
-    }).catch(function(e) { warnLog('[ChunkProgress] Clear failed:', e.message); });
+    return _chainChunkWrite(sessionId, function () {
+      return _openChunkDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+          var tx = db.transaction(_CHUNK_STORE, 'readwrite');
+          tx.objectStore(_CHUNK_STORE).delete(sessionId);
+          tx.oncomplete = function() { resolve(); };
+          tx.onerror = function() { reject(tx.error); };
+        });
+      }).catch(function(e) { warnLog('[ChunkProgress] Clear failed:', e.message); });
+    });
   };
 
   // ── Multi-session PDF remediation persistence ──
@@ -3892,6 +3925,9 @@ var createDocPipeline = function(deps) {
   // Creates the record on first call. Does not merge HTML — that's the caller's
   // job via mergeRangesToFullHtml.
   var saveMultiSessionRange = function(sessionId, meta, rangeData) {
+    // Finding 11: read-modify-write on the shared store — serialized per session id so two
+    // concurrent range saves can't lose one range (and can't interleave with a clear).
+    return _chainChunkWrite(sessionId, function () {
     return loadMultiSession(sessionId).then(function(existing) {
       var record = existing || {
         schemaVersion: _MULTI_SESSION_SCHEMA,
@@ -3970,19 +4006,30 @@ var createDocPipeline = function(deps) {
           tx.onerror = function() { reject(tx.error); };
         });
       });
-    }).catch(function(e) { warnLog('[MultiSession] Save failed:', e && e.message); return null; });
+    }).catch(function(e) {
+      warnLog('[MultiSession] Save failed:', e && e.message);
+      // Finding 11 (ChatGPT review 2026-07-10): this catch used to swallow the rejection and
+      // return null — the CALLER's .catch (which owns the user-facing "export your project file
+      // manually" warning) could never fire, so IndexedDB quota/permission failures were
+      // invisible while the teacher believed their multi-session progress was saved. Rethrow;
+      // the caller's .then(saved) falsy branch still handles a graceful non-save.
+      throw e;
+    });
+    });
   };
 
   // Erase a session record entirely (user clicked "Clear saved progress").
   var clearMultiSession = function(sessionId) {
-    return _openChunkDB().then(function(db) {
-      return new Promise(function(resolve, reject) {
-        var tx = db.transaction(_CHUNK_STORE, 'readwrite');
-        tx.objectStore(_CHUNK_STORE).delete(sessionId);
-        tx.oncomplete = function() { resolve(); };
-        tx.onerror = function() { reject(tx.error); };
-      });
-    }).catch(function(e) { warnLog('[MultiSession] Clear failed:', e && e.message); });
+    return _chainChunkWrite(sessionId, function () {
+      return _openChunkDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+          var tx = db.transaction(_CHUNK_STORE, 'readwrite');
+          tx.objectStore(_CHUNK_STORE).delete(sessionId);
+          tx.oncomplete = function() { resolve(); };
+          tx.onerror = function() { reject(tx.error); };
+        });
+      }).catch(function(e) { warnLog('[MultiSession] Clear failed:', e && e.message); });
+    });
   };
 
   // ── Deterministic integrity helpers ──
@@ -9880,30 +9927,50 @@ var createDocPipeline = function(deps) {
       try { return JSON.parse(String(raw).trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim()); }
       catch (_) { return null; }
     };
-    const sliceAudits = [];
+    // Range IDENTITY (ChatGPT review 2026-07-10, finding 5): failed ranges used to collapse into
+    // anonymous nulls — one surviving slice was accepted as "the audit", the summary claimed all
+    // N slices ran, and the missing pages were undetectable downstream. Each range now keeps its
+    // status; failed ranges get ONE calm-gated sequential retry; the result reports explicit
+    // coverage and goes _partialAudit when any range is still missing.
+    const _sliceOne = async ([s, e]) => {
+      let sb;
+      try { sb = await _sliceB64(s, e); }
+      catch (se) { warnLog('[PDF Audit/slices] slice ' + (s + 1) + '-' + e + ' build failed: ' + (se && se.message)); return null; }
+      const slicePrompt = auditPromptBase
+        + `\n\nIMPORTANT — SLICE CONTEXT: This file contains ONLY pages ${s + 1}–${e} of a larger ${totalPages}-page document. Audit just these pages. Begin every issue's text with "Pages ${s + 1}–${e}: " so page-specific findings stay distinct — EXCEPT document-wide issues (missing document language, missing document title, missing document metadata) which you must word generically with NO page prefix. Report pageCount as ${totalPages}.`;
+      const resp = await callGeminiVision(slicePrompt, sb, 'application/pdf').catch(() => null);
+      return _parseSlice(resp);
+    };
+    const rangeResults = ranges.map(([s, e]) => ({ startPage: s + 1, endPage: e, status: 'pending', audit: null }));
     const BATCH = 3; // keep the gate queue short; callGeminiVision is already wrapped by _GEMINI_MAX_CONCURRENT
     for (let b = 0; b < ranges.length; b += BATCH) {
       const group = ranges.slice(b, b + BATCH);
-      const results = await Promise.all(group.map(async ([s, e]) => {
-        let sb;
-        try { sb = await _sliceB64(s, e); }
-        catch (se) { warnLog('[PDF Audit/slices] slice ' + (s + 1) + '-' + e + ' build failed: ' + (se && se.message)); return null; }
-        const slicePrompt = auditPromptBase
-          + `\n\nIMPORTANT — SLICE CONTEXT: This file contains ONLY pages ${s + 1}–${e} of a larger ${totalPages}-page document. Audit just these pages. Begin every issue's text with "Pages ${s + 1}–${e}: " so page-specific findings stay distinct — EXCEPT document-wide issues (missing document language, missing document title, missing document metadata) which you must word generically with NO page prefix. Report pageCount as ${totalPages}.`;
-        const resp = await callGeminiVision(slicePrompt, sb, 'application/pdf').catch(() => null);
-        return _parseSlice(resp);
-      }));
-      results.forEach((r) => { if (r) sliceAudits.push(r); });
+      const results = await Promise.all(group.map(_sliceOne));
+      results.forEach((r, gi) => { const rr = rangeResults[b + gi]; rr.audit = r; rr.status = r ? 'ok' : 'failed'; });
       if (b + BATCH < ranges.length) await new Promise((r) => setTimeout(r, 400));
     }
+    // ONE sequential retry round for failed ranges, after the storm (if any) eases — a throttle
+    // burst mid-fan-out is the common failure shape, and it clears in seconds-to-minutes.
+    if (rangeResults.some((rr) => rr.status === 'failed') && rangeResults.some((rr) => rr.status === 'ok')) {
+      try { await waitForGeminiCalm({ maxWaitMs: 90000 }); } catch (_) {}
+      for (const rr of rangeResults) {
+        if (rr.status !== 'failed') continue;
+        const again = await _sliceOne([rr.startPage - 1, rr.endPage]);
+        if (again) { rr.audit = again; rr.status = 'ok'; warnLog('[PDF Audit/slices] retry recovered pages ' + rr.startPage + '-' + rr.endPage); }
+      }
+    }
+    const sliceAudits = rangeResults.filter((rr) => rr.status === 'ok').map((rr) => rr.audit);
+    const _missingRanges = rangeResults.filter((rr) => rr.status !== 'ok').map((rr) => rr.startPage + '–' + rr.endPage);
     if (sliceAudits.length === 0) { warnLog('[PDF Audit/slices] no slice returned a parseable audit'); return null; }
     const _cat = (k) => sliceAudits.flatMap((a) => Array.isArray(a[k]) ? a[k] : (k === 'serious' && Array.isArray(a.major) ? a.major : []));
     const _firstStr = (k) => { for (const a of sliceAudits) { if (a && typeof a[k] === 'string' && a[k]) return a[k]; } return null; };
-    warnLog('[PDF Audit/slices] merged ' + sliceAudits.length + '/' + ranges.length + ' slices for a ' + totalPages + '-page document');
+    warnLog('[PDF Audit/slices] merged ' + sliceAudits.length + '/' + ranges.length + ' slices for a ' + totalPages + '-page document' + (_missingRanges.length ? ' — MISSING pages ' + _missingRanges.join(', ') : ''));
     return {
-      score: 0, // recomputed downstream from the consolidated (deduped) issue list
+      score: 0, // recomputed downstream from the consolidated (deduped) issue list — WITHHELD there when coverage is incomplete
       confidence: 'medium',
-      summary: `Audited in ${ranges.length} page-slices (this ${totalPages}-page document was too large for a single whole-document pass). Findings are merged across slices; cross-page checks (reading order, heading continuity) are approximate.`,
+      summary: _missingRanges.length
+        ? `${sliceAudits.length} of ${ranges.length} page-slices audited; pages ${_missingRanges.join(' and ')} were NOT reviewed (the AI service failed on those slices even after a retry). Findings cover only the audited pages — re-run the audit to review the missing pages before relying on a score.`
+        : `Audited in ${ranges.length} page-slices (this ${totalPages}-page document was too large for a single whole-document pass). Findings are merged across slices; cross-page checks (reading order, heading continuity) are approximate.`,
       critical: _cat('critical'),
       serious: _cat('serious'),
       moderate: _cat('moderate'),
@@ -9917,6 +9984,10 @@ var createDocPipeline = function(deps) {
       documentLanguage: _firstStr('documentLanguage') || undefined,
       _slicedAudit: true,
       _sliceCount: ranges.length,
+      // Explicit coverage (finding 5): downstream scoring withholds the headline when incomplete,
+      // and the fix loop's partial-audit gate refuses to stop on a partial "target met".
+      _sliceCoverage: { successfulSlices: sliceAudits.length, requestedSlices: ranges.length, totalPages, missingPageRanges: _missingRanges },
+      _partialAudit: _missingRanges.length > 0,
     };
   };
 
@@ -10517,8 +10588,16 @@ Return ONLY valid JSON:
       // and reflects the clamp, not stable scoring). Flag it so the UI shows an honest "n/a" + explanation
       // instead of an "excellent" verdict. (2026-06-23, maintainer Canvas test.)
       const _reliabilityDegenerate = n < 2 || scores.every(s => s === 0);
+      // Finding 5 (ChatGPT review 2026-07-10): a sliced audit with MISSING page ranges must not
+      // publish a normal before-score — the deduction rubric only saw the audited pages, so a
+      // tiny surviving subset would score the whole document (falsely high: unseen pages
+      // contribute zero deductions). Findings still flow to remediation; the score is withheld.
+      const _sliceIncomplete = !!(parsedAudits.length === 1 && parsedAudits[0]._slicedAudit && parsedAudits[0]._partialAudit);
       const triangulated = {
-        score: _consolidatedContentScore, // headline = deduction on the displayed consolidated list (reproducible)
+        score: _sliceIncomplete ? null : _consolidatedContentScore, // headline = deduction on the displayed consolidated list (reproducible); WITHHELD on incomplete slice coverage
+        _scoreUnavailableReason: _sliceIncomplete ? 'incomplete-slice-coverage' : undefined,
+        _sliceCoverage: _sliceIncomplete ? parsedAudits[0]._sliceCoverage : undefined,
+        _partialAudit: _sliceIncomplete || undefined,
         _aiPanelMeanScore: avgScore,       // mean of the N per-auditor scores — retained for the agreement band only
         _consolidatedDeductions: Math.round(_consolidatedDed),
         scores,
@@ -10652,7 +10731,12 @@ Return ONLY valid JSON:
           // claim: no text layer → the AI rubric IS the headline; the engine audits are
           // still recorded below for disclosure (the UI renders them as n/a).
           const _noTextLayer = triangulated.hasSearchableText === false;
-          const governingInitial = _noTextLayer ? aiOnlyScore : _alloComputeHeadline(aiOnlyScore, deterministicBaseline);
+          // Finding 5 (2026-07-10): an incomplete-slice-coverage audit has a WITHHELD (null) AI
+          // score — the min() must not resurrect a number for it (the deduction only saw the
+          // audited pages). The deterministic baseline is still recorded below for disclosure.
+          const governingInitial = (aiOnlyScore === null)
+            ? null
+            : (_noTextLayer ? aiOnlyScore : _alloComputeHeadline(aiOnlyScore, deterministicBaseline));
           if (_noTextLayer) triangulated._automatedNA = true;
           triangulated.score = governingInitial;
           triangulated._aiOnlyScore = aiOnlyScore;
@@ -11936,12 +12020,12 @@ HTML section ${chunkNum}/${chunks.length}:
         totalViolations: results.violations.length,
         totalPasses: results.passes.length,
         totalIncomplete: (results.incomplete || []).length,
-        critical: critical.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
-        serious: serious.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
-        moderate: moderate.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
-        minor: minor.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', ') })),
-        passes: results.passes.map(p => ({ id: p.id, description: p.help, wcag: (p.tags || []).filter(t => t.startsWith('wcag')).join(', '), nodes: p.nodes.length })),
-        incomplete: (results.incomplete || []).map(i => ({ id: i.id, description: i.help, nodes: i.nodes.length })),
+        critical: critical.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
+        serious: serious.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
+        moderate: moderate.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, 3).map(_mapNode) })),
+        minor: minor.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl })),
+        passes: results.passes.map(p => ({ id: p.id, description: p.help, wcag: (p.tags || []).filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(p.tags), nodes: p.nodes.length })),
+        incomplete: (results.incomplete || []).map(i => ({ id: i.id, description: i.help, nodes: i.nodes.length, wcag: (i.tags || []).filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(i.tags), helpUrl: i.helpUrl })), // finding 14: incomplete findings used to omit WCAG identity entirely
         score: Math.max(0, Math.round(100 - (critical.length * SEVERITY_WEIGHTS.critical) - (serious.length * SEVERITY_WEIGHTS.serious) - (moderate.length * SEVERITY_WEIGHTS.moderate) - (minor.length * SEVERITY_WEIGHTS.minor))), // S6: shared weights (per failed RULE — axe nodes are counted separately)
       };
     } catch (err) {
@@ -20156,7 +20240,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         addToast(t('toasts.axe_core_verification_failed_final'), 'warning');
       }
 
-      const scoreGain = finalAfterScore !== null ? finalAfterScore - beforeScore : null;
+      // Finding 5 (2026-07-10): beforeScore can now be legitimately NULL (incomplete slice
+      // coverage withheld it) — `finalAfterScore - null` coerces null to 0 and fabricates a
+      // "+N improvement" against a baseline that was never measured.
+      const scoreGain = (finalAfterScore !== null && Number.isFinite(beforeScore)) ? finalAfterScore - beforeScore : null;
       const fixNote = autoFixPasses > 0 ? ` (${autoFixPasses} auto-fix pass${autoFixPasses > 1 ? 'es' : ''})` : '';
       if (integrityWarning && finalAfterScore !== null) {
         // The content-integrity gate flagged missing source text — NEVER show a green

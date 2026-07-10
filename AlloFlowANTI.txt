@@ -14014,11 +14014,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // actually reached the teacher's target (pdfTargetScore) with no known
       // residual axe violations; anything that completed below that is
       // 'incomplete' (counts in the denominator, not the success numerator).
-      // CONSERVATIVE: a NULL axe audit (checker didn't run) is NOT downgraded on
-      // the violations axis — we only flag a KNOWN low/violating result, so older
-      // / loaded rows that lack data aren't over-flagged. (afterScore is non-null
-      // here by the effect guard above.)
-      const _outcome = (cur.afterScore >= pdfTargetScore && (_resid === 0 || _resid == null)) ? 'success' : 'incomplete';
+      // Finding 15 (ChatGPT review 2026-07-10): the old "conservative" rule counted a NULL axe
+      // audit (checker never ran) as SATISFYING the no-violations requirement — an unverified run
+      // could enter the success numerator of the reliability rate Aaron defends to UMaine.
+      // Unknown verifier state is now 'incomplete', never 'success': success requires target
+      // reached AND a KNOWN-zero axe result AND a complete (non-degraded) AI verification.
+      const _outcome = (cur.afterScore >= pdfTargetScore && _resid === 0 && !cur._aiVerificationIncomplete) ? 'success' : 'incomplete';
       const row = {
         _k: key, at: new Date().toISOString(),
         fileName: pendingPdfFile?.name || 'document',
@@ -20007,7 +20008,16 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // target — the AI-rubric half of the score had NO fixer. Now an
         // axe-clean round feeds the AI-flagged issues to aiFixChunked
         // (mirroring fixAndVerifyPdf's internal pass loop).
-        if (_vio === 0 && _aiIssues.length === 0) break;
+        // Finding 7 (ChatGPT review 2026-07-10): Equal Access GOVERNS the headline (min of the two
+        // engines) but its CONFIRMED failures didn't participate in the stop condition — the loop
+        // could declare itself done (axe clean + AI clean) while EA failures still held the score
+        // below target. EA-clean now joins the stop gate WHEN EA ran (an unavailable EA must not
+        // block — that state is already disclosed as verification-incomplete elsewhere), and the
+        // confirmed failures feed the next round's fix instructions below. Bounded: EA fails flow
+        // into _det = min(axe, EA), so a genuinely unfixable EA rule shows no det progress and the
+        // existing two-stall guard ends the loop.
+        const _eaFails = (cur.secondEngineAudit && typeof cur.secondEngineAudit.failViolations === 'number') ? cur.secondEngineAudit.failViolations : 0;
+        if (_vio === 0 && _aiIssues.length === 0 && _eaFails === 0) break;
         // NOISE-AWARE PROGRESS (loop fix, 2026-06-15): the blended afterScore is half AI-rubric,
         // which is run-to-run NOISY (SD ~5). Score-only progress let that noise fake a stall in the
         // axe-clean phase (and oscillate the stall-counter). Count progress ONLY from reliable
@@ -20057,7 +20067,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         if (_vio > 0) {
           result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses);
         } else {
-          const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).join('\n');
+          // Finding 7 (2026-07-10): EA's CONFIRMED failures join the fix instructions — previously
+          // the engine that governs the headline had no voice in what the fixer was told to fix.
+          const _eaLines = ((cur.secondEngineAudit && Array.isArray(cur.secondEngineAudit.fails)) ? cur.secondEngineAudit.fails : []).slice(0, 15)
+            .map((f) => 'EQUAL-ACCESS-CONFIRMED: ' + String((f && (f.message || f.ruleId || f.reasonId)) || JSON.stringify(f)).slice(0, 200));
+          const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).concat(_eaLines).join('\n');
           let _fixedHtml = await aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-' + (round + 1));
           // CONTRAST ROUTING (loop fix, 2026-06-15): a WCAG 1.4.3 contrast issue is a CSS/style
           // problem the generic chunk rewriter rarely fixes — route it to the deterministic,

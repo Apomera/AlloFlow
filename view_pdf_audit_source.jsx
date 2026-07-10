@@ -8362,21 +8362,33 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               if (!scMap[sc]) scMap[sc] = { passes: 0, violations: 0, incomplete: 0 };
                               scMap[sc][bucket]++;
                             };
-                            const extractSc = (w) => {
-                              if (!w) return null;
-                              const m = String(w).match(/(\d+\.\d+(?:\.\d+)?)/);
-                              return m ? m[1] : null;
+                            // Finding 14 (ChatGPT review 2026-07-10): axe ships COMPACT tags (wcag111) but this
+                            // parser only matched dotted text — the whole SC report rendered EMPTY forever. The
+                            // pipeline now provides normalized wcagCriteria arrays (every SC a rule maps to, not
+                            // just the first); the extractor converts compact tags as the legacy fallback.
+                            const extractScList = (entry) => {
+                              if (entry && Array.isArray(entry.wcagCriteria) && entry.wcagCriteria.length) return entry.wcagCriteria;
+                              const w = entry && entry.wcag;
+                              if (!w) return [];
+                              const out = [];
+                              String(w).split(/[,\s]+/).forEach((tok) => {
+                                const compact = tok.match(/^wcag(\d{3,4})$/i);
+                                if (compact) { const d = compact[1]; const sc = d[0] + '.' + d[1] + '.' + d.slice(2); if (!out.includes(sc)) out.push(sc); return; }
+                                const dotted = tok.match(/^(\d+\.\d+(?:\.\d+)?)$/);
+                                if (dotted && !out.includes(dotted[1])) out.push(dotted[1]);
+                              });
+                              return out;
                             };
                             (pdfFixResult.axeAudit.passes || []).forEach(p => {
-                              const sc = extractSc(p.wcag); if (sc) addToSc(sc, 'passes');
+                              extractScList(p).forEach(sc => addToSc(sc, 'passes'));
                             });
                             ['critical','serious','moderate','minor'].forEach(sev => {
                               (pdfFixResult.axeAudit[sev] || []).forEach(v => {
-                                const sc = extractSc(v.wcag); if (sc) addToSc(sc, 'violations');
+                                extractScList(v).forEach(sc => addToSc(sc, 'violations'));
                               });
                             });
                             (pdfFixResult.axeAudit.incomplete || []).forEach(i => {
-                              const sc = extractSc(i.wcag); if (sc) addToSc(sc, 'incomplete');
+                              extractScList(i).forEach(sc => addToSc(sc, 'incomplete'));
                             });
                             const scEntries = Object.entries(scMap).sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
                             if (scEntries.length === 0) return null;
