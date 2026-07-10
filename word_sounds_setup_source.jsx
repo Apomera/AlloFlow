@@ -893,6 +893,7 @@
         const [prewarmCount, setPrewarmCount] = React.useState(0);
         const [prewarmTotal, setPrewarmTotal] = React.useState(0);
         const [selectedIndices, setSelectedIndices] = React.useState(new Set());
+        const startRunRef = React.useRef(false);
         const [kokoroRecDismissed, setKokoroRecDismissed] = React.useState(() => {
             try { return sessionStorage.getItem('allo.kokoroRecDismissed') === '1'; }
             catch (_) { return false; }
@@ -982,9 +983,144 @@
             }
             setIsAiGenerating(false);
         };
+        const normalizePackKey = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+        const shuffleForPack = (values) => {
+            const out = [...(values || [])];
+            for (let i = out.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [out[i], out[j]] = [out[j], out[i]];
+            }
+            return out;
+        };
+        const flatPackPhoneme = (p) => typeof p === 'string' ? p : (p && (p.grapheme || p.ipa)) || '';
+        const estimatePackSyllables = (word) => {
+            const source = String(word || '');
+            const cleaned = source.toLowerCase().replace(/[^a-z]/g, '');
+            if (!cleaned) return [source].filter(Boolean);
+            const groups = cleaned.match(/[aeiouy]+/g) || ['a'];
+            let count = groups.length;
+            if (cleaned.endsWith('e') && count > 1) count--;
+            count = Math.max(1, count);
+            const width = Math.ceil(source.length / count);
+            return Array.from({ length: count }, (_, i) => source.slice(i * width, Math.min((i + 1) * width, source.length))).filter(Boolean);
+        };
+        const makePackManipulationFallback = (word, phonemes) => {
+            const source = normalizePackKey(word);
+            const answer = source.length > 1 ? source.slice(1) : source;
+            return {
+                type: 'deletion',
+                instruction: `Say '${source}'. Now say it again, but leave out the first sound.`,
+                targetPhoneme: flatPackPhoneme((phonemes || [])[0]) || source[0] || '',
+                answer,
+                distractors: ['at', 'on', 'in', 'up', 'it', 'an', 'sit', 'map'].filter((w) => w !== answer).slice(0, 5),
+            };
+        };
+        const packTtsSource = async (src) => {
+            if (!src || typeof src !== 'string') return null;
+            if (/^data:audio\//i.test(src)) {
+                const match = src.match(/^data:([^;,]+);base64,(.+)$/i);
+                return match ? { mime: match[1], base64: match[2] } : null;
+            }
+            const response = await fetch(src);
+            if (!response.ok) throw new Error(`TTS asset fetch failed (${response.status})`);
+            const blob = await response.blob();
+            const bytes = new Uint8Array(await blob.arrayBuffer());
+            let binary = '';
+            for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+                binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+            }
+            return { mime: blob.type || 'audio/mpeg', base64: btoa(binary) };
+        };
+        const compileActivityItems = (items) => {
+            const commonWords = ['cat','dog','sun','map','bed','pig','cup','hat','fish','star','tree','frog','duck','book','run','red','sit','fan','hop','moon','pen','top','ring','rock','look','mug'];
+            const itemWords = items.map((item) => normalizePackKey(item.targetWord || item.word || item.term)).filter(Boolean);
+            const wordPool = [...new Set([...itemWords, ...commonWords])];
+            const firstSound = (raw) => {
+                const word = normalizePackKey(raw);
+                const pair = ['sh','ch','th','wh','ph','kn','wr','gn'].find((value) => word.startsWith(value));
+                if (pair === 'kn' || pair === 'gn') return 'n';
+                if (pair === 'wr') return 'r';
+                return pair || word[0] || '';
+            };
+            const lastSound = (raw) => {
+                const word = normalizePackKey(raw);
+                const pair = ['sh','ch','th','ng','ck'].find((value) => word.endsWith(value));
+                return pair === 'ck' ? 'k' : (pair || word.slice(-1));
+            };
+            items.forEach((item) => {
+                const word = normalizePackKey(item.targetWord || item.word || item.term);
+                const phonemes = (item.phonemes || []).map(flatPackPhoneme).filter(Boolean);
+                const seed = word.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+                const position = phonemes.length ? seed % phonemes.length : 0;
+                const correctSound = phonemes[position] || item.firstSound || word[0] || 'a';
+                const isolationPool = [...phonemes, 'b','d','f','g','k','l','m','n','p','r','s','t','a','e','i','o','u','sh','ch','th'];
+                const isolationOptions = shuffleForPack([...new Set([correctSound, ...isolationPool.filter((value) => value && value !== correctSound)])].slice(0, 6));
+                const chipDistractors = shuffleForPack(['s','t','m','p','k','n','r','l','b','g','f','h','d','sh','ch','th','a','e','i','o','u'].filter((value) => !phonemes.includes(value))).slice(0, 5);
+                const chips = shuffleForPack([
+                    ...phonemes.map((value, index) => ({ id: `correct-${index}`, phoneme: value, type: 'correct', isDistractor: false })),
+                    ...chipDistractors.map((value, index) => ({ id: `distractor-${index}`, phoneme: value, type: 'distractor', isDistractor: true })),
+                ]);
+                const otherWords = wordPool.filter((value) => value !== word);
+                const blending = shuffleForPack([...new Set([word, ...(item.blendingDistractors || []), ...otherWords])]).slice(0, 6);
+                const rhymeAnswer = item.rhymeWord || (item.rhymes || [])[0] || '';
+                const rhyming = shuffleForPack([...new Set([rhymeAnswer, ...(item.rhymeDistractors || []), ...otherWords].filter(Boolean))]).slice(0, 5);
+                const task = item.manipulationTask || makePackManipulationFallback(word, phonemes);
+                item.manipulationTask = task;
+                const manipulation = shuffleForPack([...new Set([task.answer, ...(task.distractors || []), 'sit','map','bed','pin','mud','fan'].filter(Boolean))]).slice(0, 6);
+                const syllables = Array.isArray(item.syllables) && item.syllables.length ? item.syllables : estimatePackSyllables(word);
+                item.syllables = syllables;
+                const syllableOptions = shuffleForPack([...new Set([word, ...(item.syllableBlendingOptions || []), ...otherWords])]).slice(0, 4);
+                const graphemes = Array.isArray(item.graphemes) && item.graphemes.length
+                    ? item.graphemes
+                    : ((item.phonemes || []).every((p) => p && typeof p === 'object' && p.grapheme) ? item.phonemes.map((p) => p.grapheme) : word.split(''));
+                item.graphemes = graphemes;
+                const letters = word.split('');
+                for (let i = letters.length - 1; i > 0; i--) {
+                    const j = (seed + i) % (i + 1);
+                    [letters[i], letters[j]] = [letters[j], letters[i]];
+                }
+                if (letters.length > 1 && letters.join('') === word) [letters[0], letters[1]] = [letters[1], letters[0]];
+                const hiddenIndex = word.length > 1 ? seed % word.length : 0;
+                const correctLetter = word[hiddenIndex] || '';
+                const letterOptions = shuffleForPack([...new Set([correctLetter, ...'abcdefghijklmnopqrstuvwxyz'.split('').filter((value) => value !== correctLetter)])].slice(0, 4));
+                const mode = seed % 2 === 0 ? 'first' : 'last';
+                const targetChar = (mode === 'first' ? phonemes[0] : phonemes[phonemes.length - 1]) || (mode === 'first' ? firstSound(word) : lastSound(word));
+                const soundFor = mode === 'first' ? firstSound : lastSound;
+                const sortMatches = shuffleForPack(wordPool.filter((value) => value !== word && soundFor(value) === targetChar)).slice(0, word.length <= 3 ? 3 : 5);
+                const sortDistractors = shuffleForPack(wordPool.filter((value) => value !== word && soundFor(value) !== targetChar)).slice(0, word.length <= 3 ? 2 : 4);
+                const rime = String(item.familyEnding || '').replace(/^-/, '') || (word.match(/[aeiou][a-z]*$/) || ['at'])[0];
+                const familySource = [...new Set((item.familyMembers || []).map(normalizePackKey).filter((value) => value && value !== word))];
+                const familyOptions = shuffleForPack(familySource.length ? familySource : wordPool.filter((value) => value !== word && value.endsWith(rime))).slice(0, word.length <= 3 ? 3 : 5);
+                const familyDistractors = shuffleForPack(wordPool.filter((value) => value !== word && !value.endsWith(rime))).slice(0, word.length <= 3 ? 2 : 4);
+                const decodingChoices = shuffleForPack([...new Set([word, ...itemWords.filter((value) => value !== word), ...commonWords.filter((value) => value !== word)])]).slice(0, 4);
+                item.activityItems = {
+                    counting: { options: [1,2,3,4,5,6,7,8,9,10,'11+'], answer: item.phonemeCount || phonemes.length },
+                    isolation: { position, correctSound, options: isolationOptions },
+                    segmentation: { chips, slotCount: item.phonemeCount || phonemes.length },
+                    blending: { options: blending, answer: word },
+                    rhyming: { options: rhyming, answer: rhymeAnswer },
+                    manipulation: { task, options: manipulation },
+                    syllable_blending: { syllables, options: syllableOptions, answer: word },
+                    syllable_counting: { syllables, answer: syllables.length },
+                    orthography: { options: shuffleForPack([...new Set([word, ...(item.orthographyDistractors || [])])]), answer: word },
+                    mapping: { graphemes, chipOrder: shuffleForPack(graphemes.map((value, index) => ({ id: index, text: String(value) }))) },
+                    spelling_bee: { answer: word },
+                    word_scramble: { letters, answer: word },
+                    missing_letter: { hiddenIndex, correctLetter, options: letterOptions },
+                    sound_sort: { mode, targetChar, difficulty: word.length <= 3 ? 'easy' : word.length <= 4 ? 'medium' : 'hard', options: sortMatches, distractors: sortDistractors },
+                    letter_tracing: { letter: word[0] || '' },
+                    word_families: { rime, options: familyOptions, distractors: familyDistractors },
+                    decoding: { choices: decodingChoices },
+                };
+            });
+            return items;
+        };
+
         const handleStart = async () => {
              const wordsToProcess = previewList.filter((_, i) => selectedIndices.has(i));
-             if (wordsToProcess.length === 0) return;
+             if (wordsToProcess.length === 0 || startRunRef.current) return;
+             startRunRef.current = true;
+             try {
              setIsProcessing(true);
              setGeneratedCount(0);
              setPrewarmCount(0);
@@ -1045,8 +1181,10 @@
                          {
                              "word": "${rawWord}",
                              "phonemes": ["k", "or", "n"],
+                             "graphemes": ["c", "or", "n"],
                              "phonemeCount": 3,
                              "syllables": ["corn"],
+                             "syllableBlendingOptions": ["corn", "rabbit", "window", "pencil"],
                              "rhymeWord": "horn",
                              "rhymeDistractors": ["dog", "sun", "bed", "leg", "cup"],
                              "blendingDistractors": ["cord", "core", "born", "worn", "torn"],
@@ -1109,6 +1247,8 @@
                          phonemes: validatedPhonemes,
                           phonemeCount: validatedPhonemes.length,
                          syllables: data.syllables,
+                         syllableBlendingOptions: data.syllableBlendingOptions || [],
+                         graphemes: data.graphemes || [],
                          rhymes: data.rhymes || [data.rhymeWord],
                          rhymeWord: data.rhymeWord || (data.rhymes && data.rhymes[0]) || '',
                          rhymeDistractors: data.rhymeDistractors || [],
@@ -1137,52 +1277,114 @@
                          _fallbackUsed: true
                      });
                  }
-                     const lastItem = processed[processed.length - 1];
-                     if (callTTS && typeof callTTS === 'function' && lastItem && !lastItem._fallbackUsed && !prewarmAborted) {
-                         const ttsTasks = new Set();
-                         const target = lastItem.targetWord || lastItem.word;
-                         if (target) ttsTasks.add(target);
-                         if (lastItem.rhymeWord) ttsTasks.add(lastItem.rhymeWord);
-                         (lastItem.rhymeDistractors || []).forEach(w => w && ttsTasks.add(w));
-                         (lastItem.blendingDistractors || []).forEach(w => w && ttsTasks.add(w));
-                         (lastItem.familyMembers || []).forEach(w => w && ttsTasks.add(w));
-                         (lastItem.orthographyDistractors || []).forEach(w => w && ttsTasks.add(w));
-                         // Sound Swap: pre-warm the per-word instruction + answer + distractors
-                         // so the teacher can hear exactly what the student will hear, and no
-                         // mid-activity Gemini TTS stall surprises a live session.
-                         if (lastItem.manipulationTask) {
-                             if (lastItem.manipulationTask.instruction) ttsTasks.add(lastItem.manipulationTask.instruction);
-                             if (lastItem.manipulationTask.answer) ttsTasks.add(lastItem.manipulationTask.answer);
-                             (lastItem.manipulationTask.distractors || []).forEach(w => w && ttsTasks.add(w));
-                         }
-                         const voiceForTts = selectedVoice || undefined;
-                         const speedForTts = (typeof ttsSpeed === 'number') ? ttsSpeed : undefined;
-                         const taskList = Array.from(ttsTasks);
-                         setPrewarmTotal(prev => prev + taskList.length);
-                         try {
-                             const results = await Promise.allSettled(taskList.map(async (w) => {
-                                 try {
-                                     await callTTS(w, voiceForTts, speedForTts);
-                                 } finally {
-                                     setPrewarmCount(prev => prev + 1);
-                                 }
-                             }));
-                             // If any task 429'd mid-batch, stop prewarming subsequent words
-                             // and surface the Kokoro offer (once per preload) if user is on a
-                             // cloud voice and hasn't previously declined.
-                             const hit429 = results.some(r => r.status === 'rejected'
-                                 && /429|Rate Limit/i.test(r.reason?.message || ''));
-                             if (hit429) {
-                                 prewarmAborted = true;
-                                 if (typeof window !== 'undefined' && !window.__kokoroOfferDeclined
-                                     && onRequestKokoroOffer && !window.__kokoroOfferedThisPreload) {
-                                     window.__kokoroOfferedThisPreload = true;
-                                     try { onRequestKokoroOffer('word_sounds'); } catch (_) {}
-                                 }
-                             }
-                         } catch(e) { warnLog('prewarm batch failed:', e?.message || e); }
-                     }
                      setGeneratedCount(prev => prev + 1);
+             }
+             compileActivityItems(processed);
+
+             // Build every picture required by the saved Read & Match boards on
+             // the teacher device, then store one shared image manifest.
+             const decodingAssets = {};
+             processed.forEach((item) => {
+                 const key = normalizePackKey(item.targetWord || item.word || item.term);
+                 if (key && item.image) decodingAssets[key] = item.image;
+                 if (item._decodingAssets) Object.assign(decodingAssets, item._decodingAssets);
+                 delete item._decodingAssets;
+             });
+             if (typeof callImagen === 'function') {
+                 const decodingWords = [...new Set(processed.flatMap((item) => item.activityItems?.decoding?.choices || []))];
+                 for (const word of decodingWords) {
+                     if (decodingAssets[word]) continue;
+                     try {
+                         const themePrefix = imageTheme?.trim() ? `${imageTheme.trim()} style, ` : '';
+                         const image = await callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`);
+                         if (image) decodingAssets[word] = image;
+                     } catch (e) {
+                         warnLog('Decoding image preload failed for:', word, e?.message || e);
+                     }
+                 }
+             }
+
+             // Convert teacher-generated blob URLs into portable JSON audio
+             // assets. The student player reconstructs data URLs from this map
+             // and never calls TTS.
+             const packedTtsAssets = {};
+             processed.forEach((item) => {
+                 if (item._ttsAssets) Object.assign(packedTtsAssets, item._ttsAssets);
+                 delete item._ttsAssets;
+             });
+             const addInstructionParts = (tasks, sentence) => {
+                 String(sentence || '').split(/(\/[^\s/]{1,4}\/)/g)
+                     .map((part) => part.trim())
+                     .filter((part) => part && /[a-z0-9]/i.test(part) && !/^\/[^/]+\/$/.test(part))
+                     .forEach((part) => tasks.add(part));
+             };
+             const voiceForTts = selectedVoice || undefined;
+             const speedForTts = (typeof ttsSpeed === 'number') ? ttsSpeed : undefined;
+             for (const item of processed) {
+                 const word = item.targetWord || item.word || item.term;
+                 const boards = item.activityItems || {};
+                 const tasks = new Set([word]);
+                 [
+                     ...(boards.blending?.options || []),
+                     ...(boards.rhyming?.options || []),
+                     ...(boards.manipulation?.options || []),
+                     ...(boards.syllable_blending?.syllables || []),
+                     ...(boards.syllable_blending?.options || []),
+                     ...(boards.orthography?.options || []),
+                     ...(boards.sound_sort?.options || []),
+                     ...(boards.sound_sort?.distractors || []),
+                     ...(boards.word_families?.options || []),
+                     ...(boards.word_families?.distractors || []),
+                 ].forEach((value) => value && tasks.add(String(value)));
+                 addInstructionParts(tasks, boards.manipulation?.task?.instruction);
+                 tasks.add('Which word did you hear?');
+                 tasks.add('Which word rhymes with');
+                 tasks.add('Find words that start with the sound');
+                 tasks.add('Find words that end with the sound');
+                 tasks.add('as in');
+                 tasks.add('Listen to the syllables and blend them together');
+                 tasks.add('How many syllables do you hear? Clap for each one');
+                 if (boards.word_families?.rime) tasks.add(`Find all words in the ${boards.word_families.rime} family`);
+                 const ordinalNames = ['first','second','third','fourth','fifth','sixth','seventh','eighth','ninth','tenth','eleventh','twelfth'];
+                 (item.phonemes || []).forEach((_, index) => {
+                     const ordinal = ordinalNames[index] || `${index + 1}th`;
+                     tasks.add(`What is the ${ordinal} sound in ${word}?`);
+                     tasks.add(`What is the ${index + 1}${index === 0 ? 'st' : index === 1 ? 'nd' : index === 2 ? 'rd' : 'th'} sound?`);
+                 });
+                 const taskList = [...tasks].filter(Boolean);
+                 setPrewarmTotal((prev) => prev + taskList.length);
+                 const results = await Promise.allSettled(taskList.map(async (text) => {
+                     const key = normalizePackKey(text);
+                     if (packedTtsAssets[key]) {
+                         setPrewarmCount((prev) => prev + 1);
+                         return packedTtsAssets[key];
+                     }
+                     try {
+                         if (prewarmAborted || typeof callTTS !== 'function') throw new Error('TTS unavailable');
+                         const src = await callTTS(text, voiceForTts, speedForTts);
+                         const asset = await packTtsSource(src);
+                         if (!asset) throw new Error('TTS returned no portable audio');
+                         packedTtsAssets[key] = asset;
+                         return asset;
+                     } finally {
+                         setPrewarmCount((prev) => prev + 1);
+                     }
+                 }));
+                 const hit429 = results.some((result) => result.status === 'rejected' && /429|Rate Limit/i.test(result.reason?.message || ''));
+                 if (hit429) {
+                     prewarmAborted = true;
+                     if (typeof window !== 'undefined' && !window.__kokoroOfferDeclined && onRequestKokoroOffer && !window.__kokoroOfferedThisPreload) {
+                         window.__kokoroOfferedThisPreload = true;
+                         try { onRequestKokoroOffer('word_sounds'); } catch (_) {}
+                     }
+                 }
+                 item.ttsReady = !!packedTtsAssets[normalizePackKey(word)];
+                 item._ttsFailed = !item.ttsReady;
+             }
+             if (processed[0]) {
+                 processed[0]._studentPackVersion = 2;
+                 processed[0]._ttsAssets = packedTtsAssets;
+                 processed[0]._decodingAssets = decodingAssets;
              }
              // A probe is a single timed skill — never a multi-activity lesson plan.
              const isAssessment = sessionType === 'assessment';
@@ -1219,7 +1421,10 @@
              // 5th arg is backward-compatible: an older host that destructures only
              // the first four simply ignores it (practice behaviour unchanged).
              onStartGame(processed, sequence, lessonPlanConfig, configSummary, probeOptions);
-             setIsProcessing(false);
+             } finally {
+                 setIsProcessing(false);
+                 startRunRef.current = false;
+             }
         };
 
         if (isMinimized) {
