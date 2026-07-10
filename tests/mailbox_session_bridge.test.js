@@ -440,4 +440,31 @@ describe('three-copy sync pins (Phase C sections)', () => {
             expect(heal).toContain('[`roster.${user.uid}`]');
         });
     });
+    it('ships the mailbox server script inside the app, byte-identical to Code.gs', () => {
+        copies.forEach(source => {
+            const start = source.indexOf('const ALLO_MB_SCRIPT_SOURCE = `');
+            expect(start).toBeGreaterThan(-1);
+            const open = source.indexOf('`', start);
+            const close = source.indexOf('`;', open + 1);
+            expect(close).toBeGreaterThan(open);
+            const literal = source.slice(open, close + 1);
+            // Evaluate the template literal so escape handling (backslashes)
+            // is exercised exactly the way the browser will see it.
+            const embedded = new Function('return ' + literal + ';')();
+            expect(embedded).toBe(gsSource);
+        });
+    });
+    it('every copy hands teachers the embedded script and nudges outdated deployments', () => {
+        const serverVersion = Number((gsSource.match(/var VERSION = (\d+);/) || [])[1]);
+        expect(serverVersion).toBeGreaterThanOrEqual(6);
+        copies.forEach(source => {
+            expect(source).toContain('copyToClipboard(ALLO_MB_SCRIPT_SOURCE)');
+            // The old CDN fetch was CORS-fragile in Canvas and dead offline.
+            expect(source).not.toContain("const res = await fetch('https://alloflow-cdn.pages.dev/apps_script");
+            expect(source).toContain('v: Number(mbHello && mbHello.v) || 0');
+            // Banner threshold must track the shipped server VERSION so a
+            // future bump cannot silently stop nudging teachers to update.
+            expect(source).toContain(`Number(mbConfig.v) < ${serverVersion}`);
+        });
+    });
 });

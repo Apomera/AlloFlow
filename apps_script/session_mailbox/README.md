@@ -14,9 +14,12 @@ infrastructure the school doesn't already trust.
    "New project"). Do this in a browser where you are signed into the
    Google account that should own the mailbox (a school account is ideal;
    see "School accounts" below).
-2. Delete the starter code in the editor and paste the full contents of
-   `Code.gs` from this folder. Name the project **AlloFlow Class Mailbox**
-   (click "Untitled project" to rename). Save (Ctrl+S).
+2. Delete the starter code in the editor and paste the mailbox script. The
+   easiest source is AlloFlow itself: **Student QR → Live class without
+   accounts → "copy script code"** — the script ships inside the app, so the
+   button works offline and inside Gemini Canvas (this folder's `Code.gs` is
+   the same file). Name the project **AlloFlow Class Mailbox** (click
+   "Untitled project" to rename). Save (Ctrl+S).
 3. Click **Deploy → New deployment**. Click the gear next to "Select type"
    and choose **Web app**.
 4. Set **Execute as: Me** and **Who has access: Anyone**. Click **Deploy**.
