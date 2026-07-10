@@ -18,28 +18,28 @@
   var Fragment = React.Fragment;
 
   var _lazyIcon = function (name) {
-    return function (props) {
-      var I = window.AlloIcons && window.AlloIcons[name];
-      return I ? React.createElement(I, props) : null;
-    };
+  return function (props) {
+    var I = window.AlloIcons && window.AlloIcons[name];
+    return I ? /*#__PURE__*/React.createElement(I, props) : null;
   };
-  var Search = _lazyIcon('Search');
-  var CheckCircle2 = _lazyIcon('CheckCircle2');
-  var AlertCircle = _lazyIcon('AlertCircle');
-  var Wrench = _lazyIcon('Wrench');
-  var RefreshCw = _lazyIcon('RefreshCw');
-  var Wand2 = _lazyIcon('Wand2');
-  var Pencil = _lazyIcon('Pencil');
-  var Sparkles = _lazyIcon('Sparkles');
-  var Send = _lazyIcon('Send');
-  var Bold = _lazyIcon('Bold');
-  var Italic = _lazyIcon('Italic');
-  var Highlighter = _lazyIcon('Highlighter');
-  var List = _lazyIcon('List');
-  var ListOrdered = _lazyIcon('ListOrdered');
-  var FileText = _lazyIcon('FileText');
-
-  function AnalysisView(props) {
+};
+var Search = _lazyIcon('Search');
+var CheckCircle2 = _lazyIcon('CheckCircle2');
+var AlertCircle = _lazyIcon('AlertCircle');
+var Wrench = _lazyIcon('Wrench');
+var RefreshCw = _lazyIcon('RefreshCw');
+var Wand2 = _lazyIcon('Wand2');
+var Pencil = _lazyIcon('Pencil');
+var Sparkles = _lazyIcon('Sparkles');
+var Send = _lazyIcon('Send');
+var Bold = _lazyIcon('Bold');
+var Italic = _lazyIcon('Italic');
+var Highlighter = _lazyIcon('Highlighter');
+var List = _lazyIcon('List');
+var ListOrdered = _lazyIcon('ListOrdered');
+var FileText = _lazyIcon('FileText');
+var Download = _lazyIcon('Download');
+function AnalysisView(props) {
   // State reads
   var t = props.t;
   var generatedContent = props.generatedContent;
@@ -66,6 +66,11 @@
   var handleAiRefineSource = props.handleAiRefineSource;
   var handleFormatText = props.handleFormatText;
   var handleAnalysisTextChange = props.handleAnalysisTextChange;
+  // Download-as-MP3 for the ORIGINAL source text — same AudioHelpers flow
+  // the leveled-text view uses, so audio of the unleveled text is available
+  // too (not just the simplified version).
+  var handleDownloadAudio = props.handleDownloadAudio;
+  var downloadingContentId = props.downloadingContentId;
   // API
   var callGemini = props.callGemini;
   // Pure helpers
@@ -240,7 +245,7 @@
       setIsProcessing(true);
       setGenerationStep(t('process.fixing_grammar') || 'Fixing grammar errors...');
       try {
-        const isFixable = (g) => typeof g === 'string' && !isInvalidGrammarNote(g) && !g.startsWith('✓ FIXED:');
+        const isFixable = g => typeof g === 'string' && !isInvalidGrammarNote(g) && !g.startsWith('✓ FIXED:');
         const errorsToFix = rawGrammarNotes.filter((g, i) => selectedGrammarErrors.has(i) && isFixable(g));
         const originalText = generatedContent?.data.originalText;
         if (errorsToFix.length === 0) {
@@ -265,7 +270,9 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
           if (window.ai && window.ai.languageModel && typeof window.ai.languageModel.create === 'function') {
             const session = await window.ai.languageModel.create();
             raw = await session.prompt(fixPrompt);
-            try { session.destroy(); } catch (_) {}
+            try {
+              session.destroy();
+            } catch (_) {}
           }
         } catch (e) {
           warnLog('Built-in AI failed, falling back to Gemini:', e);
@@ -274,12 +281,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
         if (!raw) {
           raw = await callGemini(fixPrompt, false, false, null);
         }
-        const cleaned = (typeof raw === 'string' ? raw : (raw && raw.text) || '')
-          .trim()
-          .replace(/^```(?:[a-z]+)?\s*/i, '')
-          .replace(/\s*```$/, '')
-          .replace(/^["']|["']$/g, '')
-          .trim();
+        const cleaned = (typeof raw === 'string' ? raw : raw && raw.text || '').trim().replace(/^```(?:[a-z]+)?\s*/i, '').replace(/\s*```$/, '').replace(/^["']|["']$/g, '').trim();
         if (!cleaned) {
           addToast(t('process.grammar_fix_failed') || 'Failed to fix grammar errors.', 'error');
           return;
@@ -299,7 +301,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
           data: {
             ...prev.data,
             originalText: cleaned,
-            grammar: prev.data.grammar.map((g, i) => (selectedGrammarErrors.has(i) && isFixable(g)) ? `✓ FIXED: ${g}` : g)
+            grammar: prev.data.grammar.map((g, i) => selectedGrammarErrors.has(i) && isFixable(g) ? `✓ FIXED: ${g}` : g)
           }
         }));
         setInputText(cleaned);
@@ -377,10 +379,24 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
   })(), /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 p-6 rounded-xl border border-slate-400 relative group"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between items-center mb-3"
+    className: "flex justify-between items-center mb-3 flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider"
-  }, t('output.common_original')), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+  }, t('output.common_original')), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    "aria-label": t('common.download_audio'),
+    title: t('common.download_audio'),
+    "data-help-key": "analysis_download_audio",
+    onClick: () => handleDownloadAudio && handleDownloadAudio(generatedContent?.data?.originalText, 'original-source-text', 'dl-analysis-source'),
+    disabled: downloadingContentId === 'dl-analysis-source' || !generatedContent?.data?.originalText,
+    className: "flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
+  }, downloadingContentId === 'dl-analysis-source' ? /*#__PURE__*/React.createElement(RefreshCw, {
+    size: 14,
+    className: "animate-spin"
+  }) : /*#__PURE__*/React.createElement(Download, {
+    size: 14
+  }), downloadingContentId === 'dl-analysis-source' ? t('common.downloading') : t('common.download_audio')), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.toggle_edit_analysis'),
     onClick: handleToggleIsEditingAnalysis,
     className: `flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isEditingAnalysis ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-100'}`
@@ -388,7 +404,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditingAnalysis ? t('common.done') : t('common.edit'))), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+  }), isEditingAnalysis ? t('common.done') : t('common.edit')))), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "mb-4 flex gap-2 animate-in fade-in slide-in-from-top-1"
   }, /*#__PURE__*/React.createElement("div", {
     className: "relative flex-grow"

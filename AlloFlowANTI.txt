@@ -1228,7 +1228,8 @@ const TEACHER_ONLY_TYPES = [
     'lesson-plan',
     'udl-advice',
     'brainstorm',
-    'alignment-report'
+    'alignment-report',
+    'video-ref'
 ];
 let globalAudioCtx = null;
 let globalTtsUrlCache = _ttsState.urlCache;
@@ -2711,6 +2712,7 @@ const getIconForType = (type) => {
         case 'glossary': return <Globe size={16} />;
         case 'quiz': return <CheckSquare size={16} />;
         case 'video-transcript': return <FileText size={16} />;
+        case 'video-ref': return <MonitorPlay size={16} />;
         case 'image': return <ImageIcon size={16} />;
         case 'outline': return <Layout size={16} />;
         case 'analysis': return <Search size={16} />;
@@ -10324,6 +10326,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [generatedContent?.id]);
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const [history, setHistory] = useState([]);
+  // Video Studio 'video-ref' card player: clicking a video-ref history item
+  // opens this overlay (bytes are never in packs — playback comes from the
+  // teacher's hosted link or a re-attached local file).
+  const [videoRefPlayerItem, setVideoRefPlayerItem] = useState(null);
   // ── AlloFlow Whiteboard bridge (companion window) ──
   // The Whiteboard (Excalidraw) runs in its own top-level window opened from the
   // Educator Hub — a deliberate escape from the Gemini Canvas iframe. We retain the
@@ -19547,7 +19553,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     }
     setShowExportPreview(v);
   };
-  const NON_EXPORTABLE_TYPES = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'poettree-config', 'poettree-submission', 'litlab-config', 'litlab-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment']);
+  const NON_EXPORTABLE_TYPES = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'poettree-config', 'poettree-submission', 'litlab-config', 'litlab-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment', 'video-ref']);
   const getExportableHistory = () => history.filter(item => item && !NON_EXPORTABLE_TYPES.has(item.type));
   const getSkippedResources = () => {
     const skipped = history.filter(item => item && NON_EXPORTABLE_TYPES.has(item.type));
@@ -20494,6 +20500,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
           return; // do NOT fall through to the default activeView swap
       }
+      if (item && item.type === 'video-ref') {
+          // No activeView renderer exists for this type — open the player
+          // overlay instead of falling through to the default swap.
+          setVideoRefPlayerItem(item);
+          return;
+      }
       if (item && item.type === 'video-transcript') {
           const transcript = String(item.text || item.content || item.data?.transcript || '').trim();
           if (transcript) setInputText(transcript);
@@ -20711,6 +20723,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           case 'outline': return t('outline.title');
           case 'image': return t('visuals.title');
           case 'video-transcript': return 'Video Transcript';
+          case 'video-ref': return t('video_ref.default_title') || 'Video';
           case 'quiz': return t('quiz.title');
           case 'analysis': return t('analysis.title');
           case 'udl-advice': return t('sidebar.ai_guide');
@@ -30025,6 +30038,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     callGemini,
                     formatInlineText, renderFormattedText, splitReferencesFromBody,
                     addToast, warnLog,
+                    handleDownloadAudio, downloadingContentId,
                     BilingualFieldRenderer, SourceReferencesPanel
                 })}
                 {activeView === 'word-sounds' && !isWordSoundsMode && window.AlloModules && window.AlloModules.WordSoundsPreviewView && React.createElement(window.AlloModules.WordSoundsPreviewView, {
