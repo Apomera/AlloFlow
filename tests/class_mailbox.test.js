@@ -116,7 +116,8 @@ function buildClientHelpers({ windowObj, fetchImpl, configuredBase = 'https://al
         'window', 'fetch', '_alloGetConfiguredStudentBaseUrl', '_alloShareHostIsNotStudentReachable',
         helperSource + `;
         return { _alloCleanMailboxUrl, _alloMailboxCall, _alloSplitPackChunks, _alloReadMailboxEntryParam,
-                 _buildAlloMailboxEntryUrl, _alloRandomToken, _alloBase64UrlEncode };`
+                 _buildAlloMailboxEntryUrl, _alloRandomToken, _alloBase64UrlEncode,
+                 _alloMailboxCallWithRetry, _alloNextPollDelay, _alloCollectResChunk, _alloWaitIceComplete };`
     );
     return factory(windowObj, fetchImpl, () => configuredBase, () => false);
 }
@@ -166,6 +167,93 @@ describe('ANTI mailbox client helpers', () => {
     });
 });
 
+describe('Code.gs hardening (v2)', () => {
+    it("'auth' verifies admin tokens without side effects", () => {
+        const { call } = makeGsSandbox();
+        expect(call({ a: 'auth', admin: 'whatever' })).toMatchObject({ ok: true, admin: false, claimed: false });
+        const claim = call({ a: 'claim' });
+        expect(call({ a: 'auth', admin: 'wrong-token' })).toMatchObject({ ok: true, admin: false, claimed: true });
+        expect(call({ a: 'auth', admin: claim.admin })).toMatchObject({ ok: true, admin: true, claimed: true });
+    });
+
+    it('caps per-box sends at the flood limit', () => {
+        const { call } = makeGsSandbox();
+        const K = 'k_secret_k_secret_20';
+        const admin = call({ a: 'claim' }).admin;
+        expect(call({ a: 'open', admin, c: 'FLOOD', k: K }).ok).toBe(true);
+        let lastOk = null;
+        for (let i = 0; i < 900; i += 1) lastOk = call({ a: 'send', c: 'FLOOD', k: K, from: 's', box: 'up', v: i });
+        expect(lastOk.ok).toBe(true);
+        const over = call({ a: 'send', c: 'FLOOD', k: K, from: 's', box: 'up', v: 'x' });
+        expect(over.e).toBe('rate-limited');
+        // The other box is unaffected.
+        expect(call({ a: 'send', c: 'FLOOD', k: K, from: 't', box: 'down', v: 'y' }).ok).toBe(true);
+    });
+});
+
+describe('resilience helpers', () => {
+    it('retry wrapper retries transient failures and never retries protocol denials', async () => {
+        let flaky = 0;
+        const flakyFetch = async () => {
+            flaky += 1;
+            if (flaky < 3) return { status: 200, text: async () => JSON.stringify({ ok: false, e: 'busy' }) };
+            return { status: 200, text: async () => JSON.stringify({ ok: true, i: 1 }) };
+        };
+        const H = buildClientHelpers({ fetchImpl: flakyFetch });
+        const res = await H._alloMailboxCallWithRetry('https://script.google.com/macros/s/A/exec', { a: 'send' }, 3, 1);
+        expect(res.i).toBe(1);
+        expect(flaky).toBe(3);
+        let denialCalls = 0;
+        const denialFetch = async () => { denialCalls += 1; return { status: 200, text: async () => JSON.stringify({ ok: false, e: 'denied' }) }; };
+        const H2 = buildClientHelpers({ fetchImpl: denialFetch });
+        await expect(H2._alloMailboxCallWithRetry('https://script.google.com/macros/s/A/exec', { a: 'send' }, 3, 1)).rejects.toMatchObject({ code: 'allo/mailbox-denied' });
+        expect(denialCalls).toBe(1);
+    });
+
+    it('poll-delay policy: hidden parks, errors back off capped, idle stretches, jitter bounded', () => {
+        const H = buildClientHelpers({});
+        expect(H._alloNextPollDelay({ hidden: true })).toBe(5000);
+        expect(H._alloNextPollDelay({ errorCount: 1 })).toBe(5000);
+        expect(H._alloNextPollDelay({ errorCount: 3 })).toBe(15000);
+        expect(H._alloNextPollDelay({ errorCount: 9 })).toBe(15000);
+        for (let i = 0; i < 20; i += 1) {
+            const active = H._alloNextPollDelay({});
+            expect(active).toBeGreaterThanOrEqual(2250);
+            expect(active).toBeLessThanOrEqual(2750);
+            const idle = H._alloNextPollDelay({ idleMs: 300000 });
+            expect(idle).toBeGreaterThanOrEqual(3600);
+            expect(idle).toBeLessThanOrEqual(4400);
+        }
+    });
+
+    it('chunk fold assembles once and dedups replayed rids across transports', () => {
+        const H = buildClientHelpers({});
+        const store = { parts: {}, applied: new Set() };
+        expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 1, of: 2, data: 'AA' })).toBe(null);
+        expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 2, of: 2, data: 'BB' })).toBe('AABB');
+        // Mailbox replay of the same rid after the channel already delivered it.
+        expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 1, of: 2, data: 'AA' })).toBe(null);
+        expect(H._alloCollectResChunk(store, { kind: 'res', rid: 'r1', part: 2, of: 2, data: 'BB' })).toBe(null);
+        expect(H._alloCollectResChunk(store, { kind: 'student' })).toBe(null);
+    });
+
+    it('ICE-complete wait resolves on completion and on timeout', async () => {
+        const H = buildClientHelpers({});
+        let listener = null;
+        const pc = {
+            iceGatheringState: 'gathering',
+            addEventListener: (_, cb) => { listener = cb; },
+            removeEventListener: () => {},
+        };
+        const done = H._alloWaitIceComplete(pc, 5000);
+        pc.iceGatheringState = 'complete';
+        listener();
+        await expect(done).resolves.toBeUndefined();
+        const stuck = { iceGatheringState: 'gathering', addEventListener: () => {}, removeEventListener: () => {} };
+        await expect(H._alloWaitIceComplete(stuck, 30)).resolves.toBeUndefined();
+    });
+});
+
 describe('ANTI wiring pins', () => {
     it('student mailbox entries never touch Firebase', () => {
         const live = sliceBetween('// Mailbox live-session student entry', '// Mailbox-hosted homework entry');
@@ -192,5 +280,27 @@ describe('ANTI wiring pins', () => {
         expect(gsSource).toMatch(/a === 'open'[\s\S]{0,80}not-admin/);
         expect(gsSource).toMatch(/a === 'putpack'[\s\S]{0,120}not-admin/);
         expect(gsSource).toMatch(/b === 'up' \|\| b === 'down'/);
+    });
+
+    it('hardening + real-time wiring is present on both sides', () => {
+        // Teacher: token UX, RTC answerer, dual-path push, staleness UI.
+        expect(anti).toMatch(/Admin token — save it like a password/);
+        expect(anti).toMatch(/Admin token \(only when reconnecting from a new device\)/);
+        expect(anti).toMatch(/answerRtcOffer/);
+        expect(anti).toMatch(/ondatachannel/);
+        expect(anti).toMatch(/instant, ' \+ Math\.max\(0, total - rtcCount\) \+ ' via mailbox/);
+        expect(anti).toMatch(/· away\?/);
+        expect(anti).toMatch(/real-time ⚡/);
+        // Student: heartbeat, visibility handling, RTC offerer with retry cap,
+        // channel-first presence, shared dedup store.
+        expect(anti).toMatch(/Date\.now\(\) - lastAnnounce > 60000/);
+        const visibilityCount = (anti.match(/visibilitychange/g) || []).length;
+        expect(visibilityCount).toBeGreaterThanOrEqual(4); // add+remove on both loops
+        expect(anti).toMatch(/pc\.createDataChannel\('allo'\)/);
+        expect(anti).toMatch(/tries >= 4/);
+        expect(anti).toMatch(/applyMbDownPayload/);
+        expect(anti).toMatch(/_alloCollectResChunk\(store, v\)/);
+        // Poll cadence: slower base while the channel is open.
+        expect(anti).toMatch(/rtcOpen \? 8000 : ALLO_MB_POLL_MS/);
     });
 });

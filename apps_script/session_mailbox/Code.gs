@@ -23,7 +23,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 1;
+var VERSION = 2;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -31,6 +31,8 @@ var MAX_MSG_CHARS = 90 * 1024;          // CacheService value limit is 100KB
 var MAX_PACK_CHARS = 8 * 1024 * 1024;   // ~8MB assembled pack ceiling
 var GET_PART_CHARS = 150 * 1024;        // pack download slice size
 var MAX_RECV_MSGS = 50;                 // per box per poll
+var RATE_LIMIT_MSGS = 900;              // sends per box per ~minute (rolling cache window)
+var RATE_LIMIT_TTL_SEC = 60;
 var FOLDER_NAME = 'AlloFlow Class Mailbox';
 
 function doGet() {
@@ -76,6 +78,10 @@ function handle(p) {
   var admin = props.getProperty('admin') || '';
   var isAdmin = admin && String(p.admin || '') === admin;
 
+  // Cheap ownership check so a reconnecting teacher can validate a pasted
+  // admin token without side effects.
+  if (a === 'auth') return out({ ok: true, admin: !!isAdmin, claimed: !!admin, t: Date.now() });
+
   if (a === 'open') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
     var code = String(p.c || '').toUpperCase();
@@ -120,6 +126,13 @@ function send(cache, code, p) {
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) return out({ ok: false, e: 'busy' });
   try {
+    // Rolling ~1-minute flood cap per box: a leaked QR lets a student write
+    // to this session, but not drown it. Normal classroom load (heartbeats,
+    // hand-raises, chunked pushes, RTC signaling) stays far below this.
+    var rKey = 'r:' + code + ':' + box;
+    var used = (parseInt(cache.get(rKey), 10) || 0) + 1;
+    if (used > RATE_LIMIT_MSGS) return out({ ok: false, e: 'rate-limited' });
+    cache.put(rKey, String(used), RATE_LIMIT_TTL_SEC);
     var nKey = 'n:' + code + ':' + box;
     var next = (parseInt(cache.get(nKey), 10) || 0) + 1;
     cache.put('m:' + code + ':' + box + ':' + next, text, MESSAGE_TTL_SEC);

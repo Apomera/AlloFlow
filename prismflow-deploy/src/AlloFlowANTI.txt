@@ -803,6 +803,84 @@ function _buildAlloMailboxEntryUrl(name, payload) {
         return '';
     }
 }
+// Retry transient mailbox failures (network blips, Apps Script cold starts,
+// lock contention, flood-cap trips). Protocol denials (denied / not-admin /
+// no-session / bad-*) are never retried — they will not change.
+async function _alloMailboxCallWithRetry(execUrl, payload, tries = 3, delayMs = 800) {
+    let lastError = null;
+    for (let attempt = 0; attempt < tries; attempt += 1) {
+        try {
+            return await _alloMailboxCall(execUrl, payload);
+        } catch (e) {
+            lastError = e;
+            const code = String(e?.code || '');
+            const transient = code.includes('http-') || code.includes('unreachable') || code.includes('busy') || code.includes('rate-limited') || code.includes('server');
+            if (!transient || attempt === tries - 1) throw e;
+            await new Promise(resolve => setTimeout(resolve, delayMs * (attempt + 1)));
+        }
+    }
+    throw lastError;
+}
+// Poll cadence policy: jittered base, stretched when the session is idle,
+// backed off geometrically on errors, and parked while the tab is hidden.
+function _alloNextPollDelay({ baseMs = ALLO_MB_POLL_MS, idleMs = 0, errorCount = 0, hidden = false } = {}) {
+    if (hidden) return 5000;
+    if (errorCount > 0) return Math.min(baseMs * Math.pow(2, errorCount), 15000);
+    const stretched = idleMs > 120000 ? Math.min(baseMs * 1.6, 4000) : baseMs;
+    return Math.round(stretched * (0.9 + Math.random() * 0.2));
+}
+// Fold one chunked-resource message into `store`; returns the assembled
+// encoded pack once every part of that rid has arrived (else null). Both the
+// mailbox poll and the WebRTC channel feed the same store, and `applied`
+// dedups the double delivery (channel-fast copy + mailbox replay copy).
+function _alloCollectResChunk(store, v) {
+    if (!v || v.kind !== 'res' || !v.rid || !(v.part >= 1) || !(v.of >= 1)) return null;
+    if (store.applied && store.applied.has(v.rid)) return null;
+    const slots = store.parts || (store.parts = {});
+    const slot = slots[v.rid] || (slots[v.rid] = { of: v.of, got: {} });
+    slot.got[v.part] = String(v.data || '');
+    if (Object.keys(slot.got).length < slot.of) return null;
+    const assembled = Array.from({ length: slot.of }, (_, i) => slot.got[i + 1] || '').join('');
+    delete slots[v.rid];
+    if (store.applied) store.applied.add(v.rid);
+    return assembled;
+}
+// Non-trickle ICE: over slow mailbox signaling, one complete SDP each way
+// beats dribbling candidates through 2.5s polls.
+function _alloWaitIceComplete(pc, timeoutMs = 2500) {
+    return new Promise(resolve => {
+        if (!pc || pc.iceGatheringState === 'complete') { resolve(); return; }
+        let done = false;
+        const check = () => { if (pc.iceGatheringState === 'complete') finish(); };
+        const finish = () => {
+            if (done) return;
+            done = true;
+            try { pc.removeEventListener('icegatheringstatechange', check); } catch (_) {}
+            resolve();
+        };
+        try { pc.addEventListener('icegatheringstatechange', check); } catch (_) { finish(); return; }
+        setTimeout(finish, timeoutMs);
+    });
+}
+function _alloMailboxRtcConfig() {
+    const base = { iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }] };
+    try {
+        if (typeof window !== 'undefined' && window.__alloRtcConfig && typeof window.__alloRtcConfig === 'object') {
+            return { ...base, ...window.__alloRtcConfig };
+        }
+    } catch (_) {}
+    return base;
+}
+// Send over a data channel without overrunning its buffer (chunked resource
+// pushes can be several MB). 60KB chunks stay under the common 64KB
+// per-message interop ceiling.
+async function _alloDcSendDrained(dc, text, highWaterMark = 4 * 1024 * 1024) {
+    while (dc.readyState === 'open' && dc.bufferedAmount > highWaterMark) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    if (dc.readyState !== 'open') throw new Error('channel closed');
+    dc.send(text);
+}
 function _alloValidFirebaseConfig(config) {
     return Boolean(config && typeof config === 'object' && config.apiKey && config.projectId && config.appId);
 }
@@ -11771,11 +11849,20 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [mbLive, setMbLive] = useState(null);
   const [mbRoster, setMbRoster] = useState({});
   const [mbQrSvg, setMbQrSvg] = useState('');
+  const [mbAdminInput, setMbAdminInput] = useState('');
+  const [mbNow, setMbNow] = useState(0);
   const mbUpCursorRef = useRef(0);
+  const mbPeersRef = useRef({});
   const [mbStudent, setMbStudent] = useState(null);
   const [mbHandUp, setMbHandUp] = useState(false);
   const mbStudentCursorRef = useRef(0);
   const mbStudentConnectedRef = useRef(false);
+  const mbChunkStoreRef = useRef(null);
+  const mbRtcRef = useRef(null);
+  const mbNicknameRef = useRef('Student');
+  const mbHandRef = useRef(false);
+  const mbAnnounceRef = useRef(null);
+  const mbPollNowRef = useRef(null);
   useEffect(() => {
       window.__alloMailboxLive = () => setMbPanelOpen(true);
       return () => { try { delete window.__alloMailboxLive; } catch (_) {} };
@@ -11791,15 +11878,31 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       try {
           const t0 = Date.now();
           await _alloMailboxCall(execUrl, { a: 'hello' });
+          const pasted = String(mbAdminInput || '').trim();
+          let stored = '';
+          try { stored = localStorage.getItem(ALLO_MB_ADMIN_KEY) || ''; } catch (_) {}
           let admin = '';
-          try { admin = localStorage.getItem(ALLO_MB_ADMIN_KEY) || ''; } catch (_) {}
+          let freshlyClaimed = false;
+          if (pasted) {
+              const check = await _alloMailboxCall(execUrl, { a: 'auth', admin: pasted });
+              if (!check.admin) {
+                  setMbStatus('That admin token was not accepted by this mailbox. Double-check it, or reset it in the Apps Script editor (Project Settings → Script properties → delete "admin").');
+                  setMbBusy(false);
+                  return;
+              }
+              admin = pasted;
+          } else if (stored) {
+              const check = await _alloMailboxCall(execUrl, { a: 'auth', admin: stored });
+              if (check.admin) admin = stored;
+          }
           if (!admin) {
               try {
                   const claimed = await _alloMailboxCall(execUrl, { a: 'claim' });
                   admin = String(claimed.admin || '');
+                  freshlyClaimed = true;
               } catch (claimErr) {
                   if (String(claimErr?.code || '').includes('claimed')) {
-                      setMbStatus('Mailbox reachable, but already claimed from another device. In the Apps Script editor: Project Settings → Script properties → delete "admin", then connect again.');
+                      setMbStatus('This mailbox is already claimed. Paste its admin token above (shown when it was first connected), or reset it in the Apps Script editor: Project Settings → Script properties → delete "admin".');
                       setMbBusy(false);
                       return;
                   }
@@ -11810,14 +11913,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               localStorage.setItem(ALLO_MB_URL_KEY, execUrl);
               if (admin) localStorage.setItem(ALLO_MB_ADMIN_KEY, admin);
           } catch (_) {}
+          setMbAdminInput('');
           setMbConfig({ url: execUrl, admin });
-          setMbStatus('Connected — round-trip ' + (Date.now() - t0) + 'ms. Ready for live sessions and hosted homework QR.');
+          setMbStatus('Connected — round-trip ' + (Date.now() - t0) + 'ms.' + (freshlyClaimed ? ' SAVE YOUR ADMIN TOKEN (shown below): you will paste it to reconnect from a new device or a fresh Canvas.' : ' Ready for live sessions and hosted homework QR.'));
       } catch (e) {
           warnLog('Mailbox connect failed', e);
           setMbStatus('Could not reach the mailbox (' + (e?.message || e) + '). Check the /exec URL and that the deployment access is set to "Anyone".');
       }
       setMbBusy(false);
-  }, [mbUrlInput]);
+  }, [mbUrlInput, mbAdminInput]);
   const startMailboxLiveSession = useCallback(async () => {
       if (!mbConfig?.url || !mbConfig?.admin) return;
       setMbBusy(true);
@@ -11825,7 +11929,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       try {
           const code = generateSessionCode();
           const secret = _alloRandomToken(16);
-          await _alloMailboxCall(mbConfig.url, { a: 'open', admin: mbConfig.admin, c: code, k: secret });
+          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'open', admin: mbConfig.admin, c: code, k: secret });
           const joinUrl = _buildAlloMailboxEntryUrl('allo_mb', { u: mbConfig.url, c: code, k: secret });
           if (!joinUrl) throw new Error('no student app URL is configured for the QR');
           mbUpCursorRef.current = 0;
@@ -11838,15 +11942,23 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
       setMbBusy(false);
   }, [mbConfig]);
+  const _mbCloseTeacherPeers = useCallback(() => {
+      Object.values(mbPeersRef.current || {}).forEach(peer => {
+          try { peer.dc?.close(); } catch (_) {}
+          try { peer.pc?.close(); } catch (_) {}
+      });
+      mbPeersRef.current = {};
+  }, []);
   const endMailboxLiveSession = useCallback(async () => {
       const live = mbLive;
       setMbLive(null);
       setMbRoster({});
+      _mbCloseTeacherPeers();
       if (live && mbConfig?.url) {
           try { await _alloMailboxCall(mbConfig.url, { a: 'send', c: live.code, k: live.secret, from: 'teacher', box: 'down', v: { kind: 'end' } }); } catch (_) {}
           try { await _alloMailboxCall(mbConfig.url, { a: 'end', c: live.code, k: live.secret }); } catch (_) {}
       }
-  }, [mbLive, mbConfig]);
+  }, [mbLive, mbConfig, _mbCloseTeacherPeers]);
   const pushResourceToMailbox = useCallback(async () => {
       if (!mbLive || !mbConfig?.url) return;
       const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
@@ -11862,10 +11974,25 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const encoded = await _alloEncodeAlloPack(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })));
           const parts = _alloSplitPackChunks(encoded);
           const rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-          for (let i = 0; i < parts.length; i += 1) {
-              await _alloMailboxCall(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i] } });
+          // Real-time first: connected channels get the chunks instantly.
+          let rtcCount = 0;
+          const openPeers = Object.entries(mbPeersRef.current || {}).filter(([, peer]) => peer.dc && peer.dc.readyState === 'open');
+          for (const [, peer] of openPeers) {
+              try {
+                  for (let i = 0; i < parts.length; i += 1) {
+                      await _alloDcSendDrained(peer.dc, JSON.stringify({ kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i] }));
+                  }
+                  rtcCount += 1;
+              } catch (dcErr) { warnLog('Channel push failed for one student (mailbox copy still covers them):', dcErr?.message); }
           }
-          addToast('Pushed "' + (item.title || item.type) + '" to ' + Object.keys(mbRoster).length + ' connected student(s).', 'success');
+          // Mailbox always gets a copy: replay log for late joiners + delivery
+          // for students whose network blocked the P2P upgrade. Students dedup
+          // by rid, so double delivery is harmless.
+          for (let i = 0; i < parts.length; i += 1) {
+              await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i] } });
+          }
+          const total = Object.keys(mbRoster).length;
+          addToast('Pushed "' + (item.title || item.type) + '" — ' + rtcCount + ' instant, ' + Math.max(0, total - rtcCount) + ' via mailbox.', 'success');
       } catch (e) {
           warnLog('Mailbox push failed', e);
           addToast('Push failed: ' + (e?.message || e), 'error');
@@ -11876,37 +12003,87 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (!mbLive || !mbConfig?.url) return undefined;
       let cancelled = false;
       let timer = null;
+      let errorCount = 0;
+      let lastActivity = Date.now();
+      const applyStudentUpdate = (v, at) => {
+          if (!v || v.kind !== 'student' || !v.uid) return;
+          setMbRoster(prev => ({ ...prev, [v.uid]: { ...(prev[v.uid] || {}), name: String(v.name || 'Student').slice(0, 40), hand: !!v.hand, at: at || Date.now(), rtc: (mbPeersRef.current[v.uid]?.dc?.readyState === 'open') } }));
+      };
+      const answerRtcOffer = async (v) => {
+          const uid = String(v.uid || '');
+          if (!uid || !v.sdp || v.sdp.type !== 'offer' || typeof RTCPeerConnection !== 'function') return;
+          const existing = mbPeersRef.current[uid];
+          // Re-offer replaces the old peer (student reconnected/refreshed).
+          if (existing) { try { existing.dc?.close(); } catch (_) {} try { existing.pc?.close(); } catch (_) {} }
+          try {
+              const pc = new RTCPeerConnection(_alloMailboxRtcConfig());
+              const peer = { pc, dc: null };
+              mbPeersRef.current[uid] = peer;
+              pc.ondatachannel = (ev) => {
+                  peer.dc = ev.channel;
+                  peer.dc.onmessage = (msgEv) => {
+                      try { applyStudentUpdate(JSON.parse(msgEv.data), Date.now()); } catch (_) {}
+                  };
+                  peer.dc.onopen = () => setMbRoster(prev => (prev[uid] ? { ...prev, [uid]: { ...prev[uid], rtc: true, at: Date.now() } } : prev));
+                  peer.dc.onclose = () => setMbRoster(prev => (prev[uid] ? { ...prev, [uid]: { ...prev[uid], rtc: false } } : prev));
+              };
+              await pc.setRemoteDescription(v.sdp);
+              await pc.setLocalDescription(await pc.createAnswer());
+              await _alloWaitIceComplete(pc);
+              await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'rtc', to: uid, sdp: pc.localDescription } });
+          } catch (rtcErr) {
+              warnLog('RTC answer failed (student stays on mailbox polling):', rtcErr?.message);
+          }
+      };
       const poll = async () => {
           try {
               const res = await _alloMailboxCall(mbConfig.url, { a: 'recv', c: mbLive.code, k: mbLive.secret, box: 'up', since: String(mbUpCursorRef.current) });
               if (cancelled) return;
+              errorCount = 0;
+              setMbNow(res.t || Date.now());
               const box = res.b && res.b.up;
               if (box) {
                   mbUpCursorRef.current = box.n || mbUpCursorRef.current;
                   if (Array.isArray(box.m) && box.m.length) {
-                      setMbRoster(prev => {
-                          const next = { ...prev };
-                          box.m.forEach(entry => {
-                              const msg = entry && entry[1];
-                              const v = msg && msg.v;
-                              if (v && v.kind === 'student' && v.uid) next[v.uid] = { name: String(v.name || 'Student').slice(0, 40), hand: !!v.hand, at: msg.t };
-                          });
-                          return next;
-                      });
+                      lastActivity = Date.now();
+                      for (const entry of box.m) {
+                          const msg = entry && entry[1];
+                          const v = msg && msg.v;
+                          if (!v) continue;
+                          if (v.kind === 'student') applyStudentUpdate(v, msg.t);
+                          else if (v.kind === 'rtc') await answerRtcOffer(v);
+                      }
                   }
               }
           } catch (e) {
-              if (!cancelled && String(e?.code || '').includes('no-session')) {
+              if (cancelled) return;
+              if (String(e?.code || '').includes('no-session')) {
                   setMbLive(null);
                   setMbStatus('The live session expired or was ended.');
                   return;
               }
+              errorCount = Math.min(errorCount + 1, 3);
           }
-          if (!cancelled) timer = setTimeout(poll, ALLO_MB_POLL_MS);
+          if (!cancelled) {
+              const hidden = typeof document !== 'undefined' && document.hidden;
+              timer = setTimeout(poll, _alloNextPollDelay({ idleMs: Date.now() - lastActivity, errorCount, hidden }));
+          }
       };
+      const onVisible = () => {
+          if (typeof document !== 'undefined' && !document.hidden && !cancelled) {
+              if (timer) clearTimeout(timer);
+              timer = setTimeout(poll, 100);
+          }
+      };
+      try { document.addEventListener('visibilitychange', onVisible); } catch (_) {}
       poll();
-      return () => { cancelled = true; if (timer) clearTimeout(timer); };
-  }, [mbLive, mbConfig]);
+      return () => {
+          cancelled = true;
+          if (timer) clearTimeout(timer);
+          try { document.removeEventListener('visibilitychange', onVisible); } catch (_) {}
+          _mbCloseTeacherPeers();
+      };
+  }, [mbLive, mbConfig, _mbCloseTeacherPeers]);
   useEffect(() => {
       let cancelled = false;
       if (!mbLive?.joinUrl) { setMbQrSvg(''); return undefined; }
@@ -12016,13 +12193,49 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (!mbStudent) return;
       const next = !mbHandUp;
       setMbHandUp(next);
+      mbHandRef.current = next;
+      const presence = { kind: 'student', uid: mbStudent.uid, name: mbNicknameRef.current, hand: next };
+      // Channel-first: instant when the P2P upgrade is up, mailbox otherwise.
+      const dc = mbRtcRef.current?.dc;
+      if (dc && dc.readyState === 'open') {
+          try { dc.send(JSON.stringify(presence)); return; } catch (_) {}
+      }
       try {
-          await _alloMailboxCall(mbStudent.url, { a: 'send', c: mbStudent.code, k: mbStudent.secret, from: mbStudent.uid, box: 'up', v: { kind: 'student', uid: mbStudent.uid, name: studentNickname || 'Student', hand: next } });
+          await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', c: mbStudent.code, k: mbStudent.secret, from: mbStudent.uid, box: 'up', v: presence });
       } catch (e) {
           warnLog('Hand raise failed', e);
           setMbHandUp(!next);
+          mbHandRef.current = !next;
       }
-  }, [mbStudent, mbHandUp, studentNickname]);
+  }, [mbStudent, mbHandUp]);
+  // One applier for teacher→student payloads from EITHER transport. The
+  // shared chunk store + applied-rid set make the double delivery (instant
+  // channel copy + mailbox replay copy) converge to a single render.
+  const applyMbDownPayload = useCallback(async (v) => {
+      if (!v) return;
+      if (v.kind === 'end') {
+          addToast('The teacher ended this live session.', 'info');
+          setMbStudent(null);
+          return;
+      }
+      if (v.kind === 'res') {
+          const store = mbChunkStoreRef.current || (mbChunkStoreRef.current = { parts: {}, applied: new Set() });
+          const assembled = _alloCollectResChunk(store, v);
+          if (!assembled) return;
+          try {
+              const resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
+              if (!resource || !resource.id || !resource.type || TEACHER_ONLY_TYPES.includes(resource.type)) return;
+              setHistory(prev => {
+                  const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
+                  return [...rest, resource];
+              });
+              setPendingQrAssignmentResource(resource);
+              addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
+          } catch (decodeErr) {
+              warnLog('Mailbox resource decode failed', decodeErr);
+          }
+      }
+  }, [addToast]);
   const createHomeworkAssignmentLink = useCallback(async () => {
       const fallbackCurrent = generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type) ? [generatedContent] : [];
       const resourceCandidates = (Array.isArray(history) ? history : []).filter(item => item && item.id && !TEACHER_ONLY_TYPES.includes(item.type));
@@ -21158,52 +21371,43 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       } catch (_) { uid = 'mb-' + _alloRandomToken(8); }
       mbStudentCursorRef.current = 0;
       mbStudentConnectedRef.current = false;
+      mbChunkStoreRef.current = { parts: {}, applied: new Set() };
       setMbStudent({ url: entry.u, code: String(entry.c).toUpperCase(), secret: String(entry.k), uid });
       return undefined;
   }, []);
-  // Mailbox student loop: announce presence, then poll the 'down' box for
-  // pushed resources (chunked, pack-encoded) and the end-of-session signal.
+  // Keep the announced nickname current without restarting the poll/RTC loops.
+  useEffect(() => {
+      mbNicknameRef.current = (studentNickname || 'Student').slice(0, 40);
+      if (mbStudent && mbStudentConnectedRef.current && typeof mbAnnounceRef.current === 'function') {
+          mbAnnounceRef.current();
+      }
+  }, [studentNickname, mbStudent]);
+  // Mailbox student loop: announce presence (with a 60s heartbeat so the
+  // teacher's roster can fade ghosts), then poll the 'down' box. Polling is
+  // jittered, backs off on errors, parks while the tab is hidden, and slows
+  // to a replay-safety cadence once the real-time channel is up.
   useEffect(() => {
       if (!mbStudent) return undefined;
       let cancelled = false;
       let timer = null;
-      const resParts = {};
-      const announce = () => _alloMailboxCall(mbStudent.url, {
-          a: 'send', c: mbStudent.code, k: mbStudent.secret, from: mbStudent.uid,
-          box: 'up', v: { kind: 'student', uid: mbStudent.uid, name: studentNickname || 'Student', hand: mbHandUp },
-      });
-      const handleDownMessage = async (msg) => {
-          const v = msg && msg.v;
-          if (!v) return;
-          if (v.kind === 'end') {
-              addToast('The teacher ended this live session.', 'info');
-              setMbStudent(null);
-              return;
+      let errorCount = 0;
+      let lastActivity = Date.now();
+      let lastAnnounce = 0;
+      const announce = async () => {
+          lastAnnounce = Date.now();
+          const presence = { kind: 'student', uid: mbStudent.uid, name: mbNicknameRef.current, hand: mbHandRef.current };
+          const dc = mbRtcRef.current?.dc;
+          if (dc && dc.readyState === 'open') {
+              try { dc.send(JSON.stringify(presence)); return; } catch (_) {}
           }
-          if (v.kind === 'res' && v.rid && v.part >= 1 && v.of >= 1) {
-              const slot = resParts[v.rid] || (resParts[v.rid] = { of: v.of, parts: {} });
-              slot.parts[v.part] = String(v.data || '');
-              if (Object.keys(slot.parts).length < slot.of) return;
-              const assembled = Array.from({ length: slot.of }, (_, i) => slot.parts[i + 1] || '').join('');
-              delete resParts[v.rid];
-              try {
-                  const resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
-                  if (!resource || !resource.id || !resource.type || TEACHER_ONLY_TYPES.includes(resource.type)) return;
-                  setHistory(prev => {
-                      const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
-                      return [...rest, resource];
-                  });
-                  setPendingQrAssignmentResource(resource);
-                  addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
-              } catch (decodeErr) {
-                  warnLog('Mailbox resource decode failed', decodeErr);
-              }
-          }
+          await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', c: mbStudent.code, k: mbStudent.secret, from: mbStudent.uid, box: 'up', v: presence });
       };
+      mbAnnounceRef.current = () => { announce().catch(e => warnLog('Mailbox announce failed', e)); };
       const poll = async () => {
           try {
               const res = await _alloMailboxCall(mbStudent.url, { a: 'recv', c: mbStudent.code, k: mbStudent.secret, box: 'down', since: String(mbStudentCursorRef.current) });
               if (cancelled) return;
+              errorCount = 0;
               if (!mbStudentConnectedRef.current) {
                   mbStudentConnectedRef.current = true;
                   addToast('Connected to class ' + mbStudent.code + '. Waiting for your teacher to share.', 'success');
@@ -21211,27 +21415,122 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               const box = res.b && res.b.down;
               if (box) {
                   mbStudentCursorRef.current = box.n || mbStudentCursorRef.current;
-                  if (Array.isArray(box.m)) {
+                  if (Array.isArray(box.m) && box.m.length) {
+                      lastActivity = Date.now();
                       for (const entry of box.m) {
                           if (cancelled) return;
-                          await handleDownMessage(entry && entry[1]);
+                          const v = entry && entry[1] && entry[1].v;
+                          if (!v) continue;
+                          if (v.kind === 'rtc') {
+                              try { mbRtcRef.current?.onSignal?.(v); } catch (_) {}
+                              continue;
+                          }
+                          await applyMbDownPayload(v);
                       }
                   }
               }
+              if (Date.now() - lastAnnounce > 60000) announce().catch(e => warnLog('Mailbox heartbeat failed', e));
           } catch (e) {
+              if (cancelled) return;
               const code = String(e?.code || '');
-              if (!cancelled && (code.includes('no-session') || code.includes('denied'))) {
+              if (code.includes('no-session') || code.includes('denied')) {
                   addToast(mbStudentConnectedRef.current ? 'This live session has ended.' : 'Could not find this live session — it may have ended. Ask your teacher for a new QR code.', 'error');
                   setMbStudent(null);
                   return;
               }
+              errorCount = Math.min(errorCount + 1, 3);
           }
-          if (!cancelled) timer = setTimeout(poll, ALLO_MB_POLL_MS);
+          if (!cancelled) {
+              const rtcOpen = mbRtcRef.current?.dc?.readyState === 'open';
+              const hidden = typeof document !== 'undefined' && document.hidden;
+              timer = setTimeout(poll, _alloNextPollDelay({ baseMs: rtcOpen ? 8000 : ALLO_MB_POLL_MS, idleMs: Date.now() - lastActivity, errorCount, hidden }));
+          }
       };
+      mbPollNowRef.current = () => { if (!cancelled) { if (timer) clearTimeout(timer); timer = setTimeout(poll, 50); } };
+      const onVisible = () => {
+          if (typeof document !== 'undefined' && !document.hidden) mbPollNowRef.current?.();
+      };
+      try { document.addEventListener('visibilitychange', onVisible); } catch (_) {}
       announce().catch(e => warnLog('Mailbox join announce failed', e));
       poll();
-      return () => { cancelled = true; if (timer) clearTimeout(timer); };
-  }, [mbStudent, studentNickname]);
+      return () => {
+          cancelled = true;
+          if (timer) clearTimeout(timer);
+          mbAnnounceRef.current = null;
+          mbPollNowRef.current = null;
+          try { document.removeEventListener('visibilitychange', onVisible); } catch (_) {}
+      };
+  }, [mbStudent, applyMbDownPayload]);
+  // Real-time upgrade: the student offers a WebRTC data channel, signaled
+  // through the mailbox (one complete SDP each way). On success the channel
+  // carries pushes/presence instantly and mailbox polling drops to a replay
+  // safety net; on failure or teardown we retry a few times and otherwise
+  // stay on polling — everything still works, just at poll cadence.
+  useEffect(() => {
+      if (!mbStudent || typeof RTCPeerConnection !== 'function') return undefined;
+      let cancelled = false;
+      let retryTimer = null;
+      let tries = 0;
+      const cleanupPeer = () => {
+          const current = mbRtcRef.current;
+          if (current) {
+              try { current.dc?.close(); } catch (_) {}
+              try { current.pc?.close(); } catch (_) {}
+          }
+          mbRtcRef.current = null;
+      };
+      const scheduleRetry = () => {
+          if (cancelled || tries >= 4) return;
+          if (retryTimer) clearTimeout(retryTimer);
+          retryTimer = setTimeout(attempt, 15000);
+      };
+      const attempt = async () => {
+          if (cancelled) return;
+          tries += 1;
+          cleanupPeer();
+          try {
+              const pc = new RTCPeerConnection(_alloMailboxRtcConfig());
+              const dc = pc.createDataChannel('allo');
+              const holder = {
+                  pc,
+                  dc,
+                  onSignal: (v) => {
+                      if (!v || v.to !== mbStudent.uid || !v.sdp || v.sdp.type !== 'answer') return;
+                      if (pc.signalingState !== 'have-local-offer') return;
+                      pc.setRemoteDescription(v.sdp).catch(err => warnLog('RTC answer apply failed', err?.message));
+                  },
+              };
+              mbRtcRef.current = holder;
+              dc.onopen = () => {
+                  tries = 0;
+                  try { dc.send(JSON.stringify({ kind: 'student', uid: mbStudent.uid, name: mbNicknameRef.current, hand: mbHandRef.current })); } catch (_) {}
+              };
+              dc.onmessage = (ev) => {
+                  try {
+                      const v = JSON.parse(ev.data);
+                      applyMbDownPayload(v);
+                  } catch (_) {}
+              };
+              dc.onclose = () => { if (!cancelled) scheduleRetry(); };
+              pc.onconnectionstatechange = () => {
+                  if (pc.connectionState === 'failed' && !cancelled) scheduleRetry();
+              };
+              await pc.setLocalDescription(await pc.createOffer());
+              await _alloWaitIceComplete(pc);
+              if (cancelled) return;
+              await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', c: mbStudent.code, k: mbStudent.secret, from: mbStudent.uid, box: 'up', v: { kind: 'rtc', uid: mbStudent.uid, sdp: pc.localDescription } });
+          } catch (rtcErr) {
+              warnLog('RTC upgrade attempt failed (staying on mailbox polling):', rtcErr?.message);
+              scheduleRetry();
+          }
+      };
+      attempt();
+      return () => {
+          cancelled = true;
+          if (retryTimer) clearTimeout(retryTimer);
+          cleanupPeer();
+      };
+  }, [mbStudent, applyMbDownPayload]);
   // Mailbox-hosted homework entry (?allo_mbp=…): fetch the pack from the
   // teacher's mailbox in slices, then render exactly like #allo_pack.
   useEffect(() => {
@@ -28471,6 +28770,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   <li>Paste the /exec web app URL below.</li>
                 </ol>
                 <input value={mbUrlInput} onChange={e => setMbUrlInput(e.target.value)} placeholder="https://script.google.com/macros/s/…/exec" className="w-full text-xs border border-slate-300 rounded-lg p-2 mb-2 font-mono" aria-label="Class Mailbox web app URL" />
+                <input value={mbAdminInput} onChange={e => setMbAdminInput(e.target.value)} placeholder="Admin token (only when reconnecting from a new device)" className="w-full text-xs border border-slate-200 rounded-lg p-2 mb-2 font-mono" aria-label="Class Mailbox admin token (optional)" />
                 <button onClick={connectMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60">
                   {mbBusy ? 'Testing…' : 'Connect & self-test'}
                 </button>
@@ -28478,7 +28778,17 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             )}
             {mbConfig && !mbLive && (
               <div>
-                <p className="text-[11px] text-slate-500 mb-3 break-all">Connected mailbox: <span className="font-mono">{mbConfig.url}</span></p>
+                <p className="text-[11px] text-slate-500 mb-2 break-all">Connected mailbox: <span className="font-mono">{mbConfig.url}</span></p>
+                {mbConfig.admin && (
+                  <div className="mb-3 bg-slate-50 border border-slate-200 rounded-lg p-2">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Admin token — save it like a password</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono text-slate-700 truncate flex-1" title={mbConfig.admin}>{mbConfig.admin}</span>
+                      <button onClick={() => copyToClipboard(mbConfig.admin)} className="text-[11px] font-bold text-indigo-700 underline underline-offset-2 shrink-0">Copy</button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">Paste it to reconnect from a new device or a fresh Canvas.</p>
+                  </div>
+                )}
                 <button onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl p-3 transition-all disabled:opacity-60">
                   {mbBusy ? 'Starting…' : 'Start live session'}
                 </button>
@@ -28502,14 +28812,20 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="w-full mb-3 text-xs font-bold text-indigo-700 underline underline-offset-2">Copy join link</button>
                 )}
                 <div className="mb-3 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Connected students ({Object.keys(mbRoster).length})</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Connected students ({Object.keys(mbRoster).length}{(() => { const rt = Object.values(mbRoster).filter(s => s.rtc).length; return rt ? ` · ${rt} real-time ⚡` : ''; })()})</p>
                   {Object.keys(mbRoster).length === 0 && <p className="text-xs text-slate-400">Waiting for students to scan…</p>}
-                  {Object.entries(mbRoster).map(([uid, s]) => (
-                    <div key={uid} className="flex items-center justify-between text-xs text-slate-700 py-0.5">
-                      <span className="font-bold truncate">{s.name}</span>
-                      {s.hand && <span aria-label="hand raised" title="Hand raised">✋</span>}
-                    </div>
-                  ))}
+                  {Object.entries(mbRoster).map(([uid, s]) => {
+                    const stale = mbNow && s.at && (mbNow - s.at > 150000);
+                    return (
+                      <div key={uid} className={`flex items-center justify-between text-xs py-0.5 ${stale ? 'text-slate-400' : 'text-slate-700'}`}>
+                        <span className="font-bold truncate">{s.name}{stale ? ' · away?' : ''}</span>
+                        <span className="flex items-center gap-1 shrink-0">
+                          {s.rtc && !stale && <span aria-label="real-time connection" title="Real-time connection">⚡</span>}
+                          {s.hand && <span aria-label="hand raised" title="Hand raised">✋</span>}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
                 <button onClick={pushResourceToMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl p-3 transition-all disabled:opacity-60 mb-2">
                   {mbBusy ? 'Sending…' : 'Push current resource to class'}

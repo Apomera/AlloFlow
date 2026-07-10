@@ -50,11 +50,24 @@ allow it for your account, or deploy from a personal Google account —
 homework packs then live in that account's Drive, so prefer the school
 account when policy allows.
 
-## Resetting the admin token
+## Your admin token (reconnecting from a new device)
 
-If you connect from a new device and AlloFlow reports the mailbox is already
-claimed: open the script → Project Settings (gear) → **Script properties** →
-delete the `admin` property → reconnect from AlloFlow.
+When AlloFlow first connects it claims an **admin token** and shows it to
+you once — save it like a password. Connecting from a new device (or a fresh
+Canvas paste) just needs that token pasted into the "Admin token" field.
+
+Lost the token? Open the script → Project Settings (gear) →
+**Script properties** → delete the `admin` property → reconnect from
+AlloFlow, and it will claim (and show) a new one.
+
+## Live sessions are real-time when the network allows
+
+Students first connect through the mailbox (poll every few seconds), then
+AlloFlow automatically upgrades each student to a direct device-to-device
+WebRTC channel using the mailbox only for the handshake. Upgraded students
+get instant pushes and hand-raises; students whose network blocks
+peer-to-peer stay on mailbox polling and everything still works, just a few
+seconds slower. Flood protection caps each session at ~900 messages/minute.
 
 ## Capacity notes
 
