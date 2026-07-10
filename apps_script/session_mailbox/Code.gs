@@ -23,7 +23,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 4;
+var VERSION = 5;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -110,6 +110,29 @@ function handle(p) {
     cache.remove('s:' + sc);
     try { props.deleteProperty('sess_' + sc); } catch (e2) {}
     return out({ ok: true });
+  }
+
+  // Server-side session recovery (v5): the durable sess_<code> markers ARE
+  // the teacher's open-session list (one admin owns this mailbox). Storage is
+  // unavailable in the Gemini Canvas iframe, so the client cannot remember a
+  // running session locally — it asks the server instead, authenticated by
+  // the admin token (recoverable from the Drive backup note). No manual code
+  // re-entry needed after a refresh.
+  if (a === 'mysessions') {
+    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    pruneExpiredSessions(props);
+    var sessions = [];
+    try {
+      var all = props.getProperties();
+      Object.keys(all).forEach(function(key) {
+        if (key.indexOf('sess_') !== 0) return;
+        var val = all[key];
+        var sep = val.indexOf('|');
+        sessions.push({ c: key.slice(5), k: sep > -1 ? val.slice(0, sep) : val, at: sep > -1 ? (parseInt(val.slice(sep + 1), 10) || 0) : 0 });
+      });
+    } catch (e) {}
+    sessions.sort(function(a2, b2) { return b2.at - a2.at; });
+    return out({ ok: true, sessions: sessions, t: Date.now() });
   }
 
   if (a === 'putpack') {

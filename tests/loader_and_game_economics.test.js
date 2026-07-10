@@ -124,6 +124,16 @@ describe('mailbox live-session parity', () => {
         expect(entry).toMatch(/setHistory\(\[\]\);/);
     });
 
+    it('server-side session resume works without local storage (Canvas-correct)', () => {
+        // The connect flow queries the server, not localStorage, for open sessions.
+        expect(anti).toMatch(/a: 'mysessions', admin/);
+        expect(anti).toMatch(/setMbResumable\(open\)/);
+        expect(anti).toMatch(/resumeMailboxLiveSession/);
+        expect(anti).toMatch(/Resume class \{String\(s\.c\)\.toUpperCase\(\)\}/);
+        // localStorage is documented as the non-Canvas fast path only.
+        expect(anti).toMatch(/unavailable in the sandboxed Gemini Canvas iframe/);
+    });
+
     it('flaky-connection hardening: fetch timeout + auto-retries', () => {
         expect(anti).toMatch(/controller\.abort\(\)/);
         expect(anti).toMatch(/allo\/mailbox-' \+ \(fetchErr\?\.name === 'AbortError' \? 'timeout' : 'unreachable'\)/);

@@ -213,6 +213,26 @@ describe('Code.gs hardening (v2)', () => {
         expect(call({ a: 'recv', c: 'EVICT', k: K, box: 'up', since: '0' }).e).toBe('no-session');
     });
 
+    it("'mysessions' returns the admin's open sessions for server-side resume (v5)", () => {
+        const { call } = makeGsSandbox();
+        const K1 = 'k_one_k_one_k_one_20';
+        const K2 = 'k_two_k_two_k_two_20';
+        expect(call({ a: 'mysessions', admin: 'nope' }).e).toBe('not-admin');
+        const admin = call({ a: 'claim' }).admin;
+        expect(call({ a: 'mysessions', admin }).sessions).toEqual([]);
+        call({ a: 'open', admin, c: 'ROOM1', k: K1 });
+        call({ a: 'open', admin, c: 'ROOM2', k: K2 });
+        const mine = call({ a: 'mysessions', admin });
+        expect(mine.ok).toBe(true);
+        const codes = mine.sessions.map(s => s.c).sort();
+        expect(codes).toEqual(['ROOM1', 'ROOM2']);
+        // Secrets are returned (caller proved admin) so the client can resume.
+        expect(mine.sessions.find(s => s.c === 'ROOM1').k).toBe(K1);
+        // Ended sessions drop off the list.
+        call({ a: 'end', c: 'ROOM1', k: K1 });
+        expect(call({ a: 'mysessions', admin }).sessions.map(s => s.c)).toEqual(['ROOM2']);
+    });
+
     it('caps per-box sends at the flood limit', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';

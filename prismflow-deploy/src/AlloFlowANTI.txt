@@ -12145,9 +12145,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   });
   const [mbStatus, setMbStatus] = useState('');
   const [mbBusy, setMbBusy] = useState(false);
-  // Survive teacher refresh / Canvas re-render: the live session restores
-  // from localStorage and SELF-VALIDATES — if it expired server-side, the
-  // first poll returns no-session and tears it down cleanly.
+  // Survive teacher refresh / Canvas re-render. localStorage is the fast path
+  // BUT it is unavailable in the sandboxed Gemini Canvas iframe (setItem
+  // throws, caught silently), so it only helps the standalone student shell.
+  // The authoritative recovery is SERVER-SIDE: the mailbox remembers the
+  // admin's open sessions (see the mbConfig connect effect → 'mysessions'),
+  // which works everywhere and needs no local storage.
   const [mbLive, setMbLive] = useState(() => {
       try {
           const saved = JSON.parse(localStorage.getItem(ALLO_MB_LIVE_KEY) || 'null');
@@ -12155,6 +12158,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       } catch (_) {}
       return null;
   });
+  const [mbResumable, setMbResumable] = useState([]);
   const [mbRoster, setMbRoster] = useState({});
   const [mbQrSvg, setMbQrSvg] = useState('');
   const [mbAdminInput, setMbAdminInput] = useState('');
@@ -12228,6 +12232,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setMbAdminInput('');
           setMbConfig({ url: execUrl, admin });
           setMbStatus('Connected — round-trip ' + (Date.now() - t0) + 'ms.' + (freshlyClaimed ? ' SAVE YOUR ADMIN TOKEN (shown below): you will paste it to reconnect from a new device or a fresh Canvas.' : ' Ready for live sessions and hosted homework QR.'));
+          // Server-side resume: ask the mailbox for any still-open sessions
+          // this admin owns. Works in Canvas where local storage does not.
+          if (admin && !mbLive) {
+              try {
+                  const mine = await _alloMailboxCall(execUrl, { a: 'mysessions', admin });
+                  const open = Array.isArray(mine.sessions) ? mine.sessions.filter(s => s && s.c && s.k) : [];
+                  if (open.length) setMbResumable(open);
+              } catch (resumeErr) { warnLog('mysessions query failed', resumeErr?.message); }
+          }
       } catch (e) {
           warnLog('Mailbox connect failed', e);
           setMbStatus('Could not reach the mailbox (' + (e?.message || e) + '). Check the /exec URL and that the deployment access is set to "Anyone".');
@@ -12257,6 +12270,25 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setMbStatus('Could not start: ' + (e?.message || e));
       }
       setMbBusy(false);
+  }, [mbConfig]);
+  // Rejoin an already-open session the server remembered (post-refresh, or a
+  // fresh Canvas). Rebuilds the join URL/QR and re-arms the roster+pack loops;
+  // the roster repopulates from students' heartbeats within ~60s and the pack
+  // re-syncs from the teacher's current history via the auto-sync effect.
+  const resumeMailboxLiveSession = useCallback((session) => {
+      if (!session?.c || !session?.k || !mbConfig?.url) return;
+      const code = String(session.c).toUpperCase();
+      const secret = String(session.k);
+      const joinUrl = _buildAlloMailboxEntryUrl('allo_mb', { u: mbConfig.url, c: code, k: secret });
+      if (!joinUrl) { setMbStatus('Could not rebuild the join link for this session on this host.'); return; }
+      mbUpCursorRef.current = 0;
+      mbSentPacksRef.current = {};
+      mbPackItemsRef.current = [];
+      setMbResumable([]);
+      setMbRoster({});
+      try { localStorage.setItem(ALLO_MB_LIVE_KEY, JSON.stringify({ code, secret, joinUrl })); } catch (_) {}
+      setMbLive({ code, secret, joinUrl });
+      setMbStatus('Resumed session ' + code + '. Students are still connected.');
   }, [mbConfig]);
   const _mbCloseTeacherPeers = useCallback(() => {
       Object.values(mbPeersRef.current || {}).forEach(peer => {
@@ -29257,6 +29289,18 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <button onClick={connectMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60">
                   {mbBusy ? 'Testing…' : 'Connect & self-test'}
                 </button>
+              </div>
+            )}
+            {mbConfig && !mbLive && mbResumable.length > 0 && (
+              <div className="mb-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-3">
+                <p className="text-xs font-bold text-emerald-800 mb-2">{mbResumable.length === 1 ? 'A live session is still running:' : mbResumable.length + ' live sessions are still running:'}</p>
+                {mbResumable.map(s => (
+                  <button key={s.c} onClick={() => resumeMailboxLiveSession(s)} className="w-full flex items-center justify-between gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg p-2.5 transition-all mb-1">
+                    <span>Resume class {String(s.c).toUpperCase()}</span>
+                    <span aria-hidden="true">↻</span>
+                  </button>
+                ))}
+                <button onClick={() => setMbResumable([])} className="w-full text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2 mt-1">Start a new session instead</button>
               </div>
             )}
             {mbConfig && !mbLive && (
