@@ -1338,12 +1338,22 @@
       onProbeComplete,
       getWordSoundsString,
       isParentMode = false,
-      allowRuntimeAi = false,
+      allowRuntimeAi,
     }) => {
       // One central boundary: student players receive prepared assets only.
-      const callGemini = allowRuntimeAi ? providedCallGemini : null;
-      const callTTS = allowRuntimeAi ? providedCallTTS : null;
-      const callImagen = allowRuntimeAi ? providedCallImagen : null;
+      // Defaults to ALLOWED unless the host marks this device as a QR-student
+      // device (window.__alloStudentAiDisabled, set by the host's QR guard) —
+      // an older host that never passes the prop keeps full teacher behavior.
+      const runtimeAiAllowed =
+        allowRuntimeAi !== undefined
+          ? !!allowRuntimeAi
+          : !(
+            typeof window !== "undefined" &&
+            window.__alloStudentAiDisabled === true
+          );
+      const callGemini = runtimeAiAllowed ? providedCallGemini : null;
+      const callTTS = runtimeAiAllowed ? providedCallTTS : null;
+      const callImagen = runtimeAiAllowed ? providedCallImagen : null;
       const estimateFirstPhoneme = (word) => {
         if (!word) return "";
         const w = word.toLowerCase();
@@ -1911,6 +1921,22 @@
         }
         return library;
       }, [preloadedWords]);
+      // Resolve a playable src for text the teacher packed at setup time
+      // (data URI or {mime, base64}); null when the pack has no clip for it.
+      const portableTtsSrcFor = React.useCallback(
+        (text) => {
+          const asset =
+            portableTtsLibrary[
+            String(text || "").trim().toLowerCase().replace(/\s+/g, " ")
+            ];
+          if (!asset) return null;
+          if (typeof asset === "string") return asset;
+          return asset.base64
+            ? `data:${asset.mime || "audio/mpeg"};base64,${asset.base64}`
+            : null;
+        },
+        [portableTtsLibrary],
+      );
       const setPreloadedWords =
         setWsPreloadedWords ||
         (() => {
@@ -2145,21 +2171,42 @@
           if (!word) return;
           setIsGeneratingSyllable(true);
           try {
-            const preparedSyllable = wordSoundsPhonemes?.activityItems?.syllable_blending || wordSoundsPhonemes?.activityItems?.syllable_counting;
-            if (Array.isArray(preparedSyllable?.syllables) && preparedSyllable.syllables.length) {
-              const preparedData = {
-                syllables: [...preparedSyllable.syllables],
-                count: preparedSyllable.syllables.length,
-                blendingOptions: Array.isArray(wordSoundsPhonemes?.activityItems?.syllable_blending?.options)
-                  ? [...wordSoundsPhonemes.activityItems.syllable_blending.options]
-                  : [],
-              };
-              setSyllableData(preparedData);
-              syllableDataRef.current = preparedData;
-              return;
-            }
+            // Word-match guard: wordSoundsPhonemes can lag a word advance, and
+            // installing the PREVIOUS word's prepared syllables here would lock
+            // in an unwinnable board (the lastWordForSyllable guard blocks the
+            // refresh once data is set).
+            const packMatchesWord =
+              String(wordSoundsPhonemes?.word || "").trim().toLowerCase() ===
+              String(word).trim().toLowerCase();
+            const preparedSyllable = packMatchesWord
+              ? wordSoundsPhonemes?.activityItems?.syllable_blending ||
+              wordSoundsPhonemes?.activityItems?.syllable_counting
+              : null;
             let result = null;
-            if (typeof callGemini === "function") {
+            if (Array.isArray(preparedSyllable?.syllables) && preparedSyllable.syllables.length) {
+              const rawOpts = Array.isArray(wordSoundsPhonemes?.activityItems?.syllable_blending?.options)
+                ? [...wordSoundsPhonemes.activityItems.syllable_blending.options]
+                : [];
+              const targetLcPrep = String(word).trim().toLowerCase();
+              const optsValid =
+                rawOpts.length >= 2 &&
+                rawOpts.some((o) => String(o || "").trim().toLowerCase() === targetLcPrep);
+              if (optsValid) {
+                // Teacher-reviewed board: exact options and order.
+                const preparedData = {
+                  syllables: [...preparedSyllable.syllables],
+                  count: preparedSyllable.syllables.length,
+                  blendingOptions: rawOpts,
+                };
+                setSyllableData(preparedData);
+                syllableDataRef.current = preparedData;
+                return;
+              }
+              // Syllables are trusted; options were unusable (e.g. the target
+              // fell off the board) — rebuild them locally below, never via AI.
+              result = { syllables: [...preparedSyllable.syllables], blendingOptions: null };
+            }
+            if (!result && typeof callGemini === "function") {
               const prompt = `You are a reading specialist. For the word "${word}", return ONLY valid JSON with no markdown:\n{"syllables":["syl","la","bles"],"blendingOptions":["${word}","word2","word3","word4"]}\nsyllables: the syllables of "${word}" as an array of strings\nblendingOptions: exactly 4 words — "${word}" first, then 3 distractors of similar syllable count and general topic.\n\nCRITICAL: Distractors MUST be pronounced differently from "${word}". NEVER include homophones (words that sound the same as the target — e.g., for "whale" do not use "wail"; for "eight" do not use "ate"; for "night" do not use "knight"; for "meet" do not use "meat"). The activity plays the target word aloud and asks the child to pick the correct written word, so phonetically identical distractors make it unsolvable. If you cannot think of 3 non-homophone distractors, return fewer rather than including a homophone.`;
               try {
                 const raw = await callGemini(prompt);
@@ -2241,7 +2288,7 @@
             setIsGeneratingSyllable(false);
           }
         },
-        [callGemini],
+        [callGemini, wordSoundsPhonemes],
       );
       // Trigger syllable data generation whenever word changes in syllable activities.
       React.useEffect(() => {
@@ -2293,7 +2340,11 @@
           Array.isArray(preloadedTask.distractors) &&
           preloadedTask.distractors.length > 0
         ) {
-          const opts = Array.isArray(preparedManipulation?.options) && preparedManipulation.options.length > 1
+          // Prepared options must carry the task's answer — a board without
+          // it is unwinnable, so fall back to the local shuffle.
+          const opts = Array.isArray(preparedManipulation?.options) &&
+            preparedManipulation.options.length > 1 &&
+            preparedManipulation.options.includes(preloadedTask.answer)
             ? [...preparedManipulation.options]
             : fisherYatesShuffle(padManipOpts([preloadedTask.answer, ...preloadedTask.distractors.slice(0, 5)]));
           setManipulationState(preloadedTask);
@@ -2683,19 +2734,10 @@
             return loadAndPlay(url);
           }
           const lower = text.toLowerCase();
-          const portableKey = text.trim().toLowerCase().replace(/\s+/g, " ");
-          const portableAsset = portableTtsLibrary[portableKey];
-          if (portableAsset) {
-            const portableSrc =
-              typeof portableAsset === "string"
-                ? portableAsset
-                : portableAsset.base64
-                  ? `data:${portableAsset.mime || "audio/mpeg"};base64,${portableAsset.base64}`
-                  : null;
-            if (portableSrc) {
-              debugLog("? using prepared Word Sounds TTS for:", text);
-              return loadAndPlay(portableSrc);
-            }
+          const portableSrc = portableTtsSrcFor(text);
+          if (portableSrc) {
+            debugLog("⚡ using prepared Word Sounds TTS for:", text);
+            return loadAndPlay(portableSrc);
           }
           if (
             typeof _CACHE_WORD_AUDIO_BANK !== "undefined" &&
@@ -3010,6 +3052,7 @@
           notifyAudioUnavailable,
           clearAudioNotice,
           audioNotice,
+          portableTtsSrcFor,
         ],
       );
       const retryLastAudio = React.useCallback(() => {
@@ -3266,7 +3309,13 @@
                         }
                         try {
                           const instruction = `What is the ${ordinal} sound?`;
-                          const url = await callTTS(instruction, selectedVoice);
+                          // Prepared packs carry this exact sentence; only a
+                          // teacher device without a pack falls to live TTS.
+                          const url =
+                            portableTtsSrcFor(instruction) ||
+                            (typeof callTTS === "function"
+                              ? await callTTS(instruction, selectedVoice)
+                              : null);
                           if (url) {
                             const audio = new Audio(url);
                             audio.playbackRate = 0.9;
@@ -6671,8 +6720,22 @@
               return;
             }
             lastWordForBlending.current = targetToCheck;
-            const preparedBlending = wordSoundsPhonemes?.activityItems?.blending;
-            if (Array.isArray(preparedBlending?.options) && preparedBlending.options.length > 1) {
+            // Word-match guard: only trust the prepared board when the pack
+            // entry is for THIS word — stale wordSoundsPhonemes mid-advance
+            // would install the previous word's options (whose "correct"
+            // answer isn't even on the board).
+            const preparedBlending =
+              String(wordSoundsPhonemes?.word || "").trim().toLowerCase() ===
+                targetToCheck
+                ? wordSoundsPhonemes?.activityItems?.blending
+                : null;
+            if (
+              Array.isArray(preparedBlending?.options) &&
+              preparedBlending.options.length > 1 &&
+              preparedBlending.options.some(
+                (o) => String(o || "").trim().toLowerCase() === targetToCheck,
+              )
+            ) {
               setBlendingOptions([...preparedBlending.options]);
               return;
             }
@@ -6822,27 +6885,63 @@
         return picked.slice(0, 3);
       };
       // Read & Match (decoding): printed word (NOT spoken) -> tap/drag its picture.
-      // The target's picture is generated once (ungated - images ARE the activity).
+      // Prefers the teacher-reviewed pack board + pack images; Imagen only
+      // backfills choices the pack didn't cover (never on student devices,
+      // where the boundary nulls callImagen).
+      const decodingPreparedForRef = React.useRef(null);
       React.useEffect(() => {
         if (wordSoundsActivity !== "decoding") return;
         const target = (currentWordSoundsWord || "").toLowerCase();
         if (!target) return;
-        if (lastWordForDecoding.current === target) return;
+        const preparedDecoding =
+          String(wordSoundsPhonemes?.word || "").trim().toLowerCase() === target
+            ? wordSoundsPhonemes?.activityItems?.decoding
+            : null;
+        const preparedUsable =
+          Array.isArray(preparedDecoding?.choices) &&
+          preparedDecoding.choices.length >= 2 &&
+          preparedDecoding.choices.some(
+            (w) => String(w || "").toLowerCase() === target,
+          );
+        // Re-run for the same word only to upgrade a deterministic board to
+        // the prepared one (pack data can arrive a beat after the word).
+        if (
+          lastWordForDecoding.current === target &&
+          (!preparedUsable || decodingPreparedForRef.current === target)
+        )
+          return;
         lastWordForDecoding.current = target;
-        const distractors = buildDecodingDistractors(target);
-        setDecodingChoices(fisherYatesShuffle([currentWordSoundsWord || target, ...distractors]));
+        decodingPreparedForRef.current = preparedUsable ? target : null;
+        const choices = preparedUsable
+          ? [...preparedDecoding.choices]
+          : fisherYatesShuffle([
+            currentWordSoundsWord || target,
+            ...buildDecodingDistractors(target),
+          ]);
+        setDecodingChoices(choices);
+        const uncovered = [];
+        choices.forEach((w) => {
+          const lc = (w || "").toLowerCase();
+          if (!lc || optionImagesCache.current.has(w) || optionImagesCache.current.has(lc)) return;
+          const packedImg = preparedImageLibrary[lc];
+          if (packedImg) {
+            optionImagesCache.current.set(lc, packedImg);
+            setOptionImages((prev) => ({ ...prev, [lc]: packedImg }));
+            return;
+          }
+          const pe = (wordPool || []).find((p) => p.word === lc);
+          if (pe && pe.image) return;
+          uncovered.push(w);
+        });
         if (typeof callImagen === "function") {
-          [currentWordSoundsWord || target, ...distractors].forEach((w) => {
+          uncovered.forEach((w) => {
             const lc = (w || "").toLowerCase();
-            if (!lc || optionImagesCache.current.has(w) || optionImagesCache.current.has(lc)) return;
-            const pe = (wordPool || []).find((p) => p.word === lc);
-            if (pe && pe.image) return;
             callImagen(`Simple flat vector icon of "${w}", minimal educational illustration, white background, no text or labels`)
               .then((img) => { if (img) { optionImagesCache.current.set(lc, img); setOptionImages((prev) => ({ ...prev, [lc]: img })); } })
               .catch(() => {});
           });
         }
-      }, [wordSoundsActivity, currentWordSoundsWord, wordPool, callImagen]);
+      }, [wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes, wordPool, callImagen, preparedImageLibrary]);
       const generateOrthographyDistractors = (word) => {
         if (!word || word.length < 2)
           return [`${word}s`, `${word}ed`, `un${word}`];
@@ -6898,7 +6997,7 @@
         getDifficultyFilteredPool,
       ]);
       const preloadInitialBatch = React.useCallback(async () => {
-        if (!allowRuntimeAi) {
+        if (!runtimeAiAllowed) {
           if (!preloadedWords.length) warnLog("Prepared Word Sounds pack is empty; student runtime generation is disabled.");
           return;
         }
@@ -7573,6 +7672,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         wordPool,
         callGemini,
         wordSoundsLanguage,
+        runtimeAiAllowed,
       ]);
       React.useEffect(() => { }, [
         wordPool,
@@ -8300,6 +8400,25 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               return;
             }
             lastWordForOrthography.current = targetWord;
+            // Prefer the teacher-reviewed misspelling board from the pack
+            // (exact options + order); requires the correct word on the board.
+            const preparedOrthography =
+              String(wordSoundsPhonemes?.word || "").trim().toLowerCase() ===
+                String(targetWord).trim().toLowerCase()
+                ? wordSoundsPhonemes?.activityItems?.orthography
+                : null;
+            if (
+              Array.isArray(preparedOrthography?.options) &&
+              preparedOrthography.options.length > 1 &&
+              preparedOrthography.options.some(
+                (o) =>
+                  String(o).trim().toLowerCase() ===
+                  String(targetWord).trim().toLowerCase(),
+              )
+            ) {
+              setOrthographyOptions([...preparedOrthography.options]);
+              return;
+            }
             const generated = generateOrthographyDistractors(targetWord);
             const distractors = fisherYatesShuffle(generated).slice(0, 5);
             setOrthographyOptions(
@@ -8309,8 +8428,20 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         }
         if (wordSoundsActivity === "rhyming") {
           const currentWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
-          const preparedRhyming = wordSoundsPhonemes?.activityItems?.rhyming;
-          if (Array.isArray(preparedRhyming?.options) && preparedRhyming.options.length > 1) {
+          // Word-match guard (stale pack mid-advance) + answer-on-board guard
+          // (a pack compiled with no rhymeWord serializes a distractor-only
+          // board; fall through to the RIME_FAMILIES derivation instead).
+          const preparedRhyming =
+            String(wordSoundsPhonemes?.word || "").trim().toLowerCase() ===
+              String(currentWord || "").trim().toLowerCase()
+              ? wordSoundsPhonemes?.activityItems?.rhyming
+              : null;
+          if (
+            Array.isArray(preparedRhyming?.options) &&
+            preparedRhyming.options.length > 1 &&
+            preparedRhyming.answer &&
+            preparedRhyming.options.includes(preparedRhyming.answer)
+          ) {
             lastWordForRhyming.current = currentWord;
             setRhymeOptions([...preparedRhyming.options]);
             return;
@@ -8506,7 +8637,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const currentWord = wordSoundsPhonemes?.word || currentWordSoundsWord;
         const isNewWord = lastWordForIsolation.current !== currentWord;
         const preparedIsolation = wordSoundsPhonemes?.activityItems?.isolation;
-        if (isNewWord && Array.isArray(preparedIsolation?.options) && preparedIsolation.options.length > 1) {
+        if (
+          isNewWord &&
+          preparedIsolation?.correctSound &&
+          Array.isArray(preparedIsolation?.options) &&
+          preparedIsolation.options.includes(preparedIsolation.correctSound) &&
+          preparedIsolation.options.length > 1
+        ) {
           const preparedState = {
             word: currentWordSoundsWord || currentWord,
             currentPosition: preparedIsolation.position || 0,
@@ -12672,15 +12809,23 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         }
         return letters;
       };
+      // Prepared boards are only trusted when the pack entry is for the word
+      // currently on screen — wordSoundsPhonemes can lag a word advance, and a
+      // stale entry would deal the previous word's letters/answer.
+      const packForCurrentWord =
+        String(wordSoundsPhonemes?.word || "").trim().toLowerCase() ===
+          String(currentWordSoundsWord || "").trim().toLowerCase()
+          ? wordSoundsPhonemes?.activityItems
+          : null;
       const scrambledLetters = React.useMemo(
-        () => Array.isArray(wordSoundsPhonemes?.activityItems?.word_scramble?.letters)
-          ? [...wordSoundsPhonemes.activityItems.word_scramble.letters]
+        () => Array.isArray(packForCurrentWord?.word_scramble?.letters)
+          ? [...packForCurrentWord.word_scramble.letters]
           : scrambleWord(currentWordSoundsWord?.toLowerCase()),
         [currentWordSoundsWord, wordSoundsPhonemes],
       );
       const [usedScrambleIndices, setUsedScrambleIndices] = React.useState([]);
       const hiddenIndex = React.useMemo(() => {
-        if (Number.isInteger(wordSoundsPhonemes?.activityItems?.missing_letter?.hiddenIndex)) return wordSoundsPhonemes.activityItems.missing_letter.hiddenIndex;
+        if (Number.isInteger(packForCurrentWord?.missing_letter?.hiddenIndex)) return packForCurrentWord.missing_letter.hiddenIndex;
         if (!currentWordSoundsWord || currentWordSoundsWord.length <= 1)
           return 0;
         const seed = currentWordSoundsWord
@@ -12688,9 +12833,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           .reduce((a, c) => a + c.charCodeAt(0), 0);
         return seed % currentWordSoundsWord.length;
       }, [currentWordSoundsWord, wordSoundsPhonemes]);
-      const correctLetter = wordSoundsPhonemes?.activityItems?.missing_letter?.correctLetter || currentWordSoundsWord?.[hiddenIndex]?.toLowerCase();
+      const correctLetter = packForCurrentWord?.missing_letter?.correctLetter || currentWordSoundsWord?.[hiddenIndex]?.toLowerCase();
       const letterOptions = React.useMemo(() => {
-        if (Array.isArray(wordSoundsPhonemes?.activityItems?.missing_letter?.options)) return [...wordSoundsPhonemes.activityItems.missing_letter.options];
+        if (Array.isArray(packForCurrentWord?.missing_letter?.options)) return [...packForCurrentWord.missing_letter.options];
         const alphabet = "abcdefghijklmnopqrstuvwxyz";
         const options = [correctLetter];
         const seed = (currentWordSoundsWord || "")
@@ -14614,7 +14759,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             // one-card grid where tapping the only picture scores correct
             // with zero discrimination (image-cache timing window).
             const dChoices = (decodingChoices && decodingChoices.length >= 2) ? decodingChoices : [];
-            const imgFor = (w) => { const lc = (w || "").toLowerCase(); const pe = (wordPool || []).find((p) => p.word === lc); return optionImages[w] || optionImages[lc] || (pe && pe.image) || null; };
+            const imgFor = (w) => { const lc = (w || "").toLowerCase(); const pe = (wordPool || []).find((p) => p.word === lc); return optionImages[w] || optionImages[lc] || preparedImageLibrary[lc] || (pe && pe.image) || null; };
             const dSrc = (img) => (typeof img === "string" && (img.startsWith("data:") || img.startsWith("http"))) ? img : ("data:image/png;base64," + img);
             const dAnyImg = dChoices.some((w) => imgFor(w));
             // Only reveal the grid when EVERY choice has its picture, so a card

@@ -1061,15 +1061,43 @@
                     ...chipDistractors.map((value, index) => ({ id: `distractor-${index}`, phoneme: value, type: 'distractor', isDistractor: true })),
                 ]);
                 const otherWords = wordPool.filter((value) => value !== word);
-                const blending = shuffleForPack([...new Set([word, ...(item.blendingDistractors || []), ...otherWords])]).slice(0, 6);
+                // Common K-2 homophone sets: an aloud-played target must never
+                // share a board with a word that sounds identical to it.
+                const HOMOPHONE_SETS = [['sun','son'],['ate','eight'],['sea','see'],['eye','i'],['know','no'],['knight','night'],['right','write'],['meet','meat'],['whale','wail'],['bee','be'],['two','to','too'],['four','for'],['one','won'],['hear','here'],['blue','blew'],['red','read'],['pear','pair'],['flower','flour'],['dear','deer'],['bear','bare'],['tail','tale'],['sail','sale'],['mail','male'],['plane','plain'],['road','rode'],['hole','whole'],['week','weak'],['hair','hare']];
+                const soundsLike = (a, b) => {
+                    const la = normalizePackKey(a), lb = normalizePackKey(b);
+                    if (!la || !lb) return false;
+                    if (la === lb) return true;
+                    return HOMOPHONE_SETS.some((set) => set.includes(la) && set.includes(lb));
+                };
+                // Answer-preserving board builder: the answer ALWAYS survives —
+                // slicing a shuffled [answer, ...pool] list could cut it off and
+                // ship an unwinnable board.
+                const boardWithAnswer = (answer, pool, distractorCount) => shuffleForPack([
+                    answer,
+                    ...[...new Set(pool)].filter((value) => value && !soundsLike(value, answer)).slice(0, distractorCount),
+                ]);
+                const blending = boardWithAnswer(word, [...(item.blendingDistractors || []), ...otherWords], 5);
                 const rhymeAnswer = item.rhymeWord || (item.rhymes || [])[0] || '';
-                const rhyming = shuffleForPack([...new Set([rhymeAnswer, ...(item.rhymeDistractors || []), ...otherWords].filter(Boolean))]).slice(0, 5);
+                const answerRime = (normalizePackKey(rhymeAnswer).match(/[aeiou][a-z]*$/) || [''])[0];
+                const rhyming = rhymeAnswer
+                    ? boardWithAnswer(
+                        rhymeAnswer,
+                        [...(item.rhymeDistractors || []), ...otherWords].filter((value) => {
+                            const v = normalizePackKey(value);
+                            // A distractor that rhymes with the answer is a second
+                            // right answer that would be scored wrong.
+                            return v && v !== word && (!answerRime || (v.match(/[aeiou][a-z]*$/) || [''])[0] !== answerRime);
+                        }),
+                        4,
+                    )
+                    : [];
                 const task = item.manipulationTask || makePackManipulationFallback(word, phonemes);
                 item.manipulationTask = task;
-                const manipulation = shuffleForPack([...new Set([task.answer, ...(task.distractors || []), 'sit','map','bed','pin','mud','fan'].filter(Boolean))]).slice(0, 6);
+                const manipulation = boardWithAnswer(task.answer, [...(task.distractors || []), 'sit','map','bed','pin','mud','fan'], 5);
                 const syllables = Array.isArray(item.syllables) && item.syllables.length ? item.syllables : estimatePackSyllables(word);
                 item.syllables = syllables;
-                const syllableOptions = shuffleForPack([...new Set([word, ...(item.syllableBlendingOptions || []), ...otherWords])]).slice(0, 4);
+                const syllableOptions = boardWithAnswer(word, [...(item.syllableBlendingOptions || []), ...otherWords], 3);
                 const graphemes = Array.isArray(item.graphemes) && item.graphemes.length
                     ? item.graphemes
                     : ((item.phonemes || []).every((p) => p && typeof p === 'object' && p.grapheme) ? item.phonemes.map((p) => p.grapheme) : word.split(''));
@@ -1092,7 +1120,7 @@
                 const familySource = [...new Set((item.familyMembers || []).map(normalizePackKey).filter((value) => value && value !== word))];
                 const familyOptions = shuffleForPack(familySource.length ? familySource : wordPool.filter((value) => value !== word && value.endsWith(rime))).slice(0, word.length <= 3 ? 3 : 5);
                 const familyDistractors = shuffleForPack(wordPool.filter((value) => value !== word && !value.endsWith(rime))).slice(0, word.length <= 3 ? 2 : 4);
-                const decodingChoices = shuffleForPack([...new Set([word, ...itemWords.filter((value) => value !== word), ...commonWords.filter((value) => value !== word)])]).slice(0, 4);
+                const decodingChoices = boardWithAnswer(word, [...itemWords, ...commonWords].filter((value) => value !== word), 3);
                 item.activityItems = {
                     counting: { options: [1,2,3,4,5,6,7,8,9,10,'11+'], answer: item.phonemeCount || phonemes.length },
                     isolation: { position, correctSound, options: isolationOptions },
