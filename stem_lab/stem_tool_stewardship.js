@@ -1002,6 +1002,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
   }
 
   // ── Tool registration ──
+  if (typeof document !== 'undefined' && !document.getElementById('stewardship-mission-css')) {
+    var stewardshipStyle = document.createElement('style');
+    stewardshipStyle.id = 'stewardship-mission-css';
+    stewardshipStyle.textContent = [
+      '.stewardship-menu-shell{background:var(--allo-stem-canvas,#0f172a);border-radius:18px;padding:18px 14px;min-height:calc(100vh - 32px);color:#e2e8f0;}',
+      '.stewardship-menu-shell *{box-sizing:border-box;}',
+      '.stewardship-layout{max-width:1080px!important;margin:0 auto;}',
+      '.stewardship-command{padding:20px;border:1px solid rgba(134,239,172,.36);border-radius:20px;background:radial-gradient(circle at 92% 8%,rgba(168,85,247,.18),transparent 32%),linear-gradient(135deg,rgba(22,101,52,.56),rgba(2,6,23,.98) 68%);box-shadow:0 18px 44px rgba(2,6,23,.3);margin-bottom:14px;}',
+      '.stewardship-command-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}',
+      '.stewardship-command-title{display:flex;align-items:flex-start;gap:11px;min-width:0;}',
+      '.stewardship-back{flex:0 0 auto;min-height:36px;padding:6px 10px;border:1px solid #475569;border-radius:9px;background:rgba(15,23,42,.7);color:#cbd5e1;cursor:pointer;}',
+      '.stewardship-eyebrow{margin:0 0 6px;color:#86efac;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;}',
+      '.stewardship-title{margin:0;color:#f0fdf4;font-size:clamp(22px,3vw,31px);line-height:1.12;}',
+      '.stewardship-subtitle{max-width:760px;margin:8px 0 0;color:#cbd5e1;font-size:12px;line-height:1.55;}',
+      '.stewardship-tour{flex:0 0 auto;min-height:38px;padding:7px 11px;border:1px solid #86efac;border-radius:9px;background:rgba(134,239,172,.1);color:#bbf7d0;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;}',
+      '.stewardship-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:17px;}',
+      '.stewardship-metric{min-width:0;padding:10px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(15,23,42,.72);}',
+      '.stewardship-metric-label{display:block;color:#94a3b8;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.stewardship-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+      '.stewardship-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px;}',
+      '.stewardship-primary{min-height:44px;padding:10px 16px;border:1px solid rgba(220,252,231,.42);border-radius:12px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(22,163,74,.22);transition:transform .18s,box-shadow .18s;}',
+      '.stewardship-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(22,163,74,.3);}',
+      '.stewardship-action-note{color:#bbf7d0;font-size:10px;line-height:1.45;}',
+      '.stewardship-inquiry{margin-bottom:14px;border:1px solid #334155;border-radius:14px;background:rgba(15,23,42,.78);overflow:hidden;}',
+      '.stewardship-inquiry summary{min-height:48px;padding:13px 15px;cursor:pointer;color:#e9d5ff;font-size:12px;font-weight:900;}',
+      '.stewardship-inquiry-body{padding:0 13px 13px;}',
+      '@media(max-width:760px){.stewardship-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.stewardship-command-top{flex-direction:column;}.stewardship-tour{white-space:normal;}}',
+      '@media(max-width:520px){.stewardship-menu-shell{padding:8px 0;border-radius:14px;}.stewardship-command{padding:14px;border-radius:16px;}.stewardship-command-title{flex-direction:column;}.stewardship-primary{width:100%;}.stewardship-actions{align-items:stretch;}.stewardship-action-note{width:100%;}}',
+      '@media(prefers-reduced-motion:reduce){.stewardship-primary{transition:none;}.stewardship-primary:hover{transform:none;}}',
+      '.theme-contrast .stewardship-command,.theme-contrast .stewardship-inquiry{box-shadow:none;border-width:2px;}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(stewardshipStyle);
+  }
+
   window.StemLab.registerTool('stewardshipHub', {
     icon: '🌍',
     label: 'Environmental Stewardship Campaigns',
@@ -1948,32 +1982,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         return renderTutorial();
       }
 
-      return h('div', {
+      var scenarioInProgress = scenarioSnaps.filter(function(s) { return s.state.status === 'inProgress'; }).length;
+      var totalInProgress = inProgressCount + scenarioInProgress;
+      var recommendedSnap = snapshots.filter(function(s) { return s.state.status === 'inProgress'; })[0]
+        || snapshots.filter(function(s) { return s.campaign.id === 'conserve'; })[0]
+        || snapshots[0];
+      var recommendedCampaign = recommendedSnap && recommendedSnap.campaign;
+      var recommendedStatus = recommendedSnap && recommendedSnap.state ? recommendedSnap.state.status : 'notStarted';
+      var currentTier = earnedTiers.length > 0 ? earnedTiers[earnedTiers.length - 1].label : __alloT('stem.stewardship.not_yet_earned', 'Not yet earned');
+
+      function missionMetric(label, value) {
+        return h('div', { className: 'stewardship-metric', role: 'listitem' },
+          h('span', { className: 'stewardship-metric-label' }, label),
+          h('strong', { className: 'stewardship-metric-value' }, value));
+      }
+
+      return h('main', { className: 'stewardship-menu-shell', 'data-stewardship-mission': 'true',
         // Dark self-contained shell: this tool's color palette assumes a dark
         // navy background (greens like #86efac, slates like #94a3b8 / #cbd5e1
         // fail WCAG AA on white). Wrapping the panel in #0f172a guarantees the
         // designed contrast regardless of the parent page's background.
-        style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
         role: 'region',
         'aria-label': __alloT('stem.stewardship.environmental_stewardship_campaigns_hu', 'Environmental Stewardship Campaigns hub')
-      }, h('div', {
-        style: { maxWidth: 900, margin: '0 auto' }
-      },
-        // Header
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
-          ArrowLeft ? h('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': __alloT('stem.stewardship.back_to_stem_lab', 'Back to STEM Lab'),
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 14 } }, __alloT('stem.stewardship.back_4', '← Back')) : null,
-          h('div', { style: { flex: 1, minWidth: 280 } },
-            h('h2', { style: { margin: 0, color: '#86efac', fontSize: 22, fontWeight: 900 } }, __alloT('stem.stewardship.environmental_stewardship_campaigns', '🌍 Environmental Stewardship Campaigns')),
-            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, maxWidth: 720, lineHeight: 1.55 } }, __alloT('stem.stewardship.fifteen_environmental_stewardship_camp', 'Fifteen environmental stewardship campaigns across eleven regions. Five deep multi-period Maine anchor campaigns (your case studies for fire-return intervals, trophic cascades, public-health trust, hydrological cascades, climate-policy interdependence) plus ten self-contained cross-region scenarios (Yarralin Australia, Karuk Northern California, Yellowstone wolves, Akagera Rwanda lions, Mumbai monsoon dengue, Liberia 2014 Ebola, Klamath River, Murray–Darling Basin, Marshall Islands atolls, Bangladesh delta) that teach the same universal mechanics on different country. Every mechanic family now has at least two cross-region case studies for direct comparison.'))
-          ),
-          h('button', { onClick: startTutorial, 'aria-label': __alloT('stem.stewardship.take_the_5_step_tour', 'Take the 5-step tour'),
-            title: __alloT('stem.stewardship.re_launch_the_onboarding_tutorial', 'Re-launch the onboarding tutorial'),
-            style: { background: 'rgba(134,239,172,0.10)', border: '1px solid #86efac', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: '#86efac', fontSize: 12, fontWeight: 700 } }, __alloT('stem.stewardship.take_the_tour', '🧭 Take the tour'))
+      }, h('div', { className: 'stewardship-layout' },
+        h('header', { className: 'stewardship-command' },
+          h('div', { className: 'stewardship-command-top' },
+            h('div', { className: 'stewardship-command-title' },
+              ArrowLeft ? h('button', { type: 'button', className: 'stewardship-back', onClick: function() { setStemLabTool(null); }, 'aria-label': __alloT('stem.stewardship.back_to_stem_lab', 'Back to STEM Lab') }, __alloT('stem.stewardship.back_4', 'Back')) : null,
+              h('div', null,
+                h('p', { className: 'stewardship-eyebrow' }, __alloT('stem.stewardship.mission_label', 'Systems stewardship mission')),
+                h('h2', { className: 'stewardship-title' }, __alloT('stem.stewardship.environmental_stewardship_campaigns', 'Environmental Stewardship Campaigns')),
+                h('p', { className: 'stewardship-subtitle' }, __alloT('stem.stewardship.mission_blurb', 'Compare how ecological feedback, community trust, time horizons, and local authority shape fifteen campaigns across eleven regions.')))),
+            h('button', { type: 'button', className: 'stewardship-tour', onClick: startTutorial, 'aria-label': __alloT('stem.stewardship.take_the_5_step_tour', 'Take the 5-step tour') }, __alloT('stem.stewardship.take_the_tour', 'Take the tour'))),
+          h('div', { className: 'stewardship-metrics', role: 'list', 'aria-label': __alloT('stem.stewardship.portfolio_progress', 'Stewardship portfolio progress') },
+            missionMetric(__alloT('stem.stewardship.complete', 'Complete'), totalComplete + ' / ' + totalAvailable),
+            missionMetric(__alloT('stem.stewardship.in_progress', 'In progress'), String(totalInProgress)),
+            missionMetric(__alloT('stem.stewardship.top_tier_outcomes', 'Top-tier outcomes'), String(totalTopTier)),
+            missionMetric(__alloT('stem.stewardship.stewardship_tier', 'Stewardship tier'), currentTier)),
+          recommendedCampaign && h('div', { className: 'stewardship-actions' },
+            h('button', { type: 'button', className: 'stewardship-primary', onClick: function() { launchCampaign(recommendedCampaign); } },
+              recommendedStatus === 'inProgress' ? __alloT('stem.stewardship.continue_recommended', 'Continue recommended campaign') : __alloT('stem.stewardship.start_recommended', 'Start recommended campaign')),
+            h('span', { className: 'stewardship-action-note' }, recommendedCampaign.icon + ' ' + recommendedCampaign.label + ' - ' + recommendedCampaign.mechanic))
         ),
 
         // ══ STEWARDSHIP INQUIRY widget (H7b'') ══
-        (function() {
+        h('details', { className: 'stewardship-inquiry' },
+          h('summary', null, __alloT('stem.stewardship.advanced_inquiry', 'Advanced inquiry: model a stewardship investment')),
+          h('div', { className: 'stewardship-inquiry-body' },
+            (function() {
           // Slider semantics: `ecologicalComplex` here represents INTERVENTION COMPLEXITY /
           // UNCERTAINTY (more variables to manage, more uncertain causal chains), NOT
           // biodiversity. Higher biodiversity generally INCREASES ecosystem resilience
@@ -1999,11 +2055,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           return h('div', { style: { padding: 14, marginBottom: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('h4', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.stewardship.stewardship_inquiry_predict_the_trajec', '🔬 Stewardship Inquiry — Predict the Trajectory')),
             h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.stewardship.pick_a_hypothetical_project_setting_pr', 'Pick a hypothetical project setting. Predict how investment, time, community, and intervention complexity combine. No score, no reveal. (Note: this slider is intervention complexity, NOT biodiversity — higher biodiversity generally INCREASES resilience.)')),
-            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · success odds ' + (successOdds * 100).toFixed(0) + '% · ROI proxy ' + roi.toFixed(2)),
+            h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · success odds ' + (successOdds * 100).toFixed(0) + '% · ROI proxy ' + roi.toFixed(2)),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
               h('rect', { x: 30, y: 30, width: 260, height: 60, fill: '#0f172a', stroke: '#1e293b' }),
-              h('rect', { x: 30, y: 30, width: successOdds * 260, height: 60, fill: sm.color, opacity: 0.7 }),
+              h('rect', { x: 30, y: 30, width: (successOdds * 260).toFixed(1), height: 60, fill: sm.color, opacity: 0.7 }),
               h('text', { x: 160, y: 65, fill: '#fff', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, 'success ' + (successOdds * 100).toFixed(0) + '%'),
               h('text', { x: 30, y: 24, fill: '#94a3b8', fontSize: 9 }, 'failing'),
               h('text', { x: 290, y: 24, fill: '#94a3b8', fontSize: 9, textAnchor: 'end' }, 'flourishing'),
@@ -2056,7 +2112,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.stewardship.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
             h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.stewardship.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Linear scoring is pedagogical only; real stewardship has tipping points, lag effects, and qualitative shifts that don\'t fit a single index.'))
           );
-        })(),
+            })()
+          )
+        ),
 
         // Aggregate progress strip
         h('div', {
