@@ -4831,16 +4831,22 @@ const AlloFlowContent = () => {
     const visualInterval = setInterval(() => {
       if (visualStep < VISUAL_STEPS.length) { setLoadingProgress(VISUAL_STEPS[visualStep]); visualStep++; }
     }, 200);
-    // Poll readiness: LaunchPadView is the first screen the user sees after
-    // splash dismisses, so it must be ready. AlloIcons is now populated
-    // synchronously during render, so it's a fast no-op check.
+    // Poll readiness: hold the splash for the first-paint-critical module set
+    // (the screens/chrome a user touches in the first seconds), not for all
+    // ~160 modules — the "still loading N tools" pill covers the long tail.
+    // AlloIcons is populated synchronously during render, so it's a fast
+    // no-op check. The hard ceiling guarantees we never hang forever; if it
+    // fires, the pill communicates what is still missing.
+    const CORE_BOOT_MODULES = ['LaunchPadView', 'MiscComponents', 'UtilsPure', 'SidebarTabsNav', 'HistoryPanel'];
     const readinessInterval = setInterval(() => {
       const elapsed = Date.now() - startTs;
-      const launchPadReady = !!(window.AlloModules && window.AlloModules.LaunchPadView);
+      const coreReady = typeof window.__alloModuleReady === 'function'
+        ? window.__alloModuleReady(CORE_BOOT_MODULES)
+        : !!(window.AlloModules && window.AlloModules.LaunchPadView);
       const iconsReady = !!window.AlloIcons;
       const minDwellMet = elapsed >= MIN_DWELL_MS;
       const hardTimeout = elapsed >= MAX_WAIT_MS;
-      if ((launchPadReady && iconsReady && minDwellMet) || hardTimeout) {
+      if ((coreReady && iconsReady && minDwellMet) || hardTimeout) {
         clearInterval(visualInterval);
         clearInterval(readinessInterval);
         setLoadingProgress(100);
@@ -4849,6 +4855,31 @@ const AlloFlowContent = () => {
       }
     }, 100);
     return () => { clearInterval(visualInterval); clearInterval(readinessInterval); };
+  }, []);
+  // "Still loading N tools" pill + failed-module retry. Registry-driven: the
+  // loader dispatches alloflow:module-registry-changed on every transition;
+  // the interval is a safety net for missed events. Rendered only after the
+  // splash so it never competes with the progress bar.
+  const [moduleLoadInfo, setModuleLoadInfo] = useState({ pending: [], failed: [] });
+  useEffect(() => {
+    let timer = null;
+    const refresh = () => {
+      try {
+        if (typeof window.__alloModuleSnapshot === 'function') setModuleLoadInfo(window.__alloModuleSnapshot());
+      } catch (_) {}
+    };
+    const onChange = () => {
+      // Defer to a microtask so a load completing mid-render never re-enters
+      // React (same discipline as the plugins-changed tick).
+      Promise.resolve().then(refresh);
+    };
+    window.addEventListener('alloflow:module-registry-changed', onChange);
+    timer = setInterval(refresh, 2000);
+    refresh();
+    return () => {
+      window.removeEventListener('alloflow:module-registry-changed', onChange);
+      if (timer) clearInterval(timer);
+    };
   }, []);
   const [canPlayBotIntro, setCanPlayBotIntro] = useState(false);
   useEffect(() => {
@@ -5780,7 +5811,45 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         },
       };
     }
+    // ── Module readiness registry ──
+    // Every module load transitions pending → loaded | failed here, so the
+    // splash can hold for first-paint-critical modules, the in-app pill can
+    // report "still loading N tools", and failed modules can be retried on
+    // demand. Before this, loads were fire-and-forget: on slow connections
+    // the curtain rose before the orchestra was seated.
+    var __alloModuleRegistry = (window.__alloModuleRegistry = window.__alloModuleRegistry || {});
+    var __alloModuleNotify = function() {
+      try { window.dispatchEvent(new CustomEvent('alloflow:module-registry-changed')); } catch (_) {}
+    };
+    var __alloSetModuleStatus = function(name, status) {
+      var entry = __alloModuleRegistry[name] || (__alloModuleRegistry[name] = {});
+      if (entry.status === 'loaded') return; // never demote a loaded module
+      entry.status = status;
+      __alloModuleNotify();
+    };
+    window.__alloModuleSnapshot = function() {
+      var pending = [];
+      var failed = [];
+      Object.keys(__alloModuleRegistry).forEach(function(name) {
+        var status = __alloModuleRegistry[name].status;
+        if (status === 'pending') pending.push(name);
+        else if (status === 'failed') failed.push(name);
+      });
+      return { pending: pending, failed: failed };
+    };
+    window.__alloModuleReady = function(names) {
+      return (names || []).every(function(name) {
+        return !!(window.AlloModules && window.AlloModules[name]);
+      });
+    };
     const loadModule = (name, url) => {
+      // Dedup: already registered (module executed) or already in flight.
+      if (window.AlloModules && window.AlloModules[name]) {
+        __alloSetModuleStatus(name, 'loaded');
+        return;
+      }
+      var existing = __alloModuleRegistry[name];
+      if (existing && existing.status === 'pending') return;
       // Auto-append cache-buster so each deploy invalidates browser + CDN edge
       // caches. Without this, modules like content_engine_module.js can pin to
       // an old version indefinitely (e.g., leftover debug logs were still
@@ -5793,6 +5862,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       } else if (url.indexOf('v=') === -1) {
         url = url + '&v=' + pluginCdnVersion;
       }
+      var entry = __alloModuleRegistry[name] || (__alloModuleRegistry[name] = {});
+      entry.originalUrl = originalUrl;
+      __alloSetModuleStatus(name, 'pending');
       console.log('[CDN] Attempting to load ' + name + ' from: ' + url);
       const prevOnError = window.onerror;
       window.onerror = function(msg, src, line, col, err) {
@@ -5814,6 +5886,23 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const s = document.createElement('script');
       s.src = url;
       s.crossOrigin = "anonymous";
+      // One fallback path for both failure shapes (network error, or executed
+      // but never registered): try GitHub raw, then settle the registry.
+      var tryFallback = function() {
+        var fb = moduleFallbackUrl(originalUrl, url);
+        console.log('[CDN-FALLBACK] URL:', fb);
+        var s2 = document.createElement('script'); s2.src = fb;
+        s2.onload = function() {
+          var f2 = window.AlloModules && window.AlloModules[name];
+          console.log('[CDN-FALLBACK] ' + name + ': ' + (f2 ? 'SUCCESS' : 'FAILED'));
+          __alloSetModuleStatus(name, f2 ? 'loaded' : 'failed');
+        };
+        s2.onerror = function() {
+          console.error('[CDN-FALLBACK-FAIL] ' + name + ' fallback also unreachable');
+          __alloSetModuleStatus(name, 'failed');
+        };
+        document.head.appendChild(s2);
+      };
       s.onload = () => {
         const found = window.AlloModules && window.AlloModules[name];
         console.log('[CDN] ' + name + ' script executed. Registration: ' + (found ? 'SUCCESS' : 'FAILED'));
@@ -5824,12 +5913,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           // jsdelivr URL pattern (cdn.jsdelivr.net/gh/Apomera/AlloFlow@HASH/),
           // so previously-pinned-hash modules (PoetTree, EscapeRoom, etc.)
           // can still recover via this fallback if their edge fails.
-          var fb = moduleFallbackUrl(originalUrl, url);
-          console.log('[CDN-FALLBACK] URL:', fb);
-          var s2 = document.createElement('script'); s2.src = fb;
-          s2.onload = function() { var f2 = window.AlloModules && window.AlloModules[name]; console.log('[CDN-FALLBACK] ' + name + ': ' + (f2 ? 'SUCCESS' : 'FAILED')); };
-          document.head.appendChild(s2);
+          tryFallback();
           console.error('[CDN] window.AlloModules keys:', Object.keys(window.AlloModules || {}));
+        } else {
+          __alloSetModuleStatus(name, 'loaded');
         }
         window.onerror = prevOnError;
       };
@@ -5837,13 +5924,22 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         console.error('[CDN-FAIL] ' + name + ' network error, trying GitHub raw fallback:', e);
         // Same fallback regex as the onload path above — recognizes both
         // Cloudflare Pages and legacy jsdelivr URLs.
-        var fb = moduleFallbackUrl(originalUrl, url);
-        var s2 = document.createElement('script'); s2.src = fb;
-        s2.onload = function() { console.log('[CDN-FALLBACK] ' + name + ': ' + (window.AlloModules && window.AlloModules[name] ? 'SUCCESS' : 'FAILED')); };
-        document.head.appendChild(s2);
+        tryFallback();
         window.onerror = prevOnError;
       };
       document.head.appendChild(s);
+    };
+    window.__alloRetryFailedModules = function() {
+      var retried = 0;
+      Object.keys(__alloModuleRegistry).forEach(function(name) {
+        var entry = __alloModuleRegistry[name];
+        if (entry.status === 'failed' && entry.originalUrl) {
+          entry.status = 'idle'; // allow the pending-dedup to pass
+          loadModule(name, entry.originalUrl);
+          retried += 1;
+        }
+      });
+      return retried;
     };
     // ── Error Reporter — loads FIRST so it can capture errors from every other
     //    module's load + runtime. Surfaces a hidden-by-default red badge that
@@ -12116,46 +12212,80 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           try { await _alloMailboxCall(mbConfig.url, { a: 'end', c: live.code, k: live.secret }); } catch (_) {}
       }
   }, [mbLive, mbConfig, _mbCloseTeacherPeers]);
-  const pushResourceToMailbox = useCallback(async () => {
+  // Chunk-send core shared by single pushes, auto-follow, and full-pack
+  // sharing. Real-time channels get chunks instantly; the mailbox ALWAYS gets
+  // a copy (replay log for late joiners + delivery when P2P is blocked) and
+  // students dedup by rid. opts.open=false delivers into the student's pack
+  // without yanking their view; opts.quiet=true suppresses per-item toasts.
+  const _mbPushOneResource = useCallback(async (item, opts = {}) => {
+      if (!mbLive || !mbConfig?.url || !item || !item.id) return { rtcCount: 0 };
+      const flags = { open: opts.open !== false, quiet: opts.quiet === true };
+      const encoded = await _alloEncodeAlloPack(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })));
+      const parts = _alloSplitPackChunks(encoded);
+      const rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      let rtcCount = 0;
+      const openPeers = Object.entries(mbPeersRef.current || {}).filter(([, peer]) => peer.dc && peer.dc.readyState === 'open');
+      for (const [, peer] of openPeers) {
+          try {
+              for (let i = 0; i < parts.length; i += 1) {
+                  await _alloDcSendDrained(peer.dc, JSON.stringify({ kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet }));
+              }
+              rtcCount += 1;
+          } catch (dcErr) { warnLog('Channel push failed for one student (mailbox copy still covers them):', dcErr?.message); }
+      }
+      for (let i = 0; i < parts.length; i += 1) {
+          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet } });
+      }
+      return { rtcCount };
+  }, [mbLive, mbConfig]);
+  const pushResourceToMailbox = useCallback(async (targetItem, opts = {}) => {
       if (!mbLive || !mbConfig?.url) return;
       const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
-      const item = (generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type))
-          ? generatedContent
-          : candidates[candidates.length - 1];
+      const item = (targetItem && targetItem.id && !TEACHER_ONLY_TYPES.includes(targetItem.type))
+          ? targetItem
+          : ((generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type))
+              ? generatedContent
+              : candidates[candidates.length - 1]);
       if (!item) {
-          addToast('Open a student-safe resource first, then push it to the class.', 'info');
+          if (!opts.silentTeacher) addToast('Open a student-safe resource first, then push it to the class.', 'info');
+          return;
+      }
+      if (!opts.silentTeacher) setMbBusy(true);
+      try {
+          const { rtcCount } = await _mbPushOneResource(item, opts);
+          if (!opts.silentTeacher) {
+              const total = Object.keys(mbRoster).length;
+              addToast('Pushed "' + (item.title || item.type) + '" — ' + rtcCount + ' instant, ' + Math.max(0, total - rtcCount) + ' via mailbox.', 'success');
+          }
+      } catch (e) {
+          warnLog('Mailbox push failed', e);
+          if (!opts.silentTeacher) addToast('Push failed: ' + (e?.message || e), 'error');
+      }
+      if (!opts.silentTeacher) setMbBusy(false);
+  }, [mbLive, mbConfig, generatedContent, history, mbRoster, _mbPushOneResource]);
+  // Async-mode parity: hand the class the teacher's whole student-safe pack
+  // to explore freely (delivered quietly, without yanking anyone's view).
+  const shareFullPackToMailbox = useCallback(async () => {
+      if (!mbLive || !mbConfig?.url) return;
+      const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
+      if (!candidates.length) {
+          addToast('No student-safe resources to share yet.', 'info');
           return;
       }
       setMbBusy(true);
-      try {
-          const encoded = await _alloEncodeAlloPack(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })));
-          const parts = _alloSplitPackChunks(encoded);
-          const rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-          // Real-time first: connected channels get the chunks instantly.
-          let rtcCount = 0;
-          const openPeers = Object.entries(mbPeersRef.current || {}).filter(([, peer]) => peer.dc && peer.dc.readyState === 'open');
-          for (const [, peer] of openPeers) {
-              try {
-                  for (let i = 0; i < parts.length; i += 1) {
-                      await _alloDcSendDrained(peer.dc, JSON.stringify({ kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i] }));
-                  }
-                  rtcCount += 1;
-              } catch (dcErr) { warnLog('Channel push failed for one student (mailbox copy still covers them):', dcErr?.message); }
-          }
-          // Mailbox always gets a copy: replay log for late joiners + delivery
-          // for students whose network blocked the P2P upgrade. Students dedup
-          // by rid, so double delivery is harmless.
-          for (let i = 0; i < parts.length; i += 1) {
-              await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i] } });
-          }
-          const total = Object.keys(mbRoster).length;
-          addToast('Pushed "' + (item.title || item.type) + '" — ' + rtcCount + ' instant, ' + Math.max(0, total - rtcCount) + ' via mailbox.', 'success');
-      } catch (e) {
-          warnLog('Mailbox push failed', e);
-          addToast('Push failed: ' + (e?.message || e), 'error');
+      let shared = 0;
+      for (const item of candidates) {
+          try {
+              await _mbPushOneResource(item, { open: false, quiet: true });
+              shared += 1;
+          } catch (e) { warnLog('Pack share failed for one resource:', e?.message); }
       }
+      try {
+          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'packdone', count: shared } });
+      } catch (_) {}
+      addToast('Shared ' + shared + ' of ' + candidates.length + ' resources with the class.', shared ? 'success' : 'error');
       setMbBusy(false);
-  }, [mbLive, mbConfig, generatedContent, history, mbRoster]);
+  }, [mbLive, mbConfig, history, _mbPushOneResource]);
   useEffect(() => {
       if (!mbLive || !mbConfig?.url) return undefined;
       let cancelled = false;
@@ -12375,6 +12505,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setMbStudent(null);
           return;
       }
+      if (v.kind === 'packdone') {
+          addToast('Your teacher shared ' + (v.count || 'new') + ' resources — explore them in your pack.', 'success');
+          return;
+      }
       if (v.kind === 'res') {
           const store = mbChunkStoreRef.current || (mbChunkStoreRef.current = { parts: {}, applied: new Set() });
           const assembled = _alloCollectResChunk(store, v);
@@ -12386,8 +12520,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
                   return [...rest, resource];
               });
-              setPendingQrAssignmentResource(resource);
-              addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
+              // open=false delivers quietly into the pack (async-mode share);
+              // open=true (default) follows the teacher like sync mode.
+              if (v.open !== false) setPendingQrAssignmentResource(resource);
+              if (!v.quiet) addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
           } catch (decodeErr) {
               warnLog('Mailbox resource decode failed', decodeErr);
           }
@@ -21415,6 +21551,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               addToast(t('adventure.toasts.teacher_sync_warning'), "info");
           }
       }
+      // Mailbox sync-mode parity: opening a resource while a mailbox live
+      // session runs auto-follows the class to it, exactly like the Firestore
+      // currentResourceId sync above (silent — no toast per navigation).
+      if (isTeacherMode && mbLive && item && !TEACHER_ONLY_TYPES.includes(item.type)) {
+          pushResourceToMailbox(item, { silentTeacher: true });
+      }
   };
   useEffect(() => {
       if (!pendingQrAssignmentResource || isTeacherMode) return;
@@ -21563,9 +21705,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       return undefined;
   }, []);
   // Keep the announced nickname current without restarting the poll/RTC loops.
+  // No connected-gate here: the codename picker often commits BEFORE the first
+  // poll round-trip finishes, and gating on it left the teacher roster showing
+  // the boot-time placeholder until the next heartbeat. Announcing early is
+  // harmless (retry wrapper + heartbeat cover any race).
   useEffect(() => {
       mbNicknameRef.current = (studentNickname || 'Student').slice(0, 40);
-      if (mbStudent && mbStudentConnectedRef.current && typeof mbAnnounceRef.current === 'function') {
+      if (mbStudent && typeof mbAnnounceRef.current === 'function') {
           mbAnnounceRef.current();
       }
   }, [studentNickname, mbStudent]);
@@ -29015,9 +29161,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     );
                   })}
                 </div>
-                <button onClick={pushResourceToMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl p-3 transition-all disabled:opacity-60 mb-2">
+                <button onClick={() => pushResourceToMailbox()} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl p-3 transition-all disabled:opacity-60 mb-2">
                   {mbBusy ? 'Sending…' : 'Push current resource to class'}
                 </button>
+                <button onClick={shareFullPackToMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60 mb-2">
+                  Share full resource pack (students explore freely)
+                </button>
+                <p className="text-[10px] text-slate-400 mb-2 text-center">Opening a resource now auto-shows it to the class, like a regular live session.</p>
                 <button onClick={endMailboxLiveSession} className="w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">End session</button>
               </div>
             )}
@@ -29029,6 +29179,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         <button onClick={toggleMbHand} aria-pressed={mbHandUp} aria-label={mbHandUp ? 'Lower hand' : 'Raise hand'} title={mbHandUp ? 'Lower hand' : 'Raise hand'} className={`fixed bottom-24 right-4 z-[140] rounded-full shadow-lg p-3 text-xl border-2 transition-all no-print ${mbHandUp ? 'bg-amber-300 border-amber-500 scale-110' : 'bg-white border-slate-300 hover:border-amber-400'}`}>
           ✋
         </button>
+      )}
+      {isAppReady && (moduleLoadInfo.pending.length > 0 || moduleLoadInfo.failed.length > 0) && (
+        <div role="status" aria-live="polite" className="fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm">
+          {moduleLoadInfo.pending.length > 0 && (
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block w-2.5 h-2.5 rounded-full border-2 border-slate-400 border-t-transparent animate-spin" aria-hidden="true"></span>
+              Loading tools… {moduleLoadInfo.pending.length} left
+            </span>
+          )}
+          {moduleLoadInfo.failed.length > 0 && (
+            <button onClick={() => { try { window.__alloRetryFailedModules?.(); } catch (_) {} }} className="flex items-center gap-1 bg-rose-600 hover:bg-rose-500 text-white rounded-full px-2 py-0.5 transition-colors">
+              {moduleLoadInfo.failed.length} failed — retry
+            </button>
+          )}
+        </div>
       )}
       {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
       {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
