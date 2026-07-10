@@ -69,6 +69,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
     if (document.head) document.head.appendChild(st);
   })();
 
+  if (typeof document !== 'undefined' && !document.getElementById('swimlab-readiness-css')) {
+    var swimReadinessStyle = document.createElement('style');
+    swimReadinessStyle.id = 'swimlab-readiness-css';
+    swimReadinessStyle.textContent = [
+      '.swimlab-menu-shell{width:min(100%,1080px);margin:0 auto;padding:8px;color:#e6f4ff;display:grid;gap:14px;}',
+      '.swimlab-menu-shell *{box-sizing:border-box;}',
+      '.swimlab-command{padding:20px;border:1px solid rgba(56,189,248,.42);border-radius:20px;background:radial-gradient(circle at 90% 10%,rgba(14,165,233,.24),transparent 34%),linear-gradient(135deg,rgba(7,89,133,.72),rgba(2,6,23,.98) 66%);box-shadow:0 18px 44px rgba(2,6,23,.28);}',
+      '.swimlab-command-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}',
+      '.swimlab-eyebrow{margin:0 0 7px;color:#7dd3fc;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;}',
+      '.swimlab-title{margin:0;color:#f8fafc;font-size:clamp(22px,3vw,31px);line-height:1.12;}',
+      '.swimlab-subtitle{max-width:720px;margin:8px 0 0;color:#dbeafe;font-size:13px;line-height:1.55;}',
+      '.swimlab-status{flex:0 0 auto;padding:8px 11px;border:1px solid rgba(125,211,252,.34);border-radius:999rem;background:rgba(2,6,23,.62);color:#bae6fd;font-size:10px;font-weight:800;white-space:nowrap;}',
+      '.swimlab-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:17px;}',
+      '.swimlab-metric{min-width:0;padding:10px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(15,23,42,.7);}',
+      '.swimlab-metric-label{display:block;color:#94a3b8;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.swimlab-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+      '.swimlab-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px;}',
+      '.swimlab-primary{min-height:44px;padding:10px 16px;border:1px solid rgba(224,242,254,.4);border-radius:12px;background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(2,132,199,.23);transition:transform .18s,box-shadow .18s;}',
+      '.swimlab-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(2,132,199,.3);}',
+      '.swimlab-action-note{color:#bae6fd;font-size:10px;line-height:1.4;}',
+      '.swimlab-section{padding:16px;border:1px solid #334155;border-radius:16px;background:rgba(15,23,42,.65);}',
+      '.swimlab-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;}',
+      '.swimlab-section-head h3{margin:0;color:#f8fafc;font-size:15px;}',
+      '.swimlab-section-head p{margin:3px 0 0;color:#94a3b8;font-size:11px;line-height:1.45;}',
+      '.swimlab-essential-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}',
+      '.swimlab-tile-wrap{min-width:0;}',
+      '.swimlab-menu-tile{width:100%;height:100%;min-height:132px;transition:transform .18s,border-color .18s,box-shadow .18s;}',
+      '.swimlab-menu-tile:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(2,6,23,.24);}',
+      '.swimlab-menu-tile--compact{min-height:108px;}',
+      '.swimlab-catalog{border:1px solid #334155;border-radius:16px;background:rgba(15,23,42,.72);overflow:hidden;}',
+      '.swimlab-catalog summary{min-height:50px;padding:14px 16px;cursor:pointer;color:#e0f2fe;font-size:12px;font-weight:900;}',
+      '.swimlab-catalog-body{display:grid;gap:16px;padding:0 14px 14px;}',
+      '.swimlab-catalog-section h3{margin:0 0 4px;color:#7dd3fc;font-size:12px;text-transform:uppercase;letter-spacing:.06em;}',
+      '.swimlab-catalog-section p{margin:0 0 9px;color:#94a3b8;font-size:10px;line-height:1.45;}',
+      '.swimlab-catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}',
+      '.swimlab-badges{padding:13px;border:1px solid #334155;border-radius:14px;background:#0f172a;}',
+      '.swimlab-quote{padding:13px 15px;border-left:3px solid #38bdf8;border-radius:0 12px 12px 0;background:rgba(14,165,233,.07);color:#94a3b8;font-size:12px;font-style:italic;line-height:1.55;}',
+      '@media(max-width:820px){.swimlab-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.swimlab-essential-grid,.swimlab-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media(max-width:560px){.swimlab-menu-shell{padding:0;}.swimlab-command{padding:14px;border-radius:16px;}.swimlab-command-top{flex-direction:column;}.swimlab-status{white-space:normal;}.swimlab-essential-grid,.swimlab-catalog-grid{grid-template-columns:1fr;}.swimlab-primary{width:100%;}.swimlab-actions{align-items:stretch;}.swimlab-action-note{width:100%;}.swimlab-menu-tile{min-height:100px;}}',
+      '@media(prefers-reduced-motion:reduce){.swimlab-primary,.swimlab-menu-tile{transition:none;}.swimlab-primary:hover,.swimlab-menu-tile:hover{transform:none;}}',
+      '.theme-contrast .swimlab-command,.theme-contrast .swimlab-section,.theme-contrast .swimlab-catalog,.theme-contrast .swimlab-badges{box-shadow:none;border-width:2px;}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(swimReadinessStyle);
+  }
+
   window.StemLab.registerTool('swimLab', {
     name: 'SwimLab',
     icon: '🏊',
@@ -321,96 +366,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       ];
 
       function renderMenu() {
-        var visitedCount = Object.keys(modulesVisited).length;
-        // Total = educational modules only (excludes cumulative, askLifeguard,
-        // resources). 3 in "start" + 6 in "modules" = 9.
-        var totalModules = 9;
-        function renderTile(tile, emphasized) {
+        var educationalTiles = MENU_TILES.filter(function(tile) { return tile.section === 'start' || tile.section === 'modules'; });
+        var safetyTiles = MENU_TILES.filter(function(tile) { return tile.section === 'start'; });
+        var catalogSections = MENU_SECTIONS.filter(function(section) { return section.id !== 'start'; });
+        var visitedCount = educationalTiles.filter(function(tile) { return !!modulesVisited[tile.id]; }).length;
+        var safetyCompleted = safetyTiles.filter(function(tile) { return !!modulesVisited[tile.id]; }).length;
+        var nextTile = safetyTiles.filter(function(tile) { return !modulesVisited[tile.id]; })[0]
+          || educationalTiles.filter(function(tile) { return !modulesVisited[tile.id]; })[0]
+          || MENU_TILES.filter(function(tile) { return tile.id === 'cumulative'; })[0];
+
+        function openTile(tile) {
+          if (!tile) return;
+          upd('view', tile.id);
+          markVisited(tile.id);
+          wsAnnounce('Opening ' + tile.label);
+        }
+
+        function metric(label, value) {
+          return h('div', { className: 'swimlab-metric', role: 'listitem' },
+            h('span', { className: 'swimlab-metric-label' }, label),
+            h('strong', { className: 'swimlab-metric-value' }, value));
+        }
+
+        function renderTile(tile, emphasized, compact) {
           var visited = !!modulesVisited[tile.id];
           var borderColor = visited ? T.ok : (emphasized ? T.danger : T.border);
-          return h('button', { key: tile.id, role: 'listitem',
-            'aria-label': tile.label + (visited ? ' (visited)' : '') + (emphasized ? ' — start here' : ''),
-            onClick: function() {
-              upd('view', tile.id);
-              markVisited(tile.id);
-              wsAnnounce('Opening ' + tile.label);
+          return h('div', { key: tile.id, role: 'listitem', className: 'swimlab-tile-wrap' },
+            h('button', {
+              type: 'button',
+              className: 'swimlab-menu-tile' + (compact ? ' swimlab-menu-tile--compact' : ''),
+              'aria-label': tile.label + (visited ? ' (visited)' : '') + (emphasized ? ' - start here' : ''),
+              onClick: function() { openTile(tile); },
+              style: btn({
+                display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
+                padding: 14, background: emphasized ? '#0a1d2e' : T.card,
+                borderColor: borderColor, borderWidth: emphasized ? 2 : 1, borderStyle: 'solid'
+              })
             },
-            style: btn({
-              display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
-              padding: 14, minHeight: 110,
-              background: emphasized ? '#0a1d2e' : T.card,
-              borderColor: borderColor,
-              borderWidth: emphasized ? 2 : 1,
-              borderStyle: 'solid'
-            })
-          },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
-              h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, tile.icon),
-              h('span', { style: { fontWeight: 700, fontSize: 15, flex: 1, color: T.text } }, tile.label),
-              visited && h('span', { 'aria-hidden': 'true', style: { color: T.ok, fontSize: 14 } }, '✓')
-            ),
-            h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.45 } }, tile.desc)
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, tile.icon),
+                h('span', { style: { fontWeight: 700, fontSize: compact ? 13 : 15, flex: 1, color: T.text } }, tile.label),
+                visited && h('span', { 'aria-hidden': 'true', style: { color: T.ok, fontSize: 14 } }, '\u2713')),
+              h('div', { style: { fontSize: compact ? 11 : 12, color: T.muted, lineHeight: 1.45 } }, tile.desc)
+            )
           );
         }
-        return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
-          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 } },
-            h('h2', { style: { margin: 0, fontSize: 22 } }, __alloT('stem.swimlab.swimlab', '🏊 SwimLab')),
-            h('span', { style: { fontSize: 12, color: T.dim },
-              'aria-label': 'Modules visited: ' + Math.min(visitedCount, totalModules) + ' of ' + totalModules },
-              'Modules: ', h('strong', { style: { color: T.text } }, Math.min(visitedCount, totalModules) + ' / ' + totalModules))
-          ),
-          h('p', { style: { margin: '0 0 18px', color: T.muted, fontSize: 14, lineHeight: 1.55 } },
-            __alloT('stem.swimlab.the_science_of_swimming_and_the_surviv', 'The science of swimming and the survival skills that go with it. The '),
-            h('strong', { style: { color: T.text } }, __alloT('stem.swimlab.start_here_2', 'Start here')),
-            __alloT('stem.swimlab.lane_is_the_three_modules_most_likely_', ' lane is the three modules most likely to actually save a life if you only do three. Every module is sourced inline.')),
-          MENU_SECTIONS.map(function(sec) {
-            var sectionTiles = MENU_TILES.filter(function(t) { return t.section === sec.id; });
-            if (sectionTiles.length === 0) return null;
-            return h('section', { key: sec.id, 'aria-label': sec.label,
-              style: {
-                marginBottom: 18,
-                padding: sec.emphasized ? 14 : 0,
-                borderRadius: sec.emphasized ? 12 : 0,
-                background: sec.emphasized ? 'rgba(239,68,68,0.06)' : 'transparent',
-                border: sec.emphasized ? '1px solid ' + sec.accent : 'none'
-              }
-            },
-              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: sec.blurb ? 4 : 8, flexWrap: 'wrap' } },
-                h('h3', { style: { margin: 0, fontSize: 15, color: sec.emphasized ? sec.accent : T.accentHi, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 } },
-                  h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, sec.emoji),
-                  sec.label)
-              ),
-              sec.blurb && h('p', { style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.5 } }, sec.blurb),
-              h('div', { role: 'list',
-                style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
-                sectionTiles.map(function(tile) { return renderTile(tile, !!sec.emphasized); })
-              )
-            );
-          }),
-          // Badge tray
-          Object.keys(badges).length > 0 && h('div', { style: { marginTop: 18, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, __alloT('stem.swimlab.badges_earned', '🏅 Badges earned')),
+
+        return h('main', { className: 'swimlab-menu-shell', 'data-swimlab-readiness': 'true' },
+          h('header', { className: 'swimlab-command' },
+            h('div', { className: 'swimlab-command-top' },
+              h('div', null,
+                h('p', { className: 'swimlab-eyebrow' }, __alloT('stem.swimlab.readiness_label', 'Water safety readiness')),
+                h('h2', { className: 'swimlab-title' }, __alloT('stem.swimlab.swimlab', 'SwimLab')),
+                h('p', { className: 'swimlab-subtitle' }, __alloT('stem.swimlab.readiness_blurb', 'Learn the physiology, physics, and decisions behind safer swimming, cold-water survival, and bystander rescue.'))),
+              h('div', { className: 'swimlab-status', role: 'status' }, __alloT('stem.swimlab.education_status', 'Education only - in an emergency, call 911'))),
+            h('div', { className: 'swimlab-metrics', role: 'list', 'aria-label': __alloT('stem.swimlab.progress_label', 'SwimLab progress') },
+              metric(__alloT('stem.swimlab.safety_essentials', 'Safety essentials'), safetyCompleted + ' / ' + safetyTiles.length),
+              metric(__alloT('stem.swimlab.modules_explored', 'Modules explored'), visitedCount + ' / ' + educationalTiles.length),
+              metric(__alloT('stem.swimlab.badges', 'Badges'), String(Object.keys(badges).length)),
+              metric(__alloT('stem.swimlab.recommended_next', 'Recommended next'), nextTile ? nextTile.label : __alloT('stem.swimlab.review', 'Review'))),
+            h('div', { className: 'swimlab-actions' },
+              h('button', { type: 'button', className: 'swimlab-primary', onClick: function() { openTile(nextTile); } },
+                safetyCompleted < safetyTiles.length ? __alloT('stem.swimlab.continue_essentials', 'Continue safety essentials') : __alloT('stem.swimlab.continue_learning', 'Continue learning')),
+              h('span', { className: 'swimlab-action-note' }, nextTile ? nextTile.label : __alloT('stem.swimlab.choose_review', 'Choose a module to review')))),
+
+          h('section', { className: 'swimlab-section', 'aria-labelledby': 'swimlab-essential-heading' },
+            h('div', { className: 'swimlab-section-head' },
+              h('div', null,
+                h('h3', { id: 'swimlab-essential-heading' }, __alloT('stem.swimlab.essential_route', 'Three life-saving essentials')),
+                h('p', null, __alloT('stem.swimlab.essential_route_blurb', 'Start with the modules most likely to change a real-world decision.'))),
+              h('span', { className: 'swimlab-action-note' }, safetyCompleted + ' / ' + safetyTiles.length)),
+            h('div', { className: 'swimlab-essential-grid', role: 'list' },
+              safetyTiles.map(function(tile) { return renderTile(tile, true, false); }))),
+
+          h('details', { className: 'swimlab-catalog', open: safetyCompleted === safetyTiles.length },
+            h('summary', null, __alloT('stem.swimlab.full_catalog', 'Explore all modules, practice, and resources') + ' (' + (MENU_TILES.length - safetyTiles.length) + ')'),
+            h('div', { className: 'swimlab-catalog-body' },
+              catalogSections.map(function(section) {
+                var sectionTiles = MENU_TILES.filter(function(tile) { return tile.section === section.id; });
+                if (!sectionTiles.length) return null;
+                return h('section', { key: section.id, className: 'swimlab-catalog-section', 'aria-label': section.label },
+                  h('h3', null, h('span', { 'aria-hidden': 'true' }, section.emoji + ' '), section.label),
+                  section.blurb && h('p', null, section.blurb),
+                  h('div', { className: 'swimlab-catalog-grid', role: 'list' },
+                    sectionTiles.map(function(tile) { return renderTile(tile, false, true); })));
+              }))),
+
+          Object.keys(badges).length > 0 && h('section', { className: 'swimlab-badges', 'aria-label': __alloT('stem.swimlab.badges_earned', 'Badges earned') },
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, __alloT('stem.swimlab.badges_earned', 'Badges earned')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               Object.keys(badges).map(function(bid) {
-                return h('span', { key: bid,
-                  style: { fontSize: 11, padding: '4px 10px', borderRadius: 999, background: '#075985', color: '#e0f2fe', border: '1px solid ' + T.water } },
-                  badges[bid].label || bid);
-              })
-            )
-          ),
-          // Why this tool exists, treated lightly
-          h('div', { style: { marginTop: 22, padding: '14px 16px', borderLeft: '3px solid ' + T.accent, background: 'rgba(14,165,233,0.06)', fontSize: 13, fontStyle: 'italic', color: T.muted, lineHeight: 1.6 } },
+                return h('span', { key: bid, style: { fontSize: 11, padding: '4px 10px', borderRadius: '999rem', background: '#075985', color: '#e0f2fe', border: '1px solid ' + T.water } }, badges[bid].label || bid);
+              }))),
+
+          h('div', { className: 'swimlab-quote' },
             __alloT('stem.swimlab.whoever_saves_a_single_soul_scripture__2', '"Whoever saves a single soul, scripture considers it as if they saved an entire world."'),
             h('br'),
-            h('span', { style: { fontSize: 11, color: T.dim, fontStyle: 'normal' } }, __alloT('stem.swimlab.mishnah_sanhedrin_4_5_pirkei_avot_2', '— Mishnah Sanhedrin 4:5 (Pirkei Avot)'))
-          ),
+            h('span', { style: { fontSize: 10, fontStyle: 'normal' } }, __alloT('stem.swimlab.mishnah_sanhedrin_4_5_pirkei_avot_2', '- Mishnah Sanhedrin 4:5 (Pirkei Avot)'))),
           disclaimerFooter()
         );
       }
 
-      // ─────────────────────────────────────────
-      // SHARED MODULE COMPONENTS
-      // ─────────────────────────────────────────
+      // Shared module components
       function sectionHeader(emoji, title) {
         return h('h3', { style: { margin: '18px 0 8px', fontSize: 15, color: T.accentHi, display: 'flex', alignItems: 'center', gap: 6 } },
           h('span', { 'aria-hidden': 'true' }, emoji), title);
