@@ -304,10 +304,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for rockC
   "buttons": 13,
   "canvases": 1,
   "inputs": 0,
-  "lengthBucket": 29,
+  "lengthBucket": 39,
   "paths": 0,
   "selects": 1,
-  "sha": "ec35ca6ea52b21a6",
+  "sha": "9e9f2a87e6fee64f",
   "svgs": 0,
 }
 `;

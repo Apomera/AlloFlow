@@ -4535,12 +4535,18 @@ const d = labToolData.rockCycle || {};
           };
 
 
+          var viewedFamilies = Object.keys(d.rcViewed || {}).length;
+          var transformsRun = d.transformsRun || 0;
+          var nextMission = viewedFamilies < 3 ? { icon: '🪨', title: 'Compare all three rock families', detail: 'Select each node and look for evidence of how it formed.' }
+            : !d.selectedProcess ? { icon: '↔️', title: 'Trace a transformation', detail: 'Choose an arrow to connect process, energy, and time.' }
+            : transformsRun < 3 ? { icon: '🔄', title: 'Test the transformation machine', detail: 'Run another pathway and compare its inputs and products.' }
+            : { icon: '🧠', title: 'Explain the branching cycle', detail: 'Use evidence to show why the rock cycle has many valid paths.' };
 
-          return React.createElement("div", { className: "max-w-3xl mx-auto animate-in fade-in duration-200" },
+          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
+              React.createElement("button", { type: 'button', onClick: () => setStemLabTool(null), className: "transition-colors grid h-10 w-10 shrink-0 place-items-center border border-slate-200 hover:bg-slate-100 rounded-xl active:scale-[0.97]", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold text-slate-800 tracking-tight" }, "\uD83E\uDEA8 Rock Cycle"),
 
@@ -4548,7 +4554,23 @@ const d = labToolData.rockCycle || {};
 
             ),
 
-            React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, "Click a rock type on the diagram to explore. Watch particles flow through the cycle!"),
+            React.createElement("section", { "data-rockcycle-command": true, className: "relative overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-sky-50 p-4 sm:p-5 mb-4", "aria-labelledby": "rockcycle-command-title" },
+              React.createElement("div", { className: "absolute -right-6 -top-8 text-8xl opacity-[0.06]", "aria-hidden": true }, "🪨"),
+              React.createElement("div", { className: "relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]" },
+                React.createElement("div", null,
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.15em] text-orange-700" }, "Earth systems mission"),
+                  React.createElement("h2", { id: "rockcycle-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-slate-900" }, nextMission.icon + " " + nextMission.title),
+                  React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed" }, nextMission.detail),
+                  React.createElement("div", { className: "mt-4 grid grid-cols-3 gap-2", "aria-label": "Rock cycle mission progress" },
+                    [[viewedFamilies + '/3', 'Families'], [d.selectedProcess ? '1/1' : '0/1', 'Process'], [transformsRun + '/3', 'Transforms']].map(function(metric) { return React.createElement("div", { key: metric[1], className: "rounded-xl border border-orange-100 bg-white/80 p-3 text-center" }, React.createElement("div", { className: "text-lg font-black text-slate-900" }, metric[0]), React.createElement("div", { className: "text-[10px] font-bold text-slate-500" }, metric[1])); })
+                  )
+                ),
+                React.createElement("aside", { className: "rounded-xl border border-sky-200 bg-sky-50/70 p-4", "aria-label": "Rock cycle evidence route" },
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-sky-800" }, "Evidence route"),
+                  React.createElement("ol", { className: "mt-2 space-y-2 text-[11px] text-slate-700" }, ['Observe texture and composition', 'Connect process to energy and time', 'Explain more than one valid pathway'].map(function(step, i) { return React.createElement("li", { key: step, className: "flex gap-2" }, React.createElement("span", { className: "font-black text-orange-600" }, (i + 1) + '.'), React.createElement("span", null, step)); }))
+                )
+              )
+            ),
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg mb-3", style: { height: "420px" } },
 
