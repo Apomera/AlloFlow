@@ -630,6 +630,88 @@ function _alloBase64UrlDecode(value) {
         return '';
     }
 }
+const ALLO_QR_PACK_PARAM = 'allo_pack';
+const ALLO_QR_PACK_MAX_URL_CHARS = 60000;
+const ALLO_QR_PACK_QR_MAX_CHARS = 1600;
+function _alloBytesToBase64Url(bytes) {
+    if (typeof btoa !== 'function' || !bytes || !bytes.length) return '';
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    }
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+function _alloBase64UrlToBytes(value) {
+    if (typeof atob !== 'function') return new Uint8Array(0);
+    let text = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
+    while (text.length % 4) text += '=';
+    const binary = atob(text);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+}
+// Self-contained homework packs: the entire activity rides inside the URL
+// fragment (fragments are never sent to any server), so students need no
+// account, no Firebase, and no hosting — the answer to Canvas-managed
+// backends rejecting anonymous student reads. Format: '1.' = deflate-raw
+// compressed; '0.' = raw JSON fallback for engines without CompressionStream.
+async function _alloEncodeAlloPack(text) {
+    const source = String(text || '');
+    try {
+        if (typeof CompressionStream === 'function' && typeof Blob === 'function' && typeof Response === 'function') {
+            const stream = new Blob([source]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+            const buffer = await new Response(stream).arrayBuffer();
+            const encoded = _alloBytesToBase64Url(new Uint8Array(buffer));
+            if (encoded) return '1.' + encoded;
+        }
+    } catch (_) {}
+    return '0.' + _alloBase64UrlEncode(source);
+}
+async function _alloDecodeAlloPack(value) {
+    const text = String(value || '');
+    const dot = text.indexOf('.');
+    const version = dot > -1 ? text.slice(0, dot) : '0';
+    const body = dot > -1 ? text.slice(dot + 1) : text;
+    if (version === '1') {
+        if (typeof DecompressionStream !== 'function') {
+            const err = new Error('This browser cannot open compressed homework links.');
+            err.code = 'allo/pack-unsupported-browser';
+            throw err;
+        }
+        const bytes = _alloBase64UrlToBytes(body);
+        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+        return await new Response(stream).text();
+    }
+    return _alloBase64UrlDecode(body);
+}
+function _alloReadAlloPackParam() {
+    if (typeof window === 'undefined') return '';
+    try {
+        const hash = String(window.location.hash || '');
+        if (hash.length > 1) {
+            const fromHash = new URLSearchParams(hash.replace(/^#/, '')).get(ALLO_QR_PACK_PARAM) || '';
+            if (fromHash) return fromHash;
+        }
+        return new URLSearchParams(window.location.search || '').get(ALLO_QR_PACK_PARAM) || '';
+    } catch (_) {
+        return '';
+    }
+}
+function _buildAlloPackShareUrl(encodedPack) {
+    if (typeof window === 'undefined' || !encodedPack) return '';
+    try {
+        const current = new URL(window.location.href);
+        const base = _alloGetConfiguredStudentBaseUrl() || (_alloShareHostIsNotStudentReachable(current) ? '' : current.toString());
+        if (!base) return '';
+        const url = new URL(base);
+        if (_alloShareHostIsNotStudentReachable(url)) return '';
+        url.search = '';
+        url.hash = ALLO_QR_PACK_PARAM + '=' + encodedPack;
+        return url.toString();
+    } catch (_) {
+        return '';
+    }
+}
 function _alloValidFirebaseConfig(config) {
     return Boolean(config && typeof config === 'object' && config.apiKey && config.projectId && config.appId);
 }
@@ -11694,7 +11776,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, []);
   useEffect(() => {
       let cancelled = false;
-      const url = qrShareModal?.url || '';
+      const url = qrShareModal?.noQr ? '' : (qrShareModal?.url || '');
       if (!url) {
           setQrShareSvg('');
           setQrShareError(false);
@@ -11706,7 +11788,58 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           .then(svg => { if (!cancelled) setQrShareSvg(svg); })
           .catch(() => { if (!cancelled) { setQrShareSvg(''); setQrShareError(true); } });
       return () => { cancelled = true; };
-  }, [qrShareModal?.url, qrShareModal?.title]);
+  }, [qrShareModal?.url, qrShareModal?.title, qrShareModal?.noQr]);
+  // Self-contained variant: no Firestore write, no student auth — the whole
+  // pack is compressed into the URL fragment and decoded by the student shell.
+  // This is the pathway that works when the class backend (e.g. Gemini
+  // Canvas-managed Firebase) refuses anonymous student devices.
+  const createSelfContainedHomeworkLink = useCallback(async () => {
+      const fallbackCurrent = generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type) ? [generatedContent] : [];
+      const resourceCandidates = (Array.isArray(history) ? history : []).filter(item => item && item.id && !TEACHER_ONLY_TYPES.includes(item.type));
+      const resourcesToAssign = resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
+      if (!resourcesToAssign.length) {
+          addToast('Create or restore a teacher resource before making a homework link.', 'info');
+          return null;
+      }
+      try {
+          const title = String(sourceTopic || generatedContent?.title || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
+          const resources = resourcesToAssign.map(item => ({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data }));
+          const packet = stripUndefined({
+              v: 1,
+              kind: 'assignment',
+              title,
+              createdAt: new Date().toISOString(),
+              currentResourceId: resources[0]?.id || null,
+              resources,
+              aiPolicy: { studentAi: 'off', defaultStudentAi: 'off', teacherPrepared: true },
+          });
+          const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
+          const shareUrl = _buildAlloPackShareUrl(encoded);
+          if (!shareUrl) {
+              addToast('Self-contained link is unavailable from this host. Configure a student app URL first.', 'error');
+              return null;
+          }
+          if (shareUrl.length > ALLO_QR_PACK_MAX_URL_CHARS) {
+              addToast('This activity is too large for a self-contained link. Use the HTML export instead (Export menu).', 'error');
+              return null;
+          }
+          copyToClipboard(shareUrl);
+          setQrShareModal({
+              type: 'assignment-pack',
+              title,
+              url: shareUrl,
+              resourceCount: resources.length,
+              noQr: shareUrl.length > ALLO_QR_PACK_QR_MAX_CHARS,
+              sizeChars: shareUrl.length,
+          });
+          addToast('Self-contained homework link ready — students need no account and nothing is stored online.', 'success');
+          return shareUrl;
+      } catch (e) {
+          warnLog('Self-contained homework link failed:', e);
+          addToast('Could not create a self-contained homework link.', 'error');
+          return null;
+      }
+  }, [copyToClipboard, generatedContent, history, sourceTopic]);
   const createHomeworkAssignmentLink = useCallback(async () => {
       const fallbackCurrent = generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type) ? [generatedContent] : [];
       const resourceCandidates = (Array.isArray(history) ? history : []).filter(item => item && item.id && !TEACHER_ONLY_TYPES.includes(item.type));
@@ -11756,10 +11889,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           return shareUrl;
       } catch (e) {
           warnLog('Homework QR creation failed:', e);
-          addToast('Could not create homework QR link.', 'error');
-          return null;
+          addToast('Cloud homework link failed — making a self-contained link instead.', 'info');
+          return createSelfContainedHomeworkLink();
       }
-  }, [appId, buildAlloShareUrl, copyToClipboard, generatedContent, history, sourceTopic, user?.uid]);
+  }, [appId, buildAlloShareUrl, copyToClipboard, createSelfContainedHomeworkLink, generatedContent, history, sourceTopic, user?.uid]);
   const [includeSourceCitations, setIncludeSourceCitations] = useState(false);
   const [saveOriginalOnAdjust, setSaveOriginalOnAdjust] = useState(false);
   const [isGeneratingSource, setIsGeneratingSource] = useState(false);
@@ -20772,6 +20905,54 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       return () => { cancelled = true; };
   }, []);
+  // Self-contained homework entry (#allo_pack=…): the activity is decoded
+  // entirely from the URL fragment — no Firebase, no auth, no network reads.
+  // This is the student pathway that works when the class backend refuses
+  // anonymous devices (e.g. Gemini Canvas-managed Firestore).
+  useEffect(() => {
+      let cancelled = false;
+      const encodedPack = _alloReadAlloPackParam();
+      if (!encodedPack) return undefined;
+      window.__alloQrStudentMode = { type: 'assignment-pack', aiDisabled: true };
+      window.__alloStudentAiDisabled = true;
+      try { window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1'); } catch (_) {}
+      try { if (typeof window.__alloInstallQrStudentAiGuard === 'function') window.__alloInstallQrStudentAiGuard(); } catch (_) {}
+      setHasSelectedMode(true);
+      setHasSelectedRole(true);
+      setShowWizard(false);
+      setShowStudentWelcome(false);
+      setIsTeacherMode(false);
+      setIsParentMode(false);
+      setIsIndependentMode(false);
+      setIsStudentLinkMode(true);
+      setShowStudentEntry(true);
+      const loadPack = async () => {
+          try {
+              const text = await _alloDecodeAlloPack(encodedPack);
+              const packet = JSON.parse(text || 'null');
+              const rawResources = Array.isArray(packet?.resources)
+                  ? packet.resources.filter(item => item && item.id && item.type && !TEACHER_ONLY_TYPES.includes(item.type))
+                  : [];
+              if (!rawResources.length) throw new Error('Pack has no resources');
+              if (cancelled) return;
+              setHistory(rawResources);
+              const firstId = packet.currentResourceId || rawResources[0]?.id;
+              const firstResource = rawResources.find(item => item && item.id === firstId) || rawResources[0];
+              setPendingQrAssignmentResource(firstResource);
+              addToast('Homework loaded: ' + (packet.title || firstResource.title || 'AlloFlow assignment'), 'success');
+          } catch (e) {
+              warnLog('Self-contained homework load failed:', e);
+              if (!cancelled) {
+                  const message = e?.code === 'allo/pack-unsupported-browser'
+                      ? 'This browser is too old to open compressed homework links. Try another device or browser.'
+                      : 'Could not open this homework link. Ask your teacher for a new one.';
+                  addToast(message, 'error');
+              }
+          }
+      };
+      loadPack();
+      return () => { cancelled = true; };
+  }, []);
   useEffect(() => {
       if (activeView === 'adventure' && generatedContent?.type === 'adventure' && adventureState.turnCount > 0) {
           const timeout = setTimeout(() => {
@@ -27901,8 +28082,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           <div className="bg-white rounded-2xl shadow-2xl p-6 text-center max-w-md w-full relative" onClick={e => e.stopPropagation()}>
             <button onClick={() => setQrShareModal(null)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
             <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center"><Share2 size={24}/></div>
-            <h2 className="text-xl font-black text-slate-900 mb-1">Homework QR</h2>
+            <h2 className="text-xl font-black text-slate-900 mb-1">{qrShareModal.type === 'assignment-pack' ? 'Self-contained homework link' : 'Homework QR'}</h2>
             <p className="text-sm text-slate-600 mb-4">{qrShareModal.title}</p>
+            {!qrShareModal.noQr && (
             <div className="flex justify-center mb-4">
               <div className="bg-white border border-slate-200 rounded-xl p-3 w-52 h-52 flex items-center justify-center shadow-sm">
                 {qrShareSvg
@@ -27910,10 +28092,25 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   : <span className="text-xs font-bold text-cyan-700 text-center">{qrShareError ? 'Copy link below' : 'QR loading'}</span>}
               </div>
             </div>
+            )}
+            {qrShareModal.noQr && (
+              <div className="mb-4 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left">
+                <p className="text-xs text-amber-900 text-center">This activity is too large for a scannable QR code. The link was copied — paste it into Google Classroom, email, or any message.</p>
+              </div>
+            )}
             <button onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-cyan-800 hover:text-cyan-900 bg-cyan-50 border border-cyan-300 hover:border-cyan-400 rounded-lg p-2 transition-all break-all">
-              Copy homework link <Copy size={12}/>
+              {qrShareModal.type === 'assignment-pack' ? 'Copy self-contained link' : 'Copy homework link'} <Copy size={12}/>
             </button>
-            <p className="text-[11px] text-slate-500 mt-3">Students open teacher-prepared resources with AI generation off.</p>
+            {qrShareModal.type === 'assignment' && (
+              <button onClick={() => { createSelfContainedHomeworkLink(); }} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all">
+                Make self-contained version (no accounts needed) <Share2 size={12}/>
+              </button>
+            )}
+            {qrShareModal.type === 'assignment-pack' ? (
+              <p className="text-[11px] text-slate-500 mt-3">The whole activity travels inside the link — students need no account, nothing is stored online, and AI stays off.{typeof qrShareModal.sizeChars === 'number' ? ` Link size ~${Math.max(1, Math.round(qrShareModal.sizeChars / 1024))} KB${qrShareModal.sizeChars > 8000 ? ' — very long links can be truncated by some apps; Google Classroom and email handle them well.' : '.'}` : ''}</p>
+            ) : (
+              <p className="text-[11px] text-slate-500 mt-3">Students open teacher-prepared resources with AI generation off.</p>
+            )}
           </div>
         </div>
       )}
