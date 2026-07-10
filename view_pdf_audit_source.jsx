@@ -8530,8 +8530,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               {Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.length > 0 && (
                                 <ul className="mt-2 space-y-1">
                                   {pdfFixResult.fidelityNotes.map((n, i) => (
-                                    <li key={i} className={'text-xs leading-snug flex items-start gap-1.5 ' + (n.kind === 'refusal' ? 'text-red-700 font-semibold' : n.kind === 'numeric' ? 'text-amber-800 font-semibold' : 'text-sky-800')}>
-                                      <span aria-hidden="true">{n.kind === 'refusal' ? '🚫' : n.kind === 'numeric' ? '🔢' : n.kind === 'tables' ? '▦' : '🔗'}</span>
+                                    <li key={i} className={'text-xs leading-snug flex items-start gap-1.5 ' + (n.kind === 'refusal' ? 'text-red-700 font-semibold' : (n.kind === 'numeric' || n.kind === 'placement') ? 'text-amber-800 font-semibold' : 'text-sky-800')}>
+                                      <span aria-hidden="true">{n.kind === 'refusal' ? '🚫' : n.kind === 'numeric' ? '🔢' : n.kind === 'placement' ? '📑' : n.kind === 'tables' ? '▦' : '🔗'}</span>
                                       <span>{n.msg}</span>
                                     </li>
                                   ))}

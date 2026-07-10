@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -837,12 +837,26 @@ var _stripRestoreMarkdown = function (s) {
 var _stripPageEdgeArtifacts = function (pageTexts) {
   var texts = (pageTexts || []).map(function (t) { return String(t == null ? '' : t); });
   var folios = [];
-  if (texts.length < 2) return { texts: texts, folios: folios }; // repetition needs 2+ pages
+  var strippedLines = [];
+  if (texts.length < 2) return { texts: texts, folios: folios, strippedLines: strippedLines }; // repetition needs 2+ pages
   var EDGE = 2;
+  // H4 (deep dive 2026-07-09): the old rule stripped any digit-bearing edge line whose DIGITLESS key
+  // repeated on just 2 pages — so "Chapter 3" (one page-top) and "Chapter 7" (another) both keyed
+  // `chapter` and were silently DELETED from the OCR ground truth, and their digits joined
+  // detectedFolios (priming the folio-leak net to tell the user to delete a legitimate "3" from the
+  // body). A key now qualifies by either route:
+  //   (a) FREQUENCY — it repeats on >=max(3, 40% of pages): genuine running heads clear this easily;
+  //       content headings that recur on a couple of pages don't; OR
+  //   (b) FOLIO CONSISTENCY — it repeats on >=2 pages AND its digits track the page position with one
+  //       CONSTANT offset ("90 …" on page idx 0, "92 …" on idx 2 → offset 90 twice). This is what
+  //       verso/recto alternating heads look like (each side is on only HALF the pages — the 7/5
+  //       App-E book's exact layout), and what content headings do NOT look like ("Chapter 3" on
+  //       p1 and "Chapter 7" on p6 → offsets 2 and 1 → kept).
+  var _minRepeat = Math.max(3, Math.ceil(texts.length * 0.4));
   var _digitless = function (line) { return line.toLowerCase().replace(/\d{1,4}/g, ' ').replace(/[^\p{L}\p{N}]+/gu, ' ').replace(/\s+/g, ' ').trim(); };
   var _isBareNum = function (line) { return /^\s*\d{1,4}\s*$/.test(line); };
   // Pass 1: census of page-edge lines across all pages.
-  var keyPages = new Map(); // digitless key -> Set(pageIdx)
+  var keyPages = new Map(); // digitless key -> Map(pageIdx -> [numbers in the line])
   var perPage = texts.map(function (t, pi) {
     var lines = t.split('\n');
     var edgeIdx = new Set();
@@ -857,14 +871,30 @@ var _stripPageEdgeArtifacts = function (pageTexts) {
       if (!/\d/.test(ln)) return; // digit-bearing candidates only — never a real repeated heading
       var k = _digitless(ln);
       if (k.length >= 4) {
-        if (!keyPages.has(k)) keyPages.set(k, new Set());
-        keyPages.get(k).add(pi);
+        if (!keyPages.has(k)) keyPages.set(k, new Map());
+        var _kp = keyPages.get(k);
+        var _nums = (ln.match(/\d{1,4}/g) || []).map(Number);
+        _kp.set(pi, (_kp.get(pi) || []).concat(_nums));
       }
     });
     return { lines: lines, edgeIdx: edgeIdx, firstIdx: firstIdx, lastIdx: lastIdx };
   });
   var repeatedKeys = new Set();
-  keyPages.forEach(function (set, k) { if (set.size >= 2) repeatedKeys.add(k); });
+  keyPages.forEach(function (pageNums, k) {
+    if (pageNums.size >= _minRepeat) { repeatedKeys.add(k); return; } // route (a): frequency
+    if (pageNums.size >= 2) {
+      // route (b): folio consistency — the best-supported (number − pageIdx) offset must hold on
+      // >=2 pages and on at least half of the key's appearances (tolerates one OCR-misread digit).
+      var support = new Map(); // offset -> pages supporting it
+      pageNums.forEach(function (nums, pi2) {
+        var seenOffsets = new Set();
+        nums.forEach(function (n) { var o = n - pi2; if (!seenOffsets.has(o)) { seenOffsets.add(o); support.set(o, (support.get(o) || 0) + 1); } });
+      });
+      var best = 0;
+      support.forEach(function (c) { if (c > best) best = c; });
+      if (best >= 2 && best >= Math.ceil(pageNums.size / 2)) repeatedKeys.add(k);
+    }
+  });
   // Bare-number folio stripping is DOUBLY gated (R4's score-column/lone-year protections must stand):
   // (a) the doc must have a PROVEN repeated running-head pattern, and (b) the bare number must be the
   // very FIRST or LAST non-empty line of its page (the folio position). A score column whose value
@@ -881,6 +911,7 @@ var _stripPageEdgeArtifacts = function (pageTexts) {
           var k2 = _digitless(ln);
           if (k2.length >= 4 && repeatedKeys.has(k2)) {
             (ln.match(/\d{1,4}/g) || []).forEach(function (n) { folios.push(n); });
+            strippedLines.push(ln.trim()); // H4: the deleted TEXT was undisclosed (only its digits rode out)
             return;
           }
         }
@@ -889,7 +920,7 @@ var _stripPageEdgeArtifacts = function (pageTexts) {
     });
     return kept.join('\n');
   });
-  return { texts: outTexts, folios: Array.from(new Set(folios)) };
+  return { texts: outTexts, folios: Array.from(new Set(folios)), strippedLines: Array.from(new Set(strippedLines)) };
 };
 
 // ── #G (2026-07-05): cross-engine adjacent-duplicate collapse ──
@@ -8985,7 +9016,8 @@ var createDocPipeline = function(deps) {
     // boundaries still exist. The 7/5 test showed folios riding INSIDE running-head lines ("192 Appendix E",
     // "Consumer-Responsive Report Writing 89") that no whole-line-number strip can catch; they polluted the
     // ground truth -> false "3 numbers changed (90, 192, 193)" alarms + a blocked hyphen fusion (the
-    // "ated-in" orphan). Repetition across pages is the detector — no thresholds to calibrate.
+    // "ated-in" orphan). Repetition across the MAJORITY of pages is the detector (H4 2026-07-09: the
+    // original >=2-page rule deleted repeated CONTENT headings like "Chapter 3"/"Chapter 7").
     const _edge = _stripPageEdgeArtifacts(merged.map(p => p.text));
     let _fullText;
     if ((visionPages || []).length === 1 && (tessPages || []).length > 1 && merged.some(p => p.source === 'vision')) {
@@ -9005,7 +9037,7 @@ var createDocPipeline = function(deps) {
     } else {
       _fullText = _edge.texts.filter(Boolean).join('\n\n');
     }
-    return { pages: merged, disagreements, lowConfidence, fullText: _fullText, detectedFolios: _edge.folios, dupeCollapses: _dupeCollapses };
+    return { pages: merged, disagreements, lowConfidence, fullText: _fullText, detectedFolios: _edge.folios, strippedEdgeLines: _edge.strippedLines || [], dupeCollapses: _dupeCollapses };
   };
 
   // Lazy-load mammoth.js for DOCX text extraction
@@ -10713,33 +10745,57 @@ Return ONLY valid JSON:
       // per-file catch marks this file 'failed' and continues (same isolation as any error),
       // and the file stays retryable. Single-file (non-batch) runs never call _processOne.
       const _PER_FILE_MS = 8 * 60 * 1000;
-      // Step 1: per-file audit (suppresses single-file UI updates)
-      progress('Auditing...');
-      const auditResult = await _withTimeout(
-        runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName, auditorCount: _batchSettings.pdfAuditorCount, outputLanguage: _batchSettings.leveledTextLanguage }),
-        _PER_FILE_MS, 'batch audit: ' + item.fileName);
-      if (!auditResult || auditResult.score === -1) {
-        throw new Error(auditResult?.summary || 'Audit failed');
-      }
-      // Step 2: fix & verify with batch overrides (also suppresses UI state changes)
-      const result = await _withTimeout(fixAndVerifyPdf({
-        base64: item.base64,
-        fileName: item.fileName,
-        fileSize: item.fileSize || null,
-        auditResult: auditResult,
-        targetScore: _batchSettings.pdfTargetScore,
-        autoFixPasses: _batchSettings.pdfAutoFixPasses,
-        polishPasses: _batchSettings.pdfPolishPasses,
-        onProgress: (step, msg) => progress(msg),
-        perFileDeadlineTs: Date.now() + _PER_FILE_MS, // R5: let fixAndVerifyPdf's deferred re-audit (B) respect the per-file wall
-      }), _PER_FILE_MS, 'batch fix: ' + item.fileName);
+      // H7 (deep dive 2026-07-09): the wall is a bare Promise.race — it discards the RESULT but
+      // cannot cancel the WORK, so a timed-out file kept running as a ZOMBIE under the next file:
+      // re-stamping the __lastGroundTruth*/__lastOcr* globals with the wrong document's identity,
+      // re-tripping the shared breaker, and burning quota for minutes. Give each file its OWN
+      // AbortController published into the __alloPdfAbortSignal slot (callGemini reads it per call,
+      // fetches capture it at creation): the finally below fires it on EVERY exit — on the wall
+      // timeout that kills the zombie's in-flight + queued calls so the orphaned run unwinds in
+      // seconds instead of minutes. Chained to the batch controller so Stop Batch still cancels the
+      // current file immediately. (The _runMainFixLoop deadline break is the graceful half: it ends
+      // the pass loop BEFORE the wall so keep-best work ships instead of being discarded.)
+      const _fileCtrl = new AbortController();
+      const _onBatchAbort = () => { try { _fileCtrl.abort(); } catch (_) {} };
+      if (_batchAbortCtrl.signal.aborted) _onBatchAbort();
+      else { try { _batchAbortCtrl.signal.addEventListener('abort', _onBatchAbort); } catch (_) {} }
+      const _prevAbortSlot = (typeof window !== 'undefined') ? window.__alloPdfAbortSignal : null;
+      if (typeof window !== 'undefined') { try { window.__alloPdfAbortSignal = _fileCtrl.signal; } catch (_) {} }
+      try {
+        // Step 1: per-file audit (suppresses single-file UI updates)
+        progress('Auditing...');
+        const auditResult = await _withTimeout(
+          runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName, auditorCount: _batchSettings.pdfAuditorCount, outputLanguage: _batchSettings.leveledTextLanguage }),
+          _PER_FILE_MS, 'batch audit: ' + item.fileName);
+        if (!auditResult || auditResult.score === -1) {
+          throw new Error(auditResult?.summary || 'Audit failed');
+        }
+        // Step 2: fix & verify with batch overrides (also suppresses UI state changes)
+        const result = await _withTimeout(fixAndVerifyPdf({
+          base64: item.base64,
+          fileName: item.fileName,
+          fileSize: item.fileSize || null,
+          auditResult: auditResult,
+          targetScore: _batchSettings.pdfTargetScore,
+          autoFixPasses: _batchSettings.pdfAutoFixPasses,
+          polishPasses: _batchSettings.pdfPolishPasses,
+          onProgress: (step, msg) => progress(msg),
+          perFileDeadlineTs: Date.now() + _PER_FILE_MS, // R5: let fixAndVerifyPdf's deferred re-audit (B) respect the per-file wall
+        }), _PER_FILE_MS, 'batch fix: ' + item.fileName);
 
-      // Write remediation cache (Tier 4)
-      if (_remedKey && result) {
-        try { await _writeRemediationCache(_remedKey, result); } catch (_) {}
-      }
+        // Write remediation cache (Tier 4)
+        if (_remedKey && result) {
+          try { await _writeRemediationCache(_remedKey, result); } catch (_) {}
+        }
 
-      return result;
+        return result;
+      } finally {
+        try { _batchAbortCtrl.signal.removeEventListener('abort', _onBatchAbort); } catch (_) {}
+        try { _fileCtrl.abort(); } catch (_) {} // kills a wall-orphaned zombie's in-flight/queued calls; a no-op on clean completion
+        if (typeof window !== 'undefined' && window.__alloPdfAbortSignal === _fileCtrl.signal) {
+          try { window.__alloPdfAbortSignal = _prevAbortSlot || null; } catch (_) {}
+        }
+      }
     };
 
     let _quotaStopped = false;
@@ -15194,6 +15250,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         let _consecFixErrors = 0; // B18: tolerate a transient chunk-fix error; bail only on 2 consecutive
         let _lastPassFeedback = ''; // $7b (2026-07-02): tell the next pass WHY the previous one was reverted/no-op — a bare retry re-sends the identical prompt and mostly re-rolls the same dud
         for (let fixPass = 0; fixPass < maxFixPasses; fixPass++) {
+          // H7 (deep dive 2026-07-09): in BATCH mode the outer _withTimeout is a bare Promise.race —
+          // it discards the RESULT at the wall but cannot cancel the WORK, so a slow file kept
+          // grinding as a zombie under the NEXT file (re-stamping the __lastGroundTruth* globals with
+          // the wrong doc's identity, burning quota into the shared breaker). Self-terminate the pass
+          // loop when the per-file budget can no longer fit another pass + the finalize tail: keep-best
+          // state ships whatever the completed passes earned instead of the wall discarding everything.
+          if (loopCtx.perFileDeadlineTs && Date.now() > loopCtx.perFileDeadlineTs - 90000) {
+            warnLog('[Auto-fix] Per-file time budget nearly exhausted (batch wall) — ending the fix loop after ' + fixPass + ' pass(es) to finish and ship the best result inside the wall.');
+            break;
+          }
           // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
           try { setTimeout(function() { var _fp = fixPass; window.dispatchEvent(new CustomEvent('alloflow:chunk-start', { detail: { index: _fp, total: maxFixPasses, sizeKB: Math.round(accessibleHtml.length / 1000), timestamp: Date.now() } })); }, 0); } catch(e) {}
           const _passAxeCount = axeResults ? axeResults.totalViolations : 0;
@@ -16647,6 +16713,9 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // #G (2026-07-05): remember reconcile-time echo collapses for the fidelity panel — a removal,
         // however safe, is never silent. Overwritten every reconcile, so it can't go stale within a run.
         try { window.__alloOcrDupeCollapses = (rec && rec.dupeCollapses) || []; } catch (_) {}
+        // H4 (2026-07-09): the edge strip deletes whole LINES (running heads) — disclose their text in
+        // the fidelity panel, not just their digits. Overwritten every reconcile, read _heavyScanned-gated.
+        try { window.__alloStrippedEdgeLines = (rec && rec.strippedEdgeLines) || []; } catch (_) {}
         // P2-a: clean the reconciled OCR ground text (drop standalone folios, rejoin page-break
         // hyphenation) before it feeds the transform / restore / integrity. rec.pages (the word boxes
         // for the positioned searchable layer) is left untouched below, so this can't desync it.
@@ -18658,7 +18727,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // Uses BOTH auditors. Reverts if score drops. Keeps going until stable.
       _pipeStepStart(4);
       // S2-extracted → _runMainFixLoop (policy: _alloLoopPolicy, golden-tested).
-      const _loopOut = await _runMainFixLoop({ accessibleHtml, verification, axeResults, updateProgress, applyDetectedLang: _applyDetectedLang, maxFixPasses: _runMaxFixPasses, targetScore: _runTargetScore });
+      const _loopOut = await _runMainFixLoop({ accessibleHtml, verification, axeResults, updateProgress, applyDetectedLang: _applyDetectedLang, maxFixPasses: _runMaxFixPasses, targetScore: _runTargetScore, perFileDeadlineTs: _perFileDeadlineTs });
       accessibleHtml = _loopOut.accessibleHtml;
       verification = _loopOut.verification;
       axeResults = _loopOut.axeResults;
@@ -19277,6 +19346,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       let integrityCoverage = null;
       let integrityWarning = null;
       let _folioLeakWarn = null; // #F (2026-07-05): a detected page folio leaked inline into the body
+      let _placementWarn = null; // H6 (2026-07-09): placement/reading-order warning — carried into the
+      // persistent fidelity panel like the numeric one below. It used to live ONLY in integrityWarning
+      // (a 3-second toast + the downloadable report), so during an unattended run the teacher never saw
+      // it — while the panel could simultaneously read "100% of source text preserved" (preserved-box
+      // text counts toward coverage), affirming the opposite of the problem.
       let _numericLossWarn = null; // (2026-06-20) numeric value-fidelity losses — carried out of the
       // integrity try so they can ALSO be pushed into the persistent fidelity panel + fidelityLimited,
       // not just integrityWarning. A silently-changed NUMBER is the worst case for an assessment report;
@@ -19353,6 +19427,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             if (_orphanN > 0) {
               const _placeWarn = `${_orphanN} source passage${_orphanN === 1 ? '' : 's'} could not be placed in ${_orphanN === 1 ? 'its' : 'their'} original location and ${_orphanN === 1 ? 'is' : 'are'} gathered in the "Preserved source content" box at the end — the text is present but its reading order needs review. Review before distributing.`;
               integrityWarning = integrityWarning ? (integrityWarning + ' ' + _placeWarn) : _placeWarn;
+              _placementWarn = _placeWarn; // also surface in the persistent fidelity panel (H6)
               if (!_silentMode) addToast('⚠ ' + _placeWarn, 'warning');
               warnLog('[Integrity] PLACEMENT — ' + _placeWarn);
             }
@@ -19410,6 +19485,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // char-coverage % barely moves on it and the structural nets don't look for it. Push it into the
       // SAME persistent notes the panel renders + that drive fidelityLimited, so the score carries the
       // amber asterisk and the panel lists the specific values — instead of it living only in a toast.
+      if (_placementWarn) _structuralFidelityNotes.push({ kind: 'placement', msg: _placementWarn }); // H6: rides the panel + fidelityLimited
       if (_numericLossWarn) _structuralFidelityNotes.push({ kind: 'numeric', msg: _numericLossWarn });
       if (_folioLeakWarn) _structuralFidelityNotes.push({ kind: 'folioLeak', msg: _folioLeakWarn }); // #F: leaked page number inline in the body
       // #G (2026-07-05): disclose reconcile-time echo collapses in the same persistent panel. Gated on
@@ -19422,6 +19498,16 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           _ddc.forEach((e) => { ((e && e.words) || []).forEach((w) => { if (_ddWords.length < 8) _ddWords.push(w); }); });
           const _ddN = _ddc.reduce((a, e) => a + (((e && e.words) || []).length), 0);
           _structuralFidelityNotes.push({ kind: 'ocrDupeCollapse', msg: _ddN + ' repeated-word OCR echo(es) collapsed during page reconciliation (' + _ddWords.join(', ') + (_ddN > _ddWords.length ? ', …' : '') + ') — each token appeared twice in a row in one engine\'s read but once in the other\'s. Verify the affected sentence(s) against the original.' });
+        }
+      } catch (_) {}
+      // H4 (2026-07-09): disclose the page-edge lines the running-head strip DELETED from the OCR
+      // ground truth — the text itself was previously undisclosed (only its digits rode out via
+      // detectedFolios). Same _heavyScanned staleness gate as the echo-collapse note above.
+      try {
+        const _sel = (_heavyScanned && typeof window !== 'undefined' && Array.isArray(window.__alloStrippedEdgeLines)) ? window.__alloStrippedEdgeLines : [];
+        if (_sel.length) {
+          const _selSample = _sel.slice(0, 4).map((l) => '"' + (String(l).length > 40 ? String(l).slice(0, 40) + '…' : l) + '"').join(', ');
+          _structuralFidelityNotes.push({ kind: 'pageEdge', msg: _sel.length + ' repeated page-edge line' + (_sel.length === 1 ? '' : 's') + ' (running heads / footers, e.g. ' + _selSample + (_sel.length > 4 ? ', …' : '') + ') ' + (_sel.length === 1 ? 'was' : 'were') + ' removed from the recovered text so ' + (_sel.length === 1 ? 'it doesn\'t' : 'they don\'t') + ' interrupt sentences mid-page. If one of these is a real heading, restore it from the Diff view.' });
         }
       } catch (_) {}
       // OCR confidence (2026-06-29): low-confidence OCR pages are ALREADY computed
@@ -32109,11 +32195,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // The attribute itself STAYS (empty) because the submission collectors select MCQs via
       // .question[data-correct] — student answers still save and submit; they just can't be
       // self-graded client-side, and the file no longer contains the key in any form.
+      // H5 (deep dive 2026-07-09): concept sorts leaked the key the same way — every strip carries
+      // its correct category in data-category-id (the Check button grades against it) and the
+      // .alloflow-cs-controls bar stayed visible. Blank the STRIP ids only (dropzones keep theirs —
+      // drag/placement and answer saving are unaffected; the only reader of the strip id is the
+      // self-grade Check button, which is hidden here too).
       let _packHtml = rawHtml;
       if (cfg.assessmentMode === true) {
         _packHtml = _packHtml
           .replace(/ data-correct="\d+"/g, ' data-correct=""')
-          .replace(/<\/head>/i, '<style>.quiz-controls{display:none !important}</style></head>');
+          .replace(/(<div[^>]*class="alloflow-cs-strip"[^>]*?) data-category-id="[^"]*"/g, '$1 data-category-id=""')
+          .replace(/<\/head>/i, '<style>.quiz-controls{display:none !important}.alloflow-cs-controls{display:none !important}</style></head>');
       }
       // Run WCAG sanitizer on the complete export HTML to guarantee accessibility
       const sanitized = sanitizeStyleForWCAG(_packHtml);
@@ -32272,11 +32364,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

@@ -40,7 +40,8 @@ describe('anti-drift: doc_pipeline pushes numeric losses into the persistent not
 describe('anti-drift: the view surfaces numeric losses + an integrity-aware "What now?"', () => {
   it('the fidelity panel renders the numeric kind with its own icon/color', () => {
     expect(viewSrc).toMatch(/n\.kind === 'numeric' \? '🔢'/);
-    expect(viewSrc).toMatch(/n\.kind === 'numeric' \? 'text-amber-800 font-semibold'/);
+    // H6 (2026-07-09): the amber emphasis class is shared with the placement kind now.
+    expect(viewSrc).toMatch(/\(n\.kind === 'numeric' \|\| n\.kind === 'placement'\) \? 'text-amber-800 font-semibold'/);
   });
   it('the "What now?" strip leads with Diff-review (not "share-ready") when fidelity is limited', () => {
     expect(viewSrc).toMatch(/pdf_audit\.whatnow\.fidelity/);
