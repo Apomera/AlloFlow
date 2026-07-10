@@ -2706,6 +2706,128 @@ window.getDoc = getDoc;
 window.__alloUtils = window.__alloUtils || {};
 window.__alloUtils.fetchAndCleanUrl = fetchAndCleanUrl;
 window.__alloUtils.isGoogleRedirect = isGoogleRedirect;
+// ── Video reference card player (Video Studio 'video-ref' history items) ──
+// Pack JSON only ever carries the small reference (title, duration, sha256,
+// thumbnail, optional teacher-hosted link) — never video bytes. This overlay
+// renders that card: "Watch" opens the hosted link; re-attaching the
+// downloaded .webm/.mp4 or .allopack plays it locally (checksum-verified,
+// object URL only, nothing uploaded).
+const VideoRefPlayerOverlay = ({ item, onClose, addToast, t }) => {
+    const ref = (item && item.data) || {};
+    const [videoUrl, setVideoUrl] = useState(null);
+    const [vttUrl, setVttUrl] = useState(null);
+    const [verify, setVerify] = useState(null); // null | 'match' | 'mismatch' | 'unknown'
+    const [busy, setBusy] = useState(false);
+    const urlsRef = useRef([]);
+    const rootRef = useRef(null);
+    useEffect(() => {
+        try { if (rootRef.current) rootRef.current.focus(); } catch (_) {}
+        const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+        window.addEventListener('keydown', onKey);
+        return () => {
+            window.removeEventListener('keydown', onKey);
+            urlsRef.current.splice(0).forEach(u => { try { URL.revokeObjectURL(u); } catch (_) {} });
+        };
+    }, []);
+    const trackUrl = (u) => { urlsRef.current.push(u); return u; };
+    const loadStudioHelpers = () => new Promise((resolve, reject) => {
+        try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {}
+        let waited = 0;
+        const timer = setInterval(() => {
+            const m = window.AlloModules && window.AlloModules.VideoStudio;
+            if (m && typeof m.vsReadZip === 'function') { clearInterval(timer); resolve(m); }
+            else if ((waited += 200) > 12000) { clearInterval(timer); reject(new Error('Video Studio helpers did not load')); }
+        }, 200);
+    });
+    const handleFile = async (file) => {
+        if (!file || busy) return;
+        setBusy(true);
+        try {
+            let bytes = new Uint8Array(await file.arrayBuffer());
+            let vttText = null;
+            let videoName = file.name;
+            if (/\.allopack$/i.test(file.name)) {
+                const m = await loadStudioHelpers();
+                const entries = m.vsReadZip(bytes) || [];
+                const vid = entries.filter(e => /\.(webm|mp4|mov|m4v|mkv)$/i.test(e.name)).sort((a, b) => b.data.length - a.data.length)[0];
+                if (!vid) throw new Error('no video file inside this .allopack');
+                const vtt = entries.find(e => /\.vtt$/i.test(e.name));
+                if (vtt) vttText = new TextDecoder().decode(vtt.data);
+                bytes = vid.data;
+                videoName = vid.name;
+            }
+            let verdict = 'unknown';
+            if (ref.sha256 && window.crypto && crypto.subtle) {
+                const digest = await crypto.subtle.digest('SHA-256', bytes);
+                const hex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+                verdict = hex === ref.sha256 ? 'match' : 'mismatch';
+            }
+            const mime = /\.(mp4|m4v)$/i.test(videoName) ? 'video/mp4' : /\.mov$/i.test(videoName) ? 'video/quicktime' : 'video/webm';
+            setVideoUrl(trackUrl(URL.createObjectURL(new Blob([bytes], { type: mime }))));
+            setVttUrl(vttText ? trackUrl(URL.createObjectURL(new Blob([vttText], { type: 'text/vtt' }))) : null);
+            setVerify(verdict);
+        } catch (e) {
+            addToast((t('video_ref.attach_failed') || 'Could not open that file: ') + String((e && e.message) || e).slice(0, 120), 'error');
+        }
+        setBusy(false);
+    };
+    const badges = [
+        ref.hasCaptions && (t('video_ref.badge_captions') || 'captions'),
+        ref.hasChapters && (t('video_ref.badge_chapters') || 'chapters'),
+        ref.hasVisualDescriptions && (t('video_ref.badge_descriptions') || 'visual descriptions'),
+        ref.hasLocalizations && (t('video_ref.badge_localizations') || 'localizations')
+    ].filter(Boolean).join(' · ');
+    const durationLabel = `${Math.floor((ref.durationSec || 0) / 60)}:${String((ref.durationSec || 0) % 60).padStart(2, '0')}`;
+    return (
+        <div className="fixed inset-0 z-[210] flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.72)' }} role="dialog" aria-modal="true" aria-label={t('video_ref.player_title') || 'Video reference'}>
+            <div ref={rootRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-violet-50">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <MonitorPlay size={20} className="text-violet-700 shrink-0" />
+                        <h2 className="font-bold text-slate-800 text-base truncate">{String(ref.title || item.title || 'Teacher video')}</h2>
+                    </div>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none px-2 py-1" aria-label={t('video_ref.close') || 'Close video card'}>×</button>
+                </div>
+                <div className="p-5 overflow-y-auto flex-1">
+                    <p className="text-xs text-slate-500 mb-3">
+                        {durationLabel}{ref.sizeBytes ? ` · ${(ref.sizeBytes / 1048576).toFixed(1)} MB` : ''}{badges ? ` · ${badges}` : ''}{ref.fileName ? ` · ${ref.fileName}` : ''}
+                    </p>
+                    {videoUrl ? (
+                        <div className="mb-3">
+                            <video src={videoUrl} controls playsInline className="w-full rounded-xl bg-black" style={{ maxHeight: '52vh' }} crossOrigin="anonymous">
+                                {vttUrl && <track kind="captions" src={vttUrl} default label={t('video_ref.captions_track') || 'Captions'} />}
+                            </video>
+                            {verify === 'match' && <p className="text-xs text-emerald-700 mt-2">✓ {t('video_ref.verified') || 'File verified — matches the checksum saved with this card.'}</p>}
+                            {verify === 'mismatch' && <p className="text-xs text-amber-700 mt-2">⚠ {t('video_ref.mismatch') || 'This file does not match the saved checksum. It may be a different export of the same lesson — check before sharing.'}</p>}
+                        </div>
+                    ) : (
+                        ref.thumb && <img src={ref.thumb} alt={t('video_ref.thumb_alt') || 'Video thumbnail'} className="w-full max-h-64 object-contain rounded-xl bg-slate-900 mb-3" />
+                    )}
+                    {ref.hostedUrl && (
+                        <a href={ref.hostedUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-700 text-white text-sm font-semibold hover:bg-violet-600 mb-3">
+                            ▶ {t('video_ref.watch_hosted') || 'Watch hosted video'} <ExternalLink size={14} />
+                        </a>
+                    )}
+                    <div
+                        className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center text-sm text-slate-500"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]); }}
+                    >
+                        <p className="mb-2">{busy ? (t('video_ref.attach_busy') || 'Opening the file…') : (t('video_ref.attach_hint') || 'Have the downloaded file? Drop the .webm/.mp4 or .allopack here to play it on this device — nothing is uploaded.')}</p>
+                        <label className="inline-block px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 cursor-pointer">
+                            {t('video_ref.attach_btn') || 'Choose file…'}
+                            <input type="file" accept="video/*,.webm,.mp4,.mov,.m4v,.mkv,.allopack" hidden onChange={(e) => { handleFile(e.target.files && e.target.files[0]); e.target.value = ''; }} />
+                        </label>
+                    </div>
+                    {!ref.hostedUrl && !videoUrl && (
+                        <p className="text-xs text-slate-400 mt-3">{t('video_ref.no_hosted_hint') || 'Tip: in Video Studio’s gallery you can paste a hosted link (YouTube/Drive/LMS) so colleagues can watch without the file.'}</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const getIconForType = (type) => {
     switch (type) {
         case 'simplified': return <BookOpen size={16} />;
@@ -32250,9 +32372,32 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     addToast('Transcript sent to Source. Use the existing quiz and support tools from there.', 'success');
                     return { id: newId };
                 },
+                onSendVideoRefToFlow: (ref) => {
+                    // Save the pack-safe video reference (metadata + thumbnail +
+                    // optional hosted link — never bytes) as a 'video-ref' card.
+                    if (!ref || ref.type !== 'videoRef') throw new Error('Not a video reference.');
+                    const refTitle = String(ref.title || 'Teacher video').slice(0, 120);
+                    const newRefId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                    const refItem = {
+                        id: newRefId,
+                        type: 'video-ref',
+                        title: refTitle,
+                        text: `${refTitle} — video (${Math.floor((ref.durationSec || 0) / 60)}:${String((ref.durationSec || 0) % 60).padStart(2, '0')})${ref.hostedUrl ? ` — ${ref.hostedUrl}` : ''}`,
+                        content: '',
+                        data: { ...ref },
+                        meta: ref.hostedUrl ? 'Video Studio card · hosted link attached' : 'Video Studio card · re-attach the downloaded file to play',
+                        timestamp: new Date(),
+                        config: {},
+                        source: 'video_studio'
+                    };
+                    setHistory(prev => [...prev, refItem]);
+                    return { id: newRefId };
+                },
                 onOpenCinematicStudio: () => { setIsVideoStudioOpen(false); setShowCinematicStudio(true); }
             })}
         </CDNModuleGate>
+
+        {videoRefPlayerItem && <VideoRefPlayerOverlay item={videoRefPlayerItem} onClose={() => setVideoRefPlayerItem(null)} addToast={addToast} t={t} />}
 
         <CDNModuleGate moduleKey="AlloStudio" isOpen={isAlloStudioOpen} onClose={() => setIsAlloStudioOpen(false)} icon="🎨" displayName="AlloStudio" t={t}>
             {(AlloStudio) => React.createElement(AlloStudio, {

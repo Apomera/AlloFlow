@@ -1724,6 +1724,17 @@ describe('vsMakePackReference (pack-size guard)', () => {
     expect(ref.durationSec).toBe(0);
     expect(ref.thumb).toBeNull();
   });
+  it('accepts only a single https hosted link (batch 3)', () => {
+    expect(VS.vsMakePackReference({ hostedUrl: 'https://youtu.be/abc123' }).hostedUrl).toBe('https://youtu.be/abc123');
+    expect(VS.vsMakePackReference({ hostedUrl: '  https://drive.google.com/file/d/x/view  ' }).hostedUrl).toBe('https://drive.google.com/file/d/x/view');
+    // http, javascript:, data:, whitespace smuggling, and oversized all drop.
+    expect(VS.vsMakePackReference({ hostedUrl: 'http://example.com/v' }).hostedUrl).toBeNull();
+    expect(VS.vsMakePackReference({ hostedUrl: 'javascript:alert(1)' }).hostedUrl).toBeNull();
+    expect(VS.vsMakePackReference({ hostedUrl: 'data:text/html;base64,x' }).hostedUrl).toBeNull();
+    expect(VS.vsMakePackReference({ hostedUrl: 'https://a.com/x y' }).hostedUrl).toBeNull();
+    expect(VS.vsMakePackReference({ hostedUrl: 'https://a.com/' + 'x'.repeat(600) }).hostedUrl).toBeNull();
+    expect(VS.vsMakePackReference({}).hostedUrl).toBeNull();
+  });
 });
 
 // ─── vsBuildStudioTakeRecord (take persistence, 2026-07-09) ──────────────────
@@ -1824,6 +1835,25 @@ describe('take persistence + export hardening wiring', () => {
     expect(m).not.toContain("return cur === 'opening' ? 'open' : cur;");
     expect(m).toContain("return 'stalled';");
     expect(m).toContain("T('video_studio.status_stalled'");
+  });
+  it('videoRef pipeline is wired end-to-end (batch 3)', () => {
+    const m = moduleText();
+    // Gallery: hosted-link input + save-to-history, both flowing through the
+    // shared reference builder.
+    expect(m).toContain('function vsPackReferenceForTake(v)');
+    expect(m).toContain('hostedUrl: v.hostedUrl || null');
+    expect(m).toContain("T('video_studio.ref_history', '🎞 Save to Resource History')");
+    expect(m).toContain('propsRef.current.onSendVideoRefToFlow');
+    expect(m).toContain("T('video_studio.hosted_link_label', 'Hosted video link (optional)')");
+    // App side: the reference finally has a renderer (dead-data gap closed).
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+    expect(anti).toContain('onSendVideoRefToFlow: (ref) => {');
+    expect(anti).toContain('const VideoRefPlayerOverlay = ({ item, onClose, addToast, t }) => {');
+    expect(anti).toContain("case 'video-ref': return <MonitorPlay size={16} />;");
+    expect(anti).toContain("if (item && item.type === 'video-ref') {");
+    // Teacher-only + excluded from document export until those surfaces exist.
+    expect(anti).toMatch(/TEACHER_ONLY_TYPES = \[[^\]]*'video-ref'/);
+    expect(anti).toMatch(/NON_EXPORTABLE_TYPES = new Set\(\[[^\]]*'video-ref'/);
   });
   it('popup re-encode cleans up on every exit and is cancelable', () => {
     const html = popup();

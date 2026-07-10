@@ -223,6 +223,13 @@
   function vsMakePackReference(meta) {
     var m = meta || {};
     var thumb = (typeof m.thumb === 'string' && m.thumb.indexOf('data:image/') === 0 && m.thumb.length <= 40000) ? m.thumb : null;
+    // Optional teacher-hosted location for the bytes (YouTube/Drive/LMS link
+    // pasted by the teacher — never auto-uploaded). https-only, no spaces.
+    var hostedUrl = (function () {
+      var u = String(m.hostedUrl || '').trim();
+      if (u.length > 500 || !/^https:\/\/\S+$/i.test(u)) return null;
+      return u;
+    })();
     return {
       type: 'videoRef',
       version: 1,
@@ -251,6 +258,7 @@
       mediaCreditCount: Math.max(0, Math.min(999, Math.round(Number(m.mediaCreditCount) || 0))),
       mediaCreditWarningCount: Math.max(0, Math.min(999, Math.round(Number(m.mediaCreditWarningCount) || 0))),
       resourceCueCount: Math.max(0, Math.min(999, Math.round(Number(m.resourceCueCount) || 0))),
+      hostedUrl: hostedUrl,
       thumb: thumb,
       createdAt: m.createdAt || null
     };
@@ -2721,6 +2729,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     } catch (_) { return null; }
   }
 
+  // Build the pack-safe reference for a gallery take (metadata + thumbnail +
+  // optional teacher-pasted hostedUrl — never bytes). Shared by "Copy pack
+  // reference", "Save to Resource History", and the .allopack bundle.
+  function vsPackReferenceForTake(v) {
+    var audioManifest = v.audioEdits ? vsBuildAudioEditManifest(Object.assign({}, v.audioEdits, { duration: v.duration || 0 })) : vsBuildAudioEditManifest({ duration: v.duration || 0, audio: v.audio || null, musicBed: v.musicBed || null, applyToSource: false, bakedIntoVideo: true });
+    return vsMakePackReference({
+      title: v.title, duration: v.duration, size: v.size, sha256: v.sha256,
+      fileName: (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + extFor(v.blob && v.blob.type),
+      hostedUrl: v.hostedUrl || null,
+      hasCaptions: !!v.vtt, hasTranscriptEdits: !!(v.transcriptEdits && v.transcriptEdits.length), transcriptEditCount: (v.transcriptEdits || []).length, hasTranscriptWords: !!(v.transcriptWords && v.transcriptWords.length), transcriptWordCount: (v.transcriptWords || []).length, hasAudioEdits: !!audioManifest.hasAudioEdits, audioEditsApplyToSource: audioManifest.applyToSource, muteSpanCount: audioManifest.muteSpanCount, hasVisualDescriptions: !!(v.visualDescriptions && v.visualDescriptions.length), hasChapters: !!(v.chapters && v.chapters.length), hasTeachingInserts: !!(v.inserts && v.inserts.length), hasVisualPrompts: !!(v.visualPrompts && v.visualPrompts.length), hasLocalizations: !!(v.localizations && v.localizations.length), localizationCount: (v.localizations || []).length, hasVisualOverlays: !!((v.inserts || []).filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length), hasMusicBed: !!v.musicBed, hasMediaCredits: !!(v.mediaCredits && v.mediaCredits.length), mediaCreditCount: (v.mediaCredits || []).length, mediaCreditWarningCount: vsSanitizeMediaCredits(v.mediaCredits || []).filter(function (item) { return item.status !== 'ok'; }).length, resourceCueCount: (v.inserts || []).filter(function (ins) { return ins && ins.source === 'resource'; }).length, thumb: v.thumb, createdAt: v.createdAt
+    });
+  }
+
   // ─── Component ─────────────────────────────────────────────────────────────
   function VideoStudio(props) {
     // Live props: the message receiver and action callbacks mount with []
@@ -3206,12 +3227,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }, []);
 
     var copyPackRef = useCallback(function (v) {
-      var audioManifest = v.audioEdits ? vsBuildAudioEditManifest(Object.assign({}, v.audioEdits, { duration: v.duration || 0 })) : vsBuildAudioEditManifest({ duration: v.duration || 0, audio: v.audio || null, musicBed: v.musicBed || null, applyToSource: false, bakedIntoVideo: true });
-      var ref = vsMakePackReference({
-        title: v.title, duration: v.duration, size: v.size, sha256: v.sha256,
-        fileName: (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + extFor(v.blob && v.blob.type),
-        hasCaptions: !!v.vtt, hasTranscriptEdits: !!(v.transcriptEdits && v.transcriptEdits.length), transcriptEditCount: (v.transcriptEdits || []).length, hasTranscriptWords: !!(v.transcriptWords && v.transcriptWords.length), transcriptWordCount: (v.transcriptWords || []).length, hasAudioEdits: !!audioManifest.hasAudioEdits, audioEditsApplyToSource: audioManifest.applyToSource, muteSpanCount: audioManifest.muteSpanCount, hasVisualDescriptions: !!(v.visualDescriptions && v.visualDescriptions.length), hasChapters: !!(v.chapters && v.chapters.length), hasTeachingInserts: !!(v.inserts && v.inserts.length), hasVisualPrompts: !!(v.visualPrompts && v.visualPrompts.length), hasLocalizations: !!(v.localizations && v.localizations.length), localizationCount: (v.localizations || []).length, hasVisualOverlays: !!((v.inserts || []).filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length), hasMusicBed: !!v.musicBed, hasMediaCredits: !!(v.mediaCredits && v.mediaCredits.length), mediaCreditCount: (v.mediaCredits || []).length, mediaCreditWarningCount: vsSanitizeMediaCredits(v.mediaCredits || []).filter(function (item) { return item.status !== 'ok'; }).length, resourceCueCount: (v.inserts || []).filter(function (ins) { return ins && ins.source === 'resource'; }).length, thumb: v.thumb, createdAt: v.createdAt
-      });
+      var ref = vsPackReferenceForTake(v);
       var text = JSON.stringify(ref, null, 2);
       var done = function () { addToast(T('video_studio.ref_copied', 'Pack reference copied — paste it wherever the resource lives. The video bytes stay in the downloaded file.'), 'success'); };
       try {
@@ -3364,6 +3380,35 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       addToast(T('video_studio.transcript_send_failed', 'Transcript could not be added automatically.'), 'error');
     }, []);
 
+    // Teacher-pasted hosted link (YouTube/Drive/LMS). https-only; stored on
+    // the take (persists with it) and rides along in every pack reference.
+    var setHostedUrl = useCallback(function (v, raw) {
+      var u = String(raw || '').trim();
+      if (u && (u.length > 500 || !/^https:\/\/\S+$/i.test(u))) {
+        addToast(T('video_studio.hosted_link_invalid', 'Hosted link must be a single https:// address (YouTube, Drive, or your LMS).'), 'error');
+        return;
+      }
+      if ((v.hostedUrl || '') === u) return;
+      vsTakeStore.patchTake(v.id, { hostedUrl: u || null });
+      addToast(u ? T('video_studio.hosted_link_saved', 'Hosted link saved — pack references and bundles now point viewers to it.') : T('video_studio.hosted_link_cleared', 'Hosted link cleared.'), 'success');
+    }, []);
+
+    // Save the reference into Resource History so it travels with packs and
+    // renders as a video card. Falls back to the clipboard copy when the app
+    // didn't pass a receiver (older ANTI builds).
+    var sendRefToHistory = useCallback(function (v) {
+      var ref = vsPackReferenceForTake(v);
+      var fn = propsRef.current.onSendVideoRefToFlow;
+      if (typeof fn !== 'function') { copyPackRef(v); return; }
+      Promise.resolve().then(function () { return fn(ref); }).then(function () {
+        addToast(T('video_studio.ref_saved', 'Video reference saved to Resource History — it travels with packs; the video bytes stay in your downloaded file.'), 'success');
+        announce(T('video_studio.ref_saved_sr', 'Video reference saved to Resource History.'));
+      }).catch(function () {
+        addToast(T('video_studio.ref_save_failed', 'Could not save to Resource History — the reference was copied to the clipboard instead.'), 'error');
+        copyPackRef(v);
+      });
+    }, []);
+
     // One-file share: .allopack = STORE-zip of meta.json + video + captions.
     // Reopens in the Studio (drag-drop) with captions intact; pack JSON still
     // only ever carries the metadata reference, never these bytes.
@@ -3379,6 +3424,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         var localizations = (v.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, v.duration || 0); }).filter(function (loc) { return loc && (loc.captions.length || loc.narration.length || loc.inserts.length || loc.chapters.length || loc.visualDescriptions.length); });
         var ref = vsMakePackReference({
           title: v.title, duration: v.duration, size: v.size, sha256: v.sha256,
+          hostedUrl: v.hostedUrl || null,
           fileName: base + extFor(v.blob.type), hasCaptions: !!v.vtt, hasTranscriptEdits: !!transcriptEdits.length, transcriptEditCount: transcriptEdits.length, hasTranscriptWords: !!transcriptWords.length, transcriptWordCount: transcriptWords.length, hasAudioEdits: !!audioManifest.hasAudioEdits, audioEditsApplyToSource: audioManifest.applyToSource, muteSpanCount: audioManifest.muteSpanCount, hasVisualDescriptions: !!(v.visualDescriptions && v.visualDescriptions.length), hasChapters: !!(v.chapters && v.chapters.length), hasTeachingInserts: !!inserts.length, hasVisualPrompts: !!(v.visualPrompts && v.visualPrompts.length), hasLocalizations: !!localizations.length, localizationCount: localizations.length, hasVisualOverlays: !!inserts.filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length, hasMusicBed: !!musicBed, hasMediaCredits: !!mediaCredits.length, mediaCreditCount: mediaCredits.length, mediaCreditWarningCount: mediaCredits.filter(function (item) { return item.status !== 'ok'; }).length, resourceCueCount: inserts.filter(function (ins) { return ins && ins.source === 'resource'; }).length, thumb: v.thumb, createdAt: v.createdAt
         });
         var entries = [
@@ -3474,6 +3520,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                     h('p', { className: 'font-semibold text-slate-800 text-sm truncate' }, v.title),
                     h('p', { className: 'text-xs text-slate-500 mb-2' },
                       fmtDur(v.duration) + ' · ' + fmtBytes(v.size) + (v.vtt ? ' · ' + T('video_studio.has_captions', 'captions included') : '') + (v.chapters && v.chapters.length ? ' · chapters' : '') + (v.inserts && v.inserts.length ? ' · inserts' : '') + ((v.inserts || []).filter(function (ins) { return ins && ins.type === 'image_overlay'; }).length ? ' · overlays' : '') + (v.musicBed ? ' · music' : '') + (v.visualPrompts && v.visualPrompts.length ? ' · visual prompts' : '') + (v.localizations && v.localizations.length ? ' · localizations' : '')),
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                      h('input', {
+                        type: 'url',
+                        defaultValue: v.hostedUrl || '',
+                        placeholder: T('video_studio.hosted_link_ph', 'Optional hosted link — upload the downloaded file yourself (YouTube/Drive/LMS), then paste the https:// link'),
+                        'aria-label': T('video_studio.hosted_link_label', 'Hosted video link (optional)'),
+                        className: 'flex-1 min-w-0 text-xs border border-slate-300 rounded-lg px-2 py-1.5 text-slate-700',
+                        onKeyDown: function (e) { if (e.key === 'Enter') setHostedUrl(v, e.target.value); },
+                        onBlur: function (e) { setHostedUrl(v, e.target.value); }
+                      }),
+                      v.hostedUrl && h('a', {
+                        href: v.hostedUrl, target: '_blank', rel: 'noopener noreferrer',
+                        className: 'text-xs font-semibold text-indigo-700 hover:underline shrink-0'
+                      }, T('video_studio.hosted_link_test', 'Test link ↗'))
+                    ),
                     h('div', { className: 'flex flex-wrap gap-2' },
                       h('button', {
                         onClick: function () { downloadBlob(v.blob, (v.title || 'teacher_video').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') + extFor(v.blob && v.blob.type)); },
@@ -3503,6 +3564,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                         className: 'px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700',
                         title: T('video_studio.bundle_title', 'One shareable file (.allopack zip) holding the video, its captions, and the metadata reference. Drop it into the Studio to re-edit.')
                       }, T('video_studio.download_bundle', '📦 Bundle (.allopack)')),
+                      h('button', {
+                        onClick: function () { sendRefToHistory(v); },
+                        className: 'px-3 py-1.5 rounded-lg bg-violet-700 text-white text-xs font-semibold hover:bg-violet-600',
+                        title: T('video_studio.ref_history_title', 'Saves a small video card (title, duration, thumbnail, checksum, hosted link if set — never the video bytes) into Resource History so it travels with packs.')
+                      }, T('video_studio.ref_history', '🎞 Save to Resource History')),
                       h('button', {
                         onClick: function () { copyPackRef(v); },
                         className: 'px-3 py-1.5 rounded-lg border border-indigo-300 text-indigo-700 text-xs font-semibold hover:bg-indigo-50',

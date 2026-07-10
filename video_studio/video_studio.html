@@ -1232,6 +1232,13 @@
   function vsMakePackReference(meta) {
     var m = meta || {};
     var thumb = (typeof m.thumb === 'string' && m.thumb.indexOf('data:image/') === 0 && m.thumb.length <= 40000) ? m.thumb : null;
+    // Optional teacher-hosted location for the bytes (YouTube/Drive/LMS link
+    // pasted by the teacher — never auto-uploaded). https-only, no spaces.
+    var hostedUrl = (function () {
+      var u = String(m.hostedUrl || '').trim();
+      if (u.length > 500 || !/^https:\/\/\S+$/i.test(u)) return null;
+      return u;
+    })();
     return {
       type: 'videoRef',
       version: 1,
@@ -1260,6 +1267,7 @@
       mediaCreditCount: Math.max(0, Math.min(999, Math.round(Number(m.mediaCreditCount) || 0))),
       mediaCreditWarningCount: Math.max(0, Math.min(999, Math.round(Number(m.mediaCreditWarningCount) || 0))),
       resourceCueCount: Math.max(0, Math.min(999, Math.round(Number(m.resourceCueCount) || 0))),
+      hostedUrl: hostedUrl,
       thumb: thumb,
       createdAt: m.createdAt || null
     };
