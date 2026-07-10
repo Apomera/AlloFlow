@@ -320,6 +320,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
   // SECTION 3: TOOL REGISTRATION + RENDER
   // ─────────────────────────────────────────────────────────
 
+  if (typeof document !== 'undefined' && !document.getElementById('firstresponse-readiness-css')) {
+    var firstResponseStyle = document.createElement('style');
+    firstResponseStyle.id = 'firstresponse-readiness-css';
+    firstResponseStyle.textContent = [
+      '.firstresponse-menu-shell{width:min(100%,1100px);margin:0 auto;padding:8px;color:#f8fafc;display:grid;gap:14px;}',
+      '.firstresponse-menu-shell *{box-sizing:border-box;}',
+      '.firstresponse-command{padding:20px;border:1px solid rgba(96,165,250,.4);border-radius:20px;background:radial-gradient(circle at 91% 9%,rgba(59,130,246,.22),transparent 34%),linear-gradient(135deg,rgba(30,58,138,.64),rgba(2,6,23,.98) 68%);box-shadow:0 18px 44px rgba(2,6,23,.28);}',
+      '.firstresponse-command-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}',
+      '.firstresponse-eyebrow{margin:0 0 7px;color:#93c5fd;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;}',
+      '.firstresponse-title{margin:0;color:#fff;font-size:clamp(22px,3vw,31px);line-height:1.12;}',
+      '.firstresponse-subtitle{max-width:740px;margin:8px 0 0;color:#dbeafe;font-size:13px;line-height:1.55;}',
+      '.firstresponse-status{flex:0 0 auto;padding:8px 11px;border:1px solid rgba(147,197,253,.35);border-radius:999rem;background:rgba(2,6,23,.66);color:#bfdbfe;font-size:10px;font-weight:800;white-space:nowrap;}',
+      '.firstresponse-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:17px;}',
+      '.firstresponse-metric{min-width:0;padding:10px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(15,23,42,.72);}',
+      '.firstresponse-metric-label{display:block;color:#94a3b8;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.firstresponse-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+      '.firstresponse-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px;}',
+      '.firstresponse-primary{min-height:44px;padding:10px 16px;border:1px solid rgba(219,234,254,.42);border-radius:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(37,99,235,.22);transition:transform .18s,box-shadow .18s;}',
+      '.firstresponse-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(37,99,235,.3);}',
+      '.firstresponse-action-note{color:#bfdbfe;font-size:10px;line-height:1.4;}',
+      '.firstresponse-section{padding:16px;border:1px solid #334155;border-radius:16px;background:rgba(15,23,42,.67);}',
+      '.firstresponse-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;}',
+      '.firstresponse-section-head h3{margin:0;color:#f8fafc;font-size:15px;}',
+      '.firstresponse-section-head p{margin:3px 0 0;color:#94a3b8;font-size:11px;line-height:1.45;}',
+      '.firstresponse-core-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;}',
+      '.firstresponse-tile-wrap{min-width:0;}',
+      '.firstresponse-menu-tile{width:100%;height:100%;min-height:142px;transition:transform .18s,border-color .18s,box-shadow .18s;}',
+      '.firstresponse-menu-tile:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(2,6,23,.25);}',
+      '.firstresponse-menu-tile--compact{min-height:108px;}',
+      '.firstresponse-catalog{border:1px solid #334155;border-radius:16px;background:rgba(15,23,42,.72);overflow:hidden;}',
+      '.firstresponse-catalog summary{min-height:50px;padding:14px 16px;cursor:pointer;color:#dbeafe;font-size:12px;font-weight:900;}',
+      '.firstresponse-catalog-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:0 14px 14px;}',
+      '.firstresponse-badges{padding:13px;border:1px solid #334155;border-radius:14px;background:#0f172a;}',
+      '@media(max-width:980px){.firstresponse-core-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.firstresponse-catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media(max-width:720px){.firstresponse-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.firstresponse-core-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media(max-width:520px){.firstresponse-menu-shell{padding:0;}.firstresponse-command{padding:14px;border-radius:16px;}.firstresponse-command-top{flex-direction:column;}.firstresponse-status{white-space:normal;}.firstresponse-core-grid,.firstresponse-catalog-grid{grid-template-columns:1fr;}.firstresponse-primary{width:100%;}.firstresponse-actions{align-items:stretch;}.firstresponse-action-note{width:100%;}.firstresponse-menu-tile{min-height:100px;}}',
+      '@media(prefers-reduced-motion:reduce){.firstresponse-primary,.firstresponse-menu-tile{transition:none;}.firstresponse-primary:hover,.firstresponse-menu-tile:hover{transform:none;}}',
+      '.theme-contrast .firstresponse-command,.theme-contrast .firstresponse-section,.theme-contrast .firstresponse-catalog,.theme-contrast .firstresponse-badges{box-shadow:none;border-width:2px;}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(firstResponseStyle);
+  }
+
   window.StemLab.registerTool('firstResponse', {
     name: 'First Response Lab',
     icon: '🚑',
@@ -579,78 +621,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       ];
 
       function renderMenu() {
-        var visitedCount = Object.keys(modulesVisited).length;
         var _mMastery = (d.faMastery && typeof d.faMastery === 'object') ? d.faMastery : {};
-        var _mDoneCount = FA_VIGNETTE_INDEX.filter(function (v) { return !!_mMastery[v.id]; }).length;
+        var _mDoneCount = FA_VIGNETTE_INDEX.filter(function(v) { return !!_mMastery[v.id]; }).length;
         var _mTotal = FA_VIGNETTE_INDEX.length;
-        return h('div', { style: { padding: 20, maxWidth: 960, margin: '0 auto', color: T.text } },
-          emergencyBanner(),
-          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 } },
-            h('h2', { style: { margin: 0, fontSize: 22 } }, __alloT('stem.firstresponse.first_response_lab', '🚑 First Response Lab')),
-            h('div', { style: { display: 'flex', gap: 14, fontSize: 12, color: T.dim, flexWrap: 'wrap' } },
-              h('span', null, 'Modules: ', h('strong', { style: { color: T.text } }, visitedCount + ' / ' + (MENU_TILES.length - 1))),
-              h('span', { 'aria-label': 'Responder mastery: ' + _mDoneCount + ' of ' + _mTotal + ' scenarios mastered' },
-                h('span', { 'aria-hidden': 'true' }, '🏅 '),
-                'Mastery: ',
-                h('strong', { style: { color: _mDoneCount > 0 ? T.accentHi : T.text } }, _mDoneCount + ' / ' + _mTotal)
-              )
+        var coreIds = ['recognize', 'call', 'cprAed', 'bleed', 'choking'];
+        var coreTiles = coreIds.map(function(id) { return MENU_TILES.filter(function(tile) { return tile.id === id; })[0]; }).filter(Boolean);
+        var catalogTiles = MENU_TILES.filter(function(tile) { return coreIds.indexOf(tile.id) < 0; });
+        var learningTiles = MENU_TILES.filter(function(tile) { return tile.id !== 'resources'; });
+        var visitedCount = learningTiles.filter(function(tile) { return !!modulesVisited[tile.id]; }).length;
+        var coreCompleted = coreTiles.filter(function(tile) { return !!modulesVisited[tile.id]; }).length;
+        var nextTile = coreTiles.filter(function(tile) { return !modulesVisited[tile.id]; })[0]
+          || learningTiles.filter(function(tile) { return !modulesVisited[tile.id]; })[0]
+          || MENU_TILES.filter(function(tile) { return tile.id === 'mastery'; })[0];
+
+        function openTile(tile) {
+          if (!tile || !tile.ready) return;
+          upd('view', tile.id);
+          markVisited(tile.id);
+          frAnnounce('Opening ' + tile.label);
+        }
+
+        function metric(label, value) {
+          return h('div', { className: 'firstresponse-metric', role: 'listitem' },
+            h('span', { className: 'firstresponse-metric-label' }, label),
+            h('strong', { className: 'firstresponse-metric-value' }, value));
+        }
+
+        function renderTile(tile, core, compact) {
+          var visited = !!modulesVisited[tile.id];
+          return h('div', { key: tile.id, role: 'listitem', className: 'firstresponse-tile-wrap' },
+            h('button', {
+              type: 'button',
+              className: 'firstresponse-menu-tile' + (compact ? ' firstresponse-menu-tile--compact' : ''),
+              'data-fr-focusable': true,
+              disabled: !tile.ready,
+              'aria-label': tile.label + (visited ? ' (visited)' : '') + (core ? ' - core response step' : ''),
+              onClick: function() { openTile(tile); },
+              style: btn({
+                display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
+                padding: 14, background: core ? '#101b3d' : T.card,
+                borderColor: visited ? T.ok : (core ? '#3b82f6' : T.border),
+                borderWidth: core ? 2 : 1, borderStyle: 'solid'
+              })
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, tile.icon),
+                h('span', { style: { fontWeight: 700, fontSize: compact ? 13 : 14, flex: 1 } }, tile.label),
+                visited && h('span', { 'aria-hidden': 'true', style: { color: T.ok, fontSize: 14 } }, '\u2713')),
+              h('div', { style: { fontSize: compact ? 11 : 12, color: T.muted, lineHeight: 1.45 } }, tile.desc)
             )
-          ),
-          h('p', { style: { margin: '0 0 16px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            __alloT('stem.firstresponse.pick_a_module_start_with', 'Pick a module. Start with '),
-            h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.recognize_2', 'Recognize')),
-            __alloT('stem.firstresponse.if_you_are_new_every_other_module_assu', ' if you are new — every other module assumes you can spot the emergency first.')),
-          h('div', { role: 'list',
-            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
-            MENU_TILES.map(function(tile) {
-              var visited = !!modulesVisited[tile.id];
-              var isReady = tile.ready;
-              return h('button', { key: tile.id, role: 'listitem',
-                'data-fr-focusable': true,
-                disabled: !isReady,
-                'aria-label': tile.label + (visited ? ' (visited)' : '') + (!isReady ? ' (coming soon)' : ''),
-                onClick: function() {
-                  if (!isReady) return;
-                  upd('view', tile.id);
-                  markVisited(tile.id);
-                  frAnnounce('Opening ' + tile.label);
-                },
-                style: btn({
-                  display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
-                  padding: 14, minHeight: 110,
-                  background: isReady ? T.card : T.cardAlt,
-                  opacity: isReady ? 1 : 0.55, cursor: isReady ? 'pointer' : 'not-allowed',
-                  borderColor: visited ? T.ok : T.border
-                })
-              },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
-                  h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, tile.icon),
-                  h('span', { style: { fontWeight: 700, fontSize: 15, flex: 1 } }, tile.label),
-                  visited && h('span', { 'aria-hidden': 'true', style: { color: T.ok, fontSize: 14 } }, '✓'),
-                  !isReady && h('span', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic' } }, __alloT('stem.firstresponse.soon', 'Soon'))
-                ),
-                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.45 } }, tile.desc)
-              );
-            })
-          ),
-          // Badge tray
-          Object.keys(badges).length > 0 && h('div', { style: { marginTop: 18, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, __alloT('stem.firstresponse.badges_earned', '🏅 Badges earned')),
+          );
+        }
+
+        return h('main', { className: 'firstresponse-menu-shell', 'data-firstresponse-readiness': 'true' },
+          emergencyBanner(),
+          h('header', { className: 'firstresponse-command' },
+            h('div', { className: 'firstresponse-command-top' },
+              h('div', null,
+                h('p', { className: 'firstresponse-eyebrow' }, __alloT('stem.firstresponse.readiness_label', 'Emergency response readiness')),
+                h('h2', { className: 'firstresponse-title' }, __alloT('stem.firstresponse.first_response_lab', 'First Response Lab')),
+                h('p', { className: 'firstresponse-subtitle' }, __alloT('stem.firstresponse.readiness_blurb', 'Build the decision sequence: recognize the emergency, activate help, then choose the appropriate first action.'))),
+              h('div', { className: 'firstresponse-status', role: 'status' }, __alloT('stem.firstresponse.education_status', 'Educational only - real emergencies: call 911'))),
+            h('div', { className: 'firstresponse-metrics', role: 'list', 'aria-label': __alloT('stem.firstresponse.progress_label', 'First Response progress') },
+              metric(__alloT('stem.firstresponse.core_readiness', 'Core readiness'), coreCompleted + ' / ' + coreTiles.length),
+              metric(__alloT('stem.firstresponse.modules_explored', 'Modules explored'), visitedCount + ' / ' + learningTiles.length),
+              metric(__alloT('stem.firstresponse.scenario_mastery', 'Scenario mastery'), _mDoneCount + ' / ' + _mTotal),
+              metric(__alloT('stem.firstresponse.badges', 'Badges'), String(Object.keys(badges).length))),
+            h('div', { className: 'firstresponse-actions' },
+              h('button', { type: 'button', className: 'firstresponse-primary', onClick: function() { openTile(nextTile); } },
+                coreCompleted < coreTiles.length ? __alloT('stem.firstresponse.continue_core', 'Continue core response path') : __alloT('stem.firstresponse.continue_practice', 'Continue practice')),
+              h('span', { className: 'firstresponse-action-note' }, nextTile ? nextTile.label : __alloT('stem.firstresponse.review', 'Review mastery')))),
+
+          h('section', { className: 'firstresponse-section', 'aria-labelledby': 'firstresponse-core-heading' },
+            h('div', { className: 'firstresponse-section-head' },
+              h('div', null,
+                h('h3', { id: 'firstresponse-core-heading' }, __alloT('stem.firstresponse.core_path', 'Recognize - Call - Act')),
+                h('p', null, __alloT('stem.firstresponse.core_path_blurb', 'Start with recognition and emergency activation, then learn the core response modules.'))),
+              h('span', { className: 'firstresponse-action-note' }, coreCompleted + ' / ' + coreTiles.length)),
+            h('div', { className: 'firstresponse-core-grid', role: 'list' },
+              coreTiles.map(function(tile) { return renderTile(tile, true, false); }))),
+
+          h('details', { className: 'firstresponse-catalog', open: coreCompleted === coreTiles.length },
+            h('summary', null, __alloT('stem.firstresponse.more_practice', 'More practice, accessibility, mastery, and resources') + ' (' + catalogTiles.length + ')'),
+            h('div', { className: 'firstresponse-catalog-grid', role: 'list' },
+              catalogTiles.map(function(tile) { return renderTile(tile, false, true); }))),
+
+          Object.keys(badges).length > 0 && h('section', { className: 'firstresponse-badges', 'aria-label': __alloT('stem.firstresponse.badges_earned', 'Badges earned') },
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, __alloT('stem.firstresponse.badges_earned', 'Badges earned')),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
               Object.keys(badges).map(function(bid) {
-                return h('span', { key: bid,
-                  style: { fontSize: 11, padding: '4px 10px', borderRadius: 999, background: '#1e3a8a', color: '#dbeafe', border: '1px solid #1e40af' } },
-                  badges[bid].label || bid);
-              })
-            )
-          ),
+                return h('span', { key: bid, style: { fontSize: 11, padding: '4px 10px', borderRadius: '999rem', background: '#1e3a8a', color: '#dbeafe', border: '1px solid #1e40af' } }, badges[bid].label || bid);
+              }))),
           disclaimerFooter()
         );
       }
 
-      // ─────────────────────────────────────────
-      // BACK BUTTON (returns to menu)
-      // ─────────────────────────────────────────
+      // Back button (returns to menu)
       function backBar(title) {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
           h('button', { 'data-fr-focusable': true,
