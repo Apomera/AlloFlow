@@ -194,8 +194,8 @@ const getSessionAssetSecurityMetadata = (sessionCode) => {
   if (!ownerUid) throw new Error("Firebase Authentication must be ready before uploading session assets.");
   if (!sessionCode || parentId !== String(sessionCode)) throw new Error("A valid session or assignment ID is required for asset upload.");
   const parentKind = parentId.startsWith("HW-") ? "assignment" : "live";
-  const now = new Date();
-  const lifetimeMs = parentKind === "assignment" ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+  const now = /* @__PURE__ */ new Date();
+  const lifetimeMs = parentKind === "assignment" ? 30 * 24 * 60 * 60 * 1e3 : 24 * 60 * 60 * 1e3;
   return {
     ownerUid,
     parentId,
@@ -204,34 +204,43 @@ const getSessionAssetSecurityMetadata = (sessionCode) => {
     expiresAt: new Date(now.getTime() + lifetimeMs)
   };
 };
-const enqueueChunkedStringAsset = (appId, assetId, kind, data, writeTasks, metadata = {}) => {
+const _sessionAssetUploadMemo = /* @__PURE__ */ new Set();
+const enqueueChunkedStringAsset = (appId, assetId, kind, data, writeTasks, metadata = {}, options = {}) => {
+  const memoWrites = !!options.contentAddressed;
+  const pushSetDoc = (docId, payload) => {
+    const memoKey = `${appId}|${docId}`;
+    if (memoWrites && _sessionAssetUploadMemo.has(memoKey)) return;
+    writeTasks.push(() => Promise.resolve(setDoc(getSessionAssetRef(appId, docId), payload)).then(() => {
+      if (memoWrites) _sessionAssetUploadMemo.add(memoKey);
+    }));
+  };
   const text = typeof data === "string" ? data : JSON.stringify(data);
   if (jsonByteLength(text) > SESSION_RESOURCE_CHUNK_SIZE) {
     const chunkIds = [];
     for (let offset = 0; offset < text.length; offset += SESSION_RESOURCE_CHUNK_SIZE) {
       const chunkId = `${assetId}_chunk_${chunkIds.length}`;
       chunkIds.push(chunkId);
-      writeTasks.push(() => setDoc(getSessionAssetRef(appId, chunkId), {
+      pushSetDoc(chunkId, {
         kind: `${kind}Chunk`,
         parent: assetId,
         index: chunkIds.length - 1,
         data: text.slice(offset, offset + SESSION_RESOURCE_CHUNK_SIZE),
         ...metadata
-      }));
+      });
     }
-    writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
+    pushSetDoc(assetId, stripUndefinedForFirestore({
       kind: `${kind}Chunks`,
       chunks: chunkIds,
       byteLength: jsonByteLength(text),
       ...metadata
-    })));
+    }));
   } else {
-    writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
+    pushSetDoc(assetId, stripUndefinedForFirestore({
       kind,
       data: text,
       byteLength: jsonByteLength(text),
       ...metadata
-    })));
+    }));
   }
 };
 const enqueueSessionResourceAsset = (appId, assetId, item, itemJson, writeTasks, metadata = {}) => {
@@ -347,7 +356,6 @@ const runFirestoreWriteTasks = async (writeTasks, concurrency = SESSION_ASSET_WR
   });
   await Promise.all(workers);
 };
-
 const uploadSessionAssets = async (appId, resources, sessionCode) => {
   console.log("[SESSION DEBUG] uploadSessionAssets called, resources:", resources?.length);
   if (!resources || !Array.isArray(resources)) return;
@@ -388,8 +396,22 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
     if (val && typeof val === "string" && val.startsWith("data:image")) {
       const assetId = makeSessionAssetId("img", assetSeed.concat([key, hashStringForSessionAsset(val)]));
       obj[key] = `ref::${assetId}`;
-      enqueueChunkedStringAsset(appId, assetId, "sessionImage", val, writeTasks, securityMetadata);
+      enqueueChunkedStringAsset(appId, assetId, "sessionImage", val, writeTasks, securityMetadata, { contentAddressed: true });
     }
+  };
+  const processJsonField = (obj, key, prefix, sessionSeed) => {
+    const val = obj && obj[key];
+    if (!val || typeof val !== "object" || Array.isArray(val)) return;
+    let json = "";
+    try {
+      json = JSON.stringify(val);
+    } catch (_) {
+      return;
+    }
+    if (jsonByteLength(json) <= 2048) return;
+    const assetId = makeSessionAssetId(prefix, [sessionSeed, hashStringForSessionAsset(json)]);
+    obj[key] = `jsonref::${assetId}`;
+    enqueueChunkedStringAsset(appId, assetId, "sessionJson", json, writeTasks, securityMetadata, { contentAddressed: true });
   };
   safeResources.forEach((item, index) => {
     const seed = [sessionCode || "session", index, item && item.id || item && item.type || "resource"];
@@ -409,6 +431,15 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
     }
     if (item.type === "persona" && Array.isArray(item.data)) {
       item.data.forEach((p, personaIndex) => processField(p, "avatarUrl", seed.concat(["persona", personaIndex])));
+    }
+    if (item.type === "word-sounds" && Array.isArray(item.data)) {
+      item.data.forEach((wordItem, wordIndex) => {
+        if (!wordItem || typeof wordItem !== "object") return;
+        processField(wordItem, "image", seed.concat(["word", wordIndex]));
+        processJsonField(wordItem, "_ttsAssets", "wsaudio", sessionCode || "session");
+        processJsonField(wordItem, "_decodingAssets", "wsimg", sessionCode || "session");
+        processJsonField(wordItem, "_aacAssets", "wsaac", sessionCode || "session");
+      });
     }
   });
   const firestoreResources = stripUndefinedForFirestore(safeResources);
@@ -474,7 +505,6 @@ const hydrateSessionAssets = async (appId, resources) => {
     resourceFetchPromises.push(promise);
   });
   await Promise.all(resourceFetchPromises);
-
   const fetchPromises = [];
   const restoreField = (obj, key) => {
     const val = obj[key];
@@ -494,6 +524,29 @@ const hydrateSessionAssets = async (appId, resources) => {
       fetchPromises.push(promise);
     }
   };
+  const restoreJsonField = (obj, key) => {
+    const val = obj && obj[key];
+    if (val && typeof val === "string" && val.startsWith("jsonref::")) {
+      const assetId = val.slice("jsonref::".length);
+      const promise = getDoc(getSessionAssetRef(appId, assetId)).then(async (snap) => {
+        if (!snap.exists()) {
+          obj[key] = null;
+          return;
+        }
+        const payload = snap.data() || {};
+        const json = Array.isArray(payload.chunks) ? await loadChunkedAssetString(appId, payload) : payload.data;
+        try {
+          obj[key] = JSON.parse(json || "null");
+        } catch (_) {
+          obj[key] = null;
+        }
+      }).catch(() => {
+        obj[key] = null;
+        warnLog("Failed to load asset", assetId);
+      });
+      fetchPromises.push(promise);
+    }
+  };
   hydrated.forEach((item) => {
     if (item.type === "image" && item.data) {
       restoreField(item.data, "imageUrl");
@@ -509,6 +562,15 @@ const hydrateSessionAssets = async (appId, resources) => {
     }
     if (item.type === "persona" && Array.isArray(item.data)) {
       item.data.forEach((p) => restoreField(p, "avatarUrl"));
+    }
+    if (item.type === "word-sounds" && Array.isArray(item.data)) {
+      item.data.forEach((wordItem) => {
+        if (!wordItem || typeof wordItem !== "object") return;
+        restoreField(wordItem, "image");
+        restoreJsonField(wordItem, "_ttsAssets");
+        restoreJsonField(wordItem, "_decodingAssets");
+        restoreJsonField(wordItem, "_aacAssets");
+      });
     }
   });
   await Promise.all(fetchPromises);

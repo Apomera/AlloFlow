@@ -1916,11 +1916,16 @@
         const library = {};
         for (const item of preloadedWords) {
           const word = String(item?.targetWord || item?.word || item?.term || "").trim().toLowerCase();
-          if (word && item?.image) library[word] = item.image;
+          if (word && item?.image && typeof item.image === "string" && !item.image.startsWith("ref::")) library[word] = item.image;
           if (item?._decodingAssets && typeof item._decodingAssets === "object") Object.assign(library, item._decodingAssets);
+          if (item?._aacAssets && typeof item._aacAssets === "object") Object.assign(library, item._aacAssets);
         }
         return library;
       }, [preloadedWords]);
+      const hasPreparedImages = React.useMemo(
+        () => Object.keys(preparedImageLibrary).length > 0,
+        [preparedImageLibrary],
+      );
       // Resolve a playable src for text the teacher packed at setup time
       // (data URI or {mime, base64}); null when the pack has no clip for it.
       const portableTtsSrcFor = React.useCallback(
@@ -2021,13 +2026,33 @@
       // Results are cached in optionImagesCache so each word is only generated once.
       const generateOptionImages = React.useCallback(
         async (words) => {
-          if (!aacMode || typeof callImagen !== "function") return;
+          if (!aacMode) return;
           const uncached = words.filter(
             (w) => w && !optionImagesCache.current.has(w),
           );
           if (!uncached.length) return;
+          // Pack images first — student devices have no Imagen. AAC render
+          // sites prepend the data:image header themselves, so normalize a
+          // packed data-URI down to its raw base64 payload.
+          const needGen = [];
+          uncached.forEach((word) => {
+            const packed =
+              preparedImageLibrary[String(word).trim().toLowerCase()];
+            if (packed && typeof packed === "string") {
+              const raw = packed.startsWith("data:")
+                ? packed.split(",")[1] || ""
+                : packed;
+              if (raw) {
+                optionImagesCache.current.set(word, raw);
+                setOptionImages((prev) => ({ ...prev, [word]: raw }));
+                return;
+              }
+            }
+            needGen.push(word);
+          });
+          if (!needGen.length || typeof callImagen !== "function") return;
           await Promise.all(
-            uncached.map(async (word) => {
+            needGen.map(async (word) => {
               try {
                 const prompt = `Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`;
                 const img = await callImagen(prompt);
@@ -2041,7 +2066,7 @@
             }),
           );
         },
-        [aacMode, callImagen],
+        [aacMode, callImagen, preparedImageLibrary],
       );
       // Re-generate images whenever options change while AAC mode is active.
       React.useEffect(() => {
@@ -16077,7 +16102,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ),
                 ];
               }),
-              typeof callImagen === "function" &&
+              (typeof callImagen === "function" || hasPreparedImages) &&
                 /*#__PURE__*/ React.createElement(
                 "button",
                 {

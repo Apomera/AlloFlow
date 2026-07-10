@@ -191,9 +191,17 @@ const WordSoundsReviewPanel = ({
   const [audioProgress, setAudioProgress] = React.useState({ ready: 0, total: 0 });
   React.useEffect(() => {
     if (!preloadedWords || preloadedWords.length === 0) return;
+    const normalizeAudioKey = (value) => String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
     const checkAudio = () => {
+      const portableKeys = /* @__PURE__ */ new Set();
+      preloadedWords.forEach((item) => {
+        const assets = item && item._ttsAssets;
+        if (assets && typeof assets === "object") {
+          Object.keys(assets).forEach((key) => portableKeys.add(normalizeAudioKey(key)));
+        }
+      });
       setAudioProgress({
-        ready: preloadedWords.filter((w) => w.ttsReady || w.phonemes).length,
+        ready: preloadedWords.filter((w) => w.ttsReady === true || portableKeys.has(normalizeAudioKey(w.targetWord || w.word || w.term))).length,
         total: preloadedWords.length
       });
     };

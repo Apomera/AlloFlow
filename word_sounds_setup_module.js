@@ -1015,6 +1015,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   ]);
   const [draggedActivity, setDraggedActivity] = React.useState(null);
   const [imageTheme, setImageTheme] = React.useState("");
+  const [includeAacImages, setIncludeAacImages] = React.useState(false);
   const [syllableRange, setSyllableRange] = React.useState({ min: 1, max: 4 });
   const [aiTopic, setAiTopic] = React.useState("");
   const [aiTerms, setAiTerms] = React.useState([]);
@@ -1441,11 +1442,14 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       }
       compileActivityItems(processed);
       const decodingAssets = {};
+      const aacAssets = {};
       processed.forEach((item) => {
         const key = normalizePackKey(item.targetWord || item.word || item.term);
         if (key && item.image) decodingAssets[key] = item.image;
         if (item._decodingAssets) Object.assign(decodingAssets, item._decodingAssets);
         delete item._decodingAssets;
+        if (item._aacAssets) Object.assign(aacAssets, item._aacAssets);
+        delete item._aacAssets;
       });
       if (typeof callImagen === "function") {
         const decodingWords = [...new Set(processed.flatMap((item) => item.activityItems?.decoding?.choices || []))];
@@ -1457,6 +1461,30 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             if (image) decodingAssets[word] = image;
           } catch (e) {
             warnLog("Decoding image preload failed for:", word, e?.message || e);
+          }
+        }
+      }
+      if (includeAacImages && typeof callImagen === "function") {
+        const aacWords = [...new Set(processed.flatMap((item) => {
+          const boards = item.activityItems || {};
+          return [
+            ...boards.blending?.options || [],
+            ...boards.rhyming?.options || [],
+            ...boards.manipulation?.options || [],
+            ...boards.syllable_blending?.options || []
+          ];
+        }).map((value) => normalizePackKey(value)).filter(Boolean))];
+        setPrewarmTotal((prev) => prev + aacWords.length);
+        for (const word of aacWords) {
+          try {
+            if (aacAssets[word] || decodingAssets[word]) continue;
+            const themePrefix = imageTheme?.trim() ? `${imageTheme.trim()} style, ` : "";
+            const image = await callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`);
+            if (image) aacAssets[word] = image;
+          } catch (e) {
+            warnLog("AAC image preload failed for:", word, e?.message || e);
+          } finally {
+            setPrewarmCount((prev) => prev + 1);
           }
         }
       }
@@ -1538,6 +1566,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         processed[0]._studentPackVersion = 2;
         processed[0]._ttsAssets = packedTtsAssets;
         processed[0]._decodingAssets = decodingAssets;
+        if (Object.keys(aacAssets).length) processed[0]._aacAssets = aacAssets;
       }
       const isAssessment = sessionType === "assessment";
       const useLessonPlan = includeLessonPlan && !isAssessment;
@@ -1732,7 +1761,15 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       placeholder: t("word_sounds.theme_placeholder", "e.g. cartoon, pixel art, realistic..."),
       className: "w-full p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, t("word_sounds.theme_hint", "Optional: Style for new word images (not glossary)"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.image_display_mode")), /* @__PURE__ */ React.createElement(ImageIcon, { size: 18, className: "text-violet-500" })), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, t("word_sounds.theme_hint", "Optional: Style for new word images (not glossary)")), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 mt-3 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "checkbox",
+      checked: includeAacImages,
+      onChange: (e) => setIncludeAacImages(e.target.checked),
+      className: "mt-0.5 accent-teal-600"
+    }
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.aac_prep_label", "Prepare AAC symbol images")), /* @__PURE__ */ React.createElement("br", null), t("word_sounds.aac_prep_hint", "Pre-generates a picture for every answer choice so the AAC symbol overlay works on student devices without AI. Slower to prepare.")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.image_display_mode")), /* @__PURE__ */ React.createElement(ImageIcon, { size: 18, className: "text-violet-500" })), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.image_display_mode"),

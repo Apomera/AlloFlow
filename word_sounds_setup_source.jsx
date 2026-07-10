@@ -856,6 +856,7 @@
         ]);
         const [draggedActivity, setDraggedActivity] = React.useState(null);
         const [imageTheme, setImageTheme] = React.useState('');
+        const [includeAacImages, setIncludeAacImages] = React.useState(false);
         const [syllableRange, setSyllableRange] = React.useState({ min: 1, max: 4 });
         const [aiTopic, setAiTopic] = React.useState('');
         const [aiTerms, setAiTerms] = React.useState([]);
@@ -1312,11 +1313,14 @@
              // Build every picture required by the saved Read & Match boards on
              // the teacher device, then store one shared image manifest.
              const decodingAssets = {};
+             const aacAssets = {};
              processed.forEach((item) => {
                  const key = normalizePackKey(item.targetWord || item.word || item.term);
                  if (key && item.image) decodingAssets[key] = item.image;
                  if (item._decodingAssets) Object.assign(decodingAssets, item._decodingAssets);
                  delete item._decodingAssets;
+                 if (item._aacAssets) Object.assign(aacAssets, item._aacAssets);
+                 delete item._aacAssets;
              });
              if (typeof callImagen === 'function') {
                  const decodingWords = [...new Set(processed.flatMap((item) => item.activityItems?.decoding?.choices || []))];
@@ -1328,6 +1332,34 @@
                          if (image) decodingAssets[word] = image;
                      } catch (e) {
                          warnLog('Decoding image preload failed for:', word, e?.message || e);
+                     }
+                 }
+             }
+
+             // AAC overlay imagery (opt-in): pre-generate a picture for every
+             // word that can appear as an answer choice so the AAC symbol
+             // overlay works on student devices, where Imagen is unavailable.
+             if (includeAacImages && typeof callImagen === 'function') {
+                 const aacWords = [...new Set(processed.flatMap((item) => {
+                     const boards = item.activityItems || {};
+                     return [
+                         ...(boards.blending?.options || []),
+                         ...(boards.rhyming?.options || []),
+                         ...(boards.manipulation?.options || []),
+                         ...(boards.syllable_blending?.options || []),
+                     ];
+                 }).map((value) => normalizePackKey(value)).filter(Boolean))];
+                 setPrewarmTotal((prev) => prev + aacWords.length);
+                 for (const word of aacWords) {
+                     try {
+                         if (aacAssets[word] || decodingAssets[word]) continue;
+                         const themePrefix = imageTheme?.trim() ? `${imageTheme.trim()} style, ` : '';
+                         const image = await callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`);
+                         if (image) aacAssets[word] = image;
+                     } catch (e) {
+                         warnLog('AAC image preload failed for:', word, e?.message || e);
+                     } finally {
+                         setPrewarmCount((prev) => prev + 1);
                      }
                  }
              }
@@ -1413,6 +1445,7 @@
                  processed[0]._studentPackVersion = 2;
                  processed[0]._ttsAssets = packedTtsAssets;
                  processed[0]._decodingAssets = decodingAssets;
+                 if (Object.keys(aacAssets).length) processed[0]._aacAssets = aacAssets;
              }
              // A probe is a single timed skill — never a multi-activity lesson plan.
              const isAssessment = sessionType === 'assessment';
@@ -1702,6 +1735,15 @@
                                         className="w-full p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
                                     />
                                     <p className="text-xs text-slate-600 mt-2">{t('word_sounds.theme_hint', 'Optional: Style for new word images (not glossary)')}</p>
+                                    <label className="flex items-start gap-2 mt-3 cursor-pointer">
+                                        <input type="checkbox" checked={includeAacImages}
+                                            onChange={(e) => setIncludeAacImages(e.target.checked)}
+                                            className="mt-0.5 accent-teal-600" />
+                                        <span className="text-xs text-slate-600">
+                                            <span className="font-bold text-slate-700">{t('word_sounds.aac_prep_label', 'Prepare AAC symbol images')}</span><br/>
+                                            {t('word_sounds.aac_prep_hint', 'Pre-generates a picture for every answer choice so the AAC symbol overlay works on student devices without AI. Slower to prepare.')}
+                                        </span>
+                                    </label>
                                 </div>
                                 <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
