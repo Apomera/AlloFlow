@@ -20784,6 +20784,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // fields). fidelityLimited keeps its original definition: coverage<90 OR structural notes.
         let _roundFid = null;
         try { _roundFid = recomputeContentFidelity ? recomputeContentFidelity(cur.sourceText, result.html) : null; } catch (_) {}
+        // #6-ext (2026-07-10): merge fidelity notes — RECOMPUTABLE kinds (links/tables/refusal/
+        // placement/numeric) are replaced by this round's fresh measurements so a round that swaps
+        // a number or drops a table refreshes its warning; run-scoped kinds (pageEdge, OCR
+        // accuracy/confidence, dupe-collapse, folio leak, alt quality…) can't be re-derived from
+        // (sourceText, html) and carry forward from the original run.
+        const _recompKinds = (_docPipeline && _docPipeline.recomputableFidelityKinds) || { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1 };
+        const _roundNotes = _roundFid
+          ? (cur.fidelityNotes || []).filter((n) => !(n && _recompKinds[n.kind])).concat(_roundFid.fidelityNotes || [])
+          : (cur.fidelityNotes || []);
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: result.axe,
@@ -20794,8 +20803,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           verificationAudit: reVerify,
           issueResolution: _roundIR,
           integrityCoverage: _roundFid ? _roundFid.integrityCoverage : cur.integrityCoverage,
-          integrityWarning: _roundFid ? ([_roundFid.coverageWarning, _roundFid.placementWarn].filter(Boolean).join(' ') || null) : cur.integrityWarning,
-          fidelityLimited: _roundFid ? ((_roundFid.integrityCoverage != null && _roundFid.integrityCoverage < 90) || (cur.fidelityNotes || []).length > 0) : cur.fidelityLimited,
+          integrityWarning: _roundFid ? ([_roundFid.coverageWarning, _roundFid.placementWarn, _roundFid.numericWarn].filter(Boolean).join(' ') || null) : cur.integrityWarning,
+          fidelityNotes: _roundNotes, // #6-ext: refreshed recomputable kinds + carried run-scoped kinds
+          fidelityLimited: _roundFid ? ((_roundFid.integrityCoverage != null && _roundFid.integrityCoverage < 90) || _roundNotes.length > 0) : cur.fidelityLimited,
           afterScore: newScore,
           _scoreIsBlended: _det !== null,
           // A completed re-verify clears any throttle-degraded flag from the ORIGINAL run, so a now-fully-
@@ -20831,7 +20841,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           issueResolution: snapshot.issueResolution,
           integrityCoverage: snapshot.integrityCoverage, // #6-incremental: the recomputed fidelity
           integrityWarning: snapshot.integrityWarning,   // fields must reach the RENDERED result,
-          fidelityLimited: snapshot.fidelityLimited,     // not just the ref/auto-save snapshot
+          fidelityNotes: snapshot.fidelityNotes,         // not just the ref/auto-save snapshot
+          fidelityLimited: snapshot.fidelityLimited,
           afterScore: snapshot.afterScore,
           _scoreIsBlended: snapshot._scoreIsBlended,
           axeScore: snapshot.axeScore,

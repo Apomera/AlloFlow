@@ -2869,6 +2869,18 @@ function PdfAuditView(props) {
   const [pdfFieldCandidates, setPdfFieldCandidates] = useState(null);
   const [pdfFieldAccepted, setPdfFieldAccepted] = useState({});
   const [pdfFieldBusy, setPdfFieldBusy] = useState(false);
+  const pdfPreviewTrapRef = useRef(null);
+  const pdfFieldsTrapRef = useRef(null);
+  const fillableTrapRef = useRef(null);
+  const plainCompareTrapRef = useRef(null);
+  const translateCompareTrapRef = useRef(null);
+  const closeConfirmTrapRef = useRef(null);
+  _alloUseFocusTrap(pdfPreviewTrapRef, !!(pdfPreviewOpen && pdfFixResult));
+  _alloUseFocusTrap(pdfFieldsTrapRef, !!pdfFieldCandidates);
+  _alloUseFocusTrap(fillableTrapRef, !!fillableCandidates);
+  _alloUseFocusTrap(plainCompareTrapRef, !!(showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage));
+  _alloUseFocusTrap(translateCompareTrapRef, !!(showTranslationCompare && pdfFixResult && pdfFixResult._translation));
+  _alloUseFocusTrap(closeConfirmTrapRef, !!showCloseConfirm);
   useEffect(() => {
     const onLang = (e) => {
       try {
@@ -3218,6 +3230,23 @@ function PdfAuditView(props) {
     accepted.reduce((chain, f) => chain.then(() => _alloEnqueueBatchFile(f)), Promise.resolve());
     return accepted.length;
   };
+  const _AlloQualifier = ({ text, className, children }) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      title: text,
+      "aria-label": text,
+      onClick: () => {
+        try {
+          addToast(text, "info");
+        } catch (_) {
+        }
+      },
+      style: { font: "inherit", textAlign: "inherit" },
+      className: (className || "") + " border-0 cursor-help underline decoration-dotted underline-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+    },
+    children
+  );
   const _explainIssue = (issueText) => {
     const s = String(issueText || "");
     if (/alt|image|img/i.test(s)) return "Images without descriptions: a blind student hears silence where sighted students see diagrams, charts, or photographs \u2014 they miss educational content entirely.";
@@ -6393,6 +6422,13 @@ Return ONLY JSON:
       },
       "Clear history"
     ))), pdfFixResult && /* @__PURE__ */ React.createElement("div", { className: "mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300" }, (() => {
+      const _v = _docPipeline && typeof _docPipeline.distributionVerdict === "function" ? _docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore }) : null;
+      if (!_v) return null;
+      const _sty = _v.level === "ready" ? "bg-emerald-100 border-emerald-500 text-emerald-900" : _v.level === "caution" ? "bg-amber-50 border-amber-400 text-amber-900" : "bg-rose-50 border-rose-400 text-rose-900";
+      const _icon = _v.level === "ready" ? "\u2705" : _v.level === "caution" ? "\u26A0\uFE0F" : "\u{1F6D1}";
+      const _items = _v.level === "review" ? _v.review.concat(_v.cautions) : _v.cautions;
+      return /* @__PURE__ */ React.createElement("div", { role: "status", "data-help-key": "pdf_audit_verdict_strip", className: `rounded-xl border-2 p-3 ${_sty}` }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-black" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, _icon, " "), t("pdf_audit.verdict." + _v.level) || _v.headline), _items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 ml-5 list-disc text-xs space-y-0.5" }, _items.slice(0, 6).map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i }, m)), _items.length > 6 && /* @__PURE__ */ React.createElement("li", null, "+ " + (_items.length - 6) + " " + (t("pdf_audit.verdict.more") || "more \u2014 see the panels below"))));
+    })(), (() => {
       const _jump = (id) => {
         try {
           const el = document.getElementById(id);
@@ -6428,7 +6464,7 @@ Return ONLY JSON:
         } catch (_) {
         }
         addToast(t("toasts.stopping_after_round") || "Stopping after the current round \u2014 what\u2019s done is kept.", "info");
-      }, className: "px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0" }, "\u23F9 ", t("pdf_audit.running.stop") || "Stop after this round")), /* @__PURE__ */ React.createElement("div", { "data-help-key": "pdf_audit_dashboard_bar", className: "sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap", role: "navigation", "aria-label": t("pdf_audit.dashboard.aria") || "Remediation results overview and section navigation" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black whitespace-nowrap " + (pdfFixResult._aiVerificationIncomplete ? "text-slate-500" : "text-emerald-800"), title: (pdfFixResult._aiVerificationIncomplete ? (t("pdf_audit.dashboard.score_incomplete_title") || "Structural/automated checks only \u2014 the AI semantic audit was throttled and did not finish, so this is NOT a verified content score.") + " " : "") + (t("pdf_audit.dashboard.score_title") || "Content audit score (HTML reconstruction: AI rubric + axe), before \u2192 after. This is NOT PDF/UA conformance of the exported PDF \u2014 see the PDF/UA chip.") }, pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? "\u2013", " \u2192 ", pdfFixResult._aiVerificationIncomplete ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, "\u2014") : /* @__PURE__ */ React.createElement(React.Fragment, null, pdfFixResult.afterScore ?? "\u2013", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "/100")), " ", pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) ? /* @__PURE__ */ React.createElement("span", { className: "ml-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold uppercase tracking-wide", title: t("pdf_audit.dashboard.estimated_min_title") || "Lower-confidence estimate: the lower of the last successful AI audit and the current automated checks. Complete the final audit for a verified score." }, t("pdf_audit.dashboard.estimated_min") || "est. min", " ", pdfFixResult._estimatedMinimumScore, "/100") : null, " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-400 text-[9px] uppercase tracking-wide", title: _govTag === (t("pdf_audit.dashboard.automated_tag") || "automated") ? t("pdf_audit.dashboard.automated_tag_title") || "Headline governed by the automated layer (axe-core / IBM Equal Access) \u2014 the lower of the engines. The AI content rubric may be higher; see the breakdown below." : void 0 }, _govTag), pdfFixResult.fidelityLimited ? /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-bold", "aria-hidden": "true" }, "*") : null), pdfFixResult.fidelityLimited && /* @__PURE__ */ React.createElement(
+      }, className: "px-2.5 py-1 bg-white/20 border border-white/50 rounded-full text-[11px] font-bold hover:bg-white/30 shrink-0" }, "\u23F9 ", t("pdf_audit.running.stop") || "Stop after this round")), /* @__PURE__ */ React.createElement("div", { "data-help-key": "pdf_audit_dashboard_bar", className: "sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap", role: "navigation", "aria-label": t("pdf_audit.dashboard.aria") || "Remediation results overview and section navigation" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black whitespace-nowrap " + (pdfFixResult._aiVerificationIncomplete ? "text-slate-500" : "text-emerald-800"), title: (pdfFixResult._aiVerificationIncomplete ? (t("pdf_audit.dashboard.score_incomplete_title") || "Structural/automated checks only \u2014 the AI semantic audit was throttled and did not finish, so this is NOT a verified content score.") + " " : "") + (t("pdf_audit.dashboard.score_title") || "Content audit score (HTML reconstruction: AI rubric + axe), before \u2192 after. This is NOT PDF/UA conformance of the exported PDF \u2014 see the PDF/UA chip.") }, pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? "\u2013", " \u2192 ", pdfFixResult._aiVerificationIncomplete ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, "\u2014") : /* @__PURE__ */ React.createElement(React.Fragment, null, pdfFixResult.afterScore ?? "\u2013", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "/100")), " ", pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "ml-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold uppercase tracking-wide", text: t("pdf_audit.dashboard.estimated_min_title") || "Lower-confidence estimate: the lower of the last successful AI audit and the current automated checks. Complete the final audit for a verified score." }, t("pdf_audit.dashboard.estimated_min") || "est. min", " ", pdfFixResult._estimatedMinimumScore, "/100") : null, " ", _govTag === (t("pdf_audit.dashboard.automated_tag") || "automated") ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "font-normal text-slate-400 text-[9px] uppercase tracking-wide", text: t("pdf_audit.dashboard.automated_tag_title") || "Headline governed by the automated layer (axe-core / IBM Equal Access) \u2014 the lower of the engines. The AI content rubric may be higher; see the breakdown below." }, _govTag) : /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-400 text-[9px] uppercase tracking-wide" }, _govTag), pdfFixResult.fidelityLimited ? /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "text-amber-600 font-bold", text: t("pdf_audit.dashboard.fidelity_limited_title") || "Asterisk: content fidelity is limited on this run (reduced coverage or fidelity notes) \u2014 a high score must not be read as \u201Call good\u201D. See the fidelity panel below for the specifics." }, "*") : null), pdfFixResult.fidelityLimited && /* @__PURE__ */ React.createElement(
         "span",
         {
           className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 whitespace-nowrap",
@@ -6436,10 +6472,10 @@ Return ONLY JSON:
         },
         t("pdf_audit.dashboard.fidelity_limited") || "\u26A0 verify content"
       ), _vio !== null && /* @__PURE__ */ React.createElement("span", { className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold " + (_vio === 0 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700") }, _vio === 0 ? t("pdf_audit.dashboard.zero_issues") || "0 content issues" : _vio + " " + (t("pdf_audit.dashboard.issues_left") || "content issues")), _structuralFoundations && _structuralFoundations.present && _structuralFoundations.present.length > 0 && /* @__PURE__ */ React.createElement(
-        "span",
+        _AlloQualifier,
         {
           className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800",
-          title: (t("pdf_audit.dashboard.foundations_title") || "HTML structural foundations DETECTED in the remediated document (lang, title, landmarks, headings, lists, etc.) \u2014 presence only, not validated for correctness, and separate from the per-issue content score above. Also DIFFERENT from the \u201CPDF/UA self-check\u201D chip, which checks the EXPORTED PDF\u2019s byte-level structure \u2014 the two happen to both count to 18 but measure different things. Present:") + " " + _structuralFoundations.present.join("; ")
+          text: (t("pdf_audit.dashboard.foundations_title") || "HTML structural foundations DETECTED in the remediated document (lang, title, landmarks, headings, lists, etc.) \u2014 presence only, not validated for correctness, and separate from the per-issue content score above. Also DIFFERENT from the \u201CPDF/UA self-check\u201D chip, which checks the EXPORTED PDF\u2019s byte-level structure \u2014 the two happen to both count to 18 but measure different things. Present:") + " " + _structuralFoundations.present.join("; ")
         },
         "\u{1F3D7}\uFE0F ",
         _structuralFoundations.present.length,
@@ -6447,10 +6483,10 @@ Return ONLY JSON:
         " ",
         t("pdf_audit.dashboard.foundations") || "HTML foundations"
       ), _structuralFoundations && Array.isArray(_structuralFoundations.advisory) && _structuralFoundations.advisory.length > 0 && /* @__PURE__ */ React.createElement(
-        "span",
+        _AlloQualifier,
         {
           className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-amber-100 text-amber-800",
-          title: (t("pdf_audit.dashboard.foundations_advisory_title") || "Best-practice structure recommendations \u2014 these IMPROVE the document outline / landmarks but are NOT WCAG failures and are NOT counted in the score (axe\u2019s region / page-has-heading-one / heading-order are best-practice rules). Recommendations:") + " " + _structuralFoundations.advisory.map((a) => a.label).join("  \u2022  ")
+          text: (t("pdf_audit.dashboard.foundations_advisory_title") || "Best-practice structure recommendations \u2014 these IMPROVE the document outline / landmarks but are NOT WCAG failures and are NOT counted in the score (axe\u2019s region / page-has-heading-one / heading-order are best-practice rules). Recommendations:") + " " + _structuralFoundations.advisory.map((a) => a.label).join("  \u2022  ")
         },
         "\u{1F4A1} ",
         _structuralFoundations.advisory.length,
@@ -6478,10 +6514,10 @@ Return ONLY JSON:
         }
         if (!label) return null;
         return /* @__PURE__ */ React.createElement(
-          "span",
+          _AlloQualifier,
           {
             className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap " + (fail ? "bg-red-100 text-red-700" : warnOnly ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"),
-            title: (t("pdf_audit.dashboard.pdfua_title") || "PDF/UA conformance of the EXPORTED tagged PDF \u2014 the actual file you hand out, distinct from the content score.") + (indep ? "" : ' Run "Independently validate with veraPDF" for the authoritative ISO 14289-1 verdict.')
+            text: (t("pdf_audit.dashboard.pdfua_title") || "PDF/UA conformance of the EXPORTED tagged PDF \u2014 the actual file you hand out, distinct from the content score.") + (indep ? "" : ' Run "Independently validate with veraPDF" for the authoritative ISO 14289-1 verdict.')
           },
           (fail ? "\u274C " : warnOnly ? "\u26A0\uFE0F " : "\u2705 ") + label
         );
@@ -6492,10 +6528,10 @@ Return ONLY JSON:
         const _low = _ro < 80;
         const _mid = !_low && _ro < 90;
         return /* @__PURE__ */ React.createElement(
-          "span",
+          _AlloQualifier,
           {
             className: "px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap " + (_low ? "bg-amber-100 text-amber-700" : _mid ? "bg-amber-50 text-amber-600" : "bg-slate-100 text-slate-600"),
-            title: t("pdf_audit.dashboard.reading_order_title") || "Reading-order match between the SOURCE document and the EXPORTED tagged PDF (round-trip token order, longest-common-subsequence). 100% = identical order. Lower values can indicate multi-column or table reflow that a screen reader will read out of sequence. Informational \u2014 being calibrated, does not yet block conformance."
+            text: t("pdf_audit.dashboard.reading_order_title") || "Reading-order match between the SOURCE document and the EXPORTED tagged PDF (round-trip token order, longest-common-subsequence). 100% = identical order. Lower values can indicate multi-column or table reflow that a screen reader will read out of sequence. Informational \u2014 being calibrated, does not yet block conformance."
           },
           (_low ? "\u26A0\uFE0F " : "") + (t("pdf_audit.dashboard.reading_order") || "Reading order") + ": " + Math.round(_ro * 10) / 10 + "%"
         );
@@ -6599,10 +6635,10 @@ Return ONLY JSON:
       const _cls = _oa.band === "good" ? "bg-emerald-100 text-emerald-700" : _oa.band === "fair" ? "bg-amber-50 text-amber-700" : "bg-amber-100 text-amber-800";
       const _lbl = _oa.band === "good" ? t("pdf_audit.dashboard.ocr_good") || "Good" : _oa.band === "fair" ? t("pdf_audit.dashboard.ocr_fair") || "Fair" : t("pdf_audit.dashboard.ocr_poor") || "Poor";
       return /* @__PURE__ */ React.createElement(
-        "span",
+        _AlloQualifier,
         {
           className: "text-[11px] px-2 py-0.5 rounded-full font-bold " + _cls,
-          title: (t("pdf_audit.dashboard.ocr_quality_title") || "ESTIMATED quality of the OCR text embedded as this scanned document\u2019s searchable layer. Heuristic (" + _oa.basis + "; " + _oa.confidence + " confidence) \u2014 NOT a measured accuracy: it reliably flags badly-garbled OCR but cannot catch every single-character error. Review the Diff for the final word.") + (Array.isArray(_oa.suspectSamples) && _oa.suspectSamples.length ? "  Suspect tokens: " + _oa.suspectSamples.join(", ") : "")
+          text: (t("pdf_audit.dashboard.ocr_quality_title") || "ESTIMATED quality of the OCR text embedded as this scanned document\u2019s searchable layer. Heuristic (" + _oa.basis + "; " + _oa.confidence + " confidence) \u2014 NOT a measured accuracy: it reliably flags badly-garbled OCR but cannot catch every single-character error. Review the Diff for the final word.") + (Array.isArray(_oa.suspectSamples) && _oa.suspectSamples.length ? "  Suspect tokens: " + _oa.suspectSamples.join(", ") : "")
         },
         (_oa.band === "poor" ? "\u26A0\uFE0F " : "\u{1F50E} ") + (t("pdf_audit.dashboard.ocr_quality") || "OCR quality") + ": " + _lbl + " (~" + _oa.score + "%)"
       );
@@ -6659,10 +6695,10 @@ Return ONLY JSON:
         const _badgeCls = fail ? "bg-red-100 text-red-700" : warnOnly ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-700";
         const _badgeIcon = fail ? "\u274C" : warnOnly ? "\u26A0\uFE0F" : "\u2705";
         return /* @__PURE__ */ React.createElement("div", { className: "text-center mt-1.5" }, /* @__PURE__ */ React.createElement(
-          "span",
+          _AlloQualifier,
           {
             className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold " + _badgeCls,
-            title: (t("pdf_audit.pdfua_badge.title") || "PDF/UA-1 (ISO 14289-1) conformance of the EXPORTED tagged PDF \u2014 the actual file you hand out. Shown beside the content score, never blended into it (a different artifact).") + (warnOnly ? " One or more rules are WARN (could not be auto-verified) \u2014 not yet conformant." : "") + (indep ? " Independently validated by veraPDF." : ' AlloFlow self-check \u2014 run "Independently validate with veraPDF" for the authoritative verdict.')
+            text: (t("pdf_audit.pdfua_badge.title") || "PDF/UA-1 (ISO 14289-1) conformance of the EXPORTED tagged PDF \u2014 the actual file you hand out. Shown beside the content score, never blended into it (a different artifact).") + (warnOnly ? " One or more rules are WARN (could not be auto-verified) \u2014 not yet conformant." : "") + (indep ? " Independently validated by veraPDF." : ' AlloFlow self-check \u2014 run "Independently validate with veraPDF" for the authoritative verdict.')
           },
           _badgeIcon,
           " ",
@@ -6671,7 +6707,7 @@ Return ONLY JSON:
           ": ",
           label
         ));
-      })(), /* @__PURE__ */ React.createElement("div", { className: "text-center mt-1 text-[11px]" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex items-center gap-1.5 flex-wrap justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-purple-700 font-bold", title: t("pdf_audit.score.content_label") || "Content & semantics \u2014 the AI rubric reading of meaning, alt-text quality and reading order. Reproducible: 100 minus the count-weighted deductions for the issues listed below." }, t("pdf_audit.score.content_short") || "content", ": ", initialAi ?? "?", "\u2192", _aiIncomplete ? t("pdf_audit.score.ai_incomplete_short") || "incomplete" : afterAi ?? "?"), _aiIncomplete ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2014", " ", t("pdf_audit.score.det_only_incomplete") || "structural/automated checks only; AI semantic audit incomplete \u2014 re-run for a full score") : pdfFixResult._scoreIsBlended ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\xB7"), /* @__PURE__ */ React.createElement("span", { className: "text-blue-700 font-bold", title: t("pdf_audit.score.automated_label") || "Automated WCAG \u2014 the stricter of axe-core / IBM Equal Access, run on the HTML reconstruction (passes by construction; blind to byte-level PDF tagging \u2014 see the PDF/UA badge)." }, t("pdf_audit.score.automated_short") || "automated", ": ", pdfAuditResult?.hasSearchableText === false ? "n/a" : initialAxe ?? "?", "\u2192", afterDet ?? "?"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2014", " ", t("pdf_audit.score.governing_lead") || "headline = the lower (governing) layer", typeof afterAi === "number" && typeof afterDet === "number" ? " (" + (afterAi <= afterDet ? t("pdf_audit.score.content_short") || "content" : t("pdf_audit.score.automated_short") || "automated") + ")" : "")) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2014", " ", t("pdf_audit.score.ai_only_note") || "AI content rubric only (automated checks unavailable)"))), !_aiIncomplete && pdfFixResult._scoreIsBlended && pdfFixResult.secondEngineAudit && typeof afterEa === "number" && typeof afterAxe === "number" && afterEa < afterAxe ? /* @__PURE__ */ React.createElement("div", { className: "text-center mt-1 text-[11px]" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block text-left max-w-xl bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-800" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, typeof afterAi === "number" && typeof afterDet === "number" && afterAi < afterDet ? t("pdf_audit.score.ea_explains_lead") || "About the automated layer:" : t("pdf_audit.score.ea_governs_lead") || "Why the automated layer is the lower number:"), " ", (typeof afterAi === "number" && typeof afterDet === "number" && afterAi < afterDet ? t("pdf_audit.score.ea_explains_body") || "axe-core scored {axe}, but the second independent WCAG engine, IBM Equal Access, scored {ea} ({n} confirmed rule failure(s)). The automated layer always reports the stricter of the two engines. The headline is governed by the lower content layer, not by this number." : t("pdf_audit.score.ea_governs_body") || "axe-core scored {axe}, but the second independent WCAG engine, IBM Equal Access, scored {ea} ({n} confirmed rule failure(s)). The headline always uses the stricter of the two engines, so Equal Access governs here, not the higher axe-core number.").replace("{axe}", String(afterAxe)).replace("{ea}", String(afterEa)).replace("{n}", String(pdfFixResult.secondEngineAudit.failViolations ?? "?"))), Array.isArray(pdfFixResult.secondEngineAudit.fails) && pdfFixResult.secondEngineAudit.fails.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-amber-700 hover:text-amber-900" }, t("pdf_audit.score.ea_fails_summary") || "What Equal Access flagged"), /* @__PURE__ */ React.createElement("ul", { className: "mt-0.5 space-y-0.5 text-[10px] text-amber-900 list-disc pl-4" }, pdfFixResult.secondEngineAudit.fails.slice(0, 12).map((f, fi) => /* @__PURE__ */ React.createElement("li", { key: fi }, /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, f.id), f.description ? " \u2014 " + f.description : "", f.nodes > 1 ? " (" + f.nodes + " " + (t("pdf_audit.score.ea_places") || "places") + ")" : "")), pdfFixResult.secondEngineAudit.fails.length > 12 && /* @__PURE__ */ React.createElement("li", null, "\\u2026", t("pdf_audit.score.ea_more") || "and", " ", pdfFixResult.secondEngineAudit.fails.length - 12, " ", t("pdf_audit.score.ea_more2") || "more"))))) : null);
+      })(), /* @__PURE__ */ React.createElement("div", { className: "text-center mt-1 text-[11px]" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex items-center gap-1.5 flex-wrap justify-center" }, /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "text-purple-700 font-bold", text: t("pdf_audit.score.content_label") || "Content & semantics \u2014 the AI rubric reading of meaning, alt-text quality and reading order. Reproducible: 100 minus the count-weighted deductions for the issues listed below." }, t("pdf_audit.score.content_short") || "content", ": ", initialAi ?? "?", "\u2192", _aiIncomplete ? t("pdf_audit.score.ai_incomplete_short") || "incomplete" : afterAi ?? "?"), _aiIncomplete ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2014", " ", t("pdf_audit.score.det_only_incomplete") || "structural/automated checks only; AI semantic audit incomplete \u2014 re-run for a full score") : pdfFixResult._scoreIsBlended ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "\xB7"), /* @__PURE__ */ React.createElement(_AlloQualifier, { className: "text-blue-700 font-bold", text: t("pdf_audit.score.automated_label") || "Automated WCAG \u2014 the stricter of axe-core / IBM Equal Access, run on the HTML reconstruction (passes by construction; blind to byte-level PDF tagging \u2014 see the PDF/UA badge)." }, t("pdf_audit.score.automated_short") || "automated", ": ", pdfAuditResult?.hasSearchableText === false ? "n/a" : initialAxe ?? "?", "\u2192", afterDet ?? "?"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2014", " ", t("pdf_audit.score.governing_lead") || "headline = the lower (governing) layer", typeof afterAi === "number" && typeof afterDet === "number" ? " (" + (afterAi <= afterDet ? t("pdf_audit.score.content_short") || "content" : t("pdf_audit.score.automated_short") || "automated") + ")" : "")) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u2014", " ", t("pdf_audit.score.ai_only_note") || "AI content rubric only (automated checks unavailable)"))), !_aiIncomplete && pdfFixResult._scoreIsBlended && pdfFixResult.secondEngineAudit && typeof afterEa === "number" && typeof afterAxe === "number" && afterEa < afterAxe ? /* @__PURE__ */ React.createElement("div", { className: "text-center mt-1 text-[11px]" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block text-left max-w-xl bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-amber-800" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, typeof afterAi === "number" && typeof afterDet === "number" && afterAi < afterDet ? t("pdf_audit.score.ea_explains_lead") || "About the automated layer:" : t("pdf_audit.score.ea_governs_lead") || "Why the automated layer is the lower number:"), " ", (typeof afterAi === "number" && typeof afterDet === "number" && afterAi < afterDet ? t("pdf_audit.score.ea_explains_body") || "axe-core scored {axe}, but the second independent WCAG engine, IBM Equal Access, scored {ea} ({n} confirmed rule failure(s)). The automated layer always reports the stricter of the two engines. The headline is governed by the lower content layer, not by this number." : t("pdf_audit.score.ea_governs_body") || "axe-core scored {axe}, but the second independent WCAG engine, IBM Equal Access, scored {ea} ({n} confirmed rule failure(s)). The headline always uses the stricter of the two engines, so Equal Access governs here, not the higher axe-core number.").replace("{axe}", String(afterAxe)).replace("{ea}", String(afterEa)).replace("{n}", String(pdfFixResult.secondEngineAudit.failViolations ?? "?"))), Array.isArray(pdfFixResult.secondEngineAudit.fails) && pdfFixResult.secondEngineAudit.fails.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-amber-700 hover:text-amber-900" }, t("pdf_audit.score.ea_fails_summary") || "What Equal Access flagged"), /* @__PURE__ */ React.createElement("ul", { className: "mt-0.5 space-y-0.5 text-[10px] text-amber-900 list-disc pl-4" }, pdfFixResult.secondEngineAudit.fails.slice(0, 12).map((f, fi) => /* @__PURE__ */ React.createElement("li", { key: fi }, /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, f.id), f.description ? " \u2014 " + f.description : "", f.nodes > 1 ? " (" + f.nodes + " " + (t("pdf_audit.score.ea_places") || "places") + ")" : "")), pdfFixResult.secondEngineAudit.fails.length > 12 && /* @__PURE__ */ React.createElement("li", null, "\\u2026", t("pdf_audit.score.ea_more") || "and", " ", pdfFixResult.secondEngineAudit.fails.length - 12, " ", t("pdf_audit.score.ea_more2") || "more"))))) : null);
     })(), pdfFixResult.issueResolution && pdfFixResult.issueResolution.summary && pdfFixResult.issueResolution.summary.totalPre > 0 && (() => {
       const s = pdfFixResult.issueResolution.summary;
       const pct = s.totalPre > 0 ? Math.round(s.resolvedCount / s.totalPre * 100) : 0;
@@ -9519,15 +9555,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
           }
         },
         tabIndex: -1,
-        ref: (el) => {
-          if (el && !el.contains(document.activeElement)) {
-            try {
-              el.focus({ preventScroll: true });
-            } catch (_) {
-              el.focus();
-            }
-          }
-        }
+        ref: closeConfirmTrapRef
       },
       /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border-2 border-amber-300" }, /* @__PURE__ */ React.createElement("h3", { id: "pdf-close-confirm-title", className: "text-lg font-bold text-slate-800 mb-2" }, t("pdf_audit.close_confirm.title") || "Close without saving?"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mb-5 leading-relaxed" }, "This audit hasn't been saved as a ", /* @__PURE__ */ React.createElement("strong", null, "Project"), " file. If you close, your remediated HTML and audit results won't survive a browser reload."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col-reverse sm:flex-row gap-2 sm:justify-end" }, /* @__PURE__ */ React.createElement(
         "button",
@@ -9556,217 +9584,233 @@ Return ONLY the plain language summary in ${lang}.`, false);
         "\u{1F4BE} ",
         t("pdf_audit.close_confirm.save_close") || "Save & close"
       )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-4" }, "Tip: ", /* @__PURE__ */ React.createElement("strong", null, "Save & close"), " downloads a ", /* @__PURE__ */ React.createElement("code", { className: "px-1 bg-slate-100 rounded" }, ".alloflow.json"), " project file that you can re-open later via the sidebar's ", /* @__PURE__ */ React.createElement("strong", null, "Load Project"), " button."))
-    ), pdfPreviewOpen && pdfFixResult && /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite fixed inset-0 z-[70] bg-black/50 flex items-stretch", role: "dialog", "aria-modal": "true", "aria-label": t("pdf_audit.preview.modal_aria") || "Accessible document preview and editor" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-1 m-4 gap-0 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-800" }, "\u267F Preview & Edit"), /* @__PURE__ */ React.createElement("button", { onClick: () => setPdfPreviewOpen(false), className: "p-1 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": t("pdf_audit.preview.close_aria") || "Close preview" }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("pdf_audit.preview.edit_hint") || "Click anywhere in the preview to edit text directly. Use the controls below to customize appearance."), /* @__PURE__ */ React.createElement(
-      "button",
+    ), pdfPreviewOpen && pdfFixResult && /* @__PURE__ */ React.createElement(
+      "div",
       {
-        onClick: () => {
-          try {
-            const _h = typeof getPdfPreviewHtml === "function" ? getPdfPreviewHtml() : "";
-            if (_h) setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: _h, _userEditedAt: Date.now() } : prev);
-          } catch (_) {
+        className: "allo-docsuite fixed inset-0 z-[70] bg-black/50 flex items-stretch",
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": t("pdf_audit.preview.modal_aria") || "Accessible document preview and editor",
+        ref: pdfPreviewTrapRef,
+        tabIndex: -1,
+        onKeyDown: (e) => {
+          if (e.key === "Escape") {
+            e.stopPropagation();
+            setPdfPreviewOpen(false);
           }
-          setPdfPreviewOpen(false);
-          setTimeout(() => {
-            try {
-              const b = document.getElementById("allo-tagged-pdf-btn");
-              if (b) b.click();
-              else {
-                const el = document.getElementById("allo-sec-downloads");
-                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-              }
-            } catch (_) {
-            }
-          }, 220);
-        },
-        className: "w-full px-3 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm",
-        title: t("pdf_audit.preview.tag_now_title") || "Generate an accessible tagged PDF from your current edits \u2014 preserves the original layout and injects the structure tree. Runs the same verified, gated flow as the Tagged PDF button on the results screen."
-      },
-      "\u{1F4C4} ",
-      t("pdf_audit.preview.tag_now") || "Generate Tagged PDF"
-    ), (() => {
-      const wc = writingCheck;
-      const _leafBlocks = () => {
-        const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
-        if (!doc || !doc.body) return null;
-        return Array.from(doc.body.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote")).filter((el) => !el.closest('section[data-content-recovery="true"]')).filter((el) => !el.closest('[contenteditable="false"]')).filter((el) => !el.querySelector("p,li,td,th,blockquote")).filter((el) => (el.textContent || "").trim().length >= 3);
-      };
-      const runWritingCheck = async () => {
-        const _docLang = (() => {
-          try {
-            const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
-            return d && d.documentElement && (d.documentElement.getAttribute("lang") || "").toLowerCase() || "";
-          } catch (_) {
-            return "";
-          }
-        })();
-        if (_docLang && _docLang.split("-")[0] !== "en") {
-          setWritingCheck({ status: "error", error: t("export_preview.writing.non_english") || 'Writing Check is English-only \u2014 this document is set to language "' + _docLang + '". Your browser still underlines spelling as you type.' });
-          return;
         }
-        setWritingCheck({ status: "loading" });
-        try {
-          const linter = await _ensurePdfHarper();
-          const blocks = _leafBlocks();
-          if (!blocks) {
-            setWritingCheck({ status: "error", error: t("export_preview.writing.no_preview") || "Preview not ready \u2014 wait for it to render." });
-            return;
-          }
-          const items = [];
-          let capped = false;
-          for (let bi = 0; bi < blocks.length; bi++) {
-            if (items.length >= 150) {
-              capped = true;
-              break;
-            }
-            const text = blocks[bi].textContent || "";
-            let lints = [];
+      },
+      /* @__PURE__ */ React.createElement("div", { className: "flex flex-1 m-4 gap-0 animate-in fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-800" }, "\u267F Preview & Edit"), /* @__PURE__ */ React.createElement("button", { onClick: () => setPdfPreviewOpen(false), className: "p-1 hover:bg-slate-100 rounded-lg transition-colors", "aria-label": t("pdf_audit.preview.close_aria") || "Close preview" }, /* @__PURE__ */ React.createElement(X, { size: 18 }))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("pdf_audit.preview.edit_hint") || "Click anywhere in the preview to edit text directly. Use the controls below to customize appearance."), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
             try {
-              lints = await linter.lint(text);
+              const _h = typeof getPdfPreviewHtml === "function" ? getPdfPreviewHtml() : "";
+              if (_h) setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: _h, _userEditedAt: Date.now() } : prev);
             } catch (_) {
-              continue;
             }
-            for (const l of lints) {
+            setPdfPreviewOpen(false);
+            setTimeout(() => {
               try {
-                const span = l.span();
-                const sugg = (l.suggestions ? l.suggestions() : []).map((s) => s.get_replacement_text ? s.get_replacement_text() : "").filter(Boolean).slice(0, 3);
-                items.push({ blockIndex: bi, message: l.message ? l.message() : "Possible issue", start: span.start, end: span.end, bad: text.slice(span.start, span.end), snippet: (span.start > 20 ? "\u2026" : "") + text.slice(Math.max(0, span.start - 20), Math.min(text.length, span.end + 24)) + (span.end + 24 < text.length ? "\u2026" : ""), suggestions: sugg });
+                const b = document.getElementById("allo-tagged-pdf-btn");
+                if (b) b.click();
+                else {
+                  const el = document.getElementById("allo-sec-downloads");
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
               } catch (_) {
               }
+            }, 220);
+          },
+          className: "w-full px-3 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-black hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm",
+          title: t("pdf_audit.preview.tag_now_title") || "Generate an accessible tagged PDF from your current edits \u2014 preserves the original layout and injects the structure tree. Runs the same verified, gated flow as the Tagged PDF button on the results screen."
+        },
+        "\u{1F4C4} ",
+        t("pdf_audit.preview.tag_now") || "Generate Tagged PDF"
+      ), (() => {
+        const wc = writingCheck;
+        const _leafBlocks = () => {
+          const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+          if (!doc || !doc.body) return null;
+          return Array.from(doc.body.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,td,th,figcaption,blockquote")).filter((el) => !el.closest('section[data-content-recovery="true"]')).filter((el) => !el.closest('[contenteditable="false"]')).filter((el) => !el.querySelector("p,li,td,th,blockquote")).filter((el) => (el.textContent || "").trim().length >= 3);
+        };
+        const runWritingCheck = async () => {
+          const _docLang = (() => {
+            try {
+              const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+              return d && d.documentElement && (d.documentElement.getAttribute("lang") || "").toLowerCase() || "";
+            } catch (_) {
+              return "";
+            }
+          })();
+          if (_docLang && _docLang.split("-")[0] !== "en") {
+            setWritingCheck({ status: "error", error: t("export_preview.writing.non_english") || 'Writing Check is English-only \u2014 this document is set to language "' + _docLang + '". Your browser still underlines spelling as you type.' });
+            return;
+          }
+          setWritingCheck({ status: "loading" });
+          try {
+            const linter = await _ensurePdfHarper();
+            const blocks = _leafBlocks();
+            if (!blocks) {
+              setWritingCheck({ status: "error", error: t("export_preview.writing.no_preview") || "Preview not ready \u2014 wait for it to render." });
+              return;
+            }
+            const items = [];
+            let capped = false;
+            for (let bi = 0; bi < blocks.length; bi++) {
               if (items.length >= 150) {
                 capped = true;
                 break;
               }
-            }
-          }
-          setWritingCheck({ status: "done", items, capped });
-        } catch (e) {
-          setWritingCheck({ status: "error", error: (e && e.message || "The checker failed to load \u2014 check the network and try again.").slice(0, 180) });
-        }
-      };
-      const _locate = (item, outline) => {
-        const blocks = _leafBlocks();
-        const el = blocks && blocks[item.blockIndex];
-        if (!el) return null;
-        try {
-          el.scrollIntoView({ block: "center", behavior: "smooth" });
-          if (outline) {
-            el.style.outline = "3px solid #f59e0b";
-            el.style.outlineOffset = "2px";
-            setTimeout(() => {
+              const text = blocks[bi].textContent || "";
+              let lints = [];
               try {
-                el.style.outline = "";
-                el.style.outlineOffset = "";
+                lints = await linter.lint(text);
               } catch (_) {
+                continue;
               }
-            }, 2200);
-          }
-        } catch (_) {
-        }
-        return el;
-      };
-      const _apply = (item, replacement) => {
-        try {
-          const el = _locate(item, false);
-          const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
-          if (!el || !doc) {
-            addToast(t("toasts.writing_block_gone") || "That block is no longer in the preview \u2014 re-run the check.", "info");
-            return;
-          }
-          const cur = el.textContent || "";
-          if (cur.slice(item.start, item.end) !== item.bad) {
-            addToast(t("toasts.writing_text_shifted") || "The text changed since this check ran \u2014 re-run the check to apply safely.", "info");
-            return;
-          }
-          const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
-          let node, off = 0, hit = null;
-          while (node = walker.nextNode()) {
-            const len = node.textContent.length;
-            if (item.start >= off && item.end <= off + len) {
-              hit = { node, local: item.start - off };
-              break;
+              for (const l of lints) {
+                try {
+                  const span = l.span();
+                  const sugg = (l.suggestions ? l.suggestions() : []).map((s) => s.get_replacement_text ? s.get_replacement_text() : "").filter(Boolean).slice(0, 3);
+                  items.push({ blockIndex: bi, message: l.message ? l.message() : "Possible issue", start: span.start, end: span.end, bad: text.slice(span.start, span.end), snippet: (span.start > 20 ? "\u2026" : "") + text.slice(Math.max(0, span.start - 20), Math.min(text.length, span.end + 24)) + (span.end + 24 < text.length ? "\u2026" : ""), suggestions: sugg });
+                } catch (_) {
+                }
+                if (items.length >= 150) {
+                  capped = true;
+                  break;
+                }
+              }
             }
-            off += len;
+            setWritingCheck({ status: "done", items, capped });
+          } catch (e) {
+            setWritingCheck({ status: "error", error: (e && e.message || "The checker failed to load \u2014 check the network and try again.").slice(0, 180) });
           }
-          if (!hit) {
-            _locate(item, true);
-            addToast(t("toasts.writing_spans_markup") || "This suggestion spans formatting (a link or bold text) \u2014 fix it by hand at the highlighted spot.", "info");
-            return;
-          }
-          const _badLen = item.end - item.start;
-          let _ok = false;
+        };
+        const _locate = (item, outline) => {
+          const blocks = _leafBlocks();
+          const el = blocks && blocks[item.blockIndex];
+          if (!el) return null;
           try {
-            const _range = doc.createRange();
-            _range.setStart(hit.node, hit.local);
-            _range.setEnd(hit.node, hit.local + _badLen);
-            const _sel = (doc.defaultView || window).getSelection();
-            _sel.removeAllRanges();
-            _sel.addRange(_range);
-            _ok = doc.execCommand("insertText", false, replacement);
-          } catch (_) {
-            _ok = false;
-          }
-          if (!_ok) {
-            const raw = hit.node.textContent;
-            hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + _badLen);
-          }
-          try {
-            if (doc.body) doc.body.setAttribute("data-allo-user-edited", "1");
+            el.scrollIntoView({ block: "center", behavior: "smooth" });
+            if (outline) {
+              el.style.outline = "3px solid #f59e0b";
+              el.style.outlineOffset = "2px";
+              setTimeout(() => {
+                try {
+                  el.style.outline = "";
+                  el.style.outlineOffset = "";
+                } catch (_) {
+                }
+              }, 2200);
+            }
           } catch (_) {
           }
+          return el;
+        };
+        const _apply = (item, replacement) => {
           try {
-            if (typeof window.__alloflowOnPdfPreviewMutated === "function") window.__alloflowOnPdfPreviewMutated();
-          } catch (_) {
+            const el = _locate(item, false);
+            const doc = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+            if (!el || !doc) {
+              addToast(t("toasts.writing_block_gone") || "That block is no longer in the preview \u2014 re-run the check.", "info");
+              return;
+            }
+            const cur = el.textContent || "";
+            if (cur.slice(item.start, item.end) !== item.bad) {
+              addToast(t("toasts.writing_text_shifted") || "The text changed since this check ran \u2014 re-run the check to apply safely.", "info");
+              return;
+            }
+            const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+            let node, off = 0, hit = null;
+            while (node = walker.nextNode()) {
+              const len = node.textContent.length;
+              if (item.start >= off && item.end <= off + len) {
+                hit = { node, local: item.start - off };
+                break;
+              }
+              off += len;
+            }
+            if (!hit) {
+              _locate(item, true);
+              addToast(t("toasts.writing_spans_markup") || "This suggestion spans formatting (a link or bold text) \u2014 fix it by hand at the highlighted spot.", "info");
+              return;
+            }
+            const _badLen = item.end - item.start;
+            let _ok = false;
+            try {
+              const _range = doc.createRange();
+              _range.setStart(hit.node, hit.local);
+              _range.setEnd(hit.node, hit.local + _badLen);
+              const _sel = (doc.defaultView || window).getSelection();
+              _sel.removeAllRanges();
+              _sel.addRange(_range);
+              _ok = doc.execCommand("insertText", false, replacement);
+            } catch (_) {
+              _ok = false;
+            }
+            if (!_ok) {
+              const raw = hit.node.textContent;
+              hit.node.textContent = raw.slice(0, hit.local) + replacement + raw.slice(hit.local + _badLen);
+            }
+            try {
+              if (doc.body) doc.body.setAttribute("data-allo-user-edited", "1");
+            } catch (_) {
+            }
+            try {
+              if (typeof window.__alloflowOnPdfPreviewMutated === "function") window.__alloflowOnPdfPreviewMutated();
+            } catch (_) {
+            }
+            const _delta = replacement.length - _badLen;
+            setWritingCheck((p) => {
+              if (!p || !p.items) return p;
+              const items = p.items.filter((x) => x !== item).map((x) => {
+                if (x.blockIndex !== item.blockIndex || x.end <= item.start) return x;
+                if (x.start >= item.end) return { ...x, start: x.start + _delta, end: x.end + _delta };
+                return null;
+              }).filter(Boolean);
+              return { ...p, items };
+            });
+            addToast('\u2713 "' + item.bad + '" \u2192 "' + replacement + '"', "success");
+          } catch (e) {
+            addToast("Apply failed: " + (e && e.message || "error"), "error");
           }
-          const _delta = replacement.length - _badLen;
-          setWritingCheck((p) => {
-            if (!p || !p.items) return p;
-            const items = p.items.filter((x) => x !== item).map((x) => {
-              if (x.blockIndex !== item.blockIndex || x.end <= item.start) return x;
-              if (x.start >= item.end) return { ...x, start: x.start + _delta, end: x.end + _delta };
-              return null;
-            }).filter(Boolean);
-            return { ...p, items };
-          });
-          addToast('\u2713 "' + item.bad + '" \u2192 "' + replacement + '"', "success");
-        } catch (e) {
-          addToast("Apply failed: " + (e && e.message || "error"), "error");
-        }
-      };
-      const _dismiss = (item) => {
-        setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p);
-      };
-      return /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50/60 border border-teal-300 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-teal-800 uppercase mb-1.5" }, "\u{1F4DD} ", t("export_preview.writing.heading") || "Writing Check"), /* @__PURE__ */ React.createElement("button", { onClick: runWritingCheck, "data-help-key": "pdf_audit_writing_check_btn", disabled: wc && wc.status === "loading", "aria-busy": !!(wc && wc.status === "loading"), className: "w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5" }, wc && wc.status === "loading" ? t("export_preview.writing.checking") || "\u23F3 Checking\u2026 (first run downloads the checker)" : t("export_preview.writing.run") || "\u{1F4DD} Check grammar (English)"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.disclosure") || "Runs entirely on this device \u2014 no text leaves the browser. English only; the checker is a ~10 MB download on first use (instant once loaded). Spelling is underlined by your browser as you type."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, t("export_preview.writing.remediation_caution") || "\u26A0 This wording comes from the source document \u2014 apply grammar changes thoughtfully; the original author\u2019s phrasing may be intentional."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.spell_hint") || "\u{1F4A1} To fix a spelling underline, right-click the word in the preview \u2014 your browser lists corrections."), wc && wc.status === "error" && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5" }, wc.error), wc && wc.status === "done" && wc.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5" }, "\u2713 ", t("export_preview.writing.clean") || "No grammar suggestions found."), wc && wc.status === "done" && wc.items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 max-h-64 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, wc.items.length, " ", t("export_preview.writing.suggestions") || "suggestion(s)", wc.capped ? " (first 150 shown)" : "", " \u2014 ", t("export_preview.writing.suggestions_note") || "nothing is changed unless you Apply it", ":"), wc.items.map((item, ii) => /* @__PURE__ */ React.createElement("div", { key: ii, className: "bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _locate(item, true), className: "text-left w-full hover:underline", title: t("export_preview.writing.locate_title") || "Scroll the preview to this spot" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, item.message), /* @__PURE__ */ React.createElement("span", { className: "block text-slate-500 italic mt-0.5" }, item.snippet)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap items-center" }, item.suggestions.map((s, si) => /* @__PURE__ */ React.createElement("button", { key: si, onClick: () => _apply(item, s), className: "px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100", title: (t("export_preview.writing.apply_title") || "Replace") + ' "' + item.bad + '"' }, "\u2192 ", s || "(remove)")), /* @__PURE__ */ React.createElement("button", { onClick: () => _dismiss(item), className: "px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto", title: t("export_preview.writing.keep_title") || "Keep the original wording and dismiss this suggestion" }, "\u2713 ", t("export_preview.writing.keep") || "Keep as-is"))))));
-    })(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "Style"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.preview.wcag_guaranteed") || "Text contrast is re-verified by the deterministic sanitizer on every style change (contrast only \u2014 not a full WCAG audit)."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1" }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === "Match Original").map(([key, s]) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key,
-        onClick: () => {
-          setPdfPreviewTheme(key);
-          setTimeout(() => updatePdfPreview(key), 50);
+        };
+        const _dismiss = (item) => {
+          setWritingCheck((p) => p && p.items ? { ...p, items: p.items.filter((x) => x !== item) } : p);
+        };
+        return /* @__PURE__ */ React.createElement("div", { className: "bg-teal-50/60 border border-teal-300 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-teal-800 uppercase mb-1.5" }, "\u{1F4DD} ", t("export_preview.writing.heading") || "Writing Check"), /* @__PURE__ */ React.createElement("button", { onClick: runWritingCheck, "data-help-key": "pdf_audit_writing_check_btn", disabled: wc && wc.status === "loading", "aria-busy": !!(wc && wc.status === "loading"), className: "w-full px-3 py-2 bg-teal-100 text-teal-800 rounded-lg text-xs font-bold hover:bg-teal-200 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5" }, wc && wc.status === "loading" ? t("export_preview.writing.checking") || "\u23F3 Checking\u2026 (first run downloads the checker)" : t("export_preview.writing.run") || "\u{1F4DD} Check grammar (English)"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.disclosure") || "Runs entirely on this device \u2014 no text leaves the browser. English only; the checker is a ~10 MB download on first use (instant once loaded). Spelling is underlined by your browser as you type."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, t("export_preview.writing.remediation_caution") || "\u26A0 This wording comes from the source document \u2014 apply grammar changes thoughtfully; the original author\u2019s phrasing may be intentional."), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("export_preview.writing.spell_hint") || "\u{1F4A1} To fix a spelling underline, right-click the word in the preview \u2014 your browser lists corrections."), wc && wc.status === "error" && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded p-1.5" }, wc.error), wc && wc.status === "done" && wc.items.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 text-[11px] text-green-700 bg-green-50 border border-green-200 rounded p-1.5" }, "\u2713 ", t("export_preview.writing.clean") || "No grammar suggestions found."), wc && wc.status === "done" && wc.items.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 max-h-64 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, wc.items.length, " ", t("export_preview.writing.suggestions") || "suggestion(s)", wc.capped ? " (first 150 shown)" : "", " \u2014 ", t("export_preview.writing.suggestions_note") || "nothing is changed unless you Apply it", ":"), wc.items.map((item, ii) => /* @__PURE__ */ React.createElement("div", { key: ii, className: "bg-white border border-slate-200 rounded-lg p-1.5 text-[11px]" }, /* @__PURE__ */ React.createElement("button", { onClick: () => _locate(item, true), className: "text-left w-full hover:underline", title: t("export_preview.writing.locate_title") || "Scroll the preview to this spot" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, item.message), /* @__PURE__ */ React.createElement("span", { className: "block text-slate-500 italic mt-0.5" }, item.snippet)), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap items-center" }, item.suggestions.map((s, si) => /* @__PURE__ */ React.createElement("button", { key: si, onClick: () => _apply(item, s), className: "px-1.5 py-0.5 bg-teal-50 border border-teal-300 text-teal-800 rounded text-[10px] font-bold hover:bg-teal-100", title: (t("export_preview.writing.apply_title") || "Replace") + ' "' + item.bad + '"' }, "\u2192 ", s || "(remove)")), /* @__PURE__ */ React.createElement("button", { onClick: () => _dismiss(item), className: "px-1.5 py-0.5 bg-slate-50 border border-slate-300 text-slate-600 rounded text-[10px] font-bold hover:bg-slate-100 ml-auto", title: t("export_preview.writing.keep_title") || "Keep the original wording and dismiss this suggestion" }, "\u2713 ", t("export_preview.writing.keep") || "Keep as-is"))))));
+      })(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "Style"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-1" }, t("pdf_audit.preview.wcag_guaranteed") || "Text contrast is re-verified by the deterministic sanitizer on every style change (contrast only \u2014 not a full WCAG audit)."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1" }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === "Match Original").map(([key, s]) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key,
+          onClick: () => {
+            setPdfPreviewTheme(key);
+            setTimeout(() => updatePdfPreview(key), 50);
+          },
+          className: `text-[11px] font-bold px-2 py-1.5 rounded-lg border transition-all text-left ${pdfPreviewTheme === key ? "border-indigo-400 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-300" : "border-slate-200 text-slate-600 hover:border-indigo-600"}`
         },
-        className: `text-[11px] font-bold px-2 py-1.5 rounded-lg border transition-all text-left ${pdfPreviewTheme === key ? "border-indigo-400 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-300" : "border-slate-200 text-slate-600 hover:border-indigo-600"}`
-      },
-      s.emoji,
-      " ",
-      s.name,
-      s.wcagLevel === "AAA" ? " \u267F" : ""
-    )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "\u2728 AI Restyle"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mb-1.5" }, [
-      { label: "\u{1F3A8} Beautify", prompt: "Make this document visually stunning with a modern color scheme, elegant typography, subtle gradients, rounded section cards, and a cohesive design. Use a sophisticated palette." },
-      { label: "\u{1F3EB} Academic", prompt: "Professional academic style: serif headings, navy/gold scheme, formal tables, proper margins, scholarly appearance for university submissions." },
-      { label: "\u{1F308} Kid-Friendly", prompt: "Bright, playful style for elementary students. Rounded corners, fun colors (teal, coral, purple), larger friendly fonts, card-based layout with soft shadows." },
-      { label: "\u{1F319} Dark", prompt: "Elegant dark mode: dark charcoal background, soft white text, indigo accents, subtle borders, beautiful contrast for screen reading." },
-      { label: "\u{1F9CA} Minimal", prompt: "Ultra-minimal: whitespace, thin sans-serif, muted grays, one accent color, hairline borders, understated elegance." }
-    ].map((preset) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: preset.label,
-        disabled: isGeneratingStyle,
-        onClick: async () => {
-          if (!callGemini) return;
-          setIsGeneratingStyle(true);
-          addToast(t("toasts.generating_2") + preset.label.replace(/[^\w\s]/g, "").trim() + " style...", "info");
-          try {
-            const css = await callGemini(`You are a CSS expert. Create a beautiful, accessible stylesheet.
+        s.emoji,
+        " ",
+        s.name,
+        s.wcagLevel === "AAA" ? " \u267F" : ""
+      )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "\u2728 AI Restyle"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mb-1.5" }, [
+        { label: "\u{1F3A8} Beautify", prompt: "Make this document visually stunning with a modern color scheme, elegant typography, subtle gradients, rounded section cards, and a cohesive design. Use a sophisticated palette." },
+        { label: "\u{1F3EB} Academic", prompt: "Professional academic style: serif headings, navy/gold scheme, formal tables, proper margins, scholarly appearance for university submissions." },
+        { label: "\u{1F308} Kid-Friendly", prompt: "Bright, playful style for elementary students. Rounded corners, fun colors (teal, coral, purple), larger friendly fonts, card-based layout with soft shadows." },
+        { label: "\u{1F319} Dark", prompt: "Elegant dark mode: dark charcoal background, soft white text, indigo accents, subtle borders, beautiful contrast for screen reading." },
+        { label: "\u{1F9CA} Minimal", prompt: "Ultra-minimal: whitespace, thin sans-serif, muted grays, one accent color, hairline borders, understated elegance." }
+      ].map((preset) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: preset.label,
+          disabled: isGeneratingStyle,
+          onClick: async () => {
+            if (!callGemini) return;
+            setIsGeneratingStyle(true);
+            addToast(t("toasts.generating_2") + preset.label.replace(/[^\w\s]/g, "").trim() + " style...", "info");
+            try {
+              const css = await callGemini(`You are a CSS expert. Create a beautiful, accessible stylesheet.
 
 The user wants: "${preset.prompt}"
 
@@ -9779,73 +9823,73 @@ Requirements:
 - Include print styles (@media print)
 
 Return ONLY CSS \u2014 no explanation, no markdown fences.`, true);
-            if (css && pdfPreviewRef.current?.contentDocument) {
-              const doc = pdfPreviewRef.current.contentDocument;
-              const old = doc.getElementById("ai-restyle");
-              if (old) old.remove();
-              const style = doc.createElement("style");
-              style.id = "ai-restyle";
-              style.textContent = css.replace(/```[\s\S]*?```/g, "").replace(/^```\w*\n?/gm, "").replace(/\n?```$/gm, "").trim();
-              doc.head.appendChild(style);
-              try {
-                const fullHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
-                const sanitized = sanitizeStyleForWCAG(fullHtml);
-                if (sanitized.fixCount > 0) {
-                  doc.documentElement.innerHTML = sanitized.html.replace(/^<!DOCTYPE html>\s*<html[^>]*>/i, "").replace(/<\/html>\s*$/i, "");
-                  addToast(`\u2728 Style applied! (${sanitized.fixCount} contrast fixes auto-applied for WCAG AA)`, "success");
-                } else {
+              if (css && pdfPreviewRef.current?.contentDocument) {
+                const doc = pdfPreviewRef.current.contentDocument;
+                const old = doc.getElementById("ai-restyle");
+                if (old) old.remove();
+                const style = doc.createElement("style");
+                style.id = "ai-restyle";
+                style.textContent = css.replace(/```[\s\S]*?```/g, "").replace(/^```\w*\n?/gm, "").replace(/\n?```$/gm, "").trim();
+                doc.head.appendChild(style);
+                try {
+                  const fullHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+                  const sanitized = sanitizeStyleForWCAG(fullHtml);
+                  if (sanitized.fixCount > 0) {
+                    doc.documentElement.innerHTML = sanitized.html.replace(/^<!DOCTYPE html>\s*<html[^>]*>/i, "").replace(/<\/html>\s*$/i, "");
+                    addToast(`\u2728 Style applied! (${sanitized.fixCount} contrast fixes auto-applied for WCAG AA)`, "success");
+                  } else {
+                    addToast(t("toasts.style_applied"), "success");
+                  }
+                } catch (sanitizeErr) {
                   addToast(t("toasts.style_applied"), "success");
                 }
-              } catch (sanitizeErr) {
-                addToast(t("toasts.style_applied"), "success");
               }
+            } catch (err) {
+              addToast(t("toasts.style_failed_try_again"), "error");
             }
-          } catch (err) {
-            addToast(t("toasts.style_failed_try_again"), "error");
-          }
-          setIsGeneratingStyle(false);
+            setIsGeneratingStyle(false);
+          },
+          className: `px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${isGeneratingStyle ? "bg-indigo-100 text-indigo-400 animate-pulse" : "bg-slate-50 border border-slate-400 text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700"}`
         },
-        className: `px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${isGeneratingStyle ? "bg-indigo-100 text-indigo-400 animate-pulse" : "bg-slate-50 border border-slate-400 text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700"}`
-      },
-      isGeneratingStyle ? "\u23F3 Styling..." : preset.label
-    )), pdfPreviewRef.current?.contentDocument?.getElementById("ai-restyle") && /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const old = pdfPreviewRef.current?.contentDocument?.getElementById("ai-restyle");
-      if (old) {
-        old.remove();
-        addToast(t("toasts.ai_style_removed"), "info");
-      }
-    }, className: "px-2 py-1 bg-red-50 border border-red-600 rounded-md text-[11px] font-bold text-red-500 hover:bg-red-100 transition-colors" }, "\u2715 Reset")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("pdf_audit.preview.ai_restyle_hint") || "One-click AI restyling. These override the theme above.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "\u{1F4CE} Brand Match"), /* @__PURE__ */ React.createElement("label", { className: "w-full flex items-center gap-2 px-2 py-1.5 bg-white border border-dashed border-slate-300 rounded-lg text-[11px] text-slate-600 hover:border-indigo-400 hover:text-indigo-600 cursor-pointer transition-colors" }, "\u{1F4CE} Upload brand reference (PDF, image, or logo)", /* @__PURE__ */ React.createElement("input", { type: "file", accept: "image/*,.pdf", className: "hidden", onChange: async (e) => {
-      const file = e.target.files?.[0];
-      if (!file || !callGeminiVision) return;
-      addToast(t("toasts.extracting_brand_colors"), "info");
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        try {
-          const base64 = ev.target.result.split(",")[1];
-          const mime = file.type.includes("pdf") ? "application/pdf" : file.type || "image/png";
-          const result = await callGeminiVision(
-            `Analyze this document/image and extract the brand color scheme and typography.
+        isGeneratingStyle ? "\u23F3 Styling..." : preset.label
+      )), pdfPreviewRef.current?.contentDocument?.getElementById("ai-restyle") && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const old = pdfPreviewRef.current?.contentDocument?.getElementById("ai-restyle");
+        if (old) {
+          old.remove();
+          addToast(t("toasts.ai_style_removed"), "info");
+        }
+      }, className: "px-2 py-1 bg-red-50 border border-red-600 rounded-md text-[11px] font-bold text-red-500 hover:bg-red-100 transition-colors" }, "\u2715 Reset")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("pdf_audit.preview.ai_restyle_hint") || "One-click AI restyling. These override the theme above.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "\u{1F4CE} Brand Match"), /* @__PURE__ */ React.createElement("label", { className: "w-full flex items-center gap-2 px-2 py-1.5 bg-white border border-dashed border-slate-300 rounded-lg text-[11px] text-slate-600 hover:border-indigo-400 hover:text-indigo-600 cursor-pointer transition-colors" }, "\u{1F4CE} Upload brand reference (PDF, image, or logo)", /* @__PURE__ */ React.createElement("input", { type: "file", accept: "image/*,.pdf", className: "hidden", onChange: async (e) => {
+        const file = e.target.files?.[0];
+        if (!file || !callGeminiVision) return;
+        addToast(t("toasts.extracting_brand_colors"), "info");
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          try {
+            const base64 = ev.target.result.split(",")[1];
+            const mime = file.type.includes("pdf") ? "application/pdf" : file.type || "image/png";
+            const result = await callGeminiVision(
+              `Analyze this document/image and extract the brand color scheme and typography.
 
 Return ONLY JSON:
 {"headingColor":"hex","accentColor":"hex","bgColor":"hex","textColor":"hex","headerBg":"hex or CSS gradient","headerText":"hex","tableBg":"hex","tableBorder":"hex","bodyFont":"CSS font-family string","headingFont":"CSS font-family string","extraCSS":"any additional CSS rules to match the brand style"}`,
-            base64,
-            mime
-          );
-          let cleaned = result.trim();
-          if (cleaned.indexOf("```") !== -1) {
-            const ps = cleaned.split("```");
-            cleaned = ps[1] || ps[0];
-            if (cleaned.indexOf("\n") !== -1) cleaned = cleaned.split("\n").slice(1).join("\n");
-            if (cleaned.lastIndexOf("```") !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf("```"));
-          }
-          const brand = JSON.parse(cleaned);
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc) {
-            const style = doc.createElement("style");
-            style.id = "brand-theme";
-            const old = doc.getElementById("brand-theme");
-            if (old) old.remove();
-            style.textContent = `
+              base64,
+              mime
+            );
+            let cleaned = result.trim();
+            if (cleaned.indexOf("```") !== -1) {
+              const ps = cleaned.split("```");
+              cleaned = ps[1] || ps[0];
+              if (cleaned.indexOf("\n") !== -1) cleaned = cleaned.split("\n").slice(1).join("\n");
+              if (cleaned.lastIndexOf("```") !== -1) cleaned = cleaned.substring(0, cleaned.lastIndexOf("```"));
+            }
+            const brand = JSON.parse(cleaned);
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc) {
+              const style = doc.createElement("style");
+              style.id = "brand-theme";
+              const old = doc.getElementById("brand-theme");
+              if (old) old.remove();
+              style.textContent = `
                             body { font-family: ${brand.bodyFont || "system-ui"}; color: ${brand.textColor || "#1e293b"}; background: ${brand.bgColor || "#fff"}; }
                             h1,h2,h3,h4 { font-family: ${brand.headingFont || brand.bodyFont || "system-ui"}; color: ${brand.headingColor || "#1e3a5f"}; }
                             a { color: ${brand.accentColor || "#2563eb"}; }
@@ -9853,572 +9897,572 @@ Return ONLY JSON:
                             table { border-color: ${brand.tableBorder || "#cbd5e1"}; }
                             ${brand.extraCSS || ""}
                           `;
-            doc.head.appendChild(style);
-            addToast(t("toasts.brand_theme_applied"), "success");
-          }
-        } catch (err) {
-          warnLog("[Brand] Extract failed:", err);
-          addToast(t("toasts.could_extract_brand_colors"), "error");
-        }
-      };
-      reader.readAsDataURL(file);
-      e.target.value = "";
-    } }))), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F3A8} Custom Colors & Fonts ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400" }, [
-      { label: "Heading Color", prop: "headingColor", sel: "h1,h2,h3,h4", css: "color", def: "#1e3a5f", isText: true },
-      { label: "Accent / Link", prop: "accentColor", sel: "a", css: "color", def: "#2563eb", isText: true },
-      { label: "Background", prop: "bgColor", sel: "body", css: "backgroundColor", def: "#ffffff", isText: false },
-      { label: "Table Header", prop: "thBg", sel: "th", css: "backgroundColor", def: "#f1f5f9", isText: false }
-    ].map((item) => /* @__PURE__ */ React.createElement("div", { key: item.prop, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "color",
-        defaultValue: item.def,
-        "aria-label": item.label,
-        onChange: (e) => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (!doc) return;
-          doc.querySelectorAll(item.sel).forEach((el) => {
-            el.style[item.css] = e.target.value;
-          });
-          if (item.isText) {
-            const hex = e.target.value.replace("#", "");
-            const r = parseInt(hex.substr(0, 2), 16), g2 = parseInt(hex.substr(2, 2), 16), b = parseInt(hex.substr(4, 2), 16);
-            const lum = 0.2126 * (r / 255 <= 0.03928 ? r / 255 / 12.92 : Math.pow((r / 255 + 0.055) / 1.055, 2.4)) + 0.7152 * (g2 / 255 <= 0.03928 ? g2 / 255 / 12.92 : Math.pow((g2 / 255 + 0.055) / 1.055, 2.4)) + 0.0722 * (b / 255 <= 0.03928 ? b / 255 / 12.92 : Math.pow((b / 255 + 0.055) / 1.055, 2.4));
-            const ratio = 1.05 / (lum + 0.05);
-            const badge = e.target.parentElement?.querySelector(".contrast-badge");
-            if (badge) {
-              badge.textContent = ratio >= 4.5 ? "\u2705 " + ratio.toFixed(1) + ":1" : "\u26A0\uFE0F " + ratio.toFixed(1) + ":1";
-              badge.style.color = ratio >= 4.5 ? "#16a34a" : "#dc2626";
-            }
-          }
-        },
-        className: "w-6 h-6 rounded border border-slate-400 cursor-pointer p-0"
-      }
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, item.label), item.isText && /* @__PURE__ */ React.createElement("span", { className: "contrast-badge text-[11px] font-bold", style: { color: "#16a34a" } }, "\u2705 4.5+:1"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
-      "select",
-      {
-        "aria-label": t("pdf_audit.preview.body_font_aria") || "Body font",
-        defaultValue: "system-ui",
-        onChange: (e) => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (!doc) return;
-          doc.body.style.fontFamily = e.target.value;
-          const fontMap = {
-            "'Inter', sans-serif": "Inter:wght@400;600;700",
-            "'Atkinson Hyperlegible', sans-serif": "Atkinson+Hyperlegible:wght@400;700",
-            "'Lexend', sans-serif": "Lexend:wght@400;500;700"
-          };
-          const gFont = fontMap[e.target.value];
-          if (gFont) {
-            const existing = doc.getElementById("preview-google-font");
-            if (existing) existing.remove();
-            const link = doc.createElement("link");
-            link.id = "preview-google-font";
-            link.rel = "stylesheet";
-            link.href = `https://fonts.googleapis.com/css2?family=${gFont}&display=swap`;
-            doc.head.appendChild(link);
-          }
-          if (e.target.value.includes("OpenDyslexic")) {
-            const existing = doc.getElementById("preview-opendyslexic");
-            if (!existing) {
-              const style = doc.createElement("style");
-              style.id = "preview-opendyslexic";
-              style.textContent = `@font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Regular.woff') format('woff'); font-weight: normal; } @font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Bold.woff') format('woff'); font-weight: bold; }`;
               doc.head.appendChild(style);
+              addToast(t("toasts.brand_theme_applied"), "success");
             }
+          } catch (err) {
+            warnLog("[Brand] Extract failed:", err);
+            addToast(t("toasts.could_extract_brand_colors"), "error");
           }
-        },
-        className: "flex-1 text-[11px] border border-slate-400 rounded px-1 py-1 bg-white"
-      },
-      /* @__PURE__ */ React.createElement("option", { value: "system-ui, sans-serif" }, t("pdf_audit.preview.font_system") || "System (Default)"),
-      /* @__PURE__ */ React.createElement("option", { value: "'Inter', sans-serif" }, "Inter"),
-      /* @__PURE__ */ React.createElement("option", { value: "'Georgia', serif" }, t("pdf_audit.preview.font_georgia") || "Georgia (Serif)"),
-      /* @__PURE__ */ React.createElement("option", { value: "'Times New Roman', serif" }, t("pdf_audit.preview.font_times_new") || "Times New Roman"),
-      /* @__PURE__ */ React.createElement("option", { value: "'Atkinson Hyperlegible', sans-serif" }, t("pdf_audit.preview.font_atkinson_hyper") || "Atkinson Hyperlegible"),
-      /* @__PURE__ */ React.createElement("option", { value: "'OpenDyslexic', sans-serif" }, "OpenDyslexic"),
-      /* @__PURE__ */ React.createElement("option", { value: "'Lexend', sans-serif" }, "Lexend"),
-      /* @__PURE__ */ React.createElement("option", { value: "'Comic Sans MS', cursive" }, t("pdf_audit.preview.font_comic_short") || "Comic Sans"),
-      /* @__PURE__ */ React.createElement("option", { value: "'Courier New', monospace" }, t("pdf_audit.preview.font_courier") || "Courier (Mono)")
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Font")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "Font Size: ", pdfPreviewFontSize, "px"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "range",
-        min: "12",
-        max: "28",
-        value: pdfPreviewFontSize,
-        onChange: (e) => {
-          const v = parseInt(e.target.value);
-          setPdfPreviewFontSize(v);
-          setTimeout(() => updatePdfPreview(void 0, v), 50);
-        },
-        className: "w-full",
-        "aria-label": t("pdf_audit.preview.font_size_aria") || "Font size"
-      }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "12px"), /* @__PURE__ */ React.createElement("span", null, "28px"))), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1 cursor-pointer hover:text-indigo-600 transition-colors list-none flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u2728 Word Art"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 hidden group-open:inline" }, "\u25BE")), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-600 p-2 space-y-2 mt-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", id: "pdf-wordart-text-input", placeholder: t("pdf_audit.wordart.text_placeholder") || "Your word art text...", defaultValue: "", className: "w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none", "aria-label": t("pdf_audit.wordart.text_aria") || "Word art text" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Style"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1", role: "radiogroup" }, [["goldFoil", "\u2728", "Gold"], ["neonGlow", "\u{1F4A1}", "Neon"], ["retroArcade", "\u{1F579}\uFE0F", "Retro"], ["chalkboard", "\u{1F58D}\uFE0F", "Chalk"], ["embossed", "\u{1F3DB}\uFE0F", "3D"], ["rainbow", "\u{1F308}", "Rainbow"]].map(([key, emoji, label], i) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key,
-        "data-preset": key,
-        "aria-checked": i === 0 ? "true" : "false",
-        role: "radio",
-        "aria-label": label + " style",
-        style: i === 0 ? { background: "#fde68a", color: "#78350f", borderColor: "#f59e0b" } : { background: "white", borderColor: "#fcd34d" },
-        className: "pdf-wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all",
-        onClick: (e) => {
-          const btn = e.currentTarget;
-          const parent = btn.parentElement;
-          parent.querySelectorAll(".pdf-wordart-preset-btn").forEach((b) => {
-            b.setAttribute("aria-checked", "false");
-            b.style.background = "white";
-            b.style.color = "";
-            b.style.borderColor = "#fcd34d";
-          });
-          btn.setAttribute("aria-checked", "true");
-          btn.style.background = "#fde68a";
-          btn.style.color = "#78350f";
-          btn.style.borderColor = "#f59e0b";
-        }
-      },
-      emoji,
-      " ",
-      label
-    )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Size"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup" }, [["S", "S"], ["M", "M"], ["L", "L"], ["XL", "XL"]].map(([key, label], i) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key,
-        "data-size": key,
-        "aria-checked": i === 2 ? "true" : "false",
-        role: "radio",
-        "aria-label": label + " size",
-        style: i === 2 ? { background: "#6366f1", color: "white", borderColor: "#4f46e5" } : { background: "white", color: "#475569", borderColor: "#e2e8f0" },
-        className: "pdf-wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all",
-        onClick: (e) => {
-          const btn = e.currentTarget;
-          const parent = btn.parentElement;
-          parent.querySelectorAll(".pdf-wordart-size-btn").forEach((b) => {
-            b.setAttribute("aria-checked", "false");
-            b.style.background = "white";
-            b.style.color = "#475569";
-            b.style.borderColor = "#e2e8f0";
-          });
-          btn.setAttribute("aria-checked", "true");
-          btn.style.background = "#6366f1";
-          btn.style.color = "white";
-          btn.style.borderColor = "#4f46e5";
-        }
-      },
-      label
-    )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Align"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup" }, [["left", "\u21E4", "Left"], ["center", "\u21D4", "Center"], ["right", "\u21E5", "Right"]].map(([key, icon, label], i) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key,
-        "data-align": key,
-        "aria-checked": i === 1 ? "true" : "false",
-        role: "radio",
-        "aria-label": label + " alignment",
-        style: i === 1 ? { background: "#6366f1", color: "white", borderColor: "#4f46e5" } : { background: "white", color: "#475569", borderColor: "#e2e8f0" },
-        className: "pdf-wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all",
-        onClick: (e) => {
-          const btn = e.currentTarget;
-          const parent = btn.parentElement;
-          parent.querySelectorAll(".pdf-wordart-align-btn").forEach((b) => {
-            b.setAttribute("aria-checked", "false");
-            b.style.background = "white";
-            b.style.color = "#475569";
-            b.style.borderColor = "#e2e8f0";
-          });
-          btn.setAttribute("aria-checked", "true");
-          btn.style.background = "#6366f1";
-          btn.style.color = "white";
-          btn.style.borderColor = "#4f46e5";
-        }
-      },
-      icon
-    ))))), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const iframe = pdfPreviewRef.current;
-          const doc = iframe?.contentDocument;
-          if (!doc) {
-            addToast(t("toasts.preview_ready_yet"), "error");
-            return;
-          }
-          const textInput = document.getElementById("pdf-wordart-text-input");
-          const text = textInput?.value?.trim();
-          if (!text) {
-            addToast(t("toasts.enter_word_art_text_first"), "info");
-            return;
-          }
-          const presetBtn = document.querySelector('.pdf-wordart-preset-btn[aria-checked="true"]');
-          const sizeBtn = document.querySelector('.pdf-wordart-size-btn[aria-checked="true"]');
-          const alignBtn = document.querySelector('.pdf-wordart-align-btn[aria-checked="true"]');
-          const preset = presetBtn?.getAttribute("data-preset") || "goldFoil";
-          const size = sizeBtn?.getAttribute("data-size") || "L";
-          const align = alignBtn?.getAttribute("data-align") || "center";
-          let html;
-          if (window.AlloWordArt && typeof window.AlloWordArt.render === "function") {
-            html = window.AlloWordArt.render(text, preset, size, align);
-          } else {
-            const P = {
-              goldFoil: "background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 50%,#d97706 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;text-shadow:2px 2px 0 rgba(120,53,15,0.15);",
-              neonGlow: "color:#e879f9;font-weight:900;text-shadow:0 0 8px #d946ef,0 0 16px #c026d3,0 0 24px #a21caf;",
-              retroArcade: "color:#fbbf24;font-weight:900;text-shadow:3px 3px 0 #ef4444,6px 6px 0 #a16207;letter-spacing:0.05em;",
-              chalkboard: "color:#fef3c7;font-weight:900;font-family:'Comic Sans MS',cursive;text-shadow:2px 2px 4px rgba(0,0,0,0.3);",
-              embossed: "color:#475569;font-weight:900;text-shadow:1px 1px 0 #94a3b8,2px 2px 0 #64748b,3px 3px 6px rgba(0,0,0,0.3);",
-              rainbow: "background:linear-gradient(90deg,#dc2626 0%,#ea580c 17%,#ca8a04 33%,#16a34a 50%,#0891b2 67%,#4f46e5 83%,#9333ea 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;"
-            };
-            const sz = { S: "1.5rem", M: "2.5rem", L: "4rem", XL: "6rem" };
-            const safe = String(text).replace(/[<>&]/g, (c) => c === "<" ? "&lt;" : c === ">" ? "&gt;" : "&amp;");
-            const inner = '<span style="display:inline-block;font-size:' + (sz[size] || sz.L) + ";line-height:1.1;" + (P[preset] || P.goldFoil) + '">' + safe + "</span>";
-            const wrapped = preset === "chalkboard" ? '<span style="display:inline-block;background:#14532d;padding:1rem 1.5rem;border-radius:8px;border:3px solid #78350f;">' + inner + "</span>" : inner;
-            html = '<div class="alloflow-wordart" data-wa-preset="' + preset + '" data-wa-size="' + size + '" data-wa-align="' + align + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + align + '">' + wrapped + "</div>";
-          }
-          if (!html) {
-            addToast(t("toasts.could_render_word_art"), "error");
-            return;
-          }
-          iframe.contentWindow.focus();
-          try {
-            doc.designMode = "on";
-          } catch (e) {
-          }
-          const sel = doc.getSelection();
-          const bodyEl = doc.body;
-          const anchor = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).commonAncestorContainer : null;
-          const cursorInsideBody = anchor && (anchor === bodyEl || bodyEl.contains && bodyEl.contains(anchor.nodeType === 1 ? anchor : anchor.parentNode));
-          if (!cursorInsideBody) {
-            const main = doc.querySelector("main") || bodyEl;
-            const range = doc.createRange();
-            range.selectNodeContents(main);
-            range.collapse(false);
-            sel.removeAllRanges();
-            sel.addRange(range);
-          }
-          let inserted = false;
-          try {
-            inserted = doc.execCommand("insertHTML", false, html);
-          } catch (e) {
-          }
-          if (!inserted) {
-            const wrap = doc.createElement("div");
-            wrap.innerHTML = html;
-            const node = wrap.firstChild;
-            if (node) doc.body.appendChild(node);
-          }
-          if (textInput) textInput.value = "";
-          addToast(t("toasts.word_art_inserted"), "success");
-        },
-        className: "w-full px-3 py-2 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
-      },
-      "\u2728 Insert Word Art"
-    ))), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const next = !pdfPreviewA11yInspect;
-          setPdfPreviewA11yInspect(next);
-          setTimeout(() => updatePdfPreview(void 0, void 0, next), 50);
-        },
-        className: `w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${pdfPreviewA11yInspect ? "bg-violet-100 border-violet-400 text-violet-800" : "bg-white border-slate-200 text-slate-600 hover:border-violet-300"}`
-      },
-      "\u{1F50D} A11y Inspect ",
-      pdfPreviewA11yInspect ? "ON" : "OFF"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => setRegionArmed((v) => !v),
-        "aria-pressed": _regionArmed,
-        title: t("pdf_audit.region.arm_title") || "Drag a box over the preview to pick a block, then describe a change the AI applies to ONLY that region (bounded \u2014 accept or revert).",
-        className: `w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${_regionArmed ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300"}`
-      },
-      "\u25AD ",
-      _regionArmed ? t("pdf_audit.region.arm_on") || "Drawing \u2014 drag a box" : t("pdf_audit.region.arm_off") || "Select a region"
-    ), pdfPreviewA11yInspect && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 space-y-0.5 bg-slate-50 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-violet-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.headings") || "Headings (H1-H6)"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-blue-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.images") || "Images + alt text"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-emerald-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.tables") || "Tables + headers"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-cyan-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.figures") || "Figures + captions"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-green-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.main_landmark") || "Main landmark"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-orange-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.aria_roles") || "ARIA roles"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-slate-900 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.reading_order") || "Reading order (#1, #2 \u2026 \u2014 the order a screen reader walks the blocks)")), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const doc = pdfPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      const existing = doc.getElementById("sr-simulator-panel");
-      if (existing) {
-        existing.remove();
-        return;
-      }
-      const announcements = [];
-      const walk = (el) => {
-        if (!el || el.nodeType !== 1) return;
-        const tag = el.tagName?.toLowerCase();
-        const role = el.getAttribute("role");
-        const ariaLabel = el.getAttribute("aria-label");
-        if (el.getAttribute("aria-hidden") === "true") return;
-        if (tag === "main") announcements.push({ type: "landmark", text: "\u{1F4CD} Main content landmark" });
-        if (tag === "nav") announcements.push({ type: "landmark", text: "\u{1F4CD} Navigation: " + (ariaLabel || "navigation") });
-        if (tag === "header") announcements.push({ type: "landmark", text: "\u{1F4CD} Header landmark" + (ariaLabel ? ": " + ariaLabel : "") });
-        if (tag === "footer") announcements.push({ type: "landmark", text: "\u{1F4CD} Footer landmark" + (ariaLabel ? ": " + ariaLabel : "") });
-        if (tag === "aside") announcements.push({ type: "landmark", text: "\u{1F4CD} Complementary (aside)" + (ariaLabel ? ": " + ariaLabel : "") });
-        if (tag === "form") announcements.push({ type: "landmark", text: "\u{1F4CD} Form landmark" + (ariaLabel ? ": " + ariaLabel : "") });
-        if (tag === "section" && ariaLabel) announcements.push({ type: "landmark", text: "\u{1F4CD} Region: " + ariaLabel });
-        if (tag === "h1") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 1: " + el.textContent.trim() });
-        if (tag === "h2") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 2: " + el.textContent.trim() });
-        if (tag === "h3") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 3: " + el.textContent.trim() });
-        if (tag === "h4") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 4: " + el.textContent.trim() });
-        if (tag === "h5") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 5: " + el.textContent.trim() });
-        if (tag === "h6") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 6: " + el.textContent.trim() });
-        if (tag === "p" && el.textContent.trim()) announcements.push({ type: "text", text: el.textContent.trim().substring(0, 200) + (el.textContent.length > 200 ? "..." : "") });
-        if (tag === "img") announcements.push({ type: "image", text: "\u{1F5BC}\uFE0F Image: " + (el.getAttribute("alt") || "no alt text \u26A0\uFE0F") });
-        if (tag === "figure") {
-          const cap = el.querySelector("figcaption");
-          if (cap) announcements.push({ type: "figure", text: "\u{1F5BC}\uFE0F Figure: " + cap.textContent.trim().substring(0, 150) });
-          return;
-        }
-        if (tag === "table") {
-          const cap = el.querySelector("caption");
-          announcements.push({ type: "table", text: "\u{1F4CA} Table" + (cap ? ": " + cap.textContent.trim() : "") + " \u2014 " + el.querySelectorAll("tr").length + " rows" });
-          return;
-        }
-        if (tag === "a") {
-          announcements.push({ type: "link", text: "\u{1F517} Link: " + el.textContent.trim() + (el.href ? " \u2192 " + el.href.substring(0, 50) : "") });
-          return;
-        }
-        if (tag === "ul" || tag === "ol") {
-          announcements.push({ type: "list", text: "\u{1F4CB} " + (tag === "ol" ? "Numbered" : "Bulleted") + " list: " + el.querySelectorAll("li").length + " items" });
-          el.querySelectorAll("li").forEach((li) => {
-            announcements.push({ type: "listitem", text: "  \u2022 " + li.textContent.trim().substring(0, 100) });
-          });
-          return;
-        }
-        if (tag === "dl") {
-          announcements.push({ type: "list", text: "\u{1F4CB} Definition list: " + el.querySelectorAll("dt").length + " term(s)" });
-          const pairs = [];
-          let curTerm = null;
-          for (const child of el.children) {
-            if (child.tagName === "DT") curTerm = child.textContent.trim();
-            else if (child.tagName === "DD" && curTerm) {
-              pairs.push({ term: curTerm, def: child.textContent.trim() });
-              curTerm = null;
-            }
-          }
-          pairs.forEach((p) => announcements.push({ type: "listitem", text: "  \u2022 Term: " + p.term.substring(0, 60) + " \u2014 " + p.def.substring(0, 80) }));
-          return;
-        }
-        if (tag === "input" || tag === "select" || tag === "textarea") {
-          const id = el.getAttribute("id");
-          let label = ariaLabel || "";
-          if (!label && id) {
-            const lab = doc.querySelector('label[for="' + (id || "").replace(/"/g, '\\"') + '"]');
-            if (lab) label = lab.textContent.trim();
-          }
-          if (!label) {
-            const wrap = el.closest("label");
-            if (wrap) label = wrap.textContent.trim();
-          }
-          const typeLabel = tag === "input" ? "Input " + (el.getAttribute("type") || "text") : tag === "select" ? "Dropdown" : "Text area";
-          announcements.push({ type: "interactive", text: "\u270D\uFE0F " + typeLabel + ": " + (label || "unlabeled \u26A0\uFE0F") });
-        }
-        if (tag === "button") announcements.push({ type: "interactive", text: "\u{1F518} Button: " + (ariaLabel || el.textContent.trim()) });
-        Array.from(el.children).forEach(walk);
-      };
-      walk(doc.querySelector("main") || doc.body);
-      const panel = doc.createElement("div");
-      panel.id = "sr-simulator-panel";
-      panel.style.cssText = "position:fixed;top:0;right:0;width:350px;height:100vh;background:rgba(15,23,42,0.97);color:#e2e8f0;overflow-y:auto;z-index:99999;padding:16px;font-family:monospace;font-size:12px;line-height:1.6;border-left:3px solid #7c3aed;";
-      window._srAnnouncements = announcements;
-      panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #334155"><strong style="color:#a78bfa;font-size:14px">\u{1F50A} Screen Reader View</strong><div><button id="sr-read-all" style="background:#7c3aed;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-weight:bold;margin-right:4px">\u25B6 Read All</button><button id="sr-stop" style="background:#334155;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:10px;margin-right:4px">\u23F9 Stop</button><button onclick="this.closest('#sr-simulator-panel').remove()" style="background:#334155;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">\u2715</button></div></div><div style="font-size:10px;color:#94a3b8;margin-bottom:8px">Click any item to hear it. "Read All" reads the entire document as a screen reader would.</div>` + announcements.map((a, idx) => {
-        const colors = { landmark: "#a78bfa", heading: "#f59e0b", text: "#94a3b8", image: "#38bdf8", figure: "#38bdf8", table: "#34d399", link: "#60a5fa", list: "#fb923c", listitem: "#94a3b8", interactive: "#f472b6" };
-        return '<div data-sr-idx="' + idx + '" style="padding:4px 6px;border-bottom:1px solid #1e293b;color:' + (colors[a.type] || "#e2e8f0") + `;cursor:pointer;border-radius:4px" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='none'">` + a.text + "</div>";
-      }).join("") + '<div style="margin-top:12px;padding:8px;background:#1e293b;border-radius:6px;font-size:10px;color:#64748b">Total: ' + announcements.length + " announcements | " + announcements.filter((a) => a.type === "heading").length + " headings | " + announcements.filter((a) => a.type === "image" || a.type === "figure").length + " images | " + announcements.filter((a) => a.type === "table").length + " tables | " + announcements.filter((a) => a.type === "link").length + " links | " + announcements.filter((a) => a.type === "landmark").length + " landmarks | " + announcements.filter((a) => a.type === "interactive").length + " interactive</div>";
-      doc.body.appendChild(panel);
-      panel.addEventListener("click", (e) => {
-        const idx = e.target.closest("[data-sr-idx]")?.getAttribute("data-sr-idx");
-        if (idx !== null && idx !== void 0 && callTTS && window._srAnnouncements) {
-          const a = window._srAnnouncements[parseInt(idx)];
-          if (a) {
-            Promise.resolve(callTTS(a.text)).then((url) => {
-              if (!url) return;
-              const audio = new Audio(url);
-              const revoke = () => {
-                try {
-                  URL.revokeObjectURL(url);
-                } catch (_) {
-                }
-              };
-              audio.addEventListener("ended", revoke);
-              audio.addEventListener("error", revoke);
-              audio.play().catch(() => {
-                revoke();
-              });
-              setTimeout(revoke, 12e4);
-            }).catch(() => {
+        };
+        reader.readAsDataURL(file);
+        e.target.value = "";
+      } }))), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F3A8} Custom Colors & Fonts ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400" }, [
+        { label: "Heading Color", prop: "headingColor", sel: "h1,h2,h3,h4", css: "color", def: "#1e3a5f", isText: true },
+        { label: "Accent / Link", prop: "accentColor", sel: "a", css: "color", def: "#2563eb", isText: true },
+        { label: "Background", prop: "bgColor", sel: "body", css: "backgroundColor", def: "#ffffff", isText: false },
+        { label: "Table Header", prop: "thBg", sel: "th", css: "backgroundColor", def: "#f1f5f9", isText: false }
+      ].map((item) => /* @__PURE__ */ React.createElement("div", { key: item.prop, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "color",
+          defaultValue: item.def,
+          "aria-label": item.label,
+          onChange: (e) => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (!doc) return;
+            doc.querySelectorAll(item.sel).forEach((el) => {
+              el.style[item.css] = e.target.value;
             });
-          }
-        }
-      });
-      const readAllBtn = doc.getElementById("sr-read-all");
-      const stopBtn = doc.getElementById("sr-stop");
-      if (readAllBtn && callTTS) {
-        let reading = false;
-        let stopRequested = false;
-        let currentAudio = null;
-        readAllBtn.onclick = async () => {
-          if (reading) return;
-          reading = true;
-          stopRequested = false;
-          readAllBtn.textContent = "\u25B6 Reading...";
-          readAllBtn.style.background = "#16a34a";
-          for (let i = 0; i < announcements.length; i++) {
-            if (stopRequested) break;
-            const items = panel.querySelectorAll("[data-sr-idx]");
-            items.forEach((el) => el.style.background = "none");
-            if (items[i]) {
-              items[i].style.background = "#7c3aed33";
-              items[i].scrollIntoView({ behavior: "smooth", block: "center" });
-            }
-            let url = null;
-            try {
-              url = await callTTS(announcements[i].text);
-            } catch (e) {
-              warnLog && warnLog("[pdf-audit announcement] callTTS failed for item " + i + ":", e);
-            }
-            if (stopRequested) {
-              if (url) {
-                try {
-                  URL.revokeObjectURL(url);
-                } catch (_) {
-                }
+            if (item.isText) {
+              const hex = e.target.value.replace("#", "");
+              const r = parseInt(hex.substr(0, 2), 16), g2 = parseInt(hex.substr(2, 2), 16), b = parseInt(hex.substr(4, 2), 16);
+              const lum = 0.2126 * (r / 255 <= 0.03928 ? r / 255 / 12.92 : Math.pow((r / 255 + 0.055) / 1.055, 2.4)) + 0.7152 * (g2 / 255 <= 0.03928 ? g2 / 255 / 12.92 : Math.pow((g2 / 255 + 0.055) / 1.055, 2.4)) + 0.0722 * (b / 255 <= 0.03928 ? b / 255 / 12.92 : Math.pow((b / 255 + 0.055) / 1.055, 2.4));
+              const ratio = 1.05 / (lum + 0.05);
+              const badge = e.target.parentElement?.querySelector(".contrast-badge");
+              if (badge) {
+                badge.textContent = ratio >= 4.5 ? "\u2705 " + ratio.toFixed(1) + ":1" : "\u26A0\uFE0F " + ratio.toFixed(1) + ":1";
+                badge.style.color = ratio >= 4.5 ? "#16a34a" : "#dc2626";
               }
-              break;
             }
-            if (url) {
-              await new Promise((resolve) => {
+          },
+          className: "w-6 h-6 rounded border border-slate-400 cursor-pointer p-0"
+        }
+      ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, item.label), item.isText && /* @__PURE__ */ React.createElement("span", { className: "contrast-badge text-[11px] font-bold", style: { color: "#16a34a" } }, "\u2705 4.5+:1"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          "aria-label": t("pdf_audit.preview.body_font_aria") || "Body font",
+          defaultValue: "system-ui",
+          onChange: (e) => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (!doc) return;
+            doc.body.style.fontFamily = e.target.value;
+            const fontMap = {
+              "'Inter', sans-serif": "Inter:wght@400;600;700",
+              "'Atkinson Hyperlegible', sans-serif": "Atkinson+Hyperlegible:wght@400;700",
+              "'Lexend', sans-serif": "Lexend:wght@400;500;700"
+            };
+            const gFont = fontMap[e.target.value];
+            if (gFont) {
+              const existing = doc.getElementById("preview-google-font");
+              if (existing) existing.remove();
+              const link = doc.createElement("link");
+              link.id = "preview-google-font";
+              link.rel = "stylesheet";
+              link.href = `https://fonts.googleapis.com/css2?family=${gFont}&display=swap`;
+              doc.head.appendChild(link);
+            }
+            if (e.target.value.includes("OpenDyslexic")) {
+              const existing = doc.getElementById("preview-opendyslexic");
+              if (!existing) {
+                const style = doc.createElement("style");
+                style.id = "preview-opendyslexic";
+                style.textContent = `@font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Regular.woff') format('woff'); font-weight: normal; } @font-face { font-family: 'OpenDyslexic'; src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Bold.woff') format('woff'); font-weight: bold; }`;
+                doc.head.appendChild(style);
+              }
+            }
+          },
+          className: "flex-1 text-[11px] border border-slate-400 rounded px-1 py-1 bg-white"
+        },
+        /* @__PURE__ */ React.createElement("option", { value: "system-ui, sans-serif" }, t("pdf_audit.preview.font_system") || "System (Default)"),
+        /* @__PURE__ */ React.createElement("option", { value: "'Inter', sans-serif" }, "Inter"),
+        /* @__PURE__ */ React.createElement("option", { value: "'Georgia', serif" }, t("pdf_audit.preview.font_georgia") || "Georgia (Serif)"),
+        /* @__PURE__ */ React.createElement("option", { value: "'Times New Roman', serif" }, t("pdf_audit.preview.font_times_new") || "Times New Roman"),
+        /* @__PURE__ */ React.createElement("option", { value: "'Atkinson Hyperlegible', sans-serif" }, t("pdf_audit.preview.font_atkinson_hyper") || "Atkinson Hyperlegible"),
+        /* @__PURE__ */ React.createElement("option", { value: "'OpenDyslexic', sans-serif" }, "OpenDyslexic"),
+        /* @__PURE__ */ React.createElement("option", { value: "'Lexend', sans-serif" }, "Lexend"),
+        /* @__PURE__ */ React.createElement("option", { value: "'Comic Sans MS', cursive" }, t("pdf_audit.preview.font_comic_short") || "Comic Sans"),
+        /* @__PURE__ */ React.createElement("option", { value: "'Courier New', monospace" }, t("pdf_audit.preview.font_courier") || "Courier (Mono)")
+      ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Font")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1" }, "Font Size: ", pdfPreviewFontSize, "px"), /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "range",
+          min: "12",
+          max: "28",
+          value: pdfPreviewFontSize,
+          onChange: (e) => {
+            const v = parseInt(e.target.value);
+            setPdfPreviewFontSize(v);
+            setTimeout(() => updatePdfPreview(void 0, v), 50);
+          },
+          className: "w-full",
+          "aria-label": t("pdf_audit.preview.font_size_aria") || "Font size"
+        }
+      ), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, "12px"), /* @__PURE__ */ React.createElement("span", null, "28px"))), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1 cursor-pointer hover:text-indigo-600 transition-colors list-none flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u2728 Word Art"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 hidden group-open:inline" }, "\u25BE")), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-600 p-2 space-y-2 mt-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", id: "pdf-wordart-text-input", placeholder: t("pdf_audit.wordart.text_placeholder") || "Your word art text...", defaultValue: "", className: "w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none", "aria-label": t("pdf_audit.wordart.text_aria") || "Word art text" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Style"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1", role: "radiogroup" }, [["goldFoil", "\u2728", "Gold"], ["neonGlow", "\u{1F4A1}", "Neon"], ["retroArcade", "\u{1F579}\uFE0F", "Retro"], ["chalkboard", "\u{1F58D}\uFE0F", "Chalk"], ["embossed", "\u{1F3DB}\uFE0F", "3D"], ["rainbow", "\u{1F308}", "Rainbow"]].map(([key, emoji, label], i) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key,
+          "data-preset": key,
+          "aria-checked": i === 0 ? "true" : "false",
+          role: "radio",
+          "aria-label": label + " style",
+          style: i === 0 ? { background: "#fde68a", color: "#78350f", borderColor: "#f59e0b" } : { background: "white", borderColor: "#fcd34d" },
+          className: "pdf-wordart-preset-btn text-[10px] font-bold py-1.5 px-1 rounded-md border text-slate-700 transition-all",
+          onClick: (e) => {
+            const btn = e.currentTarget;
+            const parent = btn.parentElement;
+            parent.querySelectorAll(".pdf-wordart-preset-btn").forEach((b) => {
+              b.setAttribute("aria-checked", "false");
+              b.style.background = "white";
+              b.style.color = "";
+              b.style.borderColor = "#fcd34d";
+            });
+            btn.setAttribute("aria-checked", "true");
+            btn.style.background = "#fde68a";
+            btn.style.color = "#78350f";
+            btn.style.borderColor = "#f59e0b";
+          }
+        },
+        emoji,
+        " ",
+        label
+      )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Size"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup" }, [["S", "S"], ["M", "M"], ["L", "L"], ["XL", "XL"]].map(([key, label], i) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key,
+          "data-size": key,
+          "aria-checked": i === 2 ? "true" : "false",
+          role: "radio",
+          "aria-label": label + " size",
+          style: i === 2 ? { background: "#6366f1", color: "white", borderColor: "#4f46e5" } : { background: "white", color: "#475569", borderColor: "#e2e8f0" },
+          className: "pdf-wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all",
+          onClick: (e) => {
+            const btn = e.currentTarget;
+            const parent = btn.parentElement;
+            parent.querySelectorAll(".pdf-wordart-size-btn").forEach((b) => {
+              b.setAttribute("aria-checked", "false");
+              b.style.background = "white";
+              b.style.color = "#475569";
+              b.style.borderColor = "#e2e8f0";
+            });
+            btn.setAttribute("aria-checked", "true");
+            btn.style.background = "#6366f1";
+            btn.style.color = "white";
+            btn.style.borderColor = "#4f46e5";
+          }
+        },
+        label
+      )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-slate-600 uppercase mb-1" }, "Align"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5", role: "radiogroup" }, [["left", "\u21E4", "Left"], ["center", "\u21D4", "Center"], ["right", "\u21E5", "Right"]].map(([key, icon, label], i) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key,
+          "data-align": key,
+          "aria-checked": i === 1 ? "true" : "false",
+          role: "radio",
+          "aria-label": label + " alignment",
+          style: i === 1 ? { background: "#6366f1", color: "white", borderColor: "#4f46e5" } : { background: "white", color: "#475569", borderColor: "#e2e8f0" },
+          className: "pdf-wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all",
+          onClick: (e) => {
+            const btn = e.currentTarget;
+            const parent = btn.parentElement;
+            parent.querySelectorAll(".pdf-wordart-align-btn").forEach((b) => {
+              b.setAttribute("aria-checked", "false");
+              b.style.background = "white";
+              b.style.color = "#475569";
+              b.style.borderColor = "#e2e8f0";
+            });
+            btn.setAttribute("aria-checked", "true");
+            btn.style.background = "#6366f1";
+            btn.style.color = "white";
+            btn.style.borderColor = "#4f46e5";
+          }
+        },
+        icon
+      ))))), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const iframe = pdfPreviewRef.current;
+            const doc = iframe?.contentDocument;
+            if (!doc) {
+              addToast(t("toasts.preview_ready_yet"), "error");
+              return;
+            }
+            const textInput = document.getElementById("pdf-wordart-text-input");
+            const text = textInput?.value?.trim();
+            if (!text) {
+              addToast(t("toasts.enter_word_art_text_first"), "info");
+              return;
+            }
+            const presetBtn = document.querySelector('.pdf-wordart-preset-btn[aria-checked="true"]');
+            const sizeBtn = document.querySelector('.pdf-wordart-size-btn[aria-checked="true"]');
+            const alignBtn = document.querySelector('.pdf-wordart-align-btn[aria-checked="true"]');
+            const preset = presetBtn?.getAttribute("data-preset") || "goldFoil";
+            const size = sizeBtn?.getAttribute("data-size") || "L";
+            const align = alignBtn?.getAttribute("data-align") || "center";
+            let html;
+            if (window.AlloWordArt && typeof window.AlloWordArt.render === "function") {
+              html = window.AlloWordArt.render(text, preset, size, align);
+            } else {
+              const P = {
+                goldFoil: "background:linear-gradient(135deg,#fbbf24 0%,#f59e0b 50%,#d97706 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;text-shadow:2px 2px 0 rgba(120,53,15,0.15);",
+                neonGlow: "color:#e879f9;font-weight:900;text-shadow:0 0 8px #d946ef,0 0 16px #c026d3,0 0 24px #a21caf;",
+                retroArcade: "color:#fbbf24;font-weight:900;text-shadow:3px 3px 0 #ef4444,6px 6px 0 #a16207;letter-spacing:0.05em;",
+                chalkboard: "color:#fef3c7;font-weight:900;font-family:'Comic Sans MS',cursive;text-shadow:2px 2px 4px rgba(0,0,0,0.3);",
+                embossed: "color:#475569;font-weight:900;text-shadow:1px 1px 0 #94a3b8,2px 2px 0 #64748b,3px 3px 6px rgba(0,0,0,0.3);",
+                rainbow: "background:linear-gradient(90deg,#dc2626 0%,#ea580c 17%,#ca8a04 33%,#16a34a 50%,#0891b2 67%,#4f46e5 83%,#9333ea 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;"
+              };
+              const sz = { S: "1.5rem", M: "2.5rem", L: "4rem", XL: "6rem" };
+              const safe = String(text).replace(/[<>&]/g, (c) => c === "<" ? "&lt;" : c === ">" ? "&gt;" : "&amp;");
+              const inner = '<span style="display:inline-block;font-size:' + (sz[size] || sz.L) + ";line-height:1.1;" + (P[preset] || P.goldFoil) + '">' + safe + "</span>";
+              const wrapped = preset === "chalkboard" ? '<span style="display:inline-block;background:#14532d;padding:1rem 1.5rem;border-radius:8px;border:3px solid #78350f;">' + inner + "</span>" : inner;
+              html = '<div class="alloflow-wordart" data-wa-preset="' + preset + '" data-wa-size="' + size + '" data-wa-align="' + align + '" role="heading" aria-level="2" style="margin:1.5em 0;text-align:' + align + '">' + wrapped + "</div>";
+            }
+            if (!html) {
+              addToast(t("toasts.could_render_word_art"), "error");
+              return;
+            }
+            iframe.contentWindow.focus();
+            try {
+              doc.designMode = "on";
+            } catch (e) {
+            }
+            const sel = doc.getSelection();
+            const bodyEl = doc.body;
+            const anchor = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).commonAncestorContainer : null;
+            const cursorInsideBody = anchor && (anchor === bodyEl || bodyEl.contains && bodyEl.contains(anchor.nodeType === 1 ? anchor : anchor.parentNode));
+            if (!cursorInsideBody) {
+              const main = doc.querySelector("main") || bodyEl;
+              const range = doc.createRange();
+              range.selectNodeContents(main);
+              range.collapse(false);
+              sel.removeAllRanges();
+              sel.addRange(range);
+            }
+            let inserted = false;
+            try {
+              inserted = doc.execCommand("insertHTML", false, html);
+            } catch (e) {
+            }
+            if (!inserted) {
+              const wrap = doc.createElement("div");
+              wrap.innerHTML = html;
+              const node = wrap.firstChild;
+              if (node) doc.body.appendChild(node);
+            }
+            if (textInput) textInput.value = "";
+            addToast(t("toasts.word_art_inserted"), "success");
+          },
+          className: "w-full px-3 py-2 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white rounded-lg text-[11px] font-bold transition-all shadow-sm hover:shadow-md"
+        },
+        "\u2728 Insert Word Art"
+      ))), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const next = !pdfPreviewA11yInspect;
+            setPdfPreviewA11yInspect(next);
+            setTimeout(() => updatePdfPreview(void 0, void 0, next), 50);
+          },
+          className: `w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${pdfPreviewA11yInspect ? "bg-violet-100 border-violet-400 text-violet-800" : "bg-white border-slate-200 text-slate-600 hover:border-violet-300"}`
+        },
+        "\u{1F50D} A11y Inspect ",
+        pdfPreviewA11yInspect ? "ON" : "OFF"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => setRegionArmed((v) => !v),
+          "aria-pressed": _regionArmed,
+          title: t("pdf_audit.region.arm_title") || "Drag a box over the preview to pick a block, then describe a change the AI applies to ONLY that region (bounded \u2014 accept or revert).",
+          className: `w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${_regionArmed ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300"}`
+        },
+        "\u25AD ",
+        _regionArmed ? t("pdf_audit.region.arm_on") || "Drawing \u2014 drag a box" : t("pdf_audit.region.arm_off") || "Select a region"
+      ), pdfPreviewA11yInspect && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 space-y-0.5 bg-slate-50 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-violet-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.headings") || "Headings (H1-H6)"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-blue-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.images") || "Images + alt text"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-emerald-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.tables") || "Tables + headers"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-cyan-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.figures") || "Figures + captions"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-green-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.main_landmark") || "Main landmark"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-orange-600 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.aria_roles") || "ARIA roles"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-3 h-2 bg-slate-900 rounded mr-1" }), " ", t("pdf_audit.a11y_inspect.reading_order") || "Reading order (#1, #2 \u2026 \u2014 the order a screen reader walks the blocks)")), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const doc = pdfPreviewRef.current?.contentDocument;
+        if (!doc) return;
+        const existing = doc.getElementById("sr-simulator-panel");
+        if (existing) {
+          existing.remove();
+          return;
+        }
+        const announcements = [];
+        const walk = (el) => {
+          if (!el || el.nodeType !== 1) return;
+          const tag = el.tagName?.toLowerCase();
+          const role = el.getAttribute("role");
+          const ariaLabel = el.getAttribute("aria-label");
+          if (el.getAttribute("aria-hidden") === "true") return;
+          if (tag === "main") announcements.push({ type: "landmark", text: "\u{1F4CD} Main content landmark" });
+          if (tag === "nav") announcements.push({ type: "landmark", text: "\u{1F4CD} Navigation: " + (ariaLabel || "navigation") });
+          if (tag === "header") announcements.push({ type: "landmark", text: "\u{1F4CD} Header landmark" + (ariaLabel ? ": " + ariaLabel : "") });
+          if (tag === "footer") announcements.push({ type: "landmark", text: "\u{1F4CD} Footer landmark" + (ariaLabel ? ": " + ariaLabel : "") });
+          if (tag === "aside") announcements.push({ type: "landmark", text: "\u{1F4CD} Complementary (aside)" + (ariaLabel ? ": " + ariaLabel : "") });
+          if (tag === "form") announcements.push({ type: "landmark", text: "\u{1F4CD} Form landmark" + (ariaLabel ? ": " + ariaLabel : "") });
+          if (tag === "section" && ariaLabel) announcements.push({ type: "landmark", text: "\u{1F4CD} Region: " + ariaLabel });
+          if (tag === "h1") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 1: " + el.textContent.trim() });
+          if (tag === "h2") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 2: " + el.textContent.trim() });
+          if (tag === "h3") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 3: " + el.textContent.trim() });
+          if (tag === "h4") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 4: " + el.textContent.trim() });
+          if (tag === "h5") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 5: " + el.textContent.trim() });
+          if (tag === "h6") announcements.push({ type: "heading", text: "\u{1F4E2} Heading level 6: " + el.textContent.trim() });
+          if (tag === "p" && el.textContent.trim()) announcements.push({ type: "text", text: el.textContent.trim().substring(0, 200) + (el.textContent.length > 200 ? "..." : "") });
+          if (tag === "img") announcements.push({ type: "image", text: "\u{1F5BC}\uFE0F Image: " + (el.getAttribute("alt") || "no alt text \u26A0\uFE0F") });
+          if (tag === "figure") {
+            const cap = el.querySelector("figcaption");
+            if (cap) announcements.push({ type: "figure", text: "\u{1F5BC}\uFE0F Figure: " + cap.textContent.trim().substring(0, 150) });
+            return;
+          }
+          if (tag === "table") {
+            const cap = el.querySelector("caption");
+            announcements.push({ type: "table", text: "\u{1F4CA} Table" + (cap ? ": " + cap.textContent.trim() : "") + " \u2014 " + el.querySelectorAll("tr").length + " rows" });
+            return;
+          }
+          if (tag === "a") {
+            announcements.push({ type: "link", text: "\u{1F517} Link: " + el.textContent.trim() + (el.href ? " \u2192 " + el.href.substring(0, 50) : "") });
+            return;
+          }
+          if (tag === "ul" || tag === "ol") {
+            announcements.push({ type: "list", text: "\u{1F4CB} " + (tag === "ol" ? "Numbered" : "Bulleted") + " list: " + el.querySelectorAll("li").length + " items" });
+            el.querySelectorAll("li").forEach((li) => {
+              announcements.push({ type: "listitem", text: "  \u2022 " + li.textContent.trim().substring(0, 100) });
+            });
+            return;
+          }
+          if (tag === "dl") {
+            announcements.push({ type: "list", text: "\u{1F4CB} Definition list: " + el.querySelectorAll("dt").length + " term(s)" });
+            const pairs = [];
+            let curTerm = null;
+            for (const child of el.children) {
+              if (child.tagName === "DT") curTerm = child.textContent.trim();
+              else if (child.tagName === "DD" && curTerm) {
+                pairs.push({ term: curTerm, def: child.textContent.trim() });
+                curTerm = null;
+              }
+            }
+            pairs.forEach((p) => announcements.push({ type: "listitem", text: "  \u2022 Term: " + p.term.substring(0, 60) + " \u2014 " + p.def.substring(0, 80) }));
+            return;
+          }
+          if (tag === "input" || tag === "select" || tag === "textarea") {
+            const id = el.getAttribute("id");
+            let label = ariaLabel || "";
+            if (!label && id) {
+              const lab = doc.querySelector('label[for="' + (id || "").replace(/"/g, '\\"') + '"]');
+              if (lab) label = lab.textContent.trim();
+            }
+            if (!label) {
+              const wrap = el.closest("label");
+              if (wrap) label = wrap.textContent.trim();
+            }
+            const typeLabel = tag === "input" ? "Input " + (el.getAttribute("type") || "text") : tag === "select" ? "Dropdown" : "Text area";
+            announcements.push({ type: "interactive", text: "\u270D\uFE0F " + typeLabel + ": " + (label || "unlabeled \u26A0\uFE0F") });
+          }
+          if (tag === "button") announcements.push({ type: "interactive", text: "\u{1F518} Button: " + (ariaLabel || el.textContent.trim()) });
+          Array.from(el.children).forEach(walk);
+        };
+        walk(doc.querySelector("main") || doc.body);
+        const panel = doc.createElement("div");
+        panel.id = "sr-simulator-panel";
+        panel.style.cssText = "position:fixed;top:0;right:0;width:350px;height:100vh;background:rgba(15,23,42,0.97);color:#e2e8f0;overflow-y:auto;z-index:99999;padding:16px;font-family:monospace;font-size:12px;line-height:1.6;border-left:3px solid #7c3aed;";
+        window._srAnnouncements = announcements;
+        panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #334155"><strong style="color:#a78bfa;font-size:14px">\u{1F50A} Screen Reader View</strong><div><button id="sr-read-all" style="background:#7c3aed;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-weight:bold;margin-right:4px">\u25B6 Read All</button><button id="sr-stop" style="background:#334155;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:10px;margin-right:4px">\u23F9 Stop</button><button onclick="this.closest('#sr-simulator-panel').remove()" style="background:#334155;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">\u2715</button></div></div><div style="font-size:10px;color:#94a3b8;margin-bottom:8px">Click any item to hear it. "Read All" reads the entire document as a screen reader would.</div>` + announcements.map((a, idx) => {
+          const colors = { landmark: "#a78bfa", heading: "#f59e0b", text: "#94a3b8", image: "#38bdf8", figure: "#38bdf8", table: "#34d399", link: "#60a5fa", list: "#fb923c", listitem: "#94a3b8", interactive: "#f472b6" };
+          return '<div data-sr-idx="' + idx + '" style="padding:4px 6px;border-bottom:1px solid #1e293b;color:' + (colors[a.type] || "#e2e8f0") + `;cursor:pointer;border-radius:4px" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='none'">` + a.text + "</div>";
+        }).join("") + '<div style="margin-top:12px;padding:8px;background:#1e293b;border-radius:6px;font-size:10px;color:#64748b">Total: ' + announcements.length + " announcements | " + announcements.filter((a) => a.type === "heading").length + " headings | " + announcements.filter((a) => a.type === "image" || a.type === "figure").length + " images | " + announcements.filter((a) => a.type === "table").length + " tables | " + announcements.filter((a) => a.type === "link").length + " links | " + announcements.filter((a) => a.type === "landmark").length + " landmarks | " + announcements.filter((a) => a.type === "interactive").length + " interactive</div>";
+        doc.body.appendChild(panel);
+        panel.addEventListener("click", (e) => {
+          const idx = e.target.closest("[data-sr-idx]")?.getAttribute("data-sr-idx");
+          if (idx !== null && idx !== void 0 && callTTS && window._srAnnouncements) {
+            const a = window._srAnnouncements[parseInt(idx)];
+            if (a) {
+              Promise.resolve(callTTS(a.text)).then((url) => {
+                if (!url) return;
                 const audio = new Audio(url);
-                currentAudio = audio;
-                const done = () => {
+                const revoke = () => {
                   try {
                     URL.revokeObjectURL(url);
                   } catch (_) {
                   }
-                  currentAudio = null;
-                  resolve();
                 };
-                audio.addEventListener("ended", done);
-                audio.addEventListener("error", done);
-                audio.play().catch(done);
+                audio.addEventListener("ended", revoke);
+                audio.addEventListener("error", revoke);
+                audio.play().catch(() => {
+                  revoke();
+                });
+                setTimeout(revoke, 12e4);
+              }).catch(() => {
               });
             }
-            if (!stopRequested) await new Promise((r) => setTimeout(r, 300));
           }
-          reading = false;
-          readAllBtn.textContent = "\u25B6 Read All";
-          readAllBtn.style.background = "#7c3aed";
-          panel.querySelectorAll("[data-sr-idx]").forEach((el) => el.style.background = "none");
-        };
-        if (stopBtn) stopBtn.onclick = () => {
-          stopRequested = true;
-          if (currentAudio) {
-            try {
-              currentAudio.pause();
-            } catch (_) {
+        });
+        const readAllBtn = doc.getElementById("sr-read-all");
+        const stopBtn = doc.getElementById("sr-stop");
+        if (readAllBtn && callTTS) {
+          let reading = false;
+          let stopRequested = false;
+          let currentAudio = null;
+          readAllBtn.onclick = async () => {
+            if (reading) return;
+            reading = true;
+            stopRequested = false;
+            readAllBtn.textContent = "\u25B6 Reading...";
+            readAllBtn.style.background = "#16a34a";
+            for (let i = 0; i < announcements.length; i++) {
+              if (stopRequested) break;
+              const items = panel.querySelectorAll("[data-sr-idx]");
+              items.forEach((el) => el.style.background = "none");
+              if (items[i]) {
+                items[i].style.background = "#7c3aed33";
+                items[i].scrollIntoView({ behavior: "smooth", block: "center" });
+              }
+              let url = null;
+              try {
+                url = await callTTS(announcements[i].text);
+              } catch (e) {
+                warnLog && warnLog("[pdf-audit announcement] callTTS failed for item " + i + ":", e);
+              }
+              if (stopRequested) {
+                if (url) {
+                  try {
+                    URL.revokeObjectURL(url);
+                  } catch (_) {
+                  }
+                }
+                break;
+              }
+              if (url) {
+                await new Promise((resolve) => {
+                  const audio = new Audio(url);
+                  currentAudio = audio;
+                  const done = () => {
+                    try {
+                      URL.revokeObjectURL(url);
+                    } catch (_) {
+                    }
+                    currentAudio = null;
+                    resolve();
+                  };
+                  audio.addEventListener("ended", done);
+                  audio.addEventListener("error", done);
+                  audio.play().catch(done);
+                });
+              }
+              if (!stopRequested) await new Promise((r) => setTimeout(r, 300));
             }
-          }
-        };
-      }
-      addToast(t("toasts.screen_reader_view_opened_shows"), "info");
-    }, className: `w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 bg-white border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-700` }, "\u{1F50A} Screen Reader Simulator"), callImagen && /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F5BC}\uFE0F AI Image Tools ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-2 bg-slate-50 rounded-lg p-2 border border-slate-400" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "text",
-        id: "pdf-preview-img-prompt",
-        placeholder: t("pdf_audit.ai_image.prompt_placeholder") || "Describe an image to generate...",
-        "aria-label": t("pdf_audit.ai_image.prompt_aria") || "Image generation prompt",
-        className: "w-full text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300",
-        onKeyDown: (e) => {
-          if (e.key === "Enter") document.getElementById("pdf-preview-gen-img-btn")?.click();
+            reading = false;
+            readAllBtn.textContent = "\u25B6 Read All";
+            readAllBtn.style.background = "#7c3aed";
+            panel.querySelectorAll("[data-sr-idx]").forEach((el) => el.style.background = "none");
+          };
+          if (stopBtn) stopBtn.onclick = () => {
+            stopRequested = true;
+            if (currentAudio) {
+              try {
+                currentAudio.pause();
+              } catch (_) {
+              }
+            }
+          };
         }
-      }
-    ), /* @__PURE__ */ React.createElement("button", { id: "pdf-preview-gen-img-btn", onClick: async () => {
-      const prompt2 = document.getElementById("pdf-preview-img-prompt")?.value;
-      if (!prompt2?.trim()) return;
-      addToast(t("toasts.generating_image"), "info");
-      try {
-        const imgUrl = await callImagen(prompt2 + " Professional, clean, educational illustration. No text.", 400, 0.85);
-        if (imgUrl) {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (!doc) return;
-          const figure = doc.createElement("figure");
-          figure.style.cssText = "margin:1em 0;text-align:center;";
-          const img = doc.createElement("img");
-          img.src = imgUrl;
-          img.alt = prompt2;
-          img.style.cssText = "max-width:100%;border-radius:8px;";
-          const cap = doc.createElement("figcaption");
-          cap.textContent = prompt2;
-          cap.style.cssText = "font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.25rem;";
-          figure.appendChild(img);
-          figure.appendChild(cap);
-          const sel = doc.getSelection();
-          if (sel && sel.rangeCount > 0) {
-            const range = sel.getRangeAt(0);
-            range.collapse(false);
-            range.insertNode(figure);
-          } else {
-            (doc.querySelector("main") || doc.body).appendChild(figure);
-          }
-          addToast(t("toasts.image_inserted"), "success");
-          document.getElementById("pdf-preview-img-prompt").value = "";
-        }
-      } catch (e) {
-        addToast(t("toasts.image_generation_failed_2"), "error");
-      }
-    }, className: "w-full mt-1 px-2 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 transition-colors" }, "\u2728 Generate & Insert")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("pdf_audit.ai_image.select_hint") || "Click an image in the preview to select it, then:"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
-      const img = selectedPreviewImgRef.current;
-      if (!img || !img.src) {
-        addToast(t("toasts.click_image_preview_select_first"), "info");
-        return;
-      }
-      if (!callGeminiImageEdit) {
-        addToast(t("toasts.image_editing_available_build"), "error");
-        return;
-      }
-      const editPrompt = window.prompt("Describe how to edit this image:");
-      if (!editPrompt?.trim()) return;
-      addToast(t("toasts.editing_image"), "info");
-      try {
-        let base64 = null;
-        if (img.src.startsWith("data:")) {
-          base64 = img.src.split(",")[1];
-        } else {
-          try {
-            const resp = await _withTimeout(fetch(img.src), 2e4, "image fetch");
-            const blob = await resp.blob();
-            base64 = await new Promise((resolve, reject) => {
-              const fr = new FileReader();
-              fr.onload = () => {
-                const s = String(fr.result || "");
-                resolve(s.includes(",") ? s.split(",")[1] : null);
-              };
-              fr.onerror = () => reject(fr.error);
-              fr.readAsDataURL(blob);
-            });
-          } catch (fetchErr) {
-            addToast(t("toasts.cannot_read_image_likely_cors"), "error");
-            return;
+        addToast(t("toasts.screen_reader_view_opened_shows"), "info");
+      }, className: `w-full px-3 py-2 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 bg-white border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-700` }, "\u{1F50A} Screen Reader Simulator"), callImagen && /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F5BC}\uFE0F AI Image Tools ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-2 bg-slate-50 rounded-lg p-2 border border-slate-400" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "text",
+          id: "pdf-preview-img-prompt",
+          placeholder: t("pdf_audit.ai_image.prompt_placeholder") || "Describe an image to generate...",
+          "aria-label": t("pdf_audit.ai_image.prompt_aria") || "Image generation prompt",
+          className: "w-full text-[11px] p-1.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300",
+          onKeyDown: (e) => {
+            if (e.key === "Enter") document.getElementById("pdf-preview-gen-img-btn")?.click();
           }
         }
-        if (!base64) {
-          addToast(t("toasts.cannot_extract_image_data"), "error");
+      ), /* @__PURE__ */ React.createElement("button", { id: "pdf-preview-gen-img-btn", onClick: async () => {
+        const prompt2 = document.getElementById("pdf-preview-img-prompt")?.value;
+        if (!prompt2?.trim()) return;
+        addToast(t("toasts.generating_image"), "info");
+        try {
+          const imgUrl = await callImagen(prompt2 + " Professional, clean, educational illustration. No text.", 400, 0.85);
+          if (imgUrl) {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (!doc) return;
+            const figure = doc.createElement("figure");
+            figure.style.cssText = "margin:1em 0;text-align:center;";
+            const img = doc.createElement("img");
+            img.src = imgUrl;
+            img.alt = prompt2;
+            img.style.cssText = "max-width:100%;border-radius:8px;";
+            const cap = doc.createElement("figcaption");
+            cap.textContent = prompt2;
+            cap.style.cssText = "font-size:0.85em;color:#64748b;font-style:italic;margin-top:0.25rem;";
+            figure.appendChild(img);
+            figure.appendChild(cap);
+            const sel = doc.getSelection();
+            if (sel && sel.rangeCount > 0) {
+              const range = sel.getRangeAt(0);
+              range.collapse(false);
+              range.insertNode(figure);
+            } else {
+              (doc.querySelector("main") || doc.body).appendChild(figure);
+            }
+            addToast(t("toasts.image_inserted"), "success");
+            document.getElementById("pdf-preview-img-prompt").value = "";
+          }
+        } catch (e) {
+          addToast(t("toasts.image_generation_failed_2"), "error");
+        }
+      }, className: "w-full mt-1 px-2 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 transition-colors" }, "\u2728 Generate & Insert")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, t("pdf_audit.ai_image.select_hint") || "Click an image in the preview to select it, then:"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+        const img = selectedPreviewImgRef.current;
+        if (!img || !img.src) {
+          addToast(t("toasts.click_image_preview_select_first"), "info");
           return;
         }
-        const edited = await callGeminiImageEdit(editPrompt + " No text.", base64, 400, 0.85);
-        if (edited) {
-          img.src = edited;
-          addToast(t("toasts.image_updated_2"), "success");
-        } else {
-          addToast(t("toasts.image_edit_returned_result"), "error");
+        if (!callGeminiImageEdit) {
+          addToast(t("toasts.image_editing_available_build"), "error");
+          return;
         }
-      } catch (e) {
-        warnLog("[Image Edit] failed:", e);
-        addToast(t("toasts.image_edit_failed") + (e?.message || "unknown error"), "error");
-      }
-    }, className: "w-full px-2 py-1.5 bg-violet-100 text-violet-700 rounded-lg text-[11px] font-bold hover:bg-violet-200 transition-colors" }, "\u270F\uFE0F Edit Selected Image (AI)"))), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F4D0} Layout & Design ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("pdf_audit.layout.insert_blocks") || "Insert Blocks"), (() => {
-      const _ALLO_BLOCKS_CSS = `
+        const editPrompt = window.prompt("Describe how to edit this image:");
+        if (!editPrompt?.trim()) return;
+        addToast(t("toasts.editing_image"), "info");
+        try {
+          let base64 = null;
+          if (img.src.startsWith("data:")) {
+            base64 = img.src.split(",")[1];
+          } else {
+            try {
+              const resp = await _withTimeout(fetch(img.src), 2e4, "image fetch");
+              const blob = await resp.blob();
+              base64 = await new Promise((resolve, reject) => {
+                const fr = new FileReader();
+                fr.onload = () => {
+                  const s = String(fr.result || "");
+                  resolve(s.includes(",") ? s.split(",")[1] : null);
+                };
+                fr.onerror = () => reject(fr.error);
+                fr.readAsDataURL(blob);
+              });
+            } catch (fetchErr) {
+              addToast(t("toasts.cannot_read_image_likely_cors"), "error");
+              return;
+            }
+          }
+          if (!base64) {
+            addToast(t("toasts.cannot_extract_image_data"), "error");
+            return;
+          }
+          const edited = await callGeminiImageEdit(editPrompt + " No text.", base64, 400, 0.85);
+          if (edited) {
+            img.src = edited;
+            addToast(t("toasts.image_updated_2"), "success");
+          } else {
+            addToast(t("toasts.image_edit_returned_result"), "error");
+          }
+        } catch (e) {
+          warnLog("[Image Edit] failed:", e);
+          addToast(t("toasts.image_edit_failed") + (e?.message || "unknown error"), "error");
+        }
+      }, className: "w-full px-2 py-1.5 bg-violet-100 text-violet-700 rounded-lg text-[11px] font-bold hover:bg-violet-200 transition-colors" }, "\u270F\uFE0F Edit Selected Image (AI)"))), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F4D0} Layout & Design ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("pdf_audit.layout.insert_blocks") || "Insert Blocks"), (() => {
+        const _ALLO_BLOCKS_CSS = `
                       .allo-block { position: relative; margin: 12px 0; border-radius: 8px; }
                       .allo-block:focus, .allo-block:focus-within { outline: 2px solid #6366f1; outline-offset: 2px; }
                       .allo-callout { padding: 12px 16px; border-left: 4px solid; }
@@ -10576,1492 +10620,1460 @@ Return ONLY JSON:
                         .allo-block-remove { transition: none; }
                       }
                     `;
-      const _ensureKatex = (doc) => {
-        if (doc.getElementById("allo-katex-css")) return;
-        const link = doc.createElement("link");
-        link.id = "allo-katex-css";
-        link.rel = "stylesheet";
-        link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
-        doc.head.appendChild(link);
-        const script = doc.createElement("script");
-        script.id = "allo-katex-js";
-        script.src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js";
-        script.onload = () => {
-          try {
-            doc.querySelectorAll(".allo-block-math").forEach((el) => {
-              const inp = el.querySelector(".allo-math-input");
-              const out = el.querySelector(".allo-math-output");
-              if (inp && out && doc.defaultView.katex) {
-                try {
-                  doc.defaultView.katex.render(inp.value, out, { throwOnError: false, displayMode: true });
-                } catch (e) {
-                  out.textContent = inp.value;
-                }
-              }
-            });
-          } catch (_) {
-          }
-        };
-        doc.head.appendChild(script);
-      };
-      const _markPrismFailure = (doc, msg) => {
-        doc.querySelectorAll(".allo-block-code-wrap").forEach((b) => {
-          if (b.querySelector(".allo-prism-status")) return;
-          const header = b.querySelector(".allo-code-header");
-          if (!header) return;
-          const s = doc.createElement("span");
-          s.className = "allo-prism-status";
-          s.setAttribute("contenteditable", "false");
-          s.style.cssText = "color:#fca5a5;font-size:10px;margin-left:8px;";
-          s.textContent = "\u26A0 " + msg;
-          header.appendChild(s);
-        });
-      };
-      const _ensurePrism = (doc, language, targetEl) => {
-        if (!doc.getElementById("allo-prism-css")) {
+        const _ensureKatex = (doc) => {
+          if (doc.getElementById("allo-katex-css")) return;
           const link = doc.createElement("link");
-          link.id = "allo-prism-css";
+          link.id = "allo-katex-css";
           link.rel = "stylesheet";
-          link.href = "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css";
+          link.href = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
           doc.head.appendChild(link);
-        }
-        if (!doc.getElementById("allo-prism-js")) {
           const script = doc.createElement("script");
-          script.id = "allo-prism-js";
-          script.src = "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js";
+          script.id = "allo-katex-js";
+          script.src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js";
           script.onload = () => {
-            _loadPrismLang(doc, language || "python", targetEl);
-          };
-          script.onerror = () => {
-            _markPrismFailure(doc, "Highlighting offline");
+            try {
+              doc.querySelectorAll(".allo-block-math").forEach((el) => {
+                const inp = el.querySelector(".allo-math-input");
+                const out = el.querySelector(".allo-math-output");
+                if (inp && out && doc.defaultView.katex) {
+                  try {
+                    doc.defaultView.katex.render(inp.value, out, { throwOnError: false, displayMode: true });
+                  } catch (e) {
+                    out.textContent = inp.value;
+                  }
+                }
+              });
+            } catch (_) {
+            }
           };
           doc.head.appendChild(script);
-        } else {
-          _loadPrismLang(doc, language || "python", targetEl);
-        }
-      };
-      const _loadPrismLang = (doc, language, targetEl) => {
-        const win = doc.defaultView;
-        const highlight = () => {
-          try {
-            if (!win || !win.Prism) return;
-            if (targetEl && win.Prism.highlightElement) win.Prism.highlightElement(targetEl);
-            else win.Prism.highlightAll();
-          } catch (_) {
+        };
+        const _markPrismFailure = (doc, msg) => {
+          doc.querySelectorAll(".allo-block-code-wrap").forEach((b) => {
+            if (b.querySelector(".allo-prism-status")) return;
+            const header = b.querySelector(".allo-code-header");
+            if (!header) return;
+            const s = doc.createElement("span");
+            s.className = "allo-prism-status";
+            s.setAttribute("contenteditable", "false");
+            s.style.cssText = "color:#fca5a5;font-size:10px;margin-left:8px;";
+            s.textContent = "\u26A0 " + msg;
+            header.appendChild(s);
+          });
+        };
+        const _ensurePrism = (doc, language, targetEl) => {
+          if (!doc.getElementById("allo-prism-css")) {
+            const link = doc.createElement("link");
+            link.id = "allo-prism-css";
+            link.rel = "stylesheet";
+            link.href = "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css";
+            doc.head.appendChild(link);
+          }
+          if (!doc.getElementById("allo-prism-js")) {
+            const script = doc.createElement("script");
+            script.id = "allo-prism-js";
+            script.src = "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js";
+            script.onload = () => {
+              _loadPrismLang(doc, language || "python", targetEl);
+            };
+            script.onerror = () => {
+              _markPrismFailure(doc, "Highlighting offline");
+            };
+            doc.head.appendChild(script);
+          } else {
+            _loadPrismLang(doc, language || "python", targetEl);
           }
         };
-        if (!language || language === "plaintext") {
-          highlight();
-          return;
-        }
-        const id = "allo-prism-lang-" + language;
-        if (doc.getElementById(id)) {
-          highlight();
-          return;
-        }
-        const script = doc.createElement("script");
-        script.id = id;
-        script.src = "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-" + language + ".min.js";
-        script.onload = highlight;
-        script.onerror = () => {
-          _markPrismFailure(doc, "Language " + language + " unavailable");
+        const _loadPrismLang = (doc, language, targetEl) => {
+          const win = doc.defaultView;
+          const highlight = () => {
+            try {
+              if (!win || !win.Prism) return;
+              if (targetEl && win.Prism.highlightElement) win.Prism.highlightElement(targetEl);
+              else win.Prism.highlightAll();
+            } catch (_) {
+            }
+          };
+          if (!language || language === "plaintext") {
+            highlight();
+            return;
+          }
+          const id = "allo-prism-lang-" + language;
+          if (doc.getElementById(id)) {
+            highlight();
+            return;
+          }
+          const script = doc.createElement("script");
+          script.id = id;
+          script.src = "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-" + language + ".min.js";
+          script.onload = highlight;
+          script.onerror = () => {
+            _markPrismFailure(doc, "Language " + language + " unavailable");
+          };
+          doc.head.appendChild(script);
         };
-        doc.head.appendChild(script);
-      };
-      const _SENTENCE_FRAMES = {
-        "notice-because": 'I noticed <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
-        "cer": '<strong>Claim:</strong> <span class="allo-frame-blank">_______________</span><br/><strong>Evidence:</strong> <span class="allo-frame-blank">_______________</span><br/><strong>Reasoning:</strong> <span class="allo-frame-blank">_______________</span>',
-        "agree-disagree": 'I <span class="allo-frame-blank">agree / disagree</span> with <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
-        "compare": '<span class="allo-frame-blank">_______________</span> and <span class="allo-frame-blank">_______________</span> are similar because <span class="allo-frame-blank">_______________</span>, but they differ in <span class="allo-frame-blank">_______________</span>.',
-        "cause-effect": 'When <span class="allo-frame-blank">_______________</span> happens, then <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
-        "wonder": 'I wonder why <span class="allo-frame-blank">_______________</span>. I think it might be because <span class="allo-frame-blank">_______________</span>.',
-        "sel-feeling": 'I feel <span class="allo-frame-blank">_______________</span> when <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
-        "add-on": 'I want to add to what <span class="allo-frame-blank">_______________</span> said. I think <span class="allo-frame-blank">_______________</span>.'
-      };
-      const _MATH_FORMULAS = {
-        "pythagoras": { label: "Pythagorean theorem", latex: "a^2 + b^2 = c^2", group: "Geometry" },
-        "quadratic": { label: "Quadratic formula", latex: "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}", group: "Algebra" },
-        "slope": { label: "Slope", latex: "m = \\frac{y_2 - y_1}{x_2 - x_1}", group: "Algebra" },
-        "distance": { label: "Distance formula", latex: "d = \\sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}", group: "Geometry" },
-        "linear": { label: "Slope-intercept form", latex: "y = mx + b", group: "Algebra" },
-        "point-slope": { label: "Point-slope form", latex: "y - y_1 = m(x - x_1)", group: "Algebra" },
-        "area-circle": { label: "Area of circle", latex: "A = \\pi r^2", group: "Geometry" },
-        "circumference": { label: "Circumference", latex: "C = 2\\pi r", group: "Geometry" },
-        "area-triangle": { label: "Area of triangle", latex: "A = \\tfrac{1}{2} b h", group: "Geometry" },
-        "area-rect": { label: "Area of rectangle", latex: "A = l \\cdot w", group: "Geometry" },
-        "area-trap": { label: "Area of trapezoid", latex: "A = \\tfrac{1}{2}(b_1 + b_2)h", group: "Geometry" },
-        "volume-sphere": { label: "Volume of sphere", latex: "V = \\tfrac{4}{3}\\pi r^3", group: "Geometry" },
-        "volume-cylinder": { label: "Volume of cylinder", latex: "V = \\pi r^2 h", group: "Geometry" },
-        "volume-cone": { label: "Volume of cone", latex: "V = \\tfrac{1}{3}\\pi r^2 h", group: "Geometry" },
-        "sa-sphere": { label: "Surface area of sphere", latex: "SA = 4\\pi r^2", group: "Geometry" },
-        "mean": { label: "Mean (average)", latex: "\\bar{x} = \\frac{\\sum_{i=1}^{n} x_i}{n}", group: "Statistics" },
-        "std-dev": { label: "Standard deviation", latex: "\\sigma = \\sqrt{\\frac{\\sum (x_i - \\bar{x})^2}{n}}", group: "Statistics" },
-        "sum-series": { label: "Sum of 1 to n", latex: "\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}", group: "Algebra" },
-        "exponential": { label: "Exponential function", latex: "y = a \\cdot b^x", group: "Algebra" },
-        "log-base": { label: "Change of base", latex: "\\log_b a = \\frac{\\ln a}{\\ln b}", group: "Algebra" },
-        "sin-cos-tan": { label: "SOH CAH TOA", latex: "\\sin\\theta = \\tfrac{\\text{opp}}{\\text{hyp}},\\; \\cos\\theta = \\tfrac{\\text{adj}}{\\text{hyp}},\\; \\tan\\theta = \\tfrac{\\text{opp}}{\\text{adj}}", group: "Trigonometry" },
-        "pythag-trig": { label: "Pythagorean identity", latex: "\\sin^2\\theta + \\cos^2\\theta = 1", group: "Trigonometry" },
-        "newton-2": { label: "Newton's second law", latex: "F = ma", group: "Physics" },
-        "kinetic": { label: "Kinetic energy", latex: "KE = \\tfrac{1}{2}mv^2", group: "Physics" },
-        "potential": { label: "Potential energy", latex: "PE = mgh", group: "Physics" },
-        "ohms": { label: "Ohm's law", latex: "V = IR", group: "Physics" },
-        "energy-mass": { label: "Mass-energy equivalence", latex: "E = mc^2", group: "Physics" },
-        "free-fall": { label: "Free fall (no air)", latex: "d = \\tfrac{1}{2}gt^2", group: "Physics" }
-      };
-      const _RUBRIC_SCALES = {
-        "4pt": ["4 \u2014 Exemplary", "3 \u2014 Proficient", "2 \u2014 Developing", "1 \u2014 Beginning"],
-        "3pt": ["3 \u2014 Above Standard", "2 \u2014 At Standard", "1 \u2014 Approaching"],
-        "5pt": ["5 \u2014 Outstanding", "4 \u2014 Proficient", "3 \u2014 Developing", "2 \u2014 Emerging", "1 \u2014 Not Yet"],
-        "standards": ["Mastered", "Proficient", "Approaching", "Beginning"],
-        "ungraded": ["Glow", "Grow"]
-      };
-      const _ensureAlloBlocksReady = (doc) => {
-        if (!doc.getElementById("allo-blocks-css")) {
-          const s = doc.createElement("style");
-          s.id = "allo-blocks-css";
-          s.textContent = _ALLO_BLOCKS_CSS;
-          doc.head.appendChild(s);
-        }
-        if (!doc.getElementById("allo-blocks-live")) {
-          const live = doc.createElement("div");
-          live.id = "allo-blocks-live";
-          live.className = "allo-sr-only";
-          live.setAttribute("aria-live", "polite");
-          live.setAttribute("aria-atomic", "true");
-          live.setAttribute("contenteditable", "false");
-          doc.body && doc.body.appendChild(live);
-        }
-        const _ensureMoveButtons = (block) => {
-          if (!block || block.querySelector(":scope > .allo-block-move-up")) return;
-          const remove = block.querySelector(":scope > .allo-block-remove");
-          if (!remove) return;
-          const up = doc.createElement("button");
-          up.type = "button";
-          up.className = "allo-block-move-up";
-          up.setAttribute("contenteditable", "false");
-          up.setAttribute("aria-label", "Move block up");
-          up.title = "Move up";
-          up.textContent = "\u2191";
-          const down = doc.createElement("button");
-          down.type = "button";
-          down.className = "allo-block-move-down";
-          down.setAttribute("contenteditable", "false");
-          down.setAttribute("aria-label", "Move block down");
-          down.title = "Move down";
-          down.textContent = "\u2193";
-          block.insertBefore(up, remove);
-          block.insertBefore(down, remove);
+        const _SENTENCE_FRAMES = {
+          "notice-because": 'I noticed <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
+          "cer": '<strong>Claim:</strong> <span class="allo-frame-blank">_______________</span><br/><strong>Evidence:</strong> <span class="allo-frame-blank">_______________</span><br/><strong>Reasoning:</strong> <span class="allo-frame-blank">_______________</span>',
+          "agree-disagree": 'I <span class="allo-frame-blank">agree / disagree</span> with <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
+          "compare": '<span class="allo-frame-blank">_______________</span> and <span class="allo-frame-blank">_______________</span> are similar because <span class="allo-frame-blank">_______________</span>, but they differ in <span class="allo-frame-blank">_______________</span>.',
+          "cause-effect": 'When <span class="allo-frame-blank">_______________</span> happens, then <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
+          "wonder": 'I wonder why <span class="allo-frame-blank">_______________</span>. I think it might be because <span class="allo-frame-blank">_______________</span>.',
+          "sel-feeling": 'I feel <span class="allo-frame-blank">_______________</span> when <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
+          "add-on": 'I want to add to what <span class="allo-frame-blank">_______________</span> said. I think <span class="allo-frame-blank">_______________</span>.'
         };
-        try {
-          doc.querySelectorAll("[data-allo-block]").forEach(_ensureMoveButtons);
-        } catch (_) {
-        }
-        if (!doc.__alloBlocksObserver) {
+        const _MATH_FORMULAS = {
+          "pythagoras": { label: "Pythagorean theorem", latex: "a^2 + b^2 = c^2", group: "Geometry" },
+          "quadratic": { label: "Quadratic formula", latex: "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}", group: "Algebra" },
+          "slope": { label: "Slope", latex: "m = \\frac{y_2 - y_1}{x_2 - x_1}", group: "Algebra" },
+          "distance": { label: "Distance formula", latex: "d = \\sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}", group: "Geometry" },
+          "linear": { label: "Slope-intercept form", latex: "y = mx + b", group: "Algebra" },
+          "point-slope": { label: "Point-slope form", latex: "y - y_1 = m(x - x_1)", group: "Algebra" },
+          "area-circle": { label: "Area of circle", latex: "A = \\pi r^2", group: "Geometry" },
+          "circumference": { label: "Circumference", latex: "C = 2\\pi r", group: "Geometry" },
+          "area-triangle": { label: "Area of triangle", latex: "A = \\tfrac{1}{2} b h", group: "Geometry" },
+          "area-rect": { label: "Area of rectangle", latex: "A = l \\cdot w", group: "Geometry" },
+          "area-trap": { label: "Area of trapezoid", latex: "A = \\tfrac{1}{2}(b_1 + b_2)h", group: "Geometry" },
+          "volume-sphere": { label: "Volume of sphere", latex: "V = \\tfrac{4}{3}\\pi r^3", group: "Geometry" },
+          "volume-cylinder": { label: "Volume of cylinder", latex: "V = \\pi r^2 h", group: "Geometry" },
+          "volume-cone": { label: "Volume of cone", latex: "V = \\tfrac{1}{3}\\pi r^2 h", group: "Geometry" },
+          "sa-sphere": { label: "Surface area of sphere", latex: "SA = 4\\pi r^2", group: "Geometry" },
+          "mean": { label: "Mean (average)", latex: "\\bar{x} = \\frac{\\sum_{i=1}^{n} x_i}{n}", group: "Statistics" },
+          "std-dev": { label: "Standard deviation", latex: "\\sigma = \\sqrt{\\frac{\\sum (x_i - \\bar{x})^2}{n}}", group: "Statistics" },
+          "sum-series": { label: "Sum of 1 to n", latex: "\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}", group: "Algebra" },
+          "exponential": { label: "Exponential function", latex: "y = a \\cdot b^x", group: "Algebra" },
+          "log-base": { label: "Change of base", latex: "\\log_b a = \\frac{\\ln a}{\\ln b}", group: "Algebra" },
+          "sin-cos-tan": { label: "SOH CAH TOA", latex: "\\sin\\theta = \\tfrac{\\text{opp}}{\\text{hyp}},\\; \\cos\\theta = \\tfrac{\\text{adj}}{\\text{hyp}},\\; \\tan\\theta = \\tfrac{\\text{opp}}{\\text{adj}}", group: "Trigonometry" },
+          "pythag-trig": { label: "Pythagorean identity", latex: "\\sin^2\\theta + \\cos^2\\theta = 1", group: "Trigonometry" },
+          "newton-2": { label: "Newton's second law", latex: "F = ma", group: "Physics" },
+          "kinetic": { label: "Kinetic energy", latex: "KE = \\tfrac{1}{2}mv^2", group: "Physics" },
+          "potential": { label: "Potential energy", latex: "PE = mgh", group: "Physics" },
+          "ohms": { label: "Ohm's law", latex: "V = IR", group: "Physics" },
+          "energy-mass": { label: "Mass-energy equivalence", latex: "E = mc^2", group: "Physics" },
+          "free-fall": { label: "Free fall (no air)", latex: "d = \\tfrac{1}{2}gt^2", group: "Physics" }
+        };
+        const _RUBRIC_SCALES = {
+          "4pt": ["4 \u2014 Exemplary", "3 \u2014 Proficient", "2 \u2014 Developing", "1 \u2014 Beginning"],
+          "3pt": ["3 \u2014 Above Standard", "2 \u2014 At Standard", "1 \u2014 Approaching"],
+          "5pt": ["5 \u2014 Outstanding", "4 \u2014 Proficient", "3 \u2014 Developing", "2 \u2014 Emerging", "1 \u2014 Not Yet"],
+          "standards": ["Mastered", "Proficient", "Approaching", "Beginning"],
+          "ungraded": ["Glow", "Grow"]
+        };
+        const _ensureAlloBlocksReady = (doc) => {
+          if (!doc.getElementById("allo-blocks-css")) {
+            const s = doc.createElement("style");
+            s.id = "allo-blocks-css";
+            s.textContent = _ALLO_BLOCKS_CSS;
+            doc.head.appendChild(s);
+          }
+          if (!doc.getElementById("allo-blocks-live")) {
+            const live = doc.createElement("div");
+            live.id = "allo-blocks-live";
+            live.className = "allo-sr-only";
+            live.setAttribute("aria-live", "polite");
+            live.setAttribute("aria-atomic", "true");
+            live.setAttribute("contenteditable", "false");
+            doc.body && doc.body.appendChild(live);
+          }
+          const _ensureMoveButtons = (block) => {
+            if (!block || block.querySelector(":scope > .allo-block-move-up")) return;
+            const remove = block.querySelector(":scope > .allo-block-remove");
+            if (!remove) return;
+            const up = doc.createElement("button");
+            up.type = "button";
+            up.className = "allo-block-move-up";
+            up.setAttribute("contenteditable", "false");
+            up.setAttribute("aria-label", "Move block up");
+            up.title = "Move up";
+            up.textContent = "\u2191";
+            const down = doc.createElement("button");
+            down.type = "button";
+            down.className = "allo-block-move-down";
+            down.setAttribute("contenteditable", "false");
+            down.setAttribute("aria-label", "Move block down");
+            down.title = "Move down";
+            down.textContent = "\u2193";
+            block.insertBefore(up, remove);
+            block.insertBefore(down, remove);
+          };
           try {
-            const obs = new (doc.defaultView.MutationObserver || MutationObserver)((muts) => {
-              muts.forEach((m) => {
-                m.addedNodes.forEach((n) => {
-                  if (!n || n.nodeType !== 1) return;
-                  if (n.matches && n.matches("[data-allo-block]")) _ensureMoveButtons(n);
-                  if (n.querySelectorAll) n.querySelectorAll("[data-allo-block]").forEach(_ensureMoveButtons);
+            doc.querySelectorAll("[data-allo-block]").forEach(_ensureMoveButtons);
+          } catch (_) {
+          }
+          if (!doc.__alloBlocksObserver) {
+            try {
+              const obs = new (doc.defaultView.MutationObserver || MutationObserver)((muts) => {
+                muts.forEach((m) => {
+                  m.addedNodes.forEach((n) => {
+                    if (!n || n.nodeType !== 1) return;
+                    if (n.matches && n.matches("[data-allo-block]")) _ensureMoveButtons(n);
+                    if (n.querySelectorAll) n.querySelectorAll("[data-allo-block]").forEach(_ensureMoveButtons);
+                  });
                 });
               });
-            });
-            obs.observe(doc.body, { childList: true, subtree: true });
-            doc.__alloBlocksObserver = obs;
-          } catch (_) {
-          }
-        }
-        if (doc.__alloBlocksDelegated) return;
-        doc.__alloBlocksDelegated = true;
-        const announce = (msg) => {
-          try {
-            const lr = doc.getElementById("allo-blocks-live");
-            if (lr) {
-              lr.textContent = "";
-              setTimeout(() => {
-                lr.textContent = msg;
-              }, 30);
+              obs.observe(doc.body, { childList: true, subtree: true });
+              doc.__alloBlocksObserver = obs;
+            } catch (_) {
             }
-            if (typeof window.parent.addToast === "function") window.parent.addToast(msg, "info");
-          } catch (_) {
           }
-        };
-        const persist = () => {
-          try {
-            if (typeof window.parent.__alloflowOnPdfPreviewMutated === "function") window.parent.__alloflowOnPdfPreviewMutated();
-          } catch (_) {
-          }
-        };
-        doc.addEventListener("focusin", (ev) => {
-          const t2 = ev.target;
-          if (t2 && t2.tagName === "SELECT" && t2.classList && t2.classList.contains("allo-frame-template-select")) {
-            t2.dataset.prevValue = t2.value;
-          }
-        }, true);
-        doc.addEventListener("click", (ev) => {
-          const t2 = ev.target;
-          if (!t2 || !t2.closest) return;
-          const removeBtn = t2.closest(".allo-block-remove");
-          if (removeBtn) {
-            ev.preventDefault();
-            const block2 = removeBtn.closest("[data-allo-block]");
-            if (block2) {
-              const type = block2.getAttribute("data-allo-block") || "block";
-              block2.remove();
-              try {
-                _alloRenumberFootnotes(doc);
-              } catch (_) {
+          if (doc.__alloBlocksDelegated) return;
+          doc.__alloBlocksDelegated = true;
+          const announce = (msg) => {
+            try {
+              const lr = doc.getElementById("allo-blocks-live");
+              if (lr) {
+                lr.textContent = "";
+                setTimeout(() => {
+                  lr.textContent = msg;
+                }, 30);
               }
-              announce("Removed " + type + " block");
-              persist();
+              if (typeof window.parent.addToast === "function") window.parent.addToast(msg, "info");
+            } catch (_) {
             }
-            return;
-          }
-          const moveUpBtn = t2.closest(".allo-block-move-up");
-          if (moveUpBtn) {
-            ev.preventDefault();
-            const block2 = moveUpBtn.closest("[data-allo-block]");
-            if (!block2) return;
-            let prev = block2.previousElementSibling;
-            while (prev && (prev.tagName === "SPAN" || prev.id === "allo-blocks-live")) prev = prev.previousElementSibling;
-            if (prev && block2.parentNode) {
-              block2.parentNode.insertBefore(block2, prev);
-              try {
-                _alloRenumberFootnotes(doc);
-              } catch (_) {
-              }
-              announce("Moved up");
-              setTimeout(() => {
+          };
+          const persist = () => {
+            try {
+              if (typeof window.parent.__alloflowOnPdfPreviewMutated === "function") window.parent.__alloflowOnPdfPreviewMutated();
+            } catch (_) {
+            }
+          };
+          doc.addEventListener("focusin", (ev) => {
+            const t2 = ev.target;
+            if (t2 && t2.tagName === "SELECT" && t2.classList && t2.classList.contains("allo-frame-template-select")) {
+              t2.dataset.prevValue = t2.value;
+            }
+          }, true);
+          doc.addEventListener("click", (ev) => {
+            const t2 = ev.target;
+            if (!t2 || !t2.closest) return;
+            const removeBtn = t2.closest(".allo-block-remove");
+            if (removeBtn) {
+              ev.preventDefault();
+              const block2 = removeBtn.closest("[data-allo-block]");
+              if (block2) {
+                const type = block2.getAttribute("data-allo-block") || "block";
+                block2.remove();
                 try {
-                  block2.focus();
+                  _alloRenumberFootnotes(doc);
                 } catch (_) {
                 }
-              }, 30);
-              persist();
-            } else {
-              announce("Already at top");
-            }
-            return;
-          }
-          const moveDownBtn = t2.closest(".allo-block-move-down");
-          if (moveDownBtn) {
-            ev.preventDefault();
-            const block2 = moveDownBtn.closest("[data-allo-block]");
-            if (!block2) return;
-            let next = block2.nextElementSibling;
-            while (next && (next.tagName === "SPAN" || next.id === "allo-blocks-live")) next = next.nextElementSibling;
-            if (next && block2.parentNode) {
-              block2.parentNode.insertBefore(next, block2);
-              try {
-                _alloRenumberFootnotes(doc);
-              } catch (_) {
+                announce("Removed " + type + " block");
+                persist();
               }
-              announce("Moved down");
-              setTimeout(() => {
+              return;
+            }
+            const moveUpBtn = t2.closest(".allo-block-move-up");
+            if (moveUpBtn) {
+              ev.preventDefault();
+              const block2 = moveUpBtn.closest("[data-allo-block]");
+              if (!block2) return;
+              let prev = block2.previousElementSibling;
+              while (prev && (prev.tagName === "SPAN" || prev.id === "allo-blocks-live")) prev = prev.previousElementSibling;
+              if (prev && block2.parentNode) {
+                block2.parentNode.insertBefore(block2, prev);
                 try {
-                  block2.focus();
+                  _alloRenumberFootnotes(doc);
                 } catch (_) {
                 }
-              }, 30);
-              persist();
-            } else {
-              announce("Already at bottom");
-            }
-            return;
-          }
-          const vocabTtsBtn = t2.closest(".allo-vocab-tts-btn");
-          if (vocabTtsBtn) {
-            ev.preventDefault();
-            const block2 = vocabTtsBtn.closest(".allo-block-vocab");
-            if (!block2) return;
-            const wordEl = block2.querySelector(".allo-vocab-word");
-            let wordText = "";
-            if (wordEl) {
-              const clone = wordEl.cloneNode(true);
-              clone.querySelectorAll(".allo-vocab-pos").forEach((n) => n.remove());
-              wordText = (clone.textContent || "").trim();
-            }
-            if (!wordText) {
-              announce("Edit the word first, then click TTS");
-              return;
-            }
-            const win = doc.defaultView;
-            const parentCallTTS = win && win.parent && win.parent.callTTS ? win.parent.callTTS : null;
-            if (typeof parentCallTTS !== "function") {
-              announce("TTS unavailable in this build");
-              return;
-            }
-            const orig = vocabTtsBtn.textContent;
-            vocabTtsBtn.textContent = "\u23F3";
-            vocabTtsBtn.disabled = true;
-            announce("Generating pronunciation for " + wordText);
-            Promise.resolve(parentCallTTS(wordText)).then((url) => {
-              const audio = block2.querySelector(".allo-vocab-audio audio");
-              if (audio && url) {
-                audio.src = url;
-                announce("Pronunciation generated for " + wordText);
-                persist();
-              } else announce("TTS returned no audio");
-            }).catch((err) => announce("TTS failed: " + (err && err.message || "unknown"))).finally(() => {
-              try {
-                vocabTtsBtn.textContent = orig;
-                vocabTtsBtn.disabled = false;
-              } catch (_) {
-              }
-            });
-            return;
-          }
-          const defTtsBtn = t2.closest(".allo-def-tts-btn");
-          if (defTtsBtn) {
-            ev.preventDefault();
-            const block2 = defTtsBtn.closest(".allo-block-definition");
-            if (!block2) return;
-            const termEl = block2.querySelector("dt > span[lang]");
-            const termText = (termEl && termEl.textContent || "").trim();
-            if (!termText) {
-              announce("Edit the term first, then click TTS");
-              return;
-            }
-            const win = doc.defaultView;
-            const parentCallTTS = win && win.parent && win.parent.callTTS ? win.parent.callTTS : null;
-            if (typeof parentCallTTS !== "function") {
-              announce("TTS unavailable in this build");
-              return;
-            }
-            const orig = defTtsBtn.textContent;
-            defTtsBtn.textContent = "\u23F3";
-            defTtsBtn.disabled = true;
-            announce("Generating pronunciation for " + termText);
-            Promise.resolve(parentCallTTS(termText)).then((url) => {
-              const audio = block2.querySelector(".allo-def-audio audio");
-              if (audio && url) {
-                audio.src = url;
-                announce("Pronunciation generated for " + termText);
-                persist();
-              } else announce("TTS returned no audio");
-            }).catch((err) => announce("TTS failed: " + (err && err.message || "unknown"))).finally(() => {
-              try {
-                defTtsBtn.textContent = orig;
-                defTtsBtn.disabled = false;
-              } catch (_) {
-              }
-            });
-            return;
-          }
-          const ttsBtn = t2.closest(".allo-audio-tts-btn");
-          if (ttsBtn) {
-            ev.preventDefault();
-            const block2 = ttsBtn.closest(".allo-block-audio");
-            if (!block2) return;
-            const transcriptEl = block2.querySelector(".allo-audio-transcript");
-            if (!transcriptEl) return;
-            let txt = (transcriptEl.textContent || "").trim();
-            if (txt.toLowerCase().startsWith("transcript:")) txt = txt.substring(11).trim();
-            if (!txt || txt.length < 3) {
-              announce("Add transcript text first, then click TTS");
-              return;
-            }
-            const win = doc.defaultView;
-            const parentCallTTS = win && win.parent && win.parent.callTTS ? win.parent.callTTS : null;
-            if (typeof parentCallTTS !== "function") {
-              announce("TTS unavailable in this build");
-              return;
-            }
-            const origLabel = ttsBtn.textContent;
-            ttsBtn.textContent = "\u23F3 Generating\u2026";
-            ttsBtn.disabled = true;
-            announce("Generating audio from transcript");
-            Promise.resolve(parentCallTTS(txt)).then((url) => {
-              const audioEl = block2.querySelector("audio");
-              if (audioEl && url) {
-                audioEl.src = url;
-                announce("Audio generated from transcript");
+                announce("Moved up");
+                setTimeout(() => {
+                  try {
+                    block2.focus();
+                  } catch (_) {
+                  }
+                }, 30);
                 persist();
               } else {
-                announce("TTS returned no audio");
+                announce("Already at top");
               }
-            }).catch((err) => {
-              announce("TTS failed: " + (err && err.message || "unknown error"));
-            }).finally(() => {
+              return;
+            }
+            const moveDownBtn = t2.closest(".allo-block-move-down");
+            if (moveDownBtn) {
+              ev.preventDefault();
+              const block2 = moveDownBtn.closest("[data-allo-block]");
+              if (!block2) return;
+              let next = block2.nextElementSibling;
+              while (next && (next.tagName === "SPAN" || next.id === "allo-blocks-live")) next = next.nextElementSibling;
+              if (next && block2.parentNode) {
+                block2.parentNode.insertBefore(next, block2);
+                try {
+                  _alloRenumberFootnotes(doc);
+                } catch (_) {
+                }
+                announce("Moved down");
+                setTimeout(() => {
+                  try {
+                    block2.focus();
+                  } catch (_) {
+                  }
+                }, 30);
+                persist();
+              } else {
+                announce("Already at bottom");
+              }
+              return;
+            }
+            const vocabTtsBtn = t2.closest(".allo-vocab-tts-btn");
+            if (vocabTtsBtn) {
+              ev.preventDefault();
+              const block2 = vocabTtsBtn.closest(".allo-block-vocab");
+              if (!block2) return;
+              const wordEl = block2.querySelector(".allo-vocab-word");
+              let wordText = "";
+              if (wordEl) {
+                const clone = wordEl.cloneNode(true);
+                clone.querySelectorAll(".allo-vocab-pos").forEach((n) => n.remove());
+                wordText = (clone.textContent || "").trim();
+              }
+              if (!wordText) {
+                announce("Edit the word first, then click TTS");
+                return;
+              }
+              const win = doc.defaultView;
+              const parentCallTTS = win && win.parent && win.parent.callTTS ? win.parent.callTTS : null;
+              if (typeof parentCallTTS !== "function") {
+                announce("TTS unavailable in this build");
+                return;
+              }
+              const orig = vocabTtsBtn.textContent;
+              vocabTtsBtn.textContent = "\u23F3";
+              vocabTtsBtn.disabled = true;
+              announce("Generating pronunciation for " + wordText);
+              Promise.resolve(parentCallTTS(wordText)).then((url) => {
+                const audio = block2.querySelector(".allo-vocab-audio audio");
+                if (audio && url) {
+                  audio.src = url;
+                  announce("Pronunciation generated for " + wordText);
+                  persist();
+                } else announce("TTS returned no audio");
+              }).catch((err) => announce("TTS failed: " + (err && err.message || "unknown"))).finally(() => {
+                try {
+                  vocabTtsBtn.textContent = orig;
+                  vocabTtsBtn.disabled = false;
+                } catch (_) {
+                }
+              });
+              return;
+            }
+            const defTtsBtn = t2.closest(".allo-def-tts-btn");
+            if (defTtsBtn) {
+              ev.preventDefault();
+              const block2 = defTtsBtn.closest(".allo-block-definition");
+              if (!block2) return;
+              const termEl = block2.querySelector("dt > span[lang]");
+              const termText = (termEl && termEl.textContent || "").trim();
+              if (!termText) {
+                announce("Edit the term first, then click TTS");
+                return;
+              }
+              const win = doc.defaultView;
+              const parentCallTTS = win && win.parent && win.parent.callTTS ? win.parent.callTTS : null;
+              if (typeof parentCallTTS !== "function") {
+                announce("TTS unavailable in this build");
+                return;
+              }
+              const orig = defTtsBtn.textContent;
+              defTtsBtn.textContent = "\u23F3";
+              defTtsBtn.disabled = true;
+              announce("Generating pronunciation for " + termText);
+              Promise.resolve(parentCallTTS(termText)).then((url) => {
+                const audio = block2.querySelector(".allo-def-audio audio");
+                if (audio && url) {
+                  audio.src = url;
+                  announce("Pronunciation generated for " + termText);
+                  persist();
+                } else announce("TTS returned no audio");
+              }).catch((err) => announce("TTS failed: " + (err && err.message || "unknown"))).finally(() => {
+                try {
+                  defTtsBtn.textContent = orig;
+                  defTtsBtn.disabled = false;
+                } catch (_) {
+                }
+              });
+              return;
+            }
+            const ttsBtn = t2.closest(".allo-audio-tts-btn");
+            if (ttsBtn) {
+              ev.preventDefault();
+              const block2 = ttsBtn.closest(".allo-block-audio");
+              if (!block2) return;
+              const transcriptEl = block2.querySelector(".allo-audio-transcript");
+              if (!transcriptEl) return;
+              let txt = (transcriptEl.textContent || "").trim();
+              if (txt.toLowerCase().startsWith("transcript:")) txt = txt.substring(11).trim();
+              if (!txt || txt.length < 3) {
+                announce("Add transcript text first, then click TTS");
+                return;
+              }
+              const win = doc.defaultView;
+              const parentCallTTS = win && win.parent && win.parent.callTTS ? win.parent.callTTS : null;
+              if (typeof parentCallTTS !== "function") {
+                announce("TTS unavailable in this build");
+                return;
+              }
+              const origLabel = ttsBtn.textContent;
+              ttsBtn.textContent = "\u23F3 Generating\u2026";
+              ttsBtn.disabled = true;
+              announce("Generating audio from transcript");
+              Promise.resolve(parentCallTTS(txt)).then((url) => {
+                const audioEl = block2.querySelector("audio");
+                if (audioEl && url) {
+                  audioEl.src = url;
+                  announce("Audio generated from transcript");
+                  persist();
+                } else {
+                  announce("TTS returned no audio");
+                }
+              }).catch((err) => {
+                announce("TTS failed: " + (err && err.message || "unknown error"));
+              }).finally(() => {
+                try {
+                  ttsBtn.textContent = origLabel;
+                  ttsBtn.disabled = false;
+                } catch (_) {
+                }
+              });
+              return;
+            }
+            const copyBtn = t2.closest(".allo-code-copy-btn");
+            if (copyBtn) {
+              ev.preventDefault();
+              const block2 = copyBtn.closest(".allo-block-code-wrap");
+              const codeEl = block2 && block2.querySelector("code");
+              if (!codeEl) return;
+              const txt = codeEl.textContent || "";
+              let copied = false;
               try {
-                ttsBtn.textContent = origLabel;
-                ttsBtn.disabled = false;
+                const win = doc.defaultView;
+                if (win && win.navigator && win.navigator.clipboard && win.navigator.clipboard.writeText) {
+                  win.navigator.clipboard.writeText(txt);
+                  copied = true;
+                }
               } catch (_) {
               }
-            });
-            return;
-          }
-          const copyBtn = t2.closest(".allo-code-copy-btn");
-          if (copyBtn) {
+              if (!copied) {
+                try {
+                  const range = doc.createRange();
+                  range.selectNodeContents(codeEl);
+                  const sel = doc.getSelection();
+                  sel.removeAllRanges();
+                  sel.addRange(range);
+                  copied = doc.execCommand("copy");
+                  sel.removeAllRanges();
+                } catch (_) {
+                }
+              }
+              announce(copied ? "Code copied to clipboard" : "Copy failed");
+              const orig = copyBtn.textContent;
+              copyBtn.textContent = copied ? "\u2713 Copied" : "\u2717 Failed";
+              setTimeout(() => {
+                try {
+                  copyBtn.textContent = orig;
+                } catch (_) {
+                }
+              }, 1500);
+              return;
+            }
+            const ctrlBtn = t2.closest(".allo-block-controls button[data-action]");
+            if (!ctrlBtn) return;
             ev.preventDefault();
-            const block2 = copyBtn.closest(".allo-block-code-wrap");
-            const codeEl = block2 && block2.querySelector("code");
-            if (!codeEl) return;
-            const txt = codeEl.textContent || "";
-            let copied = false;
+            const action = ctrlBtn.getAttribute("data-action");
+            const block = ctrlBtn.closest("[data-allo-block]");
+            if (!block) return;
+            const isRubric = block.classList.contains("allo-block-rubric");
+            if (action === "ref-add-entry" || action === "ref-sort") {
+              if (block.classList.contains("allo-references")) {
+                const _ctrls = block.querySelector(".allo-block-controls");
+                if (action === "ref-add-entry") {
+                  const _e = doc.createElement("p");
+                  _e.className = "allo-ref-entry";
+                  _e.setAttribute("contenteditable", "true");
+                  _e.textContent = "Author, A. A. (Year). Title of the work. Source.";
+                  block.insertBefore(_e, _ctrls);
+                  setTimeout(() => {
+                    try {
+                      _e.focus();
+                      doc.getSelection().selectAllChildren(_e);
+                    } catch (_) {
+                    }
+                  }, 40);
+                } else {
+                  const _entries = Array.from(block.querySelectorAll(".allo-ref-entry"));
+                  _entries.sort((a, b) => (a.textContent || "").trim().localeCompare((b.textContent || "").trim(), void 0, { sensitivity: "base" }));
+                  _entries.forEach((e) => block.insertBefore(e, _ctrls));
+                }
+                persist();
+              }
+              return;
+            }
+            if (action === "add-row") {
+              const tbody = block.querySelector("tbody");
+              const headerRow = block.querySelector("thead tr");
+              if (tbody && headerRow) {
+                const cols = headerRow.children.length;
+                const tr = doc.createElement("tr");
+                for (let i = 0; i < cols; i++) {
+                  if (isRubric && i === 0) {
+                    const th = doc.createElement("th");
+                    th.setAttribute("scope", "row");
+                    th.textContent = "New criterion";
+                    tr.appendChild(th);
+                  } else {
+                    const td = doc.createElement("td");
+                    td.textContent = isRubric ? "Description" : "Data";
+                    tr.appendChild(td);
+                  }
+                }
+                tbody.appendChild(tr);
+                announce("Row added");
+              }
+            } else if (action === "remove-row") {
+              const tbody = block.querySelector("tbody");
+              if (tbody && tbody.children.length > 1) {
+                tbody.lastElementChild.remove();
+                announce("Row removed");
+              }
+            } else if (action === "add-col") {
+              const headerRow = block.querySelector("thead tr");
+              const bodyRows = block.querySelectorAll("tbody tr");
+              if (headerRow) {
+                const newTh = doc.createElement("th");
+                newTh.setAttribute("scope", "col");
+                newTh.textContent = isRubric ? "New level" : "New header";
+                headerRow.appendChild(newTh);
+              }
+              bodyRows.forEach((row) => {
+                const td = doc.createElement("td");
+                td.textContent = isRubric ? "Description" : "Data";
+                row.appendChild(td);
+              });
+              announce("Column added");
+            } else if (action === "remove-col") {
+              const headerRow = block.querySelector("thead tr");
+              const bodyRows = block.querySelectorAll("tbody tr");
+              const minCols = isRubric ? 2 : 1;
+              if (headerRow && headerRow.children.length > minCols) {
+                headerRow.lastElementChild.remove();
+                bodyRows.forEach((row) => {
+                  if (row.lastElementChild) row.lastElementChild.remove();
+                });
+                announce("Column removed");
+              }
+            } else if (action === "add-column-card") {
+              const newCol = doc.createElement("div");
+              newCol.className = "allo-col";
+              newCol.textContent = "New column content";
+              const ctrls = block.querySelector(".allo-block-controls");
+              if (ctrls) block.insertBefore(newCol, ctrls);
+              else block.appendChild(newCol);
+              const count = block.querySelectorAll(".allo-col").length;
+              block.style.gridTemplateColumns = "repeat(" + count + ", minmax(0, 1fr))";
+              announce("Column added");
+            } else if (action === "remove-column-card") {
+              const cols = block.querySelectorAll(".allo-col");
+              if (cols.length > 1) {
+                cols[cols.length - 1].remove();
+                const count = cols.length - 1;
+                block.style.gridTemplateColumns = "repeat(" + count + ", minmax(0, 1fr))";
+                announce("Column removed");
+              }
+            } else if (action === "add-checklist-item") {
+              const list = block.querySelector("ul");
+              if (list) {
+                const id = "cl-" + Date.now() + "-" + Math.floor(Math.random() * 1e3);
+                const li = doc.createElement("li");
+                const cb = doc.createElement("input");
+                cb.type = "checkbox";
+                cb.id = id;
+                const lbl = doc.createElement("label");
+                lbl.setAttribute("for", id);
+                lbl.textContent = "New task";
+                li.appendChild(cb);
+                li.appendChild(lbl);
+                list.appendChild(li);
+                announce("Checklist item added");
+              }
+            } else if (action === "remove-checklist-item") {
+              const list = block.querySelector("ul");
+              if (list && list.children.length > 1) {
+                list.lastElementChild.remove();
+                announce("Checklist item removed");
+              }
+            } else if (action === "add-step") {
+              const ol = block.querySelector("ol");
+              if (ol) {
+                const num = ol.children.length + 1;
+                const li = doc.createElement("li");
+                const span = doc.createElement("span");
+                span.className = "allo-step-num";
+                span.setAttribute("aria-hidden", "true");
+                span.textContent = String(num);
+                const body = doc.createElement("div");
+                body.className = "allo-step-body";
+                body.textContent = "New step description";
+                li.appendChild(span);
+                li.appendChild(body);
+                ol.appendChild(li);
+                announce("Step " + num + " added");
+              }
+            } else if (action === "remove-step") {
+              const ol = block.querySelector("ol");
+              if (ol && ol.children.length > 1) {
+                ol.lastElementChild.remove();
+                Array.from(ol.querySelectorAll(".allo-step-num")).forEach((s, i) => {
+                  s.textContent = String(i + 1);
+                });
+                announce("Step removed");
+              }
+            } else if (action === "add-vocab-example") {
+              const examplesContainer = block.querySelector(".allo-vocab-examples");
+              if (examplesContainer) {
+                const p = doc.createElement("p");
+                p.className = "allo-vocab-example";
+                p.textContent = 'Example: "Another sentence using the word."';
+                examplesContainer.appendChild(p);
+                announce("Example added");
+              }
+            } else if (action === "remove-vocab-example") {
+              const examples = block.querySelectorAll(".allo-vocab-example");
+              if (examples.length > 1) {
+                examples[examples.length - 1].remove();
+                announce("Example removed");
+              }
+            } else if (action && action.indexOf("callout-style-") === 0) {
+              const style = action.substring("callout-style-".length);
+              ["info", "warning", "success", "note", "danger"].forEach((s) => block.classList.remove("allo-callout-" + s));
+              block.classList.add("allo-callout-" + style);
+              block.setAttribute("data-allo-style", style);
+              const strong = block.querySelector(":scope > strong");
+              const labels = { info: "Note:", warning: "Important:", success: "Tip:", note: "Notice:", danger: "Caution:" };
+              if (strong && labels[style]) strong.textContent = labels[style];
+              ctrlBtn.parentElement.querySelectorAll('button[data-action^="callout-style-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
+              announce("Callout style: " + style);
+            } else if (action && action.indexOf("cols-ratio-") === 0) {
+              const cols = block.querySelectorAll(".allo-col").length;
+              const ratio = action.substring("cols-ratio-".length);
+              const ratioMap = { equal: "repeat(" + cols + ", minmax(0, 1fr))", "2-1": "2fr 1fr", "1-2": "1fr 2fr", "narrow-wide": "1fr 3fr", "wide-narrow": "3fr 1fr" };
+              if (ratioMap[ratio]) {
+                block.style.gridTemplateColumns = ratioMap[ratio];
+                announce("Column ratio: " + ratio);
+              }
+            } else if (action && action.indexOf("cols-gap-") === 0) {
+              const gap = action.substring("cols-gap-".length);
+              const gapMap = { tight: "6px", normal: "16px", wide: "32px" };
+              if (gapMap[gap]) {
+                block.style.gap = gapMap[gap];
+                announce("Gap: " + gap);
+              }
+            } else if (action && action.indexOf("list-style-") === 0) {
+              const style = action.substring("list-style-".length);
+              const list = block.querySelector("ul");
+              if (list) {
+                list.setAttribute("data-list-style", style);
+                ctrlBtn.parentElement.querySelectorAll('button[data-action^="list-style-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
+                announce("List style: " + style);
+              }
+            } else if (action && action.indexOf("num-style-") === 0) {
+              const style = action.substring("num-style-".length);
+              const ol = block.querySelector("ol");
+              if (ol) {
+                ol.setAttribute("data-num-style", style);
+                const labels = ol.querySelectorAll(".allo-step-num");
+                labels.forEach((s, i) => {
+                  if (style === "numeric") s.textContent = String(i + 1);
+                  else if (style === "alpha") s.textContent = String.fromCharCode(97 + i).toUpperCase();
+                  else if (style === "roman") {
+                    const r = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][i] || String(i + 1);
+                    s.textContent = r;
+                  }
+                });
+                ctrlBtn.parentElement.querySelectorAll('button[data-action^="num-style-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
+                announce("Numbering: " + style);
+              }
+            } else if (action === "accordion-default-open") {
+              const isOpen = block.hasAttribute("open");
+              if (isOpen) {
+                block.removeAttribute("open");
+                ctrlBtn.setAttribute("aria-pressed", "false");
+                announce("Accordion default: closed");
+              } else {
+                block.setAttribute("open", "");
+                ctrlBtn.setAttribute("aria-pressed", "true");
+                announce("Accordion default: open");
+              }
+            } else if (action && action.indexOf("table-header-") === 0) {
+              const style = action.substring("table-header-".length);
+              block.setAttribute("data-header-style", style);
+              ctrlBtn.parentElement.querySelectorAll('button[data-action^="table-header-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
+              announce("Header style: " + style);
+            } else if (action === "table-zebra-toggle") {
+              const cur = block.getAttribute("data-zebra") || "on";
+              const next = cur === "on" ? "off" : "on";
+              block.setAttribute("data-zebra", next);
+              ctrlBtn.setAttribute("aria-pressed", String(next === "on"));
+              announce("Zebra stripes: " + next);
+            } else if (action && action.indexOf("rubric-scale-") === 0) {
+              const scale = action.substring("rubric-scale-".length);
+              const labels = _RUBRIC_SCALES[scale];
+              if (!labels) return;
+              const headerRow = block.querySelector("thead tr");
+              const tbody = block.querySelector("tbody");
+              if (!headerRow || !tbody) return;
+              const firstHeader = headerRow.firstElementChild;
+              headerRow.innerHTML = "";
+              headerRow.appendChild(firstHeader);
+              labels.forEach((label) => {
+                const th = doc.createElement("th");
+                th.setAttribute("scope", "col");
+                th.textContent = label;
+                headerRow.appendChild(th);
+              });
+              const targetCols = labels.length + 1;
+              Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
+                while (row.children.length < targetCols) {
+                  const td = doc.createElement("td");
+                  td.textContent = "Description";
+                  row.appendChild(td);
+                }
+                while (row.children.length > targetCols) {
+                  row.lastElementChild.remove();
+                }
+              });
+              ctrlBtn.parentElement.querySelectorAll('button[data-action^="rubric-scale-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
+              announce("Rubric scale: " + scale);
+            } else if (action && action.indexOf("refl-length-") === 0) {
+              const len = action.substring("refl-length-".length);
+              block.setAttribute("data-length", len);
+              ctrlBtn.parentElement.querySelectorAll('button[data-action^="refl-length-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
+              announce("Reflection length: " + len);
+            }
+            persist();
+          }, true);
+          doc.addEventListener("input", (ev) => {
+            const t2 = ev.target;
+            if (!t2) return;
             try {
-              const win = doc.defaultView;
-              if (win && win.navigator && win.navigator.clipboard && win.navigator.clipboard.writeText) {
-                win.navigator.clipboard.writeText(txt);
-                copied = true;
+              const _fnSec = doc.querySelector("section.allo-footnotes");
+              if (_fnSec) {
+                const _refN = doc.querySelectorAll("sup.allo-fn-ref").length;
+                const _noteN = _fnSec.querySelectorAll("ol > li[data-fn-uid]").length;
+                if (_refN !== _noteN) {
+                  _alloRenumberFootnotes(doc);
+                  persist();
+                }
               }
             } catch (_) {
             }
-            if (!copied) {
-              try {
-                const range = doc.createRange();
-                range.selectNodeContents(codeEl);
-                const sel = doc.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(range);
-                copied = doc.execCommand("copy");
-                sel.removeAllRanges();
-              } catch (_) {
-              }
-            }
-            announce(copied ? "Code copied to clipboard" : "Copy failed");
-            const orig = copyBtn.textContent;
-            copyBtn.textContent = copied ? "\u2713 Copied" : "\u2717 Failed";
-            setTimeout(() => {
-              try {
-                copyBtn.textContent = orig;
-              } catch (_) {
-              }
-            }, 1500);
-            return;
-          }
-          const ctrlBtn = t2.closest(".allo-block-controls button[data-action]");
-          if (!ctrlBtn) return;
-          ev.preventDefault();
-          const action = ctrlBtn.getAttribute("data-action");
-          const block = ctrlBtn.closest("[data-allo-block]");
-          if (!block) return;
-          const isRubric = block.classList.contains("allo-block-rubric");
-          if (action === "ref-add-entry" || action === "ref-sort") {
-            if (block.classList.contains("allo-references")) {
-              const _ctrls = block.querySelector(".allo-block-controls");
-              if (action === "ref-add-entry") {
-                const _e = doc.createElement("p");
-                _e.className = "allo-ref-entry";
-                _e.setAttribute("contenteditable", "true");
-                _e.textContent = "Author, A. A. (Year). Title of the work. Source.";
-                block.insertBefore(_e, _ctrls);
-                setTimeout(() => {
-                  try {
-                    _e.focus();
-                    doc.getSelection().selectAllChildren(_e);
-                  } catch (_) {
-                  }
-                }, 40);
-              } else {
-                const _entries = Array.from(block.querySelectorAll(".allo-ref-entry"));
-                _entries.sort((a, b) => (a.textContent || "").trim().localeCompare((b.textContent || "").trim(), void 0, { sensitivity: "base" }));
-                _entries.forEach((e) => block.insertBefore(e, _ctrls));
-              }
-              persist();
-            }
-            return;
-          }
-          if (action === "add-row") {
-            const tbody = block.querySelector("tbody");
-            const headerRow = block.querySelector("thead tr");
-            if (tbody && headerRow) {
-              const cols = headerRow.children.length;
-              const tr = doc.createElement("tr");
-              for (let i = 0; i < cols; i++) {
-                if (isRubric && i === 0) {
-                  const th = doc.createElement("th");
-                  th.setAttribute("scope", "row");
-                  th.textContent = "New criterion";
-                  tr.appendChild(th);
-                } else {
-                  const td = doc.createElement("td");
-                  td.textContent = isRubric ? "Description" : "Data";
-                  tr.appendChild(td);
-                }
-              }
-              tbody.appendChild(tr);
-              announce("Row added");
-            }
-          } else if (action === "remove-row") {
-            const tbody = block.querySelector("tbody");
-            if (tbody && tbody.children.length > 1) {
-              tbody.lastElementChild.remove();
-              announce("Row removed");
-            }
-          } else if (action === "add-col") {
-            const headerRow = block.querySelector("thead tr");
-            const bodyRows = block.querySelectorAll("tbody tr");
-            if (headerRow) {
-              const newTh = doc.createElement("th");
-              newTh.setAttribute("scope", "col");
-              newTh.textContent = isRubric ? "New level" : "New header";
-              headerRow.appendChild(newTh);
-            }
-            bodyRows.forEach((row) => {
-              const td = doc.createElement("td");
-              td.textContent = isRubric ? "Description" : "Data";
-              row.appendChild(td);
-            });
-            announce("Column added");
-          } else if (action === "remove-col") {
-            const headerRow = block.querySelector("thead tr");
-            const bodyRows = block.querySelectorAll("tbody tr");
-            const minCols = isRubric ? 2 : 1;
-            if (headerRow && headerRow.children.length > minCols) {
-              headerRow.lastElementChild.remove();
-              bodyRows.forEach((row) => {
-                if (row.lastElementChild) row.lastElementChild.remove();
-              });
-              announce("Column removed");
-            }
-          } else if (action === "add-column-card") {
-            const newCol = doc.createElement("div");
-            newCol.className = "allo-col";
-            newCol.textContent = "New column content";
-            const ctrls = block.querySelector(".allo-block-controls");
-            if (ctrls) block.insertBefore(newCol, ctrls);
-            else block.appendChild(newCol);
-            const count = block.querySelectorAll(".allo-col").length;
-            block.style.gridTemplateColumns = "repeat(" + count + ", minmax(0, 1fr))";
-            announce("Column added");
-          } else if (action === "remove-column-card") {
-            const cols = block.querySelectorAll(".allo-col");
-            if (cols.length > 1) {
-              cols[cols.length - 1].remove();
-              const count = cols.length - 1;
-              block.style.gridTemplateColumns = "repeat(" + count + ", minmax(0, 1fr))";
-              announce("Column removed");
-            }
-          } else if (action === "add-checklist-item") {
-            const list = block.querySelector("ul");
-            if (list) {
-              const id = "cl-" + Date.now() + "-" + Math.floor(Math.random() * 1e3);
-              const li = doc.createElement("li");
-              const cb = doc.createElement("input");
-              cb.type = "checkbox";
-              cb.id = id;
-              const lbl = doc.createElement("label");
-              lbl.setAttribute("for", id);
-              lbl.textContent = "New task";
-              li.appendChild(cb);
-              li.appendChild(lbl);
-              list.appendChild(li);
-              announce("Checklist item added");
-            }
-          } else if (action === "remove-checklist-item") {
-            const list = block.querySelector("ul");
-            if (list && list.children.length > 1) {
-              list.lastElementChild.remove();
-              announce("Checklist item removed");
-            }
-          } else if (action === "add-step") {
-            const ol = block.querySelector("ol");
-            if (ol) {
-              const num = ol.children.length + 1;
-              const li = doc.createElement("li");
-              const span = doc.createElement("span");
-              span.className = "allo-step-num";
-              span.setAttribute("aria-hidden", "true");
-              span.textContent = String(num);
-              const body = doc.createElement("div");
-              body.className = "allo-step-body";
-              body.textContent = "New step description";
-              li.appendChild(span);
-              li.appendChild(body);
-              ol.appendChild(li);
-              announce("Step " + num + " added");
-            }
-          } else if (action === "remove-step") {
-            const ol = block.querySelector("ol");
-            if (ol && ol.children.length > 1) {
-              ol.lastElementChild.remove();
-              Array.from(ol.querySelectorAll(".allo-step-num")).forEach((s, i) => {
-                s.textContent = String(i + 1);
-              });
-              announce("Step removed");
-            }
-          } else if (action === "add-vocab-example") {
-            const examplesContainer = block.querySelector(".allo-vocab-examples");
-            if (examplesContainer) {
-              const p = doc.createElement("p");
-              p.className = "allo-vocab-example";
-              p.textContent = 'Example: "Another sentence using the word."';
-              examplesContainer.appendChild(p);
-              announce("Example added");
-            }
-          } else if (action === "remove-vocab-example") {
-            const examples = block.querySelectorAll(".allo-vocab-example");
-            if (examples.length > 1) {
-              examples[examples.length - 1].remove();
-              announce("Example removed");
-            }
-          } else if (action && action.indexOf("callout-style-") === 0) {
-            const style = action.substring("callout-style-".length);
-            ["info", "warning", "success", "note", "danger"].forEach((s) => block.classList.remove("allo-callout-" + s));
-            block.classList.add("allo-callout-" + style);
-            block.setAttribute("data-allo-style", style);
-            const strong = block.querySelector(":scope > strong");
-            const labels = { info: "Note:", warning: "Important:", success: "Tip:", note: "Notice:", danger: "Caution:" };
-            if (strong && labels[style]) strong.textContent = labels[style];
-            ctrlBtn.parentElement.querySelectorAll('button[data-action^="callout-style-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
-            announce("Callout style: " + style);
-          } else if (action && action.indexOf("cols-ratio-") === 0) {
-            const cols = block.querySelectorAll(".allo-col").length;
-            const ratio = action.substring("cols-ratio-".length);
-            const ratioMap = { equal: "repeat(" + cols + ", minmax(0, 1fr))", "2-1": "2fr 1fr", "1-2": "1fr 2fr", "narrow-wide": "1fr 3fr", "wide-narrow": "3fr 1fr" };
-            if (ratioMap[ratio]) {
-              block.style.gridTemplateColumns = ratioMap[ratio];
-              announce("Column ratio: " + ratio);
-            }
-          } else if (action && action.indexOf("cols-gap-") === 0) {
-            const gap = action.substring("cols-gap-".length);
-            const gapMap = { tight: "6px", normal: "16px", wide: "32px" };
-            if (gapMap[gap]) {
-              block.style.gap = gapMap[gap];
-              announce("Gap: " + gap);
-            }
-          } else if (action && action.indexOf("list-style-") === 0) {
-            const style = action.substring("list-style-".length);
-            const list = block.querySelector("ul");
-            if (list) {
-              list.setAttribute("data-list-style", style);
-              ctrlBtn.parentElement.querySelectorAll('button[data-action^="list-style-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
-              announce("List style: " + style);
-            }
-          } else if (action && action.indexOf("num-style-") === 0) {
-            const style = action.substring("num-style-".length);
-            const ol = block.querySelector("ol");
-            if (ol) {
-              ol.setAttribute("data-num-style", style);
-              const labels = ol.querySelectorAll(".allo-step-num");
-              labels.forEach((s, i) => {
-                if (style === "numeric") s.textContent = String(i + 1);
-                else if (style === "alpha") s.textContent = String.fromCharCode(97 + i).toUpperCase();
-                else if (style === "roman") {
-                  const r = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][i] || String(i + 1);
-                  s.textContent = r;
-                }
-              });
-              ctrlBtn.parentElement.querySelectorAll('button[data-action^="num-style-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
-              announce("Numbering: " + style);
-            }
-          } else if (action === "accordion-default-open") {
-            const isOpen = block.hasAttribute("open");
-            if (isOpen) {
-              block.removeAttribute("open");
-              ctrlBtn.setAttribute("aria-pressed", "false");
-              announce("Accordion default: closed");
-            } else {
-              block.setAttribute("open", "");
-              ctrlBtn.setAttribute("aria-pressed", "true");
-              announce("Accordion default: open");
-            }
-          } else if (action && action.indexOf("table-header-") === 0) {
-            const style = action.substring("table-header-".length);
-            block.setAttribute("data-header-style", style);
-            ctrlBtn.parentElement.querySelectorAll('button[data-action^="table-header-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
-            announce("Header style: " + style);
-          } else if (action === "table-zebra-toggle") {
-            const cur = block.getAttribute("data-zebra") || "on";
-            const next = cur === "on" ? "off" : "on";
-            block.setAttribute("data-zebra", next);
-            ctrlBtn.setAttribute("aria-pressed", String(next === "on"));
-            announce("Zebra stripes: " + next);
-          } else if (action && action.indexOf("rubric-scale-") === 0) {
-            const scale = action.substring("rubric-scale-".length);
-            const labels = _RUBRIC_SCALES[scale];
-            if (!labels) return;
-            const headerRow = block.querySelector("thead tr");
-            const tbody = block.querySelector("tbody");
-            if (!headerRow || !tbody) return;
-            const firstHeader = headerRow.firstElementChild;
-            headerRow.innerHTML = "";
-            headerRow.appendChild(firstHeader);
-            labels.forEach((label) => {
-              const th = doc.createElement("th");
-              th.setAttribute("scope", "col");
-              th.textContent = label;
-              headerRow.appendChild(th);
-            });
-            const targetCols = labels.length + 1;
-            Array.from(tbody.querySelectorAll("tr")).forEach((row) => {
-              while (row.children.length < targetCols) {
-                const td = doc.createElement("td");
-                td.textContent = "Description";
-                row.appendChild(td);
-              }
-              while (row.children.length > targetCols) {
-                row.lastElementChild.remove();
-              }
-            });
-            ctrlBtn.parentElement.querySelectorAll('button[data-action^="rubric-scale-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
-            announce("Rubric scale: " + scale);
-          } else if (action && action.indexOf("refl-length-") === 0) {
-            const len = action.substring("refl-length-".length);
-            block.setAttribute("data-length", len);
-            ctrlBtn.parentElement.querySelectorAll('button[data-action^="refl-length-"]').forEach((b) => b.setAttribute("aria-pressed", String(b === ctrlBtn)));
-            announce("Reflection length: " + len);
-          }
-          persist();
-        }, true);
-        doc.addEventListener("input", (ev) => {
-          const t2 = ev.target;
-          if (!t2) return;
-          try {
-            const _fnSec = doc.querySelector("section.allo-footnotes");
-            if (_fnSec) {
-              const _refN = doc.querySelectorAll("sup.allo-fn-ref").length;
-              const _noteN = _fnSec.querySelectorAll("ol > li[data-fn-uid]").length;
-              if (_refN !== _noteN) {
-                _alloRenumberFootnotes(doc);
-                persist();
-              }
-            }
-          } catch (_) {
-          }
-          if (t2.classList && t2.classList.contains("allo-math-input")) {
-            const block = t2.closest(".allo-block-math");
-            if (!block) return;
-            const out = block.querySelector(".allo-math-output");
-            const status = block.querySelector(".allo-math-status");
-            const win = doc.defaultView;
-            if (win && win.katex && out) {
-              try {
-                win.katex.render(t2.value || "", out, { throwOnError: false, displayMode: true });
-                if (status) status.textContent = "Rendered";
-              } catch (e) {
-                if (out) out.textContent = t2.value;
-                if (status) status.textContent = "Plain";
-              }
-            } else {
-              if (out) out.textContent = t2.value || "";
-              if (status) status.textContent = win && win.katex ? "Loading\u2026" : "KaTeX loading\u2026";
-            }
-            persist();
-          }
-          if (t2.classList && t2.classList.contains("allo-img-url-input")) {
-            const block = t2.closest(".allo-block-image");
-            if (!block) return;
-            const url = t2.value.trim();
-            if (!url) return;
-            const placeholder = block.querySelector(".allo-img-placeholder");
-            let img = block.querySelector("img.allo-img-real");
-            if (!img) {
-              img = doc.createElement("img");
-              img.className = "allo-img-real";
-              img.alt = "";
-              if (placeholder) placeholder.replaceWith(img);
-              else block.insertBefore(img, block.firstChild);
-            }
-            img.src = url;
-            announce("Image URL set");
-            persist();
-          }
-          if (t2.classList && t2.classList.contains("allo-audio-url-input")) {
-            const block = t2.closest(".allo-block-audio");
-            if (!block) return;
-            const url = t2.value.trim();
-            const audio = block.querySelector("audio");
-            if (audio && url) {
-              audio.src = url;
-              announce("Audio URL set");
-              persist();
-            }
-          }
-          if (t2.classList && t2.classList.contains("allo-video-url-input")) {
-            const block = t2.closest(".allo-block-video");
-            if (!block) return;
-            const url = (t2.value || "").trim();
-            if (!url) return;
-            let embedUrl = "";
-            let kind = "";
-            const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([\w-]{11})/);
-            if (ytMatch) {
-              embedUrl = "https://www.youtube.com/embed/" + ytMatch[1] + "?rel=0";
-              kind = "YouTube";
-            } else {
-              const vmMatch = url.match(/vimeo\.com\/(?:[\w]+\/)*(\d+)/);
-              if (vmMatch) {
-                embedUrl = "https://player.vimeo.com/video/" + vmMatch[1];
-                kind = "Vimeo";
-              }
-            }
-            if (!embedUrl) {
-              if (/^https?:\/\//.test(url) && url.length > 25) {
-                const placeholder = block.querySelector(".allo-video-placeholder");
-                if (placeholder) placeholder.innerHTML = '<span aria-hidden="true">\u26A0\uFE0F</span><br/>URL not recognized as YouTube or Vimeo.<br/><em style="font-size:11px;">Supported: youtube.com / youtu.be / vimeo.com</em>';
-              }
-              return;
-            }
-            const titleInput = block.querySelector(".allo-video-title-input");
-            const title = titleInput && titleInput.value || kind + " video";
-            const frame = block.querySelector(".allo-video-frame");
-            if (!frame) return;
-            let iframe = frame.querySelector("iframe");
-            if (!iframe) {
-              const placeholder = frame.querySelector(".allo-video-placeholder");
-              if (placeholder) placeholder.remove();
-              iframe = doc.createElement("iframe");
-              iframe.setAttribute("frameborder", "0");
-              iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
-              iframe.setAttribute("allowfullscreen", "");
-              frame.appendChild(iframe);
-            }
-            iframe.src = embedUrl;
-            iframe.setAttribute("title", title);
-            announce(kind + " video embedded");
-            persist();
-          }
-          if (t2.classList && t2.classList.contains("allo-video-title-input")) {
-            const block = t2.closest(".allo-block-video");
-            if (!block) return;
-            const iframe = block.querySelector("iframe");
-            if (iframe && t2.value) {
-              iframe.setAttribute("title", t2.value);
-              persist();
-            }
-          }
-        }, true);
-        doc.addEventListener("change", (ev) => {
-          const t2 = ev.target;
-          if (!t2) return;
-          if (t2.classList && t2.classList.contains("allo-img-file-input")) {
-            const file = t2.files && t2.files[0];
-            if (!file) return;
-            const block = t2.closest(".allo-block-image");
-            if (!block) return;
-            const sizeMB = file.size / (1024 * 1024);
-            if (sizeMB > 1) {
+            if (t2.classList && t2.classList.contains("allo-math-input")) {
+              const block = t2.closest(".allo-block-math");
+              if (!block) return;
+              const out = block.querySelector(".allo-math-output");
+              const status = block.querySelector(".allo-math-status");
               const win = doc.defaultView;
-              const msg = "This image is " + sizeMB.toFixed(1) + " MB. Embedding it inline will add about " + (sizeMB * 1.33).toFixed(1) + " MB to your document. Continue, or cancel and paste a URL instead?";
-              const proceed = win && typeof win.confirm === "function" ? win.confirm(msg) : true;
-              if (!proceed) {
-                t2.value = "";
-                announce("Image upload cancelled");
-                return;
+              if (win && win.katex && out) {
+                try {
+                  win.katex.render(t2.value || "", out, { throwOnError: false, displayMode: true });
+                  if (status) status.textContent = "Rendered";
+                } catch (e) {
+                  if (out) out.textContent = t2.value;
+                  if (status) status.textContent = "Plain";
+                }
+              } else {
+                if (out) out.textContent = t2.value || "";
+                if (status) status.textContent = win && win.katex ? "Loading\u2026" : "KaTeX loading\u2026";
               }
+              persist();
             }
-            const reader = new FileReader();
-            reader.onload = (e) => {
+            if (t2.classList && t2.classList.contains("allo-img-url-input")) {
+              const block = t2.closest(".allo-block-image");
+              if (!block) return;
+              const url = t2.value.trim();
+              if (!url) return;
               const placeholder = block.querySelector(".allo-img-placeholder");
               let img = block.querySelector("img.allo-img-real");
               if (!img) {
                 img = doc.createElement("img");
                 img.className = "allo-img-real";
-                img.alt = file.name.replace(/\.[^.]+$/, "");
+                img.alt = "";
                 if (placeholder) placeholder.replaceWith(img);
                 else block.insertBefore(img, block.firstChild);
               }
-              img.src = String(e.target.result || "");
-              announce("Image uploaded: " + file.name);
-              persist();
-            };
-            reader.readAsDataURL(file);
-          }
-          if (t2.classList && t2.classList.contains("allo-audio-file-input")) {
-            const file = t2.files && t2.files[0];
-            if (!file) return;
-            const block = t2.closest(".allo-block-audio");
-            if (!block) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const audio = block.querySelector("audio");
-              if (audio) {
-                audio.src = String(e.target.result || "");
-                announce("Audio uploaded: " + file.name);
-                persist();
-              }
-            };
-            reader.readAsDataURL(file);
-          }
-          if (t2.classList && t2.classList.contains("allo-vocab-audio-input")) {
-            const file = t2.files && t2.files[0];
-            if (!file) return;
-            const block = t2.closest(".allo-block-vocab");
-            if (!block) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const audio = block.querySelector(".allo-vocab-audio audio");
-              if (audio) {
-                audio.src = String(e.target.result || "");
-                announce("Pronunciation audio uploaded");
-                persist();
-              }
-            };
-            reader.readAsDataURL(file);
-          }
-          if (t2.classList && t2.classList.contains("allo-def-audio-input")) {
-            const file = t2.files && t2.files[0];
-            if (!file) return;
-            const block = t2.closest(".allo-block-definition");
-            if (!block) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const audio = block.querySelector(".allo-def-audio audio");
-              if (audio) {
-                audio.src = String(e.target.result || "");
-                announce("Pronunciation audio uploaded");
-                persist();
-              }
-            };
-            reader.readAsDataURL(file);
-          }
-          if (t2.classList && t2.classList.contains("allo-vocab-img-input")) {
-            const file = t2.files && t2.files[0];
-            if (!file) return;
-            const block = t2.closest(".allo-block-vocab");
-            if (!block) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const slot = block.querySelector(".allo-vocab-img");
-              if (slot) {
-                slot.innerHTML = "";
-                const img = doc.createElement("img");
-                img.src = String(e.target.result || "");
-                img.alt = file.name.replace(/\.[^.]+$/, "");
-                slot.appendChild(img);
-                announce("Vocab image uploaded");
-                persist();
-              }
-            };
-            reader.readAsDataURL(file);
-          }
-          if (t2.classList && t2.classList.contains("allo-code-lang-select")) {
-            const block = t2.closest(".allo-block-code-wrap");
-            if (!block) return;
-            const codeEl = block.querySelector("code");
-            if (codeEl) {
-              const newLang = t2.value || "plaintext";
-              const txt = codeEl.textContent || "";
-              codeEl.innerHTML = "";
-              codeEl.textContent = txt;
-              codeEl.className = "language-" + newLang;
-              _ensurePrism(doc, newLang, codeEl);
-              announce("Code language: " + newLang);
+              img.src = url;
+              announce("Image URL set");
               persist();
             }
-          }
-          if (t2.classList && t2.classList.contains("allo-frame-template-select")) {
-            const block = t2.closest(".allo-block-frame");
-            if (!block) return;
-            const tpl = _SENTENCE_FRAMES[t2.value];
-            if (!tpl) return;
-            const blanks = block.querySelectorAll(".allo-frame-blank");
-            let hasEdits = false;
-            blanks.forEach((b) => {
-              const stripped = (b.textContent || "").replace(/[_\s\/]/g, "");
-              if (stripped.length >= 4 && stripped !== "agreedisagree") hasEdits = true;
-            });
-            if (hasEdits) {
-              const win = doc.defaultView;
-              const proceed = win && typeof win.confirm === "function" ? win.confirm("Switch sentence frame template? Your edits to the blanks will be replaced.") : true;
-              if (!proceed) {
-                const prev = t2.dataset.prevValue;
-                if (prev) t2.value = prev;
-                announce("Template change cancelled");
+            if (t2.classList && t2.classList.contains("allo-audio-url-input")) {
+              const block = t2.closest(".allo-block-audio");
+              if (!block) return;
+              const url = t2.value.trim();
+              const audio = block.querySelector("audio");
+              if (audio && url) {
+                audio.src = url;
+                announce("Audio URL set");
+                persist();
+              }
+            }
+            if (t2.classList && t2.classList.contains("allo-video-url-input")) {
+              const block = t2.closest(".allo-block-video");
+              if (!block) return;
+              const url = (t2.value || "").trim();
+              if (!url) return;
+              let embedUrl = "";
+              let kind = "";
+              const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([\w-]{11})/);
+              if (ytMatch) {
+                embedUrl = "https://www.youtube.com/embed/" + ytMatch[1] + "?rel=0";
+                kind = "YouTube";
+              } else {
+                const vmMatch = url.match(/vimeo\.com\/(?:[\w]+\/)*(\d+)/);
+                if (vmMatch) {
+                  embedUrl = "https://player.vimeo.com/video/" + vmMatch[1];
+                  kind = "Vimeo";
+                }
+              }
+              if (!embedUrl) {
+                if (/^https?:\/\//.test(url) && url.length > 25) {
+                  const placeholder = block.querySelector(".allo-video-placeholder");
+                  if (placeholder) placeholder.innerHTML = '<span aria-hidden="true">\u26A0\uFE0F</span><br/>URL not recognized as YouTube or Vimeo.<br/><em style="font-size:11px;">Supported: youtube.com / youtu.be / vimeo.com</em>';
+                }
                 return;
               }
-            }
-            const removeBtn = block.querySelector(":scope > .allo-block-remove");
-            const picker = block.querySelector(":scope > .allo-frame-template-picker");
-            block.innerHTML = (removeBtn ? removeBtn.outerHTML : "") + tpl + (picker ? picker.outerHTML : "");
-            const newSelect = block.querySelector(".allo-frame-template-select");
-            if (newSelect) {
-              newSelect.value = t2.value;
-              newSelect.dataset.prevValue = t2.value;
-            }
-            announce("Sentence frame: " + t2.value);
-            persist();
-          }
-          if (t2.classList && t2.classList.contains("allo-def-lang-select")) {
-            const block = t2.closest(".allo-block-definition");
-            if (!block) return;
-            const span = block.querySelector("dt > span");
-            if (span) {
-              span.setAttribute("lang", t2.value);
-              announce("Term language: " + t2.value);
+              const titleInput = block.querySelector(".allo-video-title-input");
+              const title = titleInput && titleInput.value || kind + " video";
+              const frame = block.querySelector(".allo-video-frame");
+              if (!frame) return;
+              let iframe = frame.querySelector("iframe");
+              if (!iframe) {
+                const placeholder = frame.querySelector(".allo-video-placeholder");
+                if (placeholder) placeholder.remove();
+                iframe = doc.createElement("iframe");
+                iframe.setAttribute("frameborder", "0");
+                iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
+                iframe.setAttribute("allowfullscreen", "");
+                frame.appendChild(iframe);
+              }
+              iframe.src = embedUrl;
+              iframe.setAttribute("title", title);
+              announce(kind + " video embedded");
               persist();
             }
-          }
-          if (t2.classList && t2.classList.contains("allo-math-formula-select")) {
-            const key = t2.value;
-            if (!key) return;
-            const formula = _MATH_FORMULAS[key];
-            if (!formula) return;
-            const block = t2.closest(".allo-block-math");
-            if (!block) return;
-            const inp = block.querySelector(".allo-math-input");
-            const out = block.querySelector(".allo-math-output");
-            const status = block.querySelector(".allo-math-status");
-            if (inp) inp.value = formula.latex;
-            const win = doc.defaultView;
-            if (win && win.katex && out) {
-              try {
-                win.katex.render(formula.latex, out, { throwOnError: false, displayMode: true });
-                if (status) status.textContent = "Rendered";
-              } catch (e) {
-                if (out) out.textContent = formula.latex;
+            if (t2.classList && t2.classList.contains("allo-video-title-input")) {
+              const block = t2.closest(".allo-block-video");
+              if (!block) return;
+              const iframe = block.querySelector("iframe");
+              if (iframe && t2.value) {
+                iframe.setAttribute("title", t2.value);
+                persist();
               }
-            } else if (out) {
-              out.textContent = formula.latex;
             }
-            announce("Inserted " + formula.label);
-            persist();
-            t2.value = "";
-          }
-        }, true);
-      };
-      const _uid = (p) => p + "-" + Date.now() + "-" + Math.floor(Math.random() * 1e4);
-      const blocks = [
-        // ── Layout ──
-        {
-          label: "Columns",
-          icon: "\u2B1B\u2B1B",
-          category: "layout",
-          keywords: "columns grid layout split",
-          html: '<div class="allo-block allo-block-columns" data-allo-block="columns" tabindex="0" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove columns" title="Remove">\xD7</button><div class="allo-col">Column 1 content</div><div class="allo-col">Column 2 content</div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Cols</span><button type="button" data-action="add-column-card" aria-label="Add column">+ Col</button><button type="button" data-action="remove-column-card" aria-label="Remove column">\u2212 Col</button><span class="allo-control-label">Ratio</span><button type="button" data-action="cols-ratio-equal" aria-pressed="true">Equal</button><button type="button" data-action="cols-ratio-2-1" aria-pressed="false">2:1</button><button type="button" data-action="cols-ratio-1-2" aria-pressed="false">1:2</button><span class="allo-control-label">Gap</span><button type="button" data-action="cols-gap-tight">Tight</button><button type="button" data-action="cols-gap-normal" aria-pressed="true">Normal</button><button type="button" data-action="cols-gap-wide">Wide</button></div></div>'
-        },
-        {
-          label: "Divider",
-          icon: "\u2796",
-          category: "layout",
-          keywords: "divider hr separator line",
-          html: '<div class="allo-block allo-block-divider" data-allo-block="divider" tabindex="0" role="separator" aria-label="Section divider"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove divider" title="Remove">\xD7</button><hr /></div>'
-        },
-        {
-          label: "Page Break",
-          icon: "\u{1F4C4}",
-          category: "layout",
-          keywords: "page break print pagination",
-          html: '<div class="allo-block allo-block-pagebreak" data-allo-block="pagebreak" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove page break" title="Remove">\xD7</button><span class="allo-pb-label" aria-hidden="true">\u2014 Page Break \u2014</span><span class="allo-sr-only">Page break</span></div>'
-        },
-        // ── Content ──
-        {
-          label: "Callout",
-          icon: "\u2139\uFE0F",
-          category: "content",
-          keywords: "info note warning success callout alert tip",
-          html: '<div class="allo-block allo-callout allo-callout-info" data-allo-block="info" data-allo-style="info" tabindex="0" role="note" aria-label="Callout"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove callout" title="Remove">\xD7</button><strong>Note:</strong> <span>Enter info here</span><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Style</span><button type="button" data-action="callout-style-info" aria-pressed="true">Info</button><button type="button" data-action="callout-style-warning" aria-pressed="false">Warning</button><button type="button" data-action="callout-style-success" aria-pressed="false">Tip</button><button type="button" data-action="callout-style-note" aria-pressed="false">Note</button><button type="button" data-action="callout-style-danger" aria-pressed="false">Danger</button></div></div>'
-        },
-        {
-          label: "Quote",
-          icon: "\u{1F4AC}",
-          category: "content",
-          keywords: "quote blockquote cite",
-          html: '<blockquote class="allo-block allo-block-quote" data-allo-block="quote" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove quote" title="Remove">\xD7</button>"Enter quote here"<cite>\u2014 Source</cite></blockquote>'
-        },
-        {
-          label: "Checklist",
-          icon: "\u2611\uFE0F",
-          category: "content",
-          keywords: "checklist list tasks todo",
-          html: (() => {
-            const a = _uid("cl"), b = _uid("cl"), c = _uid("cl");
-            return '<div class="allo-block" data-allo-block="checklist" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove checklist" title="Remove">\xD7</button><ul class="allo-block-checklist" data-list-style="checkbox" aria-label="Checklist"><li><input type="checkbox" id="' + a + '" /><label for="' + a + '">Task item 1</label></li><li><input type="checkbox" id="' + b + '" /><label for="' + b + '">Task item 2</label></li><li><input type="checkbox" id="' + c + '" /><label for="' + c + '">Task item 3</label></li></ul><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Items</span><button type="button" data-action="add-checklist-item">+ Item</button><button type="button" data-action="remove-checklist-item">\u2212 Item</button><span class="allo-control-label">Style</span><button type="button" data-action="list-style-checkbox" aria-pressed="true">\u2611 Check</button><button type="button" data-action="list-style-bullet" aria-pressed="false">\u2022 Bullet</button><button type="button" data-action="list-style-ordered" aria-pressed="false">1. Number</button></div></div>';
-          })
-        },
-        {
-          label: "Numbered Steps",
-          icon: "1\uFE0F\u20E3",
-          category: "content",
-          keywords: "steps numbered ordered procedure how-to",
-          html: '<div class="allo-block" data-allo-block="steps" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove steps" title="Remove">\xD7</button><ol class="allo-block-steps" data-num-style="numeric" aria-label="Step-by-step instructions"><li><span class="allo-step-num" aria-hidden="true">1</span><div class="allo-step-body">First step description</div></li><li><span class="allo-step-num" aria-hidden="true">2</span><div class="allo-step-body">Second step description</div></li><li><span class="allo-step-num" aria-hidden="true">3</span><div class="allo-step-body">Third step description</div></li></ol><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Steps</span><button type="button" data-action="add-step">+ Step</button><button type="button" data-action="remove-step">\u2212 Step</button><span class="allo-control-label">Numbering</span><button type="button" data-action="num-style-numeric" aria-pressed="true">1, 2, 3</button><button type="button" data-action="num-style-alpha" aria-pressed="false">A, B, C</button><button type="button" data-action="num-style-roman" aria-pressed="false">I, II, III</button></div></div>'
-        },
-        {
-          label: "Accordion",
-          icon: "\u{1F4C2}",
-          category: "content",
-          keywords: "accordion collapsible expand toggle disclosure",
-          html: '<details class="allo-block allo-block-accordion" data-allo-block="accordion" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove accordion" title="Remove">\xD7</button><summary>Click to expand section title</summary><div class="allo-accordion-body">Hidden content goes here. Great for differentiation. <em>Note: collapsed content does not appear in printed/exported PDFs unless expanded.</em><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Default</span><button type="button" data-action="accordion-default-open" aria-pressed="false">Open by default</button></div></div></details>'
-        },
-        {
-          label: "Q & A",
-          icon: "\u2753",
-          category: "content",
-          keywords: "qa question answer faq study",
-          html: '<div class="allo-block allo-block-qa" data-allo-block="qa" tabindex="0" role="group" aria-label="Question and answer"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove question and answer" title="Remove">\xD7</button><div class="allo-qa-question"><strong>Q:</strong> Type the question here.</div><div class="allo-qa-answer"><strong>A:</strong> Type the answer here.</div></div>'
-        },
-        {
-          label: "Definition",
-          icon: "\u{1F4D6}",
-          category: "content",
-          keywords: "definition term vocabulary glossary",
-          html: '<dl class="allo-block allo-block-definition" data-allo-block="definition" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove definition" title="Remove">\xD7</button><dt><span lang="en">Term</span><span class="allo-def-pron">/pr\u0259-nun-see-AY-shun/</span></dt><dd>Definition goes here. Students can reference this for key vocabulary.</dd><div class="allo-def-audio"><audio controls aria-label="Pronunciation audio"></audio></div><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Term Lang</span><select class="allo-def-lang-select" aria-label="Term language"><option value="en">English</option><option value="es">Espa\xF1ol</option><option value="fr">Fran\xE7ais</option><option value="zh">\u4E2D\u6587</option><option value="ar">\u0627\u0644\u0639\u0631\u0628\u064A\u0629</option><option value="la">Latin</option><option value="grc">Greek</option></select><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-def-audio-input" style="display:none" /></label><button type="button" class="allo-def-tts-btn" aria-label="Generate pronunciation from the term" title="Generate pronunciation from the term">\u{1F3A4} TTS</button></div></dl>'
-        },
-        // ── Educational ──
-        {
-          label: "Sentence Frame",
-          icon: "\u{1FAA7}",
-          category: "educational",
-          keywords: "sentence frame stem scaffold ell esl",
-          html: '<div class="allo-block allo-block-frame" data-allo-block="sentence-frame" tabindex="0" role="note" aria-label="Sentence frame"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove sentence frame" title="Remove">\xD7</button>I noticed <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.<div class="allo-block-controls allo-frame-template-picker" contenteditable="false"><span class="allo-control-label">Template</span><select class="allo-frame-template-select" aria-label="Sentence frame template"><option value="notice-because">I noticed ___ because ___</option><option value="cer">Claim / Evidence / Reasoning</option><option value="agree-disagree">I agree/disagree because ___</option><option value="compare">Compare and contrast</option><option value="cause-effect">When ___, then ___</option><option value="wonder">I wonder why ___</option><option value="sel-feeling">I feel ___ when ___</option><option value="add-on">Adding to what ___ said</option></select></div></div>'
-        },
-        {
-          label: "Objective",
-          icon: "\u{1F3AF}",
-          category: "educational",
-          keywords: "learning objective goal standard outcome",
-          html: `<div class="allo-block allo-block-objective" data-allo-block="learning-objective" tabindex="0" role="note" aria-label="Learning objective"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove learning objective" title="Remove">\xD7</button><span class="allo-obj-label">Learning Objective</span><div class="allo-obj-text">By the end of this lesson, students will be able to <em>explain the main idea</em>.</div><div class="allo-obj-meta"><span>Standard: <em>edit me</em></span><span>Bloom's: <em>Apply</em></span></div></div>`
-        },
-        {
-          label: "Vocab Card",
-          icon: "\u{1F0CF}",
-          category: "educational",
-          keywords: "vocabulary card word term definition",
-          html: '<div class="allo-block allo-block-vocab" data-allo-block="vocab-card" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove vocabulary card" title="Remove">\xD7</button><div class="allo-vocab-img" aria-hidden="true">\u{1F4D6}</div><div><p class="allo-vocab-word">Word<span class="allo-vocab-pos">noun</span></p><p class="allo-vocab-pron">/w\u0259rd/</p><div class="allo-vocab-examples"><p class="allo-vocab-def">Definition of the word in student-friendly language.</p><p class="allo-vocab-example">Example: "The word in a sentence."</p></div><div class="allo-vocab-audio"><audio controls aria-label="Pronunciation audio"></audio></div></div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Image</span><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-vocab-img-input" style="display:none" /></label><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-vocab-audio-input" style="display:none" /></label><button type="button" class="allo-vocab-tts-btn" aria-label="Generate pronunciation from the word" title="Generate pronunciation from the word">\u{1F3A4} TTS</button><span class="allo-control-label">Examples</span><button type="button" data-action="add-vocab-example">+ Example</button><button type="button" data-action="remove-vocab-example">\u2212 Example</button></div></div>'
-        },
-        {
-          label: "Reflection",
-          icon: "\u270F\uFE0F",
-          category: "educational",
-          keywords: "reflection journal response writing prompt",
-          html: `<div class="allo-block allo-block-reflection" data-allo-block="reflection" data-length="medium" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove reflection" title="Remove">\xD7</button><div class="allo-refl-prompt">Reflect: What did you learn? What questions do you still have?</div><div class="allo-refl-stems">Try starting with: "I learned..." \u2022 "I'm wondering..." \u2022 "This connects to..."</div><textarea class="allo-refl-area" aria-label="Reflection response" placeholder="Write your reflection here\u2026"></textarea><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Length</span><button type="button" data-action="refl-length-short" aria-pressed="false">Short</button><button type="button" data-action="refl-length-medium" aria-pressed="true">Medium</button><button type="button" data-action="refl-length-long" aria-pressed="false">Long</button></div></div>`
-        },
-        {
-          label: "Rubric",
-          icon: "\u{1F4CB}",
-          category: "educational",
-          keywords: "rubric grading criteria scoring assessment",
-          html: '<div class="allo-block allo-block-rubric" data-allo-block="rubric" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove rubric" title="Remove">\xD7</button><table aria-label="Scoring rubric"><caption>Rubric Title \u2014 Edit Me</caption><thead><tr><th scope="col">Criterion</th><th scope="col">4 \u2014 Exemplary</th><th scope="col">3 \u2014 Proficient</th><th scope="col">2 \u2014 Developing</th><th scope="col">1 \u2014 Beginning</th></tr></thead><tbody><tr><th scope="row">Criterion 1</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 2</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 3</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 4</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr></tbody></table><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Scale</span><button type="button" data-action="rubric-scale-3pt">3-pt</button><button type="button" data-action="rubric-scale-4pt" aria-pressed="true">4-pt</button><button type="button" data-action="rubric-scale-5pt">5-pt</button><button type="button" data-action="rubric-scale-standards">Standards</button><button type="button" data-action="rubric-scale-ungraded">Glow/Grow</button><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Criterion</button><button type="button" data-action="remove-row">\u2212 Criterion</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Level</button><button type="button" data-action="remove-col">\u2212 Level</button></div></div>'
-        },
-        {
-          label: "Lesson Plan",
-          icon: "\u{1F4D8}",
-          category: "educational",
-          keywords: "lesson plan template udl objective standards materials assessment",
-          html: '<section class="allo-block allo-block-lesson" data-allo-block="lesson-plan" tabindex="0" aria-label="Lesson plan template"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove lesson plan" title="Remove">\xD7</button><h2 class="allo-lesson-title">Lesson Plan: <em>Click to edit title</em></h2><div class="allo-lesson-meta">Grade: <em>3</em> \xB7 Subject: <em>Math</em> \xB7 Duration: <em>50 min</em> \xB7 Date: <em>edit</em></div><div class="allo-lesson-section"><h3>\u{1F3AF} Learning Objective</h3><p>By the end of this lesson, students will be able to <em>(use measurable verb: explain, identify, solve, create\u2026)</em>.</p></div><div class="allo-lesson-section"><h3>\u{1F4DA} Standards</h3><ul><li>CCSS / NGSS / state standard reference here</li></ul></div><div class="allo-lesson-section"><h3>\u{1F4E6} Materials</h3><ul><li>Material 1</li><li>Material 2</li></ul></div><div class="allo-lesson-section"><h3>\u{1F4D6} Direct Instruction <em class="allo-lesson-time">(10 min)</em></h3><p>Teacher modeling, key vocabulary introduction, anchor chart\u2026</p></div><div class="allo-lesson-section"><h3>\u{1F465} Guided Practice <em class="allo-lesson-time">(15 min)</em></h3><p>Partner or small-group work with teacher checking in\u2026</p></div><div class="allo-lesson-section"><h3>\u270F\uFE0F Independent Practice <em class="allo-lesson-time">(15 min)</em></h3><p>Individual application of the skill\u2026</p></div><div class="allo-lesson-section"><h3>\u{1F4CA} Assessment</h3><p>How will you know students met the objective? (exit ticket, rubric, observation\u2026)</p></div><div class="allo-lesson-section"><h3>\u{1F4AD} Closure / Reflection <em class="allo-lesson-time">(5 min)</em></h3><p>Quick reflection prompt or share-out\u2026</p></div><div class="allo-lesson-section allo-lesson-udl"><h3>\u{1F308} UDL Considerations</h3><ul><li><strong>Multiple means of representation:</strong> visual + verbal + hands-on</li><li><strong>Multiple means of action / expression:</strong> students can show learning by writing, speaking, drawing, or building</li><li><strong>Multiple means of engagement:</strong> choice in topic / partner / format</li></ul></div></section>'
-        },
-        // ── Interactive ──
-        {
-          label: "Data Table",
-          icon: "\u{1F4CA}",
-          category: "interactive",
-          keywords: "table data grid spreadsheet",
-          html: '<div class="allo-block allo-block-table" data-allo-block="table" data-header-style="default" data-zebra="on" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove table" title="Remove">\xD7</button><figure><table aria-label="Data table"><caption>Table Title \u2014 Edit Me</caption><thead><tr><th scope="col">Header 1</th><th scope="col">Header 2</th><th scope="col">Header 3</th></tr></thead><tbody><tr><td>Data</td><td>Data</td><td>Data</td></tr><tr><td>Data</td><td>Data</td><td>Data</td></tr></tbody></table></figure><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Row</button><button type="button" data-action="remove-row">\u2212 Row</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Col</button><button type="button" data-action="remove-col">\u2212 Col</button><span class="allo-control-label">Header</span><button type="button" data-action="table-header-default" aria-pressed="true">Light</button><button type="button" data-action="table-header-dark">Dark</button><button type="button" data-action="table-header-accent">Accent</button><button type="button" data-action="table-header-minimal">Minimal</button><span class="allo-control-label">Stripes</span><button type="button" data-action="table-zebra-toggle" aria-pressed="true">Zebra</button></div></div>'
-        },
-        // ── Media ──
-        {
-          label: "Image",
-          icon: "\u{1F5BC}\uFE0F",
-          category: "media",
-          keywords: "image picture photo media",
-          html: '<figure class="allo-block allo-block-image" data-allo-block="image" tabindex="0" role="figure" aria-label="Image"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove image" title="Remove">\xD7</button><div class="allo-img-placeholder"><span aria-hidden="true">\u{1F5BC}\uFE0F</span><br/>Upload a file or paste an image URL below.</div><div class="allo-img-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-img-file-input" style="display:none" /></label><input type="url" class="allo-img-url-input" placeholder="https://image.url" autocomplete="url" aria-label="Image URL" /></div><figcaption>Image description for screen readers \u2014 edit this caption</figcaption></figure>'
-        },
-        {
-          label: "Audio",
-          icon: "\u{1F50A}",
-          category: "media",
-          keywords: "audio sound music podcast pronunciation",
-          html: '<div class="allo-block allo-block-audio" data-allo-block="audio" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove audio" title="Remove">\xD7</button><div class="allo-audio-label">Audio</div><audio controls aria-label="Audio recording"></audio><div class="allo-audio-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-audio-file-input" style="display:none" /></label><input type="url" class="allo-audio-url-input" placeholder="https://audio.url" autocomplete="url" aria-label="Audio URL" /><button type="button" class="allo-audio-tts-btn" aria-label="Generate audio from the transcript" title="Generate audio from the transcript text" style="font-size:11px;background:#7c3aed;color:white;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-family:inherit;font-weight:600;">\u{1F3A4} TTS from transcript</button></div><div class="allo-audio-transcript"><strong>Transcript:</strong> Edit this transcript to match the audio. Always provide a transcript for accessibility.</div></div>'
-        },
-        {
-          label: "Video",
-          icon: "\u{1F4F9}",
-          category: "media",
-          keywords: "video youtube vimeo embed media",
-          html: `<div class="allo-block allo-block-video" data-allo-block="video" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove video" title="Remove">\xD7</button><div class="allo-video-frame"><div class="allo-video-placeholder"><span aria-hidden="true">\u{1F4F9}</span><br/>Paste a YouTube or Vimeo URL below.<br/><em style="font-size:11px;color:#475569;">Captions and transcript are required for accessibility.</em></div></div><div class="allo-video-controls allo-block-controls" contenteditable="false"><span class="allo-control-label">URL</span><input type="url" class="allo-video-url-input" placeholder="https://youtube.com/watch?v=\u2026 or https://vimeo.com/\u2026" autocomplete="url" aria-label="Video URL" style="flex:1;min-width:200px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;" /><span class="allo-control-label">Title</span><input type="text" class="allo-video-title-input" placeholder="Title shown on screen" aria-label="Video title" style="flex:1;min-width:160px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;" /></div><div class="allo-video-transcript"><strong>Transcript:</strong> Edit this transcript to match the video. Required for accessibility \u2014 students who can't hear the audio depend on this.</div></div>`
-        },
-        {
-          label: "Math",
-          icon: "\u2797",
-          category: "media",
-          keywords: "math equation latex formula katex",
-          html: (() => {
-            const groups = {};
-            Object.entries(_MATH_FORMULAS).forEach(([k, v]) => {
-              if (!groups[v.group]) groups[v.group] = [];
-              groups[v.group].push('<option value="' + k + '">' + v.label + "</option>");
-            });
-            const optgroups = Object.entries(groups).map(([g2, opts]) => '<optgroup label="' + g2 + '">' + opts.join("") + "</optgroup>").join("");
-            return '<div class="allo-block allo-block-math" data-allo-block="math" tabindex="0" role="math" aria-label="Math equation"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove equation" title="Remove">\xD7</button><div class="allo-math-output">a\xB2 + b\xB2 = c\xB2</div><div class="allo-math-input-wrap" contenteditable="false"><label>LaTeX</label><input type="text" class="allo-math-input" value="a^2 + b^2 = c^2" placeholder="e.g. \\frac{a}{b} or \\int_0^1 x^2 dx" /><span class="allo-math-status">Loading\u2026</span></div><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Library</span><select class="allo-math-formula-select" aria-label="Insert a formula"><option value="">\u2014 Pick a formula \u2014</option>' + optgroups + "</select></div></div>";
-          })
-        },
-        {
-          label: "Code",
-          icon: "\u{1F4BB}",
-          category: "media",
-          keywords: "code syntax programming snippet",
-          html: '<div class="allo-block allo-block-code-wrap" data-allo-block="code" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove code" title="Remove">\xD7</button><div class="allo-code-header" contenteditable="false"><label style="font-size:11px;color:#94a3b8;">Lang:</label><select class="allo-code-lang-select" aria-label="Programming language"><option value="python" selected>Python</option><option value="javascript">JavaScript</option><option value="typescript">TypeScript</option><option value="html">HTML</option><option value="css">CSS</option><option value="java">Java</option><option value="csharp">C#</option><option value="cpp">C++</option><option value="c">C</option><option value="ruby">Ruby</option><option value="go">Go</option><option value="rust">Rust</option><option value="sql">SQL</option><option value="bash">Bash</option><option value="json">JSON</option><option value="markdown">Markdown</option><option value="plaintext">Plain text</option></select><button type="button" class="allo-code-copy-btn" aria-label="Copy code to clipboard" title="Copy code" style="font-size:11px;background:#475569;color:white;border:none;border-radius:4px;padding:3px 10px;cursor:pointer;font-family:inherit;font-weight:600;margin-left:auto;">\u{1F4CB} Copy</button></div><pre><code class="language-python" aria-label="Code example"># Example code\nprint("Hello, world!")</code></pre></div>'
-        },
-        // ── Footnote (always available) ── inserts a superscript
-        // anchor; the post-insert handler creates the paired note
-        // in an end-of-doc <section class="allo-footnotes"> and
-        // renumbers. Works in HTML/print export with zero changes.
-        {
-          label: "Footnote",
-          icon: "\u{1F516}",
-          category: "content",
-          keywords: "footnote endnote note citation reference superscript",
-          html: '<sup class="allo-fn-ref" data-allo-block="footnote"><a href="#">?</a></sup>'
-        },
-        // ── Academic blocks (modeOnly — surface in APA/MLA/Chicago) ──
-        // Mode-aware: headings + citation format follow DOC_MODES.
-        {
-          label: "In-text Citation",
-          icon: "\u270D\uFE0F",
-          category: "academic",
-          modeOnly: true,
-          keywords: "citation in-text parenthetical author year reference source",
-          html: () => {
-            const m = DOC_MODES[docMode] || DOC_MODES.apa;
-            return '<span class="allo-citation" contenteditable="true">' + (m.citation || "(Author, Year)") + "</span>";
-          }
-        },
-        {
-          label: "References",
-          icon: "\u{1F4DA}",
-          category: "academic",
-          modeOnly: true,
-          keywords: "references works cited bibliography sources citation list",
-          html: () => {
-            const m = DOC_MODES[docMode] || DOC_MODES.apa;
-            const h = m.refHeading || "References";
-            return '<section class="allo-references allo-block" data-allo-block="references" tabindex="0" aria-label="' + h + '"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove ' + h + '" title="Remove">\xD7</button><h2>' + h + '</h2><p class="allo-ref-entry" contenteditable="true">Author, A. A. (Year). <em>Title of the work</em>. Publisher or Source. https://doi.org/xxxx</p><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">' + h + '</span><button type="button" data-action="ref-add-entry">+ Entry</button><button type="button" data-action="ref-sort">\u2195 Sort A\u2013Z</button></div></section>';
-          }
-        },
-        {
-          label: "Title Page",
-          icon: "\u{1F4C3}",
-          category: "academic",
-          modeOnly: true,
-          keywords: "title page cover heading author affiliation course date",
-          html: '<section class="allo-titlepage allo-block" data-allo-block="titlepage" tabindex="0" aria-label="Title page" style="text-align:center;padding:3em 1em;"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove title page" title="Remove">\xD7</button><h1 contenteditable="true">Title of Your Paper</h1><p contenteditable="true">Author Name</p><p contenteditable="true">Institutional Affiliation</p><p contenteditable="true">Course &middot; Instructor &middot; Date</p></section><div class="allo-block-pagebreak" contenteditable="false" aria-label="Page break" style="page-break-after:always;break-after:page;height:0;"></div>'
-        }
-      ];
-      const _CAT_LABELS = { layout: "\u{1F3A8} Layout", content: "\u{1F4DD} Content", educational: "\u{1F393} Educational", interactive: "\u{1F5B1}\uFE0F Interactive", media: "\u{1F4F7} Media", academic: "\u{1F393} Academic" };
-      const _CAT_ORDER = ["layout", "content", "educational", "interactive", "media", "academic"];
-      const _insertBlock = (block) => {
-        const iframe = pdfPreviewRef.current;
-        if (!iframe) return;
-        const doc = iframe.contentDocument;
-        if (!doc) return;
-        try {
-          iframe.contentWindow.focus();
-        } catch (e) {
-        }
-        try {
-          doc.designMode = "on";
-        } catch (e) {
-        }
-        _ensureAlloBlocksReady(doc);
-        const sel = doc.getSelection();
-        if (!sel || sel.rangeCount === 0) {
-          const main = doc.querySelector("main") || doc.body;
-          const range = doc.createRange();
-          range.selectNodeContents(main);
-          range.collapse(false);
-          sel.removeAllRanges();
-          sel.addRange(range);
-        }
-        const sentinelId = "__allo_ins_" + Date.now() + "_" + Math.floor(Math.random() * 1e3);
-        const sentinel = '<span id="' + sentinelId + '" data-allo-sentinel="1">\u200B</span>';
-        const html = typeof block.html === "function" ? block.html() : block.html;
-        doc.execCommand("insertHTML", false, sentinel + html);
-        const sent = doc.getElementById(sentinelId);
-        const newBlock = sent && sent.nextElementSibling;
-        if (sent) sent.remove();
-        if (newBlock) {
-          try {
-            newBlock.scrollIntoView({ behavior: "smooth", block: "center" });
-          } catch (e) {
-          }
-          if (newBlock.matches && newBlock.matches("[data-allo-block]")) {
-            if (!newBlock.hasAttribute("tabindex")) newBlock.setAttribute("tabindex", "-1");
-            setTimeout(() => {
-              try {
-                newBlock.focus({ preventScroll: false });
-              } catch (e) {
-              }
-            }, 60);
-          }
-          const blockType = newBlock.getAttribute && newBlock.getAttribute("data-allo-block");
-          if (blockType === "math") {
-            _ensureKatex(doc);
-            const inp = newBlock.querySelector(".allo-math-input");
-            const out = newBlock.querySelector(".allo-math-output");
-            const status = newBlock.querySelector(".allo-math-status");
-            let _kxAttempts = 0;
-            const _kxTry = () => {
-              try {
-                if (doc.defaultView && doc.defaultView.katex && inp && out) {
-                  doc.defaultView.katex.render(inp.value, out, { throwOnError: false, displayMode: true });
-                  if (status) status.textContent = "Rendered";
+          }, true);
+          doc.addEventListener("change", (ev) => {
+            const t2 = ev.target;
+            if (!t2) return;
+            if (t2.classList && t2.classList.contains("allo-img-file-input")) {
+              const file = t2.files && t2.files[0];
+              if (!file) return;
+              const block = t2.closest(".allo-block-image");
+              if (!block) return;
+              const sizeMB = file.size / (1024 * 1024);
+              if (sizeMB > 1) {
+                const win = doc.defaultView;
+                const msg = "This image is " + sizeMB.toFixed(1) + " MB. Embedding it inline will add about " + (sizeMB * 1.33).toFixed(1) + " MB to your document. Continue, or cancel and paste a URL instead?";
+                const proceed = win && typeof win.confirm === "function" ? win.confirm(msg) : true;
+                if (!proceed) {
+                  t2.value = "";
+                  announce("Image upload cancelled");
                   return;
                 }
-              } catch (_) {
               }
-              if (++_kxAttempts < 25) {
-                setTimeout(_kxTry, 200);
-              } else if (status) {
-                status.textContent = "KaTeX failed to load";
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const placeholder = block.querySelector(".allo-img-placeholder");
+                let img = block.querySelector("img.allo-img-real");
+                if (!img) {
+                  img = doc.createElement("img");
+                  img.className = "allo-img-real";
+                  img.alt = file.name.replace(/\.[^.]+$/, "");
+                  if (placeholder) placeholder.replaceWith(img);
+                  else block.insertBefore(img, block.firstChild);
+                }
+                img.src = String(e.target.result || "");
+                announce("Image uploaded: " + file.name);
+                persist();
+              };
+              reader.readAsDataURL(file);
+            }
+            if (t2.classList && t2.classList.contains("allo-audio-file-input")) {
+              const file = t2.files && t2.files[0];
+              if (!file) return;
+              const block = t2.closest(".allo-block-audio");
+              if (!block) return;
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const audio = block.querySelector("audio");
+                if (audio) {
+                  audio.src = String(e.target.result || "");
+                  announce("Audio uploaded: " + file.name);
+                  persist();
+                }
+              };
+              reader.readAsDataURL(file);
+            }
+            if (t2.classList && t2.classList.contains("allo-vocab-audio-input")) {
+              const file = t2.files && t2.files[0];
+              if (!file) return;
+              const block = t2.closest(".allo-block-vocab");
+              if (!block) return;
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const audio = block.querySelector(".allo-vocab-audio audio");
+                if (audio) {
+                  audio.src = String(e.target.result || "");
+                  announce("Pronunciation audio uploaded");
+                  persist();
+                }
+              };
+              reader.readAsDataURL(file);
+            }
+            if (t2.classList && t2.classList.contains("allo-def-audio-input")) {
+              const file = t2.files && t2.files[0];
+              if (!file) return;
+              const block = t2.closest(".allo-block-definition");
+              if (!block) return;
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const audio = block.querySelector(".allo-def-audio audio");
+                if (audio) {
+                  audio.src = String(e.target.result || "");
+                  announce("Pronunciation audio uploaded");
+                  persist();
+                }
+              };
+              reader.readAsDataURL(file);
+            }
+            if (t2.classList && t2.classList.contains("allo-vocab-img-input")) {
+              const file = t2.files && t2.files[0];
+              if (!file) return;
+              const block = t2.closest(".allo-block-vocab");
+              if (!block) return;
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const slot = block.querySelector(".allo-vocab-img");
+                if (slot) {
+                  slot.innerHTML = "";
+                  const img = doc.createElement("img");
+                  img.src = String(e.target.result || "");
+                  img.alt = file.name.replace(/\.[^.]+$/, "");
+                  slot.appendChild(img);
+                  announce("Vocab image uploaded");
+                  persist();
+                }
+              };
+              reader.readAsDataURL(file);
+            }
+            if (t2.classList && t2.classList.contains("allo-code-lang-select")) {
+              const block = t2.closest(".allo-block-code-wrap");
+              if (!block) return;
+              const codeEl = block.querySelector("code");
+              if (codeEl) {
+                const newLang = t2.value || "plaintext";
+                const txt = codeEl.textContent || "";
+                codeEl.innerHTML = "";
+                codeEl.textContent = txt;
+                codeEl.className = "language-" + newLang;
+                _ensurePrism(doc, newLang, codeEl);
+                announce("Code language: " + newLang);
+                persist();
               }
-            };
-            setTimeout(_kxTry, 100);
-          } else if (blockType === "code") {
-            const codeEl = newBlock.querySelector("code");
-            _ensurePrism(doc, "python", codeEl || void 0);
-          } else if (blockType === "footnote") {
+            }
+            if (t2.classList && t2.classList.contains("allo-frame-template-select")) {
+              const block = t2.closest(".allo-block-frame");
+              if (!block) return;
+              const tpl = _SENTENCE_FRAMES[t2.value];
+              if (!tpl) return;
+              const blanks = block.querySelectorAll(".allo-frame-blank");
+              let hasEdits = false;
+              blanks.forEach((b) => {
+                const stripped = (b.textContent || "").replace(/[_\s\/]/g, "");
+                if (stripped.length >= 4 && stripped !== "agreedisagree") hasEdits = true;
+              });
+              if (hasEdits) {
+                const win = doc.defaultView;
+                const proceed = win && typeof win.confirm === "function" ? win.confirm("Switch sentence frame template? Your edits to the blanks will be replaced.") : true;
+                if (!proceed) {
+                  const prev = t2.dataset.prevValue;
+                  if (prev) t2.value = prev;
+                  announce("Template change cancelled");
+                  return;
+                }
+              }
+              const removeBtn = block.querySelector(":scope > .allo-block-remove");
+              const picker = block.querySelector(":scope > .allo-frame-template-picker");
+              block.innerHTML = (removeBtn ? removeBtn.outerHTML : "") + tpl + (picker ? picker.outerHTML : "");
+              const newSelect = block.querySelector(".allo-frame-template-select");
+              if (newSelect) {
+                newSelect.value = t2.value;
+                newSelect.dataset.prevValue = t2.value;
+              }
+              announce("Sentence frame: " + t2.value);
+              persist();
+            }
+            if (t2.classList && t2.classList.contains("allo-def-lang-select")) {
+              const block = t2.closest(".allo-block-definition");
+              if (!block) return;
+              const span = block.querySelector("dt > span");
+              if (span) {
+                span.setAttribute("lang", t2.value);
+                announce("Term language: " + t2.value);
+                persist();
+              }
+            }
+            if (t2.classList && t2.classList.contains("allo-math-formula-select")) {
+              const key = t2.value;
+              if (!key) return;
+              const formula = _MATH_FORMULAS[key];
+              if (!formula) return;
+              const block = t2.closest(".allo-block-math");
+              if (!block) return;
+              const inp = block.querySelector(".allo-math-input");
+              const out = block.querySelector(".allo-math-output");
+              const status = block.querySelector(".allo-math-status");
+              if (inp) inp.value = formula.latex;
+              const win = doc.defaultView;
+              if (win && win.katex && out) {
+                try {
+                  win.katex.render(formula.latex, out, { throwOnError: false, displayMode: true });
+                  if (status) status.textContent = "Rendered";
+                } catch (e) {
+                  if (out) out.textContent = formula.latex;
+                }
+              } else if (out) {
+                out.textContent = formula.latex;
+              }
+              announce("Inserted " + formula.label);
+              persist();
+              t2.value = "";
+            }
+          }, true);
+        };
+        const _uid = (p) => p + "-" + Date.now() + "-" + Math.floor(Math.random() * 1e4);
+        const blocks = [
+          // ── Layout ──
+          {
+            label: "Columns",
+            icon: "\u2B1B\u2B1B",
+            category: "layout",
+            keywords: "columns grid layout split",
+            html: '<div class="allo-block allo-block-columns" data-allo-block="columns" tabindex="0" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove columns" title="Remove">\xD7</button><div class="allo-col">Column 1 content</div><div class="allo-col">Column 2 content</div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Cols</span><button type="button" data-action="add-column-card" aria-label="Add column">+ Col</button><button type="button" data-action="remove-column-card" aria-label="Remove column">\u2212 Col</button><span class="allo-control-label">Ratio</span><button type="button" data-action="cols-ratio-equal" aria-pressed="true">Equal</button><button type="button" data-action="cols-ratio-2-1" aria-pressed="false">2:1</button><button type="button" data-action="cols-ratio-1-2" aria-pressed="false">1:2</button><span class="allo-control-label">Gap</span><button type="button" data-action="cols-gap-tight">Tight</button><button type="button" data-action="cols-gap-normal" aria-pressed="true">Normal</button><button type="button" data-action="cols-gap-wide">Wide</button></div></div>'
+          },
+          {
+            label: "Divider",
+            icon: "\u2796",
+            category: "layout",
+            keywords: "divider hr separator line",
+            html: '<div class="allo-block allo-block-divider" data-allo-block="divider" tabindex="0" role="separator" aria-label="Section divider"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove divider" title="Remove">\xD7</button><hr /></div>'
+          },
+          {
+            label: "Page Break",
+            icon: "\u{1F4C4}",
+            category: "layout",
+            keywords: "page break print pagination",
+            html: '<div class="allo-block allo-block-pagebreak" data-allo-block="pagebreak" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove page break" title="Remove">\xD7</button><span class="allo-pb-label" aria-hidden="true">\u2014 Page Break \u2014</span><span class="allo-sr-only">Page break</span></div>'
+          },
+          // ── Content ──
+          {
+            label: "Callout",
+            icon: "\u2139\uFE0F",
+            category: "content",
+            keywords: "info note warning success callout alert tip",
+            html: '<div class="allo-block allo-callout allo-callout-info" data-allo-block="info" data-allo-style="info" tabindex="0" role="note" aria-label="Callout"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove callout" title="Remove">\xD7</button><strong>Note:</strong> <span>Enter info here</span><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Style</span><button type="button" data-action="callout-style-info" aria-pressed="true">Info</button><button type="button" data-action="callout-style-warning" aria-pressed="false">Warning</button><button type="button" data-action="callout-style-success" aria-pressed="false">Tip</button><button type="button" data-action="callout-style-note" aria-pressed="false">Note</button><button type="button" data-action="callout-style-danger" aria-pressed="false">Danger</button></div></div>'
+          },
+          {
+            label: "Quote",
+            icon: "\u{1F4AC}",
+            category: "content",
+            keywords: "quote blockquote cite",
+            html: '<blockquote class="allo-block allo-block-quote" data-allo-block="quote" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove quote" title="Remove">\xD7</button>"Enter quote here"<cite>\u2014 Source</cite></blockquote>'
+          },
+          {
+            label: "Checklist",
+            icon: "\u2611\uFE0F",
+            category: "content",
+            keywords: "checklist list tasks todo",
+            html: (() => {
+              const a = _uid("cl"), b = _uid("cl"), c = _uid("cl");
+              return '<div class="allo-block" data-allo-block="checklist" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove checklist" title="Remove">\xD7</button><ul class="allo-block-checklist" data-list-style="checkbox" aria-label="Checklist"><li><input type="checkbox" id="' + a + '" /><label for="' + a + '">Task item 1</label></li><li><input type="checkbox" id="' + b + '" /><label for="' + b + '">Task item 2</label></li><li><input type="checkbox" id="' + c + '" /><label for="' + c + '">Task item 3</label></li></ul><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Items</span><button type="button" data-action="add-checklist-item">+ Item</button><button type="button" data-action="remove-checklist-item">\u2212 Item</button><span class="allo-control-label">Style</span><button type="button" data-action="list-style-checkbox" aria-pressed="true">\u2611 Check</button><button type="button" data-action="list-style-bullet" aria-pressed="false">\u2022 Bullet</button><button type="button" data-action="list-style-ordered" aria-pressed="false">1. Number</button></div></div>';
+            })
+          },
+          {
+            label: "Numbered Steps",
+            icon: "1\uFE0F\u20E3",
+            category: "content",
+            keywords: "steps numbered ordered procedure how-to",
+            html: '<div class="allo-block" data-allo-block="steps" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove steps" title="Remove">\xD7</button><ol class="allo-block-steps" data-num-style="numeric" aria-label="Step-by-step instructions"><li><span class="allo-step-num" aria-hidden="true">1</span><div class="allo-step-body">First step description</div></li><li><span class="allo-step-num" aria-hidden="true">2</span><div class="allo-step-body">Second step description</div></li><li><span class="allo-step-num" aria-hidden="true">3</span><div class="allo-step-body">Third step description</div></li></ol><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Steps</span><button type="button" data-action="add-step">+ Step</button><button type="button" data-action="remove-step">\u2212 Step</button><span class="allo-control-label">Numbering</span><button type="button" data-action="num-style-numeric" aria-pressed="true">1, 2, 3</button><button type="button" data-action="num-style-alpha" aria-pressed="false">A, B, C</button><button type="button" data-action="num-style-roman" aria-pressed="false">I, II, III</button></div></div>'
+          },
+          {
+            label: "Accordion",
+            icon: "\u{1F4C2}",
+            category: "content",
+            keywords: "accordion collapsible expand toggle disclosure",
+            html: '<details class="allo-block allo-block-accordion" data-allo-block="accordion" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove accordion" title="Remove">\xD7</button><summary>Click to expand section title</summary><div class="allo-accordion-body">Hidden content goes here. Great for differentiation. <em>Note: collapsed content does not appear in printed/exported PDFs unless expanded.</em><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Default</span><button type="button" data-action="accordion-default-open" aria-pressed="false">Open by default</button></div></div></details>'
+          },
+          {
+            label: "Q & A",
+            icon: "\u2753",
+            category: "content",
+            keywords: "qa question answer faq study",
+            html: '<div class="allo-block allo-block-qa" data-allo-block="qa" tabindex="0" role="group" aria-label="Question and answer"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove question and answer" title="Remove">\xD7</button><div class="allo-qa-question"><strong>Q:</strong> Type the question here.</div><div class="allo-qa-answer"><strong>A:</strong> Type the answer here.</div></div>'
+          },
+          {
+            label: "Definition",
+            icon: "\u{1F4D6}",
+            category: "content",
+            keywords: "definition term vocabulary glossary",
+            html: '<dl class="allo-block allo-block-definition" data-allo-block="definition" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove definition" title="Remove">\xD7</button><dt><span lang="en">Term</span><span class="allo-def-pron">/pr\u0259-nun-see-AY-shun/</span></dt><dd>Definition goes here. Students can reference this for key vocabulary.</dd><div class="allo-def-audio"><audio controls aria-label="Pronunciation audio"></audio></div><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Term Lang</span><select class="allo-def-lang-select" aria-label="Term language"><option value="en">English</option><option value="es">Espa\xF1ol</option><option value="fr">Fran\xE7ais</option><option value="zh">\u4E2D\u6587</option><option value="ar">\u0627\u0644\u0639\u0631\u0628\u064A\u0629</option><option value="la">Latin</option><option value="grc">Greek</option></select><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-def-audio-input" style="display:none" /></label><button type="button" class="allo-def-tts-btn" aria-label="Generate pronunciation from the term" title="Generate pronunciation from the term">\u{1F3A4} TTS</button></div></dl>'
+          },
+          // ── Educational ──
+          {
+            label: "Sentence Frame",
+            icon: "\u{1FAA7}",
+            category: "educational",
+            keywords: "sentence frame stem scaffold ell esl",
+            html: '<div class="allo-block allo-block-frame" data-allo-block="sentence-frame" tabindex="0" role="note" aria-label="Sentence frame"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove sentence frame" title="Remove">\xD7</button>I noticed <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.<div class="allo-block-controls allo-frame-template-picker" contenteditable="false"><span class="allo-control-label">Template</span><select class="allo-frame-template-select" aria-label="Sentence frame template"><option value="notice-because">I noticed ___ because ___</option><option value="cer">Claim / Evidence / Reasoning</option><option value="agree-disagree">I agree/disagree because ___</option><option value="compare">Compare and contrast</option><option value="cause-effect">When ___, then ___</option><option value="wonder">I wonder why ___</option><option value="sel-feeling">I feel ___ when ___</option><option value="add-on">Adding to what ___ said</option></select></div></div>'
+          },
+          {
+            label: "Objective",
+            icon: "\u{1F3AF}",
+            category: "educational",
+            keywords: "learning objective goal standard outcome",
+            html: `<div class="allo-block allo-block-objective" data-allo-block="learning-objective" tabindex="0" role="note" aria-label="Learning objective"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove learning objective" title="Remove">\xD7</button><span class="allo-obj-label">Learning Objective</span><div class="allo-obj-text">By the end of this lesson, students will be able to <em>explain the main idea</em>.</div><div class="allo-obj-meta"><span>Standard: <em>edit me</em></span><span>Bloom's: <em>Apply</em></span></div></div>`
+          },
+          {
+            label: "Vocab Card",
+            icon: "\u{1F0CF}",
+            category: "educational",
+            keywords: "vocabulary card word term definition",
+            html: '<div class="allo-block allo-block-vocab" data-allo-block="vocab-card" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove vocabulary card" title="Remove">\xD7</button><div class="allo-vocab-img" aria-hidden="true">\u{1F4D6}</div><div><p class="allo-vocab-word">Word<span class="allo-vocab-pos">noun</span></p><p class="allo-vocab-pron">/w\u0259rd/</p><div class="allo-vocab-examples"><p class="allo-vocab-def">Definition of the word in student-friendly language.</p><p class="allo-vocab-example">Example: "The word in a sentence."</p></div><div class="allo-vocab-audio"><audio controls aria-label="Pronunciation audio"></audio></div></div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Image</span><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-vocab-img-input" style="display:none" /></label><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-vocab-audio-input" style="display:none" /></label><button type="button" class="allo-vocab-tts-btn" aria-label="Generate pronunciation from the word" title="Generate pronunciation from the word">\u{1F3A4} TTS</button><span class="allo-control-label">Examples</span><button type="button" data-action="add-vocab-example">+ Example</button><button type="button" data-action="remove-vocab-example">\u2212 Example</button></div></div>'
+          },
+          {
+            label: "Reflection",
+            icon: "\u270F\uFE0F",
+            category: "educational",
+            keywords: "reflection journal response writing prompt",
+            html: `<div class="allo-block allo-block-reflection" data-allo-block="reflection" data-length="medium" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove reflection" title="Remove">\xD7</button><div class="allo-refl-prompt">Reflect: What did you learn? What questions do you still have?</div><div class="allo-refl-stems">Try starting with: "I learned..." \u2022 "I'm wondering..." \u2022 "This connects to..."</div><textarea class="allo-refl-area" aria-label="Reflection response" placeholder="Write your reflection here\u2026"></textarea><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Length</span><button type="button" data-action="refl-length-short" aria-pressed="false">Short</button><button type="button" data-action="refl-length-medium" aria-pressed="true">Medium</button><button type="button" data-action="refl-length-long" aria-pressed="false">Long</button></div></div>`
+          },
+          {
+            label: "Rubric",
+            icon: "\u{1F4CB}",
+            category: "educational",
+            keywords: "rubric grading criteria scoring assessment",
+            html: '<div class="allo-block allo-block-rubric" data-allo-block="rubric" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove rubric" title="Remove">\xD7</button><table aria-label="Scoring rubric"><caption>Rubric Title \u2014 Edit Me</caption><thead><tr><th scope="col">Criterion</th><th scope="col">4 \u2014 Exemplary</th><th scope="col">3 \u2014 Proficient</th><th scope="col">2 \u2014 Developing</th><th scope="col">1 \u2014 Beginning</th></tr></thead><tbody><tr><th scope="row">Criterion 1</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 2</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 3</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 4</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr></tbody></table><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Scale</span><button type="button" data-action="rubric-scale-3pt">3-pt</button><button type="button" data-action="rubric-scale-4pt" aria-pressed="true">4-pt</button><button type="button" data-action="rubric-scale-5pt">5-pt</button><button type="button" data-action="rubric-scale-standards">Standards</button><button type="button" data-action="rubric-scale-ungraded">Glow/Grow</button><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Criterion</button><button type="button" data-action="remove-row">\u2212 Criterion</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Level</button><button type="button" data-action="remove-col">\u2212 Level</button></div></div>'
+          },
+          {
+            label: "Lesson Plan",
+            icon: "\u{1F4D8}",
+            category: "educational",
+            keywords: "lesson plan template udl objective standards materials assessment",
+            html: '<section class="allo-block allo-block-lesson" data-allo-block="lesson-plan" tabindex="0" aria-label="Lesson plan template"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove lesson plan" title="Remove">\xD7</button><h2 class="allo-lesson-title">Lesson Plan: <em>Click to edit title</em></h2><div class="allo-lesson-meta">Grade: <em>3</em> \xB7 Subject: <em>Math</em> \xB7 Duration: <em>50 min</em> \xB7 Date: <em>edit</em></div><div class="allo-lesson-section"><h3>\u{1F3AF} Learning Objective</h3><p>By the end of this lesson, students will be able to <em>(use measurable verb: explain, identify, solve, create\u2026)</em>.</p></div><div class="allo-lesson-section"><h3>\u{1F4DA} Standards</h3><ul><li>CCSS / NGSS / state standard reference here</li></ul></div><div class="allo-lesson-section"><h3>\u{1F4E6} Materials</h3><ul><li>Material 1</li><li>Material 2</li></ul></div><div class="allo-lesson-section"><h3>\u{1F4D6} Direct Instruction <em class="allo-lesson-time">(10 min)</em></h3><p>Teacher modeling, key vocabulary introduction, anchor chart\u2026</p></div><div class="allo-lesson-section"><h3>\u{1F465} Guided Practice <em class="allo-lesson-time">(15 min)</em></h3><p>Partner or small-group work with teacher checking in\u2026</p></div><div class="allo-lesson-section"><h3>\u270F\uFE0F Independent Practice <em class="allo-lesson-time">(15 min)</em></h3><p>Individual application of the skill\u2026</p></div><div class="allo-lesson-section"><h3>\u{1F4CA} Assessment</h3><p>How will you know students met the objective? (exit ticket, rubric, observation\u2026)</p></div><div class="allo-lesson-section"><h3>\u{1F4AD} Closure / Reflection <em class="allo-lesson-time">(5 min)</em></h3><p>Quick reflection prompt or share-out\u2026</p></div><div class="allo-lesson-section allo-lesson-udl"><h3>\u{1F308} UDL Considerations</h3><ul><li><strong>Multiple means of representation:</strong> visual + verbal + hands-on</li><li><strong>Multiple means of action / expression:</strong> students can show learning by writing, speaking, drawing, or building</li><li><strong>Multiple means of engagement:</strong> choice in topic / partner / format</li></ul></div></section>'
+          },
+          // ── Interactive ──
+          {
+            label: "Data Table",
+            icon: "\u{1F4CA}",
+            category: "interactive",
+            keywords: "table data grid spreadsheet",
+            html: '<div class="allo-block allo-block-table" data-allo-block="table" data-header-style="default" data-zebra="on" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove table" title="Remove">\xD7</button><figure><table aria-label="Data table"><caption>Table Title \u2014 Edit Me</caption><thead><tr><th scope="col">Header 1</th><th scope="col">Header 2</th><th scope="col">Header 3</th></tr></thead><tbody><tr><td>Data</td><td>Data</td><td>Data</td></tr><tr><td>Data</td><td>Data</td><td>Data</td></tr></tbody></table></figure><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Row</button><button type="button" data-action="remove-row">\u2212 Row</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Col</button><button type="button" data-action="remove-col">\u2212 Col</button><span class="allo-control-label">Header</span><button type="button" data-action="table-header-default" aria-pressed="true">Light</button><button type="button" data-action="table-header-dark">Dark</button><button type="button" data-action="table-header-accent">Accent</button><button type="button" data-action="table-header-minimal">Minimal</button><span class="allo-control-label">Stripes</span><button type="button" data-action="table-zebra-toggle" aria-pressed="true">Zebra</button></div></div>'
+          },
+          // ── Media ──
+          {
+            label: "Image",
+            icon: "\u{1F5BC}\uFE0F",
+            category: "media",
+            keywords: "image picture photo media",
+            html: '<figure class="allo-block allo-block-image" data-allo-block="image" tabindex="0" role="figure" aria-label="Image"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove image" title="Remove">\xD7</button><div class="allo-img-placeholder"><span aria-hidden="true">\u{1F5BC}\uFE0F</span><br/>Upload a file or paste an image URL below.</div><div class="allo-img-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-img-file-input" style="display:none" /></label><input type="url" class="allo-img-url-input" placeholder="https://image.url" autocomplete="url" aria-label="Image URL" /></div><figcaption>Image description for screen readers \u2014 edit this caption</figcaption></figure>'
+          },
+          {
+            label: "Audio",
+            icon: "\u{1F50A}",
+            category: "media",
+            keywords: "audio sound music podcast pronunciation",
+            html: '<div class="allo-block allo-block-audio" data-allo-block="audio" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove audio" title="Remove">\xD7</button><div class="allo-audio-label">Audio</div><audio controls aria-label="Audio recording"></audio><div class="allo-audio-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-audio-file-input" style="display:none" /></label><input type="url" class="allo-audio-url-input" placeholder="https://audio.url" autocomplete="url" aria-label="Audio URL" /><button type="button" class="allo-audio-tts-btn" aria-label="Generate audio from the transcript" title="Generate audio from the transcript text" style="font-size:11px;background:#7c3aed;color:white;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-family:inherit;font-weight:600;">\u{1F3A4} TTS from transcript</button></div><div class="allo-audio-transcript"><strong>Transcript:</strong> Edit this transcript to match the audio. Always provide a transcript for accessibility.</div></div>'
+          },
+          {
+            label: "Video",
+            icon: "\u{1F4F9}",
+            category: "media",
+            keywords: "video youtube vimeo embed media",
+            html: `<div class="allo-block allo-block-video" data-allo-block="video" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove video" title="Remove">\xD7</button><div class="allo-video-frame"><div class="allo-video-placeholder"><span aria-hidden="true">\u{1F4F9}</span><br/>Paste a YouTube or Vimeo URL below.<br/><em style="font-size:11px;color:#475569;">Captions and transcript are required for accessibility.</em></div></div><div class="allo-video-controls allo-block-controls" contenteditable="false"><span class="allo-control-label">URL</span><input type="url" class="allo-video-url-input" placeholder="https://youtube.com/watch?v=\u2026 or https://vimeo.com/\u2026" autocomplete="url" aria-label="Video URL" style="flex:1;min-width:200px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;" /><span class="allo-control-label">Title</span><input type="text" class="allo-video-title-input" placeholder="Title shown on screen" aria-label="Video title" style="flex:1;min-width:160px;font-size:12px;padding:4px 8px;border:1px solid #cbd5e1;border-radius:4px;" /></div><div class="allo-video-transcript"><strong>Transcript:</strong> Edit this transcript to match the video. Required for accessibility \u2014 students who can't hear the audio depend on this.</div></div>`
+          },
+          {
+            label: "Math",
+            icon: "\u2797",
+            category: "media",
+            keywords: "math equation latex formula katex",
+            html: (() => {
+              const groups = {};
+              Object.entries(_MATH_FORMULAS).forEach(([k, v]) => {
+                if (!groups[v.group]) groups[v.group] = [];
+                groups[v.group].push('<option value="' + k + '">' + v.label + "</option>");
+              });
+              const optgroups = Object.entries(groups).map(([g2, opts]) => '<optgroup label="' + g2 + '">' + opts.join("") + "</optgroup>").join("");
+              return '<div class="allo-block allo-block-math" data-allo-block="math" tabindex="0" role="math" aria-label="Math equation"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove equation" title="Remove">\xD7</button><div class="allo-math-output">a\xB2 + b\xB2 = c\xB2</div><div class="allo-math-input-wrap" contenteditable="false"><label>LaTeX</label><input type="text" class="allo-math-input" value="a^2 + b^2 = c^2" placeholder="e.g. \\frac{a}{b} or \\int_0^1 x^2 dx" /><span class="allo-math-status">Loading\u2026</span></div><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Library</span><select class="allo-math-formula-select" aria-label="Insert a formula"><option value="">\u2014 Pick a formula \u2014</option>' + optgroups + "</select></div></div>";
+            })
+          },
+          {
+            label: "Code",
+            icon: "\u{1F4BB}",
+            category: "media",
+            keywords: "code syntax programming snippet",
+            html: '<div class="allo-block allo-block-code-wrap" data-allo-block="code" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove code" title="Remove">\xD7</button><div class="allo-code-header" contenteditable="false"><label style="font-size:11px;color:#94a3b8;">Lang:</label><select class="allo-code-lang-select" aria-label="Programming language"><option value="python" selected>Python</option><option value="javascript">JavaScript</option><option value="typescript">TypeScript</option><option value="html">HTML</option><option value="css">CSS</option><option value="java">Java</option><option value="csharp">C#</option><option value="cpp">C++</option><option value="c">C</option><option value="ruby">Ruby</option><option value="go">Go</option><option value="rust">Rust</option><option value="sql">SQL</option><option value="bash">Bash</option><option value="json">JSON</option><option value="markdown">Markdown</option><option value="plaintext">Plain text</option></select><button type="button" class="allo-code-copy-btn" aria-label="Copy code to clipboard" title="Copy code" style="font-size:11px;background:#475569;color:white;border:none;border-radius:4px;padding:3px 10px;cursor:pointer;font-family:inherit;font-weight:600;margin-left:auto;">\u{1F4CB} Copy</button></div><pre><code class="language-python" aria-label="Code example"># Example code\nprint("Hello, world!")</code></pre></div>'
+          },
+          // ── Footnote (always available) ── inserts a superscript
+          // anchor; the post-insert handler creates the paired note
+          // in an end-of-doc <section class="allo-footnotes"> and
+          // renumbers. Works in HTML/print export with zero changes.
+          {
+            label: "Footnote",
+            icon: "\u{1F516}",
+            category: "content",
+            keywords: "footnote endnote note citation reference superscript",
+            html: '<sup class="allo-fn-ref" data-allo-block="footnote"><a href="#">?</a></sup>'
+          },
+          // ── Academic blocks (modeOnly — surface in APA/MLA/Chicago) ──
+          // Mode-aware: headings + citation format follow DOC_MODES.
+          {
+            label: "In-text Citation",
+            icon: "\u270D\uFE0F",
+            category: "academic",
+            modeOnly: true,
+            keywords: "citation in-text parenthetical author year reference source",
+            html: () => {
+              const m = DOC_MODES[docMode] || DOC_MODES.apa;
+              return '<span class="allo-citation" contenteditable="true">' + (m.citation || "(Author, Year)") + "</span>";
+            }
+          },
+          {
+            label: "References",
+            icon: "\u{1F4DA}",
+            category: "academic",
+            modeOnly: true,
+            keywords: "references works cited bibliography sources citation list",
+            html: () => {
+              const m = DOC_MODES[docMode] || DOC_MODES.apa;
+              const h = m.refHeading || "References";
+              return '<section class="allo-references allo-block" data-allo-block="references" tabindex="0" aria-label="' + h + '"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove ' + h + '" title="Remove">\xD7</button><h2>' + h + '</h2><p class="allo-ref-entry" contenteditable="true">Author, A. A. (Year). <em>Title of the work</em>. Publisher or Source. https://doi.org/xxxx</p><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">' + h + '</span><button type="button" data-action="ref-add-entry">+ Entry</button><button type="button" data-action="ref-sort">\u2195 Sort A\u2013Z</button></div></section>';
+            }
+          },
+          {
+            label: "Title Page",
+            icon: "\u{1F4C3}",
+            category: "academic",
+            modeOnly: true,
+            keywords: "title page cover heading author affiliation course date",
+            html: '<section class="allo-titlepage allo-block" data-allo-block="titlepage" tabindex="0" aria-label="Title page" style="text-align:center;padding:3em 1em;"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove title page" title="Remove">\xD7</button><h1 contenteditable="true">Title of Your Paper</h1><p contenteditable="true">Author Name</p><p contenteditable="true">Institutional Affiliation</p><p contenteditable="true">Course &middot; Instructor &middot; Date</p></section><div class="allo-block-pagebreak" contenteditable="false" aria-label="Page break" style="page-break-after:always;break-after:page;height:0;"></div>'
+          }
+        ];
+        const _CAT_LABELS = { layout: "\u{1F3A8} Layout", content: "\u{1F4DD} Content", educational: "\u{1F393} Educational", interactive: "\u{1F5B1}\uFE0F Interactive", media: "\u{1F4F7} Media", academic: "\u{1F393} Academic" };
+        const _CAT_ORDER = ["layout", "content", "educational", "interactive", "media", "academic"];
+        const _insertBlock = (block) => {
+          const iframe = pdfPreviewRef.current;
+          if (!iframe) return;
+          const doc = iframe.contentDocument;
+          if (!doc) return;
+          try {
+            iframe.contentWindow.focus();
+          } catch (e) {
+          }
+          try {
+            doc.designMode = "on";
+          } catch (e) {
+          }
+          _ensureAlloBlocksReady(doc);
+          const sel = doc.getSelection();
+          if (!sel || sel.rangeCount === 0) {
+            const main = doc.querySelector("main") || doc.body;
+            const range = doc.createRange();
+            range.selectNodeContents(main);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          }
+          const sentinelId = "__allo_ins_" + Date.now() + "_" + Math.floor(Math.random() * 1e3);
+          const sentinel = '<span id="' + sentinelId + '" data-allo-sentinel="1">\u200B</span>';
+          const html = typeof block.html === "function" ? block.html() : block.html;
+          doc.execCommand("insertHTML", false, sentinel + html);
+          const sent = doc.getElementById(sentinelId);
+          const newBlock = sent && sent.nextElementSibling;
+          if (sent) sent.remove();
+          if (newBlock) {
             try {
-              const uid = "fn" + Date.now().toString(36) + Math.floor(Math.random() * 1e3).toString(36);
-              newBlock.setAttribute("data-fn-uid", uid);
-              newBlock.removeAttribute("data-allo-block");
-              newBlock.removeAttribute("tabindex");
-              let sec = doc.querySelector("section.allo-footnotes");
-              if (!sec) {
-                sec = doc.createElement("section");
-                sec.className = "allo-footnotes";
-                sec.setAttribute("aria-label", "Footnotes");
-                sec.innerHTML = "<hr/><ol></ol>";
-                (doc.querySelector("main") || doc.body).appendChild(sec);
-              }
-              const ol = sec.querySelector("ol");
-              const li = doc.createElement("li");
-              li.setAttribute("data-fn-uid", uid);
-              li.innerHTML = '<span class="allo-fn-text" contenteditable="true">Footnote text \u2014 click to edit.</span> <a href="#fnref-' + uid + '" class="allo-fn-back" aria-label="Back to reference">\u21A9</a>';
-              ol.appendChild(li);
-              _alloRenumberFootnotes(doc);
+              newBlock.scrollIntoView({ behavior: "smooth", block: "center" });
+            } catch (e) {
+            }
+            if (newBlock.matches && newBlock.matches("[data-allo-block]")) {
+              if (!newBlock.hasAttribute("tabindex")) newBlock.setAttribute("tabindex", "-1");
               setTimeout(() => {
                 try {
-                  const tx = li.querySelector(".allo-fn-text");
-                  if (tx) {
-                    tx.focus();
-                    doc.getSelection().selectAllChildren(tx);
+                  newBlock.focus({ preventScroll: false });
+                } catch (e) {
+                }
+              }, 60);
+            }
+            const blockType = newBlock.getAttribute && newBlock.getAttribute("data-allo-block");
+            if (blockType === "math") {
+              _ensureKatex(doc);
+              const inp = newBlock.querySelector(".allo-math-input");
+              const out = newBlock.querySelector(".allo-math-output");
+              const status = newBlock.querySelector(".allo-math-status");
+              let _kxAttempts = 0;
+              const _kxTry = () => {
+                try {
+                  if (doc.defaultView && doc.defaultView.katex && inp && out) {
+                    doc.defaultView.katex.render(inp.value, out, { throwOnError: false, displayMode: true });
+                    if (status) status.textContent = "Rendered";
+                    return;
                   }
                 } catch (_) {
                 }
-              }, 80);
-            } catch (_) {
+                if (++_kxAttempts < 25) {
+                  setTimeout(_kxTry, 200);
+                } else if (status) {
+                  status.textContent = "KaTeX failed to load";
+                }
+              };
+              setTimeout(_kxTry, 100);
+            } else if (blockType === "code") {
+              const codeEl = newBlock.querySelector("code");
+              _ensurePrism(doc, "python", codeEl || void 0);
+            } else if (blockType === "footnote") {
+              try {
+                const uid = "fn" + Date.now().toString(36) + Math.floor(Math.random() * 1e3).toString(36);
+                newBlock.setAttribute("data-fn-uid", uid);
+                newBlock.removeAttribute("data-allo-block");
+                newBlock.removeAttribute("tabindex");
+                let sec = doc.querySelector("section.allo-footnotes");
+                if (!sec) {
+                  sec = doc.createElement("section");
+                  sec.className = "allo-footnotes";
+                  sec.setAttribute("aria-label", "Footnotes");
+                  sec.innerHTML = "<hr/><ol></ol>";
+                  (doc.querySelector("main") || doc.body).appendChild(sec);
+                }
+                const ol = sec.querySelector("ol");
+                const li = doc.createElement("li");
+                li.setAttribute("data-fn-uid", uid);
+                li.innerHTML = '<span class="allo-fn-text" contenteditable="true">Footnote text \u2014 click to edit.</span> <a href="#fnref-' + uid + '" class="allo-fn-back" aria-label="Back to reference">\u21A9</a>';
+                ol.appendChild(li);
+                _alloRenumberFootnotes(doc);
+                setTimeout(() => {
+                  try {
+                    const tx = li.querySelector(".allo-fn-text");
+                    if (tx) {
+                      tx.focus();
+                      doc.getSelection().selectAllChildren(tx);
+                    }
+                  } catch (_) {
+                  }
+                }, 80);
+              } catch (_) {
+              }
             }
           }
-        }
-        try {
-          const lr = doc.getElementById("allo-blocks-live");
-          if (lr) {
-            lr.textContent = "";
-            setTimeout(() => {
-              lr.textContent = "Inserted " + block.label;
-            }, 30);
-          }
-        } catch (_) {
-        }
-        try {
-          if (typeof addToast === "function") addToast(t("toasts.inserted") + block.label, "success");
-        } catch (_) {
-        }
-        try {
-          if (typeof window.__alloflowOnPdfPreviewMutated === "function") window.__alloflowOnPdfPreviewMutated();
-        } catch (_) {
-        }
-        try {
-          setInsertBlockRecent((prev) => [block.label, ...prev.filter((l) => l !== block.label)].slice(0, 5));
-        } catch (_) {
-        }
-      };
-      const f = (insertBlockFilter || "").toLowerCase().trim();
-      const _modeAcademic = !!(DOC_MODES[docMode] && DOC_MODES[docMode].academic);
-      const _modeOk = (b) => !b.modeOnly || _modeAcademic;
-      const visible = (f ? blocks.filter((b) => b.label.toLowerCase().includes(f) || b.keywords && b.keywords.toLowerCase().includes(f)) : blocks).filter(_modeOk);
-      const _bt = (label) => {
-        const key = "docbuilder.block." + String(label).toLowerCase().replace(/[\s&]+/g, "_");
-        const out = typeof t === "function" ? t(key) : null;
-        return out && out !== key ? out : label;
-      };
-      const _ct = (cat) => {
-        const key = "docbuilder.cat." + cat;
-        const out = typeof t === "function" ? t(key) : null;
-        return out && out !== key ? out : _CAT_LABELS[cat];
-      };
-      const _onPickerKey = (e) => {
-        if (!insertBlockPickerRef.current) return;
-        const buttons = Array.from(insertBlockPickerRef.current.querySelectorAll("button[data-allo-pick]"));
-        if (buttons.length === 0) return;
-        const idx = buttons.indexOf(document.activeElement);
-        if (idx === -1) return;
-        let next = -1;
-        if (e.key === "ArrowRight") next = (idx + 1) % buttons.length;
-        else if (e.key === "ArrowLeft") next = (idx - 1 + buttons.length) % buttons.length;
-        else if (e.key === "ArrowDown") next = Math.min(idx + 2, buttons.length - 1);
-        else if (e.key === "ArrowUp") next = Math.max(idx - 2, 0);
-        else if (e.key === "Home") next = 0;
-        else if (e.key === "End") next = buttons.length - 1;
-        else return;
-        e.preventDefault();
-        buttons[next] && buttons[next].focus();
-      };
-      return /* @__PURE__ */ React.createElement("div", { ref: insertBlockPickerRef, className: "space-y-1.5", onKeyDown: _onPickerKey }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "allo-docmode", className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider shrink-0" }, "Mode"), /* @__PURE__ */ React.createElement(
-        "select",
-        {
-          id: "allo-docmode",
-          value: docMode,
-          onChange: (e) => {
-            const m = e.target.value;
-            setDocMode(m);
-            _applyDocMode(m);
-            try {
-              if (typeof addToast === "function") addToast((DOC_MODES[m] && DOC_MODES[m].label || "Standard") + " mode", "success");
-            } catch (_) {
+          try {
+            const lr = doc.getElementById("allo-blocks-live");
+            if (lr) {
+              lr.textContent = "";
+              setTimeout(() => {
+                lr.textContent = "Inserted " + block.label;
+              }, 30);
             }
-          },
-          "aria-label": "Document mode \u2014 formatting and citation style",
-          className: "w-full text-[11px] px-2 py-1.5 bg-white border border-slate-400 rounded-lg text-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none"
-        },
-        Object.keys(DOC_MODES).map((k) => /* @__PURE__ */ React.createElement("option", { key: k, value: k }, DOC_MODES[k].icon, " ", DOC_MODES[k].label))
-      )), docMode !== "standard" && DOC_MODES[docMode] && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 leading-snug px-0.5" }, DOC_MODES[docMode].blurb), /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "search",
-          value: insertBlockFilter,
-          onChange: (e) => setInsertBlockFilter(e.target.value),
-          placeholder: typeof t === "function" && t("docbuilder.search_placeholder") !== "docbuilder.search_placeholder" && t("docbuilder.search_placeholder") || `Search ${blocks.length} blocks\u2026`,
-          "aria-label": typeof t === "function" && t("docbuilder.search_aria") !== "docbuilder.search_aria" && t("docbuilder.search_aria") || "Search blocks",
-          className: "w-full text-[11px] px-2 py-1.5 bg-white border border-slate-400 rounded-lg text-slate-700 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none"
-        }
-      ), f && visible.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic px-2 py-1" }, 'No blocks match "', insertBlockFilter, '"'), !f && insertBlockRecent.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-indigo-700 px-1 py-0.5 uppercase tracking-wider" }, "\u23F1 ", _ct("recent")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1 mt-0.5" }, insertBlockRecent.map((label) => {
-        const block = blocks.find((b) => b.label === label);
-        if (!block) return null;
-        const dispLabel = _bt(block.label);
-        return /* @__PURE__ */ React.createElement(
-          "button",
+          } catch (_) {
+          }
+          try {
+            if (typeof addToast === "function") addToast(t("toasts.inserted") + block.label, "success");
+          } catch (_) {
+          }
+          try {
+            if (typeof window.__alloflowOnPdfPreviewMutated === "function") window.__alloflowOnPdfPreviewMutated();
+          } catch (_) {
+          }
+          try {
+            setInsertBlockRecent((prev) => [block.label, ...prev.filter((l) => l !== block.label)].slice(0, 5));
+          } catch (_) {
+          }
+        };
+        const f = (insertBlockFilter || "").toLowerCase().trim();
+        const _modeAcademic = !!(DOC_MODES[docMode] && DOC_MODES[docMode].academic);
+        const _modeOk = (b) => !b.modeOnly || _modeAcademic;
+        const visible = (f ? blocks.filter((b) => b.label.toLowerCase().includes(f) || b.keywords && b.keywords.toLowerCase().includes(f)) : blocks).filter(_modeOk);
+        const _bt = (label) => {
+          const key = "docbuilder.block." + String(label).toLowerCase().replace(/[\s&]+/g, "_");
+          const out = typeof t === "function" ? t(key) : null;
+          return out && out !== key ? out : label;
+        };
+        const _ct = (cat) => {
+          const key = "docbuilder.cat." + cat;
+          const out = typeof t === "function" ? t(key) : null;
+          return out && out !== key ? out : _CAT_LABELS[cat];
+        };
+        const _onPickerKey = (e) => {
+          if (!insertBlockPickerRef.current) return;
+          const buttons = Array.from(insertBlockPickerRef.current.querySelectorAll("button[data-allo-pick]"));
+          if (buttons.length === 0) return;
+          const idx = buttons.indexOf(document.activeElement);
+          if (idx === -1) return;
+          let next = -1;
+          if (e.key === "ArrowRight") next = (idx + 1) % buttons.length;
+          else if (e.key === "ArrowLeft") next = (idx - 1 + buttons.length) % buttons.length;
+          else if (e.key === "ArrowDown") next = Math.min(idx + 2, buttons.length - 1);
+          else if (e.key === "ArrowUp") next = Math.max(idx - 2, 0);
+          else if (e.key === "Home") next = 0;
+          else if (e.key === "End") next = buttons.length - 1;
+          else return;
+          e.preventDefault();
+          buttons[next] && buttons[next].focus();
+        };
+        return /* @__PURE__ */ React.createElement("div", { ref: insertBlockPickerRef, className: "space-y-1.5", onKeyDown: _onPickerKey }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "allo-docmode", className: "text-[10px] font-bold text-slate-600 uppercase tracking-wider shrink-0" }, "Mode"), /* @__PURE__ */ React.createElement(
+          "select",
           {
-            key: "recent-" + label,
-            type: "button",
-            "data-allo-pick": "1",
-            onClick: () => _insertBlock(block),
-            className: "text-[11px] font-bold text-indigo-700 px-1.5 py-2 bg-indigo-50 border border-indigo-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-100 transition-colors text-left min-h-[36px]",
-            "aria-label": `Insert ${dispLabel}`,
-            title: `Insert ${dispLabel}`
+            id: "allo-docmode",
+            value: docMode,
+            onChange: (e) => {
+              const m = e.target.value;
+              setDocMode(m);
+              _applyDocMode(m);
+              try {
+                if (typeof addToast === "function") addToast((DOC_MODES[m] && DOC_MODES[m].label || "Standard") + " mode", "success");
+              } catch (_) {
+              }
+            },
+            "aria-label": "Document mode \u2014 formatting and citation style",
+            className: "w-full text-[11px] px-2 py-1.5 bg-white border border-slate-400 rounded-lg text-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none"
           },
-          block.icon,
-          " ",
-          dispLabel
-        );
-      }))), _CAT_ORDER.map((cat) => {
-        const catBlocks = visible.filter((b) => b.category === cat);
-        if (catBlocks.length === 0) return null;
-        const isOpen = !!insertBlockOpenCats[cat];
-        return /* @__PURE__ */ React.createElement("div", { key: cat }, /* @__PURE__ */ React.createElement(
-          "button",
+          Object.keys(DOC_MODES).map((k) => /* @__PURE__ */ React.createElement("option", { key: k, value: k }, DOC_MODES[k].icon, " ", DOC_MODES[k].label))
+        )), docMode !== "standard" && DOC_MODES[docMode] && /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-500 leading-snug px-0.5" }, DOC_MODES[docMode].blurb), /* @__PURE__ */ React.createElement(
+          "input",
           {
-            type: "button",
-            onClick: () => setInsertBlockOpenCats((p) => ({ ...p, [cat]: !p[cat] })),
-            "aria-expanded": isOpen,
-            "aria-controls": `allo-cat-${cat}`,
-            className: "w-full flex items-center justify-between text-[10px] font-bold text-slate-600 px-1 py-0.5 hover:text-indigo-700 transition-colors uppercase tracking-wider"
-          },
-          /* @__PURE__ */ React.createElement("span", null, _ct(cat), " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-normal" }, "(", catBlocks.length, ")")),
-          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isOpen ? "\u25BE" : "\u25B8")
-        ), isOpen && /* @__PURE__ */ React.createElement("div", { id: `allo-cat-${cat}`, className: "grid grid-cols-2 gap-1 mt-0.5" }, catBlocks.map((block) => {
+            type: "search",
+            value: insertBlockFilter,
+            onChange: (e) => setInsertBlockFilter(e.target.value),
+            placeholder: typeof t === "function" && t("docbuilder.search_placeholder") !== "docbuilder.search_placeholder" && t("docbuilder.search_placeholder") || `Search ${blocks.length} blocks\u2026`,
+            "aria-label": typeof t === "function" && t("docbuilder.search_aria") !== "docbuilder.search_aria" && t("docbuilder.search_aria") || "Search blocks",
+            className: "w-full text-[11px] px-2 py-1.5 bg-white border border-slate-400 rounded-lg text-slate-700 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none"
+          }
+        ), f && visible.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 italic px-2 py-1" }, 'No blocks match "', insertBlockFilter, '"'), !f && insertBlockRecent.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold text-indigo-700 px-1 py-0.5 uppercase tracking-wider" }, "\u23F1 ", _ct("recent")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1 mt-0.5" }, insertBlockRecent.map((label) => {
+          const block = blocks.find((b) => b.label === label);
+          if (!block) return null;
           const dispLabel = _bt(block.label);
           return /* @__PURE__ */ React.createElement(
             "button",
             {
-              key: block.label,
+              key: "recent-" + label,
               type: "button",
               "data-allo-pick": "1",
               onClick: () => _insertBlock(block),
-              className: "text-[11px] font-bold text-slate-600 px-1.5 py-2 bg-white border border-slate-400 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left min-h-[36px]",
+              className: "text-[11px] font-bold text-indigo-700 px-1.5 py-2 bg-indigo-50 border border-indigo-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-100 transition-colors text-left min-h-[36px]",
               "aria-label": `Insert ${dispLabel}`,
               title: `Insert ${dispLabel}`
             },
@@ -12069,295 +12081,327 @@ Return ONLY JSON:
             " ",
             dispLabel
           );
-        })));
-      }), /* @__PURE__ */ React.createElement("div", { className: "text-[9px] text-slate-600 italic px-1 pt-0.5", "aria-hidden": "true" }, "\u2191\u2193\u2190\u2192 Home End to navigate \xB7 Enter to insert"));
-    })(), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mt-2" }, "Spacing"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, [
-      { label: "Compact", val: "0.25rem" },
-      { label: "Normal", val: "0.75rem" },
-      { label: "Relaxed", val: "1.5rem" },
-      { label: "Spacious", val: "2.5rem" }
-    ].map((sp) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: sp.label,
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (!doc) return;
-          doc.querySelectorAll("p, li, h2, h3, h4, table, figure, blockquote, div").forEach((el) => {
-            el.style.marginBottom = sp.val;
-          });
+        }))), _CAT_ORDER.map((cat) => {
+          const catBlocks = visible.filter((b) => b.category === cat);
+          if (catBlocks.length === 0) return null;
+          const isOpen = !!insertBlockOpenCats[cat];
+          return /* @__PURE__ */ React.createElement("div", { key: cat }, /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              onClick: () => setInsertBlockOpenCats((p) => ({ ...p, [cat]: !p[cat] })),
+              "aria-expanded": isOpen,
+              "aria-controls": `allo-cat-${cat}`,
+              className: "w-full flex items-center justify-between text-[10px] font-bold text-slate-600 px-1 py-0.5 hover:text-indigo-700 transition-colors uppercase tracking-wider"
+            },
+            /* @__PURE__ */ React.createElement("span", null, _ct(cat), " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-normal" }, "(", catBlocks.length, ")")),
+            /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isOpen ? "\u25BE" : "\u25B8")
+          ), isOpen && /* @__PURE__ */ React.createElement("div", { id: `allo-cat-${cat}`, className: "grid grid-cols-2 gap-1 mt-0.5" }, catBlocks.map((block) => {
+            const dispLabel = _bt(block.label);
+            return /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                key: block.label,
+                type: "button",
+                "data-allo-pick": "1",
+                onClick: () => _insertBlock(block),
+                className: "text-[11px] font-bold text-slate-600 px-1.5 py-2 bg-white border border-slate-400 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left min-h-[36px]",
+                "aria-label": `Insert ${dispLabel}`,
+                title: `Insert ${dispLabel}`
+              },
+              block.icon,
+              " ",
+              dispLabel
+            );
+          })));
+        }), /* @__PURE__ */ React.createElement("div", { className: "text-[9px] text-slate-600 italic px-1 pt-0.5", "aria-hidden": "true" }, "\u2191\u2193\u2190\u2192 Home End to navigate \xB7 Enter to insert"));
+      })(), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mt-2" }, "Spacing"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, [
+        { label: "Compact", val: "0.25rem" },
+        { label: "Normal", val: "0.75rem" },
+        { label: "Relaxed", val: "1.5rem" },
+        { label: "Spacious", val: "2.5rem" }
+      ].map((sp) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: sp.label,
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (!doc) return;
+            doc.querySelectorAll("p, li, h2, h3, h4, table, figure, blockquote, div").forEach((el) => {
+              el.style.marginBottom = sp.val;
+            });
+          },
+          className: "flex-1 text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-400 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors",
+          title: sp.label
         },
-        className: "flex-1 text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-400 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-colors",
-        title: sp.label
-      },
-      sp.label
-    ))), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mt-2" }, t("pdf_audit.layout.header_branding") || "Header / Branding"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const doc = pdfPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      const existing = doc.getElementById("doc-header-brand");
-      if (existing) {
-        existing.remove();
-        return;
-      }
-      const header = doc.createElement("div");
-      header.id = "doc-header-brand";
-      header.contentEditable = "true";
-      header.style.cssText = "background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;padding:20px 24px;border-radius:12px;margin-bottom:24px;display:flex;align-items:center;gap:16px;";
-      header.innerHTML = '<div style="font-size:28px">\u{1F3DB}\uFE0F</div><div><div style="font-size:18px;font-weight:bold">Institution Name</div><div style="font-size:12px;opacity:0.8">Department \xB7 Document Title \xB7 Date</div></div>';
-      const main = doc.querySelector("main") || doc.body;
-      main.insertBefore(header, main.firstChild);
-      addToast(t("toasts.header_added_click_edit_text"), "info");
-    }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors" }, "\u{1F3DB}\uFE0F Toggle Document Header"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const doc = pdfPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      const existing = doc.getElementById("doc-footer-brand");
-      if (existing) {
-        existing.remove();
-        return;
-      }
-      const footer = doc.createElement("div");
-      footer.id = "doc-footer-brand";
-      footer.contentEditable = "true";
-      footer.style.cssText = "border-top:2px solid #e2e8f0;padding:12px 0;margin-top:32px;font-size:11px;color:#94a3b8;display:flex;justify-content:space-between;";
-      footer.innerHTML = "<span>Institution Name \xB7 Confidential</span><span>Page __</span>";
-      (doc.querySelector("main") || doc.body).appendChild(footer);
-      addToast(t("toasts.footer_added_click_edit"), "info");
-    }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors" }, "\u{1F4CB} Toggle Document Footer"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mt-2" }, "Templates"), /* @__PURE__ */ React.createElement("select", { onChange: (e) => {
-      if (!e.target.value) return;
-      const doc = pdfPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      const templates = {
-        "syllabus": "body{font-family:Georgia,serif;max-width:750px} h1{border-bottom:3px solid #1e3a5f;padding-bottom:8px;color:#1e3a5f} h2{color:#1e3a5f;margin-top:2em;border-left:4px solid #2563eb;padding-left:12px} table{width:100%} th{background:#1e3a5f;color:white}",
-        "handout": "body{font-family:system-ui;max-width:700px} h1{text-align:center;color:#7c3aed;font-size:1.8em} h2{color:#7c3aed;background:#f5f3ff;padding:8px 12px;border-radius:6px} ul{list-style-type:disc}",
-        "worksheet": "body{font-family:system-ui;max-width:700px} h1{text-align:center;border:2px solid #0891b2;padding:12px;border-radius:8px;color:#0891b2;background:#ecfeff} h2{color:#0891b2} p{line-height:2.2}",
-        "newsletter": "body{font-family:Georgia,serif;max-width:800px;columns:2;column-gap:24px} h1{column-span:all;text-align:center;color:#dc2626;border-bottom:3px double #dc2626;padding-bottom:8px} h2{color:#dc2626;break-after:avoid} p{text-align:justify}",
-        "report": 'body{font-family:"Times New Roman",serif;max-width:700px;font-size:12pt} h1{text-align:center;font-size:14pt;text-transform:uppercase} h2{font-size:12pt;font-weight:bold;text-decoration:underline} p{text-indent:0.5in;text-align:justify;line-height:2}',
-        "accessible": 'body{font-family:"Atkinson Hyperlegible",system-ui;max-width:700px;font-size:1.1rem;line-height:1.8;letter-spacing:0.02em} h1{color:#000;font-size:1.75rem} h2{color:#000;font-size:1.3rem} a{color:#0000ff;text-decoration:underline} th{background:#000;color:#fff}',
-        "iep": 'body{font-family:"Inter",system-ui;max-width:750px;font-size:13px;line-height:1.6} h1{font-size:16px;text-align:center;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #333;padding-bottom:8px;margin-bottom:4px} h2{font-size:13px;font-weight:bold;background:#f1f5f9;padding:6px 10px;border-left:3px solid #1e3a5f;margin-top:1.5em} table{width:100%;font-size:12px} th{background:#1e3a5f;color:white;padding:6px 8px;text-align:left} td{padding:6px 8px;border-bottom:1px solid #e5e7eb} .section{page-break-inside:avoid;margin-bottom:1em} @media print{body{font-size:11px;max-width:100%}}',
-        "intervention": 'body{font-family:system-ui;max-width:700px;font-size:14px} h1{color:#7c3aed;text-align:center;font-size:1.4em;border:2px solid #7c3aed;padding:12px;border-radius:10px;background:#faf5ff} h2{color:#7c3aed;font-size:1.1em;margin-top:1.5em;border-bottom:2px solid #e9d5ff;padding-bottom:4px} table{width:100%} th{background:#7c3aed;color:white} ul{list-style:none;padding-left:0} li:before{content:"\u2713 ";color:#7c3aed;font-weight:bold}',
-        "parentletter": "body{font-family:Georgia,serif;max-width:650px;font-size:14px;line-height:1.8} h1{font-size:1.3em;color:#1e3a5f;margin-bottom:0.25em} h2{font-size:1.1em;color:#1e3a5f;margin-top:1.5em} p{margin-bottom:1em} .section{background:#f8fafc;padding:16px;border-radius:8px;border:1px solid #e2e8f0;margin:12px 0} @media print{body{font-size:12pt}}"
-      };
-      const css = templates[e.target.value];
-      if (css) {
-        const existing = doc.getElementById("template-style");
-        if (existing) existing.remove();
-        const style = doc.createElement("style");
-        style.id = "template-style";
-        style.textContent = css;
-        doc.head.appendChild(style);
-        addToast(t("toasts.template_applied") + e.target.value, "success");
-      }
-      e.target.value = "";
-    }, className: "w-full text-[11px] border border-slate-400 rounded-lg px-2 py-1.5 bg-white text-slate-600", "aria-label": t("pdf_audit.templates.aria") || "Document template", defaultValue: "" }, /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, t("pdf_audit.templates.apply_placeholder") || "Apply template..."), /* @__PURE__ */ React.createElement("option", { value: "syllabus" }, "\u{1F4DA} Syllabus"), /* @__PURE__ */ React.createElement("option", { value: "handout" }, "\u{1F4DD} Handout"), /* @__PURE__ */ React.createElement("option", { value: "worksheet" }, "\u270F\uFE0F Worksheet"), /* @__PURE__ */ React.createElement("option", { value: "newsletter" }, "\u{1F4F0} Newsletter"), /* @__PURE__ */ React.createElement("option", { value: "report" }, "\u{1F4CB} Formal Report"), /* @__PURE__ */ React.createElement("option", { value: "accessible" }, "\u267F Maximum Accessibility"), /* @__PURE__ */ React.createElement("option", { value: "iep" }, "\u{1F4CB} IEP / Progress Report"), /* @__PURE__ */ React.createElement("option", { value: "intervention" }, "\u{1F3AF} Intervention Plan"), /* @__PURE__ */ React.createElement("option", { value: "parentletter" }, "\u{1F46A} Parent Communication")), (() => {
-      let savedTemplates = [];
-      try {
-        savedTemplates = JSON.parse(localStorage.getItem("alloflow_templates") || "[]");
-      } catch (e) {
-      }
-      return savedTemplates.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "mt-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("pdf_audit.templates.saved_heading") || "Saved Accessible Templates"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, savedTemplates.map((tmpl, i) => /* @__PURE__ */ React.createElement("button", { key: i, onClick: () => {
-        const doc = (exportPreviewRef.current || pdfPreviewRef.current)?.contentDocument;
+        sp.label
+      ))), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mt-2" }, t("pdf_audit.layout.header_branding") || "Header / Branding"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const doc = pdfPreviewRef.current?.contentDocument;
         if (!doc) return;
-        let html = `<!DOCTYPE html><html lang="${tmpl.lang || "en"}"><head><meta charset="UTF-8"><title>${tmpl.name}</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:${tmpl.styles?.fontFamily || "system-ui, sans-serif"};max-width:800px;margin:0 auto;padding:2rem;line-height:1.7;color:#1e293b}h1,h2,h3{color:${tmpl.styles?.headingColor || "#1e293b"}}table{width:100%;border-collapse:collapse;margin:1rem 0}th{background:#f1f5f9;padding:8px 12px;text-align:left;font-weight:700;border:1px solid #e2e8f0}td{padding:8px 12px;border:1px solid #e2e8f0}@media print{body{max-width:100%}}</style></head><body>`;
-        html += '<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>';
-        html += '<main id="main-content" role="main">';
-        tmpl.structure.forEach((s) => {
-          if (s.type === "heading") {
-            html += `<h${s.level}>${s.text || "[Section Title]"}</h${s.level}>
+        const existing = doc.getElementById("doc-header-brand");
+        if (existing) {
+          existing.remove();
+          return;
+        }
+        const header = doc.createElement("div");
+        header.id = "doc-header-brand";
+        header.contentEditable = "true";
+        header.style.cssText = "background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;padding:20px 24px;border-radius:12px;margin-bottom:24px;display:flex;align-items:center;gap:16px;";
+        header.innerHTML = '<div style="font-size:28px">\u{1F3DB}\uFE0F</div><div><div style="font-size:18px;font-weight:bold">Institution Name</div><div style="font-size:12px;opacity:0.8">Department \xB7 Document Title \xB7 Date</div></div>';
+        const main = doc.querySelector("main") || doc.body;
+        main.insertBefore(header, main.firstChild);
+        addToast(t("toasts.header_added_click_edit_text"), "info");
+      }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors" }, "\u{1F3DB}\uFE0F Toggle Document Header"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const doc = pdfPreviewRef.current?.contentDocument;
+        if (!doc) return;
+        const existing = doc.getElementById("doc-footer-brand");
+        if (existing) {
+          existing.remove();
+          return;
+        }
+        const footer = doc.createElement("div");
+        footer.id = "doc-footer-brand";
+        footer.contentEditable = "true";
+        footer.style.cssText = "border-top:2px solid #e2e8f0;padding:12px 0;margin-top:32px;font-size:11px;color:#94a3b8;display:flex;justify-content:space-between;";
+        footer.innerHTML = "<span>Institution Name \xB7 Confidential</span><span>Page __</span>";
+        (doc.querySelector("main") || doc.body).appendChild(footer);
+        addToast(t("toasts.footer_added_click_edit"), "info");
+      }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors" }, "\u{1F4CB} Toggle Document Footer"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mt-2" }, "Templates"), /* @__PURE__ */ React.createElement("select", { onChange: (e) => {
+        if (!e.target.value) return;
+        const doc = pdfPreviewRef.current?.contentDocument;
+        if (!doc) return;
+        const templates = {
+          "syllabus": "body{font-family:Georgia,serif;max-width:750px} h1{border-bottom:3px solid #1e3a5f;padding-bottom:8px;color:#1e3a5f} h2{color:#1e3a5f;margin-top:2em;border-left:4px solid #2563eb;padding-left:12px} table{width:100%} th{background:#1e3a5f;color:white}",
+          "handout": "body{font-family:system-ui;max-width:700px} h1{text-align:center;color:#7c3aed;font-size:1.8em} h2{color:#7c3aed;background:#f5f3ff;padding:8px 12px;border-radius:6px} ul{list-style-type:disc}",
+          "worksheet": "body{font-family:system-ui;max-width:700px} h1{text-align:center;border:2px solid #0891b2;padding:12px;border-radius:8px;color:#0891b2;background:#ecfeff} h2{color:#0891b2} p{line-height:2.2}",
+          "newsletter": "body{font-family:Georgia,serif;max-width:800px;columns:2;column-gap:24px} h1{column-span:all;text-align:center;color:#dc2626;border-bottom:3px double #dc2626;padding-bottom:8px} h2{color:#dc2626;break-after:avoid} p{text-align:justify}",
+          "report": 'body{font-family:"Times New Roman",serif;max-width:700px;font-size:12pt} h1{text-align:center;font-size:14pt;text-transform:uppercase} h2{font-size:12pt;font-weight:bold;text-decoration:underline} p{text-indent:0.5in;text-align:justify;line-height:2}',
+          "accessible": 'body{font-family:"Atkinson Hyperlegible",system-ui;max-width:700px;font-size:1.1rem;line-height:1.8;letter-spacing:0.02em} h1{color:#000;font-size:1.75rem} h2{color:#000;font-size:1.3rem} a{color:#0000ff;text-decoration:underline} th{background:#000;color:#fff}',
+          "iep": 'body{font-family:"Inter",system-ui;max-width:750px;font-size:13px;line-height:1.6} h1{font-size:16px;text-align:center;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #333;padding-bottom:8px;margin-bottom:4px} h2{font-size:13px;font-weight:bold;background:#f1f5f9;padding:6px 10px;border-left:3px solid #1e3a5f;margin-top:1.5em} table{width:100%;font-size:12px} th{background:#1e3a5f;color:white;padding:6px 8px;text-align:left} td{padding:6px 8px;border-bottom:1px solid #e5e7eb} .section{page-break-inside:avoid;margin-bottom:1em} @media print{body{font-size:11px;max-width:100%}}',
+          "intervention": 'body{font-family:system-ui;max-width:700px;font-size:14px} h1{color:#7c3aed;text-align:center;font-size:1.4em;border:2px solid #7c3aed;padding:12px;border-radius:10px;background:#faf5ff} h2{color:#7c3aed;font-size:1.1em;margin-top:1.5em;border-bottom:2px solid #e9d5ff;padding-bottom:4px} table{width:100%} th{background:#7c3aed;color:white} ul{list-style:none;padding-left:0} li:before{content:"\u2713 ";color:#7c3aed;font-weight:bold}',
+          "parentletter": "body{font-family:Georgia,serif;max-width:650px;font-size:14px;line-height:1.8} h1{font-size:1.3em;color:#1e3a5f;margin-bottom:0.25em} h2{font-size:1.1em;color:#1e3a5f;margin-top:1.5em} p{margin-bottom:1em} .section{background:#f8fafc;padding:16px;border-radius:8px;border:1px solid #e2e8f0;margin:12px 0} @media print{body{font-size:12pt}}"
+        };
+        const css = templates[e.target.value];
+        if (css) {
+          const existing = doc.getElementById("template-style");
+          if (existing) existing.remove();
+          const style = doc.createElement("style");
+          style.id = "template-style";
+          style.textContent = css;
+          doc.head.appendChild(style);
+          addToast(t("toasts.template_applied") + e.target.value, "success");
+        }
+        e.target.value = "";
+      }, className: "w-full text-[11px] border border-slate-400 rounded-lg px-2 py-1.5 bg-white text-slate-600", "aria-label": t("pdf_audit.templates.aria") || "Document template", defaultValue: "" }, /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, t("pdf_audit.templates.apply_placeholder") || "Apply template..."), /* @__PURE__ */ React.createElement("option", { value: "syllabus" }, "\u{1F4DA} Syllabus"), /* @__PURE__ */ React.createElement("option", { value: "handout" }, "\u{1F4DD} Handout"), /* @__PURE__ */ React.createElement("option", { value: "worksheet" }, "\u270F\uFE0F Worksheet"), /* @__PURE__ */ React.createElement("option", { value: "newsletter" }, "\u{1F4F0} Newsletter"), /* @__PURE__ */ React.createElement("option", { value: "report" }, "\u{1F4CB} Formal Report"), /* @__PURE__ */ React.createElement("option", { value: "accessible" }, "\u267F Maximum Accessibility"), /* @__PURE__ */ React.createElement("option", { value: "iep" }, "\u{1F4CB} IEP / Progress Report"), /* @__PURE__ */ React.createElement("option", { value: "intervention" }, "\u{1F3AF} Intervention Plan"), /* @__PURE__ */ React.createElement("option", { value: "parentletter" }, "\u{1F46A} Parent Communication")), (() => {
+        let savedTemplates = [];
+        try {
+          savedTemplates = JSON.parse(localStorage.getItem("alloflow_templates") || "[]");
+        } catch (e) {
+        }
+        return savedTemplates.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "mt-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("pdf_audit.templates.saved_heading") || "Saved Accessible Templates"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, savedTemplates.map((tmpl, i) => /* @__PURE__ */ React.createElement("button", { key: i, onClick: () => {
+          const doc = (exportPreviewRef.current || pdfPreviewRef.current)?.contentDocument;
+          if (!doc) return;
+          let html = `<!DOCTYPE html><html lang="${tmpl.lang || "en"}"><head><meta charset="UTF-8"><title>${tmpl.name}</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:${tmpl.styles?.fontFamily || "system-ui, sans-serif"};max-width:800px;margin:0 auto;padding:2rem;line-height:1.7;color:#1e293b}h1,h2,h3{color:${tmpl.styles?.headingColor || "#1e293b"}}table{width:100%;border-collapse:collapse;margin:1rem 0}th{background:#f1f5f9;padding:8px 12px;text-align:left;font-weight:700;border:1px solid #e2e8f0}td{padding:8px 12px;border:1px solid #e2e8f0}@media print{body{max-width:100%}}</style></head><body>`;
+          html += '<a href="#main-content" class="sr-only" style="position:absolute;left:-9999px">Skip to main content</a>';
+          html += '<main id="main-content" role="main">';
+          tmpl.structure.forEach((s) => {
+            if (s.type === "heading") {
+              html += `<h${s.level}>${s.text || "[Section Title]"}</h${s.level}>
 <p>[Content for this section]</p>
 `;
-          } else if (s.type === "table") {
-            html += `<table role="table"><caption>${s.caption || "[Table Description]"}</caption><thead><tr>`;
-            (s.headers || ["Column 1", "Column 2", "Column 3"]).forEach((h) => {
-              html += `<th scope="col">${h}</th>`;
-            });
-            html += "</tr></thead><tbody>";
-            for (let r = 0; r < Math.min(s.rowCount || 3, 5); r++) {
-              html += "<tr>" + (s.headers || ["", "", ""]).map(() => "<td>[Data]</td>").join("") + "</tr>";
-            }
-            html += "</tbody></table>\n";
-          } else if (s.type === "list") {
-            const tag = s.ordered ? "ol" : "ul";
-            html += `<${tag} role="list">`;
-            for (let li = 0; li < Math.min(s.itemCount || 3, 8); li++) {
-              html += "<li>[List item]</li>";
-            }
-            html += `</${tag}>
+            } else if (s.type === "table") {
+              html += `<table role="table"><caption>${s.caption || "[Table Description]"}</caption><thead><tr>`;
+              (s.headers || ["Column 1", "Column 2", "Column 3"]).forEach((h) => {
+                html += `<th scope="col">${h}</th>`;
+              });
+              html += "</tr></thead><tbody>";
+              for (let r = 0; r < Math.min(s.rowCount || 3, 5); r++) {
+                html += "<tr>" + (s.headers || ["", "", ""]).map(() => "<td>[Data]</td>").join("") + "</tr>";
+              }
+              html += "</tbody></table>\n";
+            } else if (s.type === "list") {
+              const tag = s.ordered ? "ol" : "ul";
+              html += `<${tag} role="list">`;
+              for (let li = 0; li < Math.min(s.itemCount || 3, 8); li++) {
+                html += "<li>[List item]</li>";
+              }
+              html += `</${tag}>
 `;
-          }
-        });
-        html += "</main></body></html>";
-        doc.open();
-        doc.write(html);
-        doc.close();
-        try {
-          doc.designMode = "on";
-        } catch (e) {
-        }
-        addToast(t("toasts.template_2") + tmpl.name + '" applied \u2014 click any text to edit', "success");
-      }, className: "w-full text-[11px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-600 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4D0} ", tmpl.name), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-700" }, tmpl.structure?.filter((s) => s.type === "heading").length || 0, " sections"))))) : null;
-    })(), /* @__PURE__ */ React.createElement("label", { className: "mt-1.5 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 border border-dashed border-amber-300 rounded-lg text-[11px] font-bold text-amber-600 hover:bg-amber-50 cursor-pointer transition-colors" }, "\u{1F4C2} Load Template File (.json)", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        try {
-          const tmpl = JSON.parse(ev.target.result);
-          if (tmpl.type !== "alloflow-template" || !tmpl.structure) {
-            addToast(t("toasts.invalid_template_file"), "error");
-            return;
-          }
+            }
+          });
+          html += "</main></body></html>";
+          doc.open();
+          doc.write(html);
+          doc.close();
           try {
-            const saved = JSON.parse(localStorage.getItem("alloflow_templates") || "[]");
-            if (!saved.some((s) => s.name === tmpl.name)) {
-              saved.push(tmpl);
-              localStorage.setItem("alloflow_templates", JSON.stringify(saved));
+            doc.designMode = "on";
+          } catch (e) {
+          }
+          addToast(t("toasts.template_2") + tmpl.name + '" applied \u2014 click any text to edit', "success");
+        }, className: "w-full text-[11px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-600 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4D0} ", tmpl.name), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-700" }, tmpl.structure?.filter((s) => s.type === "heading").length || 0, " sections"))))) : null;
+      })(), /* @__PURE__ */ React.createElement("label", { className: "mt-1.5 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 border border-dashed border-amber-300 rounded-lg text-[11px] font-bold text-amber-600 hover:bg-amber-50 cursor-pointer transition-colors" }, "\u{1F4C2} Load Template File (.json)", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", onChange: (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const tmpl = JSON.parse(ev.target.result);
+            if (tmpl.type !== "alloflow-template" || !tmpl.structure) {
+              addToast(t("toasts.invalid_template_file"), "error");
+              return;
             }
-          } catch (e2) {
-          }
-          addToast(t("toasts.template_2") + tmpl.name + '" loaded! It now appears in Saved Templates above.', "success");
-        } catch (err) {
-          addToast(t("toasts.failed_load_template") + err.message, "error");
-        }
-      };
-      reader.readAsText(file);
-      e.target.value = "";
-    } })))), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F4CA} Stats & Readability ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400 space-y-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const doc = pdfPreviewRef.current?.contentDocument;
-      const text = doc?.body?.textContent || "";
-      if (!text.trim()) {
-        addToast(t("toasts.content_analyze"), "info");
-        return;
-      }
-      const words = text.split(/\s+/).filter((w) => w.length > 0);
-      const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
-      const syllables = words.reduce((sum, w) => {
-        const s = w.toLowerCase().replace(/[^a-z]/g, "");
-        if (s.length <= 3) return sum + 1;
-        let c = s.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "").match(/[aeiouy]{1,2}/g);
-        return sum + (c ? c.length : 1);
-      }, 0);
-      const avgWords = sentences.length > 0 ? words.length / sentences.length : 0;
-      const avgSyllables = words.length > 0 ? syllables / words.length : 0;
-      const fkGrade = Math.max(0, Math.round((0.39 * avgWords + 11.8 * avgSyllables - 15.59) * 10) / 10);
-      const fkEase = Math.max(0, Math.round((206.835 - 1.015 * avgWords - 84.6 * avgSyllables) * 10) / 10);
-      const chars = text.replace(/\s/g, "").length;
-      const headings = doc?.querySelectorAll("h1,h2,h3,h4,h5,h6")?.length || 0;
-      const images = doc?.querySelectorAll("img")?.length || 0;
-      const tables = doc?.querySelectorAll("table")?.length || 0;
-      const links = doc?.querySelectorAll("a[href]")?.length || 0;
-      const easeLabel = fkEase >= 80 ? "\u{1F7E2} Easy" : fkEase >= 60 ? "\u{1F7E1} Standard" : fkEase >= 40 ? "\u{1F7E0} Difficult" : "\u{1F534} Very Difficult";
-      const statsEl = doc.getElementById("alloflow-stats-overlay");
-      if (statsEl) {
-        statsEl.remove();
-        return;
-      }
-      const overlay = doc.createElement("div");
-      overlay.id = "alloflow-stats-overlay";
-      overlay.style.cssText = "position:fixed;bottom:16px;right:16px;background:white;border:2px solid #6366f1;border-radius:12px;padding:16px;font-family:system-ui;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:99999;max-width:280px;";
-      overlay.innerHTML = `<div style="font-weight:800;font-size:14px;color:#1e293b;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">\u{1F4CA} Document Stats <span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;color:#94a3b8;font-size:18px">&times;</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px"><div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${words.length.toLocaleString()}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Words</div></div><div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${sentences.length}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Sentences</div></div><div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${chars.toLocaleString()}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Characters</div></div><div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${Math.ceil(words.length / 250)}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">~Pages</div></div></div><div style="background:linear-gradient(135deg,#eef2ff,#e0e7ff);padding:10px;border-radius:8px;margin-bottom:8px"><div style="font-weight:800;color:#4338ca;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Reading Level</div><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:22px;font-weight:900;color:#1e293b">Grade ${fkGrade}</span><span style="font-size:11px;font-weight:600;color:#64748b">${easeLabel}</span></div><div style="font-size:10px;color:#6366f1;margin-top:2px">Flesch-Kincaid | Ease: ${fkEase}/100</div></div><div style="font-size:10px;color:#64748b;display:flex;flex-wrap:wrap;gap:6px"><span>\u{1F4D1} ${headings} headings</span><span>\u{1F5BC}\uFE0F ${images} images</span><span>\u{1F4CA} ${tables} tables</span><span>\u{1F517} ${links} links</span></div>`;
-      doc.body.appendChild(overlay);
-    }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors" }, "\u{1F4CA} Toggle Reading Level & Stats"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
-      const doc = pdfPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      const issues = [];
-      doc.querySelectorAll("img").forEach((img, i) => {
-        if (!img.alt || img.alt.trim() === "") issues.push("\u{1F5BC}\uFE0F Image " + (i + 1) + ": missing alt text");
-      });
-      const headings = Array.from(doc.querySelectorAll("h1,h2,h3,h4,h5,h6"));
-      let prevLevel = 0;
-      headings.forEach((h) => {
-        const level = parseInt(h.tagName[1]);
-        if (level > prevLevel + 1 && prevLevel > 0) issues.push("\u{1F4D1} Heading skip: h" + prevLevel + " \u2192 h" + level + ' ("' + h.textContent.substring(0, 30) + '...")');
-        prevLevel = level;
-      });
-      doc.querySelectorAll("table").forEach((tbl, i) => {
-        if (!tbl.querySelector("th") && !tbl.querySelector("thead")) issues.push("\u{1F4CA} Table " + (i + 1) + ": no header cells (th)");
-        if (!tbl.querySelector("caption") && !tbl.getAttribute("aria-label")) issues.push("\u{1F4CA} Table " + (i + 1) + ": no caption or aria-label");
-      });
-      doc.querySelectorAll("a[href]").forEach((a, i) => {
-        const txt = a.textContent.trim().toLowerCase();
-        if (["click here", "here", "link", "read more", "more"].includes(txt)) issues.push("\u{1F517} Link " + (i + 1) + ': vague text "' + txt + '"');
-      });
-      if (issues.length === 0) {
-        addToast(t("toasts.common_accessibility_issues_found"), "success");
-        return;
-      }
-      const fixable = issues.length;
-      addToast(t("toasts.found") + fixable + " accessibility issue" + (fixable !== 1 ? "s" : ""), "info");
-      const overlay = doc.getElementById("a11y-quick-report") || doc.createElement("div");
-      overlay.id = "a11y-quick-report";
-      overlay.style.cssText = "position:fixed;top:16px;right:16px;background:white;border:2px solid #f59e0b;border-radius:12px;padding:16px;font-family:system-ui;font-size:11px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:99999;max-width:320px;max-height:60vh;overflow-y:auto;";
-      overlay.innerHTML = '<div style="font-weight:800;font-size:13px;color:#92400e;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">\u26A0\uFE0F A11y Quick Check (' + fixable + ') <span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;color:#94a3b8;font-size:18px">&times;</span></div>' + issues.map((i) => '<div style="padding:4px 0;border-bottom:1px solid #fef3c7;line-height:1.4">' + i + "</div>").join("");
-      doc.body.appendChild(overlay);
-    }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-colors" }, "\u267F Quick A11y Check"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
-      const doc = pdfPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      const images = Array.from(doc.querySelectorAll("img"));
-      const needsAlt = images.filter((img) => !img.alt || img.alt.trim() === "" || img.alt === "undefined");
-      if (images.length === 0) {
-        addToast(t("toasts.images_found_document"), "info");
-        return;
-      }
-      if (needsAlt.length === 0) {
-        addToast(t("toasts.all") + images.length + " images already have alt text!", "success");
-        return;
-      }
-      addToast(t("toasts.generating_alt_text") + needsAlt.length + " image(s)...", "info");
-      let fixed = 0;
-      for (const img of needsAlt) {
-        try {
-          if (!img.src || !img.src.startsWith("data:") && !img.src.startsWith("blob:")) {
-            img.alt = "Decorative image";
-            fixed++;
-            continue;
-          }
-          const base64 = img.src.split(",")[1];
-          if (!base64 || !callGeminiVision) {
-            img.alt = "Image \u2014 description pending";
-            fixed++;
-            continue;
-          }
-          const mimeType = img.src.match(/data:([^;]+)/)?.[1] || "image/png";
-          const description = await callGeminiVision(
-            'Describe this image in one concise sentence for a screen reader alt text attribute. Be specific and descriptive. Do not start with "Image of" or "Picture of". Just describe what is shown. Max 120 characters.',
-            base64,
-            mimeType
-          );
-          if (description) {
-            img.alt = description.replace(/^["']|["']$/g, "").trim().substring(0, 150);
-            const figcap = img.closest("figure")?.querySelector("figcaption");
-            if (figcap && (!figcap.textContent || figcap.textContent.trim() === "" || figcap.textContent.includes("description"))) {
-              figcap.textContent = img.alt;
+            try {
+              const saved = JSON.parse(localStorage.getItem("alloflow_templates") || "[]");
+              if (!saved.some((s) => s.name === tmpl.name)) {
+                saved.push(tmpl);
+                localStorage.setItem("alloflow_templates", JSON.stringify(saved));
+              }
+            } catch (e2) {
             }
+            addToast(t("toasts.template_2") + tmpl.name + '" loaded! It now appears in Saved Templates above.', "success");
+          } catch (err) {
+            addToast(t("toasts.failed_load_template") + err.message, "error");
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = "";
+      } })))), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F4CA} Stats & Readability ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400 space-y-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const doc = pdfPreviewRef.current?.contentDocument;
+        const text = doc?.body?.textContent || "";
+        if (!text.trim()) {
+          addToast(t("toasts.content_analyze"), "info");
+          return;
+        }
+        const words = text.split(/\s+/).filter((w) => w.length > 0);
+        const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
+        const syllables = words.reduce((sum, w) => {
+          const s = w.toLowerCase().replace(/[^a-z]/g, "");
+          if (s.length <= 3) return sum + 1;
+          let c = s.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "").match(/[aeiouy]{1,2}/g);
+          return sum + (c ? c.length : 1);
+        }, 0);
+        const avgWords = sentences.length > 0 ? words.length / sentences.length : 0;
+        const avgSyllables = words.length > 0 ? syllables / words.length : 0;
+        const fkGrade = Math.max(0, Math.round((0.39 * avgWords + 11.8 * avgSyllables - 15.59) * 10) / 10);
+        const fkEase = Math.max(0, Math.round((206.835 - 1.015 * avgWords - 84.6 * avgSyllables) * 10) / 10);
+        const chars = text.replace(/\s/g, "").length;
+        const headings = doc?.querySelectorAll("h1,h2,h3,h4,h5,h6")?.length || 0;
+        const images = doc?.querySelectorAll("img")?.length || 0;
+        const tables = doc?.querySelectorAll("table")?.length || 0;
+        const links = doc?.querySelectorAll("a[href]")?.length || 0;
+        const easeLabel = fkEase >= 80 ? "\u{1F7E2} Easy" : fkEase >= 60 ? "\u{1F7E1} Standard" : fkEase >= 40 ? "\u{1F7E0} Difficult" : "\u{1F534} Very Difficult";
+        const statsEl = doc.getElementById("alloflow-stats-overlay");
+        if (statsEl) {
+          statsEl.remove();
+          return;
+        }
+        const overlay = doc.createElement("div");
+        overlay.id = "alloflow-stats-overlay";
+        overlay.style.cssText = "position:fixed;bottom:16px;right:16px;background:white;border:2px solid #6366f1;border-radius:12px;padding:16px;font-family:system-ui;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:99999;max-width:280px;";
+        overlay.innerHTML = `<div style="font-weight:800;font-size:14px;color:#1e293b;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">\u{1F4CA} Document Stats <span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;color:#94a3b8;font-size:18px">&times;</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px"><div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${words.length.toLocaleString()}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Words</div></div><div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${sentences.length}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Sentences</div></div><div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${chars.toLocaleString()}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Characters</div></div><div style="background:#f1f5f9;padding:8px;border-radius:6px;text-align:center"><div style="font-size:18px;font-weight:800;color:#1e293b">${Math.ceil(words.length / 250)}</div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">~Pages</div></div></div><div style="background:linear-gradient(135deg,#eef2ff,#e0e7ff);padding:10px;border-radius:8px;margin-bottom:8px"><div style="font-weight:800;color:#4338ca;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Reading Level</div><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:22px;font-weight:900;color:#1e293b">Grade ${fkGrade}</span><span style="font-size:11px;font-weight:600;color:#64748b">${easeLabel}</span></div><div style="font-size:10px;color:#6366f1;margin-top:2px">Flesch-Kincaid | Ease: ${fkEase}/100</div></div><div style="font-size:10px;color:#64748b;display:flex;flex-wrap:wrap;gap:6px"><span>\u{1F4D1} ${headings} headings</span><span>\u{1F5BC}\uFE0F ${images} images</span><span>\u{1F4CA} ${tables} tables</span><span>\u{1F517} ${links} links</span></div>`;
+        doc.body.appendChild(overlay);
+      }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors" }, "\u{1F4CA} Toggle Reading Level & Stats"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+        const doc = pdfPreviewRef.current?.contentDocument;
+        if (!doc) return;
+        const issues = [];
+        doc.querySelectorAll("img").forEach((img, i) => {
+          if (!img.alt || img.alt.trim() === "") issues.push("\u{1F5BC}\uFE0F Image " + (i + 1) + ": missing alt text");
+        });
+        const headings = Array.from(doc.querySelectorAll("h1,h2,h3,h4,h5,h6"));
+        let prevLevel = 0;
+        headings.forEach((h) => {
+          const level = parseInt(h.tagName[1]);
+          if (level > prevLevel + 1 && prevLevel > 0) issues.push("\u{1F4D1} Heading skip: h" + prevLevel + " \u2192 h" + level + ' ("' + h.textContent.substring(0, 30) + '...")');
+          prevLevel = level;
+        });
+        doc.querySelectorAll("table").forEach((tbl, i) => {
+          if (!tbl.querySelector("th") && !tbl.querySelector("thead")) issues.push("\u{1F4CA} Table " + (i + 1) + ": no header cells (th)");
+          if (!tbl.querySelector("caption") && !tbl.getAttribute("aria-label")) issues.push("\u{1F4CA} Table " + (i + 1) + ": no caption or aria-label");
+        });
+        doc.querySelectorAll("a[href]").forEach((a, i) => {
+          const txt = a.textContent.trim().toLowerCase();
+          if (["click here", "here", "link", "read more", "more"].includes(txt)) issues.push("\u{1F517} Link " + (i + 1) + ': vague text "' + txt + '"');
+        });
+        if (issues.length === 0) {
+          addToast(t("toasts.common_accessibility_issues_found"), "success");
+          return;
+        }
+        const fixable = issues.length;
+        addToast(t("toasts.found") + fixable + " accessibility issue" + (fixable !== 1 ? "s" : ""), "info");
+        const overlay = doc.getElementById("a11y-quick-report") || doc.createElement("div");
+        overlay.id = "a11y-quick-report";
+        overlay.style.cssText = "position:fixed;top:16px;right:16px;background:white;border:2px solid #f59e0b;border-radius:12px;padding:16px;font-family:system-ui;font-size:11px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:99999;max-width:320px;max-height:60vh;overflow-y:auto;";
+        overlay.innerHTML = '<div style="font-weight:800;font-size:13px;color:#92400e;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">\u26A0\uFE0F A11y Quick Check (' + fixable + ') <span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;color:#94a3b8;font-size:18px">&times;</span></div>' + issues.map((i) => '<div style="padding:4px 0;border-bottom:1px solid #fef3c7;line-height:1.4">' + i + "</div>").join("");
+        doc.body.appendChild(overlay);
+      }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-colors" }, "\u267F Quick A11y Check"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+        const doc = pdfPreviewRef.current?.contentDocument;
+        if (!doc) return;
+        const images = Array.from(doc.querySelectorAll("img"));
+        const needsAlt = images.filter((img) => !img.alt || img.alt.trim() === "" || img.alt === "undefined");
+        if (images.length === 0) {
+          addToast(t("toasts.images_found_document"), "info");
+          return;
+        }
+        if (needsAlt.length === 0) {
+          addToast(t("toasts.all") + images.length + " images already have alt text!", "success");
+          return;
+        }
+        addToast(t("toasts.generating_alt_text") + needsAlt.length + " image(s)...", "info");
+        let fixed = 0;
+        for (const img of needsAlt) {
+          try {
+            if (!img.src || !img.src.startsWith("data:") && !img.src.startsWith("blob:")) {
+              img.alt = "Decorative image";
+              fixed++;
+              continue;
+            }
+            const base64 = img.src.split(",")[1];
+            if (!base64 || !callGeminiVision) {
+              img.alt = "Image \u2014 description pending";
+              fixed++;
+              continue;
+            }
+            const mimeType = img.src.match(/data:([^;]+)/)?.[1] || "image/png";
+            const description = await callGeminiVision(
+              'Describe this image in one concise sentence for a screen reader alt text attribute. Be specific and descriptive. Do not start with "Image of" or "Picture of". Just describe what is shown. Max 120 characters.',
+              base64,
+              mimeType
+            );
+            if (description) {
+              img.alt = description.replace(/^["']|["']$/g, "").trim().substring(0, 150);
+              const figcap = img.closest("figure")?.querySelector("figcaption");
+              if (figcap && (!figcap.textContent || figcap.textContent.trim() === "" || figcap.textContent.includes("description"))) {
+                figcap.textContent = img.alt;
+              }
+              fixed++;
+            }
+          } catch (e) {
+            warnLog("[Alt Gen] Failed for image:", e);
+            img.alt = "Image";
             fixed++;
           }
-        } catch (e) {
-          warnLog("[Alt Gen] Failed for image:", e);
-          img.alt = "Image";
-          fixed++;
         }
-      }
-      addToast(t("toasts.generated_alt_text") + fixed + "/" + needsAlt.length + " images", "success");
-    }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors" }, "\u{1F5BC}\uFE0F Auto-Generate Alt Text (AI)"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const doc = pdfPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      const existing = doc.getElementById("a11y-compliance-statement");
-      if (existing) {
-        existing.remove();
-        addToast(t("toasts.compliance_statement_removed"), "info");
-        return;
-      }
-      const imgs = doc.querySelectorAll("img");
-      const imgsWithAlt = Array.from(imgs).filter((i) => i.alt && i.alt.trim()).length;
-      const headings = doc.querySelectorAll("h1,h2,h3,h4,h5,h6").length;
-      const tables = doc.querySelectorAll("table").length;
-      const tablesWithHeaders = Array.from(doc.querySelectorAll("table")).filter((t2) => t2.querySelector("th")).length;
-      const links = doc.querySelectorAll("a[href]").length;
-      const date = (/* @__PURE__ */ new Date()).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-      const stmt = doc.createElement("div");
-      stmt.id = "a11y-compliance-statement";
-      stmt.style.cssText = "margin-top:40px;padding:20px 24px;border:2px solid #6366f1;border-radius:12px;background:linear-gradient(135deg,#eef2ff,#f5f3ff);font-family:system-ui;page-break-inside:avoid;";
-      stmt.innerHTML = `
+        addToast(t("toasts.generated_alt_text") + fixed + "/" + needsAlt.length + " images", "success");
+      }, className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-emerald-50 hover:text-emerald-700 transition-colors" }, "\u{1F5BC}\uFE0F Auto-Generate Alt Text (AI)"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const doc = pdfPreviewRef.current?.contentDocument;
+        if (!doc) return;
+        const existing = doc.getElementById("a11y-compliance-statement");
+        if (existing) {
+          existing.remove();
+          addToast(t("toasts.compliance_statement_removed"), "info");
+          return;
+        }
+        const imgs = doc.querySelectorAll("img");
+        const imgsWithAlt = Array.from(imgs).filter((i) => i.alt && i.alt.trim()).length;
+        const headings = doc.querySelectorAll("h1,h2,h3,h4,h5,h6").length;
+        const tables = doc.querySelectorAll("table").length;
+        const tablesWithHeaders = Array.from(doc.querySelectorAll("table")).filter((t2) => t2.querySelector("th")).length;
+        const links = doc.querySelectorAll("a[href]").length;
+        const date = (/* @__PURE__ */ new Date()).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+        const stmt = doc.createElement("div");
+        stmt.id = "a11y-compliance-statement";
+        stmt.style.cssText = "margin-top:40px;padding:20px 24px;border:2px solid #6366f1;border-radius:12px;background:linear-gradient(135deg,#eef2ff,#f5f3ff);font-family:system-ui;page-break-inside:avoid;";
+        stmt.innerHTML = `
                   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
                     <span style="font-size:24px">\u267F</span>
                     <div>
@@ -12396,848 +12440,927 @@ Return ONLY JSON:
                     <span>AlloFlow Document Pipeline v2.0</span>
                   </div>
                 `;
-      (doc.querySelector("main") || doc.body).appendChild(stmt);
-      addToast(t("toasts.accessibility_compliance_statement_added"), "success");
-    }, className: "w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center justify-center gap-1.5" }, "\u267F Insert Accessibility Statement"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const doc = pdfPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      const existing = doc.getElementById("alloflow-toc");
-      if (existing) {
-        existing.remove();
-        addToast(t("toasts.table_contents_removed"), "info");
-        return;
-      }
-      const headings = Array.from(doc.querySelectorAll("h1,h2,h3,h4"));
-      if (headings.length < 2) {
-        addToast(t("toasts.need_least_headings_generate_toc"), "info");
-        return;
-      }
-      headings.forEach((h, i) => {
-        if (!h.id) h.id = "toc-heading-" + i;
-      });
-      const tocItems = headings.map((h, i) => {
-        const level = parseInt(h.tagName[1]);
-        const indent = (level - 1) * 16;
-        const num = (() => {
-          const counts = [0, 0, 0, 0];
-          for (let j = 0; j <= i; j++) {
-            const l = parseInt(headings[j].tagName[1]) - 1;
-            counts[l]++;
-            for (let k = l + 1; k < 4; k++) counts[k] = 0;
-          }
-          return counts.slice(0, level).filter((c) => c > 0).join(".");
-        })();
-        const text = h.textContent.trim().substring(0, 60) + (h.textContent.length > 60 ? "..." : "");
-        return '<a href="#' + h.id + '" style="display:flex;align-items:baseline;gap:6px;padding:4px 0 4px ' + indent + "px;color:#1e293b;text-decoration:none;font-size:" + (level === 1 ? "13px" : "12px") + ";font-weight:" + (level === 1 ? "700" : "400") + `;border-bottom:1px dotted #e2e8f0;transition:background 0.15s" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'"><span style="color:#6366f1;font-weight:600;font-size:11px;min-width:20px">` + num + "</span><span>" + text + "</span></a>";
-      }).join("");
-      const toc = doc.createElement("nav");
-      toc.id = "alloflow-toc";
-      toc.setAttribute("role", "navigation");
-      toc.setAttribute("aria-label", "Table of Contents");
-      toc.style.cssText = "background:linear-gradient(135deg,#f8fafc,#eef2ff);border:1px solid #c7d2fe;border-radius:12px;padding:16px 20px;margin:0 0 24px 0;page-break-after:always;";
-      toc.innerHTML = '<div style="font-weight:800;font-size:14px;color:#4338ca;margin-bottom:8px;display:flex;align-items:center;gap:6px">\u{1F4D1} Table of Contents</div>' + tocItems + '<div style="font-size:9px;color:#94a3b8;margin-top:8px;text-align:right">Auto-generated \xB7 Click headings to navigate</div>';
-      const main = doc.querySelector("main") || doc.body;
-      main.insertBefore(toc, main.firstChild);
-      addToast(t("toasts.table_contents_added_click_remove"), "success");
-    }, className: "w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5" }, "\u{1F4D1} Toggle Table of Contents"), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F512} Watermark & Stamps ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400 space-y-1" }, [
-      { label: "DRAFT", color: "#ef4444", opacity: 0.08 },
-      { label: "CONFIDENTIAL", color: "#7c3aed", opacity: 0.07 },
-      { label: "FINAL", color: "#16a34a", opacity: 0.08 },
-      { label: "SAMPLE", color: "#2563eb", opacity: 0.08 },
-      { label: "DO NOT DISTRIBUTE", color: "#dc2626", opacity: 0.06 }
-    ].map((wm) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: wm.label,
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (!doc) return;
-          const existing = doc.getElementById("alloflow-watermark");
-          if (existing && existing.dataset.label === wm.label) {
-            existing.remove();
-            addToast(t("toasts.watermark_removed"), "info");
-            return;
-          }
-          if (existing) existing.remove();
-          const el = doc.createElement("div");
-          el.id = "alloflow-watermark";
-          el.dataset.label = wm.label;
-          el.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:120px;font-weight:900;color:" + wm.color + ";opacity:" + wm.opacity + ";pointer-events:none;z-index:9998;white-space:nowrap;letter-spacing:8px;font-family:system-ui;user-select:none;";
-          el.textContent = wm.label;
-          doc.body.appendChild(el);
-          addToast(t("toasts.watermark") + wm.label + '" added \u2014 click again to remove', "success");
+        (doc.querySelector("main") || doc.body).appendChild(stmt);
+        addToast(t("toasts.accessibility_compliance_statement_added"), "success");
+      }, className: "w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-violet-50 hover:text-violet-700 transition-colors flex items-center justify-center gap-1.5" }, "\u267F Insert Accessibility Statement"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const doc = pdfPreviewRef.current?.contentDocument;
+        if (!doc) return;
+        const existing = doc.getElementById("alloflow-toc");
+        if (existing) {
+          existing.remove();
+          addToast(t("toasts.table_contents_removed"), "info");
+          return;
+        }
+        const headings = Array.from(doc.querySelectorAll("h1,h2,h3,h4"));
+        if (headings.length < 2) {
+          addToast(t("toasts.need_least_headings_generate_toc"), "info");
+          return;
+        }
+        headings.forEach((h, i) => {
+          if (!h.id) h.id = "toc-heading-" + i;
+        });
+        const tocItems = headings.map((h, i) => {
+          const level = parseInt(h.tagName[1]);
+          const indent = (level - 1) * 16;
+          const num = (() => {
+            const counts = [0, 0, 0, 0];
+            for (let j = 0; j <= i; j++) {
+              const l = parseInt(headings[j].tagName[1]) - 1;
+              counts[l]++;
+              for (let k = l + 1; k < 4; k++) counts[k] = 0;
+            }
+            return counts.slice(0, level).filter((c) => c > 0).join(".");
+          })();
+          const text = h.textContent.trim().substring(0, 60) + (h.textContent.length > 60 ? "..." : "");
+          return '<a href="#' + h.id + '" style="display:flex;align-items:baseline;gap:6px;padding:4px 0 4px ' + indent + "px;color:#1e293b;text-decoration:none;font-size:" + (level === 1 ? "13px" : "12px") + ";font-weight:" + (level === 1 ? "700" : "400") + `;border-bottom:1px dotted #e2e8f0;transition:background 0.15s" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'"><span style="color:#6366f1;font-weight:600;font-size:11px;min-width:20px">` + num + "</span><span>" + text + "</span></a>";
+        }).join("");
+        const toc = doc.createElement("nav");
+        toc.id = "alloflow-toc";
+        toc.setAttribute("role", "navigation");
+        toc.setAttribute("aria-label", "Table of Contents");
+        toc.style.cssText = "background:linear-gradient(135deg,#f8fafc,#eef2ff);border:1px solid #c7d2fe;border-radius:12px;padding:16px 20px;margin:0 0 24px 0;page-break-after:always;";
+        toc.innerHTML = '<div style="font-weight:800;font-size:14px;color:#4338ca;margin-bottom:8px;display:flex;align-items:center;gap:6px">\u{1F4D1} Table of Contents</div>' + tocItems + '<div style="font-size:9px;color:#94a3b8;margin-top:8px;text-align:right">Auto-generated \xB7 Click headings to navigate</div>';
+        const main = doc.querySelector("main") || doc.body;
+        main.insertBefore(toc, main.firstChild);
+        addToast(t("toasts.table_contents_added_click_remove"), "success");
+      }, className: "w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5" }, "\u{1F4D1} Toggle Table of Contents"), /* @__PURE__ */ React.createElement("details", { className: "group" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest cursor-pointer hover:text-indigo-600 transition-colors flex items-center gap-1" }, "\u{1F512} Watermark & Stamps ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 group-open:hidden" }, "\u25B8")), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400 space-y-1" }, [
+        { label: "DRAFT", color: "#ef4444", opacity: 0.08 },
+        { label: "CONFIDENTIAL", color: "#7c3aed", opacity: 0.07 },
+        { label: "FINAL", color: "#16a34a", opacity: 0.08 },
+        { label: "SAMPLE", color: "#2563eb", opacity: 0.08 },
+        { label: "DO NOT DISTRIBUTE", color: "#dc2626", opacity: 0.06 }
+      ].map((wm) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: wm.label,
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (!doc) return;
+            const existing = doc.getElementById("alloflow-watermark");
+            if (existing && existing.dataset.label === wm.label) {
+              existing.remove();
+              addToast(t("toasts.watermark_removed"), "info");
+              return;
+            }
+            if (existing) existing.remove();
+            const el = doc.createElement("div");
+            el.id = "alloflow-watermark";
+            el.dataset.label = wm.label;
+            el.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:120px;font-weight:900;color:" + wm.color + ";opacity:" + wm.opacity + ";pointer-events:none;z-index:9998;white-space:nowrap;letter-spacing:8px;font-family:system-ui;user-select:none;";
+            el.textContent = wm.label;
+            doc.body.appendChild(el);
+            addToast(t("toasts.watermark") + wm.label + '" added \u2014 click again to remove', "success");
+          },
+          className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2",
+          "aria-label": `Toggle ${wm.label} watermark`
         },
-        className: "w-full text-[11px] font-bold text-slate-600 py-1.5 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2",
-        "aria-label": `Toggle ${wm.label} watermark`
-      },
-      "\u{1F512} ",
-      wm.label
-    )), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200 pt-1.5 mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("pdf_audit.version_stamp.heading") || "Version Stamp"), [
-      { label: "Version 1.0", icon: "\u{1F4CC}" },
-      { label: "Revised " + (/* @__PURE__ */ new Date()).toLocaleDateString(), icon: "\u{1F4DD}" },
-      { label: "Approved " + (/* @__PURE__ */ new Date()).toLocaleDateString(), icon: "\u2705" }
-    ].map((stamp) => /* @__PURE__ */ React.createElement("button", { key: stamp.label, onClick: () => {
-      const doc = pdfPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      const existing = doc.getElementById("alloflow-version-stamp");
-      if (existing) existing.remove();
-      const el = doc.createElement("div");
-      el.id = "alloflow-version-stamp";
-      el.style.cssText = "position:fixed;top:12px;right:12px;background:white;border:2px solid #6366f1;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:#4338ca;font-family:system-ui;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.1);";
-      el.textContent = stamp.icon + " " + stamp.label;
-      doc.body.appendChild(el);
-      addToast(t("toasts.version_stamp_added"), "success");
-    }, className: "w-full text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2 mb-0.5" }, stamp.icon, " ", stamp.label))))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const doc = pdfPreviewRef.current?.contentDocument;
-      if (!doc) return;
-      const existing = doc.getElementById("bilingual-style");
-      if (existing) {
-        existing.remove();
-        addToast(t("toasts.bilingual_layout_removed_content_restored"), "info");
-        return;
-      }
-      const main = doc.querySelector("main") || doc.body;
-      const sections = Array.from(main.querySelectorAll('.section, section, article, [class*="resource"]'));
-      if (sections.length === 0) {
-        addToast(t("toasts.content_sections_found_arrange"), "info");
-        return;
-      }
-      const style = doc.createElement("style");
-      style.id = "bilingual-style";
-      style.textContent = `
+        "\u{1F512} ",
+        wm.label
+      )), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200 pt-1.5 mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("pdf_audit.version_stamp.heading") || "Version Stamp"), [
+        { label: "Version 1.0", icon: "\u{1F4CC}" },
+        { label: "Revised " + (/* @__PURE__ */ new Date()).toLocaleDateString(), icon: "\u{1F4DD}" },
+        { label: "Approved " + (/* @__PURE__ */ new Date()).toLocaleDateString(), icon: "\u2705" }
+      ].map((stamp) => /* @__PURE__ */ React.createElement("button", { key: stamp.label, onClick: () => {
+        const doc = pdfPreviewRef.current?.contentDocument;
+        if (!doc) return;
+        const existing = doc.getElementById("alloflow-version-stamp");
+        if (existing) existing.remove();
+        const el = doc.createElement("div");
+        el.id = "alloflow-version-stamp";
+        el.style.cssText = "position:fixed;top:12px;right:12px;background:white;border:2px solid #6366f1;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;color:#4338ca;font-family:system-ui;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,0.1);";
+        el.textContent = stamp.icon + " " + stamp.label;
+        doc.body.appendChild(el);
+        addToast(t("toasts.version_stamp_added"), "success");
+      }, className: "w-full text-[11px] font-bold text-slate-600 py-1 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors text-left px-2 mb-0.5" }, stamp.icon, " ", stamp.label))))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const doc = pdfPreviewRef.current?.contentDocument;
+        if (!doc) return;
+        const existing = doc.getElementById("bilingual-style");
+        if (existing) {
+          existing.remove();
+          addToast(t("toasts.bilingual_layout_removed_content_restored"), "info");
+          return;
+        }
+        const main = doc.querySelector("main") || doc.body;
+        const sections = Array.from(main.querySelectorAll('.section, section, article, [class*="resource"]'));
+        if (sections.length === 0) {
+          addToast(t("toasts.content_sections_found_arrange"), "info");
+          return;
+        }
+        const style = doc.createElement("style");
+        style.id = "bilingual-style";
+        style.textContent = `
                   .bilingual-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0; padding: 16px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fafafa; page-break-inside: avoid; }
                   .bilingual-col { padding: 0; }
                   .bilingual-col-header { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #6366f1; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #e0e7ff; }
                   .bilingual-divider { width: 1px; background: #cbd5e1; margin: 0 -10px; }
                   @media print { .bilingual-row { border: 1px solid #ddd; } }
                 `;
-      doc.head.appendChild(style);
-      sections.forEach((section) => {
-        const wrapper = doc.createElement("div");
-        wrapper.className = "bilingual-row";
-        const leftCol = doc.createElement("div");
-        leftCol.className = "bilingual-col";
-        const leftHeader = doc.createElement("div");
-        leftHeader.className = "bilingual-col-header";
-        leftHeader.textContent = "\u{1F1FA}\u{1F1F8} English";
-        leftCol.appendChild(leftHeader);
-        const clone = section.cloneNode(true);
-        leftCol.appendChild(clone);
-        const rightCol = doc.createElement("div");
-        rightCol.className = "bilingual-col";
-        const rightHeader = doc.createElement("div");
-        rightHeader.className = "bilingual-col-header";
-        rightHeader.textContent = "\u{1F310} Translation";
-        rightCol.appendChild(rightHeader);
-        const placeholder = doc.createElement("div");
-        placeholder.contentEditable = "true";
-        placeholder.style.cssText = "min-height:60px;padding:12px;background:#f0f9ff;border:1px dashed #93c5fd;border-radius:6px;color:#64748b;font-style:italic;font-size:13px;line-height:1.6;";
-        placeholder.textContent = "Paste or type translation here...";
-        placeholder.onfocus = function() {
-          if (this.textContent === "Paste or type translation here...") this.textContent = "";
-          this.style.color = "#1e293b";
-          this.style.fontStyle = "normal";
-        };
-        rightCol.appendChild(placeholder);
-        wrapper.appendChild(leftCol);
-        wrapper.appendChild(rightCol);
-        section.parentNode.insertBefore(wrapper, section);
-        section.style.display = "none";
-      });
-      addToast(t("toasts.bilingual_layout_applied_paste_translations"), "success");
-    }, className: "w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5" }, "\u{1F310} Toggle Bilingual Side-by-Side"), callTTS && /* @__PURE__ */ React.createElement("button", { id: "preview-audio-dl-btn", onClick: async () => {
-      const btn = document.getElementById("preview-audio-dl-btn");
-      const doc = pdfPreviewRef.current?.contentDocument;
-      const fullText = (doc?.body?.textContent || "").trim();
-      if (!fullText) {
-        addToast(t("toasts.text_convert"), "error");
-        return;
-      }
-      const segments = [];
-      let rem = fullText;
-      while (rem.length > 0) {
-        if (rem.length <= 600) {
-          segments.push(rem);
-          break;
+        doc.head.appendChild(style);
+        sections.forEach((section) => {
+          const wrapper = doc.createElement("div");
+          wrapper.className = "bilingual-row";
+          const leftCol = doc.createElement("div");
+          leftCol.className = "bilingual-col";
+          const leftHeader = doc.createElement("div");
+          leftHeader.className = "bilingual-col-header";
+          leftHeader.textContent = "\u{1F1FA}\u{1F1F8} English";
+          leftCol.appendChild(leftHeader);
+          const clone = section.cloneNode(true);
+          leftCol.appendChild(clone);
+          const rightCol = doc.createElement("div");
+          rightCol.className = "bilingual-col";
+          const rightHeader = doc.createElement("div");
+          rightHeader.className = "bilingual-col-header";
+          rightHeader.textContent = "\u{1F310} Translation";
+          rightCol.appendChild(rightHeader);
+          const placeholder = doc.createElement("div");
+          placeholder.contentEditable = "true";
+          placeholder.style.cssText = "min-height:60px;padding:12px;background:#f0f9ff;border:1px dashed #93c5fd;border-radius:6px;color:#64748b;font-style:italic;font-size:13px;line-height:1.6;";
+          placeholder.textContent = "Paste or type translation here...";
+          placeholder.onfocus = function() {
+            if (this.textContent === "Paste or type translation here...") this.textContent = "";
+            this.style.color = "#1e293b";
+            this.style.fontStyle = "normal";
+          };
+          rightCol.appendChild(placeholder);
+          wrapper.appendChild(leftCol);
+          wrapper.appendChild(rightCol);
+          section.parentNode.insertBefore(wrapper, section);
+          section.style.display = "none";
+        });
+        addToast(t("toasts.bilingual_layout_applied_paste_translations"), "success");
+      }, className: "w-full text-[11px] font-bold text-slate-600 py-2 bg-white border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center justify-center gap-1.5" }, "\u{1F310} Toggle Bilingual Side-by-Side"), callTTS && /* @__PURE__ */ React.createElement("button", { id: "preview-audio-dl-btn", onClick: async () => {
+        const btn = document.getElementById("preview-audio-dl-btn");
+        const doc = pdfPreviewRef.current?.contentDocument;
+        const fullText = (doc?.body?.textContent || "").trim();
+        if (!fullText) {
+          addToast(t("toasts.text_convert"), "error");
+          return;
         }
-        let sp = rem.lastIndexOf(". ", 600);
-        if (sp < 200) sp = rem.indexOf(". ", 400);
-        if (sp < 0 || sp > 800) sp = 500;
-        else sp += 2;
-        segments.push(rem.substring(0, sp));
-        rem = rem.substring(sp).trim();
-      }
-      if (btn) {
-        btn.textContent = "\u23F3 0/" + segments.length;
-        btn.disabled = true;
-      }
-      const blobs = [];
-      let failed = 0;
-      let consecutiveNull = 0;
-      let stoppedEarly = false;
-      for (let si = 0; si < segments.length; si++) {
-        if (btn) btn.textContent = "\u23F3 " + (si + 1) + "/" + segments.length;
-        try {
-          const url = await callTTS(segments[si], selectedVoice || "Puck", 1, 2);
-          if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
-            const r = await _withTimeout(fetch(url), 2e4, "TTS audio fetch");
-            blobs.push(await r.blob());
-            try {
-              if (url.startsWith("blob:")) URL.revokeObjectURL(url);
-            } catch (_) {
+        const segments = [];
+        let rem = fullText;
+        while (rem.length > 0) {
+          if (rem.length <= 600) {
+            segments.push(rem);
+            break;
+          }
+          let sp = rem.lastIndexOf(". ", 600);
+          if (sp < 200) sp = rem.indexOf(". ", 400);
+          if (sp < 0 || sp > 800) sp = 500;
+          else sp += 2;
+          segments.push(rem.substring(0, sp));
+          rem = rem.substring(sp).trim();
+        }
+        if (btn) {
+          btn.textContent = "\u23F3 0/" + segments.length;
+          btn.disabled = true;
+        }
+        const blobs = [];
+        let failed = 0;
+        let consecutiveNull = 0;
+        let stoppedEarly = false;
+        for (let si = 0; si < segments.length; si++) {
+          if (btn) btn.textContent = "\u23F3 " + (si + 1) + "/" + segments.length;
+          try {
+            const url = await callTTS(segments[si], selectedVoice || "Puck", 1, 2);
+            if (url && (url.startsWith("blob:") || url.startsWith("data:") || url.startsWith("http"))) {
+              const r = await _withTimeout(fetch(url), 2e4, "TTS audio fetch");
+              blobs.push(await r.blob());
+              try {
+                if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+              } catch (_) {
+              }
+              consecutiveNull = 0;
+            } else {
+              failed++;
+              consecutiveNull++;
             }
-            consecutiveNull = 0;
-          } else {
+          } catch (e) {
+            warnLog("[Audio] Seg " + si + " failed:", e?.message);
             failed++;
             consecutiveNull++;
+            if (e?.message?.includes("429") || e?.message?.includes("Rate")) {
+              stoppedEarly = true;
+              break;
+            }
           }
-        } catch (e) {
-          warnLog("[Audio] Seg " + si + " failed:", e?.message);
-          failed++;
-          consecutiveNull++;
-          if (e?.message?.includes("429") || e?.message?.includes("Rate")) {
+          if (consecutiveNull >= 3) {
             stoppedEarly = true;
             break;
           }
         }
-        if (consecutiveNull >= 3) {
-          stoppedEarly = true;
-          break;
+        if (btn) {
+          btn.textContent = "\u{1F3A7} Download Audio";
+          btn.disabled = false;
         }
-      }
-      if (btn) {
-        btn.textContent = "\u{1F3A7} Download Audio";
-        btn.disabled = false;
-      }
-      if (blobs.length === 0) {
-        addToast(t("toasts.audio_generation_failed_check_tts"), "error");
-        return;
-      }
-      const combined = await _concatAudioBlobs(blobs);
-      if (!combined) {
-        addToast(t("toasts.audio_generation_failed_check_tts"), "error");
-        return;
-      }
-      const dlUrl = URL.createObjectURL(combined);
-      const a = document.createElement("a");
-      a.href = dlUrl;
-      a.download = "document-audio." + (combined.type?.includes("mpeg") || combined.type?.includes("mp3") ? "mp3" : "wav");
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(dlUrl);
-      const _incomplete = stoppedEarly || blobs.length < segments.length;
-      if (_incomplete) {
-        addToast("\u26A0 Audio incomplete \u2014 only " + blobs.length + " of " + segments.length + " sections were generated" + (stoppedEarly ? " before the TTS service rate-limited (retry in ~60s for the rest)" : "") + ". The downloaded file is partial.", "error");
-      } else {
-        addToast(t("toasts.downloaded") + blobs.length + "/" + segments.length, "success");
-      }
-    }, className: "w-full px-3 py-2 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold border border-amber-600 hover:bg-amber-100 transition-colors flex items-center gap-2 disabled:opacity-50" }, "\u{1F3A7} Download Audio"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
-      const html = getPdfPreviewHtml();
-      addToast(t("toasts.running_axe_core_edited_content"), "info");
-      const axe = await runAxeAudit(html);
-      if (axe) {
-        setPdfFixResult((prev) => ({ ...prev, axeAudit: axe, axeScore: axe.score, accessibleHtml: html }));
-        addToast(axe.totalViolations === 0 ? "\u2705 Zero violations!" : `\u26A0\uFE0F ${axe.totalViolations} violation(s) found`, axe.totalViolations === 0 ? "success" : "info");
-      }
-    }, className: "w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-2" }, "\u{1F52C} Re-audit (axe-core)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
-      const html = getPdfPreviewHtml();
-      if (!html) {
-        addToast(t("toasts.preview_content_audit"), "error");
-        return;
-      }
-      addToast(t("toasts.running_full_ai_re_audit"), "info");
-      try {
-        const [aiResult, axeResult] = await Promise.all([
-          auditOutputAccessibility(html),
-          runAxeAudit(html).catch(() => null)
-        ]);
-        if (aiResult) {
-          setPdfFixResult((prev) => ({
-            ...prev,
-            verificationAudit: aiResult,
-            accessibleHtml: html,
-            afterScore: aiResult.score,
-            ...axeResult ? { axeAudit: axeResult, axeScore: axeResult.score } : {}
-          }));
-          const totalIssues = (aiResult.issues || []).length;
-          const totalPasses = (aiResult.passes || []).length;
-          addToast(totalIssues === 0 ? `\u2705 Full re-audit complete! ${totalPasses} checks passing, 0 issues.` : `\u26A0\uFE0F Re-audit: ${totalIssues} issue(s), ${totalPasses} passing`, totalIssues === 0 ? "success" : "info");
+        if (blobs.length === 0) {
+          addToast(t("toasts.audio_generation_failed_check_tts"), "error");
+          return;
         }
-      } catch (e) {
-        const _c = classifyPdfError(e);
-        addToast((t("toasts.re_audit_failed") || "Re-audit failed: ") + _c.friendly + (_c.actionable ? " \u2014 " + _c.actionable : ""), _c.severity === "info" ? "info" : "error");
-      }
-    }, className: "w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-600 hover:bg-purple-100 transition-colors flex items-center gap-2" }, "\u{1F916} Full Re-audit (AI + axe-core)"), extractedImagesList.length > 0 && (() => {
-      const _uniq = [];
-      const _bySrc = /* @__PURE__ */ new Map();
-      for (const img of extractedImagesList) {
-        const e = _bySrc.get(img.src);
-        if (e) {
-          e.count++;
-          continue;
+        const combined = await _concatAudioBlobs(blobs);
+        if (!combined) {
+          addToast(t("toasts.audio_generation_failed_check_tts"), "error");
+          return;
         }
-        const entry = { ...img, count: 1 };
-        _bySrc.set(img.src, entry);
-        _uniq.push(entry);
-      }
-      const _insertIntoFirstSlot = (img) => {
+        const dlUrl = URL.createObjectURL(combined);
+        const a = document.createElement("a");
+        a.href = dlUrl;
+        a.download = "document-audio." + (combined.type?.includes("mpeg") || combined.type?.includes("mp3") ? "mp3" : "wav");
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(dlUrl);
+        const _incomplete = stoppedEarly || blobs.length < segments.length;
+        if (_incomplete) {
+          addToast("\u26A0 Audio incomplete \u2014 only " + blobs.length + " of " + segments.length + " sections were generated" + (stoppedEarly ? " before the TTS service rate-limited (retry in ~60s for the rest)" : "") + ". The downloaded file is partial.", "error");
+        } else {
+          addToast(t("toasts.downloaded") + blobs.length + "/" + segments.length, "success");
+        }
+      }, className: "w-full px-3 py-2 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold border border-amber-600 hover:bg-amber-100 transition-colors flex items-center gap-2 disabled:opacity-50" }, "\u{1F3A7} Download Audio"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+        const html = getPdfPreviewHtml();
+        addToast(t("toasts.running_axe_core_edited_content"), "info");
+        const axe = await runAxeAudit(html);
+        if (axe) {
+          setPdfFixResult((prev) => ({ ...prev, axeAudit: axe, axeScore: axe.score, accessibleHtml: html }));
+          addToast(axe.totalViolations === 0 ? "\u2705 Zero violations!" : `\u26A0\uFE0F ${axe.totalViolations} violation(s) found`, axe.totalViolations === 0 ? "success" : "info");
+        }
+      }, className: "w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-2" }, "\u{1F52C} Re-audit (axe-core)"), /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+        const html = getPdfPreviewHtml();
+        if (!html) {
+          addToast(t("toasts.preview_content_audit"), "error");
+          return;
+        }
+        addToast(t("toasts.running_full_ai_re_audit"), "info");
         try {
-          const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
-          if (!d) {
-            addToast(t("toasts.preview_not_ready") || "Preview not ready yet \u2014 wait for it to render, then try again.", "info");
-            return;
+          const [aiResult, axeResult] = await Promise.all([
+            auditOutputAccessibility(html),
+            runAxeAudit(html).catch(() => null)
+          ]);
+          if (aiResult) {
+            setPdfFixResult((prev) => ({
+              ...prev,
+              verificationAudit: aiResult,
+              accessibleHtml: html,
+              afterScore: aiResult.score,
+              ...axeResult ? { axeAudit: axeResult, axeScore: axeResult.score } : {}
+            }));
+            const totalIssues = (aiResult.issues || []).length;
+            const totalPasses = (aiResult.passes || []).length;
+            addToast(totalIssues === 0 ? `\u2705 Full re-audit complete! ${totalPasses} checks passing, 0 issues.` : `\u26A0\uFE0F Re-audit: ${totalIssues} issue(s), ${totalPasses} passing`, totalIssues === 0 ? "success" : "info");
           }
-          const c = d.querySelector('[ondrop*="alloflow-image"]');
-          if (!c) {
-            addToast(t("toasts.no_open_image_slot") || "No open image slot left in the preview \u2014 drag the thumbnail onto a specific image to replace it instead.", "info");
-            return;
-          }
-          const pk = c.querySelector("[data-alloflow-picker]");
-          if (pk) pk.remove();
-          let target = null;
-          for (const k of Array.from(c.children)) {
-            if (k.tagName === "IMG") {
-              target = k;
-              break;
-            }
-          }
-          if (target) {
-            target.src = img.src;
-            if (img.description) target.alt = img.description;
-          } else {
-            target = d.createElement("img");
-            target.src = img.src;
-            target.alt = img.description || "Image";
-            target.style.cssText = "max-width:100%;border-radius:8px;border:1px solid #e2e8f0";
-            c.appendChild(target);
-          }
-          c.style.background = "none";
-          c.style.border = "none";
-          c.style.padding = "0";
-          c.style.minHeight = "0";
-          Array.from(c.children).forEach((ch) => {
-            if (ch !== target) ch.remove();
-          });
-          c.removeAttribute("ondragover");
-          c.removeAttribute("ondragleave");
-          c.removeAttribute("ondrop");
-          try {
-            if (window.__alloflowOnPdfPreviewMutated) window.__alloflowOnPdfPreviewMutated();
-          } catch (_) {
-          }
-          try {
-            target.scrollIntoView({ block: "center", behavior: "smooth" });
-          } catch (_) {
-          }
-          addToast(t("toasts.extracted_image_inserted") || "\u{1F5BC} Inserted into the first open image slot \u2014 drag a thumbnail instead if you want a different spot.", "success");
         } catch (e) {
-          addToast("Insert failed: " + (e?.message || "unknown error"), "error");
+          const _c = classifyPdfError(e);
+          addToast((t("toasts.re_audit_failed") || "Re-audit failed: ") + _c.friendly + (_c.actionable ? " \u2014 " + _c.actionable : ""), _c.severity === "info" ? "info" : "error");
         }
-      };
-      return /* @__PURE__ */ React.createElement("details", { className: "bg-white border border-indigo-600 rounded-lg p-2", open: true }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold text-slate-600 uppercase tracking-widest select-none" }, "\u{1F5BC} Extracted Images (", _uniq.length, _uniq.length !== extractedImagesList.length ? " unique of " + extractedImagesList.length : "", ")"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1 mb-2" }, t("pdf_audit.extracted_images.drag_hint2") || "Click a thumbnail to insert it into the first open image slot, or drag it onto any specific placeholder or image in the preview. \xD7N = the same image appeared on N pages (usually a letterhead or logo)."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1.5 max-h-64 overflow-y-auto" }, _uniq.map((img, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative group" }, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => _insertIntoFirstSlot(img),
-          className: "block w-full p-0 border-0 bg-transparent cursor-pointer focus:ring-2 focus:ring-indigo-400 rounded",
-          "aria-label": (t("pdf_audit.extracted_images.insert_aria") || "Insert extracted image into the first open slot") + ": " + (img.description || "image " + (i + 1)),
-          title: (img.description || "Image " + (i + 1)) + " \u2014 click to insert, or drag to a specific spot"
-        },
-        /* @__PURE__ */ React.createElement(
-          "img",
-          {
-            src: img.src,
-            alt: img.description || "Extracted image " + (i + 1),
-            draggable: "true",
-            onDragStart: (e) => {
-              try {
-                e.dataTransfer.setData("text/x-alloflow-image", JSON.stringify({ src: img.src, alt: img.description || "" }));
-                e.dataTransfer.setData("text/plain", img.src);
-                e.dataTransfer.effectAllowed = "copy";
-              } catch (_) {
-              }
-            },
-            loading: "lazy",
-            className: "w-full h-16 object-cover rounded border border-slate-400 cursor-grab active:cursor-grabbing hover:border-indigo-400 hover:shadow-md transition-all"
+      }, className: "w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-600 hover:bg-purple-100 transition-colors flex items-center gap-2" }, "\u{1F916} Full Re-audit (AI + axe-core)"), extractedImagesList.length > 0 && (() => {
+        const _uniq = [];
+        const _bySrc = /* @__PURE__ */ new Map();
+        for (const img of extractedImagesList) {
+          const e = _bySrc.get(img.src);
+          if (e) {
+            e.count++;
+            continue;
           }
-        )
-      ), img.count > 1 && /* @__PURE__ */ React.createElement("span", { className: "absolute bottom-0 left-0 text-[9px] bg-slate-700/90 text-white px-1 rounded-tr font-bold", title: "This image appears " + img.count + " times in the document (likely a recurring header/logo)" }, "\xD7", img.count), img.isRegenerated && /* @__PURE__ */ React.createElement("span", { className: "absolute top-0 right-0 text-[8px] bg-violet-600 text-white px-1 rounded-bl" }, "AI")))));
-    })(), /* @__PURE__ */ React.createElement("div", { className: "mt-auto space-y-2 pt-3 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const html = getPdfPreviewHtml();
-      setPdfFixResult((prev) => ({ ...prev, accessibleHtml: html }));
-      downloadAccessiblePdf(html, (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-accessible");
-    }, className: "w-full px-3 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-xs font-bold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md flex items-center justify-center gap-2" }, "\u{1F4E5} Save as PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      const html = getPdfPreviewHtml();
-      setPdfFixResult((prev) => ({ ...prev, accessibleHtml: html }));
-      const blob = new Blob([html], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${(pendingPdfFile?.name || "document").replace(/\.pdf$/i, "")}-accessible.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      addToast(t("toasts.saved_edited_html"), "success");
-    }, className: "w-full px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-600 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2" }, "\u{1F4C4} Save as HTML"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      setPdfPreviewOpen(false);
-    }, className: "w-full text-[11px] text-slate-600 hover:text-slate-900 font-bold text-center py-1" }, "Close Preview"))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-white rounded-r-2xl border-2 border-l border-indigo-600 overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-[11px] text-slate-600 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("pdf_audit.preview.live_preview") || "Live Preview"), /* @__PURE__ */ React.createElement("span", null, "\u2014 select text, then use the toolbar to format"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto font-mono" }, pendingPdfFile?.name || "document.pdf")), /* @__PURE__ */ React.createElement("div", { className: "px-2 py-1.5 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0", role: "toolbar", "aria-label": t("pdf_audit.toolbar.aria") || "Text formatting" }, [
-      { cmd: "bold", icon: "B", label: "Bold", style: "font-bold" },
-      { cmd: "italic", icon: "I", label: "Italic", style: "italic" },
-      { cmd: "underline", icon: "U", label: "Underline", style: "underline" },
-      { cmd: "strikeThrough", icon: "S", label: "Strikethrough", style: "line-through" }
-    ].map((btn) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: btn.cmd,
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc) doc.execCommand(btn.cmd, false, null);
-        },
-        className: `w-7 h-7 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`,
-        "aria-label": btn.label,
-        title: btn.label
-      },
-      btn.icon
-    )), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), [
-      { cmd: "formatBlock", val: "<h1>", icon: "H1", label: "Heading 1" },
-      { cmd: "formatBlock", val: "<h2>", icon: "H2", label: "Heading 2" },
-      { cmd: "formatBlock", val: "<h3>", icon: "H3", label: "Heading 3" },
-      { cmd: "formatBlock", val: "<p>", icon: "\xB6", label: "Paragraph" }
-    ].map((btn) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: btn.icon,
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc) doc.execCommand(btn.cmd, false, btn.val);
-        },
-        className: "px-1.5 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600",
-        "aria-label": btn.label,
-        title: btn.label
-      },
-      btn.icon
-    )), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc) doc.execCommand("insertUnorderedList", false, null);
-        },
-        className: "w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600",
-        "aria-label": t("pdf_audit.toolbar.bullet_list") || "Bullet list",
-        title: t("pdf_audit.toolbar.bullet_list") || "Bullet list"
-      },
-      "\u2022"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc) doc.execCommand("insertOrderedList", false, null);
-        },
-        className: "w-7 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600",
-        "aria-label": t("pdf_audit.toolbar.numbered_list") || "Numbered list",
-        title: t("pdf_audit.toolbar.numbered_list") || "Numbered list"
-      },
-      "1."
-    ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc) doc.execCommand("justifyLeft", false, null);
-        },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
-        "aria-label": t("pdf_audit.toolbar.align_left") || "Align left",
-        title: t("pdf_audit.toolbar.align_left") || "Align left"
-      },
-      "\u2261"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc) doc.execCommand("justifyCenter", false, null);
-        },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
-        "aria-label": t("pdf_audit.toolbar.align_center") || "Align center",
-        title: t("pdf_audit.toolbar.align_center_title") || "Center"
-      },
-      "\u2261"
-    ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (!doc) return;
-          const url = prompt("Enter link URL:");
-          if (url) doc.execCommand("createLink", false, url);
-        },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
-        "aria-label": t("pdf_audit.toolbar.insert_link") || "Insert link",
-        title: t("pdf_audit.toolbar.insert_link") || "Insert link"
-      },
-      "\u{1F517}"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc) doc.execCommand("unlink", false, null);
-        },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
-        "aria-label": t("pdf_audit.toolbar.remove_link") || "Remove link",
-        title: t("pdf_audit.toolbar.remove_link") || "Remove link"
-      },
-      "\u{1F6AB}"
-    ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc) doc.execCommand("removeFormat", false, null);
-        },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
-        "aria-label": t("pdf_audit.toolbar.clear_formatting") || "Clear formatting",
-        title: t("pdf_audit.toolbar.clear_formatting") || "Clear formatting"
-      },
-      "\u2715"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc) doc.execCommand("undo", false, null);
-        },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
-        "aria-label": t("pdf_audit.toolbar.undo") || "Undo",
-        title: t("pdf_audit.toolbar.undo") || "Undo"
-      },
-      "\u21A9"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc) doc.execCommand("redo", false, null);
-        },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
-        "aria-label": t("pdf_audit.toolbar.redo") || "Redo",
-        title: t("pdf_audit.toolbar.redo") || "Redo"
-      },
-      "\u21AA"
-    ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
-      "select",
-      {
-        onChange: (e) => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc && e.target.value) doc.execCommand("foreColor", false, e.target.value);
-          e.target.value = "";
-        },
-        className: "h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600",
-        "aria-label": t("pdf_audit.toolbar.text_color") || "Text color",
-        defaultValue: ""
-      },
-      /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, "Color"),
-      /* @__PURE__ */ React.createElement("option", { value: "#000000" }, "\u2B1B Black"),
-      /* @__PURE__ */ React.createElement("option", { value: "#1e3a5f" }, "\u{1F7E6} Navy"),
-      /* @__PURE__ */ React.createElement("option", { value: "#991b1b" }, "\u{1F7E5} Dark Red"),
-      /* @__PURE__ */ React.createElement("option", { value: "#166534" }, "\u{1F7E9} Dark Green"),
-      /* @__PURE__ */ React.createElement("option", { value: "#7c3aed" }, "\u{1F7EA} Purple"),
-      /* @__PURE__ */ React.createElement("option", { value: "#92400e" }, "\u{1F7EB} Brown")
-    ), /* @__PURE__ */ React.createElement(
-      "select",
-      {
-        onChange: (e) => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (doc && e.target.value) doc.execCommand("hiliteColor", false, e.target.value);
-          e.target.value = "";
-        },
-        className: "h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600",
-        "aria-label": t("pdf_audit.toolbar.highlight_color") || "Highlight color",
-        defaultValue: ""
-      },
-      /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, "Highlight"),
-      /* @__PURE__ */ React.createElement("option", { value: "#fef08a" }, "\u{1F7E1} Yellow"),
-      /* @__PURE__ */ React.createElement("option", { value: "#bbf7d0" }, "\u{1F7E2} Green"),
-      /* @__PURE__ */ React.createElement("option", { value: "#bfdbfe" }, "\u{1F535} Blue"),
-      /* @__PURE__ */ React.createElement("option", { value: "#fecaca" }, "\u{1F534} Pink"),
-      /* @__PURE__ */ React.createElement("option", { value: "#e9d5ff" }, "\u{1F7E3} Purple"),
-      /* @__PURE__ */ React.createElement("option", { value: "transparent" }, "\u2715 Remove")
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => {
-          const doc = pdfPreviewRef.current?.contentDocument;
-          if (!doc) return;
-          doc.execCommand("insertHTML", false, '<table style="width:100%;border-collapse:collapse;margin:12px 0"><caption style="font-weight:bold;margin-bottom:4px">Table Title</caption><thead><tr><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 1</th><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 2</th><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 3</th></tr></thead><tbody><tr><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td></tr><tr><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td></tr></tbody></table>');
-        },
-        className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
-        "aria-label": t("pdf_audit.toolbar.insert_table_aria") || "Insert table",
-        title: t("pdf_audit.toolbar.insert_table_title") || "Insert accessible table"
-      },
-      "\u{1F4CA}"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        "data-help-key": "pdf_audit_smart_table_btn",
-        onClick: () => setSmartTableOpen((v) => !v),
-        className: `px-1.5 h-7 rounded text-[11px] transition-colors border ${smartTableOpen ? "bg-violet-100 text-violet-700 border-violet-400" : "text-slate-600 border-transparent hover:bg-violet-100 hover:border-violet-600"}`,
-        "aria-expanded": smartTableOpen,
-        "aria-label": t("pdf_audit.toolbar.smart_table_aria") || "Smart table: paste data, get an accessible table",
-        title: t("pdf_audit.toolbar.smart_table_title") || "Smart table \u2014 paste ANY data (rows from email, notes, CSV) and get a clean accessible table. Delimited data parses instantly with no AI; messy data is organized by AI using only your values."
-      },
-      "\u{1F4CA}\u2728"
-    )), pdfFieldCandidates && /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4", role: "presentation", onClick: () => setPdfFieldCandidates(null) }, /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", "aria-label": t("pdf_audit.fillable.pdf_panel_aria") || "Review detected PDF form fields", className: "bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-slate-800" }, "\u{1F4DD} ", t("pdf_audit.fillable.pdf_panel_heading") || "Blanks found on the original pages \u2014 review before placing fields"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, pdfFieldCandidates.length, " ", t("pdf_audit.fillable.pdf_found") || "blanks across", " ", new Set(pdfFieldCandidates.map((c) => c.page)).size, " ", t("pdf_audit.fillable.pdf_pages") || "page(s)", " \u2014 ", t("pdf_audit.fillable.pdf_note") || "fields go exactly where the blanks print. ~ marks position-estimated ones.")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-3 space-y-1.5" }, pdfFieldCandidates.map((c) => /* @__PURE__ */ React.createElement("div", { key: c.id, className: `flex items-center gap-2 p-2 rounded-lg border ${pdfFieldAccepted[c.id] ? "border-fuchsia-200 bg-fuchsia-50/50" : "border-slate-200 bg-slate-50 opacity-60"}` }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!pdfFieldAccepted[c.id], onChange: (e) => setPdfFieldAccepted((prev) => {
-      const nx = { ...prev };
-      if (e.target.checked) nx[c.id] = { label: c.label };
-      else delete nx[c.id];
-      return nx;
-    }), "aria-label": (t("pdf_audit.fillable.include_aria") || "Include field: ") + (c.label || c.context), className: "shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "text-base shrink-0", "aria-hidden": "true" }, c.kind === "checkbox" ? "\u2611\uFE0F" : "\u270D\uFE0F"), /* @__PURE__ */ React.createElement("input", { value: pdfFieldAccepted[c.id] && pdfFieldAccepted[c.id].label != null ? pdfFieldAccepted[c.id].label : c.label, onChange: (e) => setPdfFieldAccepted((prev) => prev[c.id] ? { ...prev, [c.id]: { label: e.target.value } } : prev), disabled: !pdfFieldAccepted[c.id], placeholder: t("pdf_audit.fillable.label_ph") || "Field label (needed for screen readers)", className: `w-40 text-xs border rounded px-2 py-1 ${!c.label && !(pdfFieldAccepted[c.id] && pdfFieldAccepted[c.id].label) ? "border-amber-400 bg-amber-50" : "border-slate-300 bg-white"}` }), c.confidence === "approx" && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-1.5", title: t("pdf_audit.fillable.approx_title") || "Position estimated from character widths \u2014 check this one in the result." }, "~"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0 text-[11px] text-slate-600 truncate font-mono", title: c.context }, c.context)))), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 border-t border-slate-200 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: async () => {
-      setPdfFieldBusy(true);
-      try {
-        const b64 = await ensurePdfBase64();
-        const fielded = await overlayPdfFormFields(b64, pdfFieldCandidates, pdfFieldAccepted);
-        addToast("\u{1F4DD} " + fielded.created + " " + (t("toasts.fillable_pdf_placed") || "fields placed on the original layout \u2014 tagging for screen readers\u2026"), "info");
-        const _dm = { title: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, ""), lang: "en" };
-        let outBytes = fielded.bytes, tagNote = "";
-        try {
-          const tagged = await createTaggedPdf(fielded.bytes, pdfFixResult, _dm);
-          const tBytes = tagged && tagged.bytes ? tagged.bytes : tagged;
-          const rt = tagged && tagged.roundTrip;
-          if (tBytes && !(rt && rt.ok === false)) {
-            outBytes = tBytes;
-            const _s = tagged && tagged.summary || {};
-            tagNote = _s.uaDeclared ? t("toasts.fillable_pdf_ua") || " Tagged \u2014 PDF/UA declared." : t("toasts.fillable_pdf_tagged") || " Tagged (declaration withheld \u2014 see verification).";
-          } else {
-            tagNote = t("toasts.fillable_pdf_untagged") || " \u26A0 Tagged version failed verification \u2014 this copy is fillable but NOT tagged.";
-          }
-        } catch (te) {
-          tagNote = (t("toasts.fillable_pdf_tag_err") || " \u26A0 Tagging failed (") + (te && te.message || "unknown") + ") \u2014 this copy is fillable but NOT tagged.";
+          const entry = { ...img, count: 1 };
+          _bySrc.set(img.src, entry);
+          _uniq.push(entry);
         }
-        safeDownloadBlob(new Blob([outBytes], { type: "application/pdf" }), (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-fillable.pdf");
-        setPdfFieldCandidates(null);
-        addToast("\u{1F4DD} " + (t("toasts.fillable_pdf_done") || "Fillable PDF downloaded \u2014 original layout, ") + fielded.created + (t("toasts.fillable_pdf_done2") || " typed-into fields.") + tagNote, "success");
-      } catch (e) {
-        addToast((t("toasts.fillable_pdf_apply_failed") || "Field placement failed: ") + (e && e.message || "unknown"), "error");
-      }
-      setPdfFieldBusy(false);
-    }, disabled: pdfFieldBusy || Object.keys(pdfFieldAccepted).length === 0, className: "px-4 py-2 bg-fuchsia-600 text-white rounded-xl text-xs font-bold hover:bg-fuchsia-700 disabled:opacity-50" }, pdfFieldBusy ? "\u23F3" : "\u2705", " ", t("pdf_audit.fillable.pdf_apply") || "Place", " ", Object.keys(pdfFieldAccepted).length, " ", t("pdf_audit.fillable.pdf_apply2") || "fields + download"), /* @__PURE__ */ React.createElement("button", { onClick: () => setPdfFieldCandidates(null), className: "px-3 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200" }, t("pdf_audit.fillable.cancel") || "Cancel"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 ml-auto" }, t("pdf_audit.fillable.pdf_footer") || "The original visual layout is preserved exactly.")))), fillableCandidates && /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4", role: "presentation", onClick: () => setFillableCandidates(null) }, /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", "aria-label": t("pdf_audit.fillable.panel_aria") || "Review detected form fields", className: "bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-slate-800" }, "\u{1F4DD} ", t("pdf_audit.fillable.panel_heading") || "Detected blanks \u2014 review before converting"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, fillableCandidates.filter((c) => c.kind === "text").length, " ", t("pdf_audit.fillable.text_fields") || "text fields", " \xB7 ", fillableCandidates.filter((c) => c.kind === "checkbox").length, " ", t("pdf_audit.fillable.checkboxes") || "checkboxes", " \u2014 ", t("pdf_audit.fillable.panel_note") || "uncheck any false positives; edit labels (screen readers announce them).")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-3 space-y-1.5" }, fillableCandidates.map((c) => /* @__PURE__ */ React.createElement("div", { key: c.id, className: `flex items-center gap-2 p-2 rounded-lg border ${fillableAccepted[c.id] ? "border-fuchsia-200 bg-fuchsia-50/50" : "border-slate-200 bg-slate-50 opacity-60"}` }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!fillableAccepted[c.id], onChange: (e) => setFillableAccepted((prev) => {
-      const nx = { ...prev };
-      if (e.target.checked) nx[c.id] = { label: c.label };
-      else delete nx[c.id];
-      return nx;
-    }), "aria-label": (t("pdf_audit.fillable.include_aria") || "Include field: ") + (c.label || c.context), className: "shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "text-base shrink-0", "aria-hidden": "true" }, c.kind === "checkbox" ? "\u2611\uFE0F" : "\u270D\uFE0F"), /* @__PURE__ */ React.createElement("input", { value: fillableAccepted[c.id] && fillableAccepted[c.id].label != null ? fillableAccepted[c.id].label : c.label, onChange: (e) => setFillableAccepted((prev) => prev[c.id] ? { ...prev, [c.id]: { label: e.target.value } } : prev), disabled: !fillableAccepted[c.id], placeholder: t("pdf_audit.fillable.label_ph") || "Field label (needed for screen readers)", className: `w-44 text-xs border rounded px-2 py-1 ${!c.label && !(fillableAccepted[c.id] && fillableAccepted[c.id].label) ? "border-amber-400 bg-amber-50" : "border-slate-300 bg-white"}` }), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0 text-[11px] text-slate-600 truncate font-mono", title: c.context }, c.context)))), /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 border-t border-slate-200 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
-      try {
-        const r = applyFormBlanks(pdfFixResult.accessibleHtml, fillableAccepted);
-        setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: r.html, _userEditedAt: Date.now() } : prev);
-        try {
-          const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
-          if (ldoc && ldoc.body) {
-            const nd = new DOMParser().parseFromString(r.html, "text/html");
-            ldoc.body.innerHTML = nd.body.innerHTML;
-          }
-        } catch (_) {
-        }
-        setFillableCandidates(null);
-        addToast("\u{1F4DD} " + (t("toasts.fillable_done") || "Converted ") + r.converted + (t("toasts.fillable_done2") || " blanks into real form fields. The HTML export is now fillable in any browser; Word keeps visible blanks. Re-run detection any time \u2014 already-converted fields are skipped."), "success");
-      } catch (e) {
-        addToast((t("toasts.fillable_apply_failed") || "Conversion failed: ") + (e && e.message || "unknown"), "error");
-      }
-    }, disabled: Object.keys(fillableAccepted).length === 0, className: "px-4 py-2 bg-fuchsia-600 text-white rounded-xl text-xs font-bold hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2705 ", t("pdf_audit.fillable.apply") || "Convert", " ", Object.keys(fillableAccepted).length, " ", t("pdf_audit.fillable.apply2") || "fields"), /* @__PURE__ */ React.createElement("button", { onClick: () => setFillableCandidates(null), className: "px-3 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200" }, t("pdf_audit.fillable.cancel") || "Cancel"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 ml-auto" }, t("pdf_audit.fillable.footer") || "Amber labels need a name \u2014 unlabeled fields confuse screen readers.")))), showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage && /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4", role: "presentation", onClick: () => setShowPlainCompare(false) }, /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", "aria-label": t("pdf_audit.plain.compare_aria") || "Original and plain-language version, side by side", className: "bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-2.5 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-black text-slate-800" }, "\u2696 ", t("pdf_audit.plain.compare_heading") || "Original \u2194 Plain language"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, pdfFixResult._plainLanguage.chunksFailed > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5" }, "\u26A0 ", pdfFixResult._plainLanguage.chunksFailed, "/", pdfFixResult._plainLanguage.chunksTotal, " ", t("pdf_audit.translate.kept_original") || "sections kept the original text"), pdfFixResult._plainLanguage.srcLen != null && pdfFixResult._plainLanguage.srcLen !== (pdfFixResult.accessibleHtml || "").length && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5", title: t("pdf_audit.plain.stale_title") || "The document changed after this plain-language version was made \u2014 regenerate it to re-sync." }, "\u26A0 ", t("pdf_audit.companion.stale") || "out of date \u2014 regenerate"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowPlainCompare(false), className: "px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200", "aria-label": t("pdf_audit.translate.compare_close") || "Close comparison" }, "\u2715 ", t("pdf_audit.translate.close") || "Close"))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-2 gap-0 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0 border-r border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200" }, t("pdf_audit.translate.pane_original") || "Remediated original"), /* @__PURE__ */ React.createElement("iframe", { title: t("pdf_audit.translate.iframe_original") || "Remediated original document", sandbox: "allow-same-origin", srcDoc: pdfFixResult.accessibleHtml, className: "flex-1 w-full border-0" })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border-b border-slate-200" }, "\u{1FAB6} ", t("pdf_audit.plain.pane_note") || "Plain language \u2014 AI-simplified, original stays authoritative"), /* @__PURE__ */ React.createElement("iframe", { title: t("pdf_audit.plain.iframe") || "Plain-language version", sandbox: "allow-same-origin", srcDoc: pdfFixResult._plainLanguage.html, className: "flex-1 w-full border-0" }))))), showTranslationCompare && pdfFixResult && pdfFixResult._translation && /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4", role: "presentation", onClick: () => setShowTranslationCompare(false) }, /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", "aria-label": t("pdf_audit.translate.compare_aria") || "Original and translated document, side by side", className: "bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-2.5 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-black text-slate-800" }, "\u2696 ", (t("pdf_audit.translate.compare_heading") || "Original \u2194 ") + pdfFixResult._translation.lang), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, pdfFixResult._translation.chunksFailed > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5" }, "\u26A0 ", pdfFixResult._translation.chunksFailed, "/", pdfFixResult._translation.chunksTotal, " ", t("pdf_audit.translate.kept_original") || "sections kept the original text"), pdfFixResult._translation.srcLen != null && pdfFixResult._translation.srcLen !== (pdfFixResult.accessibleHtml || "").length && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5", title: t("pdf_audit.translate.stale_title") || "The document changed after this translation was made \u2014 regenerate it to re-sync." }, "\u26A0 ", t("pdf_audit.companion.stale") || "out of date \u2014 regenerate"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowTranslationCompare(false), className: "px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200", "aria-label": t("pdf_audit.translate.compare_close") || "Close comparison" }, "\u2715 ", t("pdf_audit.translate.close") || "Close"))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-2 gap-0 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0 border-r border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200" }, t("pdf_audit.translate.pane_original") || "Remediated original"), /* @__PURE__ */ React.createElement("iframe", { title: t("pdf_audit.translate.iframe_original") || "Remediated original document", sandbox: "allow-same-origin", srcDoc: pdfFixResult.accessibleHtml, className: "flex-1 w-full border-0" })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-sky-700 bg-sky-50 border-b border-slate-200" }, "\u{1F310} ", pdfFixResult._translation.lang, pdfFixResult._translation.rtl ? " (RTL)" : "", " \u2014 ", t("pdf_audit.translate.pane_note") || "AI-translated, review before official use"), /* @__PURE__ */ React.createElement("iframe", { title: (t("pdf_audit.translate.iframe_translated") || "Translated document \u2014 ") + pdfFixResult._translation.lang, sandbox: "allow-same-origin", srcDoc: pdfFixResult._translation.html, className: "flex-1 w-full border-0" }))))), smartTableOpen && /* @__PURE__ */ React.createElement("div", { className: "border-b border-violet-300 bg-violet-50 p-3 space-y-2", role: "region", "aria-label": t("pdf_audit.smart_table.region") || "Smart table builder" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black text-violet-800" }, "\u{1F4CA}\u2728 ", t("pdf_audit.smart_table.heading") || "Smart table \u2014 paste data, get an accessible table"), /* @__PURE__ */ React.createElement("button", { onClick: () => setSmartTableOpen(false), className: "text-violet-600 hover:text-violet-900 font-bold px-1", "aria-label": t("pdf_audit.smart_table.close") || "Close smart table builder" }, "\u2715")), /* @__PURE__ */ React.createElement(
-      "textarea",
-      {
-        value: smartTableData,
-        onChange: (e) => setSmartTableData(e.target.value),
-        rows: 4,
-        placeholder: t("pdf_audit.smart_table.data_ph") || "Paste your data \u2014 anything works: rows copied from email, lesson notes, CSV, a messy list\u2026",
-        className: "w-full text-xs border border-violet-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        value: smartTableSpec,
-        onChange: (e) => setSmartTableSpec(e.target.value),
-        placeholder: t("pdf_audit.smart_table.spec_ph") || "Optional: what should it look like? e.g. \u201Ccolumns: word, definition, example \u2014 one row per word\u201D",
-        className: "w-full text-xs border border-violet-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500"
-      }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: _buildSmartTable,
-        disabled: smartTableBusy,
-        className: "px-4 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50 transition-colors"
-      },
-      smartTableBusy ? "\u23F3 " + (t("pdf_audit.smart_table.busy") || "Structuring\u2026") : "\u{1F4CA} " + (t("pdf_audit.smart_table.build") || "Build table at cursor")
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-violet-700" }, t("pdf_audit.smart_table.honesty") || "Clean rows parse instantly with no AI. Messy data goes to AI with one hard rule: only YOUR values, never invented \u2014 blanks stay blank. Review the result; every cell stays editable."))), _issueEdit["__region__"] && (() => {
-      const _rgn = _issueEdit["__region__"];
-      return /* @__PURE__ */ React.createElement("div", { id: "allo-region-editor", className: "border-b border-indigo-300 bg-indigo-50 p-3 space-y-2", role: "region", "aria-label": t("pdf_audit.region.editor_aria") || "Selected-region editor" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black text-indigo-800" }, "\u25AD ", t("pdf_audit.region.editor_heading") || "Selected region", _rgn.tag ? " \xB7 <" + _rgn.tag + ">" : ""), /* @__PURE__ */ React.createElement("button", { onClick: () => _setIssueEdit((prev) => {
-        const n = { ...prev };
-        delete n["__region__"];
-        return n;
-      }), className: "text-indigo-600 hover:text-indigo-900 font-bold px-1", "aria-label": t("pdf_audit.region.editor_close") || "Clear region selection" }, "\u2715")), _rgn.preview && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-700 bg-white/70 border border-indigo-200 rounded px-2 py-1 truncate", title: _rgn.preview }, "\u201C", _rgn.preview, "\u201D"), /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          value: _rgn.intent || "",
-          onChange: (e) => {
-            const v = e.target.value;
-            _setIssueEdit((prev) => ({ ...prev, ["__region__"]: { ...prev["__region__"], intent: v } }));
-          },
-          onKeyDown: (e) => {
-            if (e.key === "Enter" && typeof processExpertCommand === "function" && (_rgn.intent || "").trim() && !_rgn.saving) {
-              e.preventDefault();
-              _applyScopedIntent(null, "__region__");
+        const _insertIntoFirstSlot = (img) => {
+          try {
+            const d = pdfPreviewRef.current && pdfPreviewRef.current.contentDocument;
+            if (!d) {
+              addToast(t("toasts.preview_not_ready") || "Preview not ready yet \u2014 wait for it to render, then try again.", "info");
+              return;
             }
+            const c = d.querySelector('[ondrop*="alloflow-image"]');
+            if (!c) {
+              addToast(t("toasts.no_open_image_slot") || "No open image slot left in the preview \u2014 drag the thumbnail onto a specific image to replace it instead.", "info");
+              return;
+            }
+            const pk = c.querySelector("[data-alloflow-picker]");
+            if (pk) pk.remove();
+            let target = null;
+            for (const k of Array.from(c.children)) {
+              if (k.tagName === "IMG") {
+                target = k;
+                break;
+              }
+            }
+            if (target) {
+              target.src = img.src;
+              if (img.description) target.alt = img.description;
+            } else {
+              target = d.createElement("img");
+              target.src = img.src;
+              target.alt = img.description || "Image";
+              target.style.cssText = "max-width:100%;border-radius:8px;border:1px solid #e2e8f0";
+              c.appendChild(target);
+            }
+            c.style.background = "none";
+            c.style.border = "none";
+            c.style.padding = "0";
+            c.style.minHeight = "0";
+            Array.from(c.children).forEach((ch) => {
+              if (ch !== target) ch.remove();
+            });
+            c.removeAttribute("ondragover");
+            c.removeAttribute("ondragleave");
+            c.removeAttribute("ondrop");
+            try {
+              if (window.__alloflowOnPdfPreviewMutated) window.__alloflowOnPdfPreviewMutated();
+            } catch (_) {
+            }
+            try {
+              target.scrollIntoView({ block: "center", behavior: "smooth" });
+            } catch (_) {
+            }
+            addToast(t("toasts.extracted_image_inserted") || "\u{1F5BC} Inserted into the first open image slot \u2014 drag a thumbnail instead if you want a different spot.", "success");
+          } catch (e) {
+            addToast("Insert failed: " + (e?.message || "unknown error"), "error");
+          }
+        };
+        return /* @__PURE__ */ React.createElement("details", { className: "bg-white border border-indigo-600 rounded-lg p-2", open: true }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold text-slate-600 uppercase tracking-widest select-none" }, "\u{1F5BC} Extracted Images (", _uniq.length, _uniq.length !== extractedImagesList.length ? " unique of " + extractedImagesList.length : "", ")"), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1 mb-2" }, t("pdf_audit.extracted_images.drag_hint2") || "Click a thumbnail to insert it into the first open image slot, or drag it onto any specific placeholder or image in the preview. \xD7N = the same image appeared on N pages (usually a letterhead or logo)."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-1.5 max-h-64 overflow-y-auto" }, _uniq.map((img, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative group" }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => _insertIntoFirstSlot(img),
+            className: "block w-full p-0 border-0 bg-transparent cursor-pointer focus:ring-2 focus:ring-indigo-400 rounded",
+            "aria-label": (t("pdf_audit.extracted_images.insert_aria") || "Insert extracted image into the first open slot") + ": " + (img.description || "image " + (i + 1)),
+            title: (img.description || "Image " + (i + 1)) + " \u2014 click to insert, or drag to a specific spot"
           },
-          placeholder: t("pdf_audit.region.intent_ph") || "Describe the change for this block \u2014 e.g. \u201Cmake this a bulleted list\u201D, \u201Cturn this into a callout\u201D, \u201Csimplify the wording\u201D",
-          className: "w-full text-xs border border-indigo-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500"
-        }
-      ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-indigo-700" }, t("pdf_audit.region.restyle_label") || "Quick restyle (no-AI edit):"), /* @__PURE__ */ React.createElement("button", { onClick: () => _restyleRegion("heading"), disabled: !!_rgn.saving, className: "px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold " + (_rgn.saving ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-100"), title: t("pdf_audit.region.make_heading_title") || "Promote this short title-like paragraph to a real heading at an outline-safe level (never skips a level, never an H1). A fixed transform \u2014 text unchanged. Re-level with Ctrl+2/3 in the preview if needed." }, "\u{1F520} ", t("pdf_audit.region.make_heading") || "Make a heading"), /* @__PURE__ */ React.createElement("button", { onClick: () => _restyleRegion("callout"), disabled: !!_rgn.saving, className: "px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold " + (_rgn.saving ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-100"), title: t("pdf_audit.region.make_callout_title") || "Wrap this block as a callout. A fixed transform (the AI never rewrites your content); refused if it would move or drop a word, link, or image. The usual re-check still runs after." }, "\u{1F4CC} ", t("pdf_audit.region.make_callout") || "Make a callout"), /* @__PURE__ */ React.createElement("button", { onClick: () => _restyleRegion("list"), disabled: !!_rgn.saving, className: "px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold " + (_rgn.saving ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-100"), title: t("pdf_audit.region.make_list_title") || "Turn line-broken or bulleted text into a real list. A fixed transform (no AI rewrite); refused if it would flatten a link/format or move content. The usual re-check still runs after." }, "\u2022 ", t("pdf_audit.region.make_list") || "Make a list")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, typeof processExpertCommand === "function" && /* @__PURE__ */ React.createElement(
+          /* @__PURE__ */ React.createElement(
+            "img",
+            {
+              src: img.src,
+              alt: img.description || "Extracted image " + (i + 1),
+              draggable: "true",
+              onDragStart: (e) => {
+                try {
+                  e.dataTransfer.setData("text/x-alloflow-image", JSON.stringify({ src: img.src, alt: img.description || "" }));
+                  e.dataTransfer.setData("text/plain", img.src);
+                  e.dataTransfer.effectAllowed = "copy";
+                } catch (_) {
+                }
+              },
+              loading: "lazy",
+              className: "w-full h-16 object-cover rounded border border-slate-400 cursor-grab active:cursor-grabbing hover:border-indigo-400 hover:shadow-md transition-all"
+            }
+          )
+        ), img.count > 1 && /* @__PURE__ */ React.createElement("span", { className: "absolute bottom-0 left-0 text-[9px] bg-slate-700/90 text-white px-1 rounded-tr font-bold", title: "This image appears " + img.count + " times in the document (likely a recurring header/logo)" }, "\xD7", img.count), img.isRegenerated && /* @__PURE__ */ React.createElement("span", { className: "absolute top-0 right-0 text-[8px] bg-violet-600 text-white px-1 rounded-bl" }, "AI")))));
+      })(), /* @__PURE__ */ React.createElement("div", { className: "mt-auto space-y-2 pt-3 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const html = getPdfPreviewHtml();
+        setPdfFixResult((prev) => ({ ...prev, accessibleHtml: html }));
+        downloadAccessiblePdf(html, (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-accessible");
+      }, className: "w-full px-3 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-xs font-bold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md flex items-center justify-center gap-2" }, "\u{1F4E5} Save as PDF"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        const html = getPdfPreviewHtml();
+        setPdfFixResult((prev) => ({ ...prev, accessibleHtml: html }));
+        const blob = new Blob([html], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${(pendingPdfFile?.name || "document").replace(/\.pdf$/i, "")}-accessible.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        addToast(t("toasts.saved_edited_html"), "success");
+      }, className: "w-full px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-600 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2" }, "\u{1F4C4} Save as HTML"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+        setPdfPreviewOpen(false);
+      }, className: "w-full text-[11px] text-slate-600 hover:text-slate-900 font-bold text-center py-1" }, "Close Preview"))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-white rounded-r-2xl border-2 border-l border-indigo-600 overflow-hidden flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-[11px] text-slate-600 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("pdf_audit.preview.live_preview") || "Live Preview"), /* @__PURE__ */ React.createElement("span", null, "\u2014 select text, then use the toolbar to format"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto font-mono" }, pendingPdfFile?.name || "document.pdf")), /* @__PURE__ */ React.createElement("div", { className: "px-2 py-1.5 bg-white border-b border-slate-200 flex items-center gap-0.5 flex-wrap shrink-0", role: "toolbar", "aria-label": t("pdf_audit.toolbar.aria") || "Text formatting" }, [
+        { cmd: "bold", icon: "B", label: "Bold", style: "font-bold" },
+        { cmd: "italic", icon: "I", label: "Italic", style: "italic" },
+        { cmd: "underline", icon: "U", label: "Underline", style: "underline" },
+        { cmd: "strikeThrough", icon: "S", label: "Strikethrough", style: "line-through" }
+      ].map((btn) => /* @__PURE__ */ React.createElement(
         "button",
         {
-          onClick: () => _applyScopedIntent(null, "__region__"),
-          disabled: !!_rgn.saving || !(_rgn.intent || "").trim(),
-          className: "px-3 py-1 rounded bg-indigo-600 text-white text-xs font-bold " + (_rgn.saving || !(_rgn.intent || "").trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-700")
-        },
-        _rgn.saving ? "\u23F3 " + (t("pdf_audit.region.applying") || "Applying\u2026") : "\u2728 " + (t("pdf_audit.region.apply_ai") || "Apply with AI")
-      ), /* @__PURE__ */ React.createElement("details", { className: "text-[11px]" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-indigo-700 font-bold" }, t("pdf_audit.region.edit_html") || "\u270F Or edit the HTML yourself"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 space-y-1" }, /* @__PURE__ */ React.createElement(
-        "textarea",
-        {
-          value: _rgn.draft == null ? "" : _rgn.draft,
-          onChange: (e) => {
-            const v = e.target.value;
-            _setIssueEdit((prev) => ({ ...prev, ["__region__"]: { ...prev["__region__"], draft: v } }));
+          key: btn.cmd,
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc) doc.execCommand(btn.cmd, false, null);
           },
-          rows: 4,
-          className: "w-full text-[11px] font-mono border border-indigo-300 rounded p-2 bg-white text-slate-800"
-        }
+          className: `w-7 h-7 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`,
+          "aria-label": btn.label,
+          title: btn.label
+        },
+        btn.icon
+      )), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), [
+        { cmd: "formatBlock", val: "<h1>", icon: "H1", label: "Heading 1" },
+        { cmd: "formatBlock", val: "<h2>", icon: "H2", label: "Heading 2" },
+        { cmd: "formatBlock", val: "<h3>", icon: "H3", label: "Heading 3" },
+        { cmd: "formatBlock", val: "<p>", icon: "\xB6", label: "Paragraph" }
+      ].map((btn) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: btn.icon,
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc) doc.execCommand(btn.cmd, false, btn.val);
+          },
+          className: "px-1.5 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600",
+          "aria-label": btn.label,
+          title: btn.label
+        },
+        btn.icon
+      )), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc) doc.execCommand("insertUnorderedList", false, null);
+          },
+          className: "w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600",
+          "aria-label": t("pdf_audit.toolbar.bullet_list") || "Bullet list",
+          title: t("pdf_audit.toolbar.bullet_list") || "Bullet list"
+        },
+        "\u2022"
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
-          onClick: () => _saveManualEdit(null, "__region__"),
-          disabled: !!_rgn.saving || String(_rgn.draft || "").trim() === String(_rgn.original || "").trim(),
-          className: "px-3 py-1 rounded bg-emerald-600 text-white text-xs font-bold " + (_rgn.saving || String(_rgn.draft || "").trim() === String(_rgn.original || "").trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-emerald-700")
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc) doc.execCommand("insertOrderedList", false, null);
+          },
+          className: "w-7 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600",
+          "aria-label": t("pdf_audit.toolbar.numbered_list") || "Numbered list",
+          title: t("pdf_audit.toolbar.numbered_list") || "Numbered list"
         },
-        "\u{1F4BE} ",
-        t("pdf_audit.region.save_recheck") || "Save (no-AI edit) & re-check"
-      )))), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-indigo-700 block" }, t("pdf_audit.region.honesty") || "Bounded to this block only \u2014 the rest of the document is untouched. Re-checks after applying; one-click revert if you don\u2019t like it."));
-    })(), /* @__PURE__ */ React.createElement(
-      "iframe",
-      {
-        ref: pdfPreviewRef,
-        title: t("pdf_audit.preview.iframe_title") || "Accessible document preview",
-        className: "flex-1 w-full border-0",
-        sandbox: "allow-same-origin allow-scripts allow-forms allow-modals",
-        onLoad: () => {
-          const iframe = pdfPreviewRef.current;
-          const doc = iframe?.contentDocument;
-          const cw = iframe?.contentWindow;
-          if (doc) {
-            doc.body.spellcheck = true;
+        "1."
+      ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc) doc.execCommand("justifyLeft", false, null);
+          },
+          className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
+          "aria-label": t("pdf_audit.toolbar.align_left") || "Align left",
+          title: t("pdf_audit.toolbar.align_left") || "Align left"
+        },
+        "\u2261"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc) doc.execCommand("justifyCenter", false, null);
+          },
+          className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
+          "aria-label": t("pdf_audit.toolbar.align_center") || "Align center",
+          title: t("pdf_audit.toolbar.align_center_title") || "Center"
+        },
+        "\u2261"
+      ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (!doc) return;
+            const url = prompt("Enter link URL:");
+            if (url) doc.execCommand("createLink", false, url);
+          },
+          className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
+          "aria-label": t("pdf_audit.toolbar.insert_link") || "Insert link",
+          title: t("pdf_audit.toolbar.insert_link") || "Insert link"
+        },
+        "\u{1F517}"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc) doc.execCommand("unlink", false, null);
+          },
+          className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
+          "aria-label": t("pdf_audit.toolbar.remove_link") || "Remove link",
+          title: t("pdf_audit.toolbar.remove_link") || "Remove link"
+        },
+        "\u{1F6AB}"
+      ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc) doc.execCommand("removeFormat", false, null);
+          },
+          className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
+          "aria-label": t("pdf_audit.toolbar.clear_formatting") || "Clear formatting",
+          title: t("pdf_audit.toolbar.clear_formatting") || "Clear formatting"
+        },
+        "\u2715"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc) doc.execCommand("undo", false, null);
+          },
+          className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
+          "aria-label": t("pdf_audit.toolbar.undo") || "Undo",
+          title: t("pdf_audit.toolbar.undo") || "Undo"
+        },
+        "\u21A9"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc) doc.execCommand("redo", false, null);
+          },
+          className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
+          "aria-label": t("pdf_audit.toolbar.redo") || "Redo",
+          title: t("pdf_audit.toolbar.redo") || "Redo"
+        },
+        "\u21AA"
+      ), /* @__PURE__ */ React.createElement("span", { className: "w-px h-5 bg-slate-200 mx-1", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          onChange: (e) => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc && e.target.value) doc.execCommand("foreColor", false, e.target.value);
+            e.target.value = "";
+          },
+          className: "h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600",
+          "aria-label": t("pdf_audit.toolbar.text_color") || "Text color",
+          defaultValue: ""
+        },
+        /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, "Color"),
+        /* @__PURE__ */ React.createElement("option", { value: "#000000" }, "\u2B1B Black"),
+        /* @__PURE__ */ React.createElement("option", { value: "#1e3a5f" }, "\u{1F7E6} Navy"),
+        /* @__PURE__ */ React.createElement("option", { value: "#991b1b" }, "\u{1F7E5} Dark Red"),
+        /* @__PURE__ */ React.createElement("option", { value: "#166534" }, "\u{1F7E9} Dark Green"),
+        /* @__PURE__ */ React.createElement("option", { value: "#7c3aed" }, "\u{1F7EA} Purple"),
+        /* @__PURE__ */ React.createElement("option", { value: "#92400e" }, "\u{1F7EB} Brown")
+      ), /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          onChange: (e) => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (doc && e.target.value) doc.execCommand("hiliteColor", false, e.target.value);
+            e.target.value = "";
+          },
+          className: "h-7 text-[11px] border border-slate-400 rounded px-1 text-slate-600",
+          "aria-label": t("pdf_audit.toolbar.highlight_color") || "Highlight color",
+          defaultValue: ""
+        },
+        /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, "Highlight"),
+        /* @__PURE__ */ React.createElement("option", { value: "#fef08a" }, "\u{1F7E1} Yellow"),
+        /* @__PURE__ */ React.createElement("option", { value: "#bbf7d0" }, "\u{1F7E2} Green"),
+        /* @__PURE__ */ React.createElement("option", { value: "#bfdbfe" }, "\u{1F535} Blue"),
+        /* @__PURE__ */ React.createElement("option", { value: "#fecaca" }, "\u{1F534} Pink"),
+        /* @__PURE__ */ React.createElement("option", { value: "#e9d5ff" }, "\u{1F7E3} Purple"),
+        /* @__PURE__ */ React.createElement("option", { value: "transparent" }, "\u2715 Remove")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => {
+            const doc = pdfPreviewRef.current?.contentDocument;
+            if (!doc) return;
+            doc.execCommand("insertHTML", false, '<table style="width:100%;border-collapse:collapse;margin:12px 0"><caption style="font-weight:bold;margin-bottom:4px">Table Title</caption><thead><tr><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 1</th><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 2</th><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 3</th></tr></thead><tbody><tr><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td></tr><tr><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td></tr></tbody></table>');
+          },
+          className: "w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600",
+          "aria-label": t("pdf_audit.toolbar.insert_table_aria") || "Insert table",
+          title: t("pdf_audit.toolbar.insert_table_title") || "Insert accessible table"
+        },
+        "\u{1F4CA}"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          "data-help-key": "pdf_audit_smart_table_btn",
+          onClick: () => setSmartTableOpen((v) => !v),
+          className: `px-1.5 h-7 rounded text-[11px] transition-colors border ${smartTableOpen ? "bg-violet-100 text-violet-700 border-violet-400" : "text-slate-600 border-transparent hover:bg-violet-100 hover:border-violet-600"}`,
+          "aria-expanded": smartTableOpen,
+          "aria-label": t("pdf_audit.toolbar.smart_table_aria") || "Smart table: paste data, get an accessible table",
+          title: t("pdf_audit.toolbar.smart_table_title") || "Smart table \u2014 paste ANY data (rows from email, notes, CSV) and get a clean accessible table. Delimited data parses instantly with no AI; messy data is organized by AI using only your values."
+        },
+        "\u{1F4CA}\u2728"
+      )), pdfFieldCandidates && /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4", role: "presentation", onClick: () => setPdfFieldCandidates(null) }, /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": t("pdf_audit.fillable.pdf_panel_aria") || "Review detected PDF form fields",
+          className: "bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden",
+          onClick: (e) => e.stopPropagation(),
+          ref: pdfFieldsTrapRef,
+          tabIndex: -1,
+          onKeyDown: (e) => {
+            if (e.key === "Escape") {
+              e.stopPropagation();
+              setPdfFieldCandidates(null);
+            }
+          }
+        },
+        /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-slate-800" }, "\u{1F4DD} ", t("pdf_audit.fillable.pdf_panel_heading") || "Blanks found on the original pages \u2014 review before placing fields"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, pdfFieldCandidates.length, " ", t("pdf_audit.fillable.pdf_found") || "blanks across", " ", new Set(pdfFieldCandidates.map((c) => c.page)).size, " ", t("pdf_audit.fillable.pdf_pages") || "page(s)", " \u2014 ", t("pdf_audit.fillable.pdf_note") || "fields go exactly where the blanks print. ~ marks position-estimated ones.")),
+        /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-3 space-y-1.5" }, pdfFieldCandidates.map((c) => /* @__PURE__ */ React.createElement("div", { key: c.id, className: `flex items-center gap-2 p-2 rounded-lg border ${pdfFieldAccepted[c.id] ? "border-fuchsia-200 bg-fuchsia-50/50" : "border-slate-200 bg-slate-50 opacity-60"}` }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!pdfFieldAccepted[c.id], onChange: (e) => setPdfFieldAccepted((prev) => {
+          const nx = { ...prev };
+          if (e.target.checked) nx[c.id] = { label: c.label };
+          else delete nx[c.id];
+          return nx;
+        }), "aria-label": (t("pdf_audit.fillable.include_aria") || "Include field: ") + (c.label || c.context), className: "shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "text-base shrink-0", "aria-hidden": "true" }, c.kind === "checkbox" ? "\u2611\uFE0F" : "\u270D\uFE0F"), /* @__PURE__ */ React.createElement("input", { value: pdfFieldAccepted[c.id] && pdfFieldAccepted[c.id].label != null ? pdfFieldAccepted[c.id].label : c.label, onChange: (e) => setPdfFieldAccepted((prev) => prev[c.id] ? { ...prev, [c.id]: { label: e.target.value } } : prev), disabled: !pdfFieldAccepted[c.id], placeholder: t("pdf_audit.fillable.label_ph") || "Field label (needed for screen readers)", className: `w-40 text-xs border rounded px-2 py-1 ${!c.label && !(pdfFieldAccepted[c.id] && pdfFieldAccepted[c.id].label) ? "border-amber-400 bg-amber-50" : "border-slate-300 bg-white"}` }), c.confidence === "approx" && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-1.5", title: t("pdf_audit.fillable.approx_title") || "Position estimated from character widths \u2014 check this one in the result." }, "~"), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0 text-[11px] text-slate-600 truncate font-mono", title: c.context }, c.context)))),
+        /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 border-t border-slate-200 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: async () => {
+          setPdfFieldBusy(true);
+          try {
+            const b64 = await ensurePdfBase64();
+            const fielded = await overlayPdfFormFields(b64, pdfFieldCandidates, pdfFieldAccepted);
+            addToast("\u{1F4DD} " + fielded.created + " " + (t("toasts.fillable_pdf_placed") || "fields placed on the original layout \u2014 tagging for screen readers\u2026"), "info");
+            const _dm = { title: (pendingPdfFile?.name || "document").replace(/\.pdf$/i, ""), lang: "en" };
+            let outBytes = fielded.bytes, tagNote = "";
             try {
-              if (cw) cw.__alloflowExtractedImages = extractedImagesList || [];
-              console.info("[AlloFlow] Pushed " + (extractedImagesList || []).length + " extracted images into preview iframe");
+              const tagged = await createTaggedPdf(fielded.bytes, pdfFixResult, _dm);
+              const tBytes = tagged && tagged.bytes ? tagged.bytes : tagged;
+              const rt = tagged && tagged.roundTrip;
+              if (tBytes && !(rt && rt.ok === false)) {
+                outBytes = tBytes;
+                const _s = tagged && tagged.summary || {};
+                tagNote = _s.uaDeclared ? t("toasts.fillable_pdf_ua") || " Tagged \u2014 PDF/UA declared." : t("toasts.fillable_pdf_tagged") || " Tagged (declaration withheld \u2014 see verification).";
+              } else {
+                tagNote = t("toasts.fillable_pdf_untagged") || " \u26A0 Tagged version failed verification \u2014 this copy is fillable but NOT tagged.";
+              }
+            } catch (te) {
+              tagNote = (t("toasts.fillable_pdf_tag_err") || " \u26A0 Tagging failed (") + (te && te.message || "unknown") + ") \u2014 this copy is fillable but NOT tagged.";
+            }
+            safeDownloadBlob(new Blob([outBytes], { type: "application/pdf" }), (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-fillable.pdf");
+            setPdfFieldCandidates(null);
+            addToast("\u{1F4DD} " + (t("toasts.fillable_pdf_done") || "Fillable PDF downloaded \u2014 original layout, ") + fielded.created + (t("toasts.fillable_pdf_done2") || " typed-into fields.") + tagNote, "success");
+          } catch (e) {
+            addToast((t("toasts.fillable_pdf_apply_failed") || "Field placement failed: ") + (e && e.message || "unknown"), "error");
+          }
+          setPdfFieldBusy(false);
+        }, disabled: pdfFieldBusy || Object.keys(pdfFieldAccepted).length === 0, className: "px-4 py-2 bg-fuchsia-600 text-white rounded-xl text-xs font-bold hover:bg-fuchsia-700 disabled:opacity-50" }, pdfFieldBusy ? "\u23F3" : "\u2705", " ", t("pdf_audit.fillable.pdf_apply") || "Place", " ", Object.keys(pdfFieldAccepted).length, " ", t("pdf_audit.fillable.pdf_apply2") || "fields + download"), /* @__PURE__ */ React.createElement("button", { onClick: () => setPdfFieldCandidates(null), className: "px-3 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200" }, t("pdf_audit.fillable.cancel") || "Cancel"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 ml-auto" }, t("pdf_audit.fillable.pdf_footer") || "The original visual layout is preserved exactly."))
+      )), fillableCandidates && /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4", role: "presentation", onClick: () => setFillableCandidates(null) }, /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": t("pdf_audit.fillable.panel_aria") || "Review detected form fields",
+          className: "bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden",
+          onClick: (e) => e.stopPropagation(),
+          ref: fillableTrapRef,
+          tabIndex: -1,
+          onKeyDown: (e) => {
+            if (e.key === "Escape") {
+              e.stopPropagation();
+              setFillableCandidates(null);
+            }
+          }
+        },
+        /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-black text-slate-800" }, "\u{1F4DD} ", t("pdf_audit.fillable.panel_heading") || "Detected blanks \u2014 review before converting"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, fillableCandidates.filter((c) => c.kind === "text").length, " ", t("pdf_audit.fillable.text_fields") || "text fields", " \xB7 ", fillableCandidates.filter((c) => c.kind === "checkbox").length, " ", t("pdf_audit.fillable.checkboxes") || "checkboxes", " \u2014 ", t("pdf_audit.fillable.panel_note") || "uncheck any false positives; edit labels (screen readers announce them).")),
+        /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-3 space-y-1.5" }, fillableCandidates.map((c) => /* @__PURE__ */ React.createElement("div", { key: c.id, className: `flex items-center gap-2 p-2 rounded-lg border ${fillableAccepted[c.id] ? "border-fuchsia-200 bg-fuchsia-50/50" : "border-slate-200 bg-slate-50 opacity-60"}` }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!fillableAccepted[c.id], onChange: (e) => setFillableAccepted((prev) => {
+          const nx = { ...prev };
+          if (e.target.checked) nx[c.id] = { label: c.label };
+          else delete nx[c.id];
+          return nx;
+        }), "aria-label": (t("pdf_audit.fillable.include_aria") || "Include field: ") + (c.label || c.context), className: "shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "text-base shrink-0", "aria-hidden": "true" }, c.kind === "checkbox" ? "\u2611\uFE0F" : "\u270D\uFE0F"), /* @__PURE__ */ React.createElement("input", { value: fillableAccepted[c.id] && fillableAccepted[c.id].label != null ? fillableAccepted[c.id].label : c.label, onChange: (e) => setFillableAccepted((prev) => prev[c.id] ? { ...prev, [c.id]: { label: e.target.value } } : prev), disabled: !fillableAccepted[c.id], placeholder: t("pdf_audit.fillable.label_ph") || "Field label (needed for screen readers)", className: `w-44 text-xs border rounded px-2 py-1 ${!c.label && !(fillableAccepted[c.id] && fillableAccepted[c.id].label) ? "border-amber-400 bg-amber-50" : "border-slate-300 bg-white"}` }), /* @__PURE__ */ React.createElement("span", { className: "flex-1 min-w-0 text-[11px] text-slate-600 truncate font-mono", title: c.context }, c.context)))),
+        /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 border-t border-slate-200 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+          try {
+            const r = applyFormBlanks(pdfFixResult.accessibleHtml, fillableAccepted);
+            setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: r.html, _userEditedAt: Date.now() } : prev);
+            try {
+              const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
+              if (ldoc && ldoc.body) {
+                const nd = new DOMParser().parseFromString(r.html, "text/html");
+                ldoc.body.innerHTML = nd.body.innerHTML;
+              }
             } catch (_) {
             }
-            doc.addEventListener("click", function(e) {
-              const target = e.target;
-              if (target && target.tagName === "IMG") {
-                selectedPreviewImgRef.current = target;
-                doc.querySelectorAll("img[data-alloflow-selected]").forEach(function(i) {
-                  if (i !== target) {
-                    i.removeAttribute("data-alloflow-selected");
-                    i.style.outline = "";
-                  }
-                });
-                target.setAttribute("data-alloflow-selected", "true");
-                target.style.outline = "3px solid #6366f1";
-                target.style.outlineOffset = "2px";
-              }
-            });
-            doc.addEventListener("keydown", function(e) {
-              if (e.ctrlKey || e.metaKey) {
-                if (e.key === "1") {
-                  e.preventDefault();
-                  if (!doc.querySelector("h1")) {
-                    doc.execCommand("formatBlock", false, "<h1>");
-                  }
-                } else if (e.key === "2") {
-                  e.preventDefault();
-                  doc.execCommand("formatBlock", false, "<h2>");
-                } else if (e.key === "3") {
-                  e.preventDefault();
-                  doc.execCommand("formatBlock", false, "<h3>");
-                } else if (e.key === "0") {
-                  e.preventDefault();
-                  doc.execCommand("formatBlock", false, "<p>");
-                } else if (e.key === "k" || e.key === "K") {
-                  e.preventDefault();
-                  var url = prompt("Enter link URL:");
-                  if (url) doc.execCommand("createLink", false, url);
-                } else if (e.shiftKey && (e.key === "l" || e.key === "L")) {
-                  e.preventDefault();
-                  doc.execCommand("insertUnorderedList", false, null);
-                } else if (e.shiftKey && (e.key === "o" || e.key === "O")) {
-                  e.preventDefault();
-                  doc.execCommand("insertOrderedList", false, null);
-                }
-              }
-            });
-            try {
-              var _rsMarq = null, _rsX = 0, _rsY = 0, _rsDrag = false;
-              doc.addEventListener("pointerdown", function(e) {
-                if (!cw || !cw.__alloflowRegionArmed) return;
-                _rsDrag = true;
-                _rsX = e.clientX;
-                _rsY = e.clientY;
-                _rsMarq = doc.createElement("div");
-                _rsMarq.setAttribute("data-allo-region-marquee", "1");
-                _rsMarq.style.cssText = "position:fixed;z-index:2147483646;border:2px dashed #4f46e5;background:rgba(79,70,229,0.12);pointer-events:none;left:" + _rsX + "px;top:" + _rsY + "px;width:0;height:0;";
-                try {
-                  doc.body.appendChild(_rsMarq);
-                } catch (_) {
-                }
+            setFillableCandidates(null);
+            addToast("\u{1F4DD} " + (t("toasts.fillable_done") || "Converted ") + r.converted + (t("toasts.fillable_done2") || " blanks into real form fields. The HTML export is now fillable in any browser; Word keeps visible blanks. Re-run detection any time \u2014 already-converted fields are skipped."), "success");
+          } catch (e) {
+            addToast((t("toasts.fillable_apply_failed") || "Conversion failed: ") + (e && e.message || "unknown"), "error");
+          }
+        }, disabled: Object.keys(fillableAccepted).length === 0, className: "px-4 py-2 bg-fuchsia-600 text-white rounded-xl text-xs font-bold hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2705 ", t("pdf_audit.fillable.apply") || "Convert", " ", Object.keys(fillableAccepted).length, " ", t("pdf_audit.fillable.apply2") || "fields"), /* @__PURE__ */ React.createElement("button", { onClick: () => setFillableCandidates(null), className: "px-3 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200" }, t("pdf_audit.fillable.cancel") || "Cancel"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-500 ml-auto" }, t("pdf_audit.fillable.footer") || "Amber labels need a name \u2014 unlabeled fields confuse screen readers."))
+      )), showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage && /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4", role: "presentation", onClick: () => setShowPlainCompare(false) }, /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": t("pdf_audit.plain.compare_aria") || "Original and plain-language version, side by side",
+          className: "bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden",
+          onClick: (e) => e.stopPropagation(),
+          ref: plainCompareTrapRef,
+          tabIndex: -1,
+          onKeyDown: (e) => {
+            if (e.key === "Escape") {
+              e.stopPropagation();
+              setShowPlainCompare(false);
+            }
+          }
+        },
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-2.5 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-black text-slate-800" }, "\u2696 ", t("pdf_audit.plain.compare_heading") || "Original \u2194 Plain language"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, pdfFixResult._plainLanguage.chunksFailed > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5" }, "\u26A0 ", pdfFixResult._plainLanguage.chunksFailed, "/", pdfFixResult._plainLanguage.chunksTotal, " ", t("pdf_audit.translate.kept_original") || "sections kept the original text"), pdfFixResult._plainLanguage.srcLen != null && pdfFixResult._plainLanguage.srcLen !== (pdfFixResult.accessibleHtml || "").length && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5", title: t("pdf_audit.plain.stale_title") || "The document changed after this plain-language version was made \u2014 regenerate it to re-sync." }, "\u26A0 ", t("pdf_audit.companion.stale") || "out of date \u2014 regenerate"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowPlainCompare(false), className: "px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200", "aria-label": t("pdf_audit.translate.compare_close") || "Close comparison" }, "\u2715 ", t("pdf_audit.translate.close") || "Close"))),
+        /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-2 gap-0 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0 border-r border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200" }, t("pdf_audit.translate.pane_original") || "Remediated original"), /* @__PURE__ */ React.createElement("iframe", { title: t("pdf_audit.translate.iframe_original") || "Remediated original document", sandbox: "allow-same-origin", srcDoc: pdfFixResult.accessibleHtml, className: "flex-1 w-full border-0" })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 border-b border-slate-200" }, "\u{1FAB6} ", t("pdf_audit.plain.pane_note") || "Plain language \u2014 AI-simplified, original stays authoritative"), /* @__PURE__ */ React.createElement("iframe", { title: t("pdf_audit.plain.iframe") || "Plain-language version", sandbox: "allow-same-origin", srcDoc: pdfFixResult._plainLanguage.html, className: "flex-1 w-full border-0" })))
+      )), showTranslationCompare && pdfFixResult && pdfFixResult._translation && /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4", role: "presentation", onClick: () => setShowTranslationCompare(false) }, /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": t("pdf_audit.translate.compare_aria") || "Original and translated document, side by side",
+          className: "bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden",
+          onClick: (e) => e.stopPropagation(),
+          ref: translateCompareTrapRef,
+          tabIndex: -1,
+          onKeyDown: (e) => {
+            if (e.key === "Escape") {
+              e.stopPropagation();
+              setShowTranslationCompare(false);
+            }
+          }
+        },
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between px-4 py-2.5 border-b border-slate-200" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-black text-slate-800" }, "\u2696 ", (t("pdf_audit.translate.compare_heading") || "Original \u2194 ") + pdfFixResult._translation.lang), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, pdfFixResult._translation.chunksFailed > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-full px-2 py-0.5" }, "\u26A0 ", pdfFixResult._translation.chunksFailed, "/", pdfFixResult._translation.chunksTotal, " ", t("pdf_audit.translate.kept_original") || "sections kept the original text"), pdfFixResult._translation.srcLen != null && pdfFixResult._translation.srcLen !== (pdfFixResult.accessibleHtml || "").length && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-300 rounded-full px-2 py-0.5", title: t("pdf_audit.translate.stale_title") || "The document changed after this translation was made \u2014 regenerate it to re-sync." }, "\u26A0 ", t("pdf_audit.companion.stale") || "out of date \u2014 regenerate"), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowTranslationCompare(false), className: "px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200", "aria-label": t("pdf_audit.translate.compare_close") || "Close comparison" }, "\u2715 ", t("pdf_audit.translate.close") || "Close"))),
+        /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-2 gap-0 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0 border-r border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200" }, t("pdf_audit.translate.pane_original") || "Remediated original"), /* @__PURE__ */ React.createElement("iframe", { title: t("pdf_audit.translate.iframe_original") || "Remediated original document", sandbox: "allow-same-origin", srcDoc: pdfFixResult.accessibleHtml, className: "flex-1 w-full border-0" })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "px-3 py-1.5 text-[11px] font-bold text-sky-700 bg-sky-50 border-b border-slate-200" }, "\u{1F310} ", pdfFixResult._translation.lang, pdfFixResult._translation.rtl ? " (RTL)" : "", " \u2014 ", t("pdf_audit.translate.pane_note") || "AI-translated, review before official use"), /* @__PURE__ */ React.createElement("iframe", { title: (t("pdf_audit.translate.iframe_translated") || "Translated document \u2014 ") + pdfFixResult._translation.lang, sandbox: "allow-same-origin", srcDoc: pdfFixResult._translation.html, className: "flex-1 w-full border-0" })))
+      )), smartTableOpen && /* @__PURE__ */ React.createElement("div", { className: "border-b border-violet-300 bg-violet-50 p-3 space-y-2", role: "region", "aria-label": t("pdf_audit.smart_table.region") || "Smart table builder" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black text-violet-800" }, "\u{1F4CA}\u2728 ", t("pdf_audit.smart_table.heading") || "Smart table \u2014 paste data, get an accessible table"), /* @__PURE__ */ React.createElement("button", { onClick: () => setSmartTableOpen(false), className: "text-violet-600 hover:text-violet-900 font-bold px-1", "aria-label": t("pdf_audit.smart_table.close") || "Close smart table builder" }, "\u2715")), /* @__PURE__ */ React.createElement(
+        "textarea",
+        {
+          value: smartTableData,
+          onChange: (e) => setSmartTableData(e.target.value),
+          rows: 4,
+          placeholder: t("pdf_audit.smart_table.data_ph") || "Paste your data \u2014 anything works: rows copied from email, lesson notes, CSV, a messy list\u2026",
+          className: "w-full text-xs border border-violet-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          value: smartTableSpec,
+          onChange: (e) => setSmartTableSpec(e.target.value),
+          placeholder: t("pdf_audit.smart_table.spec_ph") || "Optional: what should it look like? e.g. \u201Ccolumns: word, definition, example \u2014 one row per word\u201D",
+          className: "w-full text-xs border border-violet-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500"
+        }
+      ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: _buildSmartTable,
+          disabled: smartTableBusy,
+          className: "px-4 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50 transition-colors"
+        },
+        smartTableBusy ? "\u23F3 " + (t("pdf_audit.smart_table.busy") || "Structuring\u2026") : "\u{1F4CA} " + (t("pdf_audit.smart_table.build") || "Build table at cursor")
+      ), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-violet-700" }, t("pdf_audit.smart_table.honesty") || "Clean rows parse instantly with no AI. Messy data goes to AI with one hard rule: only YOUR values, never invented \u2014 blanks stay blank. Review the result; every cell stays editable."))), _issueEdit["__region__"] && (() => {
+        const _rgn = _issueEdit["__region__"];
+        return /* @__PURE__ */ React.createElement("div", { id: "allo-region-editor", className: "border-b border-indigo-300 bg-indigo-50 p-3 space-y-2", role: "region", "aria-label": t("pdf_audit.region.editor_aria") || "Selected-region editor" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-black text-indigo-800" }, "\u25AD ", t("pdf_audit.region.editor_heading") || "Selected region", _rgn.tag ? " \xB7 <" + _rgn.tag + ">" : ""), /* @__PURE__ */ React.createElement("button", { onClick: () => _setIssueEdit((prev) => {
+          const n = { ...prev };
+          delete n["__region__"];
+          return n;
+        }), className: "text-indigo-600 hover:text-indigo-900 font-bold px-1", "aria-label": t("pdf_audit.region.editor_close") || "Clear region selection" }, "\u2715")), _rgn.preview && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-700 bg-white/70 border border-indigo-200 rounded px-2 py-1 truncate", title: _rgn.preview }, "\u201C", _rgn.preview, "\u201D"), /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            value: _rgn.intent || "",
+            onChange: (e) => {
+              const v = e.target.value;
+              _setIssueEdit((prev) => ({ ...prev, ["__region__"]: { ...prev["__region__"], intent: v } }));
+            },
+            onKeyDown: (e) => {
+              if (e.key === "Enter" && typeof processExpertCommand === "function" && (_rgn.intent || "").trim() && !_rgn.saving) {
                 e.preventDefault();
-              }, true);
-              doc.addEventListener("pointermove", function(e) {
-                if (!_rsDrag || !_rsMarq) return;
-                var l = Math.min(_rsX, e.clientX), tp = Math.min(_rsY, e.clientY), w = Math.abs(e.clientX - _rsX), h = Math.abs(e.clientY - _rsY);
-                _rsMarq.style.left = l + "px";
-                _rsMarq.style.top = tp + "px";
-                _rsMarq.style.width = w + "px";
-                _rsMarq.style.height = h + "px";
-              }, true);
-              doc.addEventListener("pointerup", function(e) {
-                if (!_rsDrag) return;
-                _rsDrag = false;
-                var box = { left: Math.min(_rsX, e.clientX), top: Math.min(_rsY, e.clientY), right: Math.max(_rsX, e.clientX), bottom: Math.max(_rsY, e.clientY) };
-                if (_rsMarq) {
+                _applyScopedIntent(null, "__region__");
+              }
+            },
+            placeholder: t("pdf_audit.region.intent_ph") || "Describe the change for this block \u2014 e.g. \u201Cmake this a bulleted list\u201D, \u201Cturn this into a callout\u201D, \u201Csimplify the wording\u201D",
+            className: "w-full text-xs border border-indigo-300 rounded-lg p-2 bg-white text-slate-800 placeholder:text-slate-500"
+          }
+        ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-indigo-700" }, t("pdf_audit.region.restyle_label") || "Quick restyle (no-AI edit):"), /* @__PURE__ */ React.createElement("button", { onClick: () => _restyleRegion("heading"), disabled: !!_rgn.saving, className: "px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold " + (_rgn.saving ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-100"), title: t("pdf_audit.region.make_heading_title") || "Promote this short title-like paragraph to a real heading at an outline-safe level (never skips a level, never an H1). A fixed transform \u2014 text unchanged. Re-level with Ctrl+2/3 in the preview if needed." }, "\u{1F520} ", t("pdf_audit.region.make_heading") || "Make a heading"), /* @__PURE__ */ React.createElement("button", { onClick: () => _restyleRegion("callout"), disabled: !!_rgn.saving, className: "px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold " + (_rgn.saving ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-100"), title: t("pdf_audit.region.make_callout_title") || "Wrap this block as a callout. A fixed transform (the AI never rewrites your content); refused if it would move or drop a word, link, or image. The usual re-check still runs after." }, "\u{1F4CC} ", t("pdf_audit.region.make_callout") || "Make a callout"), /* @__PURE__ */ React.createElement("button", { onClick: () => _restyleRegion("list"), disabled: !!_rgn.saving, className: "px-2 py-0.5 rounded border border-indigo-300 bg-white text-indigo-700 text-[11px] font-bold " + (_rgn.saving ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-100"), title: t("pdf_audit.region.make_list_title") || "Turn line-broken or bulleted text into a real list. A fixed transform (no AI rewrite); refused if it would flatten a link/format or move content. The usual re-check still runs after." }, "\u2022 ", t("pdf_audit.region.make_list") || "Make a list")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, typeof processExpertCommand === "function" && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            onClick: () => _applyScopedIntent(null, "__region__"),
+            disabled: !!_rgn.saving || !(_rgn.intent || "").trim(),
+            className: "px-3 py-1 rounded bg-indigo-600 text-white text-xs font-bold " + (_rgn.saving || !(_rgn.intent || "").trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-indigo-700")
+          },
+          _rgn.saving ? "\u23F3 " + (t("pdf_audit.region.applying") || "Applying\u2026") : "\u2728 " + (t("pdf_audit.region.apply_ai") || "Apply with AI")
+        ), /* @__PURE__ */ React.createElement("details", { className: "text-[11px]" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-indigo-700 font-bold" }, t("pdf_audit.region.edit_html") || "\u270F Or edit the HTML yourself"), /* @__PURE__ */ React.createElement("div", { className: "mt-1 space-y-1" }, /* @__PURE__ */ React.createElement(
+          "textarea",
+          {
+            value: _rgn.draft == null ? "" : _rgn.draft,
+            onChange: (e) => {
+              const v = e.target.value;
+              _setIssueEdit((prev) => ({ ...prev, ["__region__"]: { ...prev["__region__"], draft: v } }));
+            },
+            rows: 4,
+            className: "w-full text-[11px] font-mono border border-indigo-300 rounded p-2 bg-white text-slate-800"
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            onClick: () => _saveManualEdit(null, "__region__"),
+            disabled: !!_rgn.saving || String(_rgn.draft || "").trim() === String(_rgn.original || "").trim(),
+            className: "px-3 py-1 rounded bg-emerald-600 text-white text-xs font-bold " + (_rgn.saving || String(_rgn.draft || "").trim() === String(_rgn.original || "").trim() ? "opacity-50 cursor-not-allowed" : "hover:bg-emerald-700")
+          },
+          "\u{1F4BE} ",
+          t("pdf_audit.region.save_recheck") || "Save (no-AI edit) & re-check"
+        )))), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-indigo-700 block" }, t("pdf_audit.region.honesty") || "Bounded to this block only \u2014 the rest of the document is untouched. Re-checks after applying; one-click revert if you don\u2019t like it."));
+      })(), /* @__PURE__ */ React.createElement(
+        "iframe",
+        {
+          ref: pdfPreviewRef,
+          title: t("pdf_audit.preview.iframe_title") || "Accessible document preview",
+          className: "flex-1 w-full border-0",
+          sandbox: "allow-same-origin allow-scripts allow-forms allow-modals",
+          onLoad: () => {
+            const iframe = pdfPreviewRef.current;
+            const doc = iframe?.contentDocument;
+            const cw = iframe?.contentWindow;
+            if (doc) {
+              doc.body.spellcheck = true;
+              try {
+                if (cw) cw.__alloflowExtractedImages = extractedImagesList || [];
+                console.info("[AlloFlow] Pushed " + (extractedImagesList || []).length + " extracted images into preview iframe");
+              } catch (_) {
+              }
+              doc.addEventListener("click", function(e) {
+                const target = e.target;
+                if (target && target.tagName === "IMG") {
+                  selectedPreviewImgRef.current = target;
+                  doc.querySelectorAll("img[data-alloflow-selected]").forEach(function(i) {
+                    if (i !== target) {
+                      i.removeAttribute("data-alloflow-selected");
+                      i.style.outline = "";
+                    }
+                  });
+                  target.setAttribute("data-alloflow-selected", "true");
+                  target.style.outline = "3px solid #6366f1";
+                  target.style.outlineOffset = "2px";
+                }
+              });
+              doc.addEventListener("keydown", function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                  if (e.key === "1") {
+                    e.preventDefault();
+                    if (!doc.querySelector("h1")) {
+                      doc.execCommand("formatBlock", false, "<h1>");
+                    }
+                  } else if (e.key === "2") {
+                    e.preventDefault();
+                    doc.execCommand("formatBlock", false, "<h2>");
+                  } else if (e.key === "3") {
+                    e.preventDefault();
+                    doc.execCommand("formatBlock", false, "<h3>");
+                  } else if (e.key === "0") {
+                    e.preventDefault();
+                    doc.execCommand("formatBlock", false, "<p>");
+                  } else if (e.key === "k" || e.key === "K") {
+                    e.preventDefault();
+                    var url = prompt("Enter link URL:");
+                    if (url) doc.execCommand("createLink", false, url);
+                  } else if (e.shiftKey && (e.key === "l" || e.key === "L")) {
+                    e.preventDefault();
+                    doc.execCommand("insertUnorderedList", false, null);
+                  } else if (e.shiftKey && (e.key === "o" || e.key === "O")) {
+                    e.preventDefault();
+                    doc.execCommand("insertOrderedList", false, null);
+                  }
+                }
+              });
+              try {
+                var _rsMarq = null, _rsX = 0, _rsY = 0, _rsDrag = false;
+                doc.addEventListener("pointerdown", function(e) {
+                  if (!cw || !cw.__alloflowRegionArmed) return;
+                  _rsDrag = true;
+                  _rsX = e.clientX;
+                  _rsY = e.clientY;
+                  _rsMarq = doc.createElement("div");
+                  _rsMarq.setAttribute("data-allo-region-marquee", "1");
+                  _rsMarq.style.cssText = "position:fixed;z-index:2147483646;border:2px dashed #4f46e5;background:rgba(79,70,229,0.12);pointer-events:none;left:" + _rsX + "px;top:" + _rsY + "px;width:0;height:0;";
                   try {
-                    _rsMarq.remove();
+                    doc.body.appendChild(_rsMarq);
                   } catch (_) {
                   }
-                  _rsMarq = null;
-                }
-                try {
-                  cw.__alloflowRegionArmed = false;
-                  doc.body.style.cursor = "";
-                } catch (_) {
-                }
-                if (_regionHandlerRef && typeof _regionHandlerRef.current === "function") {
+                  e.preventDefault();
+                }, true);
+                doc.addEventListener("pointermove", function(e) {
+                  if (!_rsDrag || !_rsMarq) return;
+                  var l = Math.min(_rsX, e.clientX), tp = Math.min(_rsY, e.clientY), w = Math.abs(e.clientX - _rsX), h = Math.abs(e.clientY - _rsY);
+                  _rsMarq.style.left = l + "px";
+                  _rsMarq.style.top = tp + "px";
+                  _rsMarq.style.width = w + "px";
+                  _rsMarq.style.height = h + "px";
+                }, true);
+                doc.addEventListener("pointerup", function(e) {
+                  if (!_rsDrag) return;
+                  _rsDrag = false;
+                  var box = { left: Math.min(_rsX, e.clientX), top: Math.min(_rsY, e.clientY), right: Math.max(_rsX, e.clientX), bottom: Math.max(_rsY, e.clientY) };
+                  if (_rsMarq) {
+                    try {
+                      _rsMarq.remove();
+                    } catch (_) {
+                    }
+                    _rsMarq = null;
+                  }
                   try {
-                    _regionHandlerRef.current(box);
+                    cw.__alloflowRegionArmed = false;
+                    doc.body.style.cursor = "";
                   } catch (_) {
                   }
-                }
-              }, true);
-            } catch (_) {
+                  if (_regionHandlerRef && typeof _regionHandlerRef.current === "function") {
+                    try {
+                      _regionHandlerRef.current(box);
+                    } catch (_) {
+                    }
+                  }
+                }, true);
+              } catch (_) {
+              }
             }
           }
         }
-      }
-    )))))
+      )))
+    ))
   );
 }
 window.AlloModules = window.AlloModules || {};

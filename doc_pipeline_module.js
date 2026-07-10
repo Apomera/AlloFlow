@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -2289,6 +2289,61 @@ function _computeStructuralFidelityNotes(srcText, outHtml) {
   return notes;
 }
 
+// ── R1 "Can I hand this out?" verdict (2026-07-10) ──────────────────────────
+// The ONE question a teacher actually has about a remediated document, answered from the honesty
+// signals the result already carries — score vs target, verifier completeness, coverage, fidelity
+// notes — so nobody has to synthesize seven flags from four panels. Three levels:
+//   'review'  — do NOT distribute before a human looks: possible content loss, changed numbers,
+//               leaked refusal text, lost tables, or an explicit expert-review flag.
+//   'caution' — distributable, with named caveats worth knowing (below target with clean
+//               checkers, incomplete AI verification, placement/OCR notes, remaining violations).
+//   'ready'   — every verifier completed clean at/above target with no fidelity concerns.
+// PURE + deterministic (unit-tested); the view renders it as a visible strip, never tooltip-only.
+function _alloDistributionVerdict(r, opts) {
+  if (!r) return null;
+  var target = (opts && typeof opts.targetScore === 'number') ? opts.targetScore : 90;
+  var review = [];
+  var cautions = [];
+  var notes = Array.isArray(r.fidelityNotes) ? r.fidelityNotes.filter(Boolean) : [];
+  var kinds = {};
+  notes.forEach(function (n) { if (n && n.kind) kinds[n.kind] = true; });
+  var cov = (typeof r.integrityCoverage === 'number') ? r.integrityCoverage : null;
+  var score = (typeof r.afterScore === 'number') ? r.afterScore : null;
+  var vio = (r.axeAudit && typeof r.axeAudit.totalViolations === 'number') ? r.axeAudit.totalViolations : null;
+  var eaFails = (r.secondEngineAudit && typeof r.secondEngineAudit.failViolations === 'number') ? r.secondEngineAudit.failViolations : null;
+  // review tier — content trust is in question
+  if (r.needsExpertReview) review.push(String(r.expertReviewReason || 'this run was flagged for expert review'));
+  if (cov != null && cov < 90) review.push('only ' + cov + '% of the source text is preserved in reading order — check the Diff for missing content');
+  if (kinds.numeric) review.push('numbers may have changed between source and output — verify scores, dates, and percentages before anyone reads this');
+  if (kinds.refusal) review.push('AI meta/refusal text leaked into the output — it should not ship; re-run the remediation');
+  if (kinds.tables) review.push('one or more tables may have been collapsed or lost — check the Diff');
+  // caution tier — distributable, but know these
+  if (score == null) cautions.push('no final verified score is available for this pass');
+  if (r._aiVerificationIncomplete) cautions.push('the AI verification could not fully complete (service throttling) — the score leans on the automated checkers');
+  if (score != null && score < target) cautions.push('the score (' + score + ') is below your target of ' + target + ((vio === 0 && (eaFails === 0 || eaFails == null)) ? ' — automated checks are clean; the remaining gap is AI-rubric judgment' : ''));
+  if (vio != null && vio > 0) cautions.push(vio + ' automated (axe) violation' + (vio === 1 ? '' : 's') + ' remain' + (vio === 1 ? 's' : ''));
+  if (eaFails != null && eaFails > 0) cautions.push('the second checker (Equal Access) still reports ' + eaFails + ' rule failure' + (eaFails === 1 ? '' : 's'));
+  if (kinds.placement) cautions.push('some source content is present but out of reading order (gathered in the "Preserved source content" box)');
+  if (kinds.links) cautions.push('some hyperlinks from the source may have been dropped — check the Diff');
+  if (kinds.folioLeak) cautions.push('a stray page number may appear inline in the text — search and delete it');
+  if (kinds.lowOcrAccuracy || kinds.lowOcrConfidence) cautions.push('this is a scan and parts of the OCR read are low-confidence — skim the output against the original');
+  if (kinds.ocrDupeCollapse) cautions.push('repeated-word OCR echoes were auto-collapsed — verify the affected sentences');
+  if (kinds.pageEdge) cautions.push('repeated page-edge lines (running heads/footers) were removed — restore any real heading from the Diff');
+  if (kinds.altQuality) cautions.push('some image descriptions are low-quality — review the alt text in the image panel');
+  if (cov != null && cov >= 90 && r.integrityWarning && /missing/i.test(r.integrityWarning)) cautions.push('content coverage is ' + cov + '% — worth a quick Diff check');
+  var level = review.length ? 'review' : (cautions.length ? 'caution' : 'ready');
+  return {
+    level: level,
+    review: review,
+    cautions: cautions,
+    headline: level === 'review'
+      ? 'Review before handing this out'
+      : level === 'caution'
+        ? ('Ready to hand out — with ' + cautions.length + ' caution' + (cautions.length === 1 ? '' : 's'))
+        : 'Ready to hand out',
+  };
+}
+
 // Sanitize an AI-parsed doc-style object before its color/font values are
 // interpolated into style="…" attributes (2026-06-15 security fix). Those values
 // render in the script-enabled preview iframe, so a prompt-injected PDF could
@@ -4181,9 +4236,29 @@ var createDocPipeline = function(deps) {
           out.placementWarn = `${orphanN} source passage${orphanN === 1 ? '' : 's'} could not be placed in ${orphanN === 1 ? 'its' : 'their'} original location and ${orphanN === 1 ? 'is' : 'are'} gathered in the "Preserved source content" box at the end — the text is present but its reading order needs review. Review before distributing.`;
         }
       } catch (_) {}
+      // Numeric + structural nets (#6-ext, 2026-07-10): the SAME module-level checks the primary
+      // pass runs — a round that swaps a number or drops a table/link must refresh these warnings,
+      // not leave the run's original (now-stale) set standing. Emitted as `fidelityNotes` limited
+      // to the RECOMPUTABLE kinds (links/tables/refusal/placement/numeric); run-scoped kinds
+      // (pageEdge, ocrDupeCollapse, folioLeak, OCR-accuracy, altQuality…) can't be re-derived from
+      // (sourceText, html) and are the caller's to carry forward.
+      try {
+        const lostVals = _numericFidelityLosses(sourceText, htmlToPlainText(_stripSinks(html)));
+        if (lostVals.length) {
+          const vsample = lostVals.slice(0, 8).join(', ') + (lostVals.length > 8 ? ', …' : '');
+          out.numericWarn = lostVals.length + ' source numeric value(s) not found unchanged in the output (' + vsample + '). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.';
+        }
+      } catch (_) {}
+      try { out.structuralNotes = _computeStructuralFidelityNotes(sourceText, html) || []; } catch (_) { out.structuralNotes = []; }
+      out.fidelityNotes = (out.structuralNotes || []).slice();
+      if (out.placementWarn) out.fidelityNotes.push({ kind: 'placement', msg: out.placementWarn });
+      if (out.numericWarn) out.fidelityNotes.push({ kind: 'numeric', msg: out.numericWarn });
       return out;
     } catch (_) { return null; }
   };
+  // The note kinds _recomputeContentFidelity can re-derive — the host replaces these per round and
+  // carries every other kind forward from the original run.
+  const _RECOMPUTABLE_FIDELITY_KINDS = { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1 };
 
   // acceptFixedHtmlDetailed: strict guard that rejects AI fix outputs that silently shrink
   // the document, returning a structured result with the specific reason. Callers that just
@@ -8787,13 +8862,28 @@ var createDocPipeline = function(deps) {
     const _calls = Array.isArray(calls) ? calls : [];
     const out = _runs.map((r) => ({ run: r, calls: [] }));
     if (!out.length) return out;
+    // M15 (deep dive 2026-07-09): the count-correspondence ASSUMPTION is now guarded instead of
+    // assumed. (a) When Vision leaf words and Tesseract boxes diverge by >20%, count-mapping would
+    // attribute words to the wrong leaves WHOLESALE (a TH or H1 "reading" a paragraph) — signal
+    // `mismatch` so the caller falls back to the semantic block layout (pixel alignment lost on
+    // that page, reading order kept: the right trade for an accessibility artifact). (b) The last
+    // run no longer soaks the remainder — surplus boxes beyond every leaf's own count land in
+    // `overflow`, which the caller draws inside /Artifact marked content: still searchable and
+    // selectable on the page, but excluded from the logical structure AT reads (surplus is
+    // tokenization dust — split-word halves counted once in the leaf text — not attributable leaf
+    // content; before this, it was announced as part of the LAST leaf, worst case a table header).
+    const totalWc = _runs.reduce((s, r) => s + ((String(r && r.text || '').trim().match(/\S+/g) || []).length), 0);
+    if (Math.abs(totalWc - _calls.length) / Math.max(totalWc, _calls.length, 1) > 0.2) {
+      out.mismatch = { leafWords: totalWc, boxes: _calls.length };
+      return out;
+    }
     let ci = 0;
     for (let ri = 0; ri < out.length; ri++) {
-      const isLast = ri === out.length - 1;
       const wc = (String(out[ri].run && out[ri].run.text || '').trim().match(/\S+/g) || []).length;
-      const take = isLast ? (_calls.length - ci) : Math.min(wc, _calls.length - ci);
+      const take = Math.min(wc, _calls.length - ci);
       for (let k = 0; k < take && ci < _calls.length; k++, ci++) out[ri].calls.push(_calls[ci]);
     }
+    if (ci < _calls.length) out.overflow = _calls.slice(ci);
     return out;
   };
 
@@ -22552,11 +22642,29 @@ tr { page-break-inside: avoid; }
     // word at its real position so search-highlight + selection align with the
     // scanned image. Without boxes (e.g. Vision-only), it falls back to a single
     // top-left invisible run per page — still searchable + SR-readable.
-    const ocrPages = isScanned
+    let ocrPages = isScanned
       ? ((fixResult && fixResult.groundTruthPages)
           || (_gtGlobalsMatch ? window.__lastGroundTruthPageMap : null)
           || [])
       : [];
+    // UA-gate regression fix (2026-07-10, bisected to @4d93bf5eb): a scanned fixResult WITHOUT a
+    // per-page OCR map (a project saved before groundTruthPages persisted on the result, or the
+    // window global lost across sessions/documents) gave the per-leaf path ZERO pages of text —
+    // no BDC runs were emitted anywhere, every text leaf stayed without content linkage, and the
+    // honest gate withheld the PDF/UA declaration that the pre-per-leaf path used to earn on the
+    // same inputs. Synthesize a single-page map from the remediated content: the block layout
+    // draws each leaf's OWN text under its OWN MCID (reading order correct for AT; positions are
+    // page-1 top-down, the documented no-boxes degradation), and pages 2+ take the artifact-only
+    // handling. Honest disclosure via warnLog; the declaration is earned again because linkage is.
+    if (isScanned && (!ocrPages || !ocrPages.length)) {
+      try {
+        const _fullTxt = htmlToPlainText((fixResult && fixResult.accessibleHtml) || '') || String((fixResult && fixResult.finalText) || '');
+        if (_fullTxt.trim()) {
+          ocrPages = [{ pageNum: 1, text: _fullTxt, _synthesizedNoPageMap: true }];
+          warnLog('[Tagged PDF] scanned run has NO per-page OCR map (older project or map not persisted) — synthesized a single-page text map from the remediated content so semantic leaves keep content linkage (text positions fall to the block layout).');
+        }
+      } catch (_) {}
+    }
     let _helvFont = null;
     const _getHelv = async () => {
       if (_helvFont) return _helvFont;
@@ -22933,6 +23041,10 @@ tr { page-break-inside: avoid; }
                   const _posCalls = _ocrWordsToDrawCalls(_ocrWords, sz.height, _wordDrawOpts);
                   if (_posCalls.length) {
                     const _dist = _distributeCallsToRuns(_runs, _posCalls);
+                    // M15: systematic leaf-word/box divergence — count-mapping would put words
+                    // under the wrong leaves wholesale. Leave _posDrew false so the semantic block
+                    // layout below draws this page instead (reading order right, alignment lost).
+                    if (_dist.mismatch) throw Object.assign(new Error('leaf/box divergence ' + _dist.mismatch.leafWords + ' leaf words vs ' + _dist.mismatch.boxes + ' boxes (>20%) — using block layout for this page'), { _m15Fallback: true });
                     // H1 (deep dive 2026-07-09): decide drawability BEFORE emitting any BDC. The old
                     // shape pushed one BDC/EMC pair per run and only then discovered every word folds
                     // to '' (non-Latin scan whose Unicode font failed to load) — _posDrew stayed false
@@ -22974,6 +23086,21 @@ tr { page-break-inside: avoid; }
                           }
                         }
                         page.pushOperators(_grp.emc);
+                      }
+                      // M15: surplus boxes beyond every leaf's own word count draw inside /Artifact
+                      // marked content — searchable/selectable, excluded from what AT reads — instead
+                      // of soaking into the LAST semantic leaf (worst case: stray glyphs announced as
+                      // table-header or heading content). Balanced BMC..EMC; no MCID, no StructElem.
+                      const _ovf = _dist.overflow || [];
+                      if (_ovf.length) {
+                        page.pushOperators(_PLx.PDFOperator.of(_PLx.PDFOperatorNames.BeginMarkedContent || 'BMC', [PDFName.of('Artifact')]));
+                        for (const _c of _ovf) {
+                          const _otxt = _fold ? _toWinAnsi(_c.text) : _c.text;
+                          if (!_otxt.trim()) { if (_fold) _ocrDroppedChars += _countNonWinAnsi(_c.text); continue; }
+                          try { _drawPositionedRunWord(_otxt, _c); _pageDrewAny = true; } catch (_) { /* overflow word is best-effort */ }
+                        }
+                        page.pushOperators(_PLx.PDFOperator.of(_PLx.PDFOperatorNames.EndMarkedContent, []));
+                        try { warnLog('[per-leaf exp] p' + (pi + 1) + ': ' + _ovf.length + ' surplus positioned word(s) beyond the leaf counts drawn as /Artifact (searchable, not read as leaf content)'); } catch (_) {}
                       }
                     }
                   }
@@ -32849,9 +32976,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // Recompute the Resolved/Persisted/Newly-Introduced lists against a fresh audit after a follow-up
     // pass, so they reflect the CURRENT doc instead of going stale (recompute-on-incremental-commit).
     recomputeIssueResolution: _recomputeIssueResolution,
-    // #6-incremental: recompute integrityCoverage/placement against a mutated html (auto-continue
-    // rounds change accessibleHtml after the primary pass measured fidelity — see helper above).
+    // #6-incremental: recompute integrityCoverage/placement/numeric/structural against a mutated
+    // html (auto-continue rounds change accessibleHtml after the primary pass measured fidelity).
     recomputeContentFidelity: _wrap(_recomputeContentFidelity),
+    recomputableFidelityKinds: _RECOMPUTABLE_FIDELITY_KINDS, // which note kinds the recompute replaces; the host carries the rest forward
+    // R1: the one-line "Can I hand this out?" answer — pure fn over the result's honesty signals.
+    distributionVerdict: _alloDistributionVerdict,
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
     // Redaction infra (true removal + safety verify). Pure module-scope helpers; the UI flow
     // (select → confirm → redactDocument → block-if-not-clean) is wired separately. (redaction)
@@ -32943,11 +33073,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

@@ -2664,6 +2664,24 @@ function PdfAuditView(props) {
   const [pdfFieldCandidates, setPdfFieldCandidates] = useState(null);
   const [pdfFieldAccepted, setPdfFieldAccepted] = useState({});
   const [pdfFieldBusy, setPdfFieldBusy] = useState(false);
+  // M23 (deep dive 2026-07-09): the NESTED dialogs (Preview & Edit, both form-field review panels,
+  // the two compare panels, and the close-confirm) had aria-modal but no Tab trap — keyboard users
+  // walked the inert audit modal behind them — and, except the close-confirm, no Escape of their
+  // own, so Esc fell through to the OUTER handler and raised the close-audit confirm over an open
+  // sub-dialog. Same shared trap hook the outer dialog uses (WCAG 2.1.2 / 2.4.3); each dialog's
+  // container also gets its own Escape-with-stopPropagation so Esc peels ONE layer at a time.
+  const pdfPreviewTrapRef = useRef(null);
+  const pdfFieldsTrapRef = useRef(null);
+  const fillableTrapRef = useRef(null);
+  const plainCompareTrapRef = useRef(null);
+  const translateCompareTrapRef = useRef(null);
+  const closeConfirmTrapRef = useRef(null);
+  _alloUseFocusTrap(pdfPreviewTrapRef, !!(pdfPreviewOpen && pdfFixResult));
+  _alloUseFocusTrap(pdfFieldsTrapRef, !!pdfFieldCandidates);
+  _alloUseFocusTrap(fillableTrapRef, !!fillableCandidates);
+  _alloUseFocusTrap(plainCompareTrapRef, !!(showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage));
+  _alloUseFocusTrap(translateCompareTrapRef, !!(showTranslationCompare && pdfFixResult && pdfFixResult._translation));
+  _alloUseFocusTrap(closeConfirmTrapRef, !!showCloseConfirm);
   // S3 (agent): the translate_document command pre-fills the language
   // here via event — the RUN click stays the teacher's (quota guardrail).
   useEffect(() => {
@@ -2988,6 +3006,23 @@ function PdfAuditView(props) {
     accepted.reduce((chain, f) => chain.then(() => _alloEnqueueBatchFile(f)), Promise.resolve());
     return accepted.length;
   };
+  // M24 (deep dive 2026-07-09): load-bearing score qualifiers were title-tooltips on non-focusable
+  // spans — keyboard, screen-reader, and touch users got the NUMBER without its caveat. This keeps
+  // each chip's exact look but makes it a real inline button: focusable (visible ring), SR-labeled
+  // with the full qualifier, and click/Enter/tap shows the same text as a toast (title= still
+  // serves mouse hover). Dotted underline signals "there's more here" to sighted users too.
+  const _AlloQualifier = ({ text, className, children }) => (
+    <button
+      type="button"
+      title={text}
+      aria-label={text}
+      onClick={() => { try { addToast(text, 'info'); } catch (_) {} }}
+      style={{ font: 'inherit', textAlign: 'inherit' }} /* padding/background come from the caller's chip classes — an inline reset here would beat them */
+      className={(className || '') + ' border-0 cursor-help underline decoration-dotted underline-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-500 rounded'}
+    >
+      {children}
+    </button>
+  );
   // 2026-06-08: per-issue plain-English explanation. Reuses the keyword-regex
   // pattern from the whole-pipeline whyParts (L1940+) but at per-row granularity
   // so a teacher seeing "WCAG 1.4.3" gets actionable context without leaving
@@ -7595,6 +7630,31 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   {/* ── Fix & Verify Results Panel ── */}
                   {pdfFixResult && (
                     <div className="mt-4 bg-gradient-to-b from-white to-emerald-50 rounded-2xl border-2 border-emerald-300 p-5 space-y-4 animate-in slide-in-from-bottom duration-300">
+                      {/* ── R1 verdict strip (2026-07-10): the one-line answer to the teacher's actual
+                          question — "Can I hand this out?" — computed by the pipeline (single source,
+                          unit-tested) from the honesty signals the result already carries. VISIBLE
+                          text, never tooltip-only; role=status so screen readers announce it. */}
+                      {(() => {
+                        const _v = (_docPipeline && typeof _docPipeline.distributionVerdict === 'function')
+                          ? _docPipeline.distributionVerdict(pdfFixResult, { targetScore: pdfTargetScore }) : null;
+                        if (!_v) return null;
+                        const _sty = _v.level === 'ready' ? 'bg-emerald-100 border-emerald-500 text-emerald-900'
+                          : _v.level === 'caution' ? 'bg-amber-50 border-amber-400 text-amber-900'
+                          : 'bg-rose-50 border-rose-400 text-rose-900';
+                        const _icon = _v.level === 'ready' ? '✅' : _v.level === 'caution' ? '⚠️' : '🛑';
+                        const _items = _v.level === 'review' ? _v.review.concat(_v.cautions) : _v.cautions;
+                        return (
+                          <div role="status" data-help-key="pdf_audit_verdict_strip" className={`rounded-xl border-2 p-3 ${_sty}`}>
+                            <p className="text-sm font-black"><span aria-hidden="true">{_icon} </span>{t('pdf_audit.verdict.' + _v.level) || _v.headline}</p>
+                            {_items.length > 0 && (
+                              <ul className="mt-1 ml-5 list-disc text-xs space-y-0.5">
+                                {_items.slice(0, 6).map((m, i) => <li key={i}>{m}</li>)}
+                                {_items.length > 6 && <li>{'+ ' + (_items.length - 6) + ' ' + (t('pdf_audit.verdict.more') || 'more — see the panels below')}</li>}
+                              </ul>
+                            )}
+                          </div>
+                        );
+                      })()}
                       {/* ── Results dashboard bar: pinned overview + jump-links. ──
                           NAVIGATION-ONLY by design: it moves no existing element
                           (the 308-element inventory is the completeness contract —
@@ -7653,7 +7713,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           )}
                           <div data-help-key="pdf_audit_dashboard_bar" className="sticky -top-5 -mx-5 px-5 py-2 bg-white/95 backdrop-blur border-b border-emerald-200 rounded-t-2xl z-20 flex items-center gap-1.5 flex-wrap" role="navigation" aria-label={t('pdf_audit.dashboard.aria') || 'Remediation results overview and section navigation'}>
                             <span className={'text-xs font-black whitespace-nowrap ' + (pdfFixResult._aiVerificationIncomplete ? 'text-slate-500' : 'text-emerald-800')} title={(pdfFixResult._aiVerificationIncomplete ? ((t('pdf_audit.dashboard.score_incomplete_title') || 'Structural/automated checks only — the AI semantic audit was throttled and did not finish, so this is NOT a verified content score.') + ' ') : '') + (t('pdf_audit.dashboard.score_title') || 'Content audit score (HTML reconstruction: AI rubric + axe), before → after. This is NOT PDF/UA conformance of the exported PDF — see the PDF/UA chip.')}>
-                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {pdfFixResult._aiVerificationIncomplete ? (<span className="text-slate-500">{'—'}</span>) : (<>{(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span></>)} {pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) ? (<span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold uppercase tracking-wide" title={t('pdf_audit.dashboard.estimated_min_title') || 'Lower-confidence estimate: the lower of the last successful AI audit and the current automated checks. Complete the final audit for a verified score.'}>{t('pdf_audit.dashboard.estimated_min') || 'est. min'} {pdfFixResult._estimatedMinimumScore}/100</span>) : null} <span className="font-normal text-slate-400 text-[9px] uppercase tracking-wide" title={_govTag === (t('pdf_audit.dashboard.automated_tag') || 'automated') ? (t('pdf_audit.dashboard.automated_tag_title') || 'Headline governed by the automated layer (axe-core / IBM Equal Access) — the lower of the engines. The AI content rubric may be higher; see the breakdown below.') : undefined}>{_govTag}</span>{pdfFixResult.fidelityLimited ? <span className="text-amber-600 font-bold" aria-hidden="true">*</span> : null}
+                              {(pdfFixResult.beforeScore ?? pdfAuditResult?.score ?? '–')} → {pdfFixResult._aiVerificationIncomplete ? (<span className="text-slate-500">{'—'}</span>) : (<>{(pdfFixResult.afterScore ?? '–')}<span className="font-normal text-slate-500">/100</span></>)} {pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) ? (<_AlloQualifier className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[9px] font-bold uppercase tracking-wide" text={t('pdf_audit.dashboard.estimated_min_title') || 'Lower-confidence estimate: the lower of the last successful AI audit and the current automated checks. Complete the final audit for a verified score.'}>{t('pdf_audit.dashboard.estimated_min') || 'est. min'} {pdfFixResult._estimatedMinimumScore}/100</_AlloQualifier>) : null} {_govTag === (t('pdf_audit.dashboard.automated_tag') || 'automated') ? <_AlloQualifier className="font-normal text-slate-400 text-[9px] uppercase tracking-wide" text={t('pdf_audit.dashboard.automated_tag_title') || 'Headline governed by the automated layer (axe-core / IBM Equal Access) — the lower of the engines. The AI content rubric may be higher; see the breakdown below.'}>{_govTag}</_AlloQualifier> : <span className="font-normal text-slate-400 text-[9px] uppercase tracking-wide">{_govTag}</span>}{pdfFixResult.fidelityLimited ? <_AlloQualifier className="text-amber-600 font-bold" text={t('pdf_audit.dashboard.fidelity_limited_title') || 'Asterisk: content fidelity is limited on this run (reduced coverage or fidelity notes) — a high score must not be read as “all good”. See the fidelity panel below for the specifics.'}>*</_AlloQualifier> : null}
                             </span>
                             {/* #1 score↔fidelity coupling — a high accessibility number must not read as
                                 "all good" when source content may not have carried over. */}
@@ -7673,20 +7733,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             {/* #3 Structural foundations: length-independent wins, scored on their OWN axis so a long
                                 document's per-issue pile can't bury them. Presence only — never a conformance score. */}
                             {_structuralFoundations && _structuralFoundations.present && _structuralFoundations.present.length > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800"
-                                title={(t('pdf_audit.dashboard.foundations_title') || 'HTML structural foundations DETECTED in the remediated document (lang, title, landmarks, headings, lists, etc.) — presence only, not validated for correctness, and separate from the per-issue content score above. Also DIFFERENT from the “PDF/UA self-check” chip, which checks the EXPORTED PDF’s byte-level structure — the two happen to both count to 18 but measure different things. Present:') + ' ' + _structuralFoundations.present.join('; ')}>
+                              <_AlloQualifier className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-sky-100 text-sky-800"
+                                text={(t('pdf_audit.dashboard.foundations_title') || 'HTML structural foundations DETECTED in the remediated document (lang, title, landmarks, headings, lists, etc.) — presence only, not validated for correctness, and separate from the per-issue content score above. Also DIFFERENT from the “PDF/UA self-check” chip, which checks the EXPORTED PDF’s byte-level structure — the two happen to both count to 18 but measure different things. Present:') + ' ' + _structuralFoundations.present.join('; ')}>
                                 🏗️ {_structuralFoundations.present.length}{_structuralFoundations.checked ? '/' + _structuralFoundations.checked : ''} {t('pdf_audit.dashboard.foundations') || 'HTML foundations'}
-                              </span>
+                              </_AlloQualifier>
                             )}
                             {/* Best-practice STRUCTURE recommendations (advisory, NOT WCAG, never scored): the gaps the
                                 WCAG-tagged re-audit can't see — no <main>, no <h1>, heading-order skips. Surfaced honestly
                                 so "0 WCAG issues" can't imply a perfect outline, and so a teacher can see the Tier-1/2a
                                 fixes land (the chip shrinks as they're applied). (2026-06-24) */}
                             {_structuralFoundations && Array.isArray(_structuralFoundations.advisory) && _structuralFoundations.advisory.length > 0 && (
-                              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-amber-100 text-amber-800"
-                                title={(t('pdf_audit.dashboard.foundations_advisory_title') || 'Best-practice structure recommendations — these IMPROVE the document outline / landmarks but are NOT WCAG failures and are NOT counted in the score (axe’s region / page-has-heading-one / heading-order are best-practice rules). Recommendations:') + ' ' + _structuralFoundations.advisory.map((a) => a.label).join('  •  ')}>
+                              <_AlloQualifier className="px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-amber-100 text-amber-800"
+                                text={(t('pdf_audit.dashboard.foundations_advisory_title') || 'Best-practice structure recommendations — these IMPROVE the document outline / landmarks but are NOT WCAG failures and are NOT counted in the score (axe’s region / page-has-heading-one / heading-order are best-practice rules). Recommendations:') + ' ' + _structuralFoundations.advisory.map((a) => a.label).join('  •  ')}>
                                 💡 {_structuralFoundations.advisory.length} {t('pdf_audit.dashboard.foundations_tips') || 'best-practice tip(s)'}
-                              </span>
+                              </_AlloQualifier>
                             )}
                             {/* Distinct PDF/UA verdict for the EXPORTED tagged PDF — separate from the content score above.
                                 Prefers the independent veraPDF verdict; falls back to the byte/self-check. A failing
@@ -7715,10 +7775,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               }
                               if (!label) return null;
                               return (
-                                <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (fail ? 'bg-red-100 text-red-700' : (warnOnly ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'))}
-                                  title={(t('pdf_audit.dashboard.pdfua_title') || 'PDF/UA conformance of the EXPORTED tagged PDF — the actual file you hand out, distinct from the content score.') + (indep ? '' : ' Run "Independently validate with veraPDF" for the authoritative ISO 14289-1 verdict.')}>
+                                <_AlloQualifier className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (fail ? 'bg-red-100 text-red-700' : (warnOnly ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'))}
+                                  text={(t('pdf_audit.dashboard.pdfua_title') || 'PDF/UA conformance of the EXPORTED tagged PDF — the actual file you hand out, distinct from the content score.') + (indep ? '' : ' Run "Independently validate with veraPDF" for the authoritative ISO 14289-1 verdict.')}>
                                   {(fail ? '❌ ' : (warnOnly ? '⚠️ ' : '✅ ')) + label}
-                                </span>
+                                </_AlloQualifier>
                               );
                             })()}
                             {(() => {
@@ -7734,10 +7794,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const _low = _ro < 80;
                               const _mid = !_low && _ro < 90;
                               return (
-                                <span className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (_low ? 'bg-amber-100 text-amber-700' : (_mid ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-600'))}
-                                  title={t('pdf_audit.dashboard.reading_order_title') || 'Reading-order match between the SOURCE document and the EXPORTED tagged PDF (round-trip token order, longest-common-subsequence). 100% = identical order. Lower values can indicate multi-column or table reflow that a screen reader will read out of sequence. Informational — being calibrated, does not yet block conformance.'}>
+                                <_AlloQualifier className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (_low ? 'bg-amber-100 text-amber-700' : (_mid ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-600'))}
+                                  text={t('pdf_audit.dashboard.reading_order_title') || 'Reading-order match between the SOURCE document and the EXPORTED tagged PDF (round-trip token order, longest-common-subsequence). 100% = identical order. Lower values can indicate multi-column or table reflow that a screen reader will read out of sequence. Informational — being calibrated, does not yet block conformance.'}>
                                   {(_low ? '⚠️ ' : '') + (t('pdf_audit.dashboard.reading_order') || 'Reading order') + ': ' + (Math.round(_ro * 10) / 10) + '%'}
-                                </span>
+                                </_AlloQualifier>
                               );
                             })()}
                             <span className="h-4 w-px bg-slate-300 mx-0.5" aria-hidden="true"></span>
@@ -7885,10 +7945,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             const _cls = _oa.band === 'good' ? 'bg-emerald-100 text-emerald-700' : (_oa.band === 'fair' ? 'bg-amber-50 text-amber-700' : 'bg-amber-100 text-amber-800');
                             const _lbl = _oa.band === 'good' ? (t('pdf_audit.dashboard.ocr_good') || 'Good') : (_oa.band === 'fair' ? (t('pdf_audit.dashboard.ocr_fair') || 'Fair') : (t('pdf_audit.dashboard.ocr_poor') || 'Poor'));
                             return (
-                              <span className={'text-[11px] px-2 py-0.5 rounded-full font-bold ' + _cls}
-                                title={(t('pdf_audit.dashboard.ocr_quality_title') || 'ESTIMATED quality of the OCR text embedded as this scanned document’s searchable layer. Heuristic (' + _oa.basis + '; ' + _oa.confidence + ' confidence) — NOT a measured accuracy: it reliably flags badly-garbled OCR but cannot catch every single-character error. Review the Diff for the final word.') + (Array.isArray(_oa.suspectSamples) && _oa.suspectSamples.length ? ('  Suspect tokens: ' + _oa.suspectSamples.join(', ')) : '')}>
+                              <_AlloQualifier className={'text-[11px] px-2 py-0.5 rounded-full font-bold ' + _cls}
+                                text={(t('pdf_audit.dashboard.ocr_quality_title') || 'ESTIMATED quality of the OCR text embedded as this scanned document’s searchable layer. Heuristic (' + _oa.basis + '; ' + _oa.confidence + ' confidence) — NOT a measured accuracy: it reliably flags badly-garbled OCR but cannot catch every single-character error. Review the Diff for the final word.') + (Array.isArray(_oa.suspectSamples) && _oa.suspectSamples.length ? ('  Suspect tokens: ' + _oa.suspectSamples.join(', ')) : '')}>
                                 {(_oa.band === 'poor' ? '⚠️ ' : '🔎 ') + (t('pdf_audit.dashboard.ocr_quality') || 'OCR quality') + ': ' + _lbl + ' (~' + _oa.score + '%)'}
-                              </span>
+                              </_AlloQualifier>
                             );
                           })()}
                         </div>
@@ -8011,10 +8071,10 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const _badgeIcon = fail ? '❌' : (warnOnly ? '⚠️' : '✅');
                         return (
                           <div className="text-center mt-1.5">
-                            <span className={'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ' + _badgeCls}
-                              title={(t('pdf_audit.pdfua_badge.title') || 'PDF/UA-1 (ISO 14289-1) conformance of the EXPORTED tagged PDF — the actual file you hand out. Shown beside the content score, never blended into it (a different artifact).') + (warnOnly ? ' One or more rules are WARN (could not be auto-verified) — not yet conformant.' : '') + (indep ? ' Independently validated by veraPDF.' : ' AlloFlow self-check — run "Independently validate with veraPDF" for the authoritative verdict.')}>
+                            <_AlloQualifier className={'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ' + _badgeCls}
+                              text={(t('pdf_audit.pdfua_badge.title') || 'PDF/UA-1 (ISO 14289-1) conformance of the EXPORTED tagged PDF — the actual file you hand out. Shown beside the content score, never blended into it (a different artifact).') + (warnOnly ? ' One or more rules are WARN (could not be auto-verified) — not yet conformant.' : '') + (indep ? ' Independently validated by veraPDF.' : ' AlloFlow self-check — run "Independently validate with veraPDF" for the authoritative verdict.')}>
                               {_badgeIcon} {t('pdf_audit.pdfua_badge.lead') || 'PDF/UA-1'}{indep ? '' : ' (self-check)'}: {label}
-                            </span>
+                            </_AlloQualifier>
                           </div>
                         );
                       })()}
@@ -8022,7 +8082,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           never an average. (weakest-layer-governs, 2026-06-21) */}
                       <div className="text-center mt-1 text-[11px]">
                         <div className="inline-flex items-center gap-1.5 flex-wrap justify-center">
-                          <span className="text-purple-700 font-bold" title={t('pdf_audit.score.content_label') || 'Content & semantics \u2014 the AI rubric reading of meaning, alt-text quality and reading order. Reproducible: 100 minus the count-weighted deductions for the issues listed below.'}>{t('pdf_audit.score.content_short') || 'content'}: {initialAi ?? '?'}{'\u2192'}{_aiIncomplete ? (t('pdf_audit.score.ai_incomplete_short') || 'incomplete') : (afterAi ?? '?')}</span>
+                          <_AlloQualifier className="text-purple-700 font-bold" text={t('pdf_audit.score.content_label') || 'Content & semantics \u2014 the AI rubric reading of meaning, alt-text quality and reading order. Reproducible: 100 minus the count-weighted deductions for the issues listed below.'}>{t('pdf_audit.score.content_short') || 'content'}: {initialAi ?? '?'}{'\u2192'}{_aiIncomplete ? (t('pdf_audit.score.ai_incomplete_short') || 'incomplete') : (afterAi ?? '?')}</_AlloQualifier>
                           {/* When the AI semantic audit was throttle-degraded, the headline falls back to the
                               DETERMINISTIC structural score (the reliable, completed engine) \u2014 labeled so it's
                               never read as an AI-verified result. Otherwise show both layers + name the governing one. */}
@@ -8030,7 +8090,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.det_only_incomplete') || 'structural/automated checks only; AI semantic audit incomplete \u2014 re-run for a full score'}</span>
                           ) : pdfFixResult._scoreIsBlended ? (<>
                           <span className="text-slate-400">{'\u00b7'}</span>
-                          <span className="text-blue-700 font-bold" title={t('pdf_audit.score.automated_label') || 'Automated WCAG \u2014 the stricter of axe-core / IBM Equal Access, run on the HTML reconstruction (passes by construction; blind to byte-level PDF tagging \u2014 see the PDF/UA badge).'}>{t('pdf_audit.score.automated_short') || 'automated'}: {(pdfAuditResult?.hasSearchableText === false) ? 'n/a' : (initialAxe ?? '?')}{'\u2192'}{afterDet ?? '?'}</span>
+                          <_AlloQualifier className="text-blue-700 font-bold" text={t('pdf_audit.score.automated_label') || 'Automated WCAG \u2014 the stricter of axe-core / IBM Equal Access, run on the HTML reconstruction (passes by construction; blind to byte-level PDF tagging \u2014 see the PDF/UA badge).'}>{t('pdf_audit.score.automated_short') || 'automated'}: {(pdfAuditResult?.hasSearchableText === false) ? 'n/a' : (initialAxe ?? '?')}{'\u2192'}{afterDet ?? '?'}</_AlloQualifier>
                           <span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.governing_lead') || 'headline = the lower (governing) layer'}{(typeof afterAi === 'number' && typeof afterDet === 'number') ? ' (' + ((afterAi <= afterDet) ? (t('pdf_audit.score.content_short') || 'content') : (t('pdf_audit.score.automated_short') || 'automated')) + ')' : ''}</span>
                           </>) : (<span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.ai_only_note') || 'AI content rubric only (automated checks unavailable)'}</span>)}
                         </div>
@@ -11710,7 +11770,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
           onClick={(e) => { if (e.target === e.currentTarget) setShowCloseConfirm(false); }}
           onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setShowCloseConfirm(false); } }}
           tabIndex={-1}
-          ref={(el) => { if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
+          ref={closeConfirmTrapRef} /* M23: shared Tab trap; the hook focuses the first button and restores focus on close */
         >
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border-2 border-amber-300">
             <h3 id="pdf-close-confirm-title" className="text-lg font-bold text-slate-800 mb-2">{t('pdf_audit.close_confirm.title') || 'Close without saving?'}</h3>
@@ -11752,7 +11812,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
 
       {/* ═══ PDF Preview & Edit Modal ═══ */}
       {pdfPreviewOpen && pdfFixResult && (
-        <div className="allo-docsuite fixed inset-0 z-[70] bg-black/50 flex items-stretch" role="dialog" aria-modal="true" aria-label={t('pdf_audit.preview.modal_aria') || 'Accessible document preview and editor'}>
+        <div className="allo-docsuite fixed inset-0 z-[70] bg-black/50 flex items-stretch" role="dialog" aria-modal="true" aria-label={t('pdf_audit.preview.modal_aria') || 'Accessible document preview and editor'}
+          ref={pdfPreviewTrapRef} tabIndex={-1}
+          onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setPdfPreviewOpen(false); } }}>
           <div className="flex flex-1 m-4 gap-0 animate-in fade-in duration-200">
             {/* Left panel: controls */}
             <div className="w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0">
@@ -14667,7 +14729,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   character widths and worth a glance in the result. */}
               {pdfFieldCandidates && (
                 <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setPdfFieldCandidates(null)}>
-                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.pdf_panel_aria') || 'Review detected PDF form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.pdf_panel_aria') || 'Review detected PDF form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}
+                    ref={pdfFieldsTrapRef} tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setPdfFieldCandidates(null); } }}>
                     <div className="px-4 py-3 border-b border-slate-200">
                       <div className="text-sm font-black text-slate-800">📝 {(t('pdf_audit.fillable.pdf_panel_heading') || 'Blanks found on the original pages — review before placing fields')}</div>
                       <div className="text-[11px] text-slate-600 mt-0.5">{pdfFieldCandidates.length} {t('pdf_audit.fillable.pdf_found') || 'blanks across'} {new Set(pdfFieldCandidates.map((c) => c.page)).size} {t('pdf_audit.fillable.pdf_pages') || 'page(s)'} — {t('pdf_audit.fillable.pdf_note') || 'fields go exactly where the blanks print. ~ marks position-estimated ones.'}</div>
@@ -14721,7 +14784,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   each rejectable. */}
               {fillableCandidates && (
                 <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setFillableCandidates(null)}>
-                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.panel_aria') || 'Review detected form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.fillable.panel_aria') || 'Review detected form fields'} className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}
+                    ref={fillableTrapRef} tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setFillableCandidates(null); } }}>
                     <div className="px-4 py-3 border-b border-slate-200">
                       <div className="text-sm font-black text-slate-800">📝 {(t('pdf_audit.fillable.panel_heading') || 'Detected blanks — review before converting')}</div>
                       <div className="text-[11px] text-slate-600 mt-0.5">{fillableCandidates.filter((c) => c.kind === 'text').length} {t('pdf_audit.fillable.text_fields') || 'text fields'} · {fillableCandidates.filter((c) => c.kind === 'checkbox').length} {t('pdf_audit.fillable.checkboxes') || 'checkboxes'} — {t('pdf_audit.fillable.panel_note') || 'uncheck any false positives; edit labels (screen readers announce them).'}</div>
@@ -14760,7 +14824,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
               {/* Plain-language compare (2026-06-12) */}
               {showPlainCompare && pdfFixResult && pdfFixResult._plainLanguage && (
                 <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowPlainCompare(false)}>
-                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.plain.compare_aria') || 'Original and plain-language version, side by side'} className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.plain.compare_aria') || 'Original and plain-language version, side by side'} className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}
+                    ref={plainCompareTrapRef} tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setShowPlainCompare(false); } }}>
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200">
                       <span className="text-sm font-black text-slate-800">⚖ {t('pdf_audit.plain.compare_heading') || 'Original ↔ Plain language'}</span>
                       <div className="flex items-center gap-2">
@@ -14789,7 +14854,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   pane carries its own lang/dir so SRs pronounce correctly. */}
               {showTranslationCompare && pdfFixResult && pdfFixResult._translation && (
                 <div className="allo-docsuite fixed inset-0 z-[300] bg-slate-900/70 flex items-center justify-center p-4" role="presentation" onClick={() => setShowTranslationCompare(false)}>
-                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.translate.compare_aria') || 'Original and translated document, side by side'} className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                  <div role="dialog" aria-modal="true" aria-label={t('pdf_audit.translate.compare_aria') || 'Original and translated document, side by side'} className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-[1400px] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}
+                    ref={translateCompareTrapRef} tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setShowTranslationCompare(false); } }}>
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200">
                       <span className="text-sm font-black text-slate-800">⚖ {(t('pdf_audit.translate.compare_heading') || 'Original ↔ ') + pdfFixResult._translation.lang}</span>
                       <div className="flex items-center gap-2">
