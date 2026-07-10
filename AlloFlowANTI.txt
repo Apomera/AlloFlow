@@ -285,6 +285,8 @@ function _alloMbInstallBridge(cfg) {
     pumpTimer: null,
     pumpBusy: false,
     lastChangeAt: Date.now(),
+    lastFedAt: 0,             // last recv-piggyback delivery (pump idles while fed)
+    nudgeAt: 0,               // last "change waiting NOW" ping (overrides the idle skip)
     sendNudge: null,          // set by the teacher/student RTC plumbing
   };
   _alloMbSchedulePump(200);
@@ -422,88 +424,131 @@ function _alloMbSchedulePump(ms) {
     if (_alloMbBridgeState === st) { st.pumpTimer = null; _alloMbPumpTick(st); }
   }, ms);
 }
+// A nudge means "a change is waiting NOW" (RTC ping, tab woke up): it
+// overrides the recv-fed idle skip in the pump tick below. Jittered so a
+// class-wide ping doesn't make 30 phones dial in the same 120ms window.
+function _alloMbNudge() {
+  const st = _alloMbBridgeState;
+  if (!st) return;
+  st.nudgeAt = Date.now();
+  _alloMbSchedulePump(_alloMbNudgeDelay());
+}
+function _alloMbWatchPs(st) {
+  const ps = [];
+  st.watchers.forEach((_set, p) => {
+    const known = st.docs.get(p);
+    ps.push({ p, w: (known && known.w) || 0 });
+  });
+  st.colWatchers.forEach((_watch, token) => {
+    const known = st.docs.get(token);
+    ps.push({ p: token, w: (known && known.w) || 0 });
+  });
+  return ps.slice(0, 12);
+}
+// Recv piggyback (one request per client instead of two): the mailbox recv
+// loops fold this watch list into the poll they already make (`ps` param) and
+// hand the response's `docs` back to _alloMbRecvDocsDelivered. Null when
+// there is nothing to watch. Old servers ignore `ps` and return no `docs`;
+// the pump below then keeps polling on its own — fully backward compatible.
+function _alloMbRecvDocPs() {
+  const st = _alloMbBridgeState;
+  if (!st || !st.code || st.endedFired) return null;
+  if (st.watchers.size === 0 && st.colWatchers.size === 0) return null;
+  return _alloMbWatchPs(st);
+}
+async function _alloMbRecvDocsDelivered(docs) {
+  const st = _alloMbBridgeState;
+  if (!st || st.endedFired || !Array.isArray(docs)) return;
+  st.lastFedAt = Date.now();
+  try { await _alloMbProcessDocs(st, docs); }
+  catch (e) { console.warn('[MB bridge] recv-fed doc processing failed', e && e.message); }
+}
+// Shared delta processor for both feeding paths (own dget pump + recv
+// piggyback). Returns true when anything changed.
+async function _alloMbProcessDocs(st, docsArr) {
+  let changed = false;
+  const changedCols = [];
+  (Array.isArray(docsArr) ? docsArr : []).forEach((entry) => {
+    if (!entry || !entry.p) return;
+    const isCol = st.colWatchers.has(entry.p);
+    if (entry.missing) {
+      // Cache eviction is not "session ended": the teacher re-seeds the
+      // session doc from its last known state; students just keep waiting.
+      if (entry.p === 's' && st.isTeacher && st.lastSessionDoc && Date.now() - st.reseedAt > 8000) {
+        st.reseedAt = Date.now();
+        _alloMbDocCall({ a: 'dset', p: 's', d: st.lastSessionDoc }, true)
+          .then((r) => { if (_alloMbBridgeState === st && r && r.w) st.docs.set('s', { w: r.w, d: st.lastSessionDoc, missing: false }); })
+          .catch((e) => console.warn('[MB bridge] session doc re-seed failed', e && e.message));
+      }
+      return;
+    }
+    if (entry.d === undefined) return; // unchanged (version matched)
+    st.lastChangeAt = Date.now();
+    changed = true;
+    if (isCol) {
+      st.docs.set(entry.p, { w: entry.w, d: entry.d, missing: false });
+      changedCols.push(entry.p);
+    } else {
+      _alloMbStoreAndFire(entry.p, { w: entry.w, d: entry.d, missing: false });
+    }
+  });
+  for (const token of changedCols) {
+    const watch = st.colWatchers.get(token);
+    if (!watch) continue;
+    const indexEntry = st.docs.get(token);
+    const index = (indexEntry && indexEntry.d && typeof indexEntry.d === 'object') ? indexEntry.d : {};
+    const changes = [];
+    const fetchIds = [];
+    Object.keys(index).forEach((id) => {
+      const w = index[id];
+      const knownW = watch.known.get(id);
+      if (knownW === undefined) { changes.push({ type: 'added', id }); fetchIds.push(id); }
+      else if (knownW !== w) { changes.push({ type: 'modified', id }); fetchIds.push(id); }
+    });
+    watch.known.forEach((_w, id) => {
+      if (!(id in index)) changes.push({ type: 'removed', id });
+    });
+    if (!changes.length) continue;
+    if (fetchIds.length) {
+      try {
+        const childPs = fetchIds.slice(0, 12).map((id) => {
+          const p = 'g:' + watch.sig + ':' + id;
+          const known = st.docs.get(p);
+          return { p, w: (known && known.w) || 0 };
+        });
+        const childRes = await _alloMbDocCall({ a: 'dget', ps: childPs });
+        (Array.isArray(childRes.docs) ? childRes.docs : []).forEach((entry) => {
+          if (entry && entry.p && entry.d !== undefined && !entry.missing) {
+            st.docs.set(entry.p, { w: entry.w, d: entry.d, missing: false });
+          }
+        });
+      } catch (childErr) { console.warn('[MB bridge] signaling child fetch failed', childErr && childErr.message); }
+    }
+    watch.known = new Map(Object.entries(index));
+    const snap = _alloMbColSnap(st, watch, changes);
+    watch.cbs.forEach((cb) => {
+      try { cb(snap); } catch (e) { console.warn('[MB bridge] collection callback failed', e); }
+    });
+  }
+  return changed;
+}
 async function _alloMbPumpTick(st) {
   if (!st || _alloMbBridgeState !== st || st.endedFired) return;
   if (st.pumpBusy) { _alloMbSchedulePump(800); return; }
   if (!st.code || (st.watchers.size === 0 && st.colWatchers.size === 0)) { _alloMbSchedulePump(1500); return; }
-  st.pumpBusy = true;
   const hidden = (typeof document !== 'undefined') && document.hidden;
   let delay = hidden ? 6000 : ((Date.now() - st.lastChangeAt < 45000) ? 1800 : 3500);
+  // Steady state, the recv loops feed the watch list on their own poll:
+  // skip the extra request unless a nudge arrived after the last feed
+  // (a nudge means a change is waiting right now). Strict <: a nudge in
+  // the SAME millisecond as a feed must still win, or it gets swallowed.
+  const fedRecently = st.lastFedAt && (Date.now() - st.lastFedAt < 4000) && (st.nudgeAt || 0) < st.lastFedAt;
+  if (fedRecently) { _alloMbSchedulePump(delay); return; }
+  st.pumpBusy = true;
   try {
-    const ps = [];
-    st.watchers.forEach((_set, p) => {
-      const known = st.docs.get(p);
-      ps.push({ p, w: (known && known.w) || 0 });
-    });
-    st.colWatchers.forEach((_watch, token) => {
-      const known = st.docs.get(token);
-      ps.push({ p: token, w: (known && known.w) || 0 });
-    });
-    const res = await _alloMbDocCall({ a: 'dget', ps: ps.slice(0, 12) });
+    const res = await _alloMbDocCall({ a: 'dget', ps: _alloMbWatchPs(st) });
     if (_alloMbBridgeState !== st) return;
-    const changedCols = [];
-    (Array.isArray(res.docs) ? res.docs : []).forEach((entry) => {
-      if (!entry || !entry.p) return;
-      const isCol = st.colWatchers.has(entry.p);
-      if (entry.missing) {
-        // Cache eviction is not "session ended": the teacher re-seeds the
-        // session doc from its last known state; students just keep waiting.
-        if (entry.p === 's' && st.isTeacher && st.lastSessionDoc && Date.now() - st.reseedAt > 8000) {
-          st.reseedAt = Date.now();
-          _alloMbDocCall({ a: 'dset', p: 's', d: st.lastSessionDoc }, true)
-            .then((r) => { if (_alloMbBridgeState === st && r && r.w) st.docs.set('s', { w: r.w, d: st.lastSessionDoc, missing: false }); })
-            .catch((e) => console.warn('[MB bridge] session doc re-seed failed', e && e.message));
-        }
-        return;
-      }
-      if (entry.d === undefined) return; // unchanged (version matched)
-      st.lastChangeAt = Date.now();
-      delay = 1800;
-      if (isCol) {
-        st.docs.set(entry.p, { w: entry.w, d: entry.d, missing: false });
-        changedCols.push(entry.p);
-      } else {
-        _alloMbStoreAndFire(entry.p, { w: entry.w, d: entry.d, missing: false });
-      }
-    });
-    for (const token of changedCols) {
-      const watch = st.colWatchers.get(token);
-      if (!watch) continue;
-      const indexEntry = st.docs.get(token);
-      const index = (indexEntry && indexEntry.d && typeof indexEntry.d === 'object') ? indexEntry.d : {};
-      const changes = [];
-      const fetchIds = [];
-      Object.keys(index).forEach((id) => {
-        const w = index[id];
-        const knownW = watch.known.get(id);
-        if (knownW === undefined) { changes.push({ type: 'added', id }); fetchIds.push(id); }
-        else if (knownW !== w) { changes.push({ type: 'modified', id }); fetchIds.push(id); }
-      });
-      watch.known.forEach((_w, id) => {
-        if (!(id in index)) changes.push({ type: 'removed', id });
-      });
-      if (!changes.length) continue;
-      if (fetchIds.length) {
-        try {
-          const childPs = fetchIds.slice(0, 12).map((id) => {
-            const p = 'g:' + watch.sig + ':' + id;
-            const known = st.docs.get(p);
-            return { p, w: (known && known.w) || 0 };
-          });
-          const childRes = await _alloMbDocCall({ a: 'dget', ps: childPs });
-          (Array.isArray(childRes.docs) ? childRes.docs : []).forEach((entry) => {
-            if (entry && entry.p && entry.d !== undefined && !entry.missing) {
-              st.docs.set(entry.p, { w: entry.w, d: entry.d, missing: false });
-            }
-          });
-        } catch (childErr) { console.warn('[MB bridge] signaling child fetch failed', childErr && childErr.message); }
-      }
-      watch.known = new Map(Object.entries(index));
-      const snap = _alloMbColSnap(st, watch, changes);
-      watch.cbs.forEach((cb) => {
-        try { cb(snap); } catch (e) { console.warn('[MB bridge] collection callback failed', e); }
-      });
-    }
+    if (await _alloMbProcessDocs(st, res.docs)) delay = 1800;
   } catch (e) {
     const codeStr = String((e && e.code) || '');
     if (codeStr.includes('no-session')) {
@@ -689,7 +734,7 @@ function _applyMbSessionAdapter() {
     Object.assign(window.__alloFirebase, { doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection });
   }
   if (typeof window !== 'undefined') {
-    window.__alloMbBridgeNudge = () => _alloMbSchedulePump(_alloMbNudgeDelay());
+    window.__alloMbBridgeNudge = () => _alloMbNudge();
     // Wake fast: phones freeze timers while locked. The mailbox recv loops
     // already re-poll on visibility; the session-doc pump must too, or
     // poll/quiz state lags the pack channel for several seconds after wake.
@@ -697,7 +742,7 @@ function _applyMbSessionAdapter() {
       window.__alloMbVisWakeWired = true;
       try {
         document.addEventListener('visibilitychange', () => {
-          if (!document.hidden) _alloMbSchedulePump(_alloMbNudgeDelay());
+          if (!document.hidden) _alloMbNudge();
         });
       } catch (_) {}
     }
@@ -1445,7 +1490,14 @@ function recv(cache, code, p) {
     }
     result[box] = { n: Math.max(cursor, since), m: msgs, latest: latest };
   }
-  return out({ ok: true, b: result, t: Date.now() });
+  var response = { ok: true, b: result, t: Date.now() };
+  // Doc-watch piggyback (additive, same VERSION): clients fold their session
+  // document watch list into the poll they already make, halving steady-state
+  // request volume. Old clients do not send ps; old servers ignore it and
+  // clients fall back to their own dget pump. NOTE: keep backticks out of
+  // this file — it ships embedded in the app as a template literal.
+  if (Array.isArray(p.ps) && p.ps.length) response.docs = collectDocEntries(cache, code, p.ps);
+  return out(response);
 }
 
 // ── Session document store (v6) ─────────────────────────────────────────────
@@ -1509,8 +1561,7 @@ function applyDocUpdates(target, updates) {
   return target;
 }
 
-function docGet(cache, code, p) {
-  var entries = Array.isArray(p.ps) ? p.ps : [];
+function collectDocEntries(cache, code, entries) {
   var docs = [];
   for (var i = 0; i < entries.length && i < MAX_DGET_DOCS; i++) {
     var tok = cleanDocPath(entries[i] && entries[i].p);
@@ -1521,7 +1572,11 @@ function docGet(cache, code, p) {
     if (env.w > known) docs.push({ p: tok, w: env.w, d: env.d });
     else docs.push({ p: tok, w: env.w });
   }
-  return out({ ok: true, docs: docs, t: Date.now() });
+  return docs;
+}
+
+function docGet(cache, code, p) {
+  return out({ ok: true, docs: collectDocEntries(cache, code, Array.isArray(p.ps) ? p.ps : []), t: Date.now() });
 }
 
 function docWrite(cache, code, action, p) {
@@ -12250,6 +12305,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                       } else {
                           resourcesToRender = hydratedHistoryRef.current;
                       }
+                  } else if (_alloMbBridgeActive() && Array.isArray(hydratedHistoryRef.current) && hydratedHistoryRef.current.length) {
+                      // Mailbox sessions: the session doc deliberately carries NO
+                      // resources (85KB ceiling) — content arrives over the chunked
+                      // pack channel, which maintains this same pool. Using it here
+                      // keeps sync jumps and group/individual pushes working
+                      // unchanged over the mailbox.
+                      resourcesToRender = hydratedHistoryRef.current;
                   }
                   if (data.bridgePayload && data.bridgePayload.timestamp) {
                     const payloadTs = data.bridgePayload.timestamp;
@@ -13569,7 +13631,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           const parsed = JSON.parse(msgEv.data);
                           // Bridge nudge: a student just wrote to the session
                           // doc store — pull it now, not on the next poll.
-                          if (parsed && parsed.kind === 'sdocv') { _alloMbSchedulePump(120); return; }
+                          if (parsed && parsed.kind === 'sdocv') { _alloMbNudge(); return; }
                           applyStudentUpdate(parsed, Date.now());
                       } catch (_) {}
                   };
@@ -13606,10 +13668,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       };
       const poll = async () => {
           try {
-              const res = await _alloMailboxCall(mbConfig.url, { a: 'recv', c: mbLive.code, k: mbLive.secret, box: 'up', since: String(mbUpCursorRef.current) });
+              // Fold the session-doc watch list into the poll we already make
+              // (one request, not two); the bridge pump idles while this feeds.
+              const pollPayload = { a: 'recv', c: mbLive.code, k: mbLive.secret, box: 'up', since: String(mbUpCursorRef.current) };
+              const bridgePs = _alloMbRecvDocPs();
+              if (bridgePs && bridgePs.length) pollPayload.ps = bridgePs;
+              const res = await _alloMailboxCall(mbConfig.url, pollPayload);
               if (cancelled) return;
               errorCount = 0;
               setMbNow(res.t || Date.now());
+              if (Array.isArray(res.docs)) _alloMbRecvDocsDelivered(res.docs);
               const box = res.b && res.b.up;
               // Self-heal: if the server's sequence counter was evicted and
               // restarted below our cursor, replay from 0 (roster updates are
@@ -13803,7 +13871,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           // session doc store — pull it soon (jittered: the nudge reaches the
           // whole class at once, and simultaneous pulls collide with Apps
           // Script's concurrency ceiling).
-          _alloMbSchedulePump(_alloMbNudgeDelay());
+          _alloMbNudge();
           return;
       }
       if (v.kind === 'end') {
@@ -13816,7 +13884,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           return;
       }
       if (v.kind === 'res-remove' && Array.isArray(v.ids)) {
-          setHistory(prev => (Array.isArray(prev) ? prev : []).filter(item => item && !v.ids.includes(item.id)));
+          setHistory(prev => {
+              const next = (Array.isArray(prev) ? prev : []).filter(item => item && !v.ids.includes(item.id));
+              hydratedHistoryRef.current = next;
+              return next;
+          });
           return;
       }
       if (v.kind === 'res') {
@@ -13828,7 +13900,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               if (!resource || !resource.id || !resource.type || TEACHER_ONLY_TYPES.includes(resource.type)) return;
               setHistory(prev => {
                   const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
-                  return [...rest, resource];
+                  const next = [...rest, resource];
+                  // The pack IS the mailbox session's resource pool: keep the ref
+                  // the session-doc consumers read (sync jump, group/individual
+                  // pushes) pointing at it. Idempotent under double invocation.
+                  hydratedHistoryRef.current = next;
+                  return next;
               });
               // open=false delivers quietly into the pack (async-mode share);
               // open=true (default) follows the teacher like sync mode.
@@ -23150,9 +23227,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       });
       const poll = async () => {
           try {
-              const res = await _alloMailboxCall(mbStudent.url, { a: 'recv', c: mbStudent.code, k: mbStudent.secret, box: 'down', since: String(mbStudentCursorRef.current) });
+              // Fold the session-doc watch list into the poll we already make
+              // (one request, not two); the bridge pump idles while this feeds.
+              const pollPayload = { a: 'recv', c: mbStudent.code, k: mbStudent.secret, box: 'down', since: String(mbStudentCursorRef.current) };
+              const bridgePs = _alloMbRecvDocPs();
+              if (bridgePs && bridgePs.length) pollPayload.ps = bridgePs;
+              const res = await _alloMailboxCall(mbStudent.url, pollPayload);
               if (cancelled) return;
               errorCount = 0;
+              if (Array.isArray(res.docs)) _alloMbRecvDocsDelivered(res.docs);
               if (!mbStudentConnectedRef.current) {
                   mbStudentConnectedRef.current = true;
                   addToast('Connected to class ' + mbStudent.code + '. Waiting for your teacher to share.', 'success');

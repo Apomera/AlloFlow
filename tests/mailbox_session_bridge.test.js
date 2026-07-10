@@ -138,6 +138,20 @@ describe('Code.gs v6 session document store (real source)', () => {
         expect(Object.keys(index.d)).toEqual(['u2']);
     });
 
+    it('recv piggybacks the doc watch list: one poll returns messages AND changed docs', () => {
+        const sb = openedSandbox();
+        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {} } });
+        sb.call({ a: 'send', c: sb.code, k: sb.secret, from: 'mb-1', box: 'up', v: { kind: 'student', uid: 'mb-1', name: 'Ada' } });
+        const res = sb.call({ a: 'recv', c: sb.code, k: sb.secret, box: 'up', since: '0', ps: [{ p: 's' }] });
+        expect(res.b.up.m.length).toBe(1);
+        expect(res.docs[0].d.mode).toBe('sync');
+        // Known version: the piggyback stays cheap (no body).
+        const cached = sb.call({ a: 'recv', c: sb.code, k: sb.secret, box: 'up', since: String(res.b.up.n), ps: [{ p: 's', w: res.docs[0].w }] });
+        expect(cached.docs[0].d).toBeUndefined();
+        // No ps → no docs key at all (old-client shape unchanged).
+        expect(sb.call({ a: 'recv', c: sb.code, k: sb.secret, box: 'up', since: '0' }).docs).toBeUndefined();
+    });
+
     it('rejects oversized docs, clears docs on end, and re-open does not resurrect a previous class', () => {
         const sb = openedSandbox();
         expect(sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { blob: 'x'.repeat(90 * 1024) } }).e).toBe('too-big');
@@ -204,6 +218,9 @@ function makeBridge(serverOverride) {
             bridgeUser: _alloMbBridgeUser,
             state: () => _alloMbBridgeState,
             pump: () => _alloMbPumpTick(_alloMbBridgeState),
+            recvPs: () => _alloMbRecvDocPs(),
+            deliver: (docs) => _alloMbRecvDocsDelivered(docs),
+            nudge: () => _alloMbNudge(),
         };
     `);
     const api = factory(base);
@@ -350,6 +367,34 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
         } finally { api.teardown(); }
     });
 
+    it('recv-fed deliveries update watchers and idle the pump; a nudge overrides the idle skip', async () => {
+        const { api, sb, calls } = makeBridge();
+        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {} } });
+        api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, isTeacher: false, uid: 'mb-stu1' });
+        try {
+            const ref = api.doc(...sessionArgs(sb.code));
+            const seen = [];
+            api.onSnapshot(ref, s => seen.push(s.data()));
+            // A recv loop would fetch with the watch list and hand docs back:
+            const ps = api.recvPs();
+            expect(Array.isArray(ps) && ps.length).toBeTruthy();
+            const recvRes = sb.call({ a: 'recv', c: sb.code, k: sb.secret, box: 'down', since: '0', ps });
+            await api.deliver(recvRes.docs);
+            expect(seen.length).toBe(1);
+            expect(seen[0].mode).toBe('sync');
+            // Just fed → the pump skips its own request entirely.
+            const dgetsBefore = calls.filter(c => c.a === 'dget').length;
+            await api.pump();
+            expect(calls.filter(c => c.a === 'dget').length).toBe(dgetsBefore);
+            // A nudge means a change is waiting NOW → the pump pulls anyway.
+            sb.call({ a: 'dpatch', c: sb.code, k: sb.secret, p: 's', u: { 'roster.mb-9.name': 'Calm Owl' } });
+            api.nudge();
+            await api.pump();
+            expect(calls.filter(c => c.a === 'dget').length).toBe(dgetsBefore + 1);
+            expect(seen[seen.length - 1].roster['mb-9'].name).toBe('Calm Owl');
+        } finally { api.teardown(); }
+    });
+
     it('sheds the quiz fallback store and retries when a patch hits the doc size ceiling', async () => {
         const { api, sb } = makeBridge();
         sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {}, quizState: { isActive: true, allResponses: { filler: 'x'.repeat(60 * 1024) } } } });
@@ -400,7 +445,7 @@ describe('three-copy sync pins (Phase C sections)', () => {
     });
     it('every copy wires the nudges and the unified join', () => {
         copies.forEach(source => {
-            expect(source).toContain("if (parsed && parsed.kind === 'sdocv') { _alloMbSchedulePump(120); return; }");
+            expect(source).toContain("if (parsed && parsed.kind === 'sdocv') { _alloMbNudge(); return; }");
             expect(source).toContain("dc.send(JSON.stringify({ kind: 'sdocv' }))");
             expect(source).toContain('_alloMbInstallBridge({ url: entry.u, code: mbJoinCode');
             expect(source).toContain('joinClassSession(mbJoinCode)');
@@ -411,11 +456,27 @@ describe('three-copy sync pins (Phase C sections)', () => {
     it('every copy jitters class-wide nudges and re-pumps on visibility wake', () => {
         copies.forEach(source => {
             expect(source).toContain('function _alloMbNudgeDelay()');
-            // Student-side nudge (whole class at once) is jittered; the
-            // teacher-side one (single client) stays immediate.
-            expect(source).toContain("_alloMbSchedulePump(_alloMbNudgeDelay());\n          return;");
+            expect(source).toContain('_alloMbSchedulePump(_alloMbNudgeDelay());');
             expect(source).toContain('__alloMbVisWakeWired');
-            expect(source).toContain("document.addEventListener('visibilitychange', () => {\n          if (!document.hidden) _alloMbSchedulePump(_alloMbNudgeDelay());");
+            expect(source).toContain("document.addEventListener('visibilitychange', () => {\n          if (!document.hidden) _alloMbNudge();");
+        });
+    });
+    it('every copy folds the doc watch list into both recv loops (one request per client)', () => {
+        copies.forEach(source => {
+            const wired = source.split('pollPayload.ps = bridgePs').length - 1;
+            expect(wired).toBe(2); // teacher 'up' loop + student 'down' loop
+            expect(source.split('_alloMbRecvDocsDelivered(res.docs)').length - 1).toBe(2);
+        });
+    });
+    it('every copy serves group/individual pushes from the pack-fed pool over the mailbox', () => {
+        copies.forEach(source => {
+            // The pack handler maintains the same pool the session-doc
+            // consumers read…
+            expect(source.split('hydratedHistoryRef.current = next;').length - 1).toBe(2); // res + res-remove
+            // …and the snapshot consumer falls back to it when the bridged
+            // session doc (deliberately) carries no resources.
+            const consumer = sliceBetween(source, 'let resourcesToRender = [];', 'if (data.bridgePayload && data.bridgePayload.timestamp) {');
+            expect(consumer).toContain('_alloMbBridgeActive() && Array.isArray(hydratedHistoryRef.current) && hydratedHistoryRef.current.length');
         });
     });
     it('every copy routes Canvas/backend-free homework QRs away from the dead Firestore read', () => {
@@ -445,8 +506,14 @@ describe('three-copy sync pins (Phase C sections)', () => {
             const start = source.indexOf('const ALLO_MB_SCRIPT_SOURCE = `');
             expect(start).toBeGreaterThan(-1);
             const open = source.indexOf('`', start);
-            const close = source.indexOf('`;', open + 1);
-            expect(close).toBeGreaterThan(open);
+            // Escape-aware scan for the closing backtick: the embedded copy
+            // escapes backslashes and backticks, so a naive indexOf can stop
+            // at an escaped backtick inside the script.
+            let close = open + 1;
+            while (close < source.length && source[close] !== '`') {
+                close += source[close] === '\\' ? 2 : 1;
+            }
+            expect(close).toBeLessThan(source.length);
             const literal = source.slice(open, close + 1);
             // Evaluate the template literal so escape handling (backslashes)
             // is exercised exactly the way the browser will see it.

@@ -253,7 +253,14 @@ function recv(cache, code, p) {
     }
     result[box] = { n: Math.max(cursor, since), m: msgs, latest: latest };
   }
-  return out({ ok: true, b: result, t: Date.now() });
+  var response = { ok: true, b: result, t: Date.now() };
+  // Doc-watch piggyback (additive, same VERSION): clients fold their session
+  // document watch list into the poll they already make, halving steady-state
+  // request volume. Old clients do not send ps; old servers ignore it and
+  // clients fall back to their own dget pump. NOTE: keep backticks out of
+  // this file — it ships embedded in the app as a template literal.
+  if (Array.isArray(p.ps) && p.ps.length) response.docs = collectDocEntries(cache, code, p.ps);
+  return out(response);
 }
 
 // ── Session document store (v6) ─────────────────────────────────────────────
@@ -317,8 +324,7 @@ function applyDocUpdates(target, updates) {
   return target;
 }
 
-function docGet(cache, code, p) {
-  var entries = Array.isArray(p.ps) ? p.ps : [];
+function collectDocEntries(cache, code, entries) {
   var docs = [];
   for (var i = 0; i < entries.length && i < MAX_DGET_DOCS; i++) {
     var tok = cleanDocPath(entries[i] && entries[i].p);
@@ -329,7 +335,11 @@ function docGet(cache, code, p) {
     if (env.w > known) docs.push({ p: tok, w: env.w, d: env.d });
     else docs.push({ p: tok, w: env.w });
   }
-  return out({ ok: true, docs: docs, t: Date.now() });
+  return docs;
+}
+
+function docGet(cache, code, p) {
+  return out({ ok: true, docs: collectDocEntries(cache, code, Array.isArray(p.ps) ? p.ps : []), t: Date.now() });
 }
 
 function docWrite(cache, code, action, p) {
