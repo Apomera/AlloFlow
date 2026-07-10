@@ -25134,6 +25134,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // and `stop` is polled by runPlan's shouldStop between steps (never
   // mid-command).
   const _planRunRef = useRef({ running: false, stop: false });
+  // Undo-plan snapshot (2026-07-10): captured right before a plan's first
+  // step. Content states (generatedContent / history / activeView) are
+  // replaced immutably by handleGenerate, so holding REFERENCES is a safe,
+  // clone-free restore point; `settings` preserves the intent snapshot the
+  // plan captures so a later user action can't swap it out from under the
+  // undo. One level deep — a new plan run overwrites it.
+  const _planUndoRef = useRef(null);
   const _alloCmdCtx = () => {
     const ctx = {
       t, addToast, callGemini,
@@ -25490,6 +25497,33 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setUdlInput('');
       return;
     }
+    // Undo-plan (2026-07-10): restore the snapshot taken before the plan's
+    // first step — content (generatedContent / history / activeView) plus
+    // the settings intent snapshot. One level; honest about staleness: the
+    // chip says exactly what it restores.
+    if (_rawUtter === '__allo_plan_undo') {
+      setUdlInput('');
+      const _snap = _planUndoRef.current;
+      if (!_snap) {
+        setUdlMessages(prev => [...prev, { role: 'model', text: (t('chat_guide.plan_undo_none') || 'There’s nothing from a plan to undo right now.') }]);
+        return;
+      }
+      _planUndoRef.current = null;
+      try {
+        setGeneratedContent(_snap.generatedContent);
+        setHistory(_snap.history);
+        setActiveView(_snap.activeView);
+        if (_snap.settings) {
+          lastIntentSnapshotRef.current = _snap.settings;
+          try { restoreIntentSnapshot(); } catch (_) {}
+        }
+        setUdlMessages(prev => [...prev, { role: 'model', text: '↩ ' + (t('chat_guide.plan_undone') || 'Restored your content and settings to the moment before the plan ran.') }]);
+        try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_undone') || 'Plan undone — content and settings restored.'); } catch (_) {}
+      } catch (_) {
+        setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_undo_failed') || 'The undo didn’t fully apply — check your content before continuing.') }]);
+      }
+      return;
+    }
     // ── Command confirmation (2026-07-06) ──
     // The bot chat used to RUN an app command the instant the router matched one.
     // A short opener ("hi", "bot", "assistant") matched `toggle_bot`, which hid the
@@ -25542,6 +25576,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         if (_isRun && _AC && typeof _AC.runPlan === 'function') {
           const _steps = _pendingPlan.steps;
           _planRunRef.current = { running: true, stop: false };
+          // Undo restore point: content refs + the settings intent snapshot.
+          try {
+            captureIntentSnapshot('plan');
+            _planUndoRef.current = { generatedContent, history, activeView, settings: lastIntentSnapshotRef.current };
+          } catch (_) { _planUndoRef.current = null; }
           setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '▶ ' + (t('chat_guide.plan_running') || 'Running the plan — I’ll report each step here.'), choices: [
             { label: '🛑 ' + (t('chat_guide.plan_stop') || 'Stop after current step'), value: '__allo_plan_stop' }
           ] }]);
@@ -25557,8 +25596,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               }
             });
             if (_pr && _pr.ok) {
-              setUdlMessages(prev => [...prev, { role: 'model', text: '🎉 ' + (t('chat_guide.plan_done') || 'All steps finished.') }]);
+              setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '🎉 ' + (t('chat_guide.plan_done') || 'All steps finished.'), choices: [
+                { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+              ] }]);
               try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_done') || 'All steps finished.'); } catch (_) {}
+            } else if (_pr && Array.isArray(_pr.results) && _pr.results.length) {
+              // Partial run: some steps landed — offer the same restore point.
+              setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + (_pr.reason || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_hint') || 'The finished steps are kept. To do the rest, just ask again for what’s left — for example “make a glossary, then translate it to Spanish”.'), choices: [
+                { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+              ] }]);
             } else {
               setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_hint') || 'The finished steps are kept. To do the rest, just ask again for what’s left — for example “make a glossary, then translate it to Spanish”.') }]);
             }
