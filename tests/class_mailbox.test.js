@@ -37,7 +37,12 @@ function makeGsSandbox() {
     };
     const services = {
         CacheService: { getScriptCache: () => cache },
-        PropertiesService: { getScriptProperties: () => ({ getProperty: k => (props.has(k) ? props.get(k) : null), setProperty: (k, v) => props.set(k, String(v)) }) },
+        PropertiesService: { getScriptProperties: () => ({
+            getProperty: k => (props.has(k) ? props.get(k) : null),
+            setProperty: (k, v) => props.set(k, String(v)),
+            deleteProperty: k => { props.delete(k); },
+            getProperties: () => Object.fromEntries(props),
+        }) },
         LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => {} }) },
         ContentService: (() => {
             const svc = { MimeType: { JSON: 'json' } };
@@ -49,7 +54,7 @@ function makeGsSandbox() {
     };
     const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle, doGet: doGet, doPost: doPost };');
     const gs = factory(...Object.values(services));
-    return { call: p => JSON.parse(gs.handle(p).getContent()), gs, driveFiles };
+    return { call: p => JSON.parse(gs.handle(p).getContent()), gs, driveFiles, cacheStore, props };
 }
 
 describe('Code.gs protocol (real source, mocked Google services)', () => {
@@ -188,6 +193,24 @@ describe('Code.gs hardening (v2)', () => {
         expect(driveFiles.has(noteName)).toBe(false);
         call({ a: 'auth', admin: claim.admin });
         expect(driveFiles.get(noteName)).toContain(claim.admin);
+    });
+
+    it('survives cache eviction of the session marker via the durable Properties fallback (v4)', () => {
+        const { call, gs, driveFiles, ...rest } = makeGsSandbox();
+        const K = 'k_secret_k_secret_20';
+        const admin = call({ a: 'claim' }).admin;
+        expect(call({ a: 'open', admin, c: 'EVICT', k: K }).ok).toBe(true);
+        expect(call({ a: 'send', c: 'EVICT', k: K, from: 's', box: 'up', v: 1 }).ok).toBe(true);
+        // Simulate CacheService eviction of the marker mid-class.
+        gs.handle({ a: 'noop' }); // no-op to keep shape; eviction below
+        rest.cacheStore.delete('s:EVICT');
+        expect(call({ a: 'recv', c: 'EVICT', k: K, box: 'up', since: '0' }).ok).toBe(true);
+        // Rewarmed: marker is back in cache.
+        expect(rest.cacheStore.has('s:EVICT')).toBe(true);
+        // 'end' clears the durable copy too — session stays dead.
+        expect(call({ a: 'end', c: 'EVICT', k: K }).ok).toBe(true);
+        rest.cacheStore.delete('s:EVICT');
+        expect(call({ a: 'recv', c: 'EVICT', k: K, box: 'up', since: '0' }).e).toBe('no-session');
     });
 
     it('caps per-box sends at the flood limit', () => {
@@ -330,7 +353,8 @@ describe('ANTI wiring pins', () => {
         const visibilityCount = (anti.match(/visibilitychange/g) || []).length;
         expect(visibilityCount).toBeGreaterThanOrEqual(4); // add+remove on both loops
         expect(anti).toMatch(/pc\.createDataChannel\('allo'\)/);
-        expect(anti).toMatch(/tries >= 4/);
+        // v4: capped-backoff retry-forever replaced the old 4-try cap.
+        expect(anti).toMatch(/Math\.min\(15000 \* Math\.pow\(2/);
         expect(anti).toMatch(/applyMbDownPayload/);
         expect(anti).toMatch(/_alloCollectResChunk\(store, v\)/);
         // Poll cadence: slower base while the channel is open.

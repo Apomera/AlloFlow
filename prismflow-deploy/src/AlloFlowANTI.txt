@@ -720,6 +720,7 @@ function _buildAlloPackShareUrl(encodedPack) {
 // cross-origin (it cannot handle CORS preflight OPTIONS).
 const ALLO_MB_URL_KEY = 'alloflow_session_mailbox_url';
 const ALLO_MB_ADMIN_KEY = 'alloflow_session_mailbox_admin';
+const ALLO_MB_LIVE_KEY = 'alloflow_mb_live_session';
 const ALLO_MB_CHUNK_CHARS = 60000;
 const ALLO_MB_POLL_MS = 2500;
 function _alloRandomToken(byteCount = 16) {
@@ -6072,7 +6073,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=fecc0b50e');
     loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=fecc0b50e');
     loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=fecc0b50e');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=fecc0b50e');
+    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=fa7dc48b');
     loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=fecc0b50e');
     loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=fecc0b50e');
     loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=fecc0b50e');
@@ -6093,12 +6094,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=fecc0b50e'); }; })();
     window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=fecc0b50e'); }; })();
     window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=fecc0b50e'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=fecc0b50e'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
     window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=fecc0b50e'); }; })();
     loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=fecc0b50e');
     loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=fecc0b50e');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=fecc0b50e');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=fecc0b50e');
+    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
+    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
     loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=fecc0b50e');
     loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=fecc0b50e');
     loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=fecc0b50e');
@@ -12144,7 +12145,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   });
   const [mbStatus, setMbStatus] = useState('');
   const [mbBusy, setMbBusy] = useState(false);
-  const [mbLive, setMbLive] = useState(null);
+  // Survive teacher refresh / Canvas re-render: the live session restores
+  // from localStorage and SELF-VALIDATES — if it expired server-side, the
+  // first poll returns no-session and tears it down cleanly.
+  const [mbLive, setMbLive] = useState(() => {
+      try {
+          const saved = JSON.parse(localStorage.getItem(ALLO_MB_LIVE_KEY) || 'null');
+          if (saved && saved.code && saved.secret && saved.joinUrl) return saved;
+      } catch (_) {}
+      return null;
+  });
   const [mbRoster, setMbRoster] = useState({});
   const [mbQrSvg, setMbQrSvg] = useState('');
   const [mbAdminInput, setMbAdminInput] = useState('');
@@ -12239,6 +12249,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           mbPackItemsRef.current = [];
           setMbMode('sync');
           setMbRoster({});
+          try { localStorage.setItem(ALLO_MB_LIVE_KEY, JSON.stringify({ code, secret, joinUrl })); } catch (_) {}
           setMbLive({ code, secret, joinUrl });
           setMbStatus('');
       } catch (e) {
@@ -12258,6 +12269,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const live = mbLive;
       setMbLive(null);
       setMbRoster({});
+      try { localStorage.removeItem(ALLO_MB_LIVE_KEY); } catch (_) {}
       _mbCloseTeacherPeers();
       if (live && mbConfig?.url) {
           try { await _alloMailboxCall(mbConfig.url, { a: 'send', c: live.code, k: live.secret, from: 'teacher', box: 'down', v: { kind: 'end' } }); } catch (_) {}
@@ -12431,7 +12443,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               errorCount = 0;
               setMbNow(res.t || Date.now());
               const box = res.b && res.b.up;
-              if (box) {
+              // Self-heal: if the server's sequence counter was evicted and
+              // restarted below our cursor, replay from 0 (roster updates are
+              // idempotent, resources dedup by rid).
+              if (box && typeof box.latest === 'number' && box.latest < mbUpCursorRef.current) {
+                  mbUpCursorRef.current = 0;
+              } else if (box) {
                   mbUpCursorRef.current = box.n || mbUpCursorRef.current;
                   if (Array.isArray(box.m) && box.m.length) {
                       lastActivity = Date.now();
@@ -12448,6 +12465,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               if (cancelled) return;
               if (String(e?.code || '').includes('no-session')) {
                   setMbLive(null);
+                  try { localStorage.removeItem(ALLO_MB_LIVE_KEY); } catch (_) {}
                   setMbStatus('The live session expired or was ended.');
                   return;
               }
@@ -21809,6 +21827,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       mbStudentCursorRef.current = 0;
       mbStudentConnectedRef.current = false;
       mbChunkStoreRef.current = { parts: {}, applied: new Set() };
+      // Firestore-parity: live-session students see the CLASS pack only —
+      // the Firestore student branch replaces history wholesale, so mailbox
+      // students start clean too instead of mixing in last week's leftovers
+      // persisted on the device.
+      setHistory([]);
+      setGeneratedContent(null);
       setMbStudent({ url: entry.u, code: String(entry.c).toUpperCase(), secret: String(entry.k), uid });
       return undefined;
   }, []);
@@ -21854,7 +21878,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   addToast('Connected to class ' + mbStudent.code + '. Waiting for your teacher to share.', 'success');
               }
               const box = res.b && res.b.down;
-              if (box) {
+              // Self-heal after server counter eviction (see teacher loop).
+              if (box && typeof box.latest === 'number' && box.latest < mbStudentCursorRef.current) {
+                  mbStudentCursorRef.current = 0;
+              } else if (box) {
                   mbStudentCursorRef.current = box.n || mbStudentCursorRef.current;
                   if (Array.isArray(box.m) && box.m.length) {
                       lastActivity = Date.now();
@@ -21920,11 +21947,24 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
           mbRtcRef.current = null;
       };
+      // Retry forever with capped backoff (15s → 30s → 60s): a teacher
+      // refresh or a phone sleeping through several windows must not strand
+      // the student on polling for the rest of class. dc.onopen resets tries.
       const scheduleRetry = () => {
-          if (cancelled || tries >= 4) return;
+          if (cancelled) return;
           if (retryTimer) clearTimeout(retryTimer);
-          retryTimer = setTimeout(attempt, 15000);
+          retryTimer = setTimeout(attempt, Math.min(15000 * Math.pow(2, Math.max(0, tries - 1)), 60000));
       };
+      const onRtcVisible = () => {
+          if (typeof document === 'undefined' || document.hidden || cancelled) return;
+          const dc = mbRtcRef.current?.dc;
+          if (!dc || dc.readyState !== 'open') {
+              tries = 0;
+              if (retryTimer) clearTimeout(retryTimer);
+              retryTimer = setTimeout(attempt, 800);
+          }
+      };
+      try { document.addEventListener('visibilitychange', onRtcVisible); } catch (_) {}
       const attempt = async () => {
           if (cancelled) return;
           tries += 1;
@@ -21969,6 +22009,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       return () => {
           cancelled = true;
           if (retryTimer) clearTimeout(retryTimer);
+          try { document.removeEventListener('visibilitychange', onRtcVisible); } catch (_) {}
           cleanupPeer();
       };
   }, [mbStudent, applyMbDownPayload]);

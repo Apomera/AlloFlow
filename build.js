@@ -21,6 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { createHash } = require('crypto');
 
 // ── Parse CLI args ──────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -1622,6 +1623,26 @@ if (mode === 'prod') {
 // ── Transform URLs ──────────────────────────────────────────────
 let replacementCount = 0;
 
+// Contract modules pinned by content hash (see EXCEPTION note below).
+const CONTENT_HASH_PINNED = new Set([
+    'student_interaction_module.js',
+    'view_student_join_panel_module.js',
+    'view_student_save_adventure_module.js',
+    'view_socratic_chat_module.js',
+]);
+const _contentHashCache = {};
+function contentHashPin(filename) {
+    if (!CONTENT_HASH_PINNED.has(filename)) return null;
+    if (!_contentHashCache[filename]) {
+        try {
+            _contentHashCache[filename] = createHash('sha256').update(fs.readFileSync(path.join(ROOT, filename))).digest('hex').slice(0, 8);
+        } catch (e) {
+            console.warn(`  ⚠️  content-hash pin failed for ${filename} (${e.message}); falling back to git hash`);
+            _contentHashCache[filename] = '';
+        }
+    }
+    return _contentHashCache[filename] || null;
+}
 content = content.replace(LOAD_MODULE_RE, (match, moduleName, currentUrl) => {
     const moduleDef = MODULES.find(m => m.name === moduleName);
     if (!moduleDef) {
@@ -1642,7 +1663,12 @@ content = content.replace(LOAD_MODULE_RE, (match, moduleName, currentUrl) => {
         // auto-invalidates by content" assumption was false for the big file.)
         // moduleDef.cdnBase (legacy jsdelivr URL) is left in the MODULES table
         // but unused; kept for diff readability if we ever need to switch back.
-        newUrl = `${CLOUDFLARE_CDN_BASE}/${moduleDef.filename}?v=${gitHash}`;
+        // EXCEPTION: student-facing contract modules pin by CONTENT hash
+        // (sha256-8 of the generated file) — tests/student_accessibility_
+        // contracts.test.js asserts host tags match the file, so a stale edge
+        // can never serve an old student module the host doesn't expect, and
+        // unchanged files keep a stable (cacheable) URL across deploys.
+        newUrl = `${CLOUDFLARE_CDN_BASE}/${moduleDef.filename}?v=${contentHashPin(moduleDef.filename) || gitHash}`;
     }
 
     replacementCount++;

@@ -23,7 +23,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 3;
+var VERSION = 4;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -92,17 +92,23 @@ function handle(p) {
     var code = String(p.c || '').toUpperCase();
     if (!/^[A-Z0-9]{4,8}$/.test(code) || !isToken(p.k)) return out({ ok: false, e: 'bad-request' });
     cache.put('s:' + code, String(p.k), SESSION_TTL_SEC);
+    // Durable copy: CacheService is best-effort and can evict a live session
+    // marker under memory pressure, kicking the whole class out mid-lesson.
+    // PropertiesService survives; lookups rewarm the cache from it.
+    props.setProperty('sess_' + code, String(p.k) + '|' + Date.now());
+    pruneExpiredSessions(props);
     return out({ ok: true, t: Date.now() });
   }
 
   if (a === 'send' || a === 'recv' || a === 'end') {
     var sc = String(p.c || '').toUpperCase();
-    var secret = cache.get('s:' + sc);
+    var secret = sessionSecretFor(sc, cache, props);
     if (!secret) return out({ ok: false, e: 'no-session' });
     if (String(p.k || '') !== secret) return out({ ok: false, e: 'denied' });
     if (a === 'send') return send(cache, sc, p);
     if (a === 'recv') return recv(cache, sc, p);
     cache.remove('s:' + sc);
+    try { props.deleteProperty('sess_' + sc); } catch (e2) {}
     return out({ ok: true });
   }
 
@@ -121,6 +127,36 @@ function handle(p) {
 function cleanBox(v) {
   var b = String(v || '');
   return (b === 'up' || b === 'down') ? b : '';
+}
+
+// Session secret lookup: cache first, durable PropertiesService fallback
+// (rewarming the cache), honoring the same 6h TTL.
+function sessionSecretFor(code, cache, props) {
+  var secret = cache.get('s:' + code);
+  if (secret) return secret;
+  var stored = props.getProperty('sess_' + code);
+  if (!stored) return null;
+  var sep = stored.indexOf('|');
+  var key = sep > -1 ? stored.slice(0, sep) : stored;
+  var ts = sep > -1 ? parseInt(stored.slice(sep + 1), 10) || 0 : 0;
+  if (ts && Date.now() - ts > SESSION_TTL_SEC * 1000) {
+    try { props.deleteProperty('sess_' + code); } catch (e) {}
+    return null;
+  }
+  cache.put('s:' + code, key, SESSION_TTL_SEC);
+  return key;
+}
+
+function pruneExpiredSessions(props) {
+  try {
+    var all = props.getProperties();
+    Object.keys(all).forEach(function(k) {
+      if (k.indexOf('sess_') !== 0) return;
+      var sep = all[k].indexOf('|');
+      var ts = sep > -1 ? parseInt(all[k].slice(sep + 1), 10) || 0 : 0;
+      if (!ts || Date.now() - ts > SESSION_TTL_SEC * 1000) props.deleteProperty(k);
+    });
+  } catch (e) { /* best-effort */ }
 }
 
 function send(cache, code, p) {

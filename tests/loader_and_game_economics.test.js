@@ -107,6 +107,23 @@ describe('mailbox live-session parity', () => {
         expect(anti).toMatch(/Teacher-paced: class follows what you open/);
     });
 
+    it('interruption resilience: teacher resume, RTC retry-forever, cursor self-heal, clean student pack', () => {
+        // Teacher refresh restores the live session from localStorage and
+        // self-validates via the first poll.
+        expect(anti).toMatch(/localStorage\.getItem\(ALLO_MB_LIVE_KEY\)/);
+        expect(anti).toMatch(/localStorage\.setItem\(ALLO_MB_LIVE_KEY/);
+        expect((anti.match(/localStorage\.removeItem\(ALLO_MB_LIVE_KEY\)/g) || []).length).toBeGreaterThanOrEqual(2);
+        // RTC retries forever with capped backoff + visibility nudge.
+        expect(anti).toMatch(/Math\.min\(15000 \* Math\.pow\(2, Math\.max\(0, tries - 1\)\), 60000\)/);
+        expect(anti).toMatch(/onRtcVisible/);
+        expect(anti).not.toMatch(/tries >= 4/);
+        // Cursor self-heal on server counter eviction, both directions.
+        expect((anti.match(/box\.latest === 'number' && box\.latest < mb/g) || []).length).toBe(2);
+        // Live-join students start with a clean pack (Firestore parity).
+        const entry = anti.slice(anti.indexOf('// Mailbox live-session student entry'), anti.indexOf('setMbStudent({ url: entry.u'));
+        expect(entry).toMatch(/setHistory\(\[\]\);/);
+    });
+
     it('flaky-connection hardening: fetch timeout + auto-retries', () => {
         expect(anti).toMatch(/controller\.abort\(\)/);
         expect(anti).toMatch(/allo\/mailbox-' \+ \(fetchErr\?\.name === 'AbortError' \? 'timeout' : 'unreachable'\)/);
