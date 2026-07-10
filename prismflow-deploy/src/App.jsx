@@ -745,13 +745,29 @@ function _alloCleanMailboxUrl(value) {
         return '';
     }
 }
-async function _alloMailboxCall(execUrl, payload) {
-    const res = await fetch(execUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload || {}),
-        redirect: 'follow',
-    });
+async function _alloMailboxCall(execUrl, payload, timeoutMs = 12000) {
+    // Hard timeout: on mobile radios a fetch can hang indefinitely (radio
+    // wake, captive portals, flaky Wi-Fi). Without this, the FIRST join poll
+    // hanging meant the student sat on a dead screen until they refreshed —
+    // aborting lets the poll/retry loops do their job.
+    const controller = (typeof AbortController === 'function') ? new AbortController() : null;
+    const abortTimer = controller ? setTimeout(() => { try { controller.abort(); } catch (_) {} }, timeoutMs) : null;
+    let res;
+    try {
+        res = await fetch(execUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload || {}),
+            redirect: 'follow',
+            signal: controller ? controller.signal : undefined,
+        });
+    } catch (fetchErr) {
+        const err = new Error('Mailbox error: ' + (fetchErr?.name === 'AbortError' ? 'timeout' : 'unreachable'));
+        err.code = 'allo/mailbox-' + (fetchErr?.name === 'AbortError' ? 'timeout' : 'unreachable');
+        throw err;
+    } finally {
+        if (abortTimer) clearTimeout(abortTimer);
+    }
     const text = await res.text();
     let parsed = null;
     try { parsed = JSON.parse(text); } catch (_) {}
@@ -768,6 +784,14 @@ function _alloSplitPackChunks(text, size = ALLO_MB_CHUNK_CHARS) {
     const chunks = [];
     for (let i = 0; i < source.length; i += size) chunks.push(source.slice(i, i + size));
     return chunks.length ? chunks : [''];
+}
+// Cheap content fingerprint (djb2 + length) for incremental pack sync:
+// unchanged resources are never re-sent through the mailbox.
+function _alloQuickHash(text) {
+    const source = String(text || '');
+    let hash = 5381;
+    for (let i = 0; i < source.length; i += 1) hash = ((hash << 5) + hash + source.charCodeAt(i)) >>> 0;
+    return source.length + ':' + hash.toString(36);
 }
 function _alloReadMailboxEntryParam(name) {
     if (typeof window === 'undefined') return null;
@@ -814,7 +838,7 @@ async function _alloMailboxCallWithRetry(execUrl, payload, tries = 3, delayMs = 
         } catch (e) {
             lastError = e;
             const code = String(e?.code || '');
-            const transient = code.includes('http-') || code.includes('unreachable') || code.includes('busy') || code.includes('rate-limited') || code.includes('server');
+            const transient = code.includes('http-') || code.includes('unreachable') || code.includes('timeout') || code.includes('busy') || code.includes('rate-limited') || code.includes('server');
             if (!transient || attempt === tries - 1) throw e;
             await new Promise(resolve => setTimeout(resolve, delayMs * (attempt + 1)));
         }
@@ -4838,11 +4862,24 @@ const AlloFlowContent = () => {
     // no-op check. The hard ceiling guarantees we never hang forever; if it
     // fires, the pill communicates what is still missing.
     const CORE_BOOT_MODULES = ['LaunchPadView', 'MiscComponents', 'UtilsPure', 'SidebarTabsNav', 'HistoryPanel'];
+    let splashAutoRetried = false;
     const readinessInterval = setInterval(() => {
       const elapsed = Date.now() - startTs;
       const coreReady = typeof window.__alloModuleReady === 'function'
         ? window.__alloModuleReady(CORE_BOOT_MODULES)
         : !!(window.AlloModules && window.AlloModules.LaunchPadView);
+      // Flaky-connection hardening: if anything failed while the splash is
+      // still up, auto-retry once at the 6s mark — most mobile hiccups are
+      // transient and this saves the user a manual refresh.
+      if (!coreReady && !splashAutoRetried && elapsed > 6000 && typeof window.__alloRetryFailedModules === 'function') {
+        try {
+          const snapshot = window.__alloModuleSnapshot ? window.__alloModuleSnapshot() : null;
+          if (snapshot && snapshot.failed.length > 0) {
+            splashAutoRetried = true;
+            window.__alloRetryFailedModules();
+          }
+        } catch (_) {}
+      }
       const iconsReady = !!window.AlloIcons;
       const minDwellMet = elapsed >= MIN_DWELL_MS;
       const hardTimeout = elapsed >= MAX_WAIT_MS;
@@ -4865,7 +4902,15 @@ const AlloFlowContent = () => {
     let timer = null;
     const refresh = () => {
       try {
-        if (typeof window.__alloModuleSnapshot === 'function') setModuleLoadInfo(window.__alloModuleSnapshot());
+        if (typeof window.__alloModuleSnapshot === 'function') {
+          const snapshot = window.__alloModuleSnapshot();
+          setModuleLoadInfo(snapshot);
+          // One automatic retry pass post-boot before asking the user to tap.
+          if (snapshot.failed.length > 0 && !moduleAutoRetryRef.current) {
+            moduleAutoRetryRef.current = true;
+            setTimeout(() => { try { window.__alloRetryFailedModules?.(); } catch (_) {} }, 4000);
+          }
+        }
       } catch (_) {}
     };
     const onChange = () => {
@@ -12106,6 +12151,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [mbNow, setMbNow] = useState(0);
   const mbUpCursorRef = useRef(0);
   const mbPeersRef = useRef({});
+  const [mbMode, setMbMode] = useState('sync');
+  const mbSentPacksRef = useRef({});
+  const mbPackItemsRef = useRef([]);
+  const moduleAutoRetryRef = useRef(false);
   const [mbStudent, setMbStudent] = useState(null);
   const [mbHandUp, setMbHandUp] = useState(false);
   const mbStudentCursorRef = useRef(0);
@@ -12186,6 +12235,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           const joinUrl = _buildAlloMailboxEntryUrl('allo_mb', { u: mbConfig.url, c: code, k: secret });
           if (!joinUrl) throw new Error('no student app URL is configured for the QR');
           mbUpCursorRef.current = 0;
+          mbSentPacksRef.current = {};
+          mbPackItemsRef.current = [];
+          setMbMode('sync');
           setMbRoster({});
           setMbLive({ code, secret, joinUrl });
           setMbStatus('');
@@ -12286,6 +12338,36 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       addToast('Shared ' + shared + ' of ' + candidates.length + ' resources with the class.', shared ? 'success' : 'error');
       setMbBusy(false);
   }, [mbLive, mbConfig, history, _mbPushOneResource]);
+  // Firestore-parity: the class pack syncs AUTOMATICALLY — the exact analogue
+  // of syncResourcesToSession (1.5s debounce on history changes), no button
+  // press needed. Incremental: content fingerprints mean only new/changed
+  // resources are re-sent, removals propagate, and the manual "Share full
+  // resource pack" button remains only as a force-resend for troubleshooting.
+  useEffect(() => {
+      if (!mbLive || !isTeacherMode || !mbConfig?.url) return undefined;
+      const timeoutId = setTimeout(async () => {
+          try {
+              const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
+              mbPackItemsRef.current = candidates;
+              const seen = mbSentPacksRef.current;
+              const currentIds = new Set(candidates.map(item => item.id));
+              const removedIds = Object.keys(seen).filter(id => !currentIds.has(id));
+              if (removedIds.length) {
+                  removedIds.forEach(id => { delete seen[id]; });
+                  await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'res-remove', ids: removedIds } });
+              }
+              for (const item of candidates) {
+                  const fp = _alloQuickHash(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })) || '');
+                  if (seen[item.id] === fp) continue;
+                  await _mbPushOneResource(item, { open: false, quiet: true });
+                  seen[item.id] = fp;
+              }
+          } catch (e) {
+              warnLog('Mailbox auto pack sync failed:', e?.message);
+          }
+      }, 1500);
+      return () => clearTimeout(timeoutId);
+  }, [history, mbLive, isTeacherMode, mbConfig, _mbPushOneResource]);
   useEffect(() => {
       if (!mbLive || !mbConfig?.url) return undefined;
       let cancelled = false;
@@ -12311,7 +12393,27 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   peer.dc.onmessage = (msgEv) => {
                       try { applyStudentUpdate(JSON.parse(msgEv.data), Date.now()); } catch (_) {}
                   };
-                  peer.dc.onopen = () => setMbRoster(prev => (prev[uid] ? { ...prev, [uid]: { ...prev[uid], rtc: true, at: Date.now() } } : prev));
+                  peer.dc.onopen = () => {
+                      setMbRoster(prev => (prev[uid] ? { ...prev, [uid]: { ...prev[uid], rtc: true, at: Date.now() } } : prev));
+                      // Late-joiner welcome: hand this student the current
+                      // pack directly over their own channel — covers joins
+                      // after the 45-minute mailbox replay window without
+                      // re-spamming the mailbox for the whole class.
+                      (async () => {
+                          try {
+                              for (const item of (mbPackItemsRef.current || [])) {
+                                  const encoded = await _alloEncodeAlloPack(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })));
+                                  const parts = _alloSplitPackChunks(encoded);
+                                  const rid = 'W' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+                                  for (let i = 0; i < parts.length; i += 1) {
+                                      await _alloDcSendDrained(peer.dc, JSON.stringify({ kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: false, quiet: true }));
+                                  }
+                              }
+                          } catch (welcomeErr) {
+                              warnLog('Welcome pack send failed (mailbox replay still covers them):', welcomeErr?.message);
+                          }
+                      })();
+                  };
                   peer.dc.onclose = () => setMbRoster(prev => (prev[uid] ? { ...prev, [uid]: { ...prev[uid], rtc: false } } : prev));
               };
               await pc.setRemoteDescription(v.sdp);
@@ -12507,6 +12609,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
       if (v.kind === 'packdone') {
           addToast('Your teacher shared ' + (v.count || 'new') + ' resources — explore them in your pack.', 'success');
+          return;
+      }
+      if (v.kind === 'res-remove' && Array.isArray(v.ids)) {
+          setHistory(prev => (Array.isArray(prev) ? prev : []).filter(item => item && !v.ids.includes(item.id)));
           return;
       }
       if (v.kind === 'res') {
@@ -21552,9 +21658,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           }
       }
       // Mailbox sync-mode parity: opening a resource while a mailbox live
-      // session runs auto-follows the class to it, exactly like the Firestore
-      // currentResourceId sync above (silent — no toast per navigation).
-      if (isTeacherMode && mbLive && item && !TEACHER_ONLY_TYPES.includes(item.type)) {
+      // session runs in teacher-paced mode auto-follows the class to it,
+      // exactly like the Firestore currentResourceId sync above (silent — no
+      // toast per navigation). Student-paced mode leaves views alone; the
+      // pack itself always auto-syncs via the incremental effect.
+      if (isTeacherMode && mbLive && mbMode === 'sync' && item && !TEACHER_ONLY_TYPES.includes(item.type)) {
           pushResourceToMailbox(item, { silentTeacher: true });
       }
   };
@@ -21890,7 +21998,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               let of = 1;
               let hostedTitle = '';
               do {
-                  const res = await _alloMailboxCall(entry.u, { a: 'getpack', id: entry.id, k: entry.k, part });
+                  const res = await _alloMailboxCallWithRetry(entry.u, { a: 'getpack', id: entry.id, k: entry.k, part });
                   assembled += String(res.data || '');
                   of = res.of || 1;
                   hostedTitle = res.title || hostedTitle;
@@ -29161,13 +29269,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     );
                   })}
                 </div>
+                <button onClick={() => setMbMode(m => m === 'sync' ? 'async' : 'sync')} className={`w-full flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 transition-all mb-2 border ${mbMode === 'sync' ? 'text-emerald-800 bg-emerald-50 border-emerald-300' : 'text-sky-800 bg-sky-50 border-sky-300'}`}>
+                  {mbMode === 'sync' ? 'Teacher-paced: class follows what you open (tap to switch)' : 'Student-paced: students explore freely (tap to switch)'}
+                </button>
                 <button onClick={() => pushResourceToMailbox()} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl p-3 transition-all disabled:opacity-60 mb-2">
                   {mbBusy ? 'Sending…' : 'Push current resource to class'}
                 </button>
-                <button onClick={shareFullPackToMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60 mb-2">
-                  Share full resource pack (students explore freely)
+                <button onClick={shareFullPackToMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60 mb-2">
+                  Re-send full pack (troubleshooting — it already syncs automatically)
                 </button>
-                <p className="text-[10px] text-slate-400 mb-2 text-center">Opening a resource now auto-shows it to the class, like a regular live session.</p>
+                <p className="text-[10px] text-slate-400 mb-2 text-center">Your resource pack shares to the class automatically, like a regular live session.</p>
                 <button onClick={endMailboxLiveSession} className="w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">End session</button>
               </div>
             )}

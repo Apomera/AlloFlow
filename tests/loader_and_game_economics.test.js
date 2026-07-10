@@ -93,6 +93,27 @@ describe('mailbox live-session parity', () => {
         expect(anti).toMatch(/_mbPushOneResource\(item, \{ open: false, quiet: true \}\)/);
         expect(anti).toMatch(/if \(v\.open !== false\) setPendingQrAssignmentResource\(resource\);/);
         expect(anti).toMatch(/kind: 'packdone'/);
-        expect(anti).toMatch(/Share full resource pack/);
+    });
+
+    it('pack auto-syncs like syncResourcesToSession: incremental, removals, no button needed', () => {
+        expect(anti).toMatch(/the exact analogue\s*\n\s*\/\/ of syncResourcesToSession/);
+        expect(anti).toMatch(/_alloQuickHash\(JSON\.stringify\(stripUndefined/);
+        expect(anti).toMatch(/kind: 'res-remove', ids: removedIds/);
+        expect(anti).toMatch(/v\.kind === 'res-remove' && Array\.isArray\(v\.ids\)/);
+        // Late joiners get the pack over their own channel (post-45min replay).
+        expect(anti).toMatch(/Late-joiner welcome/);
+        // Mode semantics match Firestore: teacher-paced gates auto-follow.
+        expect(anti).toMatch(/mbLive && mbMode === 'sync'/);
+        expect(anti).toMatch(/Teacher-paced: class follows what you open/);
+    });
+
+    it('flaky-connection hardening: fetch timeout + auto-retries', () => {
+        expect(anti).toMatch(/controller\.abort\(\)/);
+        expect(anti).toMatch(/allo\/mailbox-' \+ \(fetchErr\?\.name === 'AbortError' \? 'timeout' : 'unreachable'\)/);
+        expect(anti).toMatch(/code\.includes\('timeout'\)/);
+        expect(anti).toMatch(/splashAutoRetried = true/);
+        expect(anti).toMatch(/moduleAutoRetryRef\.current = true/);
+        // Hosted homework fetches ride the retry wrapper too.
+        expect(anti).toMatch(/_alloMailboxCallWithRetry\(entry\.u, \{ a: 'getpack'/);
     });
 });
