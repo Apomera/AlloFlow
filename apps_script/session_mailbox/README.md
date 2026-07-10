@@ -8,9 +8,12 @@ infrastructure the school doesn't already trust.
 
 ## Deploy steps
 
-1. Open **script.new** in a browser where you are signed into the Google
-   account that should own the mailbox (a school account is ideal; see
-   "School accounts" below).
+1. Type **script.new** into your browser's address bar (it is a Google
+   shortcut URL, like docs.new — it creates a blank Google Apps Script
+   project and opens the editor; the long way is script.google.com →
+   "New project"). Do this in a browser where you are signed into the
+   Google account that should own the mailbox (a school account is ideal;
+   see "School accounts" below).
 2. Delete the starter code in the editor and paste the full contents of
    `Code.gs` from this folder. Name the project **AlloFlow Class Mailbox**
    (click "Untitled project" to rename). Save (Ctrl+S).
