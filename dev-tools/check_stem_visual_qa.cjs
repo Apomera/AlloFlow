@@ -65,6 +65,7 @@ const EXPECTED_MARKERS = [
   { id: 'spaceColony', file: 'stem_tool_spacecolony.js', marker: 'data-spacecolony-life-support', label: 'Space Colony life-support mission' },
   { id: 'fireEcology', file: 'stem_tool_fireecology.js', marker: 'data-fireecology-mission', label: 'Fire Ecology stewardship mission' },
   { id: 'behaviorLab', file: 'stem_tool_behaviorlab.js', marker: 'data-behaviorlab-mission', label: 'Behavior Lab experiment mission' },
+  { id: 'beehive', file: 'stem_tool_beehive.js', marker: 'data-beehive-command', label: 'Beehive superorganism command deck' },
   { id: 'migration', file: 'stem_tool_migration.js', marker: 'data-migration-mission', label: 'Migration field mission' },
   { id: 'petsLab', file: 'stem_tool_pets.js', marker: 'data-petslab-mission', label: 'Pets Lab science mission' },
   { id: 'cell', file: 'stem_tool_cell.js', marker: 'data-cell-mission', label: 'Cell Simulator mission panel' },

@@ -17981,6 +17981,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             action && h('button', { onClick: action.onClick, className: 'shrink-0 px-3 py-2 rounded-lg text-xs font-black shadow-sm transition-all hover:shadow-md ' + actionCls },
               action.label));
         }
+        function renderBeeMissionDeck() {
+          var systemChecks = [honey >= 15, varroaLevel < 20, diseaseRisk < 35, queenHealth >= 70];
+          var stableChecks = systemChecks.filter(Boolean).length;
+          var seasonGoal = SEASON_GOALS[season] || SEASON_GOALS[0];
+          var mission = !colonySurvived
+            ? { icon: '📓', title: 'Review the collapse evidence', body: 'Trace which linked system failed first, then restart with a new management hypothesis.' }
+            : activeEvent
+              ? { icon: activeEvent.emoji || '⚠️', title: 'Respond to the colony event', body: 'Read the biological mechanism before choosing a response.' }
+              : varroaLevel >= 20
+                ? { icon: '🛡️', title: 'Interrupt the parasite–virus pathway', body: 'Varroa pressure is the most urgent threat to brood and adult longevity.' }
+                : honey < 15
+                  ? { icon: '🌸', title: 'Restore the forage-to-food pathway', body: 'Improve forage or feed before low stores destabilize the colony.' }
+                  : { icon: '🔬', title: 'Inspect, predict, then advance', body: 'Use the evidence in each system before moving the seasonal clock.' };
+          var metricTone = dk ? 'border-white/10 bg-slate-950/35' : 'border-amber-200/70 bg-white/75';
+          var labelTone = dk ? 'text-slate-300' : 'text-slate-600';
+          return h('section', { 'data-beehive-command': 'true', className: 'relative overflow-hidden rounded-2xl border p-4 sm:p-5 ' + (dk ? 'border-amber-700/40 bg-gradient-to-br from-amber-950/45 via-slate-900 to-emerald-950/30' : 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-emerald-50'), 'aria-labelledby': 'beehive-command-title' },
+            h('div', { className: 'absolute -right-8 -top-10 text-8xl opacity-[0.06] pointer-events-none', 'aria-hidden': 'true' }, '🐝'),
+            h('div', { className: 'relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]' },
+              h('div', null,
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('span', { className: 'rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'border-amber-600/50 bg-amber-950/70 text-amber-200' : 'border-amber-300 bg-amber-100 text-amber-900') }, 'Superorganism command'),
+                  h('span', { className: 'text-[11px] font-bold ' + labelTone }, (seasonGoal.emoji || '🌱') + ' ' + seasonGoal.season + ' · Day ' + day)
+                ),
+                h('h2', { id: 'beehive-command-title', className: 'mt-3 text-xl sm:text-2xl font-black tracking-tight ' + (dk ? 'text-white' : 'text-slate-900') }, mission.icon + ' ' + mission.title),
+                h('p', { className: 'mt-1 max-w-2xl text-xs sm:text-sm leading-relaxed ' + labelTone }, mission.body),
+                h('div', { className: 'mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4', 'aria-label': 'Colony system indicators' },
+                  [[colonyHealth + '%', 'Colony health', colonyHealth >= 70], [Math.round(workers / 1000) + 'k', 'Workers', workers >= 10000], [honey + ' lb', 'Honey stores', honey >= 15], [varroaLevel + '%', 'Varroa', varroaLevel < 20]].map(function(metric) {
+                    return h('div', { key: metric[1], className: 'rounded-xl border p-3 ' + metricTone }, h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-lg font-black ' + (dk ? 'text-white' : 'text-slate-900') }, metric[0]), h('span', { className: metric[2] ? 'text-emerald-500' : 'text-rose-500', 'aria-label': metric[2] ? 'stable' : 'needs attention' }, metric[2] ? '●' : '▲')), h('div', { className: 'mt-1 text-[10px] font-bold ' + labelTone }, metric[1]));
+                  })
+                )
+              ),
+              h('aside', { className: 'rounded-xl border p-4 ' + metricTone, 'aria-label': 'Season mission and system stability' },
+                h('div', { className: 'flex items-center justify-between gap-3' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-emerald-300' : 'text-emerald-800') }, 'System stability'), h('div', { className: 'text-xl font-black ' + (stableChecks >= 3 ? 'text-emerald-500' : 'text-amber-500') }, stableChecks + '/4')),
+                h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 4, 'aria-valuenow': stableChecks, 'aria-label': stableChecks + ' of 4 colony systems stable' }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all', style: { width: (stableChecks / 4 * 100) + '%' } })),
+                h('div', { className: 'mt-4 text-[10px] font-black uppercase tracking-wide ' + labelTone }, seasonGoal.season + ' evidence goals'),
+                h('ul', { className: 'mt-2 space-y-1.5' }, (seasonGoal.goals || []).slice(0, 3).map(function(goal) { return h('li', { key: goal, className: 'flex gap-2 text-[11px] leading-relaxed ' + labelTone }, h('span', { className: 'text-amber-500', 'aria-hidden': 'true' }, '◆'), h('span', null, goal)); })),
+                h('div', { className: 'mt-3 border-t pt-3 text-[11px] ' + (dk ? 'border-white/10 text-slate-300' : 'border-amber-200 text-slate-600') }, 'Queen ' + queenHealth + '% · Disease risk ' + diseaseRisk + '% · Habitat ' + habitat + '%')
+              )
+            )
+          );
+        }
         // DEBUG: Log render-time values that gate the canvas
         if (!window.__beehiveRenderLogged) window.__beehiveRenderLogged = 0;
         if (window.__beehiveRenderLogged < 3) {
@@ -17998,9 +18039,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
           // Header
-          h('div', { className: 'flex items-center justify-between' },
-            h('div', { className: 'flex items-center gap-3' },
-              h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 rounded-lg transition-colors ' + (dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.back', 'Back') }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' })),
+          h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
+            h('div', { className: 'flex items-center gap-3 min-w-0' },
+              h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-colors ' + (dk ? 'border-slate-700 hover:bg-slate-700' : 'border-slate-200 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.back', 'Back') }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' })),
               h('div', null,
                 h('h3', { className: 'text-lg font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, __alloT('stem.beehive.beehive_colony_simulator', '🐝 Beehive Colony Simulator')),
                 h('p', { className: 'text-xs ' + (dk ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.beehive.manage_a_living_superorganism_50_000_m', 'Manage a living superorganism — 50,000 minds, one purpose')))),
@@ -18025,6 +18066,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 className: 'p-1.5 rounded-lg text-sm transition-all ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-300') }, '⌨️'))),
 
           // ═══ MODE SELECTOR TABS ═══
+          renderBeeMissionDeck(),
+
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2 p-1 rounded-xl ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), style: { background: 'var(--allo-stem-deeper, ' + (dk ? '#1e293b' : '#f1f5f9') + ')' }, role: 'tablist', 'aria-label': __alloT('stem.beehive.simulation_perspective', 'Simulation perspective') },
             [
               { id: 'beekeeper', icon: '🧑‍🌾', label: __alloT('stem.beehive.beekeeper', 'Beekeeper'), desc: __alloT('stem.beehive.manage_the_colony_from_outside', 'Manage the colony from outside') },
