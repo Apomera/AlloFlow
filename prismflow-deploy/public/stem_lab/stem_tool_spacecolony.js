@@ -1079,12 +1079,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           window._colonyUpd = upd;
           window._colonyState = d;
 
-          return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 border border-slate-700' },
-            React.createElement('div', { className: 'flex items-center justify-between mb-4' },
-              React.createElement('div', { className: 'flex items-center gap-2' },
-                React.createElement('button', { onClick: function () { upd('selectedTool', null); }, 'aria-label': t('stem.spacecolony.back_to_colony_overview', 'Back to colony overview'), title: t('stem.spacecolony.back', 'Back'), className: 'transition-colors text-slate-200 hover:text-white text-lg' }, '\u2190'),
+          var lifeSupportScore = [
+            resources.food > 10,
+            resources.water > 10,
+            resources.energy > 8,
+            buildings.indexOf('hydroponics') >= 0
+          ].filter(Boolean).length;
+          var nextMission = resources.food <= 10
+            ? { icon: '\uD83C\uDF3E', title: 'Restore food reserves', detail: 'Build Hydroponics to protect the colony food web.' }
+            : resources.water <= 10
+              ? { icon: '\uD83D\uDCA7', title: 'Secure the water cycle', detail: 'Prioritize water recovery before the next turn.' }
+              : buildings.indexOf('hydroponics') < 0
+                ? { icon: '\uD83C\uDF31', title: 'Establish Hydroponics', detail: 'Create a renewable food source for six settlers.' }
+                : { icon: '\uD83D\uDD2C', title: 'Gather ecological evidence', detail: 'Explore or research before advancing the turn.' };
+
+          return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 md:p-6 border border-slate-700 overflow-hidden' },
+            React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5' },
+              React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
+                React.createElement('button', { type: 'button', onClick: function () { upd('selectedTool', null); }, 'aria-label': t('stem.spacecolony.back_to_colony_overview', 'Back to colony overview'), title: t('stem.spacecolony.back', 'Back'), className: 'transition-colors grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-600 bg-slate-800 text-slate-200 hover:border-indigo-400 hover:text-white text-lg' }, '\u2190'),
                 React.createElement('h2', { className: 'text-xl font-bold text-white tracking-tight' }, t('stem.spacecolony.kepler_colony', '\uD83D\uDE80 Kepler Colony')),
-                React.createElement('span', { className: 'text-[11px] text-indigo-400 bg-indigo-900 px-2 py-0.5 rounded-full' }, t('stem.spacecolony.turn_based_strategy', 'Turn-Based Strategy'))
+                React.createElement('span', { className: 'hidden sm:inline-flex text-[11px] text-indigo-200 bg-indigo-900/70 border border-indigo-700 px-2 py-1 rounded-full' }, 'Systems Biology Mission')
               ),
               colony && React.createElement('div', { className: 'flex gap-1 text-[11px] items-center flex-wrap' },
                 [
@@ -1111,13 +1125,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               )
             ),
             // SETUP
-            colonyPhase === 'setup' && React.createElement('div', { className: 'text-center py-10' },
-              React.createElement('div', { className: 'text-7xl mb-4', style: { animation: 'kp-float 3s ease-in-out infinite', filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.4))' } }, '\uD83D\uDE80'),
-              React.createElement('h3', { className: 'text-3xl font-black mb-2 tracking-tight', style: { background: 'linear-gradient(135deg, #e0e7ff, #c4b5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, t('stem.spacecolony.welcome_to_kepler_442b', 'Welcome to Kepler-442b')),
-              React.createElement('p', { className: 'text-slate-200 text-sm max-w-lg mx-auto mb-6' },
-                t('stem.spacecolony.you_have_arrived_at_a_habitable_exopla', 'You have arrived at a habitable exoplanet 1,206 light-years from Earth. Build a self-sustaining colony by mastering real science. Every building requires passing a science challenge. Every turn brings new surprises from the Fate Roll. Your 6 settlers are counting on you, Commander!')
+            colonyPhase === 'setup' && React.createElement('section', { 'data-spacecolony-life-support': 'true', 'aria-labelledby': 'spacecolony-mission-title', className: 'py-4 md:py-8 max-w-6xl mx-auto text-center' },
+              React.createElement('div', { className: 'grid gap-5 lg:grid-cols-[1.25fr_.75fr] lg:items-stretch mb-6 text-left' },
+                React.createElement('div', { className: 'relative overflow-hidden rounded-3xl border border-indigo-500/40 bg-gradient-to-br from-indigo-950 via-slate-900 to-emerald-950 p-6 md:p-8' },
+                  React.createElement('div', { className: 'absolute -right-10 -top-12 text-[9rem] opacity-[0.07] pointer-events-none', 'aria-hidden': 'true' }, '\uD83C\uDF0D'),
+                  React.createElement('div', { className: 'relative' },
+                    React.createElement('span', { className: 'inline-flex rounded-full border border-emerald-500/40 bg-emerald-950/70 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-200' }, 'Life-support brief'),
+                    React.createElement('h3', { id: 'spacecolony-mission-title', className: 'text-3xl md:text-4xl font-black mt-4 mb-3 tracking-tight text-white' }, 'Build a living world'),
+                    React.createElement('p', { className: 'text-slate-200 text-sm md:text-base max-w-2xl leading-relaxed' },
+                      t('stem.spacecolony.you_have_arrived_at_a_habitable_exopla', 'You have arrived at a habitable exoplanet 1,206 light-years from Earth. Build a self-sustaining colony by mastering real science. Every building requires passing a science challenge. Every turn brings new surprises from the Fate Roll. Your 6 settlers are counting on you, Commander!')
+                    ),
+                    React.createElement('div', { className: 'mt-6 grid gap-3 sm:grid-cols-3', 'aria-label': 'Mission route' },
+                      [['01', '\uD83C\uDF31', 'Sustain life', 'Balance food, water, and energy.'], ['02', '\uD83E\uDDEC', 'Prove the science', 'Unlock systems with evidence.'], ['03', '\uD83C\uDF0D', 'Adapt the ecosystem', 'Track feedback over time.']].map(function (item) {
+                        return React.createElement('div', { key: item[0], className: 'rounded-2xl border border-white/10 bg-white/5 p-3' },
+                          React.createElement('div', { className: 'flex items-center justify-between mb-2' }, React.createElement('span', { className: 'text-xl', 'aria-hidden': 'true' }, item[1]), React.createElement('span', { className: 'text-[10px] font-black tracking-widest text-indigo-300' }, item[0])),
+                          React.createElement('div', { className: 'font-bold text-white text-sm' }, item[2]),
+                          React.createElement('div', { className: 'text-[11px] text-slate-300 mt-1 leading-relaxed' }, item[3])
+                        );
+                      })
+                    )
+                  )
+                ),
+                React.createElement('aside', { className: 'rounded-3xl border border-slate-700 bg-slate-900/80 p-5', 'aria-label': 'Initial life-support manifest' },
+                  React.createElement('div', { className: 'flex items-center justify-between mb-4' },
+                    React.createElement('div', null, React.createElement('div', { className: 'text-[11px] font-bold uppercase tracking-[0.14em] text-cyan-300' }, 'Starting manifest'), React.createElement('h4', { className: 'text-lg font-black text-white mt-1' }, 'Six settlers. One system.')),
+                    React.createElement('span', { className: 'text-3xl', 'aria-hidden': 'true' }, '\uD83E\uDDEC')
+                  ),
+                  React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                    [['\uD83C\uDF3E', '40', 'Food'], ['\uD83D\uDCA7', '30', 'Water'], ['\u26A1', '30', 'Energy'], ['\uD83D\uDC65', '6', 'Settlers']].map(function (metric) {
+                      return React.createElement('div', { key: metric[2], className: 'rounded-2xl border border-slate-700 bg-slate-800/80 p-3' }, React.createElement('div', { className: 'text-lg', 'aria-hidden': 'true' }, metric[0]), React.createElement('div', { className: 'text-xl font-black text-white mt-1' }, metric[1]), React.createElement('div', { className: 'text-[11px] text-slate-300' }, metric[2]));
+                    })
+                  ),
+                  React.createElement('p', { className: 'mt-4 rounded-xl border border-amber-500/25 bg-amber-950/30 p-3 text-xs leading-relaxed text-amber-100' }, 'Systems note: every structure changes more than one part of colony life. Watch the tradeoffs, not just the totals.')
+                )
               ),
-              React.createElement('div', { className: 'grid grid-cols-3 gap-3 max-w-md mx-auto mb-6 text-slate-300 text-[11px]' },
+              React.createElement('div', { className: 'grid gap-3 sm:grid-cols-3 max-w-3xl mx-auto mb-6 text-slate-300 text-[11px]' },
                 [['\uD83C\uDF0D', 'Explore', 'Reveal tiles, find loot & anomalies'], ['\u26A1', '3 Actions/Turn', 'Build, research, or explore each day'], ['\uD83C\uDFB2', 'Fate Roll', 'Random events every turn!']].map(function (item) {
                   return React.createElement('div', { key: item[1], className: 'bg-slate-800 rounded-xl p-3 border border-slate-700 text-center' },
                     React.createElement('div', { className: 'text-2xl mb-1' }, item[0]),
@@ -1127,9 +1169,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 })
               ),
               // Difficulty Settings
-              React.createElement('div', { className: 'bg-slate-800/80 rounded-xl p-4 border border-slate-700 max-w-md mx-auto mb-6' },
-                React.createElement('h4', { className: 'text-[11px] font-bold text-white mb-3 text-center' }, t('stem.spacecolony.game_settings', '\u2699\uFE0F Game Settings')),
-                React.createElement('div', { className: 'grid grid-cols-3 gap-3' },
+              React.createElement('div', { className: 'bg-slate-800/80 rounded-2xl p-4 md:p-5 border border-slate-700 max-w-4xl mx-auto mb-6 text-left' },
+                React.createElement('h4', { className: 'text-sm font-bold text-white mb-4' }, t('stem.spacecolony.game_settings', '\u2699\uFE0F Mission Settings')),
+                React.createElement('div', { className: 'grid gap-4 md:grid-cols-3' },
                   // Grade Level
                   React.createElement('div', null,
                     React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, t('stem.spacecolony.grade_level', '\uD83C\uDF93 Grade Level')),
@@ -1137,8 +1179,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       ['K-2', '3-5', '6-8', '9-12', 'College'].map(function (gl) {
                         return React.createElement('button', {
                           key: gl,
+                          type: 'button',
+                          'aria-pressed': (d.colonyGrade || '6-8') === gl,
                           onClick: function () { upd('colonyGrade', gl); },
-                          className: 'px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
+                          className: 'min-h-9 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
                             ((d.colonyGrade || '6-8') === gl ? 'border-green-400 bg-green-900 text-green-200' : 'transition-colors border-slate-700 bg-slate-900 text-slate-600 hover:border-slate-500')
                         }, gl);
                       })
@@ -1149,11 +1193,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, t('stem.spacecolony.science_challenge_mode', 'Science Challenge Mode')),
                     React.createElement('div', { className: 'flex gap-1' },
                       React.createElement('button', {
+                        type: 'button',
+                        'aria-pressed': (d.colonyMode || 'mcq') === 'mcq',
                         onClick: function () { upd('colonyMode', 'mcq'); },
                         className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold border-2 transition-all ' +
                           ((d.colonyMode || 'mcq') === 'mcq' ? 'border-indigo-400 bg-indigo-900 text-indigo-200' : 'border-slate-600 bg-slate-900 text-slate-200')
                       }, t('stem.spacecolony.mcq', '\uD83D\uDCCB MCQ')),
                       React.createElement('button', {
+                        type: 'button',
+                        'aria-pressed': (d.colonyMode || 'mcq') === 'freeResponse',
                         onClick: function () { upd('colonyMode', 'freeResponse'); },
                         className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold border-2 transition-all ' +
                           ((d.colonyMode || 'mcq') === 'freeResponse' ? 'border-purple-400 bg-purple-900 text-purple-200' : 'border-slate-600 bg-slate-900 text-slate-200')
@@ -1167,6 +1215,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     React.createElement('div', { className: 'text-[11px] text-slate-200 mb-1' }, t('stem.spacecolony.audio_narration', 'Audio Narration')),
                     React.createElement('div', { className: 'flex gap-1' },
                       React.createElement('button', {
+                        type: 'button',
+                        'aria-pressed': !!d.colonyTTS,
                         onClick: function () { upd('colonyTTS', !(d.colonyTTS)); },
                         className: 'flex-1 px-2 py-2 rounded-lg text-[11px] font-bold border-2 transition-all ' +
                           (d.colonyTTS ? 'border-green-400 bg-green-900 text-green-200' : 'border-slate-600 bg-slate-900 text-slate-200')
@@ -1177,6 +1227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 )
               ),
               React.createElement('button', {
+                type: 'button',
                 onClick: function () {
                   var startMap = generateMap();
                   var initPickups = generatePickups(startMap.tiles);
@@ -1199,11 +1250,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   if (addToast) addToast('\uD83D\uDE80 Colony established!', 'success');
                   if (typeof addXP === 'function') addXP(10, 'Kepler Colony: Mission launched');
                 },
-                className: 'px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl text-lg font-bold hover:shadow-lg hover:shadow-indigo-500/30 transition-all tracking-tight'
-              }, t('stem.spacecolony.launch_colony_mission', '\uD83D\uDE80 Launch Colony Mission'))
+                className: 'w-full sm:w-auto min-h-14 px-8 py-4 bg-gradient-to-r from-emerald-500 via-cyan-500 to-indigo-500 text-slate-950 rounded-2xl text-base md:text-lg font-black hover:shadow-lg hover:shadow-cyan-500/25 transition-all tracking-tight'
+              }, t('stem.spacecolony.launch_colony_mission', '\uD83D\uDE80 Launch Life-Support Mission'))
             ),
             // PLAYING
             colonyPhase === 'playing' && mapData && React.createElement('div', null,
+              React.createElement('section', { 'data-spacecolony-life-support': 'active', 'aria-label': 'Life-support dashboard', className: 'grid gap-3 mb-4 lg:grid-cols-[1fr_auto]' },
+                React.createElement('div', { className: 'rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/70 to-slate-900 p-4' },
+                  React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
+                    React.createElement('div', null, React.createElement('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-emerald-300' }, 'Recommended system move'), React.createElement('div', { className: 'mt-1 flex items-center gap-2 text-white' }, React.createElement('span', { className: 'text-2xl', 'aria-hidden': 'true' }, nextMission.icon), React.createElement('div', null, React.createElement('div', { className: 'font-black' }, nextMission.title), React.createElement('div', { className: 'text-xs text-slate-300' }, nextMission.detail)))),
+                    React.createElement('div', { className: 'flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-black/20 px-4 py-3' }, React.createElement('div', { className: 'text-2xl font-black text-emerald-300' }, lifeSupportScore + '/4'), React.createElement('div', { className: 'text-[11px] leading-tight text-slate-300' }, 'life-support checks', React.createElement('br'), 'currently stable'))
+                  )
+                ),
+                React.createElement('div', { className: 'grid grid-cols-3 gap-2 rounded-2xl border border-slate-700 bg-slate-900/80 p-3 sm:min-w-[18rem]' },
+                  [[buildings.length, 'Structures'], [settlers.length, 'Settlers'], [terraform + '%', 'Terraform']].map(function (metric) { return React.createElement('div', { key: metric[1], className: 'text-center rounded-xl bg-slate-800 p-2' }, React.createElement('div', { className: 'text-lg font-black text-white' }, metric[0]), React.createElement('div', { className: 'text-[10px] text-slate-300' }, metric[1])); })
+                )
+              ),
               React.createElement('style', null, t('stem.spacecolony.keyframes_kp_fadein_from_opacity_0_tra', '@keyframes kp-fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes kp-pulse{0%,100%{opacity:1}50%{opacity:.6}}@keyframes kp-glow{0%,100%{box-shadow:0 0 5px rgba(99,102,241,.3)}50%{box-shadow:0 0 20px rgba(99,102,241,.6)}}@keyframes kp-fateRoll{0%{transform:scale(.5) rotate(0);opacity:0}50%{transform:scale(1.3) rotate(180deg);opacity:1}100%{transform:scale(1) rotate(360deg);opacity:1}}@keyframes kp-barFill{from{width:0}}@keyframes kp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes kp-slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}@keyframes kp-shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-2px)}20%,40%,60%,80%{transform:translateX(2px)}}@keyframes kp-sparkle{0%,100%{opacity:0;transform:scale(0) rotate(0deg)}50%{opacity:1;transform:scale(1) rotate(180deg)}}@keyframes kp-breathe{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.02);opacity:1}}')),
               // ══ DAWN PHASE OVERLAY ══
               turnPhase === 'dawn' && React.createElement('div', {

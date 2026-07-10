@@ -62,6 +62,7 @@ const EXPECTED_MARKERS = [
   { id: 'swimLab', file: 'stem_tool_swimlab.js', marker: 'data-swimlab-readiness', label: 'SwimLab water-safety readiness' },
   { id: 'firstResponse', file: 'stem_tool_firstresponse.js', marker: 'data-firstresponse-readiness', label: 'First Response readiness path' },
   { id: 'stewardshipHub', file: 'stem_tool_stewardship.js', marker: 'data-stewardship-mission', label: 'Stewardship systems mission' },
+  { id: 'spaceColony', file: 'stem_tool_spacecolony.js', marker: 'data-spacecolony-life-support', label: 'Space Colony life-support mission' },
   { id: 'fireEcology', file: 'stem_tool_fireecology.js', marker: 'data-fireecology-mission', label: 'Fire Ecology stewardship mission' },
   { id: 'behaviorLab', file: 'stem_tool_behaviorlab.js', marker: 'data-behaviorlab-mission', label: 'Behavior Lab experiment mission' },
   { id: 'migration', file: 'stem_tool_migration.js', marker: 'data-migration-mission', label: 'Migration field mission' },
