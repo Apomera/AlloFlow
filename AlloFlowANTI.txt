@@ -12761,7 +12761,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           _alloMbInstallBridge({ url: mbConfig.url, admin: mbConfig.admin, secret, isTeacher: true });
           const hasResources = Array.isArray(history) && history.some(h => h && h.id);
           if (hasResources && typeof startClassSessionRef.current === 'function') {
-              await startClassSessionRef.current();
+              // Best-effort: if the PhaseO module is not loaded yet (or its
+              // flow fails before the session doc write), fall through to the
+              // direct doc creation below — the pack auto-sync still delivers
+              // resources, so a mailbox start never dies on module timing.
+              try { await startClassSessionRef.current(); }
+              catch (startErr) { warnLog('Unified start unavailable, using direct mailbox session doc:', startErr?.message); }
           }
           let code = (_alloMbBridgeState && _alloMbBridgeState.code) || null;
           if (!code) {
