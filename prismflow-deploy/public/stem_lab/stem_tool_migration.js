@@ -41,6 +41,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     document.body.appendChild(lr);
   })();
 
+  if (!document.getElementById('migration-workspace-css')) {
+    var migrationStyle = document.createElement('style');
+    migrationStyle.id = 'migration-workspace-css';
+    migrationStyle.textContent = [
+      '.migration-tool-shell{--mg-sky:#0ea5e9;--mg-green:#16a34a;--mg-text:var(--allo-stem-text,#e2e8f0);--mg-muted:var(--allo-stem-text-soft,#94a3b8);--mg-panel:var(--allo-stem-panel,#1e293b);--mg-canvas:var(--allo-stem-canvas,#0f172a);--mg-border:var(--allo-stem-border,#334155);max-width:1120px;margin:0 auto;padding:4px!important;color:var(--mg-text);}',
+      '.migration-tool-shell *{box-sizing:border-box;}',
+      '.migration-tool-shell button:focus-visible,.migration-tool-shell input:focus-visible,.migration-tool-shell select:focus-visible,.migration-tool-shell textarea:focus-visible,.migration-tool-shell canvas:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}',
+      '.migration-command{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 18px;border:1px solid rgba(14,165,233,.38);border-radius:18px;background:radial-gradient(circle at 88% 12%,rgba(14,165,233,.2),transparent 34%),linear-gradient(135deg,rgba(8,47,73,.94),rgba(15,23,42,.97));box-shadow:0 18px 42px rgba(15,23,42,.2);}',
+      '.migration-command-main{display:flex;align-items:center;gap:12px;min-width:0;}',
+      '.migration-command-copy{min-width:0;}',
+      '.migration-eyebrow{margin:0 0 3px;color:#7dd3fc;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;}',
+      '.migration-command h2{margin:0;color:#fff;font-size:clamp(20px,3vw,28px);line-height:1.15;}',
+      '.migration-command p{margin:5px 0 0;color:#bae6fd;font-size:12px;line-height:1.45;}',
+      '.migration-command-icon{font-size:38px;filter:drop-shadow(0 7px 14px rgba(14,165,233,.35));}',
+      '.migration-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}',
+      '.migration-metric{min-width:0;border:1px solid var(--mg-border);border-radius:12px;padding:10px 12px;background:linear-gradient(180deg,var(--mg-canvas),var(--mg-panel));}',
+      '.migration-metric-label{display:block;color:var(--mg-muted);font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.migration-metric-value{display:block;margin-top:3px;color:var(--mg-text);font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+      '.migration-route-board{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px!important;padding:10px;border:1px solid var(--mg-border);border-radius:14px;background:var(--mg-canvas);}',
+      '.migration-route-tab{display:flex!important;align-items:center;justify-content:flex-start;min-width:0;min-height:46px;padding:8px 9px!important;text-align:left;line-height:1.25;border:1px solid transparent!important;border-radius:10px!important;}',
+      '.migration-route-tab[aria-selected="true"]{border-color:#38bdf8!important;background:linear-gradient(135deg,#0369a1,#0e7490)!important;box-shadow:0 8px 20px rgba(14,165,233,.2);}',
+      '.migration-route-label{min-width:0;font-size:10px;font-weight:900;}',
+      '.migration-active-band{border-radius:14px!important;box-shadow:0 10px 28px rgba(15,23,42,.12);}',
+      '.migration-workspace{min-width:0;}',
+      '.migration-workspace canvas{display:block;max-width:100%!important;border-radius:14px;box-shadow:0 12px 30px rgba(15,23,42,.2);}',
+      '.migration-workspace [style*="grid-template-columns:repeat(3"]{min-width:0;}',
+      '@media (max-width:900px){.migration-route-board{grid-template-columns:repeat(3,minmax(0,1fr));}}',
+      '@media (max-width:700px){.migration-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.migration-command{align-items:flex-start;}.migration-command-icon{display:none;}}',
+      '@media (max-width:520px){.migration-tool-shell{padding:0!important;}.migration-command{padding:13px;border-radius:14px;}.migration-command p{font-size:11px;}.migration-route-board{grid-template-columns:repeat(2,minmax(0,1fr));padding:7px;}.migration-route-tab{min-height:44px;}.migration-workspace [style*="grid-template-columns: repeat(3"],.migration-workspace [style*="grid-template-columns: repeat(2"]{grid-template-columns:1fr!important;}}',
+      '@media (prefers-reduced-motion:reduce){.migration-route-tab{transition:none!important;}}',
+      '.theme-contrast .migration-command,.theme-contrast .migration-active-band,.theme-contrast .migration-workspace canvas{box-shadow:none;}'
+    ].join('\n');
+    document.head.appendChild(migrationStyle);
+  }
+
 
   // ── Audio + WCAG (auto-injected) ──
   var _migrAC = null;
@@ -3306,27 +3341,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       );
 
       // Tab bar
-      var tabBar = h('div', { className: 'flex gap-1 flex-wrap', role: 'tablist', 'aria-label': t('stem.migration.migration_wind_lab_sections', 'Migration & Wind Lab sections') },
+      var tabBar = h('div', { className: 'migration-route-board', role: 'tablist', 'aria-label': t('stem.migration.migration_wind_lab_sections', 'Migration & Wind Lab sections') },
         TABS.map(function(tb, ti) {
           var active = tab === tb.id;
           return h('button', {
             key: tb.id,
+            id: 'migration-tab-' + tb.id,
+            type: 'button',
             role: 'tab',
+            className: 'migration-route-tab ' + (active ? 'bg-sky-500 text-white' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
             'aria-selected': active ? 'true' : 'false',
+            'aria-controls': 'migration-active-panel',
             'aria-label': tb.label,
             tabIndex: active ? 0 : -1,
             onKeyDown: function(e) {
               var nextIdx = ti;
-              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); nextIdx = (ti + 1) % TABS.length; }
-              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); nextIdx = (ti - 1 + TABS.length) % TABS.length; }
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (ti + 1) % TABS.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (ti - 1 + TABS.length) % TABS.length;
+              else if (e.key === 'Home') nextIdx = 0;
+              else if (e.key === 'End') nextIdx = TABS.length - 1;
               else return;
+              e.preventDefault();
               upd('tab', TABS[nextIdx].id);
+              setTimeout(function() { var el = document.getElementById('migration-tab-' + TABS[nextIdx].id); if (el) el.focus(); }, 0);
             },
-            className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/25' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
             onClick: function() { upd('tab', tb.id); }
           },
             h('span', { 'aria-hidden': 'true' }, tb.icon),
-            tb.label
+            h('span', { className: 'migration-route-label' }, tb.label)
           );
         })
       );
@@ -3364,7 +3406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
           h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.migration.energy_inquiry_can_the_bird_make_it', '🔬 Energy Inquiry — Can the bird make it?')),
           h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.migration.pick_wingspan_mass_headwind_formation_', 'Pick wingspan, mass, headwind, formation, and distance. Predict the energy state. No score, no reveal.')),
-          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · reserve ratio ' + feasibility.toFixed(2) + 'x'),
+          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · reserve ratio ' + feasibility.toFixed(2) + 'x'),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
             [
@@ -3446,10 +3488,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         wind:       { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',   icon: '\uD83C\uDF2C\uFE0F', title: t('stem.migration.wind_currents_thermals', 'Wind currents + thermals'),   hint: t('stem.migration.birds_read_pressure_gradients_we_canno', 'Birds read pressure gradients we cannot feel. Updrafts, ridge lift, and thermal columns are how raptors fly hundreds of miles burning almost no calories.') },
         routes:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83D\uDDFA\uFE0F', title: t('stem.migration.migration_routes_flyways', 'Migration routes + flyways'),  hint: t('stem.migration.four_major_north_american_flyways_paci', 'Four major North American flyways (Pacific, Central, Mississippi, Atlantic) channel billions of birds twice yearly. Maine sits at the top of the Atlantic Flyway.') },
         aero:       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\u2708\uFE0F', title: t('stem.migration.aerodynamics_of_bird_flight', 'Aerodynamics of bird flight'), hint: t('stem.migration.wing_shape_aspect_ratio_camber_tunes_l', 'Wing shape (aspect ratio + camber) tunes lift vs drag. Soaring birds = high aspect ratio, slow wingbeat. Hummingbirds = low AR, 60+ Hz wingbeat.') },
-        navigate:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83E\uDDED', title: t('stem.migration.weather_navigation', 'Weather + navigation'),       hint: t('stem.migration.birds_use_multiple_cues_simultaneously', 'Birds use multiple cues simultaneously \u2014 sun compass, magnetic field via cryptochrome in the eye, star patterns, and learned landmarks. Robust against losing any single cue.') }
+        navigate:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83E\uDDED', title: t('stem.migration.weather_navigation', 'Weather + navigation'),       hint: t('stem.migration.birds_use_multiple_cues_simultaneously', 'Birds use multiple cues simultaneously \u2014 sun compass, magnetic field via cryptochrome in the eye, star patterns, and learned landmarks. Robust against losing any single cue.') },
+        inquiry:    { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83D\uDD2C', title: t('stem.migration.energy_inquiry', 'Energy inquiry'), hint: t('stem.migration.energy_inquiry_hint', 'Test how wingspan, body mass, wind, formation, and distance combine to determine whether a migration leg is feasible.') }
       };
       var meta = TAB_META[tab] || TAB_META.vformation;
       var tabHero = h('div', {
+        className: 'migration-active-band', 'data-migration-route': tab,
         style: {
           padding: '12px 14px',
           borderRadius: 12,
@@ -3466,23 +3510,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         )
       );
 
-      return h('div', { className: 'space-y-3 p-3 ' + bg + ' rounded-2xl' },
-        // Header
-        h('div', { className: 'flex items-center justify-between' },
-          backButton,
-          h('div', { className: 'flex items-center gap-2' },
-            h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '\uD83E\uDEBF'),
-            h('div', null,
-              h('h2', { className: 'font-black text-sm ' + textPrimary }, t ? t('Migration & Wind Lab') : 'Migration & Wind Lab'),
-              h('p', { className: 'text-[11px] ' + textMuted }, t('stem.migration.v_formation_wind_currents_flyways_aero', 'V-formation \u2022 Wind currents \u2022 Flyways \u2022 Aerodynamics \u2022 Navigation'))
+      var activeTab = TABS.filter(function(item) { return item.id === tab; })[0] || TABS[0];
+      var species = SPECIES.filter(function(item) { return item.id === (d.selectedSpecies || 'canada_goose'); })[0] || SPECIES[0];
+      return h('main', { className: 'migration-tool-shell space-y-3 ' + bg, 'data-migration-tool': 'true' },
+        h('header', { className: 'migration-command', 'data-migration-mission': 'true' },
+          h('div', { className: 'migration-command-main' },
+            backButton,
+            h('div', { className: 'migration-command-copy' },
+              h('p', { className: 'migration-eyebrow' }, t('stem.migration.field_station', 'Migration field station')),
+              h('h2', null, t('stem.migration.title', 'Migration & Wind Lab')),
+              h('p', null, t('stem.migration.v_formation_wind_currents_flyways_aero', 'V-formation - Wind currents - Flyways - Aerodynamics - Navigation'))
             )
-          )
+          ),
+          h('span', { className: 'migration-command-icon', 'aria-hidden': 'true' }, '\uD83E\uDEBF')
+        ),
+        h('section', { className: 'migration-metrics', 'aria-label': t('stem.migration.field_status', 'Migration field status') },
+          [
+            { label: t('stem.migration.active_activity', 'Active activity'), value: activeTab.label },
+            { label: t('stem.migration.focus_species', 'Focus species'), value: species.name },
+            { label: t('stem.migration.formation_status', 'Formation status'), value: d.perfectVFormed ? 'Perfect V formed' : 'Formation in progress' },
+            { label: t('stem.migration.routes_planned', 'Routes planned'), value: String(d.routesPlanned || 0) }
+          ].map(function(metric) {
+            return h('div', { key: metric.label, className: 'migration-metric' },
+              h('span', { className: 'migration-metric-label' }, metric.label),
+              h('span', { className: 'migration-metric-value', title: metric.value }, metric.value)
+            );
+          })
         ),
         tabBar,
         tabHero,
-        h('div', { role: 'tabpanel', 'aria-label': (function() { for (var i = 0; i < TABS.length; i++) { if (TABS[i].id === tab) return TABS[i].label; } return 'Tab'; })() },
-          tabContent
-        )
+        h('section', { id: 'migration-active-panel', className: 'migration-workspace', role: 'tabpanel', 'aria-labelledby': 'migration-tab-' + tab, tabIndex: 0, 'data-migration-workspace': tab }, tabContent)
       );
     }
   });

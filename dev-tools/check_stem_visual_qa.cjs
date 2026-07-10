@@ -60,6 +60,7 @@ const EXPECTED_MARKERS = [
   { id: 'dnaLab', file: 'stem_tool_dna.js', marker: 'data-dna-mission', label: 'DNA mission control' },
   { id: 'fireEcology', file: 'stem_tool_fireecology.js', marker: 'data-fireecology-mission', label: 'Fire Ecology stewardship mission' },
   { id: 'behaviorLab', file: 'stem_tool_behaviorlab.js', marker: 'data-behaviorlab-mission', label: 'Behavior Lab experiment mission' },
+  { id: 'migration', file: 'stem_tool_migration.js', marker: 'data-migration-mission', label: 'Migration field mission' },
   { id: 'cell', file: 'stem_tool_cell.js', marker: 'data-cell-mission', label: 'Cell Simulator mission panel' },
   { id: 'evoLab', file: 'stem_tool_evolab.js', marker: 'data-evolab-command', label: 'EvoLab command panel' },
   { id: 'dinoLab', file: 'stem_tool_dinolab.js', marker: 'data-dinolab-command', label: 'Dino Lab mission deck' },
