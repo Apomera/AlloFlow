@@ -1295,9 +1295,9 @@
       fetchTTSBytes,
       onScoreUpdate,
       speakWord,
-      callGemini,
-      callTTS,
-      callImagen,
+      callGemini: providedCallGemini,
+      callTTS: providedCallTTS,
+      callImagen: providedCallImagen,
       selectedVoice,
       t,
       wordSoundsDifficulty = "auto",
@@ -1338,7 +1338,12 @@
       onProbeComplete,
       getWordSoundsString,
       isParentMode = false,
+      allowRuntimeAi = false,
     }) => {
+      // One central boundary: student players receive prepared assets only.
+      const callGemini = allowRuntimeAi ? providedCallGemini : null;
+      const callTTS = allowRuntimeAi ? providedCallTTS : null;
+      const callImagen = allowRuntimeAi ? providedCallImagen : null;
       const estimateFirstPhoneme = (word) => {
         if (!word) return "";
         const w = word.toLowerCase();
@@ -1886,6 +1891,26 @@
       const [showGardenBanner, setShowGardenBanner] = React.useState(!!gardenPhonicsWords);
 
       const preloadedWords = wsPreloadedWords || [];
+      const portableTtsLibrary = React.useMemo(() => {
+        const library = {};
+        for (const item of preloadedWords) {
+          const assets = item && item._ttsAssets;
+          if (!assets || typeof assets !== "object") continue;
+          Object.entries(assets).forEach(([key, asset]) => {
+            if (asset) library[String(key).trim().toLowerCase().replace(/\s+/g, " ")] = asset;
+          });
+        }
+        return library;
+      }, [preloadedWords]);
+      const preparedImageLibrary = React.useMemo(() => {
+        const library = {};
+        for (const item of preloadedWords) {
+          const word = String(item?.targetWord || item?.word || item?.term || "").trim().toLowerCase();
+          if (word && item?.image) library[word] = item.image;
+          if (item?._decodingAssets && typeof item._decodingAssets === "object") Object.assign(library, item._decodingAssets);
+        }
+        return library;
+      }, [preloadedWords]);
       const setPreloadedWords =
         setWsPreloadedWords ||
         (() => {
@@ -2120,6 +2145,19 @@
           if (!word) return;
           setIsGeneratingSyllable(true);
           try {
+            const preparedSyllable = wordSoundsPhonemes?.activityItems?.syllable_blending || wordSoundsPhonemes?.activityItems?.syllable_counting;
+            if (Array.isArray(preparedSyllable?.syllables) && preparedSyllable.syllables.length) {
+              const preparedData = {
+                syllables: [...preparedSyllable.syllables],
+                count: preparedSyllable.syllables.length,
+                blendingOptions: Array.isArray(wordSoundsPhonemes?.activityItems?.syllable_blending?.options)
+                  ? [...wordSoundsPhonemes.activityItems.syllable_blending.options]
+                  : [],
+              };
+              setSyllableData(preparedData);
+              syllableDataRef.current = preparedData;
+              return;
+            }
             let result = null;
             if (typeof callGemini === "function") {
               const prompt = `You are a reading specialist. For the word "${word}", return ONLY valid JSON with no markdown:\n{"syllables":["syl","la","bles"],"blendingOptions":["${word}","word2","word3","word4"]}\nsyllables: the syllables of "${word}" as an array of strings\nblendingOptions: exactly 4 words — "${word}" first, then 3 distractors of similar syllable count and general topic.\n\nCRITICAL: Distractors MUST be pronounced differently from "${word}". NEVER include homophones (words that sound the same as the target — e.g., for "whale" do not use "wail"; for "eight" do not use "ate"; for "night" do not use "knight"; for "meet" do not use "meat"). The activity plays the target word aloud and asks the child to pick the correct written word, so phonetically identical distractors make it unsolvable. If you cannot think of 3 non-homophone distractors, return fewer rather than including a homophone.`;
@@ -2247,14 +2285,17 @@
         )
           return;
         lastWordForManipulation.current = currentWord;
-        const preloadedTask = wordSoundsPhonemes?.manipulationTask;
+        const preparedManipulation = wordSoundsPhonemes?.activityItems?.manipulation;
+        const preloadedTask = preparedManipulation?.task || wordSoundsPhonemes?.manipulationTask;
         if (
           preloadedTask &&
           preloadedTask.answer &&
           Array.isArray(preloadedTask.distractors) &&
           preloadedTask.distractors.length > 0
         ) {
-          const opts = fisherYatesShuffle(padManipOpts([preloadedTask.answer, ...preloadedTask.distractors.slice(0, 5)]));
+          const opts = Array.isArray(preparedManipulation?.options) && preparedManipulation.options.length > 1
+            ? [...preparedManipulation.options]
+            : fisherYatesShuffle(padManipOpts([preloadedTask.answer, ...preloadedTask.distractors.slice(0, 5)]));
           setManipulationState(preloadedTask);
           manipulationStateRef.current = preloadedTask;
           setManipulationOptions(opts);
@@ -2642,6 +2683,20 @@
             return loadAndPlay(url);
           }
           const lower = text.toLowerCase();
+          const portableKey = text.trim().toLowerCase().replace(/\s+/g, " ");
+          const portableAsset = portableTtsLibrary[portableKey];
+          if (portableAsset) {
+            const portableSrc =
+              typeof portableAsset === "string"
+                ? portableAsset
+                : portableAsset.base64
+                  ? `data:${portableAsset.mime || "audio/mpeg"};base64,${portableAsset.base64}`
+                  : null;
+            if (portableSrc) {
+              debugLog("? using prepared Word Sounds TTS for:", text);
+              return loadAndPlay(portableSrc);
+            }
+          }
           if (
             typeof _CACHE_WORD_AUDIO_BANK !== "undefined" &&
             _CACHE_WORD_AUDIO_BANK &&
@@ -6616,6 +6671,11 @@
               return;
             }
             lastWordForBlending.current = targetToCheck;
+            const preparedBlending = wordSoundsPhonemes?.activityItems?.blending;
+            if (Array.isArray(preparedBlending?.options) && preparedBlending.options.length > 1) {
+              setBlendingOptions([...preparedBlending.options]);
+              return;
+            }
             let rawDistractors = wordSoundsPhonemes?.blendingDistractors || [];
             const hpMap = {
               sun: ["son"],
@@ -6838,6 +6898,10 @@
         getDifficultyFilteredPool,
       ]);
       const preloadInitialBatch = React.useCallback(async () => {
+        if (!allowRuntimeAi) {
+          if (!preloadedWords.length) warnLog("Prepared Word Sounds pack is empty; student runtime generation is disabled.");
+          return;
+        }
         if (isPreloading) return;
         if (preloadedWords.length > 0) {
           debugLog("🛡️ Blocking preloadInitialBatch: words already loaded");
@@ -8212,7 +8276,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             );
             wordSoundsPhonemes?.phonemes &&
               setSoundChips(
-                generateUniqueSoundChips(wordSoundsPhonemes.phonemes),
+                Array.isArray(wordSoundsPhonemes?.activityItems?.segmentation?.chips)
+                  ? wordSoundsPhonemes.activityItems.segmentation.chips.map((chip, index) => ({ ...chip, used: false, color: ["#eff6ff", "#f0fdf4", "#faf5ff", "#fff7ed", "#fdf2f8", "#ecfeff"][index % 6] }))
+                  : generateUniqueSoundChips(wordSoundsPhonemes.phonemes),
               );
             setElkoninBoxes(new Array(effectiveCount).fill(null));
           }
@@ -8243,6 +8309,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         }
         if (wordSoundsActivity === "rhyming") {
           const currentWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
+          const preparedRhyming = wordSoundsPhonemes?.activityItems?.rhyming;
+          if (Array.isArray(preparedRhyming?.options) && preparedRhyming.options.length > 1) {
+            lastWordForRhyming.current = currentWord;
+            setRhymeOptions([...preparedRhyming.options]);
+            return;
+          }
           if (
             lastWordForRhyming.current === currentWord &&
             rhymeOptions.length > 0
@@ -8433,6 +8505,21 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         }
         const currentWord = wordSoundsPhonemes?.word || currentWordSoundsWord;
         const isNewWord = lastWordForIsolation.current !== currentWord;
+        const preparedIsolation = wordSoundsPhonemes?.activityItems?.isolation;
+        if (isNewWord && Array.isArray(preparedIsolation?.options) && preparedIsolation.options.length > 1) {
+          const preparedState = {
+            word: currentWordSoundsWord || currentWord,
+            currentPosition: preparedIsolation.position || 0,
+            correctSound: preparedIsolation.correctSound,
+            correctAnswer: preparedIsolation.correctSound,
+            isoOptions: [...preparedIsolation.options],
+          };
+          isolationPositionRef.current = preparedState.currentPosition;
+          lastWordForIsolation.current = currentWord;
+          isolationStateRef.current = preparedState;
+          setIsolationState(preparedState);
+          return;
+        }
         if (
           isNewWord &&
           isolationState &&
@@ -12586,20 +12673,24 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         return letters;
       };
       const scrambledLetters = React.useMemo(
-        () => scrambleWord(currentWordSoundsWord?.toLowerCase()),
-        [currentWordSoundsWord],
+        () => Array.isArray(wordSoundsPhonemes?.activityItems?.word_scramble?.letters)
+          ? [...wordSoundsPhonemes.activityItems.word_scramble.letters]
+          : scrambleWord(currentWordSoundsWord?.toLowerCase()),
+        [currentWordSoundsWord, wordSoundsPhonemes],
       );
       const [usedScrambleIndices, setUsedScrambleIndices] = React.useState([]);
       const hiddenIndex = React.useMemo(() => {
+        if (Number.isInteger(wordSoundsPhonemes?.activityItems?.missing_letter?.hiddenIndex)) return wordSoundsPhonemes.activityItems.missing_letter.hiddenIndex;
         if (!currentWordSoundsWord || currentWordSoundsWord.length <= 1)
           return 0;
         const seed = currentWordSoundsWord
           .split("")
           .reduce((a, c) => a + c.charCodeAt(0), 0);
         return seed % currentWordSoundsWord.length;
-      }, [currentWordSoundsWord]);
-      const correctLetter = currentWordSoundsWord?.[hiddenIndex]?.toLowerCase();
+      }, [currentWordSoundsWord, wordSoundsPhonemes]);
+      const correctLetter = wordSoundsPhonemes?.activityItems?.missing_letter?.correctLetter || currentWordSoundsWord?.[hiddenIndex]?.toLowerCase();
       const letterOptions = React.useMemo(() => {
+        if (Array.isArray(wordSoundsPhonemes?.activityItems?.missing_letter?.options)) return [...wordSoundsPhonemes.activityItems.missing_letter.options];
         const alphabet = "abcdefghijklmnopqrstuvwxyz";
         const options = [correctLetter];
         const seed = (currentWordSoundsWord || "")
@@ -12615,7 +12706,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (!options.includes(rand)) options.push(rand);
         }
         return options.sort(() => nextRand() - 0.5);
-      }, [correctLetter, currentWordSoundsWord]);
+      }, [correctLetter, currentWordSoundsWord, wordSoundsPhonemes]);
       const renderActivityContent = () => {
         const handleDragStart = (e, item, source, index = null) => {
           setDraggedItem({ item, source, index });

@@ -9603,10 +9603,23 @@ var createDocPipeline = function(deps) {
   // unchanged to avoid any accuracy regression. This is pure additive caching.
   const _AUDIT_CACHE_DB = 'allo_pdf_audit_cache_v1';
   const _AUDIT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-  // Bump when the audit prompt changes materially so users get fresh audits
-  // instead of stale cached results from old prompts. Format: YYYYMMDD-N.
-  // Last bump: 2026-05-24 (Tier 8 — added pre-extracted tag-tree directive).
-  const _PIPELINE_PROMPT_VERSION = '20260524-1';
+  // Bump when the audit prompt OR pipeline correctness logic changes materially so users get fresh
+  // results instead of stale cached ones. Format: YYYYMMDD-N.
+  // Last bump: 2026-07-10 (audit-cache finalization fix + key identity extension — the version had
+  // sat at 20260524-1 through six weeks of scoring/honesty changes, so cache hits could replay
+  // results produced by superseded logic).
+  const _PIPELINE_PROMPT_VERSION = '20260710-1';
+  // Cache identity must include the AI backend/model — a result produced by a local Ollama model is
+  // not interchangeable with a Gemini one for the SAME bytes and settings. Best-effort, stable id.
+  const _cacheBackendId = () => {
+    try {
+      const w = typeof window !== 'undefined' ? window : null;
+      const backend = (_rawCallGemini && _rawCallGemini._alloflowBackend)
+        || (w && w.__alloActiveAIBackend && w.__alloActiveAIBackend.backend) || 'gemini';
+      const model = (w && w.__alloActiveAIBackend && w.__alloActiveAIBackend.model) || 'default';
+      return String(backend + ':' + model).toLowerCase().replace(/[^a-z0-9:._-]/g, '_').slice(0, 60);
+    } catch (_) { return 'gemini:default'; }
+  };
   const _sha256Hex = async (str) => {
     try {
       if (typeof crypto === 'undefined' || !crypto.subtle) return null;
@@ -9622,7 +9635,7 @@ var createDocPipeline = function(deps) {
     // crypto.subtle digests tens of MB in ~100ms, once per run — the sample saved nothing
     // that matters against a cross-document replay.
     const hash = await _sha256Hex(base64Data || '');
-    return hash ? `pdf_audit_${_PIPELINE_PROMPT_VERSION}_${hash}_n${numAuditors}_${(outLang || 'en').toLowerCase().replace(/[^a-z0-9-]/g, '_')}` : null;
+    return hash ? `pdf_audit_${_PIPELINE_PROMPT_VERSION}_${_cacheBackendId()}_${hash}_n${numAuditors}_${(outLang || 'en').toLowerCase().replace(/[^a-z0-9-]/g, '_')}` : null;
   };
   const _readAuditCache = async (key) => {
     if (!key || typeof window === 'undefined' || !window.idbKeyval) return null;
@@ -9630,6 +9643,12 @@ var createDocPipeline = function(deps) {
       const cached = await storageDB.get(key);
       if (!cached || !cached.audit || !cached.savedAt) return null;
       if (Date.now() - cached.savedAt > _AUDIT_CACHE_TTL_MS) return null;
+      // Finalization guard (ChatGPT review 2026-07-10, finding 1): the PDF path used to cache the
+      // triangulated result BEFORE the deterministic axe/EA baseline attached the weakest-layer
+      // score and the _baseline* evidence — a cache hit then replayed an AI-ONLY score with no
+      // deterministic audits and skipped the baseline (early return). Every write now marks the
+      // object AFTER finalization; unmarked entries are legacy bad snapshots — reject them.
+      if (!cached.audit._auditFinalized) return null;
       return cached.audit;
     } catch (_) { return null; }
   };
@@ -10568,13 +10587,11 @@ Return ONLY valid JSON:
         timestamp: new Date().toISOString(),
       };
       if (!_skipUi) setPdfAuditResult(triangulated);
-      // Write to content-hash cache (Tier 5). Only triangulated result — no
-      // intermediate model state — so the cache hit replays the same final
-      // findings without any model behavior change.
-      // Sliced-fallback audits are NOT cached: they are lower-fidelity than a whole-
-      // document pass, so a later un-throttled run should be free to earn the better
-      // whole-document score instead of being permanently masked by a cached slice result.
-      if (_cacheKey && !_auditedViaSlices) { try { _writeAuditCache(_cacheKey, triangulated); } catch (_) {} }
+      // Cache write MOVED below (ChatGPT review 2026-07-10, finding 1): it used to fire HERE —
+      // before the deterministic axe/EA baseline attaches the weakest-layer score, the
+      // _baselineAxeAudit/_baselineSecondEngineAudit evidence, and the _baselineAxeFailed
+      // disclosure — so a cache hit replayed an AI-only score and (via the early return) never
+      // ran the baseline at all. The write now happens after the baseline finalizes.
 
       // ── Quick axe-core baseline: extract text deterministically, build minimal HTML, run axe-core ──
       // Uses the shared extractPdfTextDeterministic helper (reading-order sorted, no truncation).
@@ -10657,6 +10674,13 @@ Return ONLY valid JSON:
           setPdfAuditResult(prev => ({ ...prev, _baselineAxeFailed: true }));
         }
       }
+      // ── Content-hash cache write (Tier 5) — AFTER finalization (finding 1, 2026-07-10) ──
+      // The object is complete here: weakest-layer score, both baseline engine audits (or the
+      // explicit _baselineAxeFailed disclosure), no further mutation before return. Sliced-fallback
+      // audits are still NOT cached (lower-fidelity than a whole-document pass — a later
+      // un-throttled run should be free to earn the better whole-document score).
+      triangulated._auditFinalized = true;
+      if (_cacheKey && !_auditedViaSlices) { try { _writeAuditCache(_cacheKey, triangulated); } catch (_) {} }
       if (!_skipUi) setPdfAuditLoading(false);
       return triangulated;
     } catch (err) {
