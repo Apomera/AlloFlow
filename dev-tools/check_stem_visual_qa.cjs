@@ -58,6 +58,7 @@ const EXPECTED_MARKERS = [
   { id: 'cellularLab', file: 'stem_tool_cellular.js', marker: 'data-cellularlab-focus-panel', label: 'Cellular focus panel' },
   { id: 'companionPlanting', file: 'stem_tool_companionplanting.js', marker: 'data-companion-workspace-stage', label: 'Companion Planting workspace stage' },
   { id: 'dnaLab', file: 'stem_tool_dna.js', marker: 'data-dna-mission', label: 'DNA mission control' },
+  { id: 'fireEcology', file: 'stem_tool_fireecology.js', marker: 'data-fireecology-mission', label: 'Fire Ecology stewardship mission' },
   { id: 'cell', file: 'stem_tool_cell.js', marker: 'data-cell-mission', label: 'Cell Simulator mission panel' },
   { id: 'evoLab', file: 'stem_tool_evolab.js', marker: 'data-evolab-command', label: 'EvoLab command panel' },
   { id: 'dinoLab', file: 'stem_tool_dinolab.js', marker: 'data-dinolab-command', label: 'Dino Lab mission deck' },

@@ -174,10 +174,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for fireE
   "buttons": 29,
   "canvases": 0,
   "inputs": 1,
-  "lengthBucket": 113,
+  "lengthBucket": 127,
   "paths": 0,
   "selects": 0,
-  "sha": "01f3e76ea94e2a71",
+  "sha": "c6702496ca2194af",
   "svgs": 0,
 }
 `;
