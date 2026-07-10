@@ -101,8 +101,10 @@ describe('anti-drift: the host auto-continue loop scores by min + clears the deg
     expect(host).toMatch(/return Math\.min\(aiScore, axeScore\);/); // the fallback, used only until the engine module loads
     expect(host).not.toMatch(/return Math\.round\(\(aiScore \+ axeScore\) \/ 2\);/);
   });
-  it('a completed re-verify clears _aiVerificationIncomplete on the primary path', () => {
-    expect(host).toMatch(/_aiVerificationIncomplete: \(typeof reVerify\.score === 'number'\) \? false : cur\._aiVerificationIncomplete/);
+  it('a completed FULL-COVERAGE re-verify clears _aiVerificationIncomplete on the primary path', () => {
+    // Tightened 2026-07-10 (ChatGPT review, finding 6): a PARTIAL re-audit can carry a numeric
+    // score — clearing on "numeric" alone erased the incomplete disclosure from 2-of-3 coverage.
+    expect(host).toMatch(/_aiVerificationIncomplete: \(typeof reVerify\.score === 'number' && !reVerify\._partialAudit && !reVerify\._scoreDegraded && !reVerify\.synthesized\) \? false : cur\._aiVerificationIncomplete/);
   });
 });
 

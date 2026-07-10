@@ -19519,9 +19519,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           // A completed re-verify clears any throttle-degraded flag from the ORIGINAL run, so a now-fully-
           // AI-verified auto-continue score stops being shown as "AI verification incomplete" / slate /
           // deterministic-only. (Critic's #1 miss — same root bug as the Workbench recompute VDH-1, but on
-          // the primary automated path. Only clear when this round's audit produced a real score.) 2026-06-21
-          _aiVerificationIncomplete: (typeof reVerify.score === 'number') ? false : cur._aiVerificationIncomplete,
-          _scoreSource: (typeof reVerify.score === 'number') ? (_det !== null ? 'min' : 'content-only') : cur._scoreSource,
+          // the primary automated path.) 2026-06-21. TIGHTENED 2026-07-10 (ChatGPT review, finding 6):
+          // a PARTIAL re-audit can carry a numeric score (2-of-3 sections above the coverage floor) —
+          // clearing on "numeric" alone let a partial-derived score erase the incomplete disclosure and
+          // even satisfy the target. Clear ONLY on FULL coverage: numeric AND not partial/degraded/synthesized.
+          _aiVerificationIncomplete: (typeof reVerify.score === 'number' && !reVerify._partialAudit && !reVerify._scoreDegraded && !reVerify.synthesized) ? false : cur._aiVerificationIncomplete,
+          _scoreSource: (typeof reVerify.score === 'number' && !reVerify._partialAudit && !reVerify._scoreDegraded && !reVerify.synthesized) ? (_det !== null ? 'min' : 'content-only') : cur._scoreSource,
           axeScore: result.axe && typeof result.axe.score === 'number' ? result.axe.score : cur.axeScore,
           axeViolations: result.axe ? result.axe.totalViolations : cur.axeViolations,
           secondEngineAudit: _ea || cur.secondEngineAudit,

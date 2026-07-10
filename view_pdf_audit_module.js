@@ -4160,8 +4160,11 @@ function PdfAuditView(props) {
           const toastMsg = t("pdf_audit.batch.resume.toast", { done: resumableBatch._doneCount, remaining: resumableBatch._incompleteCount }) || `Resuming batch \xB7 ${resumableBatch._doneCount} cached, ${resumableBatch._incompleteCount} to process`;
           setResumableBatch(null);
           addToast(toastMsg, "info");
+          if (resumableBatch.settings) {
+            addToast(t("pdf_audit.batch.resume.settings_toast") || "Resuming with the batch\u2019s original settings \u2014 current slider values apply to new batches.", "info");
+          }
           try {
-            runPdfBatchRemediation({ resumeQueue });
+            runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null });
           } catch (e) {
             warnLog("[Batch Resume] start failed:", e);
           }
@@ -4458,7 +4461,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
       await new Promise((res) => setTimeout(res, 250));
       addToast(t("toasts.make_accessible_fixing") || "\u2728 Audit done \u2014 remediating automatically (no clicks needed)\u2026", "info");
       const _HANDSOFF_MAX = 3;
-      const _permanentErr = (e) => /\b(quota|exceeded|429|api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|network|offline|cdn|mirror|failed to (?:load|fetch)|load timeout)\b/i.test(String(e && (e.message || e) || ""));
+      const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|failed to (?:load|fetch)|load timeout)\b/i;
+      const _handsDisposition = (e) => {
+        if (!e) return "retry";
+        const _m = String(e && (e.message || e) || "");
+        if (e.name === "AbortError" || /\baborted?\b/i.test(_m)) return "stop-silent";
+        if (e.isConfig) return "never";
+        if (e.isAuth && !e.canvasTransientAuth) return "never";
+        if (e.isQuota) return e.classification && e.classification.perDay ? "pause-daily" : "wait-retry";
+        if (e.canvasTransientAuth) return "wait-retry";
+        if (_permanentRegex.test(_m)) return "never";
+        return "retry";
+      };
       const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current);
       let _handsErr = null, _res = null;
       const _runFix = async () => {
@@ -4468,17 +4482,34 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         } catch (e) {
           _handsErr = e;
         }
-        for (let _w = 0; _w < 6 && !(_res || pdfFixResultRef.current); _w++) {
-          await new Promise((res) => setTimeout(res, 200));
+        if (!_handsErr) {
+          for (let _w = 0; _w < 6 && !(_res || pdfFixResultRef.current); _w++) {
+            await new Promise((res) => setTimeout(res, 200));
+          }
+          _res = _res || pdfFixResultRef.current;
         }
-        _res = _res || pdfFixResultRef.current;
       };
       await _runFix();
       let _fixTries = 0;
-      while (!_res && _fixTries < _HANDSOFF_MAX && !_permanentErr(_handsErr) && !_stopped()) {
+      while (!_res && _fixTries < _HANDSOFF_MAX && !_stopped()) {
+        const _disp = _handsDisposition(_handsErr);
+        if (_disp === "never" || _disp === "stop-silent") break;
+        if (_disp === "pause-daily") {
+          addToast("\u23F8 " + (t("toasts.handsoff_daily_quota") || "Daily AI quota reached \u2014 the run is paused, your progress is preserved. Re-run after the quota resets (midnight Pacific)."), "warning");
+          break;
+        }
         _fixTries++;
-        addToast("\u{1F501} " + (t("toasts.handsoff_retry_fix") || "Hands-off mode \u2014 the fix produced no result; retrying") + " (" + _fixTries + "/" + _HANDSOFF_MAX + ")\u2026", "info");
-        await new Promise((res) => setTimeout(res, 1500 * _fixTries));
+        if (_disp === "wait-retry") {
+          addToast("\u23F3 " + (t("toasts.handsoff_wait_retry") || "AI rate-limit \u2014 waiting for it to ease before retrying") + " (" + _fixTries + "/" + _HANDSOFF_MAX + ")\u2026", "info");
+          try {
+            if (_docPipeline && typeof _docPipeline.waitForGeminiCalm === "function") await _docPipeline.waitForGeminiCalm({ maxWaitMs: 18e4, shouldAbort: _stopped });
+          } catch (_) {
+          }
+        } else {
+          addToast("\u{1F501} " + (t("toasts.handsoff_retry_fix") || "Hands-off mode \u2014 the fix produced no result; retrying") + " (" + _fixTries + "/" + _HANDSOFF_MAX + ")\u2026", "info");
+          await new Promise((res) => setTimeout(res, 1500 * _fixTries));
+        }
+        if (_stopped()) break;
         await _runFix();
       }
       let r = _res || pdfFixResultRef.current;
@@ -5480,9 +5511,11 @@ Return ONLY JSON:
       const freshBase64 = await ensurePdfBase64();
       if (!freshBase64) return;
       if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
-        fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name });
+        fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {
+        });
       } else {
-        fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name });
+        fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {
+        });
       }
     }, disabled: pdfFixLoading, className: "flex-1 px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40" }, pdfFixLoading ? /* @__PURE__ */ React.createElement("span", { className: "animate-spin" }, "\u23F3") : /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), pdfFixLoading ? pdfFixStep || "Fixing..." : pdfPageRange ? `\u267F Fix Pages ${pdfPageRange.start}\u2013${pdfPageRange.end}` : `\u267F Fix & Verify${pdfAuditResult.pageCount > 1 ? ` (${pdfAuditResult.pageCount} pages)` : ""}`), pdfFixLoading && /* @__PURE__ */ React.createElement("div", { className: "basis-full mt-1", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 overflow-hidden", role: "progressbar", "aria-label": t("pdf_audit.fix_pass.progress_aria") || "Fix and verify progress", "aria-valuenow": pdfFixStep.includes("Step 1") ? 15 : pdfFixStep.includes("Step 2") ? 50 : pdfFixStep.includes("Step 3") ? 80 : pdfFixStep.includes("Step 4") ? 92 : pdfFixStep.includes("Auto-fix") ? 96 : 5, "aria-valuemin": 0, "aria-valuemax": 100 }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-700 rounded-full", style: { width: pdfFixStep.includes("Step 1") ? "15%" : pdfFixStep.includes("Step 2") ? "50%" : pdfFixStep.includes("Step 3") ? "80%" : pdfFixStep.includes("Step 4") ? "92%" : pdfFixStep.includes("Auto-fix") || pdfFixStep.includes("Auto-continue") ? "96%" : "5%" } })), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-700 mt-0.5 text-center", role: "status", "aria-live": "polite" }, pdfFixStep), (() => {
       const steps = [
@@ -8353,8 +8386,10 @@ Return ONLY JSON:
           }
           return;
         }
-        if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name });
-        else fixAndVerifyPdf({ base64: fb, fileName: pendingPdfFile?.name });
+        if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name }).catch(() => {
+        });
+        else fixAndVerifyPdf({ base64: fb, fileName: pendingPdfFile?.name }).catch(() => {
+        });
       };
       return /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, _lowPages.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-1.5 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, "\u26A0 ", t("pdf_audit.low_conf_ocr") || "Low OCR confidence on", " page", _lowPages.length === 1 ? "" : "s", " ", _lowPages.slice(0, 8).join(", "), _lowPages.length > 8 ? "\u2026" : "", ". ", t("pdf_audit.low_conf_ocr_hint") || "The text may be misread."), /* @__PURE__ */ React.createElement("button", { onClick: () => _reRun({ pages: _lowPages }), disabled: pdfFixLoading, className: "ml-auto px-2 py-0.5 bg-white border border-amber-400 text-amber-800 rounded-full font-bold hover:bg-amber-100 disabled:opacity-40 shrink-0" }, "\u{1F504} Re-OCR ", _lowPages.length, " ", _lowPages.length === 1 ? t("pdf_audit.page") || "page" : t("pdf_audit.pages") || "pages")), /* @__PURE__ */ React.createElement("button", { onClick: () => _reRun("all"), disabled: pdfFixLoading, title: t("pdf_audit.rescan_ocr_tooltip") || "Re-run OCR on the whole document, ignoring the embedded text layer and any saved text. Use this if the extracted text looks garbled.", className: "w-full px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40" }, "\u{1F504} ", t("pdf_audit.rescan_ocr") || "Re-scan with OCR (text looks wrong?)"));
     })(), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_save_project_btn", onClick: () => {

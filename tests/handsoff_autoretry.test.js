@@ -29,11 +29,20 @@ describe('hands-off auto-retry — Make Accessible retries bounded, progress-gat
     expect(onclick).toContain('_fixTries < _HANDSOFF_MAX');
     expect(onclick).toContain('_loopTries < _HANDSOFF_MAX');
   });
-  it('never re-runs a PERMANENT error — auth/quota/config AND network/CDN hard-fails (offline, mirrors, timeouts)', () => {
-    expect(onclick).toContain('_permanentErr');
-    expect(onclick).toContain('!_permanentErr(_handsErr)');
-    expect(onclick).toMatch(/quota|429|RECITATION/);
-    expect(onclick).toMatch(/network|offline|cdn|mirror|failed to|timeout/); // A3-MED: bail fast offline
+  it('classification-aware dispositions replace the regex (finding 2/8, 2026-07-10): permanent never retries, daily quota pauses, bursts wait', () => {
+    // fixAndVerifyPdf now RETHROWS single-mode failures carrying the Gemini classification —
+    // the old _permanentErr regex (which treated EVERY quota/429 as permanent) is retired in
+    // favor of a structured disposition table; the regex survives only as the unclassified fallback.
+    expect(onclick).toContain('const _handsDisposition = (e) => {');
+    expect(onclick).toContain("if (e.isAuth && !e.canvasTransientAuth) return 'never';");
+    expect(onclick).toContain("if (e.isQuota) return (e.classification && e.classification.perDay) ? 'pause-daily' : 'wait-retry';");
+    expect(onclick).toContain("if (e.canvasTransientAuth) return 'wait-retry';");
+    expect(onclick).toContain("if (_disp === 'never' || _disp === 'stop-silent') break;");
+    expect(onclick).toContain("if (_disp === 'pause-daily') {");
+    expect(onclick).toContain('waitForGeminiCalm');           // burst → breaker-aware wait, not a blind sleep
+    expect(onclick).toMatch(/offline|cdn|mirror|failed to|load timeout/); // A3-MED fallback regex retained
+    // …and a FAILED run can no longer adopt a stale pdfFixResultRef as instant success:
+    expect(onclick).toContain('if (!_handsErr) { for (let _w = 0;');
   });
   it('honors the user STOP across the retry boundary (A3-HIGH — must not relaunch the loop after Stop)', () => {
     expect(onclick).toContain('const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current);');

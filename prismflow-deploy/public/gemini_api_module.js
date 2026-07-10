@@ -144,6 +144,12 @@ const createGeminiAPI = (deps) => {
         window.__alloflowQuotaState = {
           active: true,
           kind: classification.kind,
+          // Carry the per-day/per-minute evidence (ChatGPT review 2026-07-10, finding 8): the
+          // batch layer's daily-stop must fire only for a REAL daily quota — a per-minute burst
+          // pausing a whole batch turned one blip into a full stop. (H2 added these to the
+          // classification; the global stash used to drop them.)
+          perDay: !!classification.perDay,
+          perMinute: !!classification.perMinute,
           message: classification.userMessage,
           model: classification.model,
           hitAt: window.__alloflowQuotaState?.hitAt || (typeof Date !== 'undefined' ? Date.now() : 0)

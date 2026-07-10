@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -9709,13 +9709,18 @@ var createDocPipeline = function(deps) {
   // we skip both audit + fix entirely. Covers the most common "resume" use
   // case (user re-uploads same files after closing the tab) without needing
   // a full mid-batch persistence layer. TTL: 7 days (same as audit cache).
-  const _remediationCacheKey = async (base64Data, numAuditors, outLang, targetScore, autoFixPasses) => {
+  const _remediationCacheKey = async (base64Data, numAuditors, outLang, targetScore, autoFixPasses, extras) => {
     // H10: full-content hash — see _auditCacheKey. A collision HERE was the worse case:
     // _readRemediationCache replays a full accessibleHtml, i.e. another document's content.
+    // Identity extension (ChatGPT review 2026-07-10, finding 9): the key omitted output-affecting
+    // settings — polish passes, OCR language, and the AI backend/model — so a cached result could
+    // replay under DIFFERENT settings than the ones on screen. All output-affecting knobs now key.
     const hash = await _sha256Hex(base64Data || '');
     if (!hash) return null;
     const lang = (outLang || 'en').toLowerCase().replace(/[^a-z0-9-]/g, '_');
-    return `pdf_remed_${_PIPELINE_PROMPT_VERSION}_${hash}_n${numAuditors}_${lang}_t${targetScore || PIPELINE_DEFAULTS.targetScore}_p${autoFixPasses || 0}`;
+    const _x = extras || {};
+    const ocr = String(_x.ocrLanguage || 'auto').toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+    return `pdf_remed_${_PIPELINE_PROMPT_VERSION}_${_cacheBackendId()}_${hash}_n${numAuditors}_${lang}_t${targetScore || PIPELINE_DEFAULTS.targetScore}_p${autoFixPasses || 0}_pp${_x.polishPasses || 0}_ocr${ocr}`;
   };
   const _readRemediationCache = async (key) => {
     if (!key || typeof window === 'undefined' || !window.idbKeyval) return null;
@@ -10010,6 +10015,7 @@ var createDocPipeline = function(deps) {
         // Cache write (sweep 2026-06-11 LOW[8]): the key was computed and READ
         // for transcripts but never written — repeat audits of the same
         // recording re-ran the whole branch.
+        result._auditFinalized = true; // finding 1 (2026-07-10): the read guard rejects unmarked entries
         if (_cacheKey) { try { _writeAuditCache(_cacheKey, result); } catch (_) {} }
         if (!_skipUi) { setPdfAuditResult((prev) => ({ ...(prev || {}), ...result })); setPdfAuditLoading(false); }
         return result;
@@ -10112,6 +10118,7 @@ var createDocPipeline = function(deps) {
           _scoreIsBlended: false,
           structTree: { hasTags: false },
         };
+        result._auditFinalized = true; // finding 1 (2026-07-10): the read guard rejects unmarked entries
         if (_cacheKey) { try { _writeAuditCache(_cacheKey, result); } catch (_) {} }
         if (!_skipUi) {
           setPdfAuditResult(result);
@@ -10731,13 +10738,31 @@ Return ONLY valid JSON:
     // S1 step 6: this snapshot (which Tier-4 persistence already used) is now ALSO the
     // configuration every per-file audit/fix runs with AND the cache-key input — the whole
     // batch runs on ONE configuration captured at entry, deterministically.
-    const _batchSettings = {
+    // Resume-settings parity (ChatGPT review 2026-07-10, finding 10): a RESUMED batch used to
+    // snapshot the CURRENT UI sliders, so already-completed files (old settings) and remaining
+    // files (new settings) shipped under one summary implying uniform processing — and the Tier-4
+    // cache key mismatch silently re-ran "done" files. When the caller passes the batch's SAVED
+    // settings, they win over the live UI.
+    const _saved = (opts && opts.resumeSettings && typeof opts.resumeSettings === 'object') ? opts.resumeSettings : null;
+    const _batchSettings = _saved ? {
+      pdfAuditorCount: _saved.pdfAuditorCount ?? _run.auditorCount,
+      leveledTextLanguage: _saved.leveledTextLanguage ?? _run.outputLanguage,
+      pdfTargetScore: _saved.pdfTargetScore ?? _run.targetScore,
+      pdfAutoFixPasses: _saved.pdfAutoFixPasses ?? _run.autoFixPasses,
+      pdfPolishPasses: _saved.pdfPolishPasses ?? _run.polishPasses,
+      pdfOcrLanguage: _saved.pdfOcrLanguage ?? '',
+    } : {
       pdfAuditorCount: _run.auditorCount,
       leveledTextLanguage: _run.outputLanguage,
       pdfTargetScore: _run.targetScore,
       pdfAutoFixPasses: _run.autoFixPasses,
       pdfPolishPasses: _run.polishPasses,
+      // '' = auto-detect. pdfOcrLanguage is a deliberate read-fresh S1 exemption (not on _run) —
+      // snapshot it here once so the whole batch keys consistently (finding 9).
+      pdfOcrLanguage: (typeof window !== 'undefined' && window.__docPipelineState && window.__docPipelineState.pdfOcrLanguage) || '',
     };
+    if (_saved) { try { warnLog('[Batch] Resuming with the batch\'s ORIGINAL settings (auditors ' + _batchSettings.pdfAuditorCount + ', target ' + _batchSettings.pdfTargetScore + ', passes ' + _batchSettings.pdfAutoFixPasses + ') — current slider values apply to NEW batches.'); } catch (_) {}
+    }
     const _persistBatchStatus = () => {
       // Fire-and-forget — never block the loop on storage writes.
       _saveBatchStatus(queue).catch(() => {});
@@ -10776,7 +10801,7 @@ Return ONLY valid JSON:
       // change during a long batch silently changed cache keys between files. Now keyed on
       // the batch's own settings snapshot. (Entries cached under previously-drifted keys
       // become unreachable — harmless, 7-day TTL.)
-      const _remedKey = await _remediationCacheKey(item.base64, _batchSettings.pdfAuditorCount, _batchSettings.leveledTextLanguage, _batchSettings.pdfTargetScore, _batchSettings.pdfAutoFixPasses);
+      const _remedKey = await _remediationCacheKey(item.base64, _batchSettings.pdfAuditorCount, _batchSettings.leveledTextLanguage, _batchSettings.pdfTargetScore, _batchSettings.pdfAutoFixPasses, { polishPasses: _batchSettings.pdfPolishPasses, ocrLanguage: _batchSettings.pdfOcrLanguage });
       if (_remedKey) {
         const cached = await _readRemediationCache(_remedKey);
         if (cached) {
@@ -10796,6 +10821,12 @@ Return ONLY valid JSON:
       // per-file catch marks this file 'failed' and continues (same isolation as any error),
       // and the file stays retryable. Single-file (non-batch) runs never call _processOne.
       const _PER_FILE_MS = 8 * 60 * 1000;
+      // ONE absolute deadline per file (ChatGPT review 2026-07-10, finding 4): audit and fix each
+      // used to get a FULL _PER_FILE_MS wall, with the fix's deadline minted AFTER the audit
+      // finished — so the advertised 8-minute wall actually permitted ~16 minutes per file. The
+      // deadline is now created once at entry; every phase gets only what remains of it.
+      const _deadlineAt = Date.now() + _PER_FILE_MS;
+      const _remainingMs = () => Math.max(1000, _deadlineAt - Date.now());
       // H7 (deep dive 2026-07-09): the wall is a bare Promise.race — it discards the RESULT but
       // cannot cancel the WORK, so a timed-out file kept running as a ZOMBIE under the next file:
       // re-stamping the __lastGroundTruth*/__lastOcr* globals with the wrong document's identity,
@@ -10817,7 +10848,7 @@ Return ONLY valid JSON:
         progress('Auditing...');
         const auditResult = await _withTimeout(
           runPdfAccessibilityAudit(item.base64, { skipUiUpdates: true, fileName: item.fileName, auditorCount: _batchSettings.pdfAuditorCount, outputLanguage: _batchSettings.leveledTextLanguage }),
-          _PER_FILE_MS, 'batch audit: ' + item.fileName);
+          _remainingMs(), 'batch audit: ' + item.fileName);
         if (!auditResult || auditResult.score === -1) {
           throw new Error(auditResult?.summary || 'Audit failed');
         }
@@ -10831,8 +10862,8 @@ Return ONLY valid JSON:
           autoFixPasses: _batchSettings.pdfAutoFixPasses,
           polishPasses: _batchSettings.pdfPolishPasses,
           onProgress: (step, msg) => progress(msg),
-          perFileDeadlineTs: Date.now() + _PER_FILE_MS, // R5: let fixAndVerifyPdf's deferred re-audit (B) respect the per-file wall
-        }), _PER_FILE_MS, 'batch fix: ' + item.fileName);
+          perFileDeadlineTs: _deadlineAt, // R5 + finding 4: the SAME absolute wall the audit ran under — no second budget
+        }), _remainingMs(), 'batch fix: ' + item.fileName);
 
         // Write remediation cache (Tier 4)
         if (_remedKey && result) {
@@ -10874,22 +10905,30 @@ Return ONLY valid JSON:
         warnLog(`[Batch] ${item.fileName} FAILED:`, err);
         queue[i] = { ...item, status: 'failed', error: err.message };
         setPdfBatchQueue([...queue]);
-        // Quota circuit-breaker: once the daily cap is hit, every remaining file would
+        // Quota circuit-breaker: once the DAILY cap is hit, every remaining file would
         // re-pay a full primary+fallback backoff only to fail the same way — turning one
         // quota event into N failures and minutes of grind. Stop now with a resume hint;
         // the unprocessed files stay queued (Tier-4 done-skip resumes cleanly after reset).
-        const _isQuota = (err && (err.isQuota || /API_QUOTA_EXHAUSTED|RESOURCE_EXHAUSTED|quota|\b429\b/i.test(err.message || ''))) ||
-          // Global half must be ACTIVE and FRESH (<60s): __alloflowQuotaState is never cleared at
-          // batch start, so a stale quota flag from an earlier run would otherwise strand file 1
-          // with a wrong "quota reached" stop. A real live quota always carries active:true +
-          // a numeric hitAt; the per-error half above still catches a concurrent live quota. (quota-freshness)
-          (typeof window !== 'undefined' && window.__alloflowQuotaState && window.__alloflowQuotaState.kind === 'quota' &&
-            window.__alloflowQuotaState.active === true && (Date.now() - (window.__alloflowQuotaState.hitAt || 0) < 60000));
-        if (_isQuota) {
+        // Finding 8 (ChatGPT review 2026-07-10): only an EXPLICIT per-day quota stops the whole
+        // batch. A per-minute burst (or an ambiguous 429) already got the breaker treatment inside
+        // _geminiCall (H2) — if it still failed THIS file, the file is marked failed and the batch
+        // moves on; declaring "Daily quota reached" on a burst froze whole batches on one blip.
+        const _cls = err && err.classification;
+        const _gq = (typeof window !== 'undefined') ? window.__alloflowQuotaState : null;
+        const _gqFresh = !!(_gq && _gq.kind === 'quota' && _gq.active === true && (Date.now() - (_gq.hitAt || 0) < 60000));
+        const _dailyQuota = (err && err.isQuota && _cls && _cls.perDay === true) || (_gqFresh && _gq.perDay === true);
+        const _burstQuotaFail = !_dailyQuota && ((err && err.isQuota) || (_gqFresh && !_gq.perDay));
+        if (_dailyQuota) {
           _quotaStopped = true;
           setPdfBatchStep('Daily AI quota reached — stopped at ' + (i + 1) + '/' + queue.length + '. Remaining files stay queued; resume after the quota resets.');
-          warnLog('[Batch] Quota reached — early-stop at ' + (i + 1) + '/' + queue.length + '; ' + (queue.length - i - 1) + ' file(s) left for resume.');
+          warnLog('[Batch] Daily quota reached — early-stop at ' + (i + 1) + '/' + queue.length + '; ' + (queue.length - i - 1) + ' file(s) left for resume.');
           break;
+        }
+        if (_burstQuotaFail) {
+          // Ride out the burst before the next file so it doesn't fail the same way immediately.
+          warnLog('[Batch] ' + item.fileName + ' failed on a rate-limit BURST (not daily quota) — waiting for calm, then continuing with the next file.');
+          setPdfBatchStep('Rate-limit burst on ' + item.fileName + ' — pausing briefly, then continuing (' + (i + 1) + '/' + queue.length + ')...');
+          try { await waitForGeminiCalm({ maxWaitMs: 120000, shouldAbort: () => _batchAbortCtrl.signal.aborted }); } catch (_) {}
         }
       } finally {
         // Per-file global hygiene (review F5, 2026-07-01): a file that THROWS
@@ -18008,9 +18047,21 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           if (_polishPasses > 0) {
             const POLISH_CHUNK = _localHtmlChunkChars(GEMINI_CHUNK_CHARS); // S6: shared chunk budget; local backends get model-aware smaller chunks
             const polishViolations = 'TABLE CONTINUITY: Merge split table fragments.\nSTYLE CONSISTENCY: Unify inline CSS to match dominant style.\nTRANSITION SMOOTHING: Remove artifacts at section boundaries.\nPRESERVE ALL CONTENT. Do NOT summarize or shorten.';
-            const _maxPolishPasses = 1; // cap at 1 regardless of user setting — diminishing returns
+            // Honor the ADVERTISED setting (ChatGPT review 2026-07-10, finding 9): the UI sells a
+            // 0–3 slider ("Extra polish") but this loop hard-capped at 1 — pass 2/3 were silently
+            // identical to 1, and the progress line even printed "Polish pass 1/3" then stopped.
+            // The count is now honored (bounded ≤3) with a CONVERGENCE early-exit: a pass that
+            // changes nothing proves the doc is stable, so further passes are skipped — the common
+            // case still costs one pass; only docs that keep changing use the extra budget.
+            const _maxPolishPasses = Math.min(3, Math.max(1, Number(_polishPasses) || 1));
+            let _prevPolishBody = null;
             for (let polishIdx = 0; polishIdx < _maxPolishPasses; polishIdx++) {
-              updateProgress(2, `Polish pass ${polishIdx + 1}/${_polishPasses} (style + table unification)...`);
+              if (_prevPolishBody !== null && _prevPolishBody === bodyContent) {
+                _pipeLog('Polish', 'Converged after pass ' + polishIdx + ' (no changes) — skipping the remaining ' + (_maxPolishPasses - polishIdx) + ' pass(es).');
+                break;
+              }
+              _prevPolishBody = bodyContent;
+              updateProgress(2, `Polish pass ${polishIdx + 1}/${_maxPolishPasses} (style + table unification)...`);
               _pipeLog('Polish', 'Phase 2: AI polish pass ' + (polishIdx + 1) + ' (' + POLISH_CHUNK + ' char chunks)');
               try {
                 // Strip <style> block before chunking — CSS classes don't need polishing
@@ -20230,6 +20281,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       addToast(t('toasts.pdf_remediation_failed') + (err.message || 'Unknown error'), 'error');
       // Audio: descending minor tone signals pipeline failure
       try { window.remediationAudio && window.remediationAudio.error(); } catch(e) {}
+      // Failure contract (ChatGPT review 2026-07-10, finding 2): RETHROW after the UI handling.
+      // Single-mode failures used to resolve undefined — the hands-off wrapper's _handsErr stayed
+      // null, its permanent-error check saw nothing, and auth/daily-quota/config failures burned up
+      // to 3 full reruns. The same error object propagates so its Gemini classification fields
+      // (isQuota/isAuth/isConfig/canvasTransientAuth/classification) drive retry policy. Direct
+      // fire-and-forget callers attach their own .catch (the toast above already informed the user).
+      throw err;
     }
   };
 
@@ -32502,11 +32560,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();

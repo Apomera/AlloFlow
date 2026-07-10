@@ -3829,7 +3829,11 @@ function PdfAuditView(props) {
                                   const toastMsg = t('pdf_audit.batch.resume.toast', { done: resumableBatch._doneCount, remaining: resumableBatch._incompleteCount }) || `Resuming batch · ${resumableBatch._doneCount} cached, ${resumableBatch._incompleteCount} to process`;
                                   setResumableBatch(null);
                                   addToast(toastMsg, 'info');
-                                  try { runPdfBatchRemediation({ resumeQueue }); } catch (e) { warnLog('[Batch Resume] start failed:', e); }
+                                  // Finding 10 (ChatGPT review 2026-07-10): resume with the batch's SAVED settings —
+                                  // resuming under the CURRENT sliders mixed configurations in one summary and
+                                  // broke the Tier-4 done-skip (cache keys no longer matched).
+                                  if (resumableBatch.settings) { addToast(t('pdf_audit.batch.resume.settings_toast') || 'Resuming with the batch’s original settings — current slider values apply to new batches.', 'info'); }
+                                  try { runPdfBatchRemediation({ resumeQueue, resumeSettings: resumableBatch.settings || null }); } catch (e) { warnLog('[Batch Resume] start failed:', e); }
                                 }}
                                 data-help-key="pdf_audit_view_batch_resume_btn"
                                 className="px-4 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg text-xs font-bold hover:from-amber-700 hover:to-orange-700 transition-all shadow"
@@ -4253,22 +4257,51 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // can't help) are never retried. Robust to the dead-man switches (we gate on the RESULT
                     // ref, not the loading flags). Each retry posts a visible note.
                     const _HANDSOFF_MAX = 3;
-                    // Permanent failures re-running can't fix: auth/quota/config AND network/CDN hard-fails
-                    // (offline / blocked mirrors / load timeouts) — bail immediately rather than burn retries.
-                    const _permanentErr = (e) => /\b(quota|exceeded|429|api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|network|offline|cdn|mirror|failed to (?:load|fetch)|load timeout)\b/i.test(String((e && (e.message || e)) || ''));
+                    // Disposition table (ChatGPT review 2026-07-10, findings 2+8): fixAndVerifyPdf now
+                    // RETHROWS single-mode failures carrying the Gemini classification (isQuota/isAuth/
+                    // isConfig/canvasTransientAuth/classification.perDay) — previously it swallowed them,
+                    // _handsErr stayed null, and auth/daily-quota/config failures burned up to 3 full
+                    // reruns. Policy reads the STRUCTURED evidence first; the message regex is only the
+                    // fallback for unclassified errors. Note the old regex treated EVERY quota/429 as
+                    // permanent — a per-minute burst should wait-and-retry (H2), not bail.
+                    const _permanentRegex = /\b(api[\s_-]?key|unauthoriz|forbidden|invalid[\s_-]?key|config|RECITATION|safety[\s_-]?block|offline|cdn|mirror|failed to (?:load|fetch)|load timeout)\b/i;
+                    const _handsDisposition = (e) => {
+                      if (!e) return 'retry';                              // no result, no error → transient shape
+                      const _m = String((e && (e.message || e)) || '');
+                      if (e.name === 'AbortError' || /\baborted?\b/i.test(_m)) return 'stop-silent'; // cancellation: no retry, no alarm
+                      if (e.isConfig) return 'never';
+                      if (e.isAuth && !e.canvasTransientAuth) return 'never';
+                      if (e.isQuota) return (e.classification && e.classification.perDay) ? 'pause-daily' : 'wait-retry';
+                      if (e.canvasTransientAuth) return 'wait-retry';
+                      if (_permanentRegex.test(_m)) return 'never';
+                      return 'retry';                                      // network/5xx/timeout → bounded retry
+                    };
                     const _stopped = () => !!(pdfAutoContinueAbortRef && pdfAutoContinueAbortRef.current); // user pressed Stop
                     let _handsErr = null, _res = null;
                     // Capture the RETURN value (no 250ms ref-timing race) and fall back to the ref if the
-                    // pipeline doesn't return it.
-                    const _runFix = async () => { _handsErr = null; try { _res = await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || undefined }); } catch (e) { _handsErr = e; /* fix surface shows its own errors */ } for (let _w = 0; _w < 6 && !(_res || pdfFixResultRef.current); _w++) { await new Promise((res) => setTimeout(res, 200)); } _res = _res || pdfFixResultRef.current; };
+                    // pipeline doesn't return it — but NEVER adopt a stale ref after a FAILED run (the ref
+                    // can still hold the PREVIOUS document's result, which read as instant success).
+                    const _runFix = async () => { _handsErr = null; try { _res = await fixAndVerifyPdf({ base64: pendingPdfBase64, fileName: pendingPdfFile?.name, auditResult: _audit || undefined }); } catch (e) { _handsErr = e; /* fix surface shows its own errors */ } if (!_handsErr) { for (let _w = 0; _w < 6 && !(_res || pdfFixResultRef.current); _w++) { await new Promise((res) => setTimeout(res, 200)); } _res = _res || pdfFixResultRef.current; } };
                     await _runFix();
                     let _fixTries = 0;
-                    // (1) Re-run the whole fix only if it produced NO result — bounded, never for a permanent
-                    // error, never after the user pressed Stop.
-                    while (!_res && _fixTries < _HANDSOFF_MAX && !_permanentErr(_handsErr) && !_stopped()) {
+                    // (1) Re-run the whole fix only if it produced NO result — bounded, disposition-gated,
+                    // never after the user pressed Stop.
+                    while (!_res && _fixTries < _HANDSOFF_MAX && !_stopped()) {
+                      const _disp = _handsDisposition(_handsErr);
+                      if (_disp === 'never' || _disp === 'stop-silent') break;
+                      if (_disp === 'pause-daily') {
+                        addToast('⏸ ' + (t('toasts.handsoff_daily_quota') || 'Daily AI quota reached — the run is paused, your progress is preserved. Re-run after the quota resets (midnight Pacific).'), 'warning');
+                        break;
+                      }
                       _fixTries++;
-                      addToast('🔁 ' + (t('toasts.handsoff_retry_fix') || 'Hands-off mode — the fix produced no result; retrying') + ' (' + _fixTries + '/' + _HANDSOFF_MAX + ')…', 'info');
-                      await new Promise((res) => setTimeout(res, 1500 * _fixTries));
+                      if (_disp === 'wait-retry') {
+                        addToast('⏳ ' + (t('toasts.handsoff_wait_retry') || 'AI rate-limit — waiting for it to ease before retrying') + ' (' + _fixTries + '/' + _HANDSOFF_MAX + ')…', 'info');
+                        try { if (_docPipeline && typeof _docPipeline.waitForGeminiCalm === 'function') await _docPipeline.waitForGeminiCalm({ maxWaitMs: 180000, shouldAbort: _stopped }); } catch (_) {}
+                      } else {
+                        addToast('🔁 ' + (t('toasts.handsoff_retry_fix') || 'Hands-off mode — the fix produced no result; retrying') + ' (' + _fixTries + '/' + _HANDSOFF_MAX + ')…', 'info');
+                        await new Promise((res) => setTimeout(res, 1500 * _fixTries));
+                      }
+                      if (_stopped()) break;
                       await _runFix();
                     }
                     let r = _res || pdfFixResultRef.current;
@@ -5985,9 +6018,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         const freshBase64 = await ensurePdfBase64();
                         if (!freshBase64) return; // user cancelled re-attach
                         if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) {
-                          fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name });
+                          fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting — swallow here (fire-and-forget button)
                         } else {
-                          fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name });
+                          fixAndVerifyPdf({ base64: freshBase64, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2: pipeline rethrows after toasting
                         }
                       }} disabled={pdfFixLoading} className="flex-1 px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-40">
                         {pdfFixLoading ? <span className="animate-spin">⏳</span> : <Sparkles size={16} />}
@@ -10358,8 +10391,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           try { window.__alloForceOcr = force; } catch (_) {}
                           const fb = await ensurePdfBase64();
                           if (!fb) { try { window.__alloForceOcr = null; } catch (_) {} return; } // user cancelled re-attach
-                          if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name });
-                          else fixAndVerifyPdf({ base64: fb, fileName: pendingPdfFile?.name });
+                          if (pdfPageRange && pdfPageRange.start && pdfPageRange.end) fixAndVerifyPdf({ pageRange: [pdfPageRange.start, pdfPageRange.end], base64: fb, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2
+                          else fixAndVerifyPdf({ base64: fb, fileName: pendingPdfFile?.name }).catch(() => {}); // finding 2
                         };
                         return (
                           <div className="mb-2">
