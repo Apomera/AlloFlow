@@ -928,6 +928,7 @@
         <span class="status" id="exportContainerHelp" style="margin-top:0">Auto fits most exports. WebM is most reliable. Strict MP4 runs on this device when a site requires MP4.</span>
       </div>
       <div class="row" style="margin-bottom:10px">
+        <label id="fastExportWrap" hidden><input type="checkbox" id="fastExportChk"> ⚡ Fast export (beta) — encodes faster than real time on this device; falls back to the standard encoder automatically if anything goes wrong</label>
         <label><input type="checkbox" id="titleCardChk"> 2.5s title card at the start</label>
         <label>Title card look:
           <select id="titleCardStyle" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:6px 8px">
@@ -3472,6 +3473,142 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       out.push(Math.min(1, m));
     }
     return out;
+  }
+
+  // Minimal WebM (Matroska subset) muxer for the WebCodecs fast-export path:
+  // VP8/VP9 video + optional Opus audio, per-chunk millisecond timestamps,
+  // known-size elements throughout (so vsPatchWebmDuration deliberately
+  // leaves these files alone — Duration is written up front). Clusters break
+  // on video keyframes (>1s apart) or every 30s so SimpleBlock int16
+  // relative timestamps can never overflow.
+  function vsMuxWebm(opts) {
+    var o = opts || {};
+    var vid = o.video || {};
+    var aud = o.audio || null;
+    var vChunks = Array.isArray(vid.chunks) ? vid.chunks : [];
+    if (!vChunks.length) return new Uint8Array(0);
+    function be(n, len) {
+      var a = new Uint8Array(len);
+      var v = Math.max(0, Math.floor(Number(n) || 0));
+      for (var i = len - 1; i >= 0; i--) { a[i] = v & 0xff; v = Math.floor(v / 256); }
+      return a;
+    }
+    function esize(n) {
+      var len = 1;
+      while (len < 8 && n >= Math.pow(2, 7 * len) - 1) len++;
+      var a = be(n, len);
+      a[0] |= (0x80 >> (len - 1));
+      return a;
+    }
+    function cat(list) {
+      var total = 0;
+      list.forEach(function (c) { total += c.length; });
+      var out = new Uint8Array(total), p = 0;
+      list.forEach(function (c) { out.set(c, p); p += c.length; });
+      return out;
+    }
+    function el(idBytes, payload) {
+      return cat([new Uint8Array(idBytes), esize(payload.length), payload]);
+    }
+    function uintPayload(n) {
+      var v = Math.max(0, Math.floor(Number(n) || 0));
+      var len = 1;
+      while (len < 8 && v >= Math.pow(2, 8 * len)) len++;
+      return be(v, len);
+    }
+    function strPayload(s) {
+      var str = String(s || ''), a = new Uint8Array(str.length);
+      for (var i = 0; i < str.length; i++) a[i] = str.charCodeAt(i) & 0xff;
+      return a;
+    }
+    function f64Payload(x) {
+      var b = new Uint8Array(8);
+      new DataView(b.buffer).setFloat64(0, Number(x) || 0);
+      return b;
+    }
+    function opusHead(channels, sampleRate) {
+      var b = new Uint8Array(19);
+      b.set(strPayload('OpusHead'), 0);
+      b[8] = 1; b[9] = channels;
+      b[10] = 0x38; b[11] = 0x01; // pre-skip 312 samples, little-endian
+      new DataView(b.buffer).setUint32(12, sampleRate, true);
+      return b;
+    }
+    var ebmlHeader = el([0x1a, 0x45, 0xdf, 0xa3], cat([
+      el([0x42, 0x86], uintPayload(1)),          // EBMLVersion
+      el([0x42, 0xf7], uintPayload(1)),          // EBMLReadVersion
+      el([0x42, 0xf2], uintPayload(4)),          // EBMLMaxIDLength
+      el([0x42, 0xf3], uintPayload(8)),          // EBMLMaxSizeLength
+      el([0x42, 0x82], strPayload('webm')),      // DocType
+      el([0x42, 0x87], uintPayload(2)),          // DocTypeVersion
+      el([0x42, 0x85], uintPayload(2))           // DocTypeReadVersion
+    ]));
+    var durationMs = Math.max(0, Number(o.durationMs) || 0);
+    var info = el([0x15, 0x49, 0xa9, 0x66], cat([
+      el([0x2a, 0xd7, 0xb1], uintPayload(1000000)),   // TimestampScale: 1ms
+      el([0x44, 0x89], f64Payload(durationMs)),
+      el([0x4d, 0x80], strPayload('AlloFlowVideoStudio')),
+      el([0x57, 0x41], strPayload('AlloFlowVideoStudio'))
+    ]));
+    var videoEntry = el([0xae], cat([
+      el([0xd7], uintPayload(1)),                     // TrackNumber
+      el([0x73, 0xc5], uintPayload(1)),               // TrackUID
+      el([0x83], uintPayload(1)),                     // TrackType: video
+      el([0x9c], uintPayload(0)),                     // FlagLacing off
+      el([0x86], strPayload(vid.codec === 'vp9' ? 'V_VP9' : 'V_VP8')),
+      el([0xe0], cat([
+        el([0xb0], uintPayload(vid.width || 0)),
+        el([0xba], uintPayload(vid.height || 0))
+      ]))
+    ]));
+    var trackList = [videoEntry];
+    if (aud && Array.isArray(aud.chunks) && aud.chunks.length) {
+      trackList.push(el([0xae], cat([
+        el([0xd7], uintPayload(2)),
+        el([0x73, 0xc5], uintPayload(2)),
+        el([0x83], uintPayload(2)),                   // TrackType: audio
+        el([0x9c], uintPayload(0)),
+        el([0x86], strPayload('A_OPUS')),
+        el([0x63, 0xa2], opusHead(aud.channels || 2, aud.sampleRate || 48000)),
+        el([0x56, 0xaa], uintPayload(6500000)),       // CodecDelay ns (312/48k)
+        el([0x56, 0xbb], uintPayload(80000000)),      // SeekPreRoll ns
+        el([0xe1], cat([
+          el([0xb5], f64Payload(aud.sampleRate || 48000)),
+          el([0x9f], uintPayload(aud.channels || 2))
+        ]))
+      ])));
+    }
+    var tracks = el([0x16, 0x54, 0xae, 0x6b], cat(trackList));
+    var events = [];
+    vChunks.forEach(function (c) {
+      if (c && c.data && c.data.length) events.push({ t: Math.max(0, Math.round(Number(c.timestampMs) || 0)), track: 1, key: !!c.keyframe, data: c.data });
+    });
+    if (aud && Array.isArray(aud.chunks)) {
+      aud.chunks.forEach(function (c) {
+        if (c && c.data && c.data.length) events.push({ t: Math.max(0, Math.round(Number(c.timestampMs) || 0)), track: 2, key: true, data: c.data });
+      });
+    }
+    events.sort(function (a, b) { return a.t - b.t || a.track - b.track; });
+    var clusters = [];
+    var base = -1, blocks = null;
+    function flushCluster() {
+      if (blocks && blocks.length) {
+        clusters.push(el([0x1f, 0x43, 0xb6, 0x75], cat([el([0xe7], uintPayload(base))].concat(blocks))));
+      }
+      blocks = null;
+    }
+    events.forEach(function (ev) {
+      var needNew = base < 0 || (ev.t - base) > 30000 || (ev.track === 1 && ev.key && (ev.t - base) > 1000);
+      if (needNew) { flushCluster(); base = ev.t; blocks = []; }
+      var rel = ev.t - base;
+      var head = new Uint8Array(3);
+      head[0] = (rel >> 8) & 0xff; head[1] = rel & 0xff;
+      head[2] = (ev.track === 1 && ev.key) || ev.track === 2 ? 0x80 : 0x00;
+      blocks.push(el([0xa3], cat([esize(ev.track), head, ev.data])));
+    });
+    flushCluster();
+    var segment = el([0x18, 0x53, 0x80, 0x67], cat([info, tracks].concat(clusters)));
+    return cat([ebmlHeader, segment]);
   }
   // [VS_SHARED_END]
 
@@ -10071,7 +10208,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         setStatus($('exportStatus'), 'No re-encode needed - keeping the original file.', outputContainer.fallback ? 'warn' : 'ok');
       } else {
         setStatus($('exportStatus'), 'Re-encoding for ' + (VIDEO_EXPORT_FORMATS[exportFormatKey] || VIDEO_EXPORT_FORMATS.original).label + '... keep this window visible.', 'warn');
-        var res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, { format: exportFormatKey, framing: exportFraming, container: exportContainer });
+        var res = null;
+        if (fastExportSupported && $('fastExportChk') && $('fastExportChk').checked) {
+          try {
+            res = await reencodeFast(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, { format: exportFormatKey, framing: exportFraming, container: exportContainer });
+          } catch (fastErr) {
+            if (fastErr && fastErr.name === 'AbortError') throw fastErr;
+            setStatus($('exportStatus'), 'Fast export hit a snag (' + String((fastErr && fastErr.message) || fastErr).slice(0, 120) + ') — using the standard real-time encoder instead.', 'warn');
+            res = null;
+          }
+        }
+        if (!res) res = await reencode(t, seg.segments[0], cues, capMode === 'burn', wantTitleCard ? title : null, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, { format: exportFormatKey, framing: exportFraming, container: exportContainer });
         outBlob = res.blob; outDur = res.duration; outputFormat = res.outputFormat || exportCanvasSizeFor(exportFormatKey, 1280, 720); exportFraming = res.outputFraming || exportFraming; outputContainer = res.outputContainer || outputContainerInfoForBlob(outBlob, exportContainer);
         setStatus($('exportStatus'), 'Done (' + fmtBytes(outBlob.size) + ', ' + exportFormatLabel(outputFormat) + ', ' + exportContainerLabel(outputContainer) + ').', outputContainer.fallback ? 'warn' : 'ok');
       }
@@ -10318,6 +10465,61 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
 
+  // Burned-caption renderer shared by both export paths (real-time reencode
+  // and the WebCodecs fast path) — one implementation so the two encoders
+  // can never draw captions differently.
+  function drawBurnCaption(ctx, w, hgt, cues, tSec, captionStyle) {
+    var cue = activeCaptionAt(cues, tSec);
+    var line = cue && cue.text;
+    if (!line) return;
+    ctx.save();
+    var fontSize = Math.max(18, Math.round(hgt * 0.046 * (captionStyle.scale || 1)));
+    var lineHeight = Math.round(fontSize * 1.26);
+    ctx.font = String(captionStyle.fontWeight || 800) + ' ' + fontSize + 'px ' + (captionStyle.fontFamily || 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = captionStyle.align === 'left' ? 'left' : 'center';
+    var maxWidth = w * (captionStyle.position === 'lower-left' ? 0.58 : 0.78);
+    var lines = wrapCaptionLinesCanvas(ctx, line, maxWidth, captionStyle.maxLines || 3);
+    var textW = 0;
+    for (var li = 0; li < lines.length; li++) textW = Math.max(textW, ctx.measureText(lines[li]).width);
+    var padX = Math.round(fontSize * 0.72);
+    var padY = Math.round(fontSize * 0.42);
+    var boxW = Math.min(w * 0.9, textW + padX * 2);
+    var boxH = lines.length * lineHeight + padY * 2;
+    var boxX = captionStyle.position === 'lower-left' ? Math.round(w * 0.06) : Math.round((w - boxW) / 2);
+    var boxY = captionStyle.position === 'top' ? Math.round(Math.max(hgt * 0.055, 28)) : Math.round(hgt - Math.max(hgt * 0.055, 28) - boxH);
+    if (captionStyle.position === 'lower-left') boxY = Math.round(hgt - Math.max(hgt * 0.065, 34) - boxH);
+    boxX = Math.max(Math.round(w * 0.035), Math.min(w - boxW - Math.round(w * 0.035), boxX));
+    boxY = Math.max(Math.round(hgt * 0.04), Math.min(hgt - boxH - Math.round(hgt * 0.04), boxY));
+    if (captionStyle.box) {
+      ctx.shadowColor = captionStyle.shadow || 'rgba(0,0,0,0.45)';
+      ctx.shadowBlur = Math.round(fontSize * 0.75);
+      ctx.shadowOffsetY = Math.round(fontSize * 0.22);
+      ctx.fillStyle = captionStyle.background || 'rgba(0,0,0,0.78)';
+      drawRoundRect(ctx, boxX, boxY, boxW, boxH, Math.round(fontSize * 0.55));
+      ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.lineWidth = Math.max(1, Math.round(fontSize * 0.055));
+      ctx.strokeStyle = captionStyle.border || 'rgba(255,255,255,0.24)';
+      ctx.stroke();
+    } else {
+      ctx.shadowColor = captionStyle.shadow || 'rgba(0,0,0,0.85)';
+      ctx.shadowBlur = Math.round(fontSize * 0.42);
+      ctx.shadowOffsetY = Math.round(fontSize * 0.12);
+      ctx.lineWidth = Math.max(3, Math.round(fontSize * 0.14));
+      ctx.strokeStyle = captionStyle.stroke || 'rgba(0,0,0,0.9)';
+    }
+    var textX = captionStyle.align === 'left' ? boxX + padX : boxX + boxW / 2;
+    var firstY = boxY + padY + lineHeight / 2;
+    for (var ti = 0; ti < lines.length; ti++) {
+      var ty = firstY + ti * lineHeight;
+      if (!captionStyle.box) ctx.strokeText(lines[ti], textX, ty, maxWidth);
+      ctx.fillStyle = captionStyle.textColor || '#ffffff';
+      ctx.fillText(lines[ti], textX, ty, maxWidth);
+    }
+    ctx.restore();
+  }
+
   // Real-time re-encode: play the take through the kept segment, draw to a
   // canvas (title card first, caption overlay if burning), mix audio via
   // AudioContext, and record the composite. Duration ≈ edited length.
@@ -10446,55 +10648,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         var startedAt = 0, raf = 0, phase = titleCard ? 'card' : 'video';
         function drawCaption(tSec) {
           if (!burnCaptions) return;
-          var cue = activeCaptionAt(cues, tSec);
-          var line = cue && cue.text;
-          if (!line) return;
-          ctx.save();
-          var fontSize = Math.max(18, Math.round(hgt * 0.046 * (captionStyle.scale || 1)));
-          var lineHeight = Math.round(fontSize * 1.26);
-          ctx.font = String(captionStyle.fontWeight || 800) + ' ' + fontSize + 'px ' + (captionStyle.fontFamily || 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif');
-          ctx.textBaseline = 'middle';
-          ctx.textAlign = captionStyle.align === 'left' ? 'left' : 'center';
-          var maxWidth = w * (captionStyle.position === 'lower-left' ? 0.58 : 0.78);
-          var lines = wrapCaptionLinesCanvas(ctx, line, maxWidth, captionStyle.maxLines || 3);
-          var textW = 0;
-          for (var li = 0; li < lines.length; li++) textW = Math.max(textW, ctx.measureText(lines[li]).width);
-          var padX = Math.round(fontSize * 0.72);
-          var padY = Math.round(fontSize * 0.42);
-          var boxW = Math.min(w * 0.9, textW + padX * 2);
-          var boxH = lines.length * lineHeight + padY * 2;
-          var boxX = captionStyle.position === 'lower-left' ? Math.round(w * 0.06) : Math.round((w - boxW) / 2);
-          var boxY = captionStyle.position === 'top' ? Math.round(Math.max(hgt * 0.055, 28)) : Math.round(hgt - Math.max(hgt * 0.055, 28) - boxH);
-          if (captionStyle.position === 'lower-left') boxY = Math.round(hgt - Math.max(hgt * 0.065, 34) - boxH);
-          boxX = Math.max(Math.round(w * 0.035), Math.min(w - boxW - Math.round(w * 0.035), boxX));
-          boxY = Math.max(Math.round(hgt * 0.04), Math.min(hgt - boxH - Math.round(hgt * 0.04), boxY));
-          if (captionStyle.box) {
-            ctx.shadowColor = captionStyle.shadow || 'rgba(0,0,0,0.45)';
-            ctx.shadowBlur = Math.round(fontSize * 0.75);
-            ctx.shadowOffsetY = Math.round(fontSize * 0.22);
-            ctx.fillStyle = captionStyle.background || 'rgba(0,0,0,0.78)';
-            drawRoundRect(ctx, boxX, boxY, boxW, boxH, Math.round(fontSize * 0.55));
-            ctx.fill();
-            ctx.shadowColor = 'transparent';
-            ctx.lineWidth = Math.max(1, Math.round(fontSize * 0.055));
-            ctx.strokeStyle = captionStyle.border || 'rgba(255,255,255,0.24)';
-            ctx.stroke();
-          } else {
-            ctx.shadowColor = captionStyle.shadow || 'rgba(0,0,0,0.85)';
-            ctx.shadowBlur = Math.round(fontSize * 0.42);
-            ctx.shadowOffsetY = Math.round(fontSize * 0.12);
-            ctx.lineWidth = Math.max(3, Math.round(fontSize * 0.14));
-            ctx.strokeStyle = captionStyle.stroke || 'rgba(0,0,0,0.9)';
-          }
-          var textX = captionStyle.align === 'left' ? boxX + padX : boxX + boxW / 2;
-          var firstY = boxY + padY + lineHeight / 2;
-          for (var ti = 0; ti < lines.length; ti++) {
-            var ty = firstY + ti * lineHeight;
-            if (!captionStyle.box) ctx.strokeText(lines[ti], textX, ty, maxWidth);
-            ctx.fillStyle = captionStyle.textColor || '#ffffff';
-            ctx.fillText(lines[ti], textX, ty, maxWidth);
-          }
-          ctx.restore();
+          drawBurnCaption(ctx, w, hgt, cues, tSec, captionStyle);
         }
         function frame(now) {
           if (!startedAt) startedAt = now;
@@ -10591,6 +10745,276 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           });
         });
       });
+    });
+  }
+
+  // ── WebCodecs fast export (beta) ──
+  // Encodes the composite off the real-time clock: frames come from
+  // requestVideoFrameCallback while the muted take plays at up to 4×, are
+  // stamped with MEDIA time (so a dropped frame can never desync timing), and
+  // feed a VP8 VideoEncoder; audio renders in one shot via OfflineAudioContext
+  // (the same vsGainAt/vsMusicGainAt math as the live path) and encodes to
+  // Opus; vsMuxWebm containerizes both. Any failure falls back to the
+  // real-time encoder in doExport — this path may be fast, it must never be
+  // the only way out.
+  var FAST_EXPORT_RATE = 4;
+  var fastExportSupported = false;
+  (function () {
+    try {
+      if (!('VideoEncoder' in window) || !('AudioEncoder' in window) || !('VideoFrame' in window) || !('AudioData' in window)) return;
+      if (!HTMLVideoElement.prototype.requestVideoFrameCallback) return;
+      if (!window.OfflineAudioContext) return;
+      Promise.all([
+        VideoEncoder.isConfigSupported({ codec: 'vp8', width: 1280, height: 720, bitrate: 2500000, framerate: 30 }),
+        AudioEncoder.isConfigSupported({ codec: 'opus', sampleRate: 48000, numberOfChannels: 2, bitrate: 128000 })
+      ]).then(function (res) {
+        if (res[0] && res[0].supported && res[1] && res[1].supported) {
+          fastExportSupported = true;
+          if ($('fastExportWrap')) $('fastExportWrap').hidden = false;
+        }
+      }).catch(function () {});
+    } catch (_) {}
+  })();
+
+  // Offline audio mix for the fast path. Mirrors the live export exactly:
+  // original track with mute-span/master-volume gain curve, narration and
+  // sound clips at their take times, music bed with speech ducking and loop.
+  // A broken clip is skipped (live-path tolerance); an undecodable ORIGINAL
+  // track throws so doExport falls back to the real-time encoder.
+  async function renderExportAudioOffline(take, seg, cardDur, totalDur, audioCfg, musicBed) {
+    var removeAudio = !!(audioCfg && audioCfg.removeAll);
+    var mixItems = [];
+    if (take.narration && take.narration.blob) mixItems.push({ kind: 'speech', blob: take.narration.blob, at: 0, vol: take.narration.volume });
+    (take.audioClips || []).forEach(function (c) { if (c && c.blob) mixItems.push({ kind: 'speech', blob: c.blob, at: Number(c.t) || 0, vol: c.volume }); });
+    var safeMusic = musicBed && musicBed.blob ? vsSanitizeMusicBed(musicBed, take.duration || 0) : null;
+    if (safeMusic && safeMusic.blob) mixItems.push(Object.assign({ kind: 'music', blob: safeMusic.blob, at: safeMusic.start, vol: safeMusic.volume }, safeMusic));
+    if (removeAudio && !mixItems.length) return null;
+    var sr = 48000;
+    var oac = new OfflineAudioContext(2, Math.max(1, Math.ceil(totalDur * sr)), sr);
+    var segLen = seg.end - seg.start;
+    if (!removeAudio) {
+      var srcBuf = await oac.decodeAudioData(await take.blob.arrayBuffer());
+      var src = oac.createBufferSource(); src.buffer = srcBuf;
+      var g = oac.createGain();
+      var n = Math.max(2, Math.ceil(segLen / 0.01));
+      var curve = new Float32Array(n);
+      for (var i = 0; i < n; i++) curve[i] = vsGainAt(audioCfg && audioCfg.muteSpans, audioCfg ? audioCfg.volume : 1, seg.start + (i / (n - 1)) * segLen);
+      g.gain.setValueAtTime(curve[0], 0);
+      try { g.gain.setValueCurveAtTime(curve, cardDur, Math.max(0.05, segLen)); } catch (_) { g.gain.value = curve[0]; }
+      src.connect(g); g.connect(oac.destination);
+      src.start(cardDur, seg.start, segLen);
+    }
+    for (var mi = 0; mi < mixItems.length; mi++) {
+      var m = mixItems[mi];
+      var mBuf;
+      try { mBuf = await oac.decodeAudioData(await m.blob.arrayBuffer()); } catch (_) { continue; }
+      var mSrc = oac.createBufferSource(); mSrc.buffer = mBuf;
+      var mGain = oac.createGain();
+      if (m.kind === 'music') {
+        var mStart = Math.max(m.start, seg.start), mEnd = Math.min(m.end, seg.end);
+        if (!(mEnd > mStart)) continue;
+        var when = cardDur + (mStart - seg.start);
+        var dur = mEnd - mStart;
+        var mN = Math.max(2, Math.ceil(dur / 0.05));
+        var mCurve = new Float32Array(mN);
+        for (var k = 0; k < mN; k++) {
+          var takeT = mStart + (k / (mN - 1)) * dur;
+          mCurve[k] = vsMusicGainAt(m, takeT, speechActiveAt(take, takeT));
+        }
+        mGain.gain.setValueAtTime(0, 0);
+        try { mGain.gain.setValueCurveAtTime(mCurve, when, Math.max(0.05, dur)); } catch (_) { mGain.gain.value = mCurve[0]; }
+        if (m.loop && mBuf.duration > 0.1) { mSrc.loop = true; mSrc.loopStart = 0; mSrc.loopEnd = mBuf.duration; }
+        var offset = Math.max(0, mStart - m.start);
+        if (mSrc.loop && mBuf.duration > 0.1) offset = offset % mBuf.duration;
+        mSrc.connect(mGain); mGain.connect(oac.destination);
+        mSrc.start(when, Math.min(offset, Math.max(0, mBuf.duration - 0.01)), dur);
+      } else {
+        var when2 = cardDur + Math.max(0, m.at - seg.start);
+        var offset2 = Math.max(0, seg.start - m.at);
+        if (offset2 >= mBuf.duration) continue;
+        var maxDur = totalDur - when2;
+        if (maxDur <= 0) continue;
+        mGain.gain.value = Math.max(0, Math.min(2, Number(m.vol != null ? m.vol : 1)));
+        mSrc.connect(mGain); mGain.connect(oac.destination);
+        mSrc.start(when2, offset2, Math.min(mBuf.duration - offset2, maxDur));
+      }
+    }
+    var rendered = await oac.startRendering();
+    var chunks = [];
+    var encError = null;
+    var aenc = new AudioEncoder({
+      output: function (chunk) {
+        var buf = new Uint8Array(chunk.byteLength);
+        chunk.copyTo(buf);
+        chunks.push({ data: buf, timestampMs: Math.round(chunk.timestamp / 1000) });
+      },
+      error: function (e) { encError = e; }
+    });
+    aenc.configure({ codec: 'opus', sampleRate: sr, numberOfChannels: 2, bitrate: 128000 });
+    var frames = rendered.length, FR = 960; // 20ms Opus frames
+    var chL = rendered.getChannelData(0);
+    var chR = rendered.numberOfChannels > 1 ? rendered.getChannelData(1) : chL;
+    for (var off = 0; off < frames; off += FR) {
+      var nn = Math.min(FR, frames - off);
+      var data = new Float32Array(nn * 2);
+      data.set(chL.subarray(off, off + nn), 0);
+      data.set(chR.subarray(off, off + nn), nn);
+      var ad = new AudioData({ format: 'f32-planar', sampleRate: sr, numberOfFrames: nn, numberOfChannels: 2, timestamp: Math.round(off / sr * 1e6), data: data });
+      aenc.encode(ad);
+      ad.close();
+    }
+    await aenc.flush();
+    aenc.close();
+    if (encError) throw encError;
+    return { codec: 'opus', sampleRate: sr, channels: 2, chunks: chunks };
+  }
+
+  function reencodeFast(take, seg, cues, burnCaptions, titleCard, zooms, audioCfg, inserts, musicBed, captionStyleKey, captionCustom, titleCardStyleKey, outputOptions) {
+    return new Promise(function (resolve, reject) {
+      (async function () {
+        var canceled = false;
+        var v = document.createElement('video');
+        var venc = null;
+        activeReencodeCancel = function () {
+          canceled = true;
+          announce('Export canceled');
+        };
+        try {
+          var opts = outputOptions || {};
+          await new Promise(function (res, rej) {
+            v.addEventListener('loadedmetadata', res, { once: true });
+            v.addEventListener('error', function () { rej(new Error('could not decode the take')); }, { once: true });
+            v.src = take.url;
+          });
+          var outputFormat = exportCanvasSizeFor(opts.format || 'original', v.videoWidth || 1280, v.videoHeight || 720);
+          var outputFraming = sanitizeExportFraming(opts.framing || 'fit');
+          var outputContainerChoice = sanitizeExportContainer(opts.container || 'auto');
+          var w = outputFormat.width, hgt = outputFormat.height;
+          var cv = document.createElement('canvas'); cv.width = w; cv.height = hgt;
+          var ctx = cv.getContext('2d');
+          var captionStyle = vsResolveCaptionStyle(captionStyleKey, captionCustom);
+          var insertList = vsSanitizeTeachingInserts(inserts || [], take.duration || 0);
+          await Promise.all(insertList.map(function (ins) {
+            return new Promise(function (res) {
+              if (!ins.imageSrc) { res(); return; }
+              var im = new Image();
+              im.onload = function () { ins._img = im; res(); };
+              im.onerror = function () { res(); };
+              im.src = ins.imageSrc;
+            });
+          }));
+          var cardDur = titleCard ? 2.5 : 0;
+          var segLen = seg.end - seg.start;
+          var totalDur = cardDur + segLen;
+          var fps = 30;
+          var videoChunks = [];
+          var vErr = null;
+          venc = new VideoEncoder({
+            output: function (chunk) {
+              var buf = new Uint8Array(chunk.byteLength);
+              chunk.copyTo(buf);
+              videoChunks.push({ data: buf, timestampMs: Math.round(chunk.timestamp / 1000), keyframe: chunk.type === 'key' });
+            },
+            error: function (e) { vErr = e; }
+          });
+          venc.configure({ codec: 'vp8', width: w, height: hgt, bitrate: exportVideoBitrate(w, hgt), framerate: fps });
+          setReencodeUi(true, 'Fast export: rendering the audio mix…');
+          var audioTrack = await renderExportAudioOffline(take, seg, cardDur, totalDur, audioCfg, musicBed);
+          if (canceled) throw exportAbortError('Export canceled');
+          var framesSinceKey = 0;
+          function encodeCanvasFrame(tsSec, keyHint) {
+            var key = !!keyHint || framesSinceKey >= fps * 4;
+            var f = new VideoFrame(cv, { timestamp: Math.round(tsSec * 1e6), duration: Math.round(1e6 / fps) });
+            venc.encode(f, { keyFrame: key });
+            f.close();
+            framesSinceKey = key ? 0 : framesSinceKey + 1;
+          }
+          if (cardDur) {
+            var cardFrames = Math.round(cardDur * fps);
+            for (var cf = 0; cf < cardFrames; cf++) {
+              if (canceled) throw exportAbortError('Export canceled');
+              drawStyledTitleCard(ctx, w, hgt, titleCard, titleCardStyleKey, cardFrames > 1 ? cf / (cardFrames - 1) : 1);
+              encodeCanvasFrame(cf / fps, cf === 0);
+            }
+          }
+          v.muted = true; v.playsInline = true;
+          v.playbackRate = FAST_EXPORT_RATE;
+          v.currentTime = seg.start;
+          var wallStart = performance.now();
+          var lastTsUs = -1;
+          await new Promise(function (res, rej) {
+            var done = false;
+            function finish() { if (done) return; done = true; try { v.pause(); } catch (_) {} res(); }
+            function fail(err) { if (done) return; done = true; try { v.pause(); } catch (_) {} rej(err); }
+            function step(now, meta) {
+              if (done) return;
+              if (canceled) { fail(exportAbortError('Export canceled')); return; }
+              var mt = (meta && isFinite(meta.mediaTime)) ? meta.mediaTime : v.currentTime;
+              if (mt >= seg.end - 0.001 || v.ended) { finish(); return; }
+              if (mt >= seg.start - 0.001) {
+                var zs = vsZoomState(zooms || [], mt);
+                drawVideoIntoFrame(ctx, v, w, hgt, outputFraming, zs);
+                drawTeachingInserts(ctx, w, hgt, insertList, mt);
+                if (burnCaptions) drawBurnCaption(ctx, w, hgt, cues, mt - seg.start, captionStyle);
+                var tsUs = Math.round((cardDur + (mt - seg.start)) * 1e6);
+                if (tsUs > lastTsUs) {
+                  encodeCanvasFrame(cardDur + (mt - seg.start), lastTsUs < 0 && !cardDur);
+                  lastTsUs = tsUs;
+                }
+                var wallSec = (performance.now() - wallStart) / 1000;
+                var doneFrac = Math.min(1, (mt - seg.start) / Math.max(0.1, segLen));
+                $('exportProgress').hidden = false;
+                $('exportProgress').value = Math.round(doneFrac * 100);
+                var speed = wallSec > 0.4 ? ((mt - seg.start) / wallSec) : 0;
+                setReencodeUi(true, 'Fast export: ' + Math.round(doneFrac * 100) + '%' + (speed > 0.1 ? ' — encoding at ' + (Math.round(speed * 10) / 10) + 'x real time' : '') + '.');
+              }
+              // Backpressure: pause decode while the encoder queue drains.
+              if (venc.encodeQueueSize > 24 && !v.paused) {
+                try { v.pause(); } catch (_) {}
+                var drain = setInterval(function () {
+                  if (done || canceled) { clearInterval(drain); return; }
+                  if (venc.encodeQueueSize <= 8) {
+                    clearInterval(drain);
+                    v.play().catch(function () { fail(new Error('playback blocked')); });
+                  }
+                }, 40);
+              }
+              v.requestVideoFrameCallback(step);
+            }
+            v.requestVideoFrameCallback(step);
+            v.addEventListener('ended', finish);
+            v.play().catch(function () { fail(new Error('playback blocked')); });
+          });
+          if (canceled) throw exportAbortError('Export canceled');
+          setReencodeUi(true, 'Fast export: finishing the file…');
+          await venc.flush();
+          venc.close(); venc = null;
+          if (vErr) throw vErr;
+          if (!videoChunks.length) throw new Error('no frames were encoded');
+          var webm = vsMuxWebm({
+            durationMs: Math.round(totalDur * 1000),
+            video: { codec: 'vp8', width: w, height: hgt, chunks: videoChunks },
+            audio: audioTrack
+          });
+          var blob = new Blob([webm], { type: 'video/webm' });
+          resolve({
+            blob: blob,
+            duration: totalDur,
+            outputFormat: outputFormat,
+            outputFraming: outputFraming,
+            outputContainer: outputContainerInfoForBlob(blob, outputContainerChoice)
+          });
+        } catch (e) {
+          reject(e);
+        } finally {
+          activeReencodeCancel = null;
+          try { v.pause(); } catch (_) {}
+          try { if (venc && venc.state !== 'closed') venc.close(); } catch (_) {}
+          setReencodeUi(false);
+          $('exportProgress').hidden = true;
+          $('exportProgress').value = 0;
+        }
+      })();
     });
   }
 

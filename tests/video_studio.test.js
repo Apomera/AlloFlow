@@ -1773,6 +1773,46 @@ describe('vsBuildStudioTakeRecord', () => {
   });
 });
 
+// ─── vsMuxWebm (WebCodecs fast-export container, 2026-07-10) ─────────────────
+describe('vsMuxWebm', () => {
+  const chunk = (t, key, bytes) => ({ timestampMs: t, keyframe: key, data: new Uint8Array(bytes) });
+  const hexOf = (u8) => Array.from(u8).map((b) => b.toString(16).padStart(2, '0')).join('');
+  it('produces a well-formed WebM: EBML magic, doctype, both tracks, clusters', () => {
+    const out = VS.vsMuxWebm({
+      durationMs: 2000,
+      video: { codec: 'vp8', width: 640, height: 360, chunks: [chunk(0, true, [1, 2, 3]), chunk(33, false, [4, 5]), chunk(66, false, [6])] },
+      audio: { codec: 'opus', sampleRate: 48000, channels: 2, chunks: [{ timestampMs: 0, data: new Uint8Array([9]) }, { timestampMs: 20, data: new Uint8Array([8]) }] },
+    });
+    expect(out.length).toBeGreaterThan(100);
+    expect(Array.from(out.slice(0, 4))).toEqual([0x1a, 0x45, 0xdf, 0xa3]); // EBML
+    const ascii = Array.from(out).map((b) => (b >= 32 && b < 127 ? String.fromCharCode(b) : '.')).join('');
+    expect(ascii).toContain('webm');
+    expect(ascii).toContain('V_VP8');
+    expect(ascii).toContain('A_OPUS');
+    expect(ascii).toContain('OpusHead');
+    const hex = hexOf(out);
+    expect(hex).toContain('18538067'); // Segment
+    expect(hex).toContain('1654ae6b'); // Tracks
+    expect(hex).toContain('1f43b675'); // Cluster
+  });
+  it('splits clusters on spaced keyframes / 30s spans', () => {
+    const out = VS.vsMuxWebm({
+      durationMs: 40000,
+      video: { codec: 'vp8', width: 64, height: 64, chunks: [chunk(0, true, [1]), chunk(5000, true, [2]), chunk(39000, true, [3])] },
+    });
+    expect(hexOf(out).split('1f43b675').length - 1).toBe(3);
+  });
+  it('writes a known-size Segment with Duration, which the patcher leaves alone', () => {
+    const out = VS.vsMuxWebm({ durationMs: 1234, video: { codec: 'vp8', width: 64, height: 64, chunks: [chunk(0, true, [1])] } });
+    const patched = VS.vsPatchWebmDuration(out, 99999);
+    expect(Array.from(patched)).toEqual(Array.from(out));
+  });
+  it('returns empty output without video chunks', () => {
+    expect(VS.vsMuxWebm({}).length).toBe(0);
+    expect(VS.vsMuxWebm({ video: { chunks: [] } }).length).toBe(0);
+  });
+});
+
 // ─── Batch-1 hardening wiring (2026-07-09) ───────────────────────────────────
 // Take persistence + always-on bridge receiver in the module; export cleanup,
 // cancel, and honest real-time ETA in the popup. Structural pins: these prove
@@ -1872,6 +1912,26 @@ describe('take persistence + export hardening wiring', () => {
     const m = moduleText();
     expect(m).toContain('var dupe = hex ? vsTakeStore.takes.filter(function (t) { return t.sha256 === hex; })[0] : null;');
     expect(m).toContain('id: dupe.id, createdAt: dupe.createdAt');
+  });
+  it('WebCodecs fast export is capability-gated with real-time fallback', () => {
+    const html = popup();
+    expect(html).toContain('id="fastExportChk"');
+    expect(html).toContain("VideoEncoder.isConfigSupported({ codec: 'vp8'");
+    expect(html).toContain("AudioEncoder.isConfigSupported({ codec: 'opus'");
+    expect(html).toContain('HTMLVideoElement.prototype.requestVideoFrameCallback');
+    expect(html).toContain('function reencodeFast(');
+    expect(html).toContain('async function renderExportAudioOffline(');
+    // Frames stamped with MEDIA time so drops never desync.
+    expect(html).toContain('meta.mediaTime');
+    // Encoder backpressure pauses decode instead of ballooning the queue.
+    expect(html).toContain('venc.encodeQueueSize > 24');
+    // doExport: fast path is opt-in and ALWAYS falls back on non-abort errors.
+    expect(html).toContain("fastExportSupported && $('fastExportChk') && $('fastExportChk').checked");
+    expect(html).toContain('using the standard real-time encoder instead');
+    expect(html).toContain('if (!res) res = await reencode(');
+    // Both paths burn captions through the single shared renderer.
+    expect(html).toContain('function drawBurnCaption(ctx, w, hgt, cues, tSec, captionStyle)');
+    expect((html.match(/drawBurnCaption\(ctx, w, hgt, cues/g) || []).length).toBeGreaterThanOrEqual(3);
   });
   it('popup re-encode cleans up on every exit and is cancelable', () => {
     const html = popup();

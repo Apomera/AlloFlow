@@ -2464,6 +2464,142 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     return out;
   }
+
+  // Minimal WebM (Matroska subset) muxer for the WebCodecs fast-export path:
+  // VP8/VP9 video + optional Opus audio, per-chunk millisecond timestamps,
+  // known-size elements throughout (so vsPatchWebmDuration deliberately
+  // leaves these files alone — Duration is written up front). Clusters break
+  // on video keyframes (>1s apart) or every 30s so SimpleBlock int16
+  // relative timestamps can never overflow.
+  function vsMuxWebm(opts) {
+    var o = opts || {};
+    var vid = o.video || {};
+    var aud = o.audio || null;
+    var vChunks = Array.isArray(vid.chunks) ? vid.chunks : [];
+    if (!vChunks.length) return new Uint8Array(0);
+    function be(n, len) {
+      var a = new Uint8Array(len);
+      var v = Math.max(0, Math.floor(Number(n) || 0));
+      for (var i = len - 1; i >= 0; i--) { a[i] = v & 0xff; v = Math.floor(v / 256); }
+      return a;
+    }
+    function esize(n) {
+      var len = 1;
+      while (len < 8 && n >= Math.pow(2, 7 * len) - 1) len++;
+      var a = be(n, len);
+      a[0] |= (0x80 >> (len - 1));
+      return a;
+    }
+    function cat(list) {
+      var total = 0;
+      list.forEach(function (c) { total += c.length; });
+      var out = new Uint8Array(total), p = 0;
+      list.forEach(function (c) { out.set(c, p); p += c.length; });
+      return out;
+    }
+    function el(idBytes, payload) {
+      return cat([new Uint8Array(idBytes), esize(payload.length), payload]);
+    }
+    function uintPayload(n) {
+      var v = Math.max(0, Math.floor(Number(n) || 0));
+      var len = 1;
+      while (len < 8 && v >= Math.pow(2, 8 * len)) len++;
+      return be(v, len);
+    }
+    function strPayload(s) {
+      var str = String(s || ''), a = new Uint8Array(str.length);
+      for (var i = 0; i < str.length; i++) a[i] = str.charCodeAt(i) & 0xff;
+      return a;
+    }
+    function f64Payload(x) {
+      var b = new Uint8Array(8);
+      new DataView(b.buffer).setFloat64(0, Number(x) || 0);
+      return b;
+    }
+    function opusHead(channels, sampleRate) {
+      var b = new Uint8Array(19);
+      b.set(strPayload('OpusHead'), 0);
+      b[8] = 1; b[9] = channels;
+      b[10] = 0x38; b[11] = 0x01; // pre-skip 312 samples, little-endian
+      new DataView(b.buffer).setUint32(12, sampleRate, true);
+      return b;
+    }
+    var ebmlHeader = el([0x1a, 0x45, 0xdf, 0xa3], cat([
+      el([0x42, 0x86], uintPayload(1)),          // EBMLVersion
+      el([0x42, 0xf7], uintPayload(1)),          // EBMLReadVersion
+      el([0x42, 0xf2], uintPayload(4)),          // EBMLMaxIDLength
+      el([0x42, 0xf3], uintPayload(8)),          // EBMLMaxSizeLength
+      el([0x42, 0x82], strPayload('webm')),      // DocType
+      el([0x42, 0x87], uintPayload(2)),          // DocTypeVersion
+      el([0x42, 0x85], uintPayload(2))           // DocTypeReadVersion
+    ]));
+    var durationMs = Math.max(0, Number(o.durationMs) || 0);
+    var info = el([0x15, 0x49, 0xa9, 0x66], cat([
+      el([0x2a, 0xd7, 0xb1], uintPayload(1000000)),   // TimestampScale: 1ms
+      el([0x44, 0x89], f64Payload(durationMs)),
+      el([0x4d, 0x80], strPayload('AlloFlowVideoStudio')),
+      el([0x57, 0x41], strPayload('AlloFlowVideoStudio'))
+    ]));
+    var videoEntry = el([0xae], cat([
+      el([0xd7], uintPayload(1)),                     // TrackNumber
+      el([0x73, 0xc5], uintPayload(1)),               // TrackUID
+      el([0x83], uintPayload(1)),                     // TrackType: video
+      el([0x9c], uintPayload(0)),                     // FlagLacing off
+      el([0x86], strPayload(vid.codec === 'vp9' ? 'V_VP9' : 'V_VP8')),
+      el([0xe0], cat([
+        el([0xb0], uintPayload(vid.width || 0)),
+        el([0xba], uintPayload(vid.height || 0))
+      ]))
+    ]));
+    var trackList = [videoEntry];
+    if (aud && Array.isArray(aud.chunks) && aud.chunks.length) {
+      trackList.push(el([0xae], cat([
+        el([0xd7], uintPayload(2)),
+        el([0x73, 0xc5], uintPayload(2)),
+        el([0x83], uintPayload(2)),                   // TrackType: audio
+        el([0x9c], uintPayload(0)),
+        el([0x86], strPayload('A_OPUS')),
+        el([0x63, 0xa2], opusHead(aud.channels || 2, aud.sampleRate || 48000)),
+        el([0x56, 0xaa], uintPayload(6500000)),       // CodecDelay ns (312/48k)
+        el([0x56, 0xbb], uintPayload(80000000)),      // SeekPreRoll ns
+        el([0xe1], cat([
+          el([0xb5], f64Payload(aud.sampleRate || 48000)),
+          el([0x9f], uintPayload(aud.channels || 2))
+        ]))
+      ])));
+    }
+    var tracks = el([0x16, 0x54, 0xae, 0x6b], cat(trackList));
+    var events = [];
+    vChunks.forEach(function (c) {
+      if (c && c.data && c.data.length) events.push({ t: Math.max(0, Math.round(Number(c.timestampMs) || 0)), track: 1, key: !!c.keyframe, data: c.data });
+    });
+    if (aud && Array.isArray(aud.chunks)) {
+      aud.chunks.forEach(function (c) {
+        if (c && c.data && c.data.length) events.push({ t: Math.max(0, Math.round(Number(c.timestampMs) || 0)), track: 2, key: true, data: c.data });
+      });
+    }
+    events.sort(function (a, b) { return a.t - b.t || a.track - b.track; });
+    var clusters = [];
+    var base = -1, blocks = null;
+    function flushCluster() {
+      if (blocks && blocks.length) {
+        clusters.push(el([0x1f, 0x43, 0xb6, 0x75], cat([el([0xe7], uintPayload(base))].concat(blocks))));
+      }
+      blocks = null;
+    }
+    events.forEach(function (ev) {
+      var needNew = base < 0 || (ev.t - base) > 30000 || (ev.track === 1 && ev.key && (ev.t - base) > 1000);
+      if (needNew) { flushCluster(); base = ev.t; blocks = []; }
+      var rel = ev.t - base;
+      var head = new Uint8Array(3);
+      head[0] = (rel >> 8) & 0xff; head[1] = rel & 0xff;
+      head[2] = (ev.track === 1 && ev.key) || ev.track === 2 ? 0x80 : 0x00;
+      blocks.push(el([0xa3], cat([esize(ev.track), head, ev.data])));
+    });
+    flushCluster();
+    var segment = el([0x18, 0x53, 0x80, 0x67], cat([info, tracks].concat(clusters)));
+    return cat([ebmlHeader, segment]);
+  }
   // [VS_SHARED_END]
 
   // Module-only (NOT part of the shared block): normalize an allostudio-video
@@ -2522,7 +2658,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     };
   }
 
-  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav };
+  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
