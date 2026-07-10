@@ -18793,44 +18793,181 @@ const d = labToolData.solarSystem || {};
                 React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                   React.createElement('span', { className: 'text-xs font-bold ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.star_spectra_comparison', "📊 Star Spectra Comparison")),
                   React.createElement('button', {
+                    type: 'button',
                     onClick: function() { upd("showSpc", !d.showSpc); },
+                    'aria-expanded': !!d.showSpc,
+                    'aria-controls': 'star-spectra-panel',
+                    'aria-label': (d.showSpc ? 'Close' : 'Open') + ' Star Spectra Comparison',
                     className: 'text-[11px] font-bold px-2 py-0.5 rounded-lg transition-colors ' +
                       (d.showSpc ? 'bg-fuchsia-500 text-white' : 'bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-200')
                   }, d.showSpc ? 'Hide' : 'Open')
                 ),
-                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.spectra_reveal_what_stars_are_made_of_', "Spectra reveal what stars are made of + their stage of life.")),
-                d.showSpc && React.createElement('div', { className: 'mt-2' },
+                React.createElement('p', { className: 'text-[10px] mb-2 ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, __alloT('stem.solarsystem.spectra_reveal_temperature_composition_motion', "Spectra reveal temperature, composition, motion, and clues to an object's evolutionary state.")),
+                d.showSpc && React.createElement('div', { id: 'star-spectra-panel', className: 'mt-2' },
                   (function() {
                                       var element = d.spcEl || 'sun';
-                                      var SP = { sun: { name: __alloT('stem.solarsystem.sun_g2_star', 'Sun (G2 star)'), H: 5, He: 1, others: 4, color: '#fde047' }, redgi: { name: __alloT('stem.solarsystem.red_giant_2', 'Red Giant'), H: 3, He: 6, others: 7, color: '#dc2626' }, neb: { name: __alloT('stem.solarsystem.planetary_nebula_2', 'Planetary Nebula'), H: 8, He: 5, others: 2, color: '#a78bfa' }, sn: { name: __alloT('stem.solarsystem.supernova_2', 'Supernova'), H: 1, He: 2, others: 12, color: '#fff' } };
+                                      var SP = {
+                                        sun: {
+                                          name: __alloT('stem.solarsystem.sun_g2_star', 'Sun (G2 V star)'),
+                                          mode: 'absorption',
+                                          spectrumType: __alloT('stem.solarsystem.absorption_spectrum', 'Absorption spectrum'),
+                                          context: __alloT('stem.solarsystem.photosphere_5772_k', 'Photosphere: 5,772 K'),
+                                          temperature: 5772,
+                                          plotColor: '#fde047',
+                                          lines: [
+                                            { w: 393.4, label: 'Ca II K', strength: 0.72, width: 1.8, major: true },
+                                            { w: 396.8, label: 'Ca II H', strength: 0.62, width: 1.6 },
+                                            { w: 486.1, label: 'H-beta', strength: 0.38, width: 2.0, major: true },
+                                            { w: 517.0, label: 'Mg', strength: 0.46, width: 2.5 },
+                                            { w: 589.3, label: 'Na D', strength: 0.68, width: 1.8, major: true },
+                                            { w: 656.3, label: 'H-alpha', strength: 0.45, width: 2.4, major: true }
+                                          ],
+                                          signature: 'Ca II H and K, H-beta, magnesium, sodium D, and H-alpha',
+                                          insight: 'Cooler gas above the bright photosphere absorbs specific wavelengths, producing dark Fraunhofer lines.'
+                                        },
+                                        redgi: {
+                                          name: __alloT('stem.solarsystem.red_giant_2', 'Cool red giant'),
+                                          mode: 'absorption',
+                                          spectrumType: __alloT('stem.solarsystem.absorption_spectrum', 'Absorption spectrum'),
+                                          context: __alloT('stem.solarsystem.cool_giant_atmosphere_4000_k', 'Cool giant atmosphere: about 4,000 K'),
+                                          temperature: 4000,
+                                          plotColor: '#fb7185',
+                                          lines: [
+                                            { w: 395.0, label: 'Ca II', strength: 0.72, width: 2.4, major: true },
+                                            { w: 430.0, label: 'CH band', strength: 0.52, width: 7.0 },
+                                            { w: 517.0, label: 'Mg', strength: 0.58, width: 3.2, major: true },
+                                            { w: 589.3, label: 'Na D', strength: 0.78, width: 2.4, major: true },
+                                            { w: 705.0, label: 'TiO band', strength: 0.42, width: 11.0, major: true }
+                                          ],
+                                          signature: 'calcium, magnesium, sodium, and temperature-sensitive molecular bands',
+                                          insight: 'Cooler atmospheres strengthen neutral-metal and molecular features. That change is mainly about temperature and ionization, not a sudden jump in helium abundance.'
+                                        },
+                                        neb: {
+                                          name: __alloT('stem.solarsystem.planetary_nebula_2', 'Planetary nebula'),
+                                          mode: 'emission',
+                                          spectrumType: __alloT('stem.solarsystem.emission_spectrum', 'Emission spectrum'),
+                                          context: __alloT('stem.solarsystem.excited_gas_10000_k', 'Excited gas: typically about 10,000 K'),
+                                          plotColor: '#67e8f9',
+                                          lines: [
+                                            { w: 434.0, label: 'H-gamma', strength: 0.45, width: 1.5 },
+                                            { w: 486.1, label: 'H-beta', strength: 0.72, width: 1.5, major: true },
+                                            { w: 495.9, label: '[O III]', strength: 0.82, width: 1.4 },
+                                            { w: 500.7, label: '[O III]', strength: 1.25, width: 1.4, major: true },
+                                            { w: 587.6, label: 'He I', strength: 0.32, width: 1.6 },
+                                            { w: 656.3, label: 'H-alpha', strength: 1.05, width: 1.7, major: true },
+                                            { w: 658.3, label: '[N II]', strength: 0.48, width: 1.5 }
+                                          ],
+                                          signature: 'bright hydrogen, doubly ionized oxygen ([O III]), helium, and nitrogen emission lines',
+                                          insight: 'Thin gas shed by a Sun-like star glows at specific wavelengths after ultraviolet light from the hot central remnant excites it.'
+                                        },
+                                        sn: {
+                                          name: __alloT('stem.solarsystem.type_ii_supernova', 'Type II supernova'),
+                                          mode: 'broad',
+                                          spectrumType: __alloT('stem.solarsystem.broad_line_spectrum', 'Broad-line spectrum'),
+                                          context: __alloT('stem.solarsystem.expanding_ejecta_thousands_km_s', 'Expanding ejecta: thousands of km/s'),
+                                          temperature: 9000,
+                                          plotColor: '#f8fafc',
+                                          lines: [
+                                            { w: 395.0, label: 'Ca II', strength: 0.36, width: 10.0 },
+                                            { w: 486.1, label: 'H-beta', strength: 0.50, width: 13.0, major: true },
+                                            { w: 516.9, label: 'Fe II', strength: 0.40, width: 11.0, major: true },
+                                            { w: 589.3, label: 'Na I', strength: 0.38, width: 13.0 },
+                                            { w: 656.3, label: 'H-alpha', strength: 0.66, width: 17.0, major: true }
+                                          ],
+                                          signature: 'very broad hydrogen features, with iron, sodium, and calcium signatures',
+                                          insight: 'Hydrogen lines define Type II spectra. Rapidly expanding ejecta broaden and shift the features; other supernova types can lack hydrogen.'
+                                        }
+                                      };
                                       var sel = SP[element];
+                                      var bands = [
+                                        { from: 380, to: 440, color: '#6d28d9' },
+                                        { from: 440, to: 490, color: '#2563eb' },
+                                        { from: 490, to: 510, color: '#06b6d4' },
+                                        { from: 510, to: 580, color: '#22c55e' },
+                                        { from: 580, to: 645, color: '#facc15' },
+                                        { from: 645, to: 700, color: '#f97316' },
+                                        { from: 700, to: 740, color: '#dc2626' }
+                                      ];
+                                      function xFor(wavelength) { return 36 + ((wavelength - 380) / 360) * 346; }
+                                      function yFor(value) { return 132 - value * 96; }
+                                      function planckRelative(wavelength, temperature) {
+                                        var exponent = 14387768.77 / (wavelength * temperature);
+                                        return 1 / (Math.pow(wavelength, 5) * (Math.exp(exponent) - 1));
+                                      }
+                                      var continuumMax = 1;
+                                      if (sel.mode !== 'emission') {
+                                        continuumMax = 0;
+                                        for (var cw = 380; cw <= 740; cw += 2) continuumMax = Math.max(continuumMax, planckRelative(cw, sel.temperature));
+                                      }
+                                      var samples = [];
+                                      for (var w = 380; w <= 740; w += 2) {
+                                        var value = sel.mode === 'emission' ? 0.025 : planckRelative(w, sel.temperature) / continuumMax;
+                                        sel.lines.forEach(function(line) {
+                                          var distance = (w - line.w) / line.width;
+                                          var profile = Math.exp(-0.5 * distance * distance);
+                                          if (sel.mode === 'emission') value += line.strength * profile;
+                                          else value *= (1 - line.strength * profile);
+                                        });
+                                        samples.push({ w: w, value: Math.max(0.015, value) });
+                                      }
+                                      var sampleMax = samples.reduce(function(max, point) { return Math.max(max, point.value); }, 0);
+                                      samples.forEach(function(point) { point.value = point.value / sampleMax; });
+                                      var linePath = samples.map(function(point, index) {
+                                        return (index ? 'L' : 'M') + xFor(point.w).toFixed(1) + ',' + yFor(point.value).toFixed(1);
+                                      }).join(' ');
+                                      var areaPath = linePath + ' L' + xFor(740).toFixed(1) + ',132 L' + xFor(380).toFixed(1) + ',132 Z';
+                                      var accessibleSummary = sel.name + '. ' + sel.spectrumType + '. ' + sel.context + '. Key visible features: ' + sel.signature + '. ' + sel.insight;
                                       return React.createElement('div', null,
-                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2' },
+                                        React.createElement('div', { className: 'flex flex-wrap gap-1 mb-2', role: 'group', 'aria-label': 'Choose an object to compare' },
                                           Object.keys(SP).map(function(k) {
-                                            return React.createElement('button', { key: k, onClick: function() { upd('spcEl', k); }, className: 'px-2 py-1 rounded text-[10px] font-bold ' + (element === k ? 'bg-fuchsia-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700')) }, SP[k].name);
+                                            var active = element === k;
+                                            return React.createElement('button', {
+                                              key: k,
+                                              type: 'button',
+                                              onClick: function() { upd('spcEl', k); },
+                                              'aria-pressed': active,
+                                              'aria-label': 'View ' + SP[k].name + ' spectrum',
+                                              className: 'px-2 py-1 rounded text-[10px] font-bold ' + (active ? 'bg-fuchsia-500 text-white' : (isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700'))
+                                            }, SP[k].name);
                                           })
                                         ),
                                         React.createElement('div', { className: 'rounded-lg overflow-hidden border ' + (isDark ? 'border-slate-700' : 'border-slate-300') },
-                                          React.createElement('svg', { viewBox: '0 0 400 200', style: { width: '100%', display: 'block', background: '#000' } },
-                                            React.createElement('rect', { x: 20, y: 40, width: 360, height: 40, fill: '#1f2937' }),
-                                            new Array(sel.H + sel.He + sel.others).fill(0).map(function(_, li) {
-                                              return React.createElement('rect', { key: 'l' + li, x: 30 + li * 22 + (li * 13 % 30), y: 40, width: 1.5, height: 40, fill: li < sel.H ? '#dc2626' : li < sel.H + sel.He ? '#fbbf24' : '#7dd3fc' });
+                                          React.createElement('svg', { viewBox: '0 0 400 205', role: 'img', 'aria-label': accessibleSummary, style: { width: '100%', display: 'block', background: '#020617' } },
+                                            React.createElement('title', null, sel.name + ' representative visible-light spectrum'),
+                                            React.createElement('desc', null, accessibleSummary),
+                                            React.createElement('text', { x: 209, y: 18, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11, fontWeight: 'bold' }, sel.name),
+                                            [0, 0.5, 1].map(function(level) {
+                                              return React.createElement('line', { key: 'grid-' + level, x1: 36, y1: yFor(level), x2: 382, y2: yFor(level), stroke: '#334155', strokeWidth: 1 });
                                             }),
-                                            React.createElement('rect', { x: 20, y: 100, width: 360, height: 30, fill: sel.color, opacity: 0.3 }),
-                                            React.createElement('text', { x: 200, y: 30, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 'bold' }, sel.name + ' spectrum'),
-                                            React.createElement('text', { x: 200, y: 165, textAnchor: 'middle', fill: '#dc2626', fontSize: 9 }, __alloT('stem.solarsystem.hydrogen_2', '🔴 Hydrogen')),
-                                            React.createElement('text', { x: 100, y: 180, textAnchor: 'middle', fill: '#fbbf24', fontSize: 9 }, __alloT('stem.solarsystem.helium_2', '🟡 Helium')),
-                                            React.createElement('text', { x: 300, y: 180, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 9 }, __alloT('stem.solarsystem.heavier', '🔵 Heavier'))
+                                            sel.lines.filter(function(line) { return line.major; }).map(function(line) {
+                                              return React.createElement('line', { key: 'marker-' + line.w, x1: xFor(line.w), y1: 36, x2: xFor(line.w), y2: 132, stroke: sel.plotColor, strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.32 });
+                                            }),
+                                            React.createElement('path', { d: areaPath, fill: sel.plotColor, opacity: 0.14 }),
+                                            React.createElement('path', { d: linePath, fill: 'none', stroke: sel.plotColor, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+                                            React.createElement('text', { x: 12, y: 86, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 8, transform: 'rotate(-90 12 86)' }, __alloT('stem.solarsystem.relative_brightness', 'Relative brightness')),
+                                            bands.map(function(band) {
+                                              return React.createElement('rect', { key: 'band-' + band.from, x: xFor(band.from), y: 145, width: xFor(band.to) - xFor(band.from) + 0.5, height: 11, fill: band.color });
+                                            }),
+                                            [400, 500, 600, 700].map(function(tick) {
+                                              return React.createElement('g', { key: 'tick-' + tick },
+                                                React.createElement('line', { x1: xFor(tick), y1: 157, x2: xFor(tick), y2: 161, stroke: '#94a3b8', strokeWidth: 1 }),
+                                                React.createElement('text', { x: xFor(tick), y: 172, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 8 }, tick)
+                                              );
+                                            }),
+                                            React.createElement('text', { x: 209, y: 193, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.solarsystem.wavelength_nm', 'Wavelength (nm)'))
                                           )
                                         ),
-                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700') },
-                                          __alloT('stem.solarsystem.different_stages_of_stellar_life_show_', 'Different stages of stellar life show different spectra. The Sun is hydrogen-dominated. Red giants have more helium (hydrogen consumed). Supernovae show heavy elements (made in last fusion stages + the explosion itself).')
+                                        React.createElement('div', { className: 'mt-2 text-[10px] p-2 rounded ' + (isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'), 'aria-live': 'polite' },
+                                          React.createElement('div', { className: 'font-bold ' + (isDark ? 'text-fuchsia-200' : 'text-fuchsia-800') }, sel.spectrumType + ' | ' + sel.context),
+                                          React.createElement('div', { className: 'mt-1' }, React.createElement('span', { className: 'font-bold' }, __alloT('stem.solarsystem.key_visible_features', 'Key visible features: ')), sel.signature + '.'),
+                                          React.createElement('div', { className: 'mt-1' }, sel.insight),
+                                          React.createElement('div', { className: 'mt-1 ' + (isDark ? 'text-slate-400' : 'text-slate-600') }, __alloT('stem.solarsystem.spectral_line_strength_caution', 'Line strength is not a simple abundance meter: temperature, density, and ionization also determine which features appear strongest. These curves are simplified teaching models.')),
+                                          React.createElement('div', { className: 'mt-1 ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, __alloT('stem.solarsystem.spectra_life_paths_note', 'These examples are not one timeline: a Sun-like star can become a red giant and planetary nebula, while a Type II supernova ends the life of a massive star.'))
                                         )
                                       );
                                     })()
                 )
               ),
-
               // === MINI-TOOL: TIME ZONE VISUALIZER ===
               React.createElement('div', { className: 'mt-3 rounded-xl p-3 border ' + (isDark ? 'bg-slate-900/40 border-slate-700' : 'bg-white border-slate-200') },
                 React.createElement('div', { className: 'flex items-center justify-between mb-2' },
