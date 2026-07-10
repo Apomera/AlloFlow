@@ -58,6 +58,7 @@ const EXPECTED_MARKERS = [
   { id: 'cellularLab', file: 'stem_tool_cellular.js', marker: 'data-cellularlab-focus-panel', label: 'Cellular focus panel' },
   { id: 'companionPlanting', file: 'stem_tool_companionplanting.js', marker: 'data-companion-workspace-stage', label: 'Companion Planting workspace stage' },
   { id: 'dnaLab', file: 'stem_tool_dna.js', marker: 'data-dna-mission', label: 'DNA mission control' },
+  { id: 'alphaFoldExplorer', file: 'stem_tool_alphafold.js', marker: 'data-alphafold-mission', label: 'AlphaFold structural biology mission' },
   { id: 'fireEcology', file: 'stem_tool_fireecology.js', marker: 'data-fireecology-mission', label: 'Fire Ecology stewardship mission' },
   { id: 'behaviorLab', file: 'stem_tool_behaviorlab.js', marker: 'data-behaviorlab-mission', label: 'Behavior Lab experiment mission' },
   { id: 'migration', file: 'stem_tool_migration.js', marker: 'data-migration-mission', label: 'Migration field mission' },

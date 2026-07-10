@@ -31,6 +31,58 @@
 
   var ALPHAFOLD_URL = companionUrl('alphafold_explorer/alphafold_explorer.html?v=1', ALPHAFOLD_CDN_URL);
 
+  if (typeof document !== 'undefined' && !document.getElementById('alphafold-launcher-css')) {
+    var alphaFoldStyle = document.createElement('style');
+    alphaFoldStyle.id = 'alphafold-launcher-css';
+    alphaFoldStyle.textContent = [
+      '.af-launcher{width:min(100%,960px);margin:0 auto;display:grid;gap:14px;color:#e2e8f0;}',
+      '.af-launcher *{box-sizing:border-box;}',
+      '.af-mission{position:relative;overflow:hidden;padding:22px;border:1px solid rgba(45,212,191,.38);border-radius:20px;background:radial-gradient(circle at 92% 8%,rgba(56,189,248,.2),transparent 34%),linear-gradient(135deg,rgba(15,118,110,.3),rgba(2,6,23,.98) 62%);box-shadow:0 18px 46px rgba(2,6,23,.28);}',
+      '.af-mission-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}',
+      '.af-eyebrow{margin:0 0 7px;color:#5eead4;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;}',
+      '.af-title{margin:0;color:#f8fafc;font-size:clamp(22px,3vw,32px);line-height:1.12;}',
+      '.af-subtitle{max-width:700px;margin:9px 0 0;color:#cbd5e1;font-size:13px;line-height:1.6;}',
+      '.af-status{flex:0 0 auto;padding:8px 11px;border:1px solid rgba(94,234,212,.3);border-radius:999rem;background:rgba(15,23,42,.72);color:#99f6e4;font-size:11px;font-weight:800;white-space:nowrap;}',
+      '.af-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:18px;}',
+      '.af-metric{min-width:0;padding:10px;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(15,23,42,.7);}',
+      '.af-metric-label{display:block;color:#94a3b8;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.af-metric-value{display:block;margin-top:3px;color:#f8fafc;font-size:14px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+      '.af-metric-note{display:block;margin-top:2px;color:#94a3b8;font-size:9px;line-height:1.35;}',
+      '.af-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;}',
+      '.af-primary{min-height:46px;padding:11px 17px;border:1px solid rgba(153,246,228,.38);border-radius:12px;background:linear-gradient(135deg,#0d9488,#0284c7);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(8,145,178,.23);transition:transform .18s,box-shadow .18s;}',
+      '.af-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(8,145,178,.3);}',
+      '.af-action-note{color:#94a3b8;font-size:10px;line-height:1.45;}',
+      '.af-section{padding:16px;border:1px solid #334155;border-radius:16px;background:rgba(15,23,42,.62);}',
+      '.af-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:11px;}',
+      '.af-section h3{margin:0;color:#f8fafc;font-size:15px;}',
+      '.af-section-head p{margin:3px 0 0;color:#94a3b8;font-size:11px;}',
+      '.af-route{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}',
+      '.af-route-card{min-width:0;padding:13px;border:1px solid #334155;border-radius:13px;background:#0f172a;}',
+      '.af-route-card[data-complete="true"]{border-color:rgba(45,212,191,.55);background:linear-gradient(145deg,rgba(13,148,136,.14),#0f172a 70%);}',
+      '.af-route-kicker{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#5eead4;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;}',
+      '.af-route-card h4{margin:8px 0 5px;color:#f8fafc;font-size:13px;}',
+      '.af-route-card p{margin:0;color:#94a3b8;font-size:10px;line-height:1.5;}',
+      '.af-route-state{color:#cbd5e1;font-size:9px;}',
+      '.af-support-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:10px;}',
+      '.af-details,.af-guardrail{border:1px solid #334155;border-radius:14px;background:#0f172a;overflow:hidden;}',
+      '.af-details summary{min-height:48px;padding:14px;cursor:pointer;color:#e2e8f0;font-size:12px;font-weight:900;}',
+      '.af-details ol{margin:0;padding:0 20px 15px 34px;color:#cbd5e1;font-size:11px;line-height:1.55;}',
+      '.af-details li+li{margin-top:5px;}',
+      '.af-guardrail{padding:14px;border-color:rgba(251,191,36,.34);background:linear-gradient(145deg,rgba(120,53,15,.16),#0f172a 72%);}',
+      '.af-guardrail h3{margin:0 0 7px;color:#fde68a;font-size:12px;}',
+      '.af-guardrail p{margin:0;color:#cbd5e1;font-size:10px;line-height:1.55;}',
+      '.af-guardrail p+p{margin-top:7px;}',
+      '.af-alert{padding:11px 13px;border:1px solid rgba(251,191,36,.45);border-radius:12px;background:rgba(120,53,15,.2);color:#fde68a;font-size:11px;line-height:1.5;}',
+      '.af-alert a{color:#fef3c7;text-decoration:underline;font-weight:800;}',
+      '.af-credit{margin:0;padding:0 4px;color:#64748b;font-size:9px;line-height:1.5;}',
+      '@media(max-width:760px){.af-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.af-route{grid-template-columns:1fr;}.af-support-grid{grid-template-columns:1fr;}}',
+      '@media(max-width:520px){.af-mission{padding:15px;border-radius:16px;}.af-mission-top{flex-direction:column;}.af-status{white-space:normal;}.af-metrics{grid-template-columns:1fr 1fr;}.af-primary{width:100%;}.af-actions{align-items:stretch;}.af-action-note{width:100%;}}',
+      '@media(prefers-reduced-motion:reduce){.af-primary{transition:none;}.af-primary:hover{transform:none;}}',
+      '.theme-contrast .af-mission,.theme-contrast .af-section,.theme-contrast .af-route-card,.theme-contrast .af-details,.theme-contrast .af-guardrail{box-shadow:none;border-width:2px;}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(alphaFoldStyle);
+  }
+
   function safeClip(value, limit) {
     return String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, limit || 300);
   }
@@ -161,6 +213,27 @@
       var _win = React.useRef(null);
       var _st = React.useState('idle'); var popupState = _st[0], setPopupState = _st[1];
       var aiOn = !!(ctx.aiHintsEnabled && typeof ctx.callGemini === 'function');
+      var progress = (ctx.toolData && ctx.toolData._alphaFoldExplorer) || {};
+      var openedCount = progress.openedCount || (progress.opened ? 1 : 0);
+      var lookupCount = progress.lookupCount || 0;
+      var preparedCount = progress.sequencePreparedCount || 0;
+      var guidanceCount = (progress.coachCount || 0) + (progress.guideCount || 0);
+
+      function metric(label, value, note) {
+        return h('div', { className: 'af-metric', role: 'listitem' },
+          h('span', { className: 'af-metric-label' }, label),
+          h('strong', { className: 'af-metric-value' }, value),
+          h('span', { className: 'af-metric-note' }, note));
+      }
+
+      function routeCard(step, title, body, complete, state) {
+        return h('article', { className: 'af-route-card', 'data-complete': complete ? 'true' : 'false' },
+          h('div', { className: 'af-route-kicker' },
+            h('span', null, 'Step ' + step),
+            h('span', { className: 'af-route-state' }, complete ? '\u2713 Complete' : state)),
+          h('h4', null, title),
+          h('p', null, body));
+      }
 
       function bumpSlice(key) {
         setLabToolData(function (prev) {
@@ -223,40 +296,73 @@
         if (announceToSR) announceToSR(t('stem.alphaFold.opened_sr', 'Opened AlphaFold Explorer in a new window.'));
       }
 
-      return h('div', { className: 'flex flex-col gap-4 animate-in fade-in duration-300 max-w-2xl' },
-        h('h2', { className: 'text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-sky-400' },
-          t('stem.alphaFold.title', 'AlphaFold Explorer - public protein structures')),
-        h('p', { className: 'text-sm text-slate-300 leading-relaxed' },
-          t('stem.alphaFold.blurb', 'Look up public AlphaFold DB predictions by UniProt/accession, inspect structures in Mol*, import downloaded result files, prepare AlphaFold Server or AlphaFold 3 local-code JSON, and use classroom presets, grade-leveled tutorials, copyable lesson sequences, biology-context investigation briefs, LMS-ready assignment packets, learner-support scaffolds, confidence/PAE guidance, route guidance, accessibility lenses, local claim review, and rubric feedback. The tool does not automatically submit sequences anywhere; students use public, synthetic, or teacher-approved classroom samples only.')),
-        h('div', { className: 'bg-slate-900/50 rounded-xl p-3 border border-teal-800/60 text-xs text-slate-200 leading-relaxed space-y-2' },
-          h('div', { className: 'font-bold text-teal-200' },
-            t('stem.alphaFold.tutorial_title', 'Quick tutorial')),
-          h('ol', { className: 'list-decimal pl-5 space-y-1' },
-            h('li', null, t('stem.alphaFold.tutorial_1', 'AlphaFold predicts a protein 3D structure from an amino acid sequence; AlphaFold DB provides public predicted structures.')),
-            h('li', null, t('stem.alphaFold.tutorial_2', 'Start from a classroom preset or choose a grade-level tutorial, lesson length, biology context, assignment format, and support level.')),
-            h('li', null, t('stem.alphaFold.tutorial_3', 'Use cautious wording: the model suggests evidence, but it is not final proof by itself.')),
-            h('li', null, t('stem.alphaFold.tutorial_4', 'Only prepare JSON for public, synthetic, or teacher-approved classroom samples; the explorer does not automatically submit sequences.')))),
-        h('div', { className: 'bg-slate-800/60 rounded-xl p-3 border border-slate-700 text-xs text-slate-300 space-y-1.5' },
-          h('div', null, t('stem.alphaFold.guardrail1', 'Guardrail: do not enter sequences from yourself, classmates, family members, patients, private genetic tests, or medical reports.')),
-          h('div', null, aiOn
-            ? t('stem.alphaFold.ai_on', 'AI coach and guide are on. They receive structure metadata, learner context, and student observations/claims, not full protein sequences.')
-            : t('stem.alphaFold.ai_off', 'AI hints are off. The explorer still works with built-in inspection prompts.'))),
-        h('button', {
-          onClick: openExplorer,
-          className: 'px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-teal-600 to-sky-600 hover:from-teal-700 hover:to-sky-700 shadow-md shadow-teal-600/20 transition-all w-fit',
-          'aria-label': t('stem.alphaFold.open_title', 'Open AlphaFold Explorer in a new window')
-        }, t('stem.alphaFold.open', 'Open AlphaFold Explorer')),
-        popupState === 'blocked' && h('div', { className: 'text-xs text-amber-200 bg-amber-950/40 border border-amber-700/50 rounded-lg p-2 leading-relaxed' },
-          h('div', null, t('stem.alphaFold.blocked_note', 'Pop-up blocked - allow pop-ups for this page and try again.')),
+      var statusText = popupState === 'open'
+        ? t('stem.alphaFold.status_open', 'Explorer connected')
+        : popupState === 'opening'
+          ? t('stem.alphaFold.status_opening', 'Opening companion window')
+          : popupState === 'blocked'
+            ? t('stem.alphaFold.status_blocked', 'Pop-up needs permission')
+            : t('stem.alphaFold.status_ready', 'Ready to investigate');
+
+      return h('main', { className: 'af-launcher', 'data-alphafold-mission': 'true' },
+        h('header', { className: 'af-mission' },
+          h('div', { className: 'af-mission-top' },
+            h('div', null,
+              h('p', { className: 'af-eyebrow' }, t('stem.alphaFold.mission_label', 'Structural biology mission')),
+              h('h2', { className: 'af-title' }, t('stem.alphaFold.title', 'AlphaFold Explorer')),
+              h('p', { className: 'af-subtitle' },
+                t('stem.alphaFold.mission_blurb', 'Explore a public protein prediction, inspect confidence and shape, then build a cautious claim from visible evidence.'))),
+            h('div', { className: 'af-status', role: 'status', 'aria-live': 'polite' }, statusText)),
+          h('div', { className: 'af-metrics', role: 'list', 'aria-label': t('stem.alphaFold.progress_label', 'AlphaFold investigation progress') },
+            metric(t('stem.alphaFold.metric_launches', 'Explorer launches'), String(openedCount), t('stem.alphaFold.metric_launches_note', 'companion-window sessions')),
+            metric(t('stem.alphaFold.metric_structures', 'Public structures'), String(lookupCount), t('stem.alphaFold.metric_structures_note', 'database lookups')),
+            metric(t('stem.alphaFold.metric_prepared', 'Inputs prepared'), String(preparedCount), t('stem.alphaFold.metric_prepared_note', 'safe classroom samples')),
+            metric(t('stem.alphaFold.metric_guidance', 'Reasoning checks'), String(guidanceCount), aiOn ? t('stem.alphaFold.metric_ai_on', 'AI guidance available') : t('stem.alphaFold.metric_ai_off', 'built-in prompts active'))),
+          h('div', { className: 'af-actions' },
+            h('button', {
+              type: 'button',
+              onClick: openExplorer,
+              className: 'af-primary',
+              'aria-label': t('stem.alphaFold.open_title', 'Open AlphaFold Explorer in a new window')
+            }, popupState === 'open' ? t('stem.alphaFold.refocus', 'Return to AlphaFold Explorer') : t('stem.alphaFold.open', 'Open AlphaFold Explorer')),
+            h('span', { className: 'af-action-note' },
+              t('stem.alphaFold.action_note', 'Opens a companion window. Keep AlloFlow open for progress and optional guidance.')))),
+
+        popupState === 'blocked' && h('div', { className: 'af-alert', role: 'alert' },
+          t('stem.alphaFold.blocked_note', 'Pop-up blocked - allow pop-ups for this page and try again. '),
           h('a', {
             href: ALPHAFOLD_URL + '&lang=' + encodeURIComponent(ctx.lang || 'en'),
             target: '_blank',
-            rel: 'noopener',
-            className: 'inline-block mt-1 underline text-amber-100'
+            rel: 'noopener'
           }, t('stem.alphaFold.blocked_link', 'Open AlphaFold Explorer directly'))),
-        popupState === 'open' && h('p', { className: 'text-xs text-emerald-300' },
-          t('stem.alphaFold.open_note', 'AlphaFold Explorer is open. Keep this AlloFlow window open too - it powers the optional AI coach and guide.')),
-        h('p', { className: 'text-[11px] text-slate-500 leading-relaxed' },
+
+        h('section', { className: 'af-section', 'aria-labelledby': 'af-route-heading' },
+          h('div', { className: 'af-section-head' },
+            h('div', null,
+              h('h3', { id: 'af-route-heading' }, t('stem.alphaFold.route_title', 'Your investigation route')),
+              h('p', null, t('stem.alphaFold.route_subtitle', 'Move from model viewing to evidence-based explanation.'))),
+            h('span', { className: 'af-route-state' }, (openedCount > 0 ? 1 : 0) + (lookupCount > 0 ? 1 : 0) + (guidanceCount > 0 ? 1 : 0) + ' / 3')),
+          h('div', { className: 'af-route' },
+            routeCard('01', t('stem.alphaFold.route_launch', 'Launch safely'), t('stem.alphaFold.route_launch_body', 'Use a public, synthetic, or teacher-approved sample—never personal genetic data.'), openedCount > 0, t('stem.alphaFold.route_launch_state', 'Start here')),
+            routeCard('02', t('stem.alphaFold.route_inspect', 'Inspect the model'), t('stem.alphaFold.route_inspect_body', 'Compare folds, domains, surfaces, pLDDT confidence, and PAE uncertainty.'), lookupCount > 0, t('stem.alphaFold.route_inspect_state', 'Observe next')),
+            routeCard('03', t('stem.alphaFold.route_explain', 'Explain cautiously'), t('stem.alphaFold.route_explain_body', 'Connect one visible feature to evidence, uncertainty, and a useful next test.'), guidanceCount > 0, t('stem.alphaFold.route_explain_state', 'Build a claim')))),
+
+        h('section', { className: 'af-support-grid', 'aria-label': t('stem.alphaFold.support_label', 'Tutorial and classroom data guidance') },
+          h('details', { className: 'af-details' },
+            h('summary', null, t('stem.alphaFold.tutorial_title', 'How AlphaFold investigations work (4 steps)')),
+            h('ol', null,
+              h('li', null, t('stem.alphaFold.tutorial_1', 'AlphaFold predicts a protein 3D structure from an amino acid sequence; AlphaFold DB provides public predicted structures.')),
+              h('li', null, t('stem.alphaFold.tutorial_2', 'Start from a classroom preset or choose a grade-level tutorial, lesson length, biology context, assignment format, and support level.')),
+              h('li', null, t('stem.alphaFold.tutorial_3', 'Use cautious wording: the model suggests evidence, but it is not final proof by itself.')),
+              h('li', null, t('stem.alphaFold.tutorial_4', 'Only prepare JSON for public, synthetic, or teacher-approved classroom samples; the explorer does not automatically submit sequences.')))),
+          h('aside', { className: 'af-guardrail', 'aria-labelledby': 'af-guardrail-heading' },
+            h('h3', { id: 'af-guardrail-heading' }, t('stem.alphaFold.guardrail_title', 'Classroom data boundary')),
+            h('p', null, t('stem.alphaFold.guardrail1', 'Do not enter sequences from yourself, classmates, family members, patients, private genetic tests, or medical reports.')),
+            h('p', null, aiOn
+              ? t('stem.alphaFold.ai_on', 'AI guidance receives structure metadata, learner context, and student observations or claims—not full protein sequences.')
+              : t('stem.alphaFold.ai_off', 'AI hints are off. The explorer still works with built-in inspection prompts.')))),
+
+        h('p', { className: 'af-credit' },
           t('stem.alphaFold.credit', 'Data/viewing: AlphaFold Protein Structure Database by Google DeepMind and EMBL-EBI; Mol* viewer under MIT license. AlphaFold Server opens separately for non-commercial research workflows. Internet is required for database lookup and web viewing.'))
       );
     }
