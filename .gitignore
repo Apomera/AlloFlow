@@ -18,6 +18,7 @@ prismflow-deploy/.firebase/
 prismflow-deploy/.env
 prismflow-deploy/.env.local
 prismflow-deploy/.env.production
+prismflow-deploy/.env.maintainer-demo
 *.env.local
 
 # Security: Never commit API key files
