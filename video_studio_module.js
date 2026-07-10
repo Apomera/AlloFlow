@@ -2465,6 +2465,34 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return out;
   }
 
+  // Demo Autopilot captions: one cue per executed plan step, timed by the
+  // recording clock at the moment the step ran. A 'start' event opens the
+  // cue, the matching 'done' extends it to the completion moment; cues never
+  // overlap (each closes when the next opens) and idle tails cap at 8s.
+  function vsBuildDemoCaptionCues(events, totalDur) {
+    var evs = (Array.isArray(events) ? events : []).filter(function (e) {
+      return e && isFinite(Number(e.t)) && Number(e.t) >= 0 && String(e.label || '').trim();
+    }).map(function (e) {
+      return { t: Number(e.t), phase: e.phase === 'done' ? 'done' : 'start', index: Math.max(0, Math.round(Number(e.index) || 0)), label: String(e.label).trim().slice(0, 140) };
+    }).sort(function (a, b) { return a.t - b.t; });
+    var cues = [];
+    evs.forEach(function (e) {
+      if (e.phase === 'start') {
+        cues.push({ start: e.t, end: e.t + 8, text: 'Step ' + (e.index + 1) + ': ' + e.label, _i: e.index });
+      } else {
+        for (var i = cues.length - 1; i >= 0; i--) {
+          if (cues[i]._i === e.index) { cues[i].end = Math.max(cues[i].start + 0.8, e.t); break; }
+        }
+      }
+    });
+    for (var k = 0; k < cues.length - 1; k++) cues[k].end = Math.min(cues[k].end, Math.max(cues[k].start + 0.4, cues[k + 1].start));
+    var dur = Number(totalDur);
+    if (isFinite(dur) && dur > 0) cues.forEach(function (c) { c.end = Math.min(c.end, dur); });
+    return cues.filter(function (c) { return c.end > c.start; }).map(function (c) {
+      return { start: Math.round(c.start * 100) / 100, end: Math.round(c.end * 100) / 100, text: c.text };
+    });
+  }
+
   // Minimal WebM (Matroska subset) muxer for the WebCodecs fast-export path:
   // VP8/VP9 video + optional Opus audio, per-chunk millisecond timestamps,
   // known-size elements throughout (so vsPatchWebmDuration deliberately
@@ -2658,7 +2686,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     };
   }
 
-  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm };
+  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -2910,6 +2938,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var studioWinRef = useRef(null);
     var bridgeTokenRef = useRef(null);
     var rootRef = useRef(null);
+    var demoRunRef = useRef({ running: false, stop: false });
 
     function postToStudio(win, msg) {
       try {
@@ -3199,6 +3228,65 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           } else {
             fRespond({ error: 'image-edit-unavailable' });
           }
+        } else if (ev.data.type === 'allostudio-demoplan-request') {
+          // Demo Autopilot: goal TEXT only goes to the app's planner (which
+          // reuses AlloBot's planUtterance over the command registry).
+          var dpReq = ev.data;
+          var dpReplyTo = studioWinRef.current;
+          var dpRespond = function (payload) {
+            postToStudio(dpReplyTo, Object.assign({ type: 'allostudio-demoplan-response', id: dpReq.id }, payload));
+          };
+          var planFn = propsRef.current.onPlanDemo;
+          if (typeof planFn !== 'function') { dpRespond({ error: 'demo-planner-unavailable' }); return; }
+          Promise.resolve().then(function () { return planFn(String(dpReq.goal || '').slice(0, 300)); }).then(function (out) {
+            var steps = (out && Array.isArray(out.steps)) ? out.steps.slice(0, 8).map(function (s) {
+              return { commandId: String((s && s.commandId) || '').slice(0, 60), params: (s && s.params && typeof s.params === 'object') ? s.params : {}, why: String((s && s.why) || '').slice(0, 120), label: String((s && s.label) || (s && s.commandId) || '').slice(0, 90) };
+            }).filter(function (s) { return s.commandId; }) : [];
+            dpRespond({ steps: steps });
+          }).catch(function (e) {
+            dpRespond({ error: String((e && e.message) || e).slice(0, 200) });
+          });
+        } else if (ev.data.type === 'allostudio-demorun-request') {
+          var drReq = ev.data;
+          var drReplyTo = studioWinRef.current;
+          var drRespond = function (payload) {
+            postToStudio(drReplyTo, Object.assign({ type: 'allostudio-demorun-response', id: drReq.id }, payload));
+          };
+          var runFn = propsRef.current.onRunDemoPlan;
+          if (typeof runFn !== 'function') { drRespond({ error: 'demo-runner-unavailable' }); return; }
+          if (demoRunRef.current.running) { drRespond({ error: 'a demo is already running' }); return; }
+          // Steps are re-clamped here and re-validated against the live
+          // registry inside runPlan (unknown ids fail the step) — the popup
+          // can only ever pick from what the registry offers.
+          var drSteps = (Array.isArray(drReq.steps) ? drReq.steps : []).slice(0, 8).map(function (s) {
+            var params = {};
+            if (s && s.params && typeof s.params === 'object') {
+              Object.keys(s.params).slice(0, 8).forEach(function (k) {
+                var pv = s.params[k];
+                if (typeof pv === 'string') params[String(k).slice(0, 40)] = pv.slice(0, 200);
+                else if (typeof pv === 'number' || typeof pv === 'boolean') params[String(k).slice(0, 40)] = pv;
+              });
+            }
+            return { commandId: String((s && s.commandId) || '').slice(0, 60), params: params };
+          }).filter(function (s) { return s.commandId; });
+          if (!drSteps.length) { drRespond({ error: 'no runnable steps' }); return; }
+          demoRunRef.current = { running: true, stop: false };
+          Promise.resolve().then(function () {
+            return runFn(drSteps, {
+              shouldStop: function () { return demoRunRef.current.stop; },
+              onStep: function (i, phase, label, narration) {
+                postToStudio(drReplyTo, { type: 'allostudio-demostep', id: drReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 160) });
+              }
+            });
+          }).then(function (result) {
+            demoRunRef.current = { running: false, stop: false };
+            drRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });
+          }).catch(function (e) {
+            demoRunRef.current = { running: false, stop: false };
+            drRespond({ error: String((e && e.message) || e).slice(0, 200) });
+          });
+        } else if (ev.data.type === 'allostudio-demostop') {
+          demoRunRef.current.stop = true;
         } else if (ev.data.type === 'allostudio-resource-cues-request') {
           var creq = ev.data;
           var cReplyTo = studioWinRef.current;

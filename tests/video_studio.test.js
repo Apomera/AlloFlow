@@ -1813,6 +1813,36 @@ describe('vsMuxWebm', () => {
   });
 });
 
+// ─── vsBuildDemoCaptionCues (Demo Autopilot, 2026-07-10) ─────────────────────
+describe('vsBuildDemoCaptionCues', () => {
+  it('pairs start/done events into non-overlapping step cues', () => {
+    const cues = VS.vsBuildDemoCaptionCues([
+      { t: 2, index: 0, phase: 'start', label: 'Create a lesson' },
+      { t: 9.5, index: 0, phase: 'done', label: 'Create a lesson' },
+      { t: 12, index: 1, phase: 'start', label: 'Generate a quiz' },
+      { t: 20, index: 1, phase: 'done', label: 'Generate a quiz' },
+    ], 30);
+    expect(cues).toEqual([
+      { start: 2, end: 9.5, text: 'Step 1: Create a lesson' },
+      { start: 12, end: 20, text: 'Step 2: Generate a quiz' },
+    ]);
+  });
+  it('caps orphan cues at 8s, clips at the next cue and the take end', () => {
+    const cues = VS.vsBuildDemoCaptionCues([
+      { t: 0, index: 0, phase: 'start', label: 'A' },   // no done → 8s cap…
+      { t: 3, index: 1, phase: 'start', label: 'B' },   // …but next cue clips it to 3
+      { t: 3, index: 1, phase: 'done', label: 'B' },    // done before start+0.8 → floor
+    ], 4);
+    expect(cues[0].end).toBe(3);
+    expect(cues[1].start).toBe(3);
+    expect(cues[1].end).toBeCloseTo(3.8, 5); // start+0.8 floor, still under dur? no: dur=4 clip → 3.8
+  });
+  it('ignores junk events and returns [] on empty input', () => {
+    expect(VS.vsBuildDemoCaptionCues(null, 10)).toEqual([]);
+    expect(VS.vsBuildDemoCaptionCues([{ t: -5, label: 'x' }, { t: 'NaN', label: 'y' }, { t: 1, label: '   ' }], 10)).toEqual([]);
+  });
+});
+
 // ─── Batch-1 hardening wiring (2026-07-09) ───────────────────────────────────
 // Take persistence + always-on bridge receiver in the module; export cleanup,
 // cancel, and honest real-time ETA in the popup. Structural pins: these prove
@@ -1932,6 +1962,35 @@ describe('take persistence + export hardening wiring', () => {
     // Both paths burn captions through the single shared renderer.
     expect(html).toContain('function drawBurnCaption(ctx, w, hgt, cues, tSec, captionStyle)');
     expect((html.match(/drawBurnCaption\(ctx, w, hgt, cues/g) || []).length).toBeGreaterThanOrEqual(3);
+  });
+  it('Demo Autopilot is wired end-to-end with plan review and guarded execution', () => {
+    const html = popup();
+    // Popup: card, plan review, start/stop, step events on the recording clock.
+    expect(html).toContain('id="demoAutopilotCard"');
+    expect(html).toContain('id="demoGoal"');
+    expect(html).toContain('id="demoPlanList"');
+    expect(html).toContain("bridgeRequest('allostudio-demoplan-request'");
+    expect(html).toContain("bridgeRequest('allostudio-demorun-request'");
+    expect(html).toContain("isOpenerMessage(ev, 'allostudio-demostep')");
+    expect(html).toContain("postToOpener({ type: 'allostudio-demostop' });");
+    expect(html).toContain('t: Math.max(0, elapsed)');
+    expect(html).toContain('vsBuildDemoCaptionCues(demoState.events, dur)');
+    expect(html).toContain("take.name = 'Demo · ' + take.name;");
+    // Module: relays with param clamping and single-flight.
+    const m = moduleText();
+    expect(m).toContain("ev.data.type === 'allostudio-demoplan-request'");
+    expect(m).toContain("ev.data.type === 'allostudio-demorun-request'");
+    expect(m).toContain("ev.data.type === 'allostudio-demostop'");
+    expect(m).toContain('propsRef.current.onRunDemoPlan');
+    expect(m).toContain("{ error: 'a demo is already running' }");
+    // ANTI: props reuse AlloBot's planner/runner + shared single-flight guard.
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+    expect(anti).toContain('onPlanDemo: async (goal) => {');
+    expect(anti).toContain('onRunDemoPlan: async (steps, hooks) => {');
+    expect(anti).toContain('AC.planUtterance(_alloCmdCtx()');
+    expect(anti).toContain('AC.runPlan(() => _alloCmdCtx(), [list[i]]');
+    expect(anti).toContain("throw new Error('AlloBot is already running a plan — stop it first.');");
+    expect(anti).toContain("document.visibilityState !== 'visible'");
   });
   it('popup re-encode cleans up on every exit and is cancelable', () => {
     const html = popup();

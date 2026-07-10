@@ -321,6 +321,19 @@
       </div>
       <div id="importSummaryBox" class="restore-summary import-summary-box" hidden aria-live="polite" aria-label="Project restore summary"></div>
     </div>
+    <div class="card" id="demoAutopilotCard">
+      <h2>🤖 Demo Autopilot (beta)</h2>
+      <div class="status">Describe what to show, review the step plan, then AlloFlow drives itself while this window records the tab — each step becomes a caption. Your goal text (never video) goes to Gemini to pick steps from AlloFlow’s own command list; nothing runs until you approve the plan. Before starting: close anything with student data, and pick the <strong>AlloFlow tab</strong> in the share dialog.</div>
+      <label for="demoGoal" style="display:block;margin:8px 0 6px">What should the demo show?</label>
+      <textarea id="demoGoal" rows="2" placeholder="Example: Create a 5th-grade lesson about volcanoes, then generate a quiz and a glossary from it." style="width:100%;box-sizing:border-box;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;resize:vertical"></textarea>
+      <div class="row" style="margin:8px 0">
+        <button class="quiet" id="demoPlanBtn">1 · Draft the step plan</button>
+        <button class="action" id="demoStartBtn" disabled>2 · Record the demo</button>
+        <button class="danger" id="demoStopBtn" hidden>🛑 Stop demo</button>
+      </div>
+      <div id="demoPlanList" role="group" aria-label="Demo plan steps"></div>
+      <div class="status" id="demoStatus"></div>
+    </div>
     <div class="stage" id="stage">
       <div class="placeholder" id="stagePlaceholder">Press <strong>Start recording</strong> — you’ll pick what to share, then a 3-second countdown runs.</div>
       <video id="previewVideo" autoplay muted playsinline hidden></video>
@@ -3475,6 +3488,34 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return out;
   }
 
+  // Demo Autopilot captions: one cue per executed plan step, timed by the
+  // recording clock at the moment the step ran. A 'start' event opens the
+  // cue, the matching 'done' extends it to the completion moment; cues never
+  // overlap (each closes when the next opens) and idle tails cap at 8s.
+  function vsBuildDemoCaptionCues(events, totalDur) {
+    var evs = (Array.isArray(events) ? events : []).filter(function (e) {
+      return e && isFinite(Number(e.t)) && Number(e.t) >= 0 && String(e.label || '').trim();
+    }).map(function (e) {
+      return { t: Number(e.t), phase: e.phase === 'done' ? 'done' : 'start', index: Math.max(0, Math.round(Number(e.index) || 0)), label: String(e.label).trim().slice(0, 140) };
+    }).sort(function (a, b) { return a.t - b.t; });
+    var cues = [];
+    evs.forEach(function (e) {
+      if (e.phase === 'start') {
+        cues.push({ start: e.t, end: e.t + 8, text: 'Step ' + (e.index + 1) + ': ' + e.label, _i: e.index });
+      } else {
+        for (var i = cues.length - 1; i >= 0; i--) {
+          if (cues[i]._i === e.index) { cues[i].end = Math.max(cues[i].start + 0.8, e.t); break; }
+        }
+      }
+    });
+    for (var k = 0; k < cues.length - 1; k++) cues[k].end = Math.min(cues[k].end, Math.max(cues[k].start + 0.4, cues[k + 1].start));
+    var dur = Number(totalDur);
+    if (isFinite(dur) && dur > 0) cues.forEach(function (c) { c.end = Math.min(c.end, dur); });
+    return cues.filter(function (c) { return c.end > c.start; }).map(function (c) {
+      return { start: Math.round(c.start * 100) / 100, end: Math.round(c.end * 100) / 100, text: c.text };
+    });
+  }
+
   // Minimal WebM (Matroska subset) muxer for the WebCodecs fast-export path:
   // VP8/VP9 video + optional Opus audio, per-chunk millisecond timestamps,
   // known-size elements throughout (so vsPatchWebmDuration deliberately
@@ -4742,6 +4783,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         blob: blob, url: URL.createObjectURL(blob), type: blob.type || rawType,
         duration: dur, captions: cuesLive.slice(), transcriptEdits: [], transcriptWords: [], transcriptCleanupQueue: [], visualDescriptions: [], chapters: [], inserts: [], visualPrompts: [], localizations: [], mediaCredits: [], finishReview: {}, zooms: [], musicBed: null, createdAt: new Date().toISOString()
       };
+      // Demo Autopilot: the take that ends a demo gets its step captions
+      // (timed by the recording clock) and a recognizable name.
+      if (demoState.active) {
+        var demoCues = vsBuildDemoCaptionCues(demoState.events, dur);
+        if (demoCues.length) take.captions = demoCues;
+        take.name = 'Demo · ' + take.name;
+        demoState.active = false; demoState.events = [];
+        setStatus($('demoStatus'), demoCues.length ? 'Demo take saved with ' + demoCues.length + ' step captions — review them in Edit & Captions before exporting.' : 'Demo take saved (no step captions were recorded).', 'ok');
+        announce('Demo take saved');
+      }
       takes.push(take);
       saveDraft(take);
       selectTake(take.id);
@@ -10122,6 +10173,102 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }, 6000);
   }
   $('sendTranscriptBtn').addEventListener('click', function () { sendTranscriptToAlloFlow('transcriptStatus'); });
+
+  // ── Demo Autopilot (beta) ──
+  // This window only ORCHESTRATES: Gemini plans steps from AlloFlow's own
+  // command registry (goal TEXT only — never video), the teacher reviews and
+  // approves, then the APP runs the plan through the same guarded runPlan as
+  // AlloBot (when-guards rechecked per step, destructive commands never
+  // auto-run) while this window records the tab. Step events arrive over the
+  // bridge stamped with the recording clock and become caption cues.
+  var demoState = { steps: null, active: false, events: [], running: false };
+  function approvedDemoSteps() {
+    if (!demoState.steps) return [];
+    var boxes = $('demoPlanList').querySelectorAll('input[type="checkbox"]');
+    var out = [];
+    Array.prototype.forEach.call(boxes, function (b, i) { if (b.checked && demoState.steps[i]) out.push(demoState.steps[i]); });
+    return out;
+  }
+  function renderDemoPlan() {
+    var host = $('demoPlanList');
+    host.innerHTML = '';
+    (demoState.steps || []).forEach(function (s, i) {
+      var row = document.createElement('label');
+      row.style.cssText = 'display:flex;gap:8px;align-items:baseline;padding:4px 2px';
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = true;
+      cb.setAttribute('aria-label', 'Include step ' + (i + 1));
+      var span = document.createElement('span');
+      span.textContent = (i + 1) + '. ' + (s.label || s.commandId) + (s.why ? ' — ' + s.why : '');
+      row.appendChild(cb); row.appendChild(span);
+      host.appendChild(row);
+    });
+    $('demoStartBtn').disabled = !(demoState.steps && demoState.steps.length);
+  }
+  $('demoPlanBtn').addEventListener('click', async function () {
+    var goal = $('demoGoal').value.trim();
+    if (!goal) { setStatus($('demoStatus'), 'Describe what the demo should show first.', 'warn'); return; }
+    if (!opener || opener.closed) { setStatus($('demoStatus'), 'Demo Autopilot needs the AlloFlow window (it uses the app’s command registry and Gemini connection).', 'warn'); return; }
+    var btn = $('demoPlanBtn'); btn.disabled = true;
+    setStatus($('demoStatus'), 'Asking Gemini to plan steps from AlloFlow’s command list (your goal text only — no video)…');
+    try {
+      var resp = await bridgeRequest('allostudio-demoplan-request', { goal: goal }, 60000);
+      if (resp.error) {
+        setStatus($('demoStatus'), 'Could not draft a plan: ' + resp.error, 'bad');
+      } else if (!resp.steps || !resp.steps.length) {
+        setStatus($('demoStatus'), 'Gemini couldn’t map that goal to app commands. Describe concrete actions — for example “create a lesson about X, then generate a quiz from it”.', 'warn');
+      } else {
+        demoState.steps = resp.steps;
+        renderDemoPlan();
+        setStatus($('demoStatus'), resp.steps.length + ' steps drafted. Untick any you don’t want, then press “Record the demo”.', 'ok');
+        announce('Demo plan ready: ' + resp.steps.length + ' steps');
+      }
+    } catch (e) {
+      setStatus($('demoStatus'), 'Could not draft a plan: ' + String((e && e.message) || e).slice(0, 140), 'bad');
+    }
+    btn.disabled = false;
+  });
+  window.addEventListener('message', function (ev) {
+    if (!isOpenerMessage(ev, 'allostudio-demostep')) return;
+    if (!demoState.active) return;
+    var d = ev.data;
+    demoState.events.push({ t: Math.max(0, elapsed), index: d.index, phase: d.phase, label: d.label });
+    setStatus($('demoStatus'), (d.phase === 'start' ? '⏳' : '✅') + ' Step ' + ((Number(d.index) || 0) + 1) + ': ' + String(d.label || '').slice(0, 120), 'ok');
+  });
+  $('demoStartBtn').addEventListener('click', async function () {
+    var steps = approvedDemoSteps();
+    if (!steps.length) { setStatus($('demoStatus'), 'Draft a plan first, and keep at least one step ticked.', 'warn'); return; }
+    if (!opener || opener.closed) { setStatus($('demoStatus'), 'Demo Autopilot needs the AlloFlow window.', 'warn'); return; }
+    if (rec && rec.state !== 'inactive') { setStatus($('demoStatus'), 'Already recording — stop the current take first.', 'warn'); return; }
+    if (demoState.running) return;
+    srcMode = 'screen'; syncSrcButtons();
+    setStatus($('demoStatus'), 'Pick the AlloFlow TAB in the share dialog, then switch to that tab — the demo starts on its own.', 'ok');
+    demoState.active = true; demoState.events = []; demoState.running = true;
+    $('demoStartBtn').disabled = true;
+    try {
+      await startRecording();
+      if (!rec || rec.state === 'inactive') {
+        demoState.active = false;
+        setStatus($('demoStatus'), 'Recording didn’t start, so the demo was cancelled.', 'warn');
+        return;
+      }
+      $('demoStopBtn').hidden = false;
+      var resp = await bridgeRequest('allostudio-demorun-request', { steps: steps }, 1800000);
+      if (resp.error) setStatus($('demoStatus'), 'Demo problem: ' + resp.error + ' — the recording is still yours; stop it when you’re ready.', 'warn');
+      else if (resp.ok) setStatus($('demoStatus'), 'Demo finished (' + (resp.completed != null ? resp.completed : steps.length) + ' steps). Stopping the recording…', 'ok');
+      else setStatus($('demoStatus'), 'Demo stopped early' + (resp.reason ? ': ' + resp.reason : '') + '. Captions cover the steps that ran.', 'warn');
+      setTimeout(function () { if (rec && rec.state !== 'inactive') stopRecording(); }, 1600);
+    } catch (e) {
+      setStatus($('demoStatus'), 'Demo problem: ' + String((e && e.message) || e).slice(0, 140) + ' — stop the recording manually if it is still running.', 'warn');
+    } finally {
+      demoState.running = false;
+      $('demoStopBtn').hidden = true;
+      $('demoStartBtn').disabled = !(demoState.steps && demoState.steps.length);
+    }
+  });
+  $('demoStopBtn').addEventListener('click', function () {
+    postToOpener({ type: 'allostudio-demostop' });
+    setStatus($('demoStatus'), 'Stopping after the current step…', 'warn');
+  });
 
   // ── Export ──
   var lastExport = null; // {blob, vtt, title, duration, url, takeId}

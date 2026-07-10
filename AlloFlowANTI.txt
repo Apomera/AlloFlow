@@ -35238,6 +35238,59 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     setHistory(prev => [...prev, refItem]);
                     return { id: newRefId };
                 },
+                onPlanDemo: async (goal) => {
+                    // Demo Autopilot planning: reuses AlloBot's planUtterance over
+                    // the live command registry (goal TEXT only goes to Gemini).
+                    const AC = window.AlloModules && window.AlloModules.AlloCommands;
+                    if (!AC || typeof AC.planUtterance !== 'function' || typeof AC.buildAlloCommands !== 'function') {
+                        throw new Error('The command planner has not loaded yet — open AlloBot or the Ctrl+K palette once, then try again.');
+                    }
+                    const steps = await AC.planUtterance(_alloCmdCtx(), String(goal || '').slice(0, 300));
+                    if (!steps || !steps.length) return { steps: [] };
+                    const cmds = AC.buildAlloCommands(_alloCmdCtx(), { includeGated: true });
+                    return { steps: steps.map(s => {
+                        const c = cmds.find(x => x.id === s.commandId);
+                        return { commandId: s.commandId, params: s.params || {}, why: s.why || '', label: (c && c.label) || s.commandId };
+                    }) };
+                },
+                onRunDemoPlan: async (steps, hooks) => {
+                    // Demo Autopilot execution: one guarded runPlan call PER STEP so
+                    // the demo breathes between steps (runPlan rechecks when-guards
+                    // and never auto-runs destructive commands). Shares AlloBot's
+                    // single-flight guard so a bot plan and a demo can't interleave.
+                    const AC = window.AlloModules && window.AlloModules.AlloCommands;
+                    if (!AC || typeof AC.runPlan !== 'function') throw new Error('The command runner has not loaded.');
+                    if (_planRunRef.current && _planRunRef.current.running) throw new Error('AlloBot is already running a plan — stop it first.');
+                    _planRunRef.current = { running: true, stop: false };
+                    const stopWanted = () => (_planRunRef.current.stop || !!(hooks && hooks.shouldStop && hooks.shouldStop()));
+                    try {
+                        // The teacher just picked the tab in the share dialog — wait
+                        // until this tab is actually visible before driving it.
+                        for (let waited = 0; document.visibilityState !== 'visible' && waited < 15000 && !stopWanted(); waited += 250) {
+                            await new Promise(r => setTimeout(r, 250));
+                        }
+                        addToast('🎬 Demo Autopilot is driving AlloFlow — Video Studio is recording.', 'info');
+                        const list = (Array.isArray(steps) ? steps : []).slice(0, 8);
+                        let completed = 0;
+                        for (let i = 0; i < list.length; i++) {
+                            if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
+                            const r = await AC.runPlan(() => _alloCmdCtx(), [list[i]], {
+                                shouldStop: stopWanted,
+                                onStep: (j, phase, cmd, narr) => {
+                                    try { if (hooks && hooks.onStep) hooks.onStep(i, phase, (cmd && cmd.label) || list[i].commandId, narr || ''); } catch (_) {}
+                                }
+                            });
+                            if (!r || !r.ok) return { ok: false, completed, stopped: !!(r && r.stopped), reason: (r && r.reason) || ('Step ' + (i + 1) + ' did not finish.') };
+                            completed++;
+                            // A beat between steps so viewers see each result land.
+                            await new Promise(r2 => setTimeout(r2, 2200));
+                        }
+                        addToast('🎉 Demo finished — Video Studio is wrapping up the recording.', 'success');
+                        return { ok: true, completed };
+                    } finally {
+                        _planRunRef.current = { running: false, stop: false };
+                    }
+                },
                 onOpenCinematicStudio: () => { setIsVideoStudioOpen(false); setShowCinematicStudio(true); }
             })}
         </CDNModuleGate>
