@@ -712,6 +712,97 @@ function _buildAlloPackShareUrl(encodedPack) {
         return '';
     }
 }
+// ── Class Mailbox (teacher-owned Apps Script web app) ──
+// A teacher deploys apps_script/session_mailbox/Code.gs once from their own
+// Google account; AlloFlow then uses that /exec URL as a rendezvous for
+// account-less live sessions and Drive-hosted homework packs. Requests are
+// POST text/plain JSON only — the single shape Apps Script can answer
+// cross-origin (it cannot handle CORS preflight OPTIONS).
+const ALLO_MB_URL_KEY = 'alloflow_session_mailbox_url';
+const ALLO_MB_ADMIN_KEY = 'alloflow_session_mailbox_admin';
+const ALLO_MB_CHUNK_CHARS = 60000;
+const ALLO_MB_POLL_MS = 2500;
+function _alloRandomToken(byteCount = 16) {
+    try {
+        const cryptoObj = (typeof crypto !== 'undefined' && crypto.getRandomValues) ? crypto : window.crypto;
+        const bytes = new Uint8Array(byteCount);
+        cryptoObj.getRandomValues(bytes);
+        return _alloBytesToBase64Url(bytes);
+    } catch (_) {
+        return (Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)).slice(0, byteCount * 2);
+    }
+}
+function _alloCleanMailboxUrl(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    try {
+        const url = new URL(raw);
+        if (url.protocol !== 'https:') return '';
+        const host = String(url.hostname || '').toLowerCase();
+        if (!/(^|\.)script\.google\.com$/.test(host) && !/(^|\.)googleusercontent\.com$/.test(host)) return '';
+        return url.toString();
+    } catch (_) {
+        return '';
+    }
+}
+async function _alloMailboxCall(execUrl, payload) {
+    const res = await fetch(execUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload || {}),
+        redirect: 'follow',
+    });
+    const text = await res.text();
+    let parsed = null;
+    try { parsed = JSON.parse(text); } catch (_) {}
+    if (!parsed || parsed.ok !== true) {
+        const reason = parsed && parsed.e ? String(parsed.e) : ('http-' + res.status);
+        const err = new Error('Mailbox error: ' + reason);
+        err.code = 'allo/mailbox-' + reason;
+        throw err;
+    }
+    return parsed;
+}
+function _alloSplitPackChunks(text, size = ALLO_MB_CHUNK_CHARS) {
+    const source = String(text || '');
+    const chunks = [];
+    for (let i = 0; i < source.length; i += size) chunks.push(source.slice(i, i + size));
+    return chunks.length ? chunks : [''];
+}
+function _alloReadMailboxEntryParam(name) {
+    if (typeof window === 'undefined') return null;
+    try {
+        const search = new URLSearchParams(window.location.search || '');
+        let encoded = search.get(name) || '';
+        if (!encoded && window.location.hash && window.location.hash.length > 1) {
+            encoded = new URLSearchParams(window.location.hash.replace(/^#/, '')).get(name) || '';
+        }
+        if (!encoded) return null;
+        const parsed = JSON.parse(_alloBase64UrlDecode(encoded) || 'null');
+        const execUrl = _alloCleanMailboxUrl(parsed && parsed.u);
+        if (!execUrl) return null;
+        return { ...parsed, u: execUrl };
+    } catch (_) {
+        return null;
+    }
+}
+function _buildAlloMailboxEntryUrl(name, payload) {
+    if (typeof window === 'undefined') return '';
+    try {
+        const current = new URL(window.location.href);
+        const base = _alloGetConfiguredStudentBaseUrl() || (_alloShareHostIsNotStudentReachable(current) ? '' : current.toString());
+        if (!base) return '';
+        const url = new URL(base);
+        if (_alloShareHostIsNotStudentReachable(url)) return '';
+        url.search = '';
+        url.hash = '';
+        url.searchParams.set(name, _alloBase64UrlEncode(JSON.stringify(payload || {})));
+        url.searchParams.set('allo_ai', 'off');
+        return url.toString();
+    } catch (_) {
+        return '';
+    }
+}
 function _alloValidFirebaseConfig(config) {
     return Boolean(config && typeof config === 'object' && config.apiKey && config.projectId && config.appId);
 }
@@ -11789,11 +11880,171 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           .catch(() => { if (!cancelled) { setQrShareSvg(''); setQrShareError(true); } });
       return () => { cancelled = true; };
   }, [qrShareModal?.url, qrShareModal?.title, qrShareModal?.noQr]);
-  // Self-contained variant: no Firestore write, no student auth — the whole
-  // pack is compressed into the URL fragment and decoded by the student shell.
-  // This is the pathway that works when the class backend (e.g. Gemini
-  // Canvas-managed Firebase) refuses anonymous student devices.
-  const createSelfContainedHomeworkLink = useCallback(async () => {
+  // ── Class Mailbox: account-less live sessions + Drive-hosted homework ──
+  // The mailbox is a teacher-owned Apps Script web app (see
+  // apps_script/session_mailbox/). It exists because Canvas-managed Firestore
+  // refuses anonymous student devices; the mailbox is the meeting point both
+  // sides CAN reach, on infrastructure the teacher already owns.
+  const [mbPanelOpen, setMbPanelOpen] = useState(false);
+  const [mbUrlInput, setMbUrlInput] = useState('');
+  const [mbConfig, setMbConfig] = useState(() => {
+      try {
+          const url = _alloCleanMailboxUrl(localStorage.getItem(ALLO_MB_URL_KEY) || '');
+          const admin = localStorage.getItem(ALLO_MB_ADMIN_KEY) || '';
+          return url ? { url, admin } : null;
+      } catch (_) { return null; }
+  });
+  const [mbStatus, setMbStatus] = useState('');
+  const [mbBusy, setMbBusy] = useState(false);
+  const [mbLive, setMbLive] = useState(null);
+  const [mbRoster, setMbRoster] = useState({});
+  const [mbQrSvg, setMbQrSvg] = useState('');
+  const mbUpCursorRef = useRef(0);
+  const [mbStudent, setMbStudent] = useState(null);
+  const [mbHandUp, setMbHandUp] = useState(false);
+  const mbStudentCursorRef = useRef(0);
+  const mbStudentConnectedRef = useRef(false);
+  useEffect(() => {
+      window.__alloMailboxLive = () => setMbPanelOpen(true);
+      return () => { try { delete window.__alloMailboxLive; } catch (_) {} };
+  }, []);
+  const connectMailbox = useCallback(async () => {
+      const execUrl = _alloCleanMailboxUrl(mbUrlInput);
+      if (!execUrl) {
+          setMbStatus('That does not look like an Apps Script web app URL (it should end in /exec on script.google.com).');
+          return;
+      }
+      setMbBusy(true);
+      setMbStatus('Testing mailbox…');
+      try {
+          const t0 = Date.now();
+          await _alloMailboxCall(execUrl, { a: 'hello' });
+          let admin = '';
+          try { admin = localStorage.getItem(ALLO_MB_ADMIN_KEY) || ''; } catch (_) {}
+          if (!admin) {
+              try {
+                  const claimed = await _alloMailboxCall(execUrl, { a: 'claim' });
+                  admin = String(claimed.admin || '');
+              } catch (claimErr) {
+                  if (String(claimErr?.code || '').includes('claimed')) {
+                      setMbStatus('Mailbox reachable, but already claimed from another device. In the Apps Script editor: Project Settings → Script properties → delete "admin", then connect again.');
+                      setMbBusy(false);
+                      return;
+                  }
+                  throw claimErr;
+              }
+          }
+          try {
+              localStorage.setItem(ALLO_MB_URL_KEY, execUrl);
+              if (admin) localStorage.setItem(ALLO_MB_ADMIN_KEY, admin);
+          } catch (_) {}
+          setMbConfig({ url: execUrl, admin });
+          setMbStatus('Connected — round-trip ' + (Date.now() - t0) + 'ms. Ready for live sessions and hosted homework QR.');
+      } catch (e) {
+          warnLog('Mailbox connect failed', e);
+          setMbStatus('Could not reach the mailbox (' + (e?.message || e) + '). Check the /exec URL and that the deployment access is set to "Anyone".');
+      }
+      setMbBusy(false);
+  }, [mbUrlInput]);
+  const startMailboxLiveSession = useCallback(async () => {
+      if (!mbConfig?.url || !mbConfig?.admin) return;
+      setMbBusy(true);
+      setMbStatus('Opening live session…');
+      try {
+          const code = generateSessionCode();
+          const secret = _alloRandomToken(16);
+          await _alloMailboxCall(mbConfig.url, { a: 'open', admin: mbConfig.admin, c: code, k: secret });
+          const joinUrl = _buildAlloMailboxEntryUrl('allo_mb', { u: mbConfig.url, c: code, k: secret });
+          if (!joinUrl) throw new Error('no student app URL is configured for the QR');
+          mbUpCursorRef.current = 0;
+          setMbRoster({});
+          setMbLive({ code, secret, joinUrl });
+          setMbStatus('');
+      } catch (e) {
+          warnLog('Mailbox live start failed', e);
+          setMbStatus('Could not start: ' + (e?.message || e));
+      }
+      setMbBusy(false);
+  }, [mbConfig]);
+  const endMailboxLiveSession = useCallback(async () => {
+      const live = mbLive;
+      setMbLive(null);
+      setMbRoster({});
+      if (live && mbConfig?.url) {
+          try { await _alloMailboxCall(mbConfig.url, { a: 'send', c: live.code, k: live.secret, from: 'teacher', box: 'down', v: { kind: 'end' } }); } catch (_) {}
+          try { await _alloMailboxCall(mbConfig.url, { a: 'end', c: live.code, k: live.secret }); } catch (_) {}
+      }
+  }, [mbLive, mbConfig]);
+  const pushResourceToMailbox = useCallback(async () => {
+      if (!mbLive || !mbConfig?.url) return;
+      const candidates = (Array.isArray(history) ? history : []).filter(h => h && h.id && !TEACHER_ONLY_TYPES.includes(h.type));
+      const item = (generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type))
+          ? generatedContent
+          : candidates[candidates.length - 1];
+      if (!item) {
+          addToast('Open a student-safe resource first, then push it to the class.', 'info');
+          return;
+      }
+      setMbBusy(true);
+      try {
+          const encoded = await _alloEncodeAlloPack(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })));
+          const parts = _alloSplitPackChunks(encoded);
+          const rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+          for (let i = 0; i < parts.length; i += 1) {
+              await _alloMailboxCall(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i] } });
+          }
+          addToast('Pushed "' + (item.title || item.type) + '" to ' + Object.keys(mbRoster).length + ' connected student(s).', 'success');
+      } catch (e) {
+          warnLog('Mailbox push failed', e);
+          addToast('Push failed: ' + (e?.message || e), 'error');
+      }
+      setMbBusy(false);
+  }, [mbLive, mbConfig, generatedContent, history, mbRoster]);
+  useEffect(() => {
+      if (!mbLive || !mbConfig?.url) return undefined;
+      let cancelled = false;
+      let timer = null;
+      const poll = async () => {
+          try {
+              const res = await _alloMailboxCall(mbConfig.url, { a: 'recv', c: mbLive.code, k: mbLive.secret, box: 'up', since: String(mbUpCursorRef.current) });
+              if (cancelled) return;
+              const box = res.b && res.b.up;
+              if (box) {
+                  mbUpCursorRef.current = box.n || mbUpCursorRef.current;
+                  if (Array.isArray(box.m) && box.m.length) {
+                      setMbRoster(prev => {
+                          const next = { ...prev };
+                          box.m.forEach(entry => {
+                              const msg = entry && entry[1];
+                              const v = msg && msg.v;
+                              if (v && v.kind === 'student' && v.uid) next[v.uid] = { name: String(v.name || 'Student').slice(0, 40), hand: !!v.hand, at: msg.t };
+                          });
+                          return next;
+                      });
+                  }
+              }
+          } catch (e) {
+              if (!cancelled && String(e?.code || '').includes('no-session')) {
+                  setMbLive(null);
+                  setMbStatus('The live session expired or was ended.');
+                  return;
+              }
+          }
+          if (!cancelled) timer = setTimeout(poll, ALLO_MB_POLL_MS);
+      };
+      poll();
+      return () => { cancelled = true; if (timer) clearTimeout(timer); };
+  }, [mbLive, mbConfig]);
+  useEffect(() => {
+      let cancelled = false;
+      if (!mbLive?.joinUrl) { setMbQrSvg(''); return undefined; }
+      _makeAlloQrSvg(mbLive.joinUrl, 'AlloFlow live join')
+          .then(svg => { if (!cancelled) setMbQrSvg(svg); })
+          .catch(() => { if (!cancelled) setMbQrSvg(''); });
+      return () => { cancelled = true; };
+  }, [mbLive?.joinUrl]);
+  // Shared packet builder for both self-contained links and mailbox hosting.
+  const buildAssignmentPackEncoded = useCallback(async () => {
       const fallbackCurrent = generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type) ? [generatedContent] : [];
       const resourceCandidates = (Array.isArray(history) ? history : []).filter(item => item && item.id && !TEACHER_ONLY_TYPES.includes(item.type));
       const resourcesToAssign = resourceCandidates.length > 0 ? resourceCandidates : fallbackCurrent;
@@ -11801,34 +12052,43 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           addToast('Create or restore a teacher resource before making a homework link.', 'info');
           return null;
       }
+      const title = String(sourceTopic || generatedContent?.title || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
+      const resources = resourcesToAssign.map(item => ({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data }));
+      const packet = stripUndefined({
+          v: 1,
+          kind: 'assignment',
+          title,
+          createdAt: new Date().toISOString(),
+          currentResourceId: resources[0]?.id || null,
+          resources,
+          aiPolicy: { studentAi: 'off', defaultStudentAi: 'off', teacherPrepared: true },
+      });
+      const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
+      return { encoded, title, count: resources.length };
+  }, [generatedContent, history, sourceTopic]);
+  // Self-contained variant: no Firestore write, no student auth — the whole
+  // pack is compressed into the URL fragment and decoded by the student shell.
+  // This is the pathway that works when the class backend (e.g. Gemini
+  // Canvas-managed Firebase) refuses anonymous student devices.
+  const createSelfContainedHomeworkLink = useCallback(async () => {
       try {
-          const title = String(sourceTopic || generatedContent?.title || resourcesToAssign[0]?.title || 'AlloFlow homework').trim().slice(0, 140) || 'AlloFlow homework';
-          const resources = resourcesToAssign.map(item => ({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data }));
-          const packet = stripUndefined({
-              v: 1,
-              kind: 'assignment',
-              title,
-              createdAt: new Date().toISOString(),
-              currentResourceId: resources[0]?.id || null,
-              resources,
-              aiPolicy: { studentAi: 'off', defaultStudentAi: 'off', teacherPrepared: true },
-          });
-          const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
-          const shareUrl = _buildAlloPackShareUrl(encoded);
+          const built = await buildAssignmentPackEncoded();
+          if (!built) return null;
+          const shareUrl = _buildAlloPackShareUrl(built.encoded);
           if (!shareUrl) {
               addToast('Self-contained link is unavailable from this host. Configure a student app URL first.', 'error');
               return null;
           }
           if (shareUrl.length > ALLO_QR_PACK_MAX_URL_CHARS) {
-              addToast('This activity is too large for a self-contained link. Use the HTML export instead (Export menu).', 'error');
+              addToast('This activity is too large for a self-contained link. Host it on your Class Mailbox (images OK) or use the HTML export.', 'error');
               return null;
           }
           copyToClipboard(shareUrl);
           setQrShareModal({
               type: 'assignment-pack',
-              title,
+              title: built.title,
               url: shareUrl,
-              resourceCount: resources.length,
+              resourceCount: built.count,
               noQr: shareUrl.length > ALLO_QR_PACK_QR_MAX_CHARS,
               sizeChars: shareUrl.length,
           });
@@ -11839,7 +12099,58 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           addToast('Could not create a self-contained homework link.', 'error');
           return null;
       }
-  }, [copyToClipboard, generatedContent, history, sourceTopic]);
+  }, [buildAssignmentPackEncoded, copyToClipboard]);
+  // Mailbox-hosted variant: the full pack (images included) is chunk-uploaded
+  // to the teacher's own Drive via their mailbox; the QR carries only a tiny
+  // pointer, so it is always small enough to print.
+  const hostPackOnMailbox = useCallback(async () => {
+      if (!mbConfig?.url || !mbConfig?.admin) {
+          addToast('Connect your Class Mailbox first — open "Live class without accounts" for the one-time setup.', 'info');
+          setMbPanelOpen(true);
+          return null;
+      }
+      try {
+          const built = await buildAssignmentPackEncoded();
+          if (!built) return null;
+          setMbBusy(true);
+          const id = 'PK-' + generateUUID();
+          const secret = _alloRandomToken(16);
+          const parts = _alloSplitPackChunks(built.encoded);
+          for (let i = 0; i < parts.length; i += 1) {
+              await _alloMailboxCall(mbConfig.url, { a: 'putpack', admin: mbConfig.admin, id, k: secret, part: i + 1, of: parts.length, title: built.title, data: parts[i] });
+          }
+          const shareUrl = _buildAlloMailboxEntryUrl('allo_mbp', { u: mbConfig.url, id, k: secret });
+          if (!shareUrl) throw new Error('no student app URL configured');
+          copyToClipboard(shareUrl);
+          setQrShareModal({
+              type: 'assignment-pack-hosted',
+              title: built.title,
+              url: shareUrl,
+              resourceCount: built.count,
+              noQr: false,
+              sizeChars: shareUrl.length,
+          });
+          addToast('Homework hosted on your Class Mailbox — small printable QR, images included.', 'success');
+          setMbBusy(false);
+          return shareUrl;
+      } catch (e) {
+          warnLog('Mailbox pack hosting failed', e);
+          addToast('Could not host on the mailbox: ' + (e?.message || e), 'error');
+          setMbBusy(false);
+          return null;
+      }
+  }, [mbConfig, buildAssignmentPackEncoded, copyToClipboard]);
+  const toggleMbHand = useCallback(async () => {
+      if (!mbStudent) return;
+      const next = !mbHandUp;
+      setMbHandUp(next);
+      try {
+          await _alloMailboxCall(mbStudent.url, { a: 'send', c: mbStudent.code, k: mbStudent.secret, from: mbStudent.uid, box: 'up', v: { kind: 'student', uid: mbStudent.uid, name: studentNickname || 'Student', hand: next } });
+      } catch (e) {
+          warnLog('Hand raise failed', e);
+          setMbHandUp(!next);
+      }
+  }, [mbStudent, mbHandUp, studentNickname]);
   const createHomeworkAssignmentLink = useCallback(async () => {
       const fallbackCurrent = generatedContent && generatedContent.id && !TEACHER_ONLY_TYPES.includes(generatedContent.type) ? [generatedContent] : [];
       const resourceCandidates = (Array.isArray(history) ? history : []).filter(item => item && item.id && !TEACHER_ONLY_TYPES.includes(item.type));
@@ -20953,6 +21264,159 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       loadPack();
       return () => { cancelled = true; };
   }, []);
+  // Mailbox live-session student entry (?allo_mb=…): joins the teacher's own
+  // Apps Script mailbox — no accounts, no Firebase, works from any phone.
+  useEffect(() => {
+      const entry = _alloReadMailboxEntryParam('allo_mb');
+      if (!entry || !entry.c || !entry.k) return undefined;
+      window.__alloQrStudentMode = { type: 'mailbox-live', aiDisabled: true, code: String(entry.c).toUpperCase() };
+      window.__alloStudentAiDisabled = true;
+      try { window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1'); } catch (_) {}
+      try { if (typeof window.__alloInstallQrStudentAiGuard === 'function') window.__alloInstallQrStudentAiGuard(); } catch (_) {}
+      setHasSelectedMode(true);
+      setHasSelectedRole(true);
+      setShowWizard(false);
+      setShowStudentWelcome(false);
+      setIsTeacherMode(false);
+      setIsParentMode(false);
+      setIsIndependentMode(false);
+      setIsStudentLinkMode(true);
+      setShowStudentEntry(true);
+      let uid = '';
+      try {
+          uid = window.sessionStorage?.getItem('alloflow_mb_uid') || '';
+          if (!uid) {
+              uid = 'mb-' + _alloRandomToken(8);
+              window.sessionStorage?.setItem('alloflow_mb_uid', uid);
+          }
+      } catch (_) { uid = 'mb-' + _alloRandomToken(8); }
+      mbStudentCursorRef.current = 0;
+      mbStudentConnectedRef.current = false;
+      setMbStudent({ url: entry.u, code: String(entry.c).toUpperCase(), secret: String(entry.k), uid });
+      return undefined;
+  }, []);
+  // Mailbox student loop: announce presence, then poll the 'down' box for
+  // pushed resources (chunked, pack-encoded) and the end-of-session signal.
+  useEffect(() => {
+      if (!mbStudent) return undefined;
+      let cancelled = false;
+      let timer = null;
+      const resParts = {};
+      const announce = () => _alloMailboxCall(mbStudent.url, {
+          a: 'send', c: mbStudent.code, k: mbStudent.secret, from: mbStudent.uid,
+          box: 'up', v: { kind: 'student', uid: mbStudent.uid, name: studentNickname || 'Student', hand: mbHandUp },
+      });
+      const handleDownMessage = async (msg) => {
+          const v = msg && msg.v;
+          if (!v) return;
+          if (v.kind === 'end') {
+              addToast('The teacher ended this live session.', 'info');
+              setMbStudent(null);
+              return;
+          }
+          if (v.kind === 'res' && v.rid && v.part >= 1 && v.of >= 1) {
+              const slot = resParts[v.rid] || (resParts[v.rid] = { of: v.of, parts: {} });
+              slot.parts[v.part] = String(v.data || '');
+              if (Object.keys(slot.parts).length < slot.of) return;
+              const assembled = Array.from({ length: slot.of }, (_, i) => slot.parts[i + 1] || '').join('');
+              delete resParts[v.rid];
+              try {
+                  const resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
+                  if (!resource || !resource.id || !resource.type || TEACHER_ONLY_TYPES.includes(resource.type)) return;
+                  setHistory(prev => {
+                      const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
+                      return [...rest, resource];
+                  });
+                  setPendingQrAssignmentResource(resource);
+                  addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
+              } catch (decodeErr) {
+                  warnLog('Mailbox resource decode failed', decodeErr);
+              }
+          }
+      };
+      const poll = async () => {
+          try {
+              const res = await _alloMailboxCall(mbStudent.url, { a: 'recv', c: mbStudent.code, k: mbStudent.secret, box: 'down', since: String(mbStudentCursorRef.current) });
+              if (cancelled) return;
+              if (!mbStudentConnectedRef.current) {
+                  mbStudentConnectedRef.current = true;
+                  addToast('Connected to class ' + mbStudent.code + '. Waiting for your teacher to share.', 'success');
+              }
+              const box = res.b && res.b.down;
+              if (box) {
+                  mbStudentCursorRef.current = box.n || mbStudentCursorRef.current;
+                  if (Array.isArray(box.m)) {
+                      for (const entry of box.m) {
+                          if (cancelled) return;
+                          await handleDownMessage(entry && entry[1]);
+                      }
+                  }
+              }
+          } catch (e) {
+              const code = String(e?.code || '');
+              if (!cancelled && (code.includes('no-session') || code.includes('denied'))) {
+                  addToast(mbStudentConnectedRef.current ? 'This live session has ended.' : 'Could not find this live session — it may have ended. Ask your teacher for a new QR code.', 'error');
+                  setMbStudent(null);
+                  return;
+              }
+          }
+          if (!cancelled) timer = setTimeout(poll, ALLO_MB_POLL_MS);
+      };
+      announce().catch(e => warnLog('Mailbox join announce failed', e));
+      poll();
+      return () => { cancelled = true; if (timer) clearTimeout(timer); };
+  }, [mbStudent, studentNickname]);
+  // Mailbox-hosted homework entry (?allo_mbp=…): fetch the pack from the
+  // teacher's mailbox in slices, then render exactly like #allo_pack.
+  useEffect(() => {
+      const entry = _alloReadMailboxEntryParam('allo_mbp');
+      if (!entry || !entry.id || !entry.k) return undefined;
+      let cancelled = false;
+      window.__alloQrStudentMode = { type: 'assignment-pack-hosted', aiDisabled: true };
+      window.__alloStudentAiDisabled = true;
+      try { window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1'); } catch (_) {}
+      try { if (typeof window.__alloInstallQrStudentAiGuard === 'function') window.__alloInstallQrStudentAiGuard(); } catch (_) {}
+      setHasSelectedMode(true);
+      setHasSelectedRole(true);
+      setShowWizard(false);
+      setShowStudentWelcome(false);
+      setIsTeacherMode(false);
+      setIsParentMode(false);
+      setIsIndependentMode(false);
+      setIsStudentLinkMode(true);
+      setShowStudentEntry(true);
+      const load = async () => {
+          try {
+              let assembled = '';
+              let part = 1;
+              let of = 1;
+              let hostedTitle = '';
+              do {
+                  const res = await _alloMailboxCall(entry.u, { a: 'getpack', id: entry.id, k: entry.k, part });
+                  assembled += String(res.data || '');
+                  of = res.of || 1;
+                  hostedTitle = res.title || hostedTitle;
+                  part += 1;
+              } while (part <= of && !cancelled);
+              if (cancelled) return;
+              const packet = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
+              const rawResources = Array.isArray(packet?.resources)
+                  ? packet.resources.filter(item => item && item.id && item.type && !TEACHER_ONLY_TYPES.includes(item.type))
+                  : [];
+              if (!rawResources.length) throw new Error('Pack has no resources');
+              setHistory(rawResources);
+              const firstId = packet.currentResourceId || rawResources[0]?.id;
+              const firstResource = rawResources.find(item => item && item.id === firstId) || rawResources[0];
+              setPendingQrAssignmentResource(firstResource);
+              addToast('Homework loaded: ' + (packet.title || hostedTitle || 'AlloFlow assignment'), 'success');
+          } catch (e) {
+              warnLog('Hosted homework load failed:', e);
+              if (!cancelled) addToast('Could not load this homework from the class mailbox. Ask your teacher for a new QR.', 'error');
+          }
+      };
+      load();
+      return () => { cancelled = true; };
+  }, []);
   useEffect(() => {
       if (activeView === 'adventure' && generatedContent?.type === 'adventure' && adventureState.turnCount > 0) {
           const timeout = setTimeout(() => {
@@ -28082,7 +28546,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           <div className="bg-white rounded-2xl shadow-2xl p-6 text-center max-w-md w-full relative" onClick={e => e.stopPropagation()}>
             <button onClick={() => setQrShareModal(null)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
             <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center"><Share2 size={24}/></div>
-            <h2 className="text-xl font-black text-slate-900 mb-1">{qrShareModal.type === 'assignment-pack' ? 'Self-contained homework link' : 'Homework QR'}</h2>
+            <h2 className="text-xl font-black text-slate-900 mb-1">{qrShareModal.type === 'assignment-pack-hosted' ? 'Hosted homework QR' : qrShareModal.type === 'assignment-pack' ? 'Self-contained homework link' : 'Homework QR'}</h2>
             <p className="text-sm text-slate-600 mb-4">{qrShareModal.title}</p>
             {!qrShareModal.noQr && (
             <div className="flex justify-center mb-4">
@@ -28099,20 +28563,103 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               </div>
             )}
             <button onClick={() => copyToClipboard(qrShareModal.url)} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-cyan-800 hover:text-cyan-900 bg-cyan-50 border border-cyan-300 hover:border-cyan-400 rounded-lg p-2 transition-all break-all">
-              {qrShareModal.type === 'assignment-pack' ? 'Copy self-contained link' : 'Copy homework link'} <Copy size={12}/>
+              {qrShareModal.type === 'assignment-pack-hosted' ? 'Copy hosted homework link' : qrShareModal.type === 'assignment-pack' ? 'Copy self-contained link' : 'Copy homework link'} <Copy size={12}/>
             </button>
             {qrShareModal.type === 'assignment' && (
               <button onClick={() => { createSelfContainedHomeworkLink(); }} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all">
                 Make self-contained version (no accounts needed) <Share2 size={12}/>
               </button>
             )}
-            {qrShareModal.type === 'assignment-pack' ? (
+            {(qrShareModal.type === 'assignment' || qrShareModal.type === 'assignment-pack') && (
+              <button onClick={() => { hostPackOnMailbox(); }} disabled={mbBusy} className="w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60">
+                {mbBusy ? 'Uploading to your mailbox…' : 'Host on Class Mailbox (small QR, images OK)'} <Share2 size={12}/>
+              </button>
+            )}
+            {qrShareModal.type === 'assignment' && (
+              <button onClick={() => { setQrShareModal(null); setMbPanelOpen(true); }} className="w-full mt-2 text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2">
+                Live class without accounts (beta) — set up your Class Mailbox
+              </button>
+            )}
+            {qrShareModal.type === 'assignment-pack-hosted' ? (
+              <p className="text-[11px] text-slate-500 mt-3">The activity (images included) is stored in YOUR Google Drive via your Class Mailbox — students need no account, and AI stays off. Delete it any time from the "AlloFlow Class Mailbox" Drive folder.</p>
+            ) : qrShareModal.type === 'assignment-pack' ? (
               <p className="text-[11px] text-slate-500 mt-3">The whole activity travels inside the link — students need no account, nothing is stored online, and AI stays off.{typeof qrShareModal.sizeChars === 'number' ? ` Link size ~${Math.max(1, Math.round(qrShareModal.sizeChars / 1024))} KB${qrShareModal.sizeChars > 8000 ? ' — very long links can be truncated by some apps; Google Classroom and email handle them well.' : '.'}` : ''}</p>
             ) : (
               <p className="text-[11px] text-slate-500 mt-3">Students open teacher-prepared resources with AI generation off.</p>
             )}
           </div>
         </div>
+      )}
+      {mbPanelOpen && (
+        <div className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label="Class Mailbox live session" onClick={() => setMbPanelOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative text-left max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setMbPanelOpen(false)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
+            <h2 className="text-xl font-black text-slate-900 mb-1">Live class without accounts <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 align-middle">beta</span></h2>
+            <p className="text-xs text-slate-600 mb-4">Runs on a Class Mailbox you own (a free Google Apps Script in your account). Students scan a QR — no accounts, no apps, nothing stored outside your Google Drive.</p>
+            {!mbConfig && (
+              <div>
+                <p className="text-xs text-slate-700 mb-2 font-bold">One-time setup (~2 minutes):</p>
+                <ol className="text-xs text-slate-600 list-decimal ml-4 space-y-1 mb-3">
+                  <li>Copy the mailbox script: <button onClick={async () => { try { const res = await fetch('https://alloflow-cdn.pages.dev/apps_script/session_mailbox/Code.gs'); const code = await res.text(); if (!res.ok || !code) throw new Error('fetch failed'); copyToClipboard(code); } catch (_) { addToast('Could not fetch the script — get Code.gs from the AlloFlow repo (apps_script/session_mailbox/).', 'error'); } }} className="font-bold text-indigo-700 underline underline-offset-2">copy script code</button></li>
+                  <li>Open <span className="font-mono font-bold">script.new</span>, paste over the starter code, save.</li>
+                  <li>Deploy → New deployment → Web app → Execute as <b>Me</b>, access <b>Anyone</b> → Deploy → authorize.</li>
+                  <li>Paste the /exec web app URL below.</li>
+                </ol>
+                <input value={mbUrlInput} onChange={e => setMbUrlInput(e.target.value)} placeholder="https://script.google.com/macros/s/…/exec" className="w-full text-xs border border-slate-300 rounded-lg p-2 mb-2 font-mono" aria-label="Class Mailbox web app URL" />
+                <button onClick={connectMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60">
+                  {mbBusy ? 'Testing…' : 'Connect & self-test'}
+                </button>
+              </div>
+            )}
+            {mbConfig && !mbLive && (
+              <div>
+                <p className="text-[11px] text-slate-500 mb-3 break-all">Connected mailbox: <span className="font-mono">{mbConfig.url}</span></p>
+                <button onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl p-3 transition-all disabled:opacity-60">
+                  {mbBusy ? 'Starting…' : 'Start live session'}
+                </button>
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => { setMbUrlInput(mbConfig.url); setMbConfig(null); setMbStatus(''); }} className="flex-1 text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2">Change mailbox</button>
+                  <button onClick={() => { try { localStorage.removeItem(ALLO_MB_URL_KEY); localStorage.removeItem(ALLO_MB_ADMIN_KEY); } catch (_) {} setMbConfig(null); setMbUrlInput(''); setMbStatus('Mailbox forgotten on this device. To reconnect later you may need to reset the admin token (see the setup guide).'); }} className="flex-1 text-[11px] font-bold text-rose-500 hover:text-rose-700 underline underline-offset-2">Forget mailbox</button>
+                </div>
+              </div>
+            )}
+            {mbConfig && mbLive && (
+              <div>
+                <div className="bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4 mb-3 text-center cursor-pointer" onClick={() => copyToClipboard(mbLive.code)} title="Copy class code">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-1">Class code (tap to copy)</p>
+                  <p className="text-4xl font-black tracking-[0.3em] text-indigo-800">{mbLive.code}</p>
+                </div>
+                {mbQrSvg ? (
+                  <div className="flex justify-center mb-3">
+                    <div className="bg-white border border-slate-200 rounded-xl p-3 w-48 h-48 [&_svg]:w-full [&_svg]:h-full shadow-sm" dangerouslySetInnerHTML={{ __html: mbQrSvg }} />
+                  </div>
+                ) : (
+                  <button onClick={() => copyToClipboard(mbLive.joinUrl)} className="w-full mb-3 text-xs font-bold text-indigo-700 underline underline-offset-2">Copy join link</button>
+                )}
+                <div className="mb-3 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Connected students ({Object.keys(mbRoster).length})</p>
+                  {Object.keys(mbRoster).length === 0 && <p className="text-xs text-slate-400">Waiting for students to scan…</p>}
+                  {Object.entries(mbRoster).map(([uid, s]) => (
+                    <div key={uid} className="flex items-center justify-between text-xs text-slate-700 py-0.5">
+                      <span className="font-bold truncate">{s.name}</span>
+                      {s.hand && <span aria-label="hand raised" title="Hand raised">✋</span>}
+                    </div>
+                  ))}
+                </div>
+                <button onClick={pushResourceToMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl p-3 transition-all disabled:opacity-60 mb-2">
+                  {mbBusy ? 'Sending…' : 'Push current resource to class'}
+                </button>
+                <button onClick={endMailboxLiveSession} className="w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">End session</button>
+              </div>
+            )}
+            {mbStatus && <p className="text-xs text-slate-600 mt-3">{mbStatus}</p>}
+          </div>
+        </div>
+      )}
+      {mbStudent && !isTeacherMode && (
+        <button onClick={toggleMbHand} aria-pressed={mbHandUp} aria-label={mbHandUp ? 'Lower hand' : 'Raise hand'} title={mbHandUp ? 'Lower hand' : 'Raise hand'} className={`fixed bottom-24 right-4 z-[140] rounded-full shadow-lg p-3 text-xl border-2 transition-all no-print ${mbHandUp ? 'bg-amber-300 border-amber-500 scale-110' : 'bg-white border-slate-300 hover:border-amber-400'}`}>
+          ✋
+        </button>
       )}
       {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
       {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
