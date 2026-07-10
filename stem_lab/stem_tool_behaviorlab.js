@@ -55,6 +55,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
     document.body.appendChild(liveRegion);
   })();
 
+  // Scoped responsive workspace for Behavior Lab.
+  if (!document.getElementById('behaviorlab-workspace-css')) {
+    var behaviorLabStyle = document.createElement('style');
+    behaviorLabStyle.id = 'behaviorlab-workspace-css';
+    behaviorLabStyle.textContent = [
+      '.behaviorlab-tool-shell{--bl-amber:#f59e0b;--bl-indigo:#6366f1;--bl-text:var(--allo-stem-text,#e2e8f0);--bl-muted:var(--allo-stem-text-soft,#94a3b8);--bl-panel:var(--allo-stem-panel,#1e293b);--bl-canvas:var(--allo-stem-canvas,#0f172a);--bl-border:var(--allo-stem-border,#334155);max-width:1080px!important;margin:0 auto;color:var(--bl-text);padding:8px 2px!important;}',
+      '.behaviorlab-tool-shell *{box-sizing:border-box;}',
+      '.behaviorlab-tool-shell button,.behaviorlab-tool-shell input,.behaviorlab-tool-shell select,.behaviorlab-tool-shell textarea{font:inherit;}',
+      '.behaviorlab-tool-shell button:focus-visible,.behaviorlab-tool-shell input:focus-visible,.behaviorlab-tool-shell select:focus-visible,.behaviorlab-tool-shell textarea:focus-visible,.behaviorlab-tool-shell summary:focus-visible,.behaviorlab-tool-shell canvas:focus-visible{outline:3px solid #38bdf8;outline-offset:3px;}',
+      '.behaviorlab-command{border-radius:18px!important;padding:18px!important;background:radial-gradient(circle at 88% 12%,rgba(251,191,36,.18),transparent 34%),linear-gradient(135deg,rgba(69,26,3,.88),rgba(15,23,42,.96))!important;box-shadow:0 18px 42px rgba(15,23,42,.2);}',
+      '.behaviorlab-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px;}',
+      '.behaviorlab-metric{min-width:0;border:1px solid var(--bl-border);border-radius:12px;padding:10px 12px;background:linear-gradient(180deg,var(--bl-canvas),var(--bl-panel));}',
+      '.behaviorlab-metric-label{display:block;color:var(--bl-muted);font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;}',
+      '.behaviorlab-metric-value{display:block;margin-top:3px;color:var(--bl-text);font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+      '.behaviorlab-level-section{border:1px solid var(--bl-border);border-radius:16px;padding:14px;background:linear-gradient(180deg,var(--bl-canvas),var(--bl-panel));}',
+      '.behaviorlab-level-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;}',
+      '.behaviorlab-level-heading h3{margin:0;color:var(--bl-text);font-size:15px;}',
+      '.behaviorlab-level-heading p{margin:3px 0 0;color:var(--bl-muted);font-size:11px;line-height:1.45;}',
+      '.behaviorlab-level-progress{flex:0 0 auto;border-radius:999px;padding:5px 9px;background:rgba(245,158,11,.13);color:#fbbf24;font-size:10px;font-weight:900;}',
+      '.behaviorlab-level-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px!important;margin:0!important;}',
+      '.behaviorlab-level-card{display:flex;align-items:center;justify-content:flex-start;min-width:0;min-height:46px;padding:9px 10px!important;text-align:left;line-height:1.25;border:1px solid var(--bl-border)!important;}',
+      '.behaviorlab-level-card[aria-current="step"]{border-color:#fbbf24!important;box-shadow:0 0 0 2px rgba(251,191,36,.2),0 8px 18px rgba(15,23,42,.2);}',
+      '.behaviorlab-level-card:disabled{opacity:.55;}',
+      '.behaviorlab-intro-card{border-radius:18px!important;padding:clamp(16px,3vw,24px)!important;}',
+      '.behaviorlab-advanced{border:1px solid var(--bl-border);border-radius:14px;background:var(--bl-canvas);overflow:hidden;}',
+      '.behaviorlab-advanced summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;padding:11px 14px;cursor:pointer;color:var(--bl-text);font-size:12px;font-weight:900;}',
+      '.behaviorlab-advanced summary::after{content:"Open";border-radius:999px;padding:3px 8px;background:rgba(99,102,241,.15);color:#a5b4fc;font-size:10px;}',
+      '.behaviorlab-advanced[open] summary::after{content:"Close";}',
+      '.behaviorlab-advanced-body{padding:0 12px 12px;}',
+      '.behaviorlab-sim-shell{max-width:1080px!important;}',
+      '.behaviorlab-sim-header{position:sticky;top:4px;z-index:4;box-shadow:0 10px 26px rgba(15,23,42,.2);}',
+      '.behaviorlab-chamber-shell{border-radius:18px;overflow:hidden;border:2px solid rgba(99,102,241,.35);box-shadow:0 14px 36px rgba(15,23,42,.22);background:var(--bl-canvas);}',
+      '.behaviorlab-chamber-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;border-bottom:1px solid var(--bl-border);background:linear-gradient(90deg,rgba(99,102,241,.16),rgba(245,158,11,.08));}',
+      '.behaviorlab-chamber-header h3{margin:0;color:var(--bl-text);font-size:13px;font-weight:900;}',
+      '.behaviorlab-chamber-status{border-radius:999px;padding:4px 8px;background:var(--bl-panel);color:#fbbf24;font-size:10px;font-weight:900;}',
+      '.behaviorlab-chamber-canvas{width:100%!important;height:auto!important;min-height:260px;max-height:440px;}',
+      '@media (max-width:760px){.behaviorlab-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.behaviorlab-level-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.behaviorlab-sim-header{position:static;}}',
+      '@media (max-width:520px){.behaviorlab-tool-shell{padding:2px 0!important;}.behaviorlab-command{padding:13px!important;border-radius:14px!important;}.behaviorlab-level-section{padding:10px;}.behaviorlab-level-heading{align-items:flex-start;}.behaviorlab-level-progress{display:none;}.behaviorlab-level-grid{grid-template-columns:1fr;}.behaviorlab-level-card{min-height:44px;}.behaviorlab-metric{padding:8px 9px;}.behaviorlab-metric-value{font-size:12px;}.behaviorlab-chamber-header{align-items:flex-start;}.behaviorlab-chamber-canvas{min-height:220px;}}',
+      '@media (prefers-reduced-motion:reduce){.behaviorlab-level-card{transition:none!important;}.behaviorlab-tool-shell *{scroll-behavior:auto!important;}}',
+      '.theme-contrast .behaviorlab-command,.theme-contrast .behaviorlab-level-section,.theme-contrast .behaviorlab-chamber-shell{box-shadow:none;}'
+    ].join('\n');
+    document.head.appendChild(behaviorLabStyle);
+  }
+
 
   window.StemLab.registerTool('behaviorLab', {
     icon: "🐭",
@@ -3102,7 +3146,10 @@ dataRef.current = d;
           // ── Keyboard shortcut: Spacebar to deliver food ──
           if (!window._blKeyHandler) {
             window._blKeyHandler = function (e) {
-              if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+              var target = e.target || {};
+              var tag = target.tagName || '';
+              var interactive = ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT', 'SUMMARY', 'A'].indexOf(tag) >= 0 || target.isContentEditable;
+              if (e.code === 'Space' && !interactive) {
                 if (typeof window._blReinforceFn !== 'function') return; // lab not running — never hijack Space app-wide
                 if (!document.getElementById('bl-chamber-canvas')) return; // lab not on screen
                 e.preventDefault();
@@ -3154,7 +3201,7 @@ dataRef.current = d;
 
           if (blPhase === 'intro') {
 
-            return React.createElement("div", { className: "p-6 space-y-4", role: "main", "aria-label": __alloT('stem.behaviorlab.behavior_lab', "Behavior Lab"), style: { maxWidth: 700, margin: '0 auto' } },
+            return React.createElement("div", { className: "behaviorlab-tool-shell behaviorlab-intro space-y-4", role: "main", "aria-label": __alloT('stem.behaviorlab.behavior_lab', "Behavior Lab"), "data-behaviorlab-tool": "intro" },
 
               // Skip navigation
               React.createElement("a", { href: "#behaviorlab-main", className: "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg" }, __alloT('stem.behaviorlab.skip_to_main_content', "Skip to main content")),
@@ -3169,6 +3216,7 @@ dataRef.current = d;
               // the teal of School Behavior Toolkit and the pink of
               // Disability Voices. Three connected spaces, three accents.
               React.createElement("div", {
+                className: "behaviorlab-command", "data-behaviorlab-command": "true",
                 style: {
                   display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14, flexWrap: 'wrap',
                   padding: '14px 16px',
@@ -3202,18 +3250,18 @@ dataRef.current = d;
                 }, '\uD83D\uDC2D'),
                 React.createElement("div", { style: { flex: 1, minWidth: 240 } },
                   React.createElement("div", { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
-                    React.createElement("h2", { style: { margin: 0, color: '#fbbf24', fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, 'BehaviorLab'),
+                    React.createElement("h2", { style: { margin: 0, color: '#fbbf24', fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, 'Behavior Lab'),
                     // Level chip \u2014 replaces the old single-line subtitle with
                     // a tabular-nums chip that reads at a glance
                     React.createElement("span", { style: {
-                      padding: '2px 8px', borderRadius: 999,
+                      padding: '2px 8px', borderRadius: '999rem',
                       background: 'rgba(251,191,36,0.12)',
                       border: '1px solid rgba(251,191,36,0.40)',
                       color: 'var(--allo-stem-text, #fcd34d)', fontSize: 10, fontWeight: 700,
                       fontFamily: 'ui-monospace, Menlo, monospace'
                     } }, 'Level ' + blLevel + ' / ' + LEVELS.length)
                   ),
-                  React.createElement("div", { style: { height: 3, width: 48, borderRadius: 999, marginBottom: 6, background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' } }),
+                  React.createElement("div", { style: { height: 3, width: 48, borderRadius: '999rem', marginBottom: 6, background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' } }),
                   React.createElement("div", { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600, lineHeight: 1.5 } },
                     currentLevel.title + ' \u2014 ', React.createElement("span", { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, currentLevel.concept)
                   )
@@ -3222,7 +3270,30 @@ dataRef.current = d;
 
               // Level select
 
-              React.createElement("div", { className: "flex gap-2 flex-wrap mb-3" },
+              React.createElement("section", { className: "behaviorlab-metrics", "data-behaviorlab-mission": "true", "aria-label": __alloT('stem.behaviorlab.experiment_status', 'Experiment status') },
+                [
+                  { label: __alloT('stem.behaviorlab.current_concept', 'Current concept'), value: currentLevel.concept },
+                  { label: __alloT('stem.behaviorlab.path_progress', 'Path progress'), value: blCompletedLevels.length + ' / ' + LEVELS.length + ' complete' },
+                  { label: __alloT('stem.behaviorlab.data_points', 'Data points'), value: blCumRecord.length + ' recorded' },
+                  { label: __alloT('stem.behaviorlab.lab_status', 'Lab status'), value: blPhase === 'intro' ? 'Ready to begin' : blPhase }
+                ].map(function(metric) {
+                  return React.createElement("div", { key: metric.label, className: "behaviorlab-metric" },
+                    React.createElement("span", { className: "behaviorlab-metric-label" }, metric.label),
+                    React.createElement("span", { className: "behaviorlab-metric-value", title: metric.value }, metric.value)
+                  );
+                })
+              ),
+
+              React.createElement("section", { className: "behaviorlab-level-section", "aria-labelledby": "behaviorlab-level-path" },
+                React.createElement("div", { className: "behaviorlab-level-heading" },
+                  React.createElement("div", null,
+                    React.createElement("h3", { id: "behaviorlab-level-path" }, __alloT('stem.behaviorlab.choose_experiment', 'Choose an experiment')),
+                    React.createElement("p", null, __alloT('stem.behaviorlab.experiment_path_help', 'Build from reinforcement fundamentals toward schedules, chaining, DRO, and classical conditioning.'))
+                  ),
+                  React.createElement("span", { className: "behaviorlab-level-progress" }, 'Level ' + blLevel + ' / ' + LEVELS.length)
+                ),
+
+              React.createElement("div", { className: "behaviorlab-level-grid", role: "group", "aria-label": __alloT('stem.behaviorlab.experiment_levels', 'Experiment levels') },
 
                 LEVELS.map(function (lvl) {
 
@@ -3233,6 +3304,8 @@ dataRef.current = d;
                   var isComplete = blCompletedLevels.indexOf(lvl.id) >= 0;
 
                   return React.createElement("button", { "aria-label": "Select level " + lvl.id + ": " + lvl.title,
+
+                    "aria-current": isCurrent ? "step" : undefined, "aria-pressed": isCurrent,
 
                     key: lvl.id,
 
@@ -3264,7 +3337,7 @@ dataRef.current = d;
 
                     },
 
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
+                    className: 'behaviorlab-level-card rounded-lg text-xs font-bold transition-all ' +
 
                       (isCurrent ? 'bg-amber-700 text-white shadow-lg shadow-amber-500/30' :
 
@@ -3278,11 +3351,12 @@ dataRef.current = d;
 
                 })
 
+              )
               ),
 
               // Intro card
 
-              React.createElement("div", { className: "bg-gradient-to-br from-amber-900/40 to-orange-900/30 border border-amber-500/30 rounded-2xl p-6 space-y-3" },
+              React.createElement("div", { className: "behaviorlab-intro-card bg-gradient-to-br from-amber-900/40 to-orange-900/30 border border-amber-500/30 rounded-2xl p-6 space-y-3", "data-behaviorlab-workspace": "intro" },
 
                 React.createElement("h3", { className: "text-base font-extrabold text-amber-300" }, "\uD83C\uDFAF " + currentLevel.concept),
 
@@ -3471,6 +3545,9 @@ dataRef.current = d;
               }, __alloT('stem.behaviorlab.start_experiment_2', "\uD83D\uDE80 Start Experiment")),
 
               // \u2550\u2550 REINFORCEMENT INQUIRY widget (H7b'') \u2550\u2550
+              React.createElement("details", { className: "behaviorlab-advanced", open: !!d.blShowInquiry, onToggle: function(e) { if (!!d.blShowInquiry !== e.currentTarget.open) upd('blShowInquiry', e.currentTarget.open); } },
+                React.createElement("summary", null, __alloT('stem.behaviorlab.advanced_reinforcement_inquiry', 'Advanced inquiry: predict persistence')),
+                React.createElement("div", { className: "behaviorlab-advanced-body" },
               (function() {
                 var iq = d.reinforceIQ || { schedule: 'FR3', reinforcerStrength: 5, alternativeReward: 3, extinctionTime: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
                 var setIQ = function(patch) { upd('reinforceIQ', Object.assign({}, iq, patch)); };
@@ -3488,7 +3565,7 @@ dataRef.current = d;
                 return React.createElement("div", { style: { marginTop: 14, padding: 12, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
                   React.createElement("h4", { style: { margin: '0 0 4px', fontSize: 12, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.behaviorlab.reinforcement_inquiry_predict_persiste', '\uD83D\uDD2C Reinforcement Inquiry \u2014 Predict Persistence')),
                   React.createElement("p", { style: { margin: '0 0 6px', fontSize: 10, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.behaviorlab.set_schedule_reinforcer_strength_alter', 'Set schedule, reinforcer strength, alternatives, extinction time. Predict the persistence band. No score, no reveal.')),
-                  React.createElement("div", { style: { display: 'inline-block', padding: '3px 8px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 10, fontWeight: 800, marginBottom: 6 } }, sm.label + ' \u00B7 persist ' + persistence.toFixed(1) + ' \u00B7 ext-resist ' + extinctionResistance),
+                  React.createElement("div", { style: { display: 'inline-block', padding: '3px 8px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 10, fontWeight: 800, marginBottom: 6 } }, sm.label + ' \u00B7 persist ' + persistence.toFixed(1) + ' \u00B7 ext-resist ' + extinctionResistance),
                   React.createElement("p", { style: { margin: '0 0 6px', fontSize: 10, opacity: 0.8 } }, sm.desc),
                   React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 } },
                     ['CRF', 'FR3', 'VR5', 'FI30', 'VI30'].map(function(sch) {
@@ -3540,6 +3617,8 @@ dataRef.current = d;
                   React.createElement("p", { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.behaviorlab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Skinner box terminology + matching-law extension. Persistence is multi-dimensional in real life; this is a teaching heuristic.'))
                 );
               })()
+                )
+              )
 
             );
 
@@ -3571,7 +3650,7 @@ dataRef.current = d;
 
           // Running Phase & Complete Phase
 
-          return React.createElement("div", { className: "p-4 space-y-3", role: "main", "aria-label": __alloT('stem.behaviorlab.behavior_lab_simulation', "Behavior Lab Simulation"), style: { maxWidth: 720, margin: '0 auto' } },
+          return React.createElement("div", { className: "behaviorlab-tool-shell behaviorlab-sim-shell space-y-3", role: "main", "aria-label": __alloT('stem.behaviorlab.behavior_lab_simulation', "Behavior Lab Simulation"), "data-behaviorlab-tool": "simulation", "data-behaviorlab-workspace": blPhase },
 
             // Skip navigation
             React.createElement("a", { href: "#behaviorlab-sim", className: "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg" }, __alloT('stem.behaviorlab.skip_to_simulation', "Skip to simulation")),
@@ -3593,7 +3672,7 @@ dataRef.current = d;
 
             React.createElement("div", {
 
-              className: "flex items-center gap-3 flex-wrap",
+              className: "behaviorlab-sim-header flex items-center gap-3 flex-wrap",
 
               style: Object.assign({ background: 'rgba(30,27,46,0.7)', borderRadius: 16, padding: '10px 14px', border: '1px solid rgba(99,102,241,0.2)' }, glass)
 
@@ -3947,17 +4026,24 @@ dataRef.current = d;
 
             React.createElement("div", {
 
+              className: "behaviorlab-chamber-shell", "data-behaviorlab-chamber": "true",
+
               style: Object.assign({ borderRadius: 18, overflow: 'hidden', border: '2px solid rgba(99,102,241,0.25)', boxShadow: '0 8px 32px rgba(99,102,241,0.12)' }, glass)
 
             },
 
+              React.createElement("div", { className: "behaviorlab-chamber-header" },
+                React.createElement("h3", null, __alloT('stem.behaviorlab.observation_chamber', 'Observation chamber')),
+                React.createElement("span", { className: "behaviorlab-chamber-status", role: "status" }, (blPaused ? 'Paused' : 'Live') + ' - ' + (blMouseAction || 'exploring'))
+              ),
+
               React.createElement("canvas", {
 
-                id: "bl-chamber-canvas",
+                id: "bl-chamber-canvas", ref: _blCvRef, className: "behaviorlab-chamber-canvas", "data-behaviorlab-canvas": "true", tabIndex: 0,
                 role: "img",
                 'aria-label': 'Behavior lab chamber showing a mouse. Current action: ' + (d.blAction || 'exploring') + '. Tick: ' + (d.blTick || 0),
 
-                style: { width: '100%', height: 280, display: 'block', cursor: 'crosshair' }
+                width: 720, height: 360, style: { width: '100%', height: 'auto', display: 'block', cursor: 'crosshair' }
 
               })
 
