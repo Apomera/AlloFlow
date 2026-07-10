@@ -506,12 +506,12 @@ function AdventureView(props) {
                                                     <div className="space-y-4">
                                                         <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest border-b border-indigo-100 pb-2 mb-2">{t('adventure.settings.modifiers')}</h4>
                                                         <div className="grid grid-cols-1 gap-2">
-                                                            <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                            <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || studentProjectSettings.adventurePermissions?.lockAllSettings)) ? 'opacity-50 pointer-events-none' : ''}`}>
                                                                 <input aria-label={t('common.toggle_adventure_free_response_enabled')}
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_freeresponse" checked={adventureFreeResponseEnabled}
                                                                     onChange={(e) => setAdventureFreeResponseEnabled(e.target.checked)}
-                                                                    disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+                                                                    disabled={!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || studentProjectSettings.adventurePermissions?.lockAllSettings)}
                                                                     className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed"
                                                                 />
                                                                 <div>
@@ -575,12 +575,12 @@ function AdventureView(props) {
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                            <label className={`flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings)) ? 'opacity-50 pointer-events-none' : ''}`}>
                                                                 <input aria-label={t('common.toggle_use_low_quality_visuals')}
                                                                     type="checkbox"
                                                                     data-help-key="adventure_setup_chk_lowqual" checked={useLowQualityVisuals}
                                                                     onChange={(e) => setUseLowQualityVisuals(e.target.checked)}
-                                                                    disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+                                                                    disabled={!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings)}
                                                                     className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed"
                                                                 />
                                                                 <div>

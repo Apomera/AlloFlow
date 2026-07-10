@@ -558,14 +558,14 @@
   }, t('adventure.settings.modifiers')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: `flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings ? 'opacity-50 pointer-events-none' : ''}`
+    className: `flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${adventureFreeResponseEnabled ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && (studentProjectSettings.allowFreeResponse === false || studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`
   }, /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.toggle_adventure_free_response_enabled'),
     type: "checkbox",
     "data-help-key": "adventure_setup_chk_freeresponse",
     checked: adventureFreeResponseEnabled,
     onChange: e => setAdventureFreeResponseEnabled(e.target.checked),
-    disabled: !isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings,
+    disabled: !isTeacherMode && (studentProjectSettings.allowFreeResponse === false || studentProjectSettings.adventurePermissions?.lockAllSettings),
     className: "w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed"
   }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     className: "block text-xs font-bold text-slate-700"
@@ -646,14 +646,14 @@
     placeholder: t('adventure.custom_art_style_placeholder') || 'Describe your art style...',
     className: "mt-1 w-full text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none"
   }))), /*#__PURE__*/React.createElement("label", {
-    className: `flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings ? 'opacity-50 pointer-events-none' : ''}`
+    className: `flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer ${useLowQualityVisuals ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`
   }, /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.toggle_use_low_quality_visuals'),
     type: "checkbox",
     "data-help-key": "adventure_setup_chk_lowqual",
     checked: useLowQualityVisuals,
     onChange: e => setUseLowQualityVisuals(e.target.checked),
-    disabled: !isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings,
+    disabled: !isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings),
     className: "w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed"
   }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     className: "block text-xs font-bold text-slate-700"
