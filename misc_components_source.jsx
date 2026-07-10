@@ -379,6 +379,46 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                     </p>
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                    {/* Pack completeness: what the student device will actually
+                        have, per activity — portable audio, board answers,
+                        decoding pictures. Rendered only when something is
+                        missing so a complete pack stays uncluttered. */}
+                    {!isLoading && preloadedWords.length > 0 && (() => {
+                        const norm = (v) => String(v || '').trim().toLowerCase().replace(/\s+/g, ' ');
+                        const portableKeys = new Set();
+                        const imageKeys = new Set();
+                        preloadedWords.forEach((item) => {
+                            if (item && item._ttsAssets && typeof item._ttsAssets === 'object') Object.keys(item._ttsAssets).forEach((k) => portableKeys.add(norm(k)));
+                            if (item && item._decodingAssets && typeof item._decodingAssets === 'object') Object.keys(item._decodingAssets).forEach((k) => imageKeys.add(norm(k)));
+                            if (item && item._aacAssets && typeof item._aacAssets === 'object') Object.keys(item._aacAssets).forEach((k) => imageKeys.add(norm(k)));
+                            const w = norm(item && (item.targetWord || item.word || item.term));
+                            if (w && item.image) imageKeys.add(w);
+                        });
+                        const gaps = [];
+                        const noAudio = preloadedWords.filter((w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term))).length;
+                        if (noAudio > 0) gaps.push(`🔇 ${noAudio} word${noAudio === 1 ? '' : 's'} without portable audio`);
+                        const noRhyme = preloadedWords.filter((w) => w && !(w.rhymeWord || (w.rhymes || [])[0])).length;
+                        if (noRhyme > 0) gaps.push(`🎵 ${noRhyme} without a rhyme answer (board is built on-device)`);
+                        const noTask = preloadedWords.filter((w) => w && !(w.manipulationTask && w.manipulationTask.answer)).length;
+                        if (noTask > 0) gaps.push(`🔁 ${noTask} without a Sound Swap task (fallback task used)`);
+                        const missingDecodingImgs = preloadedWords.reduce((sum, w) => {
+                            const choices = w && w.activityItems && w.activityItems.decoding && w.activityItems.decoding.choices;
+                            if (!Array.isArray(choices)) return sum;
+                            return sum + choices.filter((c) => !imageKeys.has(norm(c))).length;
+                        }, 0);
+                        if (missingDecodingImgs > 0) gaps.push(`🖼️ ${missingDecodingImgs} Read & Match picture${missingDecodingImgs === 1 ? '' : 's'} missing`);
+                        const edited = preloadedWords.filter((w) => w && w._packEdited).length;
+                        if (edited > 0) gaps.push(`✏️ ${edited} word${edited === 1 ? '' : 's'} edited since preparation (boards rebuild from your edits)`);
+                        const letterSplit = preloadedWords.filter((w) => w && w._fallbackUsed).length;
+                        if (letterSplit > 0) gaps.push(`⚠️ ${letterSplit} using letter-split sounds (generation failed)`);
+                        if (!gaps.length) return null;
+                        return (
+                            <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-900">
+                                <div className="font-bold mb-1">{t('word_sounds.pack_gaps_title') || 'Student-device readiness'}</div>
+                                <ul className="space-y-0.5">{gaps.map((g, i) => <li key={i}>{g}</li>)}</ul>
+                            </div>
+                        );
+                    })()}
                     {preloadedWords.length === 0 ? (
                         <div className="text-center py-12 text-slate-600">
                             <div className="text-4xl mb-2">⏳</div>

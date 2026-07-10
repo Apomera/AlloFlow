@@ -1973,7 +1973,12 @@
       const [revisitQueue, setRevisitQueue] = React.useState([]);
       const sequenceIndexRef = React.useRef(0);
       // AAC symbol overlay
-      const [aacMode, setAacMode] = React.useState(false);
+      // Teachers can preset the symbol overlay from setup ("_aacDefaultOn"
+      // rides the pack), so an AAC user starts supported without having to
+      // find the toggle each session.
+      const [aacMode, setAacMode] = React.useState(
+        () => preloadedWords.some((w) => w && w._aacDefaultOn),
+      );
       const [optionImages, setOptionImages] = React.useState({});
       const optionImagesCache = React.useRef(new Map());
       const shouldAdvanceActivity = React.useCallback(
@@ -6976,7 +6981,10 @@
               .catch(() => {});
           });
         }
-      }, [wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes, wordPool, callImagen, preparedImageLibrary]);
+      }, [wordSoundsActivity, currentWordSoundsWord, wordSoundsPhonemes, wordPool, callImagen, preparedImageLibrary,
+        // startActivity clears decodingChoices + the word guard; watching the
+        // state re-runs the rebuild (the guard above prevents any loop).
+        decodingChoices]);
       const generateOrthographyDistractors = (word) => {
         if (!word || word.length < 2)
           return [`${word}s`, `${word}ed`, `un${word}`];
@@ -8060,11 +8068,33 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 const prevArray = Array.isArray(prev) ? prev : [];
                 const updated = [...prevArray];
                 if (index < updated.length) {
-                  updated[index] = { ...updated[index], manipulationTask: newTask };
+                  // Strip the compiled pack board too — the manipulation
+                  // effect prefers activityItems.manipulation.task, which
+                  // would silently shadow the freshly regenerated task.
+                  const prevItem = updated[index];
+                  let nextActivityItems = prevItem.activityItems;
+                  if (nextActivityItems && nextActivityItems.manipulation) {
+                    nextActivityItems = { ...nextActivityItems };
+                    delete nextActivityItems.manipulation;
+                  }
+                  updated[index] = { ...prevItem, manipulationTask: newTask, activityItems: nextActivityItems, _packEdited: true };
                 }
                 return updated;
               });
             }
+            // Live board: if this is the word on screen, swap the task in and
+            // force the manipulation effect to rebuild from it.
+            setWordSoundsPhonemes((prev) => {
+              if (!prev || String(prev.word || "").trim().toLowerCase() !== targetWord.trim().toLowerCase()) return prev;
+              const next = { ...prev, manipulationTask: newTask };
+              if (next.activityItems && next.activityItems.manipulation) {
+                const items = { ...next.activityItems };
+                delete items.manipulation;
+                next.activityItems = items;
+              }
+              return next;
+            });
+            lastWordForManipulation.current = null;
           } catch (err) {
             warnLog("[Manipulation] Regenerate task failed:", err?.message || err);
           }
@@ -8094,6 +8124,18 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             }
             if (typeof window.__clearAlloTtsCacheForWord === "function") {
               window.__clearAlloTtsCacheForWord(raw);
+            }
+            // Same pack-first trap as handleRegenerateWord: without this the
+            // portable pack clip replays and the refresh is a silent no-op.
+            const packKey = raw.trim().toLowerCase().replace(/\s+/g, " ");
+            packAudioInvalidatedRef.current.add(packKey);
+            if (typeof setPreloadedWords === "function") {
+              setPreloadedWords((prev) => (Array.isArray(prev) ? prev : []).map((it) => {
+                if (!it || !it._ttsAssets || typeof it._ttsAssets !== "object" || !it._ttsAssets[packKey]) return it;
+                const nextAssets = { ...it._ttsAssets };
+                delete nextAssets[packKey];
+                return { ...it, _ttsAssets: nextAssets };
+              }));
             }
             await handleAudio(raw);
           } catch (e) {
@@ -8480,6 +8522,19 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         }
         if (wordSoundsActivity === "rhyming") {
           const currentWord = currentWordSoundsWord || wordSoundsPhonemes?.word;
+          // Keep-existing-board check FIRST: the prepared install below must
+          // only run for a fresh/changed word, or any effect re-run (e.g. a
+          // teacher edit writing wordSoundsPhonemes) would reinstall the pack
+          // board over the edited options.
+          if (
+            lastWordForRhyming.current === currentWord &&
+            rhymeOptions.length > 0
+          ) {
+            debugLog(
+              "✅ Rhyme options already set for this word, skipping re-shuffle",
+            );
+            return;
+          }
           // Word-match guard (stale pack mid-advance) + answer-on-board guard
           // (a pack compiled with no rhymeWord serializes a distractor-only
           // board; fall through to the RIME_FAMILIES derivation instead).
@@ -8496,15 +8551,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ) {
             lastWordForRhyming.current = currentWord;
             setRhymeOptions([...preparedRhyming.options]);
-            return;
-          }
-          if (
-            lastWordForRhyming.current === currentWord &&
-            rhymeOptions.length > 0
-          ) {
-            debugLog(
-              "✅ Rhyme options already set for this word, skipping re-shuffle",
-            );
             return;
           }
           const correctRhyme = wordSoundsPhonemes?.rhymeWord;
@@ -8680,6 +8726,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         wordSoundsActivity,
         currentWordSoundsWord,
         generateSoundChips,
+        // startActivity resets orthographyOptions AFTER this effect may have
+        // installed the prepared board in the same flush; watching the state
+        // re-runs the install (the count-gate above prevents any loop).
+        orthographyOptions,
       ]);
       React.useEffect(() => {
         if (wordSoundsActivity !== "isolation" || !wordSoundsPhonemes) {
@@ -10460,6 +10510,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               difficulty: getEffectiveDifficulty(),
               wordDifficulty: categorizeWordDifficulty(currentWordSoundsWord),
               phonemes: wordSoundsPhonemes?.phonemes || [],
+              // Integrity flag: with the AAC symbol overlay on, picture-
+              // supported responding changes what the item measures (access
+              // vs. unassisted phonological work) — analytics must be able
+              // to tell these apart rather than pooling them silently.
+              ...(aacMode ? { aacAssisted: true } : {}),
               ...(opts && typeof opts.formationScore === "number"
                 ? { formationScore: opts.formationScore }
                 : {}),
@@ -11562,6 +11617,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           attempts,
           isProbeMode,
           showLetterHints,
+          aacMode,
           wordSoundsHistory,
         ],
       );
@@ -11789,6 +11845,29 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (typeof action === "function") action();
         }
       };
+      // Any teacher edit supersedes the compiled pack board for the word's
+      // activity: strip it from the live phoneme object AND the pack item so
+      // a prepared-board effect can't reinstall the pre-edit options (now or
+      // on a later relaunch of the same resource).
+      const invalidatePreparedBoard = (activityId) => {
+        if (!activityId) return;
+        const wordKey = String(currentWordSoundsWord || "").trim().toLowerCase();
+        setWordSoundsPhonemes((prev) => {
+          if (!prev || !prev.activityItems || !prev.activityItems[activityId]) return prev;
+          const nextItems = { ...prev.activityItems };
+          delete nextItems[activityId];
+          return { ...prev, activityItems: nextItems };
+        });
+        if (typeof setPreloadedWords === "function" && wordKey) {
+          setPreloadedWords((prevWords) => (Array.isArray(prevWords) ? prevWords : []).map((it) => {
+            const itWord = String(it?.targetWord || it?.word || it?.term || "").trim().toLowerCase();
+            if (itWord !== wordKey || !it?.activityItems || !it.activityItems[activityId]) return it;
+            const nextItems = { ...it.activityItems };
+            delete nextItems[activityId];
+            return { ...it, activityItems: nextItems, _packEdited: true };
+          }));
+        }
+      };
       const handleOptionUpdate = (index, newValue, type, ctx) => {
         // Teacher edits write React state only — drop the cached entry so a
         // later cache hit / advance re-apply can't silently revert the edit
@@ -11796,6 +11875,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         if (currentWordSoundsWord && wordDataCache.current) {
           wordDataCache.current.delete(currentWordSoundsWord.toLowerCase());
         }
+        invalidatePreparedBoard((ctx && ctx.activity) || wordSoundsActivity);
         // Sound Sort / Word Families: write the fields the game ACTUALLY
         // reads (soundSortMatches / rimeFamilyMembers) with a teacherEdited
         // flag the compute paths honor verbatim. The old branch wrote
