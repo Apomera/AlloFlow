@@ -136,7 +136,8 @@ describe('H7 — the batch wall cancels WORK, not just results', () => {
     expect(dp).toContain("_batchAbortCtrl.signal.addEventListener('abort', _onBatchAbort);");
   });
   it('the main fix loop self-terminates before the wall so keep-best work ships', () => {
-    expect(dp).toContain('perFileDeadlineTs: _perFileDeadlineTs });');
+    // M8 (batch 4) appended the genStale probe to the same ctx.
+    expect(dp).toContain('perFileDeadlineTs: _perFileDeadlineTs, genStale: _runGenStale });');
     expect(dp).toContain('if (loopCtx.perFileDeadlineTs && Date.now() > loopCtx.perFileDeadlineTs - 90000) {');
   });
 });

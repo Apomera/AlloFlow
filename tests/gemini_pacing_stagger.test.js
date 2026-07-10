@@ -16,7 +16,7 @@ const _ge = dp.indexOf('var _pulsePipelineWatchdog');
 const gateBlock = dp.slice(_gs, _ge);
 
 // A controllable fake timer queue so we can drive the stagger deterministically.
-function makeGate() {
+function makeGate(opts) {
   const timers = [];
   let now = 1000;
   const fakeSetTimeout = (fn) => { const id = timers.length + 1; timers.push({ id, fn }); return id; };
@@ -34,7 +34,7 @@ function makeGate() {
     '  state: function(){ return { cap: _geminiCap, inFlight: _geminiInFlight, waiters: _geminiWaiters.length, effMax: _geminiEffectiveMax, stagger: _geminiStaggerMs }; }' +
     '};'
   );
-  const api = factory(() => {}, {}, () => {}, fakeSetTimeout, fakeClearTimeout, fakeDate, () => false);
+  const api = factory(() => {}, {}, () => {}, fakeSetTimeout, fakeClearTimeout, fakeDate, () => !!(opts && opts.localBackend));
   return {
     api,
     fireTimers: () => { const t = timers.splice(0, timers.length); t.forEach(x => x.fn()); },
@@ -149,6 +149,22 @@ describe('heavy/scanned pacing: lower ceiling + stagger the starts, but DROP NOT
     g.api.applyPacing(false);
     expect(g.api.state().effMax).toBe(3);
     expect(g.api.state().stagger).toBe(0);
+  });
+
+  it('M4 (2026-07-09): the LOCAL backend stays SERIAL — heavy pacing must not raise its ceiling to 2, nor the calm branch to 3', () => {
+    const g = makeGate({ localBackend: true });
+    g.api.reset();                        // reset pins local to serial (cap 1, stagger 900)
+    expect(g.api.state().effMax).toBe(1);
+    g.api.applyPacing(true);              // heavy/scanned doc — used to raise effMax back to 2
+    let s = g.api.state();
+    expect(s.effMax).toBe(1);
+    expect(s.cap).toBe(1);
+    expect(s.stagger).toBeGreaterThanOrEqual(900);
+    // recovery can only restore to the (serial) ceiling
+    for (let i = 0; i < 6; i++) g.api.noteSuccess();
+    expect(g.api.state().cap).toBe(1);
+    g.api.applyPacing(false);             // the calm branch used to restore the global max of 3
+    expect(g.api.state().effMax).toBe(1);
   });
 });
 

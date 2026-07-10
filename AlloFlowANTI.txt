@@ -12921,17 +12921,29 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   useEffect(() => {
     if (!pdfAutoContinueRunning) return;
     const stepAtStart = pdfFixStep;
-    const id = setTimeout(() => {
+    // M7 (deep dive 2026-07-09): HEARTBEAT-AWARE, mirroring the 8-min pdfFixLoading watchdog above
+    // (which got this exact fix 2026-06-19 for the same false-fire class). An axe-clean AI round on a
+    // large doc serializes 20+ chunks at cap 1 under residual throttle — easily >12 min with
+    // pdfFixStep frozen on the round banner while [Retry]/[GeminiGate] heartbeats flow the whole
+    // time. This detector killed slow-but-ALIVE rounds ("appeared stuck and was reset") in exactly
+    // the storm regime wait-not-stop protects. Re-arm on every 'alloflow:pipeline-warn' heartbeat;
+    // fire only after 12 SILENT minutes with an unchanged step.
+    let id = null;
+    const fire = () => {
       if (pdfFixStep === stepAtStart) {
-        warnLog('[PdfFix] Dead-man switch fired: pdfAutoContinueRunning stuck on "' + stepAtStart + '" for 12min — clearing.');
+        warnLog('[PdfFix] Dead-man switch fired: pdfAutoContinueRunning stuck on "' + stepAtStart + '" for 12min with no pipeline heartbeat — clearing.');
         try { pdfAutoContinueAbortRef.current = true; } catch (_) {}
         try { if (pdfAutoContinueAbortCtrlRef.current) pdfAutoContinueAbortCtrlRef.current.abort(); } catch (_) {}
         pdfAutoContinueAbortCtrlRef.current = null;
         setPdfAutoContinueRunning(false);
         if (typeof addToast === 'function') addToast(t('toasts.pdf_fix_appears_stuck_reset') || 'Auto-continue appeared stuck and was reset — your latest result is kept.', 'warning');
       }
-    }, 12 * 60 * 1000);
-    return () => clearTimeout(id);
+    };
+    const arm = () => { if (id) clearTimeout(id); id = setTimeout(fire, 12 * 60 * 1000); };
+    const onActivity = () => arm();
+    arm();
+    if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('alloflow:pipeline-warn', onActivity);
+    return () => { if (id) clearTimeout(id); if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('alloflow:pipeline-warn', onActivity); };
   }, [pdfAutoContinueRunning, pdfFixStep]);
   const pdfFixResultRef = useRef(null);
   // Re-entry stash (2026-06-16): when the remediation modal closes, the result
@@ -19025,9 +19037,21 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         addToast('🔁 ' + (t('toasts.below_target_stop') || 'Stopped at ') + (cur.afterScore || 0) + '/' + pdfTargetScore + (_axeClean ? (t('toasts.below_target_axe_clean') || ' — automated checks are clean; the remaining gap is AI-rubric issues that likely need a human (see Remaining Issues).') : (t('toasts.below_target_stop2') || ' — recent rounds stopped improving (the remaining issues likely need a human: see Remaining Issues). You can run Fix again to retry, or review the issues list.')), 'info');
       }
     } finally {
-      setPdfFixLoading(false);
-      setPdfAutoContinueRunning(false);
-      setPdfFixStep('');
+      // M9 (deep dive 2026-07-09): guard the UI writes — a STALE loop's exit (watchdog invalidated
+      // it, teacher already started run B) used to wipe B's spinner and status line mid-run, and
+      // because the 8-min watchdog effect is gated on pdfFixLoading, B silently lost its watchdog
+      // too. The running flag clears on OWNERSHIP (this loop's ctrl, or a vacant slot), not gen — a
+      // fresh loop that has already taken the slot owns the flag; with no successor it must still
+      // clear so the results buttons don't stay latched.
+      if (!_genStale()) {
+        setPdfFixLoading(false);
+        setPdfFixStep('');
+      } else {
+        warnLog('[AutoContinue] Stale loop exiting (gen bump) — leaving the fresh run\'s UI untouched.');
+      }
+      if (pdfAutoContinueAbortCtrlRef.current === _abortCtrl || pdfAutoContinueAbortCtrlRef.current === null) {
+        setPdfAutoContinueRunning(false);
+      }
       if (pdfAutoContinueAbortCtrlRef.current === _abortCtrl) {
         pdfAutoContinueAbortCtrlRef.current = null;
       }

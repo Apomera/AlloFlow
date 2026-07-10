@@ -1937,6 +1937,11 @@ function PdfAuditView(props) {
   // byte-bearing postMessages pin the validator origin.
   const VERAPDF_ORIGIN = (() => { try { return new URL(VERAPDF_VALIDATOR_URL).origin; } catch (_) { return '*'; } })();
   const [veraPdfResult, setVeraPdfResult] = useState(null);   // {compliant, failedChecks, failedRules:[{clause,testNumber,message,count}]} | {error}
+  // M25 (deep dive 2026-07-09): auto-veraPDF is default-ON, so when it silently can't run (popup
+  // blocked + iframe not ready, or the tagged export/validation failed) the teacher reasonably
+  // believes the run INCLUDED the ISO check — an absent badge is indistinguishable from "validation
+  // isn't a thing". Records WHY it was skipped so one amber line can render where the badge would be.
+  const [veraPdfAutoSkipped, setVeraPdfAutoSkipped] = useState(null);
   const [veraPdfBusy, setVeraPdfBusy] = useState(false);
   const [veraPdfFixing, setVeraPdfFixing] = useState(false);  // closed-loop remediation in progress
   // Architecture telemetry (2026-06-21): record which ISO 14289-1 rules an AlloFlow-tagged export actually
@@ -4202,7 +4207,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     // previous export's PDF/UA badge/panel state at run entry so a fresh upload (which
                     // doesn't pass through the project loaders' per-doc resets) can never wear the prior
                     // document's verdict. The signed trail was already hash-protected; the live UI wasn't.
-                    try { setLastTaggedValidation(null); setVeraPdfResult(null); } catch (_) {}
+                    try { setLastTaggedValidation(null); setVeraPdfResult(null); setVeraPdfAutoSkipped(null); } catch (_) {}
                     // (2026-06-20) Auto veraPDF: open + warm the independent ISO validator NOW, inside this
                     // click (a gesture → popup allowed), so it boots during the run and validates the tagged
                     // output at the end with no second popup. Default-on (localStorage opt-out), PDF inputs
@@ -4338,8 +4343,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           }
                         }
                       } catch (_vErr) { try { warnLog && warnLog('[auto-veraPDF] ' + (_vErr && _vErr.message)); } catch (_) {} }
-                      finally { try { setVeraPdfBusy(false); } catch (_) {} if (!_validated && _viaPopup) { try { if (_veraWarm.win && !_veraWarm.win.closed) _veraWarm.win.close(); } catch (_) {} } }
-                    } else if (_veraWarm && _veraWarm.win) { try { _veraWarm.win.close(); } catch (_) {} }
+                      finally {
+                        try { setVeraPdfBusy(false); } catch (_) {}
+                        if (!_validated && _viaPopup) { try { if (_veraWarm.win && !_veraWarm.win.closed) _veraWarm.win.close(); } catch (_) {} }
+                        // M25: a transport existed but validation never completed → say so (was a silent no-badge).
+                        if (!_validated) { try { setVeraPdfAutoSkipped('validation-failed'); } catch (_) {} }
+                      }
+                    } else {
+                      if (_veraWarm && _veraWarm.win) { try { _veraWarm.win.close(); } catch (_) {} }
+                      // M25: NEITHER transport was available (popup blocked + iframe not ready) — the
+                      // default-ON auto-validation silently didn't run; record it for the amber line.
+                      try {
+                        const _nmSkip = (pendingPdfFile?.name || '').toLowerCase();
+                        const _isPdfSkip = !!pendingPdfBase64 && !/\.(docx|pptx|md|markdown|csv|tsv|xlsx?|xlsb|ods|txt)$/.test(_nmSkip);
+                        if (pdfAutoVeraPdf && _isPdfSkip) setVeraPdfAutoSkipped('transport-blocked');
+                      } catch (_) {}
+                    }
                   }} className="w-full px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-black text-base hover:from-indigo-700 hover:to-violet-700 transition-all shadow-xl">
                     ✨ {t('pdf_audit.one_click.label') || 'Make Accessible'} <span className="block text-[11px] font-bold opacity-80 mt-0.5">{t('pdf_audit.one_click.badge') || 'fully automatic — audit, fix, verify, repeat to target'}</span>
                   </button>
@@ -4374,7 +4393,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <span className="text-slate-600">{pdfTargetScore >= 95 ? 'Near-perfect' : pdfTargetScore >= 90 ? 'Excellent' : pdfTargetScore >= 80 ? 'Good' : 'Minimum'}</span>
                       </div>
                       <input data-help-key="pdf_audit_view_target_score_slider" type="range" min="60" max="100" step="5" value={pdfTargetScore} onChange={(e) => setPdfTargetScore(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.target_score_aria') || 'Target accessibility score'} />
-                      <div className="flex justify-between text-[11px] text-slate-600"><span>60 (min)</span><span>90 (default)</span><span>100</span></div>
+                      {/* M10 (deep dive 2026-07-09): the label said "90 (default)" for 2+ weeks after the
+                          default was raised to 95 (2026-06-23 maintainer ask). */}
+                      <div className="flex justify-between text-[11px] text-slate-600"><span>60 (min)</span><span>95 (default)</span><span>100</span></div>
                     </div>
                     <div>
                       <div className="flex justify-between text-[11px]">
@@ -4409,6 +4430,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <input data-help-key="pdf_audit_view_polish_passes_slider" type="range" min="0" max="3" value={pdfPolishPasses} onChange={(e) => setPdfPolishPasses(parseInt(e.target.value))} className="w-full" aria-label={t('pdf_audit.settings.polish_passes_aria') || 'Polish pass count'} />
                       <div className="flex justify-between text-[11px] text-slate-600"><span>0</span><span>2 (default)</span><span>3</span></div>
                     </div>
+                    {/* M10 (deep dive 2026-07-09): the settings-lock disclosure the 2026-07-02 S1 decision
+                        called for ("settings lock at run entry") but never shipped — a teacher who drags
+                        Target Score mid-run to make it finish was never told why nothing changed. Shown
+                        only while a run is active, so it never adds noise to setup. */}
+                    {(pdfFixLoading || pdfAutoContinueRunning) && (
+                      <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+                        ⓘ {t('pdf_audit.settings.locked_midrun') || 'A run is in progress — changes here apply to the NEXT run; the current run keeps the settings it started with.'}
+                      </p>
+                    )}
                   </div>
                 </details>
                 {/* Style & Branding for remediation output */}
@@ -5932,7 +5962,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               prevSnapshot,
                               { html: bestHtml, ai: finalAiResult, axe: finalAxeResult, chars: bestHtml.length, perfect },
                               {
-                                commit: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + totalPasses, fidelityNotes: _refixNotes, fidelityLimited: _refixNotes.length > 0 },
+                                // M22 (deep dive 2026-07-09): fidelityLimited has TWO halves in the pipeline
+                                // (coverage<90 OR notes) — recomputing it here from the re-fix notes alone made
+                                // the header's "verify content" chip + amber asterisk VANISH on a doc still at
+                                // e.g. 85% coverage, while the expert panel on the same screen kept saying 85%.
+                                commit: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + totalPasses, fidelityNotes: _refixNotes, fidelityLimited: _refixNotes.length > 0 || (typeof pdfFixResult.integrityCoverage === 'number' && pdfFixResult.integrityCoverage < 90) },
                                 preserveOnRevert: { autoFixPasses: (pdfFixResult.autoFixPasses || 0) + totalPasses },
                               },
                               'Fix Remaining'
@@ -7886,6 +7920,16 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       {(() => {
                         if (veraPdfBusy) return (<div className="text-center mt-1.5"><span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700">⏳ {t('pdf_audit.pdfua_badge.validating') || 'Validating PDF/UA-1 (ISO 14289-1) with veraPDF…'}</span></div>);
                         const _ltv = lastTaggedValidation;
+                        // M25 (deep dive 2026-07-09): auto-validation is default-ON — when it silently
+                        // couldn't run, an ABSENT badge read as "validation isn't a thing". One amber
+                        // line says what happened and where the manual button is.
+                        if (!_ltv && veraPdfAutoSkipped) return (
+                          <div className="text-center mt-1.5"><span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300">
+                            ⚠ {veraPdfAutoSkipped === 'transport-blocked'
+                              ? (t('pdf_audit.pdfua_badge.auto_skipped_popup') || 'PDF/UA validation could not run (pop-up blocked / validator still starting) — use "Independently validate with veraPDF" below.')
+                              : (t('pdf_audit.pdfua_badge.auto_skipped_failed') || 'PDF/UA auto-validation did not complete — use "Independently validate with veraPDF" below.')}
+                          </span></div>
+                        );
                         if (!_ltv) return null;
                         const _v = _ltv.veraPdf;
                         const _pev = _ltv.postExportValidator && _ltv.postExportValidator.summary;
@@ -8558,9 +8602,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <span className="text-2xl shrink-0">📄</span>
                             <div>
                               <h4 className="text-sm font-bold text-sky-900">{t('pdf_audit.fidelity_review.heading') || 'Verify Content Fidelity Before Use'}</h4>
-                              <p className="text-xs text-sky-800 leading-relaxed mt-1">
-                                {(t('pdf_audit.fidelity_review.body') || 'After accounting for de-hyphenation and whitespace cleanup, the remediated output still preserves {cov} of the source text. This is a content-fidelity check, not an accessibility barrier — some source text may not have carried over. Open the Diff view to compare the remediated text against the original, and keep the source PDF on hand to confirm nothing important was dropped.').replace('{cov}', cov != null ? cov + '%' : 'less than the full source')}
-                              </p>
+                              {/* M21 (deep dive 2026-07-09): the lead sentence framed EVERY note kind as text
+                                  loss ("some source text may not have carried over") — a doc at 100% coverage
+                                  whose only notes are alt-quality/OCR-confidence flags got a banner asserting
+                                  text might be missing; the teacher checks the Diff, finds nothing missing, and
+                                  learns to distrust the panel. Quality-class notes now get a quality lead. */}
+                              {(() => {
+                                const _notes = Array.isArray(pdfFixResult.fidelityNotes) ? pdfFixResult.fidelityNotes : [];
+                                const _qualityKinds = { altQuality: 1, activeContent: 1, lowOcrAccuracy: 1, lowOcrConfidence: 1, ocrDupeCollapse: 1, pageEdge: 1 };
+                                const _textLossConcern = (cov == null || cov < 97) || pdfFixResult.integrityWarning || _notes.some(n => n && !_qualityKinds[n.kind]);
+                                return _textLossConcern ? (
+                                  <p className="text-xs text-sky-800 leading-relaxed mt-1">
+                                    {(t('pdf_audit.fidelity_review.body') || 'After accounting for de-hyphenation and whitespace cleanup, the remediated output still preserves {cov} of the source text. This is a content-fidelity check, not an accessibility barrier — some source text may not have carried over. Open the Diff view to compare the remediated text against the original, and keep the source PDF on hand to confirm nothing important was dropped.').replace('{cov}', cov != null ? cov + '%' : 'less than the full source')}
+                                  </p>
+                                ) : (
+                                  <p className="text-xs text-sky-800 leading-relaxed mt-1">
+                                    {(t('pdf_audit.fidelity_review.body_quality') || 'The text carried over fully ({cov} of source characters preserved) — the notes below are QUALITY flags (image descriptions, OCR confidence, removed running heads), not missing text. Review each note; the Diff view is available if you want to double-check.').replace('{cov}', cov != null ? cov + '%' : '~100%')}
+                                  </p>
+                                );
+                              })()}
                               {/* Structural fidelity nets (#2 refusal / #3 tables / #4 links) — the
                                   specific, actionable losses the bulk char-coverage % can miss. */}
                               {Array.isArray(pdfFixResult.fidelityNotes) && pdfFixResult.fidelityNotes.length > 0 && (
