@@ -3320,7 +3320,28 @@ var createDocPipeline = function(deps) {
   var _geminiStormAnnounced = false; // user-facing "Canvas is rate-limiting" message emitted once per sustained storm
   // Queue pump: start as many waiters as the CURRENT (possibly reduced) cap allows, and never
   // during a cooldown. Replaces the old hand-off-on-release model, which couldn't shrink the cap.
+  // #3 (ChatGPT review 2026-07-10): queue entries carry the run's abort signal, captured at ENQUEUE
+  // time. A waiter whose run has died is DROPPED (rejected with an AbortError-shaped rejection,
+  // never started) instead of starting later — possibly minutes later, under the NEXT file's live
+  // signal. Pruning runs at every pump, so aborted waiters cannot outlive a breaker cooldown either.
+  var _mkGateAbortErr = function (label) {
+    var e = new Error('Aborted: ' + (label || 'AI call') + ' cancelled before it started');
+    e.name = 'AbortError';
+    e.isAbort = true;
+    return e;
+  };
+  var _pruneAbortedWaiters = function () {
+    if (!_geminiWaiters.length) return;
+    var kept = [];
+    for (var i = 0; i < _geminiWaiters.length; i++) {
+      var w = _geminiWaiters[i];
+      if (w.signal && w.signal.aborted) { try { w.reject(_mkGateAbortErr(w.label)); } catch (_) {} }
+      else kept.push(w);
+    }
+    _geminiWaiters = kept;
+  };
   var _geminiPump = function() {
+    _pruneAbortedWaiters();
     var now = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
     if (_geminiCooldownUntil > now) {
       if (!_geminiCooldownTimer) {
@@ -3354,7 +3375,7 @@ var createDocPipeline = function(deps) {
       }
       _geminiInFlight++;
       _geminiLastStartAt = now;
-      (_geminiWaiters.shift())();
+      (_geminiWaiters.shift()).resolve();
       // If another call could start now (spare slot + queue), still hold it for the next gap rather than
       // firing back-to-back — schedule the next pump one staggerMs out.
       if (_geminiStaggerMs > 0 && _geminiInFlight < _geminiCap && _geminiWaiters.length) {
@@ -3363,16 +3384,32 @@ var createDocPipeline = function(deps) {
       }
     }
   };
-  var _acquireGeminiSlot = function() {
-    return new Promise(function(resolve) { _geminiWaiters.push(resolve); _geminiPump(); });
+  var _acquireGeminiSlot = function(signal, label) {
+    if (signal && signal.aborted) return Promise.reject(_mkGateAbortErr(label));
+    return new Promise(function(resolve, reject) {
+      _geminiWaiters.push({ resolve: resolve, reject: reject, signal: signal || null, label: label || null });
+      _geminiPump();
+    });
   };
   var _releaseGeminiSlot = function() {
     _geminiInFlight = Math.max(0, _geminiInFlight - 1);
     _geminiPump();
   };
-  var _geminiGate = function(fn) {
-    return _acquireGeminiSlot().then(function() {
-      return Promise.resolve().then(fn).finally(_releaseGeminiSlot);
+  // fn may return either a plain promise (slot held until it settles — the legacy contract) or a
+  // { result, slotUntil } pair: the CALLER gets `result` (e.g. a timeout race) while the slot is
+  // held until `slotUntil` settles. #3: a timed-out call is still on the wire — releasing its slot
+  // at the race let TRUE transport concurrency exceed _geminiCap and deepen the very storm the
+  // breaker was easing.
+  var _geminiGate = function(fn, signal, label) {
+    return _acquireGeminiSlot(signal, label).then(function() {
+      var _released = false;
+      var _free = function () { if (!_released) { _released = true; _releaseGeminiSlot(); } };
+      var ret;
+      try { ret = fn(); } catch (e) { _free(); throw e; }
+      var _isPair = !!(ret && ret.slotUntil && ret.result);
+      var _result = Promise.resolve(_isPair ? ret.result : ret);
+      Promise.resolve(_isPair ? ret.slotUntil : _result).then(_free, _free);
+      return _result;
     });
   };
   var _geminiNoteAuthFail = function() {
@@ -3610,14 +3647,36 @@ var createDocPipeline = function(deps) {
   // breaker (reduced cap + cooldown) also throttles the retries. Canvas-auth (transient 401/403)
   // gets up to _GEMINI_AUTH_RETRIES exponential-backoff retries; other transient/timeout errors get
   // one (parity with the prior _withRetry). Permanent errors (real auth/quota/config, RECITATION)
-  // never retry. The slot is held only during fn()+timeout, so queue-wait never counts toward it.
+  // never retry. Queue-wait never counts toward the timeout; the slot is held until the UNDERLYING
+  // transport settles (45s ceiling past the timeout), not just until the race — see #3 below.
   var _geminiCall = function(fn, initialMs, retryMs, label) {
+    // #3 (ChatGPT review 2026-07-10): capture the run's abort signal at ENQUEUE time (H7 publishes
+    // per-file/batch controllers into this slot). The transport re-reads the slot only when a call
+    // STARTS — so a queued call from a dead run used to start under the NEXT run's live signal.
+    // The captured signal also stops the retry ladder: a cancelled run neither retries nor feeds
+    // the breaker (its failure IS the cancellation).
+    var _gateSignal = (typeof window !== 'undefined' && window.__alloPdfAbortSignal) ? window.__alloPdfAbortSignal : null;
     var _attempt = function(n) {
       var timeoutMs = n === 0 ? initialMs : (retryMs || initialMs);
-      return _geminiGate(function() { return _withTimeout(fn(), timeoutMs, label + (n ? ' (retry ' + n + ')' : '')); }).then(function(res) {
+      return _geminiGate(function() {
+        var _underlying = Promise.resolve().then(fn);
+        var _raced = _withTimeout(_underlying, timeoutMs, label + (n ? ' (retry ' + n + ')' : ''));
+        // Hold the slot until the UNDERLYING call settles: when the timer wins the race the fetch
+        // is still consuming a real connection. Ceiling: 45s past the timeout, so a wedged
+        // transport cannot wedge the whole gate.
+        var _slotUntil = new Promise(function (resolveHold) {
+          var _done = false, _capTimer = null;
+          var _fin = function () { if (_done) return; _done = true; if (_capTimer) clearTimeout(_capTimer); resolveHold(); };
+          _underlying.then(_fin, _fin);
+          _raced.then(null, function () {}).then(function () { if (!_done && !_capTimer) _capTimer = setTimeout(_fin, 45000); });
+        });
+        return { result: _raced, slotUntil: _slotUntil };
+      }, _gateSignal, label).then(function(res) {
         _geminiNoteSuccess();
         return res;
       }).catch(function(err) {
+        // #3: aborted runs short-circuit — no retry, no breaker/storm accounting.
+        if ((err && err.isAbort) || (_gateSignal && _gateSignal.aborted)) throw err;
         var isTimeout = err && err.message && err.message.indexOf('Timeout') === 0;
         var isRecitation = err && err.message && /RECITATION/i.test(err.message);
         if (isRecitation) { warnLog('[Retry] ' + (label || 'API call') + ' failed (RECITATION) — skipping retry (content filter is deterministic)'); throw err; }
