@@ -1748,7 +1748,13 @@ function _upgradeExport() {
 if (typeof window !== 'undefined') window._upgradeExport = _upgradeExport;
 
 let _AUDIO_BANK = null;
-const _AUDIO_BANK_URL = 'https://raw.githubusercontent.com/Apomera/AlloFlow/main/audio_bank.json';
+// CDN first (same host as every other module — reachable wherever the app
+// itself loads, incl. filtered school networks that block raw.githubusercontent),
+// GitHub raw as the fallback.
+const _AUDIO_BANK_URLS = [
+    'https://alloflow-cdn.pages.dev/audio_bank.json',
+    'https://raw.githubusercontent.com/Apomera/AlloFlow/main/audio_bank.json',
+];
 function getAudio(category, key) {
     if (!_AUDIO_BANK) return null;
     if (_AUDIO_BANK[category] && _AUDIO_BANK[category][key]) return _AUDIO_BANK[category][key];
@@ -1757,16 +1763,20 @@ function getAudio(category, key) {
 }
 window.getAudio = getAudio;
 async function _initAudioBank() {
-    console.log("Initializing Audio Bank from " + _AUDIO_BANK_URL);
-    try {
-        const response = await fetch(_AUDIO_BANK_URL);
-        if (!response.ok) throw new Error("HTTP " + response.status);
-        _AUDIO_BANK = await response.json();
-        console.log("Audio Bank loaded successfully. Categories:", Object.keys(_AUDIO_BANK));
-        window.dispatchEvent(new Event('audio_bank_loaded'));
-    } catch (err) {
-        console.warn("[AudioBank] Auto-fetch failed:", err.message, "- Use the Upload button in the header to load audio_bank.json manually.");
+    for (const url of _AUDIO_BANK_URLS) {
+        console.log("Initializing Audio Bank from " + url);
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            _AUDIO_BANK = await response.json();
+            console.log("Audio Bank loaded successfully. Categories:", Object.keys(_AUDIO_BANK));
+            window.dispatchEvent(new Event('audio_bank_loaded'));
+            return;
+        } catch (err) {
+            console.warn("[AudioBank] Fetch failed from " + url + ":", err.message);
+        }
     }
+    console.warn("[AudioBank] Auto-fetch failed from all sources - Use the Upload button in the header to load audio_bank.json manually.");
 }
 _initAudioBank();
 // Audio-bank cache invalidation moved into audio_banks_module.js, which
@@ -14095,6 +14105,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const _outcome = (cur.afterScore >= pdfTargetScore && _resid === 0 && !cur._aiVerificationIncomplete) ? 'success' : 'incomplete';
       const row = {
         _k: key, at: new Date().toISOString(),
+        runId: cur.runId || null, // #15 (ChatGPT review 2026-07-10): per-run identity from the pipeline (null on older/loaded rows)
         fileName: pendingPdfFile?.name || 'document',
         beforeScore: cur.beforeScore != null ? cur.beforeScore : null,
         afterScore: cur.afterScore != null ? cur.afterScore : null,
@@ -14105,6 +14116,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         // stats from fixResult.pipelineStats (null on older/loaded rows).
         outcome: _outcome,
         retries: _ps ? _ps.retries : null,
+        // #15: the honest counter set — retries now counts real retry ATTEMPTS; the old counter
+        // incremented on terminal failure (a recovered retry recorded 0, a no-retry failure 1).
+        recoveredRetries: (_ps && _ps.recoveredRetries != null) ? _ps.recoveredRetries : null,
+        terminalFailures: (_ps && _ps.terminalFailures != null) ? _ps.terminalFailures : null,
+        authThrottles: (_ps && _ps.authThrottles != null) ? _ps.authThrottles : null,
         visionCalls: _ps ? _ps.visionCalls : null,
         apiCalls: _ps ? _ps.apiCalls : null,
         apiMs: _ps ? _ps.totalApiMs : null,
@@ -14112,10 +14128,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       };
       // Upsert (sweep 2026-06-11 [9]): auto-continue rounds and post-load
       // edits used to APPEND a row per state change — one run could leave
-      // 8 phantom rows. If the LAST row is the same file + same baseline,
-      // it's the same run evolving: update it in place.
+      // 8 phantom rows. #15 (ChatGPT review 2026-07-10): "same run" is now decided by RUN IDENTITY
+      // when present — the filename+baseline heuristic collapsed DISTINCT runs of the same document
+      // (re-run the same file: same name, same baseline score) into one evolving row, undercounting
+      // the reliability history. The heuristic remains only for legacy rows without a runId.
       const last = prev[prev.length - 1];
-      if (last && last.fileName === row.fileName && last.beforeScore === row.beforeScore) {
+      const _sameRun = last && ((row.runId && last.runId) ? last.runId === row.runId
+        : (!row.runId && !last.runId && last.fileName === row.fileName && last.beforeScore === row.beforeScore));
+      if (_sameRun) {
         return [...prev.slice(0, -1), Object.assign({}, last, row)];
       }
       const next = [...prev, row];
@@ -19961,6 +19981,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // Recompute the Issue-Resolution lists (Resolved/Persisted/Newly-Introduced) after each follow-up
   // round so fixed issues drop off instead of going stale. No-op fallback returns the prior object.
   const recomputeIssueResolution = (_docPipeline && _docPipeline.recomputeIssueResolution) ? _docPipeline.recomputeIssueResolution : (prev) => (prev || null);
+  // #6-incremental (ChatGPT review 2026-07-10): recompute the content-fidelity disclosure after each
+  // accepted auto-continue round — the rounds mutate accessibleHtml AFTER fixAndVerifyPdf measured
+  // coverage, so the panel could keep reading "100% preserved" over a round that dropped text.
+  const recomputeContentFidelity = (_docPipeline && _docPipeline.recomputeContentFidelity) ? _docPipeline.recomputeContentFidelity : null;
   const runAxeAudit = _docPipeline ? _docPipeline.runAxeAudit : async () => ({});
   const fixContrastViolations = _docPipeline ? _docPipeline.fixContrastViolations : (h) => h;
   const sanitizeStyleForWCAG = _docPipeline ? _docPipeline.sanitizeStyleForWCAG : (h) => ({ html: h, fixCount: 0 });
@@ -20199,6 +20223,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // baseline (original pre-fix issues) rides on cur.issueResolution and is unchanged across rounds.
         let _roundIR = cur.issueResolution;
         try { const _r = recomputeIssueResolution(cur.issueResolution, reVerify); if (_r) _roundIR = _r; } catch (_) {}
+        // #6-incremental: this round CHANGED the html — re-measure coverage/placement against the
+        // NEW output (pure pipeline helper; null when no text-layer ground truth → keep the prior
+        // fields). fidelityLimited keeps its original definition: coverage<90 OR structural notes.
+        let _roundFid = null;
+        try { _roundFid = recomputeContentFidelity ? recomputeContentFidelity(cur.sourceText, result.html) : null; } catch (_) {}
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: result.axe,
@@ -20208,6 +20237,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           // via the !reVerify break; here reVerify is always present.
           verificationAudit: reVerify,
           issueResolution: _roundIR,
+          integrityCoverage: _roundFid ? _roundFid.integrityCoverage : cur.integrityCoverage,
+          integrityWarning: _roundFid ? ([_roundFid.coverageWarning, _roundFid.placementWarn].filter(Boolean).join(' ') || null) : cur.integrityWarning,
+          fidelityLimited: _roundFid ? ((_roundFid.integrityCoverage != null && _roundFid.integrityCoverage < 90) || (cur.fidelityNotes || []).length > 0) : cur.fidelityLimited,
           afterScore: newScore,
           _scoreIsBlended: _det !== null,
           // A completed re-verify clears any throttle-degraded flag from the ORIGINAL run, so a now-fully-
@@ -20241,6 +20273,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           axeAudit: snapshot.axeAudit,
           verificationAudit: snapshot.verificationAudit,
           issueResolution: snapshot.issueResolution,
+          integrityCoverage: snapshot.integrityCoverage, // #6-incremental: the recomputed fidelity
+          integrityWarning: snapshot.integrityWarning,   // fields must reach the RENDERED result,
+          fidelityLimited: snapshot.fidelityLimited,     // not just the ref/auto-save snapshot
           afterScore: snapshot.afterScore,
           _scoreIsBlended: snapshot._scoreIsBlended,
           axeScore: snapshot.axeScore,
@@ -20291,7 +20326,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       }
       if (pdfAutoSaveProject) { try { saveProjectToFile(true); } catch (e) { /* non-fatal */ } }
     }
-  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, auditOutputAccessibility, recomputeIssueResolution, addToast, pdfAutoSaveProject]);
+  }, [pdfTargetScore, pdfAutoFixPasses, autoFixAxeViolations, aiFixChunked, waitForGeminiCalm, runAxeAudit, runEqualAccessAudit, auditOutputAccessibility, recomputeIssueResolution, recomputeContentFidelity, addToast, pdfAutoSaveProject]);
 
   const saveProjectToFile = React.useCallback((isAuto, _override) => {
     // Incomplete/interrupted run (resumable-incomplete-project 2026-06-20): a hard AI
@@ -25094,6 +25129,11 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // multi-step plan awaiting the teacher's confirm chip, mirroring
   // _pendingBotCmdRef. {steps, originalText}. Never runs without confirm.
   const _pendingBotPlanRef = useRef(null);
+  // Live plan execution state (2026-07-10): `running` makes the chat
+  // single-flight — a second plan or command can't race the one in flight —
+  // and `stop` is polled by runPlan's shouldStop between steps (never
+  // mid-command).
+  const _planRunRef = useRef({ running: false, stop: false });
   const _alloCmdCtx = () => {
     const ctx = {
       t, addToast, callGemini,
@@ -25427,6 +25467,29 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   const handleSendUDLMessage = async (manualText = null) => {
     const _AC = window.AlloModules && window.AlloModules.AlloCommands;
     const _rawUtter = (manualText != null ? manualText : udlInput) || '';
+    // (0) Single-flight guard (2026-07-10): while a plan is EXECUTING, the
+    // only message honored is a stop request — anything else would race the
+    // running steps (a second plan, a conflicting command, a chat reply
+    // that mutates the same state).
+    if (_planRunRef.current.running) {
+      const _stopReply = String(_rawUtter).trim().toLowerCase();
+      if (_rawUtter === '__allo_plan_stop' || /^stop( the)?( plan| everything)?[.!]?$/.test(_stopReply)) {
+        _planRunRef.current.stop = true;
+        setUdlInput('');
+        setUdlMessages(prev => [...prev, { role: 'model', text: '🛑 ' + (t('chat_guide.plan_stopping') || 'Stopping after the current step finishes — nothing is cut off mid-generation.') }]);
+        return;
+      }
+      setUdlInput('');
+      setUdlMessages(prev => [...prev, { role: 'model', text: '⏳ ' + (t('chat_guide.plan_busy') || 'A plan is still running — say “stop” to end it after the current step, or wait for it to finish.') }]);
+      return;
+    }
+    // Stray plan sentinels with no pending plan (e.g. a double-click on an
+    // old chip after the run ended): swallow them instead of leaking the
+    // literal "__allo_plan_run" into the chat/router.
+    if (!_pendingBotPlanRef.current && (_rawUtter === '__allo_plan_run' || _rawUtter === '__allo_plan_skip' || _rawUtter === '__allo_plan_stop')) {
+      setUdlInput('');
+      return;
+    }
     // ── Command confirmation (2026-07-06) ──
     // The bot chat used to RUN an app command the instant the router matched one.
     // A short opener ("hi", "bot", "assistant") matched `toggle_bot`, which hid the
@@ -25478,9 +25541,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         setUdlInput('');
         if (_isRun && _AC && typeof _AC.runPlan === 'function') {
           const _steps = _pendingPlan.steps;
-          setUdlMessages(prev => [...prev, { role: 'model', text: '▶ ' + (t('chat_guide.plan_running') || 'Running the plan — I’ll report each step here.') }]);
+          _planRunRef.current = { running: true, stop: false };
+          setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '▶ ' + (t('chat_guide.plan_running') || 'Running the plan — I’ll report each step here.'), choices: [
+            { label: '🛑 ' + (t('chat_guide.plan_stop') || 'Stop after current step'), value: '__allo_plan_stop' }
+          ] }]);
           try {
             const _pr = await _AC.runPlan(() => _alloCmdCtx(), _steps, {
+              shouldStop: () => _planRunRef.current.stop,
               onStep: (i, phase, cmd, narr) => {
                 if (phase === 'start') { setUdlMessages(prev => [...prev, { role: 'model', text: '⏳ ' + (i + 1) + '/' + _steps.length + ' — ' + ((cmd && cmd.label) || 'working') + '…' }]); }
                 else {
@@ -25497,6 +25564,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
             }
           } catch (_) {
             setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_failed') || 'The plan stopped early.') }]);
+          } finally {
+            _planRunRef.current = { running: false, stop: false };
           }
           return;
         }

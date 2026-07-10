@@ -1926,14 +1926,18 @@
         () => Object.keys(preparedImageLibrary).length > 0,
         [preparedImageLibrary],
       );
+      // Keys the teacher explicitly regenerated this session: handleAudio
+      // must NOT serve the packed clip for them (the pack entry is removed
+      // from state too, but this ref makes the very next play — inside the
+      // same regenerate handler, before re-render — already skip the pack).
+      const packAudioInvalidatedRef = React.useRef(new Set());
       // Resolve a playable src for text the teacher packed at setup time
       // (data URI or {mime, base64}); null when the pack has no clip for it.
       const portableTtsSrcFor = React.useCallback(
         (text) => {
-          const asset =
-            portableTtsLibrary[
-            String(text || "").trim().toLowerCase().replace(/\s+/g, " ")
-            ];
+          const key = String(text || "").trim().toLowerCase().replace(/\s+/g, " ");
+          if (packAudioInvalidatedRef.current.has(key)) return null;
+          const asset = portableTtsLibrary[key];
           if (!asset) return null;
           if (typeof asset === "string") return asset;
           return asset.base64
@@ -5894,17 +5898,22 @@
       );
       const generateSessionQueue = React.useCallback(
         (activityId, difficulty) => {
+          // Prepared pack words take precedence: a nonempty glossary-derived
+          // wordPool previously shadowed the teacher-reviewed pack, so
+          // sessions drew raw glossary words with no prepared boards or
+          // portable audio (blank on student devices). The glossary pool is
+          // only the fallback when no pack was prepared.
           const rawPool =
-            wordPool && wordPool.length > 0
-              ? wordPool
-              : preloadedWords.map((pw) => ({
+            preloadedWords && preloadedWords.length > 0
+              ? preloadedWords.map((pw) => ({
                 word: pw.word || pw.targetWord || pw.displayWord,
                 displayWord: pw.displayWord || pw.word,
                 originalTerm: pw.targetWord,
                 definition: pw.definition,
                 image: pw.image,
                 difficulty: "medium",
-              }));
+              }))
+              : (wordPool || []);
           const uniqueMap = new Map();
           if (rawPool) {
             rawPool.forEach((w) => {
@@ -5992,6 +6001,7 @@
         },
         [
           wordPool,
+          preloadedWords,
           wordSoundsHistory,
           categorizeWordDifficulty,
           isSequentialMode,
@@ -7979,6 +7989,23 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
           if (wordDataCache.current) {
             wordDataCache.current.delete(targetWord.toLowerCase());
+          }
+          // The portable pack is consulted FIRST by handleAudio, so clearing
+          // every other cache while leaving the packed clip made regenerate
+          // a silent no-op on pack words: invalidate the key synchronously
+          // (covers the immediate replay below) and drop the pack entry so
+          // the fresh TTS clip wins from now on.
+          {
+            const packKey = targetWord.trim().toLowerCase().replace(/\s+/g, " ");
+            packAudioInvalidatedRef.current.add(packKey);
+            if (typeof setPreloadedWords === "function") {
+              setPreloadedWords((prev) => (Array.isArray(prev) ? prev : []).map((it) => {
+                if (!it || !it._ttsAssets || typeof it._ttsAssets !== "object" || !it._ttsAssets[packKey]) return it;
+                const nextAssets = { ...it._ttsAssets };
+                delete nextAssets[packKey];
+                return { ...it, _ttsAssets: nextAssets };
+              }));
+            }
           }
           // Invalidate the pinned sound-sort/word-families items so the
           // regenerated data actually reaches the board (they're word-keyed
