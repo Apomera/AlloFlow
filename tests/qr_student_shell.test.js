@@ -269,7 +269,9 @@ describe('incomplete QR privacy guard', () => {
 
   it('blocks auth/data startup and uses an inert Firebase identity', () => {
     expect(rootSource).toContain("projectId: 'alloflow-incomplete-qr'");
-    expect(rootSource).toContain("if (!_alloQrFirebaseHandoffRequiredButMissing) _initAlloData();");
+    // v3: backend-free boots (mailbox/pack/landing, no allo_fb) also skip the
+    // data provider via the placeholder-config flag.
+    expect(rootSource).toContain("if (!_alloQrFirebaseHandoffRequiredButMissing && !_alloFirebaseIsPlaceholder) _initAlloData();");
     const apiKeyBlock = sliceBetween(rootSource, 'const apiKey =', 'const fisherYatesShuffle');
     expect(apiKeyBlock).not.toContain('REACT_APP_GEMINI_API_KEY');
     expect(

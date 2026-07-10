@@ -1298,20 +1298,39 @@ const _alloRuntimeAppId = (_alloQrFirebaseHandoff && _alloQrFirebaseHandoff.appI
   || (_alloQrFirebaseHandoffRequiredButMissing
     ? 'incomplete-qr'
     : (typeof __app_id !== 'undefined' ? __app_id : (_alloReadEnv('REACT_APP_APP_ID') || 'default-app-id')));
+// The public student shell ships with an EMPTY env on purpose (FERPA: never
+// bake a maintainer backend into the world-readable bundle). But entries that
+// need no backend at all (#allo_pack packs, ?allo_mb / ?allo_mbp mailbox
+// flows, the bare landing) must still BOOT: initializeApp tolerates empty
+// strings, yet getFirestore() throws without a projectId — at module scope —
+// which froze the whole bundle before React could mount. Fall back to a
+// valid-SHAPED placeholder so construction succeeds; anything that actually
+// calls Firebase surfaces allo/no-backend-configured instead of a dead app.
+const ALLO_FIREBASE_PLACEHOLDER_CONFIG = Object.freeze({
+    apiKey: 'unconfigured-no-backend',
+    authDomain: 'unconfigured.invalid',
+    projectId: 'alloflow-unconfigured',
+    appId: '1:0:web:alloflow-unconfigured',
+});
+const _alloEnvFirebaseConfig = {
+    apiKey: _alloReadEnv('REACT_APP_API_KEY'),
+    authDomain: _alloReadEnv('REACT_APP_AUTH_DOMAIN'),
+    projectId: _alloReadEnv('REACT_APP_PROJECT_ID'),
+    storageBucket: _alloReadEnv('REACT_APP_STORAGE_BUCKET'),
+    messagingSenderId: _alloReadEnv('REACT_APP_MESSAGING_SENDER_ID'),
+    appId: _alloReadEnv('REACT_APP_APP_ID'),
+    measurementId: _alloReadEnv('REACT_APP_MEASUREMENT_ID'),
+};
 const firebaseConfig = (_alloQrFirebaseHandoff && _alloQrFirebaseHandoff.firebaseConfig)
   || (_alloQrFirebaseHandoffRequiredButMissing
     ? ALLO_QR_BLOCKED_FIREBASE_CONFIG
     : (typeof __firebase_config !== 'undefined'
       ? JSON.parse(__firebase_config)
-      : {
-          apiKey: _alloReadEnv('REACT_APP_API_KEY'),
-          authDomain: _alloReadEnv('REACT_APP_AUTH_DOMAIN'),
-          projectId: _alloReadEnv('REACT_APP_PROJECT_ID'),
-          storageBucket: _alloReadEnv('REACT_APP_STORAGE_BUCKET'),
-          messagingSenderId: _alloReadEnv('REACT_APP_MESSAGING_SENDER_ID'),
-          appId: _alloReadEnv('REACT_APP_APP_ID'),
-          measurementId: _alloReadEnv('REACT_APP_MEASUREMENT_ID'),
-        }));
+      : (_alloValidFirebaseConfig(_alloEnvFirebaseConfig) ? _alloEnvFirebaseConfig : ALLO_FIREBASE_PLACEHOLDER_CONFIG)));
+const _alloFirebaseIsPlaceholder = firebaseConfig === ALLO_FIREBASE_PLACEHOLDER_CONFIG;
+if (_alloFirebaseIsPlaceholder && typeof console !== 'undefined') {
+    console.log('[AlloFlow] No Firebase backend configured — booting backend-free (mailbox/pack/landing pathways only).');
+}
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
@@ -1322,6 +1341,11 @@ async function _alloEnsureAuthenticatedUser() {
   if (_alloQrFirebaseHandoffRequiredButMissing) {
     const error = new Error('QR Firebase handoff is missing.');
     error.code = 'allo/qr-firebase-handoff-missing';
+    throw error;
+  }
+  if (_alloFirebaseIsPlaceholder) {
+    const error = new Error('No Firebase backend is configured for this pathway.');
+    error.code = 'allo/no-backend-configured';
     throw error;
   }
   if (auth.currentUser?.uid) return auth.currentUser;
@@ -1421,7 +1445,7 @@ const _initAlloData = async () => {
         debugLog('[AlloFlow] DataProvider not loaded — using raw Firebase calls');
     }
 };
-if (!_alloQrFirebaseHandoffRequiredButMissing) _initAlloData();
+if (!_alloQrFirebaseHandoffRequiredButMissing && !_alloFirebaseIsPlaceholder) _initAlloData();
 const appId = _alloRuntimeAppId;
 // Public web bundles must never compile a provider billing credential.
 const apiKey = "";
@@ -11408,6 +11432,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     if (_alloQrFirebaseHandoffRequiredButMissing) {
       setUser(null);
       debugLog('Firebase auth skipped: QR link has no valid teacher handoff.');
+      return undefined;
+    }
+    if (_alloFirebaseIsPlaceholder) {
+      setUser(null);
+      debugLog('Firebase auth skipped: no backend configured (mailbox/pack/landing pathway).');
       return undefined;
     }
     let authRetryTimer = null;

@@ -296,6 +296,25 @@ describe('ANTI wiring pins', () => {
         expect(gsSource).toMatch(/b === 'up' \|\| b === 'down'/);
     });
 
+    it('backend-free boot: empty-env shell falls back to a valid-shaped placeholder config', () => {
+        // Root cause pin: getFirestore() throws at module scope when projectId
+        // is empty, freezing the whole app for #allo_pack / ?allo_mb /
+        // ?allo_mbp / bare-landing entries (the only ones without allo_fb).
+        expect(anti).toMatch(/ALLO_FIREBASE_PLACEHOLDER_CONFIG = Object\.freeze/);
+        expect(anti).toMatch(/_alloValidFirebaseConfig\(_alloEnvFirebaseConfig\) \? _alloEnvFirebaseConfig : ALLO_FIREBASE_PLACEHOLDER_CONFIG/);
+        // Anything that actually needs Firebase reports a precise code…
+        expect(anti).toMatch(/allo\/no-backend-configured/);
+        // …and auth/data-provider bootstraps are skipped, not error-spammed.
+        expect(anti).toMatch(/!_alloQrFirebaseHandoffRequiredButMissing && !_alloFirebaseIsPlaceholder\) _initAlloData\(\)/);
+        expect(anti).toMatch(/Firebase auth skipped: no backend configured/);
+        // The placeholder must satisfy the same shape check the handoff uses.
+        const start = anti.indexOf('const ALLO_FIREBASE_PLACEHOLDER_CONFIG');
+        const block = anti.slice(start, anti.indexOf('});', start));
+        expect(block).toMatch(/apiKey: '[^']+'/);
+        expect(block).toMatch(/projectId: '[^']+'/);
+        expect(block).toMatch(/appId: '[^']+'/);
+    });
+
     it('hardening + real-time wiring is present on both sides', () => {
         // Teacher: token UX, RTC answerer, dual-path push, staleness UI.
         expect(anti).toMatch(/Admin token — save it like a password/);
