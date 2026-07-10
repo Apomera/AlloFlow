@@ -1789,7 +1789,7 @@ describe('take persistence + export hardening wiring', () => {
     expect(m).toContain('function vsBackgroundBridgeReceiver(ev)');
     expect(m).toContain("window.addEventListener('message', vsBackgroundBridgeReceiver);");
     // The background receiver is the SOLE video ingester and still acks.
-    expect(m).toContain("ev.source.postMessage({ bridge: vsTakeStore.token, type: 'allostudio-video-ack' }, STUDIO_ORIGIN);");
+    expect(m).toContain("replyTo.postMessage({ bridge: vsTakeStore.token, type: 'allostudio-video-ack' }, STUDIO_ORIGIN);");
     expect(m).toContain('vsTakeStore.setToken(bridgeToken);');
     // The component no longer ingests videos directly.
     expect(m).not.toContain("ev.data.type === 'allostudio-video' && ev.data.payload");
@@ -1854,6 +1854,24 @@ describe('take persistence + export hardening wiring', () => {
     // Teacher-only + excluded from document export until those surfaces exist.
     expect(anti).toMatch(/TEACHER_ONLY_TYPES = \[[^\]]*'video-ref'/);
     expect(anti).toMatch(/NON_EXPORTABLE_TYPES = new Set\(\[[^\]]*'video-ref'/);
+  });
+  it('batch 4 polish is wired: shortcuts, export prefs memory, resend dedupe', () => {
+    const html = popup();
+    // Editor shortcuts beyond Space, with typing guards.
+    expect(html).toContain("if (key === 'i') {");
+    expect(html).toContain("if (key === 'o') {");
+    expect(html).toContain("$('addCueBtn').click();");
+    expect(html).toContain("ev.key === '['");
+    expect(html).toContain('active.isContentEditable');
+    // Export settings persist and restore with option validation.
+    expect(html).toContain("var VS_EXPORT_PREFS_KEY = 'vs_export_prefs_v1';");
+    expect(html).toContain("$('panelExport').addEventListener('change', saveExportPrefs);");
+    expect(html).toContain('restoreExportPrefs();');
+    expect(html).toContain("return o.value === prefs[el.id];");
+    // Resent takes dedupe by content hash instead of piling up.
+    const m = moduleText();
+    expect(m).toContain('var dupe = hex ? vsTakeStore.takes.filter(function (t) { return t.sha256 === hex; })[0] : null;');
+    expect(m).toContain('id: dupe.id, createdAt: dupe.createdAt');
   });
   it('popup re-encode cleans up on every exit and is cancelable', () => {
     const html = popup();

@@ -2614,10 +2614,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       dropped.forEach(function (d) { vsTakeDb('delete', d.id); });
       this.notify('takes', { added: rec.id });
     },
-    patchTake: function (id, patch) {
+    patchTake: function (id, patch, extra) {
       var found = null;
       this.takes = this.takes.map(function (t) { if (t.id === id) { found = Object.assign({}, t, patch); return found; } return t; });
-      if (found) { vsTakeDb('put', found); this.notify('takes'); }
+      if (found) { vsTakeDb('put', found); this.notify('takes', extra); }
     },
     removeTake: function (id) {
       var before = this.takes.length;
@@ -2661,9 +2661,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (ev.data.type !== 'allostudio-video') return;
       var rec = vsBuildStudioTakeRecord(ev.data.payload);
       if (!rec) return;
-      vsTakeStore.addTake(rec);
-      sha256Hex(rec.blob).then(function (hex) { if (hex) vsTakeStore.patchTake(rec.id, { sha256: hex }); });
-      try { ev.source.postMessage({ bridge: vsTakeStore.token, type: 'allostudio-video-ack' }, STUDIO_ORIGIN); } catch (_) {}
+      var replyTo = ev.source;
+      // Ack receipt immediately (hashing a large blob takes a moment), then
+      // dedupe by content hash: a resend after an ack timeout must UPDATE the
+      // existing take (keeping its id and any saved hosted link), not add a
+      // persistent twin to the gallery.
+      try { replyTo.postMessage({ bridge: vsTakeStore.token, type: 'allostudio-video-ack' }, STUDIO_ORIGIN); } catch (_) {}
+      sha256Hex(rec.blob).then(function (hex) {
+        rec.sha256 = hex || null;
+        var dupe = hex ? vsTakeStore.takes.filter(function (t) { return t.sha256 === hex; })[0] : null;
+        if (dupe) {
+          vsTakeStore.patchTake(dupe.id, Object.assign({}, rec, { id: dupe.id, createdAt: dupe.createdAt, hostedUrl: dupe.hostedUrl || null }), { added: dupe.id });
+        } else {
+          vsTakeStore.addTake(rec);
+        }
+      });
     } catch (_) {}
   }
   window.addEventListener('message', vsBackgroundBridgeReceiver);

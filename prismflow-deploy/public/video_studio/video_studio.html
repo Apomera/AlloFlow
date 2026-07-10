@@ -374,7 +374,7 @@
         <div class="card" style="margin-top:12px">
           <h2>Timeline</h2>
           <canvas id="waveCanvas" style="width:100%;height:84px;display:block;background:#0b1220;border-radius:8px;cursor:pointer" height="84" role="slider" tabindex="0" aria-label="Audio timeline — click or use arrow keys to move the playhead"></canvas>
-          <div class="status" id="waveStatus">Silences you add show red, zooms indigo, captions amber. Click anywhere to jump; Space plays/pauses.</div>
+          <div class="status" id="waveStatus">Silences you add show red, zooms indigo, captions amber. Click anywhere to jump. Shortcuts: Space play/pause · I / O trim start/end to playhead · C caption at playhead · [ and ] previous/next edit.</div>
           <div class="row edit-nav">
             <button class="quiet" id="prevEditBtn">Previous edit</button>
             <button class="quiet" id="selectActiveEditBtn">Select active edit</button>
@@ -7679,14 +7679,46 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   ['editMapFilter', 'editMapScope'].forEach(function (id) {
     if ($(id)) $(id).addEventListener('change', renderEditMap);
   });
-  // Space toggles play/pause anywhere in the Edit tab (except while typing).
+  // Editor shortcuts, anywhere in the Edit tab except while typing:
+  // Space play/pause · I/O trim start/end to playhead · C caption at playhead
+  // · [ ] previous/next edit. (I and O follow video-editor convention.)
   document.addEventListener('keydown', function (ev) {
-    if (ev.code !== 'Space' || $('panelEdit').hidden) return;
-    var tag = (document.activeElement && document.activeElement.tagName) || '';
-    if (/INPUT|TEXTAREA|SELECT|BUTTON|VIDEO/.test(tag)) return;
-    ev.preventDefault();
+    if ($('panelEdit').hidden) return;
+    var active = document.activeElement;
+    var tag = (active && active.tagName) || '';
+    if (/INPUT|TEXTAREA|SELECT|BUTTON|VIDEO/.test(tag) || (active && active.isContentEditable)) return;
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
     var v = $('editVideo');
-    if (v.paused) { try { v.play(); } catch (_) {} } else { v.pause(); }
+    if (ev.code === 'Space') {
+      ev.preventDefault();
+      if (v.paused) { try { v.play(); } catch (_) {} } else { v.pause(); }
+      return;
+    }
+    var t = currentTake();
+    if (!t) return;
+    var key = (ev.key || '').toLowerCase();
+    if (key === 'i') {
+      ev.preventDefault();
+      $('trimStart').value = String(Math.round(v.currentTime * 10) / 10);
+      $('trimStart').dispatchEvent(new Event('input'));
+      setStatus($('trimStatus'), 'Trim start set to the playhead (' + fmtClock(v.currentTime) + ').', 'ok');
+      announce('Trim start set to ' + fmtClock(v.currentTime));
+    } else if (key === 'o') {
+      ev.preventDefault();
+      $('trimEnd').value = String(Math.max(0, Math.round((t.duration - v.currentTime) * 10) / 10));
+      $('trimEnd').dispatchEvent(new Event('input'));
+      setStatus($('trimStatus'), 'Trim end set to the playhead (' + fmtClock(v.currentTime) + ').', 'ok');
+      announce('Trim end set to ' + fmtClock(v.currentTime));
+    } else if (key === 'c') {
+      ev.preventDefault();
+      $('addCueBtn').click();
+    } else if (ev.key === '[') {
+      ev.preventDefault();
+      stepTimelineEntry(-1);
+    } else if (ev.key === ']') {
+      ev.preventDefault();
+      stepTimelineEntry(1);
+    }
   });
 
   // ── Import caption files (.vtt or .srt — vsParseVtt reads both) ──
@@ -9958,6 +9990,44 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var lastExport = null; // {blob, vtt, title, duration, url, takeId}
   $('exportBtn').addEventListener('click', doExport);
   if ($('exportCancelBtn')) $('exportCancelBtn').addEventListener('click', cancelActiveExport);
+
+  // Remember export settings across sessions: every select/checkbox in the
+  // Export tab (format, container, caption mode/style + customization, title
+  // card) persists to localStorage on change and restores on open. Restored
+  // values are validated against the control's current options so a stale
+  // pref can never select something that no longer exists.
+  var VS_EXPORT_PREFS_KEY = 'vs_export_prefs_v1';
+  function exportPrefControls() {
+    return Array.prototype.slice.call($('panelExport').querySelectorAll('select[id], input[type="checkbox"][id]'));
+  }
+  function saveExportPrefs() {
+    try {
+      var prefs = {};
+      exportPrefControls().forEach(function (el) {
+        prefs[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+      });
+      localStorage.setItem(VS_EXPORT_PREFS_KEY, JSON.stringify(prefs));
+    } catch (_) {}
+  }
+  function restoreExportPrefs() {
+    var prefs = null;
+    try { prefs = JSON.parse(localStorage.getItem(VS_EXPORT_PREFS_KEY) || 'null'); } catch (_) {}
+    if (!prefs || typeof prefs !== 'object') return;
+    exportPrefControls().forEach(function (el) {
+      if (!(el.id in prefs)) return;
+      if (el.type === 'checkbox') {
+        if (typeof prefs[el.id] === 'boolean') el.checked = prefs[el.id];
+      } else if (typeof prefs[el.id] === 'string') {
+        var ok = Array.prototype.some.call(el.options || [], function (o) { return o.value === prefs[el.id]; });
+        if (ok) el.value = prefs[el.id];
+      }
+    });
+    try { refreshExportFormatStatus(); } catch (_) {}
+    try { refreshExportDecisionPreview(); } catch (_) {}
+    try { renderResultReadiness(); } catch (_) {}
+  }
+  $('panelExport').addEventListener('change', saveExportPrefs);
+  restoreExportPrefs();
 
   async function doExport() {
     var t = currentTake();
