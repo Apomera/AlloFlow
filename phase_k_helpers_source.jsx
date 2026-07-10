@@ -1136,7 +1136,7 @@ const buildStudentProgressSummary = ({
       toolsUsed: selToolsUsed,
       reflectionSnapshots: selSnapshotCount,
       stations: stationList.length,
-      stationQuestsComplete,
+      stationQuestsComplete: stationQuestComplete,
       stationQuestsTotal: stationQuestTotal,
       toolStateCount: selToolStateCount,
       streakDays: toNumber(selEngagement?.streak?.days || selEngagement?.streak?.count),
