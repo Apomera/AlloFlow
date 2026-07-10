@@ -3629,9 +3629,9 @@
                             /*#__PURE__*/ React.createElement(
                               "span",
                               {
-                                className: `text-base font-bold text-slate-700 ${!showLetterHints && "blur-sm"}`,
+                                className: "text-base font-bold text-slate-700",
                               },
-                              opt,
+                              showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
                             ),
                             /*#__PURE__*/ React.createElement(
                               "button",
@@ -3657,9 +3657,9 @@
                           /*#__PURE__*/ React.createElement(
                             "span",
                             {
-                              className: `text-xl font-bold text-slate-700 ${!showLetterHints && "blur-sm"}`,
+                              className: "text-xl font-bold text-slate-700",
                             },
-                            opt,
+                            showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
                           ),
                           /*#__PURE__*/ React.createElement(
                             "button",
@@ -3858,9 +3858,9 @@
                               /*#__PURE__*/ React.createElement(
                                 "span",
                                 {
-                                  className: `text-base font-bold text-slate-700 ${!showLetterHints && "blur-sm"}`,
+                                  className: "text-base font-bold text-slate-700",
                                 },
-                                opt,
+                                showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
                               ),
                               /*#__PURE__*/ React.createElement(
                                 "button",
@@ -3886,9 +3886,9 @@
                             /*#__PURE__*/ React.createElement(
                               "span",
                               {
-                                className: `text-xl font-bold text-slate-700 ${!showLetterHints && "blur-sm"}`,
+                                className: "text-xl font-bold text-slate-700",
                               },
-                              opt,
+                              showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
                             ),
                             /*#__PURE__*/ React.createElement(
                               "button",
@@ -4178,11 +4178,15 @@
         },
       );
       const OrthographyView = React.memo(
-        ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption }) => {
+        ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, letterBank, lengthHint }) => {
           const [userSpelling, setUserSpelling] = React.useState("");
           const [feedback, setFeedback] = React.useState(null);
           const [draggedLetter, setDraggedLetter] = React.useState(null);
-          const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+          // Easy difficulty passes a scaffolded bank (word letters + a few
+          // distractors); otherwise the full alphabet.
+          const alphabet = Array.isArray(letterBank) && letterBank.length > 1
+            ? letterBank
+            : "abcdefghijklmnopqrstuvwxyz".split("");
           React.useEffect(() => {
             setUserSpelling("");
             setFeedback(null);
@@ -4323,8 +4327,15 @@
                   type: "text",
                   value: userSpelling,
                   onChange: (e) => setUserSpelling(e.target.value),
-                  placeholder: t("common.placeholder_drag_letters_here"),
-                  className: `w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-600 tracking-widest uppercase
+                  // Easy difficulty: underscores show how many letters the
+                  // word has (length scaffold).
+                  placeholder: lengthHint
+                    ? Array.from({ length: lengthHint }, () => "_").join(" ")
+                    : t("common.placeholder_drag_letters_here"),
+                  // lowercase display to match the letter tiles — K-2 learners
+                  // match letter SHAPES, and an uppercase transform of their
+                  // lowercase input broke that correspondence.
+                  className: `w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-600 tracking-widest lowercase
                                 ${feedback === "correct" ? "border-green-400 bg-green-50 text-green-700" : feedback === "incorrect" ? "border-red-600 bg-red-50 text-red-700 animate-shake" : "border-slate-200 bg-white text-slate-800 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"}
                             `,
                   autoComplete: "off",
@@ -4370,7 +4381,7 @@
                       }
                     },
                     className:
-                      "w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase\r hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all\r flex items-center justify-center select-none cursor-grab active:cursor-grabbing",
+                      "w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing",
                   },
                   letter,
                 ),
@@ -4382,7 +4393,8 @@
                   className:
                     "text-center text-slate-600 text-sm mt-4 font-medium",
                 },
-                "Drag letters to spell the word, or click to hear them!",
+                ts("word_sounds.drag_letters_hint") ||
+                  "Drag letters to spell the word, or click to hear them!",
               ),
             ),
             /*#__PURE__*/ React.createElement(
@@ -13602,6 +13614,24 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
             }
             safeOptions = [...new Set(safeOptions)];
+            // Easy difficulty: scaffold the tile bank to the word's letters +
+            // a few distractors and show a word-length placeholder, instead
+            // of the full alphabet (seeded by the word — stable re-renders).
+            let orthoLetterBank = null;
+            let orthoLengthHint = null;
+            const orthoCleanWord = (currentWordSoundsWord || "").toLowerCase().replace(/[^a-z]/g, "");
+            if (getEffectiveDifficulty() === "easy" && orthoCleanWord.length > 1) {
+              const wordLetters = [...new Set(orthoCleanWord.split(""))];
+              let s = orthoCleanWord.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+              const nextRand = () => { s = Math.sin(s + 1) * 10000; return s - Math.floor(s); };
+              const pool = "abcdefghijklmnopqrstuvwxyz".split("").filter((l) => !wordLetters.includes(l));
+              const distractors = [];
+              while (distractors.length < 4 && pool.length) {
+                distractors.push(pool.splice(Math.floor(nextRand() * pool.length), 1)[0]);
+              }
+              orthoLetterBank = [...wordLetters, ...distractors].sort(() => nextRand() - 0.5);
+              orthoLengthHint = orthoCleanWord.length;
+            }
             return /*#__PURE__*/ React.createElement(
               "div",
               { className: "space-y-4" },
@@ -13614,6 +13644,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   correct: currentWordSoundsWord,
                 },
                 showLetterHints: true,
+                letterBank: orthoLetterBank,
+                lengthHint: orthoLengthHint,
                 onPlayAudio: handleAudio,
                 onCheckAnswer: (ans) => checkAnswer(ans, currentWordSoundsWord),
                 isEditing: isEditing,
@@ -14453,7 +14485,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 // Word Families already passes this; Sound Sort omitted it, so
                 // sound-only sessions still showed printed words (solvable by
                 // first letter) and history logged mode:"sound_only" wrongly.
-                soundOnlyMode: !showWordText,
+                // The global letters toggle (👁️) also reveals — one mental
+                // model across all activities; the local toggle still works.
+                soundOnlyMode: !showWordText && !showLetterHints,
                 onPlayAudio: handleAudio,
                 onUpdateOption: (i, v, type) =>
                   handleOptionUpdate(i, v, type, {
@@ -14881,7 +14915,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     rime: targetRime,
                   }),
                 showLetterHints: showLetterHints,
-                soundOnlyMode: !showWordText,
+                // Global letters toggle reveals here too (see Sound Sort note).
+                soundOnlyMode: !showWordText && !showLetterHints,
               }),
             );
           }

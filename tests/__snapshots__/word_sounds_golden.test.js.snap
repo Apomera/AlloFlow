@@ -2890,91 +2890,20 @@ exports[`layer 2 — render behavior per activity > activity "orthography" rende
 </div>
 <form class="w-full max-w-lg relative group">
 <div class="relative rounded-2xl transition-all ">
-<input aria-label="common.drag_letters_here" type="text" placeholder="common.placeholder_drag_letters_here" class="w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-600 tracking-widest uppercase
+<input aria-label="common.drag_letters_here" type="text" placeholder="_ _ _" class="w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-600 tracking-widest lowercase
                                 border-slate-200 bg-white text-slate-800 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100
                             " autoComplete="off" value=""/>
 </div>
 </form>
 <div class="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 w-full">
 <div class="flex flex-wrap justify-center gap-2">
-<div draggable="true" role="button" tabindex="0" aria-label="A" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">a</div>
-<div draggable="true" role="button" tabindex="0" aria-label="B" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">b</div>
-<div draggable="true" role="button" tabindex="0" aria-label="C" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">c</div>
-<div draggable="true" role="button" tabindex="0" aria-label="D" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">d</div>
-<div draggable="true" role="button" tabindex="0" aria-label="E" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">e</div>
-<div draggable="true" role="button" tabindex="0" aria-label="F" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">f</div>
-<div draggable="true" role="button" tabindex="0" aria-label="G" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">g</div>
-<div draggable="true" role="button" tabindex="0" aria-label="H" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">h</div>
-<div draggable="true" role="button" tabindex="0" aria-label="I" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">i</div>
-<div draggable="true" role="button" tabindex="0" aria-label="J" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">j</div>
-<div draggable="true" role="button" tabindex="0" aria-label="K" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">k</div>
-<div draggable="true" role="button" tabindex="0" aria-label="L" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">l</div>
-<div draggable="true" role="button" tabindex="0" aria-label="M" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">m</div>
-<div draggable="true" role="button" tabindex="0" aria-label="N" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">n</div>
-<div draggable="true" role="button" tabindex="0" aria-label="O" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">o</div>
-<div draggable="true" role="button" tabindex="0" aria-label="P" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">p</div>
-<div draggable="true" role="button" tabindex="0" aria-label="Q" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">q</div>
-<div draggable="true" role="button" tabindex="0" aria-label="R" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">r</div>
-<div draggable="true" role="button" tabindex="0" aria-label="S" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">s</div>
-<div draggable="true" role="button" tabindex="0" aria-label="T" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">t</div>
-<div draggable="true" role="button" tabindex="0" aria-label="U" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">u</div>
-<div draggable="true" role="button" tabindex="0" aria-label="V" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">v</div>
-<div draggable="true" role="button" tabindex="0" aria-label="W" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">w</div>
-<div draggable="true" role="button" tabindex="0" aria-label="X" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">x</div>
-<div draggable="true" role="button" tabindex="0" aria-label="Y" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">y</div>
-<div draggable="true" role="button" tabindex="0" aria-label="Z" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 Uppercase
- hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all
- flex items-center justify-center select-none cursor-grab active:cursor-grabbing">z</div>
+<div draggable="true" role="button" tabindex="0" aria-label="T" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing">t</div>
+<div draggable="true" role="button" tabindex="0" aria-label="X" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing">x</div>
+<div draggable="true" role="button" tabindex="0" aria-label="A" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing">a</div>
+<div draggable="true" role="button" tabindex="0" aria-label="V" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing">v</div>
+<div draggable="true" role="button" tabindex="0" aria-label="S" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing">s</div>
+<div draggable="true" role="button" tabindex="0" aria-label="W" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing">w</div>
+<div draggable="true" role="button" tabindex="0" aria-label="C" class="w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing">c</div>
 </div>
 <p class="text-center text-slate-600 text-sm mt-4 font-medium">Drag letters to spell the word, or click to hear them!</p>
 </div>
