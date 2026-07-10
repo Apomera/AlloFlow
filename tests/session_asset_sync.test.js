@@ -31,6 +31,10 @@ beforeAll(() => {
     data: () => clone(store.get(ref)),
   });
   window.warnLog = () => {};
+  // getSessionAssetSecurityMetadata (added with the QR security hardening)
+  // requires an authenticated uploader; this suite predates it and had been
+  // failing on the throw ever since.
+  window.__alloFirebase = { auth: { currentUser: { uid: 'test-teacher' } } };
 
   loadAlloModule('module_scope_extras_module.js');
 });
@@ -116,5 +120,35 @@ describe('session resource asset sync', () => {
     expect(hydrated[0].data.metrics).toEqual({ wcpm: 91 });
     expect(hydrated[0].data.audioRecording).toBeUndefined();
     expect(hydrated[0].data.mimeType).toBeUndefined();
+  });
+
+  it('externalizes word-sounds pack media (jsonref) and hydrates it back intact', async () => {
+    const ttsAssets = {};
+    for (let i = 0; i < 40; i++) ttsAssets[`word${i}`] = { mime: 'audio/webm', base64: 'Q'.repeat(2000) };
+    const packWord = {
+      word: 'cat', targetWord: 'cat', phonemes: ['k', 'a', 't'],
+      image: 'data:image/png;base64,' + 'C'.repeat(5000),
+      _ttsAssets: ttsAssets,
+      _decodingAssets: { cat: 'data:image/png;base64,' + 'D'.repeat(5000) },
+      activityItems: { blending: { options: ['cat', 'cot'], answer: 'cat' } },
+    };
+    const resources = [
+      { id: 'ws-1', type: 'word-sounds', title: 'Word Sounds (1 word)', data: [packWord] },
+    ];
+
+    const manifest = await window.uploadSessionAssets('app-test', resources, 'A4RT');
+
+    // The heavy media must live in session_assets docs, not the resource body.
+    const bodyEntry = [...store.values()].find((entry) => entry.kind === 'sessionResource' || entry.kind === 'sessionResourceChunks');
+    const bodyJson = bodyEntry && bodyEntry.resource ? JSON.stringify(bodyEntry.resource) : String(bodyEntry && bodyEntry.data);
+    expect(bodyJson).toContain('jsonref::');
+    expect(bodyJson).not.toContain('Q'.repeat(200));
+    expect([...store.values()].some((entry) => String(entry.kind).startsWith('sessionJson'))).toBe(true);
+
+    const hydrated = await window.hydrateSessionAssets('app-test', manifest);
+    expect(hydrated[0].data[0]._ttsAssets).toEqual(ttsAssets);
+    expect(hydrated[0].data[0]._decodingAssets).toEqual(packWord._decodingAssets);
+    expect(hydrated[0].data[0].image).toBe(packWord.image);
+    expect(hydrated[0].data[0].activityItems).toEqual(packWord.activityItems);
   });
 });

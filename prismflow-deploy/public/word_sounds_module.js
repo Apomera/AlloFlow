@@ -3599,85 +3599,63 @@
                       }),
                     ),
                   )
+                  // WCAG: the tile was a role="button" div with the listen
+                  // <button> nested inside — nested interactive controls
+                  // (axe: nested-interactive). Same fix as the blending grid:
+                  // a plain wrapper, the tile is a real answer <button>, and
+                  // the listen control is an absolutely-positioned SIBLING.
                   : /*#__PURE__*/ React.createElement(
                     "div",
-                    {
-                      key: i,
-                      role: "button",
-                      tabIndex: 0,
-                      onClick: () => onCheckAnswer(opt),
-                      onKeyDown: (e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          onCheckAnswer(opt);
-                        }
+                    { key: i, className: "relative group" },
+                    /*#__PURE__*/ React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        onClick: () => onCheckAnswer(opt),
+                        className: `w-full ${optionImages ? "p-4" : "p-6"} rounded-2xl transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-orange-400 ${activeIndex === i ? "border-orange-500 bg-orange-200 ring-4 ring-orange-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50"}`,
                       },
-                      className: `${optionImages ? "p-4 flex-col" : "p-6"} rounded-2xl transition-all group text-left cursor-pointer outline-none focus:ring-2 focus:ring-orange-400 ${activeIndex === i ? "border-orange-500 bg-orange-200 ring-4 ring-orange-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50"}`,
-                    },
-                    optionImages && optionImages[opt]
-                      ? /*#__PURE__*/ React.createElement(
-                          "div",
-                          { className: "flex flex-col items-center gap-2" },
-                          /*#__PURE__*/ React.createElement("img", {
-                            src: `data:image/png;base64,${optionImages[opt]}`,
-                            alt: opt,
-                            className: "w-20 h-20 object-contain rounded-xl",
-                          }),
-                          /*#__PURE__*/ React.createElement(
+                      optionImages && optionImages[opt]
+                        ? /*#__PURE__*/ React.createElement(
                             "div",
-                            { className: "flex items-center justify-between w-full" },
+                            { className: "flex flex-col items-center gap-2" },
+                            /*#__PURE__*/ React.createElement("img", {
+                              src: `data:image/png;base64,${optionImages[opt]}`,
+                              alt: opt,
+                              className: "w-20 h-20 object-contain rounded-xl",
+                            }),
                             /*#__PURE__*/ React.createElement(
                               "span",
                               {
-                                className: "text-base font-bold text-slate-700",
+                                className: "text-base font-bold text-slate-700 pr-8",
                               },
                               showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
                             ),
-                            /*#__PURE__*/ React.createElement(
-                              "button",
-                              {
-                                "aria-label": t("common.volume"),
-                                onClick: (e) => {
-                                  e.stopPropagation();
-                                  onPlayAudio(opt, true);
-                                },
-                                className:
-                                  "w-8 h-8 rounded-full hover:bg-orange-200 text-slate-600 hover:text-orange-600 flex items-center justify-center transition-colors z-10",
-                                title: ts("common.listen") || "Listen",
-                              },
-                              /*#__PURE__*/ React.createElement(Volume2, {
-                                size: 16,
-                              }),
-                            ),
-                          ),
-                        )
-                      : /*#__PURE__*/ React.createElement(
-                          "div",
-                          { className: "flex items-center justify-between" },
-                          /*#__PURE__*/ React.createElement(
+                          )
+                        : /*#__PURE__*/ React.createElement(
                             "span",
                             {
-                              className: "text-xl font-bold text-slate-700",
+                              className: "text-xl font-bold text-slate-700 pr-10 block",
                             },
                             showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
                           ),
-                          /*#__PURE__*/ React.createElement(
-                            "button",
-                            {
-                              "aria-label": t("common.volume"),
-                              onClick: (e) => {
-                                e.stopPropagation();
-                                onPlayAudio(opt, true);
-                              },
-                              className:
-                                "w-10 h-10 rounded-full hover:bg-orange-200 text-slate-600 hover:text-orange-600 flex items-center justify-center transition-colors z-10",
-                              title: ts("common.listen") || "Listen",
-                            },
-                            /*#__PURE__*/ React.createElement(Volume2, {
-                              size: 20,
-                            }),
-                          ),
-                        ),
+                    ),
+                    /*#__PURE__*/ React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        "aria-label": t("common.volume"),
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          onPlayAudio(opt, true);
+                        },
+                        className:
+                          "absolute bottom-3 right-3 w-9 h-9 rounded-full bg-orange-50 hover:bg-orange-200 text-slate-600 hover:text-orange-600 flex items-center justify-center transition-colors z-10 shadow-sm",
+                        title: ts("common.listen") || "Listen",
+                      },
+                      /*#__PURE__*/ React.createElement(Volume2, {
+                        size: 18,
+                      }),
+                    ),
                   ),
               ),
             ),
@@ -3825,88 +3803,60 @@
                         /*#__PURE__*/ React.createElement(Volume2, { size: 16 }),
                       ),
                     )
+                  // WCAG: same nested-interactive fix as RhymeView — plain
+                  // wrapper, real answer <button>, sibling listen button.
                   : /*#__PURE__*/ React.createElement(
                       "div",
-                      {
-                        key: i,
-                        role: "button",
-                        tabIndex: 0,
-                        onClick: () => onCheckAnswer(opt),
-                        onKeyDown: (e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            onCheckAnswer(opt);
-                          }
+                      { key: i, className: "relative group" },
+                      /*#__PURE__*/ React.createElement(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => onCheckAnswer(opt),
+                          className: `w-full ${optionImages ? "p-4" : "p-6"} rounded-2xl transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-violet-400 ${activeIndex === i ? "border-violet-500 bg-violet-200 ring-4 ring-violet-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-violet-400 hover:bg-violet-50"}`,
                         },
-                        className: `${optionImages ? "p-4 flex-col" : "p-6"} rounded-2xl transition-all cursor-pointer outline-none focus:ring-2 focus:ring-violet-400 ${activeIndex === i ? "border-violet-500 bg-violet-200 ring-4 ring-violet-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-violet-400 hover:bg-violet-50"}`,
-                      },
-                      optionImages && optionImages[opt]
-                        ? /*#__PURE__*/ React.createElement(
-                            "div",
-                            { className: "flex flex-col items-center gap-2" },
-                            /*#__PURE__*/ React.createElement("img", {
-                              src: `data:image/png;base64,${optionImages[opt]}`,
-                              alt: opt,
-                              className: "w-20 h-20 object-contain rounded-xl",
-                            }),
-                            /*#__PURE__*/ React.createElement(
+                        optionImages && optionImages[opt]
+                          ? /*#__PURE__*/ React.createElement(
                               "div",
-                              {
-                                className:
-                                  "flex items-center justify-between w-full",
-                              },
+                              { className: "flex flex-col items-center gap-2" },
+                              /*#__PURE__*/ React.createElement("img", {
+                                src: `data:image/png;base64,${optionImages[opt]}`,
+                                alt: opt,
+                                className: "w-20 h-20 object-contain rounded-xl",
+                              }),
                               /*#__PURE__*/ React.createElement(
                                 "span",
                                 {
-                                  className: "text-base font-bold text-slate-700",
+                                  className: "text-base font-bold text-slate-700 pr-8",
                                 },
                                 showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
                               ),
-                              /*#__PURE__*/ React.createElement(
-                                "button",
-                                {
-                                  "aria-label": t("common.volume"),
-                                  onClick: (e) => {
-                                    e.stopPropagation();
-                                    onPlayAudio(opt, true);
-                                  },
-                                  className:
-                                    "w-8 h-8 rounded-full hover:bg-violet-200 text-slate-600 hover:text-violet-600 flex items-center justify-center transition-colors z-10",
-                                  title: "Listen",
-                                },
-                                /*#__PURE__*/ React.createElement(Volume2, {
-                                  size: 16,
-                                }),
-                              ),
-                            ),
-                          )
-                        : /*#__PURE__*/ React.createElement(
-                            "div",
-                            { className: "flex items-center justify-between" },
-                            /*#__PURE__*/ React.createElement(
+                            )
+                          : /*#__PURE__*/ React.createElement(
                               "span",
                               {
-                                className: "text-xl font-bold text-slate-700",
+                                className: "text-xl font-bold text-slate-700 pr-10 block",
                               },
                               showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
                             ),
-                            /*#__PURE__*/ React.createElement(
-                              "button",
-                              {
-                                "aria-label": t("common.volume"),
-                                onClick: (e) => {
-                                  e.stopPropagation();
-                                  onPlayAudio(opt, true);
-                                },
-                                className:
-                                  "w-10 h-10 rounded-full hover:bg-violet-200 text-slate-600 hover:text-violet-600 flex items-center justify-center transition-colors z-10",
-                                title: "Listen",
-                              },
-                              /*#__PURE__*/ React.createElement(Volume2, {
-                                size: 20,
-                              }),
-                            ),
-                          ),
+                      ),
+                      /*#__PURE__*/ React.createElement(
+                        "button",
+                        {
+                          type: "button",
+                          "aria-label": t("common.volume"),
+                          onClick: (e) => {
+                            e.stopPropagation();
+                            onPlayAudio(opt, true);
+                          },
+                          className:
+                            "absolute bottom-3 right-3 w-9 h-9 rounded-full bg-violet-50 hover:bg-violet-200 text-slate-600 hover:text-violet-600 flex items-center justify-center transition-colors z-10 shadow-sm",
+                          title: ts("common.listen") || "Listen",
+                        },
+                        /*#__PURE__*/ React.createElement(Volume2, {
+                          size: 18,
+                        }),
+                      ),
                     ),
               ),
             ),
@@ -5641,7 +5591,7 @@
                   /*#__PURE__*/ React.createElement("span", { className: "font-mono" }, _byBand[b].c + "/" + _byBand[b].t + " (" + _bandPct(b) + "%)"),
                 ),
               ),
-              /*#__PURE__*/ React.createElement("div", { className: "text-[10px] text-slate-400 italic mt-1" }, "Compare like with like: a shift in word difficulty (not a skill change) can move the overall number."),
+              /*#__PURE__*/ React.createElement("div", { className: "text-[10px] text-slate-600 italic mt-1" }, "Compare like with like: a shift in word difficulty (not a skill change) can move the overall number."),
             ),
             /*#__PURE__*/ React.createElement(
               "div",
@@ -13478,7 +13428,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         : /*#__PURE__*/ React.createElement(PlayCircle, {
                           size: 18,
                         }),
-                      ts("word_sounds.play_all_options"),
+                      // ts() returns "" on a missing key — without the
+                      // fallback this button had NO accessible name (and no
+                      // visible text) whenever the key wasn't in the pack.
+                      ts("word_sounds.play_all_options") || "Play all options",
                     ),
                           /*#__PURE__*/ React.createElement(
                       "div",
@@ -13868,7 +13821,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         setUserAnswer(currentWordSoundsWord?.[0] || ""),
                       className: "text-amber-600 hover:text-amber-700 underline",
                     },
-                    ts("word_sounds.spelling_bee_first_letter"),
+                    ts("word_sounds.spelling_bee_first_letter") || "Hint: first letter",
                   ),
                 /*#__PURE__*/ React.createElement(
                     "button",
@@ -14055,7 +14008,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       className:
                         "px-4 py-2 rounded-lg bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition-all",
                     },
-                    ts("word_sounds.word_scramble_clear"),
+                    ts("word_sounds.word_scramble_clear") || "Clear",
                   ),
                 /*#__PURE__*/ React.createElement(
                     "button",
@@ -16224,7 +16177,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "span",
                     {
                       key: "wsgrp-" + __g,
-                      className: "text-[10px] font-bold uppercase tracking-wide text-slate-400 px-1 self-center whitespace-nowrap",
+                      className: "text-[10px] font-bold uppercase tracking-wide text-slate-600 px-1 self-center whitespace-nowrap",
                       title: ACTIVITY_GROUP_FULL[__g],
                     },
                     ACTIVITY_GROUP_LABELS[__g],
