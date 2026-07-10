@@ -20,6 +20,7 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import { TAGGED_PDF_INVARIANTS_JS, PAKO_CDN } from './_tagged_pdf_invariants';
 
 const MODULE_PATH = path.resolve(__dirname, '../../doc_pipeline_module.js');
 const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
@@ -92,11 +93,15 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
     });
     await builder.close();
 
-    // Pipeline page: LOCAL module only — NO pdf-lib injection (the point).
+    // Pipeline page: LOCAL module only — NO pdf-lib injection (the point). pako + the invariant
+    // checker are NOT pdf-lib: the checker runs only AFTER createTaggedPdf, whose ensurePdfLibLoaded
+    // self-load (Item 0) is precisely what this page exercises — by then window.PDFLib exists.
     page = await browser.newPage();
     await page.goto('about:blank');
     await page.addScriptTag({ path: MODULE_PATH });
-    await page.waitForFunction(() => !!(window as any).AlloModules?.createDocPipeline, null, { timeout: 20000 });
+    await page.addScriptTag({ url: PAKO_CDN });
+    await page.addScriptTag({ content: TAGGED_PDF_INVARIANTS_JS });
+    await page.waitForFunction(() => !!(window as any).AlloModules?.createDocPipeline && !!(window as any).pako, null, { timeout: 20000 });
     await page.evaluate(() => {
       const w = window as any;
       w.__calls = [];
@@ -233,10 +238,16 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
         const nm = (s: string) => NS.PDFName.of(s);
         const resolveRef = (o: any) => (o && o.constructor && o.constructor.name === 'PDFRef') ? outDoc.context.lookup(o) : o;
         const markInfo = resolveRef(outDoc.catalog.get(nm('MarkInfo')));
+        // Full structural-invariant sweep (shared checker): dup MCID claims, dangling MCRs,
+        // BDC/EMC balance, artifact-only StructParents. window.PDFLib exists here precisely
+        // because ensurePdfLibLoaded self-loaded it during the run (the Item-0 fix under test).
+        const sweep = await w.__alloTaggedPdfInvariants(bytes);
         invariants = {
           hasStructTreeRoot: !!resolveRef(outDoc.catalog.get(nm('StructTreeRoot'))),
           marked: markInfo && String(markInfo.get(nm('Marked'))) === 'true',
           lang: String(outDoc.catalog.get(nm('Lang')) || ''),
+          sweepViolations: sweep.violations,
+          sweepMcrCount: sweep.mcrCount,
         };
       }
       return {
@@ -261,6 +272,10 @@ test.describe('remediation corpus — real bytes, scripted model, structural tru
     expect(out.invariants.hasStructTreeRoot).toBe(true);
     expect(out.invariants.marked).toBe(true);
     expect(out.invariants.lang).toContain('en');
+    // Shared structural-invariant sweep (2026-07-09): the full dup-claim/dangling-MCR/balance/
+    // artifact-StructParents set, on a REAL end-to-end run's bytes.
+    expect(out.invariants.sweepViolations, JSON.stringify(out.invariants.sweepViolations)).toEqual([]);
+    expect(out.invariants.sweepMcrCount).toBeGreaterThan(0); // non-vacuous: the tree references content
   });
 
   test('refusal-shaped model output cannot erase the document — empty-body guard splices extracted text', async () => {

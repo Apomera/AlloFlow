@@ -8,6 +8,7 @@
 // MCID is claimed exactly once. Runs the REAL createTaggedPdf in Chromium (pdf-lib + local module).
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
+import { TAGGED_PDF_INVARIANTS_JS } from './_tagged_pdf_invariants';
 
 const MODULE_PATH = path.resolve(__dirname, '../../doc_pipeline_module.js');
 const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
@@ -31,6 +32,7 @@ test.describe('createTaggedPdf — per-leaf fold-empty page never claims an MCID
     await page.addScriptTag({ url: 'https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js' });
     await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument && !!(window as any).pako, null, { timeout: 30000 });
     await page.addScriptTag({ path: MODULE_PATH });
+    await page.addScriptTag({ content: TAGGED_PDF_INVARIANTS_JS });
     await page.waitForFunction(() => !!((window as any).AlloModules && (window as any).AlloModules.createDocPipeline), null, { timeout: 20000 });
     // Force the fold: the Arabic Noto font must fail to load so _uniFont is null and every
     // Arabic word folds to '' in the WinAnsi (Helvetica) fallback.
@@ -92,6 +94,9 @@ test.describe('createTaggedPdf — per-leaf fold-empty page never claims an MCID
         const re = /\/MCID[\s\r\n]+(\d+)[\s\r\n]*>>[\s\r\n]*BDC/g;
         let m: RegExpExecArray | null;
         while ((m = re.exec(decoded))) claims[m[1]] = (claims[m[1]] || 0) + 1;
+        // Shared structural-invariant sweep (dup claims, dangling MCRs, unbalanced BDC/EMC,
+        // artifact-only StructParents) — the generalization of this spec's original checks.
+        const inv = await (window as any).__alloTaggedPdfInvariants(res.bytes);
         return {
           ok: true,
           claims,
@@ -99,6 +104,8 @@ test.describe('createTaggedPdf — per-leaf fold-empty page never claims an MCID
           duplicates: Object.entries(claims).filter(([, n]) => (n as number) > 1),
           hasArtifact: decoded.indexOf('/Artifact BMC') !== -1,
           droppedChars: (res.ocrTextLayer && res.ocrTextLayer.droppedChars) || 0,
+          invariantViolations: inv.violations,
+          invariantMcrCount: inv.mcrCount,
         };
       } catch (e) { return { error: String((e as any) && ((e as any).stack || (e as any).message) || e) }; }
     }, PNG_1x1);
@@ -120,5 +127,10 @@ test.describe('createTaggedPdf — per-leaf fold-empty page never claims an MCID
 
   test('folded-away non-Latin chars are tallied (the coverage disclosure was dead on this path)', () => {
     expect(result.droppedChars).toBeGreaterThan(0);
+  });
+
+  test('the FULL structural-invariant sweep is clean (dup claims, dangling MCRs, balance, artifact StructParents)', () => {
+    expect(result.invariantViolations, JSON.stringify(result.invariantViolations)).toEqual([]);
+    expect(result.invariantMcrCount).toBeGreaterThan(0); // non-vacuous: the tree really references content
   });
 });

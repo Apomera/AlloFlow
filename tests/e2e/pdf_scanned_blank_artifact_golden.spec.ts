@@ -7,6 +7,7 @@
 // BLANK=1 gives the full ISO validation).
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
+import { TAGGED_PDF_INVARIANTS_JS, PAKO_CDN } from './_tagged_pdf_invariants';
 
 const MODULE_PATH = path.resolve(__dirname, '../../doc_pipeline_module.js');
 const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
@@ -23,8 +24,10 @@ test.describe('createTaggedPdf — blank scanned page → image /Artifact, not /
     page.on('console', (m) => { if (m.type() === 'error') errs.push('[console] ' + m.text()); });
     await page.goto('about:blank');
     await page.addScriptTag({ url: PDFLIB_CDN });
-    await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument, null, { timeout: 30000 });
+    await page.addScriptTag({ url: PAKO_CDN });
+    await page.waitForFunction(() => !!(window as any).PDFLib && !!(window as any).PDFLib.PDFDocument && !!(window as any).pako, null, { timeout: 30000 });
     await page.addScriptTag({ path: MODULE_PATH });
+    await page.addScriptTag({ content: TAGGED_PDF_INVARIANTS_JS });
     await page.waitForFunction(() => !!((window as any).AlloModules && (window as any).AlloModules.createDocPipeline), null, { timeout: 20000 });
 
     result = await page.evaluate(async (png) => {
@@ -51,12 +54,15 @@ test.describe('createTaggedPdf — blank scanned page → image /Artifact, not /
         // raw output — inspect them directly.
         const b = res.bytes; let raw = '';
         for (let i = 0; i < b.length; i += 8192) raw += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
+        // Shared structural-invariant sweep (dup claims, dangling MCRs, balance, artifact StructParents).
+        const inv = await (window as any).__alloTaggedPdfInvariants(res.bytes);
         return {
           ok: true,
           hasArtifact: raw.indexOf('/Artifact BMC') !== -1,             // image wrapped decorative
           hasParagraphWrap: raw.indexOf('/P <</MCID 0>> BDC') !== -1,    // image tagged as a text paragraph (the bug)
           hasStructTree: raw.indexOf('StructTreeRoot') !== -1,          // doc still declares a structure tree
           selfCheck: (res.postExportValidator && res.postExportValidator.summary) || null,
+          invariantViolations: inv.violations,
         };
       } catch (e) { return { error: String((e as any) && ((e as any).stack || (e as any).message) || e) }; }
     }, PNG_1x1);
@@ -72,5 +78,9 @@ test.describe('createTaggedPdf — blank scanned page → image /Artifact, not /
 
   test('the tagged doc still declares a structure tree', () => {
     expect(result.hasStructTree).toBe(true);
+  });
+
+  test('the FULL structural-invariant sweep is clean', () => {
+    expect(result.invariantViolations, JSON.stringify(result.invariantViolations)).toEqual([]);
   });
 });
