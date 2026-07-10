@@ -168,12 +168,26 @@ describe('ANTI mailbox client helpers', () => {
 });
 
 describe('Code.gs hardening (v2)', () => {
-    it("'auth' verifies admin tokens without side effects", () => {
+    it("'auth' verifies admin tokens without protocol side effects", () => {
         const { call } = makeGsSandbox();
         expect(call({ a: 'auth', admin: 'whatever' })).toMatchObject({ ok: true, admin: false, claimed: false });
         const claim = call({ a: 'claim' });
         expect(call({ a: 'auth', admin: 'wrong-token' })).toMatchObject({ ok: true, admin: false, claimed: true });
         expect(call({ a: 'auth', admin: claim.admin })).toMatchObject({ ok: true, admin: true, claimed: true });
+    });
+
+    it('backs the admin token up as a Drive note at claim and refreshes it on auth (v3)', () => {
+        const { call, driveFiles } = makeGsSandbox();
+        const noteName = 'ADMIN-TOKEN (do not share).txt';
+        const claim = call({ a: 'claim' });
+        expect(driveFiles.has(noteName)).toBe(true);
+        expect(driveFiles.get(noteName)).toContain(claim.admin);
+        // Wrong token must NOT rewrite the note; valid auth refreshes it.
+        driveFiles.delete(noteName);
+        call({ a: 'auth', admin: 'wrong-token' });
+        expect(driveFiles.has(noteName)).toBe(false);
+        call({ a: 'auth', admin: claim.admin });
+        expect(driveFiles.get(noteName)).toContain(claim.admin);
     });
 
     it('caps per-box sends at the flood limit', () => {

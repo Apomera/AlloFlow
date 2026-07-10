@@ -59,9 +59,15 @@ When AlloFlow first connects it claims an **admin token** and shows it to
 you once — save it like a password. Connecting from a new device (or a fresh
 Canvas paste) just needs that token pasted into the "Admin token" field.
 
-Lost the token? Open the script → Project Settings (gear) →
+**Lost the token? Check your Drive first:** the script keeps a copy in the
+`AlloFlow Class Mailbox` folder as `ADMIN-TOKEN (do not share).txt` (written
+at claim and refreshed on every successful reconnect). It cannot be fetched
+automatically by the app — any "fetch my token" endpoint would hand it to
+students too, which is exactly what the token exists to prevent.
+
+If the Drive file is also gone: open the script → Project Settings (gear) →
 **Script properties** → delete the `admin` property → reconnect from
-AlloFlow, and it will claim (and show) a new one.
+AlloFlow, and it will claim (and show, and re-save) a new one.
 
 ## Live sessions are real-time when the network allows
 

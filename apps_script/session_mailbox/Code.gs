@@ -23,7 +23,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 2;
+var VERSION = 3;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -70,6 +70,7 @@ function handle(p) {
       if (props.getProperty('admin')) return out({ ok: false, e: 'claimed' });
       var token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
       props.setProperty('admin', token);
+      saveTokenNote(token);
       return out({ ok: true, admin: token, t: Date.now() });
     } finally { lock.releaseLock(); }
   }
@@ -79,8 +80,12 @@ function handle(p) {
   var isAdmin = admin && String(p.admin || '') === admin;
 
   // Cheap ownership check so a reconnecting teacher can validate a pasted
-  // admin token without side effects.
-  if (a === 'auth') return out({ ok: true, admin: !!isAdmin, claimed: !!admin, t: Date.now() });
+  // admin token. On success it also (re)writes the Drive token note, so
+  // deployments claimed before v3 gain the backup file.
+  if (a === 'auth') {
+    if (isAdmin) saveTokenNote(admin);
+    return out({ ok: true, admin: !!isAdmin, claimed: !!admin, t: Date.now() });
+  }
 
   if (a === 'open') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
@@ -170,6 +175,27 @@ function recv(cache, code, p) {
 function packFolder() {
   var it = DriveApp.getFoldersByName(FOLDER_NAME);
   return it.hasNext() ? it.next() : DriveApp.createFolder(FOLDER_NAME);
+}
+
+// Keep a copy of the admin token as a file in the OWNER's Drive folder, so a
+// teacher who loses it (new device, fresh Canvas) can always recover it from
+// Drive instead of spelunking Script Properties. The file lives in the
+// owner's private Drive — the web app never serves it to callers; handing it
+// out on request would make the token protect nothing.
+function saveTokenNote(token) {
+  try {
+    var name = 'ADMIN-TOKEN (do not share).txt';
+    var body = 'AlloFlow Class Mailbox admin token — treat it like a password:\n\n'
+      + token + '\n\n'
+      + 'Paste it into AlloFlow (Live class without accounts -> Admin token field)\n'
+      + 'when reconnecting from a new device or a fresh Canvas paste.\n\n'
+      + 'To invalidate it: Apps Script editor -> Project Settings -> Script\n'
+      + 'properties -> delete "admin", then reconnect from AlloFlow.';
+    var folder = packFolder();
+    var it = folder.getFilesByName(name);
+    if (it.hasNext()) it.next().setContent(body);
+    else folder.createFile(name, body, 'text/plain');
+  } catch (e) { /* best-effort: never block claim/auth on Drive hiccups */ }
 }
 
 function findPackFile(id) {
