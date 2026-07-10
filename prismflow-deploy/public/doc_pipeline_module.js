@@ -3463,6 +3463,16 @@ var createDocPipeline = function(deps) {
       _geminiEffectiveMax = _GEMINI_MAX_CONCURRENT;
       _geminiStaggerMs = 0;
     }
+    // M4 (deep dive 2026-07-09): the LOCAL text backend is pinned SERIAL at run reset (two concurrent
+    // long-context calls create exactly the queue pressure — timeouts/OOM — that gets misread as a
+    // throttle storm). Heavy-doc pacing used to RAISE its ceiling back to 2 (and the calm branch to
+    // 3), and success/time-decay recovery then restored the cap "to this run's ceiling" = 2. Clamp
+    // both branches back to serial whenever the local backend is active.
+    if (_usesLocalTextBackend()) {
+      _geminiEffectiveMax = 1;
+      if (_geminiCap > 1) _geminiCap = 1;
+      if (!_geminiStaggerMs || _geminiStaggerMs < 900) _geminiStaggerMs = 900;
+    }
     try { _geminiPump(); } catch (_) {}
   };
   // ── Storm visibility (2026-07-05, maintainer: wait-not-stop) ── Read-only snapshot of the gate for
@@ -15233,6 +15243,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       let bestHtml = accessibleHtml;
       let bestAiScore = verification ? verification.score : 0;
       let bestAxeViolations = axeResults ? axeResults.totalViolations : 0;
+      // M5 (deep dive 2026-07-09): the latest FULL-COVERAGE AI reading. bestAiScore can be promoted
+      // from a PARTIAL re-audit (correct for keep-best — the promotion was on the reliable axe gain),
+      // but that inflated number then flowed into the published "estimated minimum" labeled
+      // "last successful AI audit" — a provenance the loop itself refuses to trust for gating.
+      let _lastFullCoverageAiScore = (verification && !verification._partialAudit
+        && Number.isFinite(verification.score) && !verification._scoreDegraded && !verification.synthesized)
+        ? Math.round(verification.score) : null;
 
       const _aiIssueCount = verification && verification.issues ? verification.issues.length : 0;
       const _totalIssues = bestAxeViolations + _aiIssueCount;
@@ -15275,6 +15292,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // state ships whatever the completed passes earned instead of the wall discarding everything.
           if (loopCtx.perFileDeadlineTs && Date.now() > loopCtx.perFileDeadlineTs - 90000) {
             warnLog('[Auto-fix] Per-file time budget nearly exhausted (batch wall) — ending the fix loop after ' + fixPass + ' pass(es) to finish and ship the best result inside the wall.');
+            break;
+          }
+          // M8 (deep dive 2026-07-09): a superseded run (watchdog fired / teacher started a new doc)
+          // must stop GRINDING, not just discard its result at the final write — the gen guard
+          // protected state, never quota or gate contention.
+          if (typeof loopCtx.genStale === 'function' && loopCtx.genStale()) {
+            warnLog('[Auto-fix] Run superseded (generation bump) — ending the fix loop after ' + fixPass + ' pass(es); this run\'s result will be discarded at the completion guard.');
             break;
           }
           // Emit per-pass start event for live UI (setTimeout isolates listener errors from pipeline)
@@ -15436,6 +15460,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           const prevBestAxeViolations = bestAxeViolations;
           if (reVerify) verification = reVerify;
           if (reAxe) axeResults = reAxe;
+          // M5: remember the latest full-coverage AI reading (partial scores never qualify).
+          if (reVerify && !_rePartial && Number.isFinite(newAiScore) && !reVerify._scoreDegraded && !reVerify.synthesized) _lastFullCoverageAiScore = Math.round(newAiScore);
           // Keep-best (2026-06-19): only promote this pass to the shipped "best" if it is genuinely
           // at least as good — a higher AI score, or fewer axe violations without an AI regression.
           // A within-tolerance DROP stays as the working state (exploration through the noisy AI
@@ -15535,7 +15561,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         warnLog('[Auto-fix] Shipping best verified version (AI ' + bestAiScore + ', axe ' + bestAxeViolations + ') instead of the loop\'s last working state.');
         accessibleHtml = bestHtml;
       }
-    return { accessibleHtml, verification, axeResults, autoFixPasses, bestAiScore, bestAxeViolations };
+    return { accessibleHtml, verification, axeResults, autoFixPasses, bestAiScore, bestAxeViolations, lastFullCoverageAiScore: _lastFullCoverageAiScore };
   };
 
   // ── S2 phase extraction (deep dive 2026-07-02, wave 3): Step 1b image extraction ──
@@ -16160,7 +16186,16 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // CB-1 (2026-06-21): clear the Gemini circuit-breaker so a storm from a PREVIOUS document in this
     // session (the pipeline is a singleton) doesn't start THIS run already throttled to 1 concurrent with
     // a stale cooldown + stale "rate-limiting" message. The current run earns its own storm signal.
-    _resetGeminiBreaker();
+    // M3 (deep dive 2026-07-09): …UNLESS calls are in flight or queued RIGHT NOW — then an overlapping
+    // run (a zombie riding out a storm, or back-to-back batch files) is mid-conversation with the gate,
+    // and zeroing the cooldown/streaks under it (a) makes ITS storm checks read calm and fire into the
+    // limit, and (b) starts BOTH runs pumping at full cap into an active throttle. A busy gate keeps its
+    // earned state; this run still re-applies its own pacing below.
+    if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {
+      warnLog('[GeminiGate] Run-entry breaker reset SKIPPED — ' + _geminiInFlight + ' call(s) in flight + ' + _geminiWaiters.length + ' queued from an overlapping run; keeping the live gate state.');
+    } else {
+      _resetGeminiBreaker();
+    }
     // Heavy-doc PROACTIVE pacing (2026-06-24): a large or scanned PDF fires many Vision/audit calls in a tight
     // burst, which is exactly what trips the Canvas rate-limit — and once it trips, the breaker reacts by
     // dropping to 1 concurrent + a long cooldown. Spreading the burst up front (lower ceiling + staggered
@@ -16192,6 +16227,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // token still matches before calling setPdfFixResult.
     let _myRunGen = 0;
     if (!_silentMode && typeof window !== 'undefined') { _myRunGen = (window.__alloPdfRunGen = (window.__alloPdfRunGen || 0) + 1); }
+    // M8 (deep dive 2026-07-09): run-scope staleness probe — true once the watchdog (or a newer run)
+    // bumped the generation. Threaded into the fix loop so an invalidated run stops GRINDING (up to
+    // maxFixPasses chunked AI passes ≈ an hour under a storm, competing with the fresh run for the
+    // shared gate), not just discards its result at the final write. Never fires for silent/batch
+    // runs (they don't participate in the gen counter).
+    const _runGenStale = () => (!_silentMode && typeof window !== 'undefined' && (window.__alloPdfRunGen || 0) !== _myRunGen);
 
     // (2026-06-20) Apply the AUDIT-DETECTED document language to <html lang>. Two prior spots only
     // fixed a MISSING or INVALID attribute — so a Somali/Spanish ELL handout shipped as lang="en"
@@ -18755,12 +18796,13 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       // Uses BOTH auditors. Reverts if score drops. Keeps going until stable.
       _pipeStepStart(4);
       // S2-extracted → _runMainFixLoop (policy: _alloLoopPolicy, golden-tested).
-      const _loopOut = await _runMainFixLoop({ accessibleHtml, verification, axeResults, updateProgress, applyDetectedLang: _applyDetectedLang, maxFixPasses: _runMaxFixPasses, targetScore: _runTargetScore, perFileDeadlineTs: _perFileDeadlineTs });
+      const _loopOut = await _runMainFixLoop({ accessibleHtml, verification, axeResults, updateProgress, applyDetectedLang: _applyDetectedLang, maxFixPasses: _runMaxFixPasses, targetScore: _runTargetScore, perFileDeadlineTs: _perFileDeadlineTs, genStale: _runGenStale });
       accessibleHtml = _loopOut.accessibleHtml;
       verification = _loopOut.verification;
       axeResults = _loopOut.axeResults;
       let autoFixPasses = _loopOut.autoFixPasses;      // consumed by triage/footer/report below
       let bestAiScore = _loopOut.bestAiScore;          // consumed by the divergence check + H5 headline note
+      const _lastFullCoverageAiScore = _loopOut.lastFullCoverageAiScore; // M5: partial-inflation-free provenance for the estimated minimum
 
       // ── Diff-based semantic cleanup: compare final HTML against extractedText ground truth ──
       // Instead of blind regex, we identify what changed from the original and classify
@@ -18975,10 +19017,15 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       let _finalAuditThrottled = false;
       let _finalAuditHadUsableScore = false;
       let _finalAuditIncompleteReason = null;
-      const _lastSuccessfulAiScore = Number.isFinite(verification && verification.score)
-        && !(verification && (verification._scoreDegraded || verification.synthesized))
+      // M5 (deep dive 2026-07-09): a PARTIAL audit's score is inflated (it scored only the surviving
+      // sections) — neither branch may adopt one as "the last successful AI audit". The fallback used
+      // to be bestAiScore, which keep-best can legitimately promote from a partial pass (on the
+      // reliable axe gain); the published estimated-minimum then carried a number the loop itself
+      // refused to trust, under a provenance label claiming it was trustworthy.
+      const _lastSuccessfulAiScore = (Number.isFinite(verification && verification.score)
+        && !(verification && (verification._scoreDegraded || verification.synthesized || verification._partialAudit)))
         ? Math.round(verification.score)
-        : (Number.isFinite(bestAiScore) ? Math.round(bestAiScore) : null);
+        : (Number.isFinite(_lastFullCoverageAiScore) ? Math.round(_lastFullCoverageAiScore) : null);
       try {
         // Full chunked audit for accurate final scoring
         const finalAudit = await auditOutputAccessibility(accessibleHtml);
@@ -20146,6 +20193,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         }
       } catch (_capErr) { /* capture is best-effort — never mask the original error */ }
       if (_silentMode) throw err; // Let batch caller handle it
+      // M9 (deep dive 2026-07-09): a STALE run's failure must not stomp the fresh run's UI. This
+      // catch used to wipe run B's spinner/status mid-run and fire run A's scary "remediation
+      // failed" toast — and because the 8-min watchdog effect is gated on pdfFixLoading, run B
+      // silently lost its watchdog too. The SUCCESS path has had this guard since 2026-06-20.
+      if (_runGenStale()) {
+        warnLog('[PDF Fix] Stale run failed (gen ' + _myRunGen + ' != current ' + ((typeof window !== 'undefined' && window.__alloPdfRunGen) || 0) + ') — suppressing its UI writes and toast; the current run is unaffected.');
+        return null;
+      }
       setPdfFixLoading(false);
       setPdfFixStep('');
       addToast(t('toasts.pdf_remediation_failed') + (err.message || 'Unknown error'), 'error');

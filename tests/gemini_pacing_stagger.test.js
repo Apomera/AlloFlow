@@ -23,7 +23,9 @@ function makeGate() {
   const fakeClearTimeout = (id) => { const i = timers.findIndex(t => t.id === id); if (i >= 0) timers.splice(i, 1); };
   const fakeDate = { now: () => now };
   const factory = new Function(
-    'warnLog', '_pipelineStats', '_pipeLog', 'setTimeout', 'clearTimeout', 'Date',
+    // _usesLocalTextBackend is defined ABOVE the sliced gate block — an injection-contract free var
+    // here (like warnLog): reset() and M4's applyPacing clamp both consult it. Cloud default: false.
+    'warnLog', '_pipelineStats', '_pipeLog', 'setTimeout', 'clearTimeout', 'Date', '_usesLocalTextBackend',
     gateBlock +
     '\nreturn {' +
     '  acquire: _acquireGeminiSlot, release: _releaseGeminiSlot, gate: _geminiGate,' +
@@ -32,7 +34,7 @@ function makeGate() {
     '  state: function(){ return { cap: _geminiCap, inFlight: _geminiInFlight, waiters: _geminiWaiters.length, effMax: _geminiEffectiveMax, stagger: _geminiStaggerMs }; }' +
     '};'
   );
-  const api = factory(() => {}, {}, () => {}, fakeSetTimeout, fakeClearTimeout, fakeDate);
+  const api = factory(() => {}, {}, () => {}, fakeSetTimeout, fakeClearTimeout, fakeDate, () => false);
   return {
     api,
     fireTimers: () => { const t = timers.splice(0, timers.length); t.forEach(x => x.fn()); },

@@ -45,7 +45,10 @@ describe('CB-1: the Gemini breaker is reset at the start of each run', () => {
     expect(body).toMatch(/_geminiStormAnnounced = false;/);
   });
   it('fixAndVerifyPdf calls it in the per-run reset block (next to the telemetry reset)', () => {
-    expect(pipe).toMatch(/_pipelineStats\.lastOpenStep = null;[\s\S]{0,400}_resetGeminiBreaker\(\);/);
+    // M3 (2026-07-09): the reset is now gated on an IDLE gate — an overlapping run's live storm
+    // state must not be zeroed under it — so the window widened past the old 400 chars.
+    expect(pipe).toMatch(/_pipelineStats\.lastOpenStep = null;[\s\S]{0,1400}_resetGeminiBreaker\(\);/);
+    expect(pipe).toContain('if (_geminiInFlight > 0 || _geminiWaiters.length > 0) {');
   });
 });
 
