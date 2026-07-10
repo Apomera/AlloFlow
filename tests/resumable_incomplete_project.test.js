@@ -170,6 +170,8 @@ describe('anti-drift: the OCR-skip seed is wired end-to-end', () => {
     expect(pipeSrc).toMatch(/!extractedText \|\| extractedText\.length <= 100/);
   });
   it('the loader parks the seed under the same filename it sets on pendingPdfFile', () => {
-    expect(viewSrc).toMatch(/window\.__resumeExtractedText = \{ fileName: project\.fileName \|\| 'resumed-project\.pdf', text: project\.extractedText \}/);
+    // Harness repair (2026-07-09): H2 (deep dive 2026-07-02) added docKey to the seed so a
+    // re-uploaded DIFFERENT file with the same name refuses it (fingerprint mismatch).
+    expect(viewSrc).toMatch(/window\.__resumeExtractedText = \{ fileName: project\.fileName \|\| 'resumed-project\.pdf', text: project\.extractedText, docKey: project\.docKey \|\| null \}/);
   });
 });

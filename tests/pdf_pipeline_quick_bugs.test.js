@@ -112,7 +112,9 @@ describe('B2-2: "Fix Remaining" re-fix lane runs the main fidelity sweep + carri
     expect(vp).toMatch(/_docPipeline\.computeStructuralFidelityNotes\(_srcRaw, bestHtml\)/);
     expect(vp).toMatch(/_docPipeline\.numericFidelityLosses\(_srcRaw, _outText\)/);
     expect(vp).toMatch(/_docPipeline\.checkReadingOrderPreserved\(prevSnapshot\.html, bestHtml\)/);
-    expect(vp).toMatch(/commit: \{ autoFixPasses:[^}]*fidelityNotes: _refixNotes, fidelityLimited: _refixNotes\.length > 0 \}/);
+    // Harness repair (2026-07-09): M22 added the coverage<90 half so the header chip can't
+    // vanish while the panel still reports low coverage on the same screen.
+    expect(vp).toMatch(/commit: \{ autoFixPasses:[^}]*fidelityNotes: _refixNotes, fidelityLimited: _refixNotes\.length > 0 \|\| \(typeof pdfFixResult\.integrityCoverage === 'number' && pdfFixResult\.integrityCoverage < 90\) \}/);
   });
 });
 
@@ -190,7 +192,8 @@ describe('B3-4: RTL dir is set on the single-file remediation output for RTL lan
 
 describe('B3-5: H-8 — the loaded-project loader resets per-doc holdovers (palette snapshot etc.)', () => {
   it('clears _paletteSnapshotRef + the sibling per-doc state after loading a project', () => {
-    expect(vp).toMatch(/setPendingPdfFile\(\{ name: project\.fileName \|\| 'loaded-project\.pdf' \}\);[\s\S]{0,900}?_paletteSnapshotRef\.current = null;[\s\S]{0,400}?setTagOutline\(null\);/);
+    // Harness repair (2026-07-09): M12 added the PDF/UA badge clears inside this block — window widened.
+    expect(vp).toMatch(/setPendingPdfFile\(\{ name: project\.fileName \|\| 'loaded-project\.pdf' \}\);[\s\S]{0,1600}?_paletteSnapshotRef\.current = null;[\s\S]{0,900}?setTagOutline\(null\);/);
   });
 });
 
@@ -206,7 +209,9 @@ describe('B4: audit call-volume + pacing reductions to cut throttle failures', (
     expect(dp).toMatch(/_auditChunkMemo/);
   });
   it('audit batchSize lowered 6 → 3 to match the concurrency gate (no backlog aging out)', () => {
-    expect(dp).toMatch(/const batchSize = 3;/);
+    // Harness repair (2026-07-09): the local-backend work made the batch size backend-aware
+    // (serial for local models) — the cloud value is still 3, matched to the gate.
+    expect(dp).toMatch(/const batchSize = _usesLocalTextBackend\(\) \? 1 : 3;/);
     expect(dp).toMatch(/var _GEMINI_MAX_CONCURRENT = 3;/); // batchSize is matched to this gate
   });
   it('does NOT raise the concurrency gate (raising it would worsen throttling)', () => {

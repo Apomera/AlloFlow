@@ -48,7 +48,12 @@ describe('#9 mixed Chinese+Japanese — Chinese tagging is no longer suppressed 
   });
 
   it('anti-drift: the shipped suppression is WINDOWED, not document-wide', () => {
-    expect(src).toContain('accessibleHtml.substring(Math.max(0, offset - 60), offset + match.length + 60)');
+    // Harness repair (2026-07-09): the lang-tagger was refactored to per-TEXT-NODE processing —
+    // suppression now scopes to the node being tagged (newText), which satisfies the original
+    // intent (the bug was DOCUMENT-wide kana anywhere suppressing zh everywhere). Pin the
+    // node-scoped guard and ban a doc-wide one.
+    expect(src).toContain("if (lang === 'zh' && /[\\u3040-\\u309F\\u30A0-\\u30FF]/.test(newText)) continue;");
+    expect(src).not.toMatch(/lang === 'zh'[^\n]*test\((?:htmlContent|accessibleHtml)\)/);
     expect(src).not.toContain(".test(accessibleHtml)) return;"); // the old doc-wide check is gone
   });
 });

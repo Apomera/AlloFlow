@@ -158,7 +158,8 @@ describe('Reliability honesty (2026-06-23): no "excellent agreement" on degenera
 describe('H-8: Load Project resets per-document holdovers (no cross-document state bleed)', () => {
   it('the results-screen loader clears the palette snapshot ref + the other per-doc state before continuing', () => {
     const _s = view.indexOf('// H-8 (audit 2026-06-23): the component never remounts on Load Project');
-    const h = view.slice(_s, _s + 1500);
+    // Harness repair (2026-07-09): M12 added the PDF/UA badge clears inside the block — widened.
+    const h = view.slice(_s, _s + 2600);
     expect(h).toMatch(/_paletteSnapshotRef\.current = null;/);   // the dangerous one — stale snapshot drove the doc-A-over-doc-B Revert
     expect(h).toMatch(/_lastTaggedBytesRef\.current = null;/);
     expect(h).toMatch(/setAppliedPalette\(null\);/);

@@ -100,10 +100,16 @@ describe('PDF brand-override style sanitization (DB-SEC missed-sink consistency)
     expect(out.bodyFont).toBeUndefined();         // url( dropped
     expect(out.bgColor).toBeUndefined();          // ; } < dropped
   });
-  it('both _brandOverride merge sites now route through _sanitizeStyleObj (no raw spread)', () => {
+  it('every LIVE _brandOverride merge site routes through _sanitizeStyleObj (no raw spread)', () => {
+    // Harness repair (2026-07-09): the batchDocStyle merge lived in the dead legacy batch loop
+    // deleted @3a5d9280 (S4) — one live merge site remains, and it is sanitized. The raw-spread
+    // bans stay: a NEW unsanitized merge anywhere still fails.
     expect(dp).not.toMatch(/\{ \.\.\.batchDocStyle, \.\.\._brandOverride \}/);
     expect(dp).not.toMatch(/\{ \.\.\.docStyle, \.\.\._brandOverride \}/);
     const sanitizedMerges = dp.match(/\.\.\._sanitizeStyleObj\(_brandOverride\)/g) || [];
-    expect(sanitizedMerges.length).toBeGreaterThanOrEqual(2);
+    expect(sanitizedMerges.length).toBeGreaterThanOrEqual(1);
+    // and no bare `_brandOverride` spread exists outside the sanitizer route
+    const rawSpreads = (dp.match(/\.\.\._brandOverride\b/g) || []).length;
+    expect(rawSpreads).toBe(0);
   });
 });

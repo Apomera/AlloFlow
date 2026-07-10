@@ -36,6 +36,7 @@ describe('Make Accessible — fix runs even when audit state has not propagated'
     expect(viewSrc).toMatch(/try \{ _audit = await runPdfAccessibilityAudit\(pendingPdfBase64\); \}\s*\n\s*catch \(auditErr\)/);
   });
   it('anti-drift: fixAndVerifyPdf prefers the passed auditResult over React state', () => {
-    expect(pipeSrc).toContain('const _auditResult = batchOverrides?.auditResult || pdfAuditResult;');
+    // Harness repair (2026-07-09): S1 snapshots audit state at run entry (_run.auditResult).
+    expect(pipeSrc).toContain('const _auditResult = batchOverrides?.auditResult || _run.auditResult;');
   });
 });

@@ -32,10 +32,13 @@ describe('exported report: EA note claims headline governance only when EA also 
   });
 });
 
-describe('live UI: the amber box lead/body branch on which layer governs (source + hand-spliced module)', () => {
+describe('live UI: the amber box lead/body branch on which layer governs (source + compiled module)', () => {
   it('both the JSX source and the compiled module carry the branch + both variants', () => {
     for (const s of [view, viewMod]) {
-      expect(s).toContain("afterAi < afterDet) ? (t(");
+      // Harness repair (2026-07-09): the module used to be a HAND-SPLICED copy preserving the
+      // source's exact parens; it is now built by _build_view_pdf_audit_module.js, whose transform
+      // normalizes `) ? (t(` → ` ? t(`. Tolerate both spellings — the branch is what matters.
+      expect(s).toMatch(/afterAi < afterDet\s*\)?\s*\?\s*\(?\s*t\(/);
       expect(s).toContain('About the automated layer:');
       expect(s).toContain('The headline is governed by the lower content layer, not by this number.');
       expect(s).toContain('Why the automated layer is the lower number:'); // the governing variant is kept

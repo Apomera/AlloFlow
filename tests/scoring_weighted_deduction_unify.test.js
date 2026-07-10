@@ -77,6 +77,7 @@ describe('anti-drift: both output-audit paths route through the single shared fn
   });
   it('the fn is defined once at module top with the weight applied', () => {
     expect(pipeSrc).toMatch(/var _alloWeightedDeductions = function \(issues\) \{/);
-    expect(pipeSrc).toMatch(/\(\(i && i\.deduction\) \|\| 0\) \* _alloIssueWeight\(i && i\.count\)/);
+    // Harness repair (2026-07-09): a NaN-hardening pass wrapped the deduction in Number(...).
+    expect(pipeSrc).toMatch(/\(Number\(i && i\.deduction\) \|\| 0\) \* _alloIssueWeight\(i && i\.count\)/);
   });
 });

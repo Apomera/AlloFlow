@@ -28,8 +28,10 @@ describe('anti-drift: both skip-link injection sites carry the contrast fix', ()
   it('no skip-link :focus rule still uses the low-contrast amber outline', () => {
     expect(dp).not.toMatch(/outline:3px solid #fbbf24!important;outline-offset:2px!important;text-decoration/);
   });
-  it('both injection sites use the dark-blue outline + white halo', () => {
+  it('the live injection site uses the dark-blue outline + white halo', () => {
+    // Harness repair (2026-07-09): the SECOND injection site lived in the dead legacy batch loop
+    // deleted @3a5d9280 (S4) — the known dead-loop-orphan class. One live site remains.
     const hits = dp.match(/outline:3px solid #1e3a8a!important;outline-offset:2px!important;box-shadow:0 0 0 2px #ffffff!important/g) || [];
-    expect(hits.length).toBeGreaterThanOrEqual(2);
+    expect(hits.length).toBeGreaterThanOrEqual(1);
   });
 });

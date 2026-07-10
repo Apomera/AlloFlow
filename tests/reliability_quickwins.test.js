@@ -51,7 +51,9 @@ describe('anti-drift: pdf.js docs are freed on the high-traffic extraction paths
     expect((pipeSrc.match(/let pdf = null;/g) || []).length).toBeGreaterThanOrEqual(3);
   });
   it('frees the doc in a finally (destroy on success AND error)', () => {
-    expect((pipeSrc.match(/finally \{ if \(pdf\) \{ try \{ pdf\.destroy\(\); \} catch \(_\) \{\} \} \}/g) || []).length).toBeGreaterThanOrEqual(3);
+    // Harness repair (2026-07-09): later refactors reformatted two of the finally blocks
+    // (comment on the line, own-line body) — pin the destroy idiom itself, not the whitespace.
+    expect((pipeSrc.match(/if \(pdf\) \{ try \{ pdf\.destroy\(\); \} catch \(_\) \{\} \}/g) || []).length).toBeGreaterThanOrEqual(3);
   });
 });
 
