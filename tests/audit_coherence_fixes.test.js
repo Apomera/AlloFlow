@@ -12,7 +12,9 @@ const vw = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'ut
 describe('audit coherence — no-text-layer story is enforced by the math', () => {
   it('C1: initial-audit blend EXCLUDES the engines when there is no text layer (AI governs, as the badge claims)', () => {
     expect(dp).toMatch(/const _noTextLayer = triangulated\.hasSearchableText === false;/);
-    expect(dp).toMatch(/const governingInitial = _noTextLayer \? aiOnlyScore : _alloComputeHeadline\(aiOnlyScore, deterministicBaseline\);/);
+    // Repointed 2026-07-10 (ChatGPT finding 5): a null AI score (WITHHELD on incomplete slice
+    // coverage) passes through as null; the C1 no-text-layer routing is now the inner ternary.
+    expect(dp).toMatch(/const governingInitial = \(aiOnlyScore === null\)\s*\n?\s*\? null\s*\n?\s*: \(_noTextLayer \? aiOnlyScore : _alloComputeHeadline\(aiOnlyScore, deterministicBaseline\)\);/);
     expect(dp).toMatch(/if \(_noTextLayer\) triangulated\._automatedNA = true;/);
   });
 
@@ -290,8 +292,11 @@ describe('deep-dive queue fixes (2026-07-02)', () => {
     // one hung document must not stall the whole batch forever; a timeout throws → per-file
     // catch marks it failed → loop continues (same isolation as any error).
     expect(dpNow).toMatch(/const _PER_FILE_MS = 8 \* 60 \* 1000;/);
-    expect(dpNow).toMatch(/await _withTimeout\(\s*\n?\s*runPdfAccessibilityAudit\(item\.base64[\s\S]*?_PER_FILE_MS/);
-    expect(dpNow).toMatch(/await _withTimeout\(fixAndVerifyPdf\(\{[\s\S]*?\}\), _PER_FILE_MS/);
+    // Repointed 2026-07-10 (ChatGPT finding 4): ONE absolute wall per file - audit and fix
+    // share _deadlineAt via _remainingMs() instead of each minting a fresh _PER_FILE_MS budget.
+    expect(dpNow).toMatch(/const _deadlineAt = Date\.now\(\) \+ _PER_FILE_MS;/);
+    expect(dpNow).toMatch(/await _withTimeout\(\s*\n?\s*runPdfAccessibilityAudit\(item\.base64[\s\S]*?_remainingMs\(\)/);
+    expect(dpNow).toMatch(/await _withTimeout\(fixAndVerifyPdf\(\{[\s\S]*?\}\), _remainingMs\(\)/);
   });
 
   it('D2: caption/description hints fed into Vision prompts are fence-neutralized (B1)', () => {

@@ -82,7 +82,11 @@ describe('finding 8 — batch quota policy honors the per-day/per-minute split',
 
 describe('finding 9 — cache identity and the polish-pass contract', () => {
   it('the pipeline version was finally bumped and both keys carry the backend id', () => {
-    expect(dp).toContain("const _PIPELINE_PROMPT_VERSION = '20260710-1';");
+    // Repointed 2026-07-10 (Phase 3): pin the FORMAT + a floor, not the exact value — the whole
+    // point of the finding was that this constant must move when behavior moves.
+    const _vm = dp.match(/const _PIPELINE_PROMPT_VERSION = '(\d{8})-(\d+)';/);
+    expect(_vm).not.toBeNull();
+    expect(Number(_vm[1])).toBeGreaterThanOrEqual(20260710);
     expect(dp).toContain('const _cacheBackendId = () => {');
     expect(dp).toMatch(/pdf_audit_\$\{_PIPELINE_PROMPT_VERSION\}_\$\{_cacheBackendId\(\)\}/);
     expect(dp).toMatch(/pdf_remed_\$\{_PIPELINE_PROMPT_VERSION\}_\$\{_cacheBackendId\(\)\}/);

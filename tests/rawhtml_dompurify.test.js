@@ -25,19 +25,30 @@ afterAll(() => {
 const _noPurify = () => { if (globalThis.window) delete globalThis.window.DOMPurify; };
 
 describe('_sanitizeRawHtmlBlock: regex baseline (DOMPurify not loaded — node/SSR + pre-CDN path)', () => {
-  it('strips <script>, <style>, and active-content embedding tags', () => {
+  it('FAILS CLOSED on execution-shaped content (#16, 2026-07-10): script/iframe blocks are WITHHELD, not regex-trimmed', () => {
+    // The regex baseline cannot prove parity with DOMPurify against mutation-XSS — a block that
+    // carries execution vectors while DOMPurify is unavailable is withheld with a visible notice
+    // instead of riding the weaker sanitizer into a distributed file.
     _noPurify();
-    const out = _sanitizeRawHtmlBlock('<p>ok</p><script>alert(1)</script><style>x{}</style><iframe src=evil></iframe>');
-    expect(out).toContain('<p>ok</p>');
+    const out = _sanitizeRawHtmlBlock('<p>ok</p><script>alert(1)</script><iframe src=evil></iframe>');
+    expect(out).toContain('data-allo-rawhtml-withheld');
     expect(out).not.toMatch(/<script/i);
-    expect(out).not.toMatch(/<style/i);
     expect(out).not.toMatch(/<iframe/i);
+    expect(out).not.toContain('<p>ok</p>'); // the whole block is withheld, not partially trusted
   });
-  it('strips inline event handlers (space- AND slash-prefixed) and javascript: schemes', () => {
+  it('still strips INERT forbidden tags (<style>, form controls) while keeping the content — offline benign export unchanged', () => {
     _noPurify();
+    const out = _sanitizeRawHtmlBlock('<p>ok</p><style>x{}</style><input value="q">');
+    expect(out).toContain('<p>ok</p>');
+    expect(out).not.toMatch(/<style|<input/i);
+    expect(out).not.toContain('data-allo-rawhtml-withheld');
+  });
+  it('inline event handlers and javascript: schemes are execution-shaped → withheld (#16)', () => {
+    _noPurify();
+    expect(_sanitizeRawHtmlBlock('<img src=x onerror="alert(1)">')).toContain('data-allo-rawhtml-withheld');
+    expect(_sanitizeRawHtmlBlock('<svg/onload=alert(1)>')).toContain('data-allo-rawhtml-withheld');
+    expect(_sanitizeRawHtmlBlock('<a href="javascript:alert(1)">x</a>')).toContain('data-allo-rawhtml-withheld');
     expect(_sanitizeRawHtmlBlock('<img src=x onerror="alert(1)">')).not.toMatch(/onerror/i);
-    expect(_sanitizeRawHtmlBlock('<svg/onload=alert(1)>')).not.toMatch(/onload/i);
-    expect(_sanitizeRawHtmlBlock('<a href="javascript:alert(1)">x</a>')).not.toMatch(/javascript:/i);
   });
   it('leaves benign semantic HTML intact', () => {
     _noPurify();
@@ -64,12 +75,15 @@ describe('_sanitizeRawHtmlBlock: routes through DOMPurify when it is present', (
     expect(seenCfg.FORBID_TAGS).toContain('script');
     expect(seenCfg.ALLOW_DATA_ATTR).toBe(true);
   });
-  it('falls back to the regex baseline if DOMPurify.sanitize throws', () => {
+  it('falls back if DOMPurify.sanitize throws — benign content sanitizes, execution-shaped content withholds (#16)', () => {
     globalThis.window = globalThis.window || {};
     globalThis.window.DOMPurify = { sanitize: () => { throw new Error('boom'); } };
-    const out = _sanitizeRawHtmlBlock('<p>ok</p><script>alert(1)</script>');
-    expect(out).toContain('<p>ok</p>');
-    expect(out).not.toMatch(/<script/i);
+    const benign = _sanitizeRawHtmlBlock('<p>ok</p><style>x{}</style>');
+    expect(benign).toContain('<p>ok</p>');
+    expect(benign).not.toMatch(/<style/i);
+    const risky = _sanitizeRawHtmlBlock('<p>ok</p><script>alert(1)</script>');
+    expect(risky).toContain('data-allo-rawhtml-withheld');
+    expect(risky).not.toMatch(/<script/i);
   });
 });
 

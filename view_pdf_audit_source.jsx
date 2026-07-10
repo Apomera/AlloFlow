@@ -2908,6 +2908,86 @@ function PdfAuditView(props) {
     // Generic fallback — keep the raw message but framed
     return { friendly: 'Something went wrong.', actionable: 'Details: ' + (msg || 'unknown error'), severity: 'error' };
   };
+  // #12 (ChatGPT review 2026-07-10): batch intake budgets. The intake used to start a FileReader
+  // for EVERY selected file at once and retain every result as a base64 string in React state —
+  // the 200 MB per-file decoder cap fired only AFTER the memory expansion (base64 ≈ +33%, JS
+  // strings UTF-16 ≈ ×2), so an oversized selection could exhaust the tab (or evict this origin's
+  // IndexedDB data) before any cap was consulted. Budgets now run BEFORE any read, and the reads
+  // themselves are SEQUENTIAL (one decoded file in flight at a time) instead of all at once.
+  const _BATCH_MAX_FILES = 60;
+  const _BATCH_MAX_FILE_BYTES = 200 * 1024 * 1024;  // matches the decoder cap — a bigger file would only fail later, after the expansion
+  const _BATCH_MAX_TOTAL_BYTES = 300 * 1024 * 1024; // aggregate RAW bytes across the whole queue (≈800 MB resident once base64+UTF-16)
+  const _alloBatchPreflight = (files, existingQueue) => {
+    const _fmtMB = (b) => Math.round(b / (1024 * 1024)) + ' MB';
+    const queuedBytes = (existingQueue || []).reduce((s, q) => s + (q.fileSize || 0), 0);
+    const queuedCount = (existingQueue || []).length;
+    const accepted = [];
+    let total = queuedBytes, overCount = 0, overSize = [], overTotal = 0;
+    for (const f of files) {
+      if (queuedCount + accepted.length >= _BATCH_MAX_FILES) { overCount++; continue; }
+      if ((f.size || 0) > _BATCH_MAX_FILE_BYTES) { overSize.push(f.name || 'file'); continue; }
+      if (total + (f.size || 0) > _BATCH_MAX_TOTAL_BYTES) { overTotal++; continue; }
+      total += (f.size || 0);
+      accepted.push(f);
+    }
+    if (overCount) addToast('⚠ Batch limit is ' + _BATCH_MAX_FILES + ' files — ' + overCount + ' file(s) were not added. Run them as a second batch.', 'warning');
+    if (overSize.length) addToast('⚠ Skipped ' + overSize.length + ' file(s) over the ' + _fmtMB(_BATCH_MAX_FILE_BYTES) + ' per-file limit: ' + overSize.slice(0, 3).join(', ') + (overSize.length > 3 ? '…' : ''), 'warning');
+    if (overTotal) addToast('⚠ Batch memory budget (' + _fmtMB(_BATCH_MAX_TOTAL_BYTES) + ' total) reached — ' + overTotal + ' file(s) were not added. Run them as a second batch.', 'warning');
+    // Storage headroom (best-effort, async): the queue is persisted for Resume; when it likely
+    // will NOT fit, the batch still runs but the resume promise is downgraded UP FRONT instead of
+    // failing silently at checkpoint time. (~1.45 ≈ base64 overhead + record framing.)
+    try {
+      if (accepted.length && typeof navigator !== 'undefined' && navigator.storage && navigator.storage.estimate) {
+        navigator.storage.estimate().then((est) => {
+          const _free = Math.max(0, ((est && est.quota) || 0) - ((est && est.usage) || 0) - 50 * 1024 * 1024);
+          if (est && est.quota && (total * 1.45) > _free) {
+            addToast('⚠ This batch is larger than the browser can safely checkpoint — it will run, but Resume after a reload may be unavailable. Consider smaller batches.', 'warning');
+          }
+        }).catch(() => {});
+      }
+    } catch (_) {}
+    return accepted;
+  };
+  // One file → one queue entry (shared by the drop + browse handlers, which were byte-identical).
+  // Returns a promise that settles when the read + optional transcript conversion has finished, so
+  // the caller can CHAIN reads instead of firing every FileReader at once.
+  const _alloEnqueueBatchFile = (file) => new Promise((_done) => {
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        if (reader.error || !reader.result) return; // onerror already surfaced it; never push a broken entry
+        let base64 = reader.result.split(',')[1];
+        // Transcript formats (sweep 2026-06-11 LOW[7]): encode to ALLOTRANSCRIPT exactly like the
+        // single-file lane — the batch runner's audit/fix dispatchers already speak it.
+        try {
+          const _isText = /\.(md|markdown|csv|tsv)$/i.test(file.name || '');
+          const _isSheet = /\.(xlsx|xls|xlsb|ods)$/i.test(file.name || '');
+          if (_isText || _isSheet) {
+            let _text;
+            if (_isSheet) {
+              if (typeof convertXlsxToMarkdownTables !== 'function') { addToast('"' + file.name + '" — spreadsheet support is still loading; try again in a moment. Skipped.', 'error'); return; }
+              const _conv = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+              // audit 2026-06-13: was assigning the {text,...} OBJECT → .trim() threw → every spreadsheet dropped
+              _text = '# ' + (file.name || 'Spreadsheet').replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + (_conv.text || '') + (_conv.truncatedRows ? ('\n\n*Note: ' + _conv.truncatedRows + ' row(s) beyond the first 200 per sheet were omitted.*') : '');
+            } else {
+              _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
+            }
+            if (!_text || !_text.trim()) { addToast('"' + file.name + '" looks empty — skipped.', 'error'); return; }
+            const _r = await transcribeMediaToPayload(null, 'text/plain', { preText: _text, file });
+            base64 = (_r && _r.payload) || base64;
+          }
+        } catch (_convErr) { addToast('Could not convert "' + file.name + '": ' + ((_convErr && _convErr.message) || 'unknown') + ' — skipped.', 'error'); return; }
+        setPdfBatchQueue(prev => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: 'pending', result: null }]);
+      } finally { _done(); }
+    };
+    reader.onerror = () => { addToast('Could not read "' + file.name + '" — it may be corrupt or locked; skipped.', 'error'); };
+    reader.readAsDataURL(file);
+  });
+  const _alloEnqueueBatchFiles = (files) => {
+    const accepted = _alloBatchPreflight(files, pdfBatchQueue);
+    accepted.reduce((chain, f) => chain.then(() => _alloEnqueueBatchFile(f)), Promise.resolve());
+    return accepted.length;
+  };
   // 2026-06-08: per-issue plain-English explanation. Reuses the keyword-regex
   // pattern from the whole-pipeline whyParts (L1940+) but at per-row granularity
   // so a teacher seeing "WCAG 1.4.3" gets actionable context without leaving
@@ -3727,38 +3807,9 @@ function PdfAuditView(props) {
                           e.currentTarget.classList.remove('border-indigo-500', 'bg-indigo-50');
                           const files = [...e.dataTransfer.files].filter(f => f.type === 'application/pdf' || /\.(docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods)$/i.test(f.name || ''));
                           if (files.length === 0) { addToast(t('toasts.drop_pdf_files_only'), 'error'); return; }
-                          files.forEach(file => {
-                            const reader = new FileReader();
-                            reader.onloadend = async () => {
-                              if (reader.error || !reader.result) return; // onerror already surfaced it; never push a broken entry
-                              let base64 = reader.result.split(',')[1];
-                              // Transcript formats (sweep 2026-06-11 LOW[7]): encode to
-                              // ALLOTRANSCRIPT exactly like the single-file lane — the batch
-                              // runner's audit/fix dispatchers already speak it.
-                              try {
-                                const _isText = /\.(md|markdown|csv|tsv)$/i.test(file.name || '');
-                                const _isSheet = /\.(xlsx|xls|xlsb|ods)$/i.test(file.name || '');
-                                if (_isText || _isSheet) {
-                                  let _text;
-                                  if (_isSheet) {
-                                    if (typeof convertXlsxToMarkdownTables !== 'function') { addToast('"' + file.name + '" — spreadsheet support is still loading; try again in a moment. Skipped.', 'error'); return; }
-                                    const _conv = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
-                                    // audit 2026-06-13: was assigning the {text,...} OBJECT → .trim() threw → every spreadsheet dropped
-                                    _text = '# ' + (file.name || 'Spreadsheet').replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + (_conv.text || '') + (_conv.truncatedRows ? ('\n\n*Note: ' + _conv.truncatedRows + ' row(s) beyond the first 200 per sheet were omitted.*') : '');
-                                  } else {
-                                    _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
-                                  }
-                                  if (!_text || !_text.trim()) { addToast('"' + file.name + '" looks empty — skipped.', 'error'); return; }
-                                  const _r = await transcribeMediaToPayload(null, 'text/plain', { preText: _text, file });
-                                  base64 = (_r && _r.payload) || base64;
-                                }
-                              } catch (_convErr) { addToast('Could not convert "' + file.name + '": ' + ((_convErr && _convErr.message) || 'unknown') + ' — skipped.', 'error'); return; }
-                              setPdfBatchQueue(prev => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: 'pending', result: null }]);
-                            };
-                            reader.onerror = () => addToast('Could not read "' + file.name + '" — it may be corrupt or locked; skipped.', 'error');
-                            reader.readAsDataURL(file);
-                          });
-                          addToast(`Added ${files.length} file(s) to batch queue`, 'success');
+                          // #12: budget-checked + sequential reads (shared helper — was a byte-copy of the browse handler)
+                          const _added = _alloEnqueueBatchFiles(files);
+                          if (_added > 0) addToast(`Added ${_added} file(s) to batch queue`, 'success');
                         }}
                       >
                         <div className="text-4xl mb-2">📥</div>
@@ -3766,38 +3817,9 @@ function PdfAuditView(props) {
                         <p className="text-xs text-slate-600 mt-1">or click to browse</p>
                         <input type="file" accept=".pdf,.docx,.pptx,.md,.markdown,.csv,.tsv,.xlsx,.xls,.xlsb,.ods" multiple className="hidden" id="batch-pdf-input" onChange={(e) => {
                           const files = [...(e.target.files || [])].filter(f => f.type === 'application/pdf' || /\.(docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods)$/i.test(f.name || ''));
-                          files.forEach(file => {
-                            const reader = new FileReader();
-                            reader.onloadend = async () => {
-                              if (reader.error || !reader.result) return; // onerror already surfaced it; never push a broken entry
-                              let base64 = reader.result.split(',')[1];
-                              // Transcript formats (sweep 2026-06-11 LOW[7]): encode to
-                              // ALLOTRANSCRIPT exactly like the single-file lane — the batch
-                              // runner's audit/fix dispatchers already speak it.
-                              try {
-                                const _isText = /\.(md|markdown|csv|tsv)$/i.test(file.name || '');
-                                const _isSheet = /\.(xlsx|xls|xlsb|ods)$/i.test(file.name || '');
-                                if (_isText || _isSheet) {
-                                  let _text;
-                                  if (_isSheet) {
-                                    if (typeof convertXlsxToMarkdownTables !== 'function') { addToast('"' + file.name + '" — spreadsheet support is still loading; try again in a moment. Skipped.', 'error'); return; }
-                                    const _conv = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
-                                    // audit 2026-06-13: was assigning the {text,...} OBJECT → .trim() threw → every spreadsheet dropped
-                                    _text = '# ' + (file.name || 'Spreadsheet').replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + (_conv.text || '') + (_conv.truncatedRows ? ('\n\n*Note: ' + _conv.truncatedRows + ' row(s) beyond the first 200 per sheet were omitted.*') : '');
-                                  } else {
-                                    _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
-                                  }
-                                  if (!_text || !_text.trim()) { addToast('"' + file.name + '" looks empty — skipped.', 'error'); return; }
-                                  const _r = await transcribeMediaToPayload(null, 'text/plain', { preText: _text, file });
-                                  base64 = (_r && _r.payload) || base64;
-                                }
-                              } catch (_convErr) { addToast('Could not convert "' + file.name + '": ' + ((_convErr && _convErr.message) || 'unknown') + ' — skipped.', 'error'); return; }
-                              setPdfBatchQueue(prev => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: 'pending', result: null }]);
-                            };
-                            reader.onerror = () => addToast('Could not read "' + file.name + '" — it may be corrupt or locked; skipped.', 'error');
-                            reader.readAsDataURL(file);
-                          });
-                          if (files.length > 0) addToast(`Added ${files.length} PDF(s)`, 'success');
+                          // #12: budget-checked + sequential reads (shared helper — was a byte-copy of the drop handler)
+                          const _added = _alloEnqueueBatchFiles(files);
+                          if (_added > 0) addToast(`Added ${_added} PDF(s)`, 'success');
                           e.target.value = '';
                         }} />
                         <label data-help-key="pdf_audit_view_batch_browse_btn" htmlFor="batch-pdf-input" className="inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors">{t('pdf_audit.batch.browse_files') || 'Browse Files'}</label>

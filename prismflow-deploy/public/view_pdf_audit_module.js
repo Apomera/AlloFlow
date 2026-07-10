@@ -3129,6 +3129,95 @@ function PdfAuditView(props) {
     }
     return { friendly: "Something went wrong.", actionable: "Details: " + (msg || "unknown error"), severity: "error" };
   };
+  const _BATCH_MAX_FILES = 60;
+  const _BATCH_MAX_FILE_BYTES = 200 * 1024 * 1024;
+  const _BATCH_MAX_TOTAL_BYTES = 300 * 1024 * 1024;
+  const _alloBatchPreflight = (files, existingQueue) => {
+    const _fmtMB = (b) => Math.round(b / (1024 * 1024)) + " MB";
+    const queuedBytes = (existingQueue || []).reduce((s, q) => s + (q.fileSize || 0), 0);
+    const queuedCount = (existingQueue || []).length;
+    const accepted = [];
+    let total = queuedBytes, overCount = 0, overSize = [], overTotal = 0;
+    for (const f of files) {
+      if (queuedCount + accepted.length >= _BATCH_MAX_FILES) {
+        overCount++;
+        continue;
+      }
+      if ((f.size || 0) > _BATCH_MAX_FILE_BYTES) {
+        overSize.push(f.name || "file");
+        continue;
+      }
+      if (total + (f.size || 0) > _BATCH_MAX_TOTAL_BYTES) {
+        overTotal++;
+        continue;
+      }
+      total += f.size || 0;
+      accepted.push(f);
+    }
+    if (overCount) addToast("\u26A0 Batch limit is " + _BATCH_MAX_FILES + " files \u2014 " + overCount + " file(s) were not added. Run them as a second batch.", "warning");
+    if (overSize.length) addToast("\u26A0 Skipped " + overSize.length + " file(s) over the " + _fmtMB(_BATCH_MAX_FILE_BYTES) + " per-file limit: " + overSize.slice(0, 3).join(", ") + (overSize.length > 3 ? "\u2026" : ""), "warning");
+    if (overTotal) addToast("\u26A0 Batch memory budget (" + _fmtMB(_BATCH_MAX_TOTAL_BYTES) + " total) reached \u2014 " + overTotal + " file(s) were not added. Run them as a second batch.", "warning");
+    try {
+      if (accepted.length && typeof navigator !== "undefined" && navigator.storage && navigator.storage.estimate) {
+        navigator.storage.estimate().then((est) => {
+          const _free = Math.max(0, (est && est.quota || 0) - (est && est.usage || 0) - 50 * 1024 * 1024);
+          if (est && est.quota && total * 1.45 > _free) {
+            addToast("\u26A0 This batch is larger than the browser can safely checkpoint \u2014 it will run, but Resume after a reload may be unavailable. Consider smaller batches.", "warning");
+          }
+        }).catch(() => {
+        });
+      }
+    } catch (_) {
+    }
+    return accepted;
+  };
+  const _alloEnqueueBatchFile = (file) => new Promise((_done) => {
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        if (reader.error || !reader.result) return;
+        let base64 = reader.result.split(",")[1];
+        try {
+          const _isText = /\.(md|markdown|csv|tsv)$/i.test(file.name || "");
+          const _isSheet = /\.(xlsx|xls|xlsb|ods)$/i.test(file.name || "");
+          if (_isText || _isSheet) {
+            let _text;
+            if (_isSheet) {
+              if (typeof convertXlsxToMarkdownTables !== "function") {
+                addToast('"' + file.name + '" \u2014 spreadsheet support is still loading; try again in a moment. Skipped.', "error");
+                return;
+              }
+              const _conv = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
+              _text = "# " + (file.name || "Spreadsheet").replace(/\.(xlsx|xls|xlsb|ods)$/i, "") + "\n\n" + (_conv.text || "") + (_conv.truncatedRows ? "\n\n*Note: " + _conv.truncatedRows + " row(s) beyond the first 200 per sheet were omitted.*" : "");
+            } else {
+              _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
+            }
+            if (!_text || !_text.trim()) {
+              addToast('"' + file.name + '" looks empty \u2014 skipped.', "error");
+              return;
+            }
+            const _r = await transcribeMediaToPayload(null, "text/plain", { preText: _text, file });
+            base64 = _r && _r.payload || base64;
+          }
+        } catch (_convErr) {
+          addToast('Could not convert "' + file.name + '": ' + (_convErr && _convErr.message || "unknown") + " \u2014 skipped.", "error");
+          return;
+        }
+        setPdfBatchQueue((prev) => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: "pending", result: null }]);
+      } finally {
+        _done();
+      }
+    };
+    reader.onerror = () => {
+      addToast('Could not read "' + file.name + '" \u2014 it may be corrupt or locked; skipped.', "error");
+    };
+    reader.readAsDataURL(file);
+  });
+  const _alloEnqueueBatchFiles = (files) => {
+    const accepted = _alloBatchPreflight(files, pdfBatchQueue);
+    accepted.reduce((chain, f) => chain.then(() => _alloEnqueueBatchFile(f)), Promise.resolve());
+    return accepted.length;
+  };
   const _explainIssue = (issueText) => {
     const s = String(issueText || "");
     if (/alt|image|img/i.test(s)) return "Images without descriptions: a blind student hears silence where sighted students see diagrams, charts, or photographs \u2014 they miss educational content entirely.";
@@ -4065,43 +4154,8 @@ function PdfAuditView(props) {
             addToast(t("toasts.drop_pdf_files_only"), "error");
             return;
           }
-          files.forEach((file) => {
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-              if (reader.error || !reader.result) return;
-              let base64 = reader.result.split(",")[1];
-              try {
-                const _isText = /\.(md|markdown|csv|tsv)$/i.test(file.name || "");
-                const _isSheet = /\.(xlsx|xls|xlsb|ods)$/i.test(file.name || "");
-                if (_isText || _isSheet) {
-                  let _text;
-                  if (_isSheet) {
-                    if (typeof convertXlsxToMarkdownTables !== "function") {
-                      addToast('"' + file.name + '" \u2014 spreadsheet support is still loading; try again in a moment. Skipped.', "error");
-                      return;
-                    }
-                    const _conv = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
-                    _text = "# " + (file.name || "Spreadsheet").replace(/\.(xlsx|xls|xlsb|ods)$/i, "") + "\n\n" + (_conv.text || "") + (_conv.truncatedRows ? "\n\n*Note: " + _conv.truncatedRows + " row(s) beyond the first 200 per sheet were omitted.*" : "");
-                  } else {
-                    _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
-                  }
-                  if (!_text || !_text.trim()) {
-                    addToast('"' + file.name + '" looks empty \u2014 skipped.', "error");
-                    return;
-                  }
-                  const _r = await transcribeMediaToPayload(null, "text/plain", { preText: _text, file });
-                  base64 = _r && _r.payload || base64;
-                }
-              } catch (_convErr) {
-                addToast('Could not convert "' + file.name + '": ' + (_convErr && _convErr.message || "unknown") + " \u2014 skipped.", "error");
-                return;
-              }
-              setPdfBatchQueue((prev) => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: "pending", result: null }]);
-            };
-            reader.onerror = () => addToast('Could not read "' + file.name + '" \u2014 it may be corrupt or locked; skipped.', "error");
-            reader.readAsDataURL(file);
-          });
-          addToast(`Added ${files.length} file(s) to batch queue`, "success");
+          const _added = _alloEnqueueBatchFiles(files);
+          if (_added > 0) addToast(`Added ${_added} file(s) to batch queue`, "success");
         }
       },
       /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u{1F4E5}"),
@@ -4109,43 +4163,8 @@ function PdfAuditView(props) {
       /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, "or click to browse"),
       /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".pdf,.docx,.pptx,.md,.markdown,.csv,.tsv,.xlsx,.xls,.xlsb,.ods", multiple: true, className: "hidden", id: "batch-pdf-input", onChange: (e) => {
         const files = [...e.target.files || []].filter((f) => f.type === "application/pdf" || /\.(docx|pptx|md|markdown|csv|tsv|xlsx|xls|xlsb|ods)$/i.test(f.name || ""));
-        files.forEach((file) => {
-          const reader = new FileReader();
-          reader.onloadend = async () => {
-            if (reader.error || !reader.result) return;
-            let base64 = reader.result.split(",")[1];
-            try {
-              const _isText = /\.(md|markdown|csv|tsv)$/i.test(file.name || "");
-              const _isSheet = /\.(xlsx|xls|xlsb|ods)$/i.test(file.name || "");
-              if (_isText || _isSheet) {
-                let _text;
-                if (_isSheet) {
-                  if (typeof convertXlsxToMarkdownTables !== "function") {
-                    addToast('"' + file.name + '" \u2014 spreadsheet support is still loading; try again in a moment. Skipped.', "error");
-                    return;
-                  }
-                  const _conv = await convertXlsxToMarkdownTables(base64, { fileName: file.name });
-                  _text = "# " + (file.name || "Spreadsheet").replace(/\.(xlsx|xls|xlsb|ods)$/i, "") + "\n\n" + (_conv.text || "") + (_conv.truncatedRows ? "\n\n*Note: " + _conv.truncatedRows + " row(s) beyond the first 200 per sheet were omitted.*" : "");
-                } else {
-                  _text = new TextDecoder().decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
-                }
-                if (!_text || !_text.trim()) {
-                  addToast('"' + file.name + '" looks empty \u2014 skipped.', "error");
-                  return;
-                }
-                const _r = await transcribeMediaToPayload(null, "text/plain", { preText: _text, file });
-                base64 = _r && _r.payload || base64;
-              }
-            } catch (_convErr) {
-              addToast('Could not convert "' + file.name + '": ' + (_convErr && _convErr.message || "unknown") + " \u2014 skipped.", "error");
-              return;
-            }
-            setPdfBatchQueue((prev) => [...prev, { id: Date.now() + Math.random(), fileName: file.name, fileSize: file.size, base64, status: "pending", result: null }]);
-          };
-          reader.onerror = () => addToast('Could not read "' + file.name + '" \u2014 it may be corrupt or locked; skipped.', "error");
-          reader.readAsDataURL(file);
-        });
-        if (files.length > 0) addToast(`Added ${files.length} PDF(s)`, "success");
+        const _added = _alloEnqueueBatchFiles(files);
+        if (_added > 0) addToast(`Added ${_added} PDF(s)`, "success");
         e.target.value = "";
       } }),
       /* @__PURE__ */ React.createElement("label", { "data-help-key": "pdf_audit_view_batch_browse_btn", htmlFor: "batch-pdf-input", className: "inline-block mt-2 px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold cursor-pointer hover:bg-indigo-200 transition-colors" }, t("pdf_audit.batch.browse_files") || "Browse Files")

@@ -67,7 +67,9 @@ describe('anti-drift: the engine ships min (not mean) + a reproducible content s
     expect(pipeSrc).not.toMatch(/Math\.round\(\(finalAfterScore \+ deterministicScore\) \/ 2\)/);
   });
   it('the initial/before headline routes through the shared fn too', () => {
-    expect(pipeSrc).toMatch(/const governingInitial = _noTextLayer \? aiOnlyScore : _alloComputeHeadline\(aiOnlyScore, deterministicBaseline\)/);
+    // Repointed 2026-07-10 (ChatGPT finding 5): null-guarded - a WITHHELD (null) sliced-audit
+    // score passes through instead of being resurrected by the blend.
+    expect(pipeSrc).toMatch(/const governingInitial = \(aiOnlyScore === null\)\s*\n?\s*\? null\s*\n?\s*: \(_noTextLayer \? aiOnlyScore : _alloComputeHeadline\(aiOnlyScore, deterministicBaseline\)\)/);
     expect(pipeSrc).not.toMatch(/Math\.round\(\(aiOnlyScore \+ deterministicBaseline\) \/ 2\)/);
   });
   it('the re-blend after recovery routes through the shared fn', () => {
@@ -75,7 +77,8 @@ describe('anti-drift: the engine ships min (not mean) + a reproducible content s
   });
   it('the content score is the deduction on the CONSOLIDATED displayed list, not the per-auditor mean', () => {
     expect(pipeSrc).toMatch(/_consolidatedContentScore = Math\.max\(0, 100 - Math\.round\(_consolidatedDed\)\)/);
-    expect(pipeSrc).toMatch(/score: _consolidatedContentScore/);
+    // Repointed 2026-07-10 (ChatGPT finding 5): WITHHELD (null) on incomplete slice coverage.
+    expect(pipeSrc).toMatch(/score: _sliceIncomplete \? null : _consolidatedContentScore/);
     expect(pipeSrc).toMatch(/_aiPanelMeanScore: avgScore/); // the mean is demoted to the agreement band
   });
   it('the auditor self-score is never kept — always deduction-grounded (the ±12 override is gone)', () => {

@@ -67,6 +67,10 @@ describe('#9 batch quota breaker — stale global state must not trip on file 1'
     expect(quotaTrips({ message: 'HTTP 429 RESOURCE_EXHAUSTED' }, null, NOW)).toBe(true);
   });
   it('anti-drift: the shipped global half requires active + freshness', () => {
-    expect(src).toContain('window.__alloflowQuotaState.active === true && (Date.now() - (window.__alloflowQuotaState.hitAt || 0) < 60000)');
+    // Repointed 2026-07-10 (ChatGPT finding 10): the check moved into the per-day/burst
+    // disposition split - same active + <60s freshness contract on the _gq alias, and the
+    // batch-stop additionally requires per-day evidence.
+    expect(src).toContain("const _gqFresh = !!(_gq && _gq.kind === 'quota' && _gq.active === true && (Date.now() - (_gq.hitAt || 0) < 60000));");
+    expect(src).toContain('(_gqFresh && _gq.perDay === true)');
   });
 });

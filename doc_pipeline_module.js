@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded");return;}
+if(window.AlloModules&&window.AlloModules.DocPipelineModule){console.log("[CDN] DocPipelineModule already loaded, skipping"); return;}
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -3186,8 +3186,17 @@ var createDocPipeline = function(deps) {
   // carries the same numbers in fixResult.pipelineStats).
   var _getPipelineStats = function() {
     return {
+      runId: _pipelineStats.runId || null, // #15: per-run identity — history rows dedupe on this
       apiCalls: _pipelineStats.apiCalls, visionCalls: _pipelineStats.visionCalls,
       totalApiMs: Math.round(_pipelineStats.totalApiMs), retries: _pipelineStats.retries,
+      // #15 honest counters: retries = real retry ATTEMPTS (transportRetries mirrors it under its
+      // accurate name); recoveredRetries = retries that then succeeded; terminalFailures = calls
+      // that gave up (the old `retries` counted THESE); authThrottles = breaker trips (was
+      // counted but never surfaced in any snapshot).
+      transportRetries: _pipelineStats.transportRetries || 0,
+      recoveredRetries: _pipelineStats.recoveredRetries || 0,
+      terminalFailures: _pipelineStats.terminalFailures || 0,
+      authThrottles: _pipelineStats.authThrottles || 0,
       lastOpenStep: _pipelineStats.lastOpenStep, lastOpenStepLabel: _pipelineStats.lastOpenStepLabel,
       durationMs: _pipelineStats.startTime ? Math.round(performance.now() - _pipelineStats.startTime) : null,
     };
@@ -3672,6 +3681,8 @@ var createDocPipeline = function(deps) {
         });
         return { result: _raced, slotUntil: _slotUntil };
       }, _gateSignal, label).then(function(res) {
+        // #15: a retry that then SUCCEEDED — the metric the old `retries` counter claimed to be.
+        if (n > 0) _pipelineStats.recoveredRetries = (_pipelineStats.recoveredRetries || 0) + 1;
         _geminiNoteSuccess();
         return res;
       }).catch(function(err) {
@@ -3699,6 +3710,7 @@ var createDocPipeline = function(deps) {
           // don't retry in lockstep and re-storm the proxy on the same tick.
           var _backoff = Math.round(Math.min(20000, 2500 * Math.pow(2, n)) * (0.7 + Math.random() * 0.6));
           warnLog('[Retry] ' + (label || 'API call') + ' ' + _throttleKind + ' — retry ' + (n + 1) + '/' + _GEMINI_AUTH_RETRIES + ' after ' + _backoff + 'ms');
+          _pipelineStats.retries++; _pipelineStats.transportRetries = (_pipelineStats.transportRetries || 0) + 1; // #15: count the ATTEMPT, here where it happens
           _pulsePipelineWatchdog(); // a retry is activity — keep the dead-man watchdog from clearing a throttled-but-alive run (fix A)
           return new Promise(function(r) { setTimeout(r, _backoff); }).then(function() { return _attempt(n + 1); });
         }
@@ -3707,6 +3719,7 @@ var createDocPipeline = function(deps) {
         // same breaker the 401 path does — Canvas throttles via empty 200s + timeouts, not only 401s.
         if (n >= 1) { _geminiNoteTransientFail(); throw err; }
         warnLog('[Retry] ' + (label || 'API call') + ' failed (' + (isTimeout ? 'timeout' : err.message) + ') — retrying once...');
+        _pipelineStats.retries++; _pipelineStats.transportRetries = (_pipelineStats.transportRetries || 0) + 1; // #15
         _pulsePipelineWatchdog(); // a retry is activity (fix A)
         return _attempt(n + 1);
       });
@@ -3728,7 +3741,7 @@ var createDocPipeline = function(deps) {
       return result;
     }).catch(function(err) {
       var dur = Math.round(performance.now() - t0);
-      _pipelineStats.retries++;
+      _pipelineStats.terminalFailures = (_pipelineStats.terminalFailures || 0) + 1; // #15: this is a GIVE-UP, not a retry — it used to inflate `retries`
       _pipeLog('API✗', 'callGemini #' + callNum + ' FAILED after ' + dur + 'ms: ' + (err && err.message || err));
       throw err;
     });
@@ -3746,7 +3759,7 @@ var createDocPipeline = function(deps) {
       return result;
     }).catch(function(err) {
       var dur = Math.round(performance.now() - t0);
-      _pipelineStats.retries++;
+      _pipelineStats.terminalFailures = (_pipelineStats.terminalFailures || 0) + 1; // #15: this is a GIVE-UP, not a retry — it used to inflate `retries`
       _pipeLog('Vision✗', 'callGeminiVision #' + callNum + ' FAILED after ' + dur + 'ms: ' + (err && err.message || err));
       throw err;
     });
@@ -4123,6 +4136,53 @@ var createDocPipeline = function(deps) {
       .replace(/&[a-z]+;/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim();
+  };
+
+  // #6-incremental (ChatGPT review 2026-07-10): auto-continue / follow-up passes mutate
+  // accessibleHtml AFTER fixAndVerifyPdf computed integrityCoverage — so the fidelity panel could
+  // keep reading "100% of source text preserved" over a later round that dropped a paragraph.
+  // This re-runs the SAME normalized coverage + placement math (de-hyphenation normalize, both
+  // out-of-order sinks excluded from the numerator, present-anywhere refinement, preserved-box
+  // orphan count) against a fresh html so the host can update the disclosure after every accepted
+  // mutation. PURE: no toasts, no globals — the caller merges the fields. The inline primary pass
+  // in fixAndVerifyPdf aliases _alloNormForCoverage so the two passes cannot drift on
+  // normalization; the sink-strip regexes are duplicated there (the inline copy is pinned +
+  // eval-sliced by tests) — a parity golden holds them together.
+  const _alloNormForCoverage = (s) => String(s || '')
+    .replace(/(\p{L})[-­]\s+(\p{L})/gu, '$1$2')
+    .replace(/­/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const _recomputeContentFidelity = (sourceText, html) => {
+    try {
+      const src = _alloNormForCoverage(sourceText);
+      if (!src.length) return null; // no text-layer ground truth → nothing to measure
+      const _stripSinks = (h) => String(h || '')
+        .replace(/<section\b[^>]*\bdata-content-recovery\s*=\s*["']true["'][^>]*>[\s\S]*?<\/section>/gi, ' ')
+        .replace(/<section\b[^>]*\bdata-source-preserved-block\s*=\s*["']true["'][^>]*>[\s\S]*?<\/section>/gi, ' ');
+      const inOrder = _alloNormForCoverage(htmlToPlainText(_stripSinks(html))).length;
+      const coverage = Math.min(100, Math.round((inOrder / src.length) * 100));
+      const out = { integrityCoverage: coverage, coverageWarning: null, placementWarn: null, orphanCount: 0 };
+      if (inOrder < src.length * 0.97) {
+        // Present-anywhere refinement (R1): content routed to the preserved-box is PRESENT, out of
+        // order — placement, not loss. Only claim "missing" when the shortfall persists with the
+        // preserved box counted back in.
+        const presentHtml = String(html || '').replace(/<section\b[^>]*\bdata-content-recovery\s*=\s*["']true["'][^>]*>[\s\S]*?<\/section>/gi, ' ');
+        const present = _alloNormForCoverage(htmlToPlainText(presentHtml)).length;
+        if (present < src.length * 0.97) {
+          out.coverageWarning = `Output preserves ${inOrder.toLocaleString()} of ${src.length.toLocaleString()} source characters (${coverage}% coverage) after de-hyphenation and whitespace normalization. Some source content may be missing — review the Diff to confirm.`;
+        }
+      }
+      try {
+        const sinkMatch = String(html || '').match(/<section\b[^>]*\bdata-source-preserved-block\s*=\s*["']true["'][^>]*>([\s\S]*?)<\/section>/i);
+        const orphanN = sinkMatch ? (sinkMatch[1].match(/data-source-restored\s*=/gi) || []).length : 0;
+        if (orphanN > 0) {
+          out.orphanCount = orphanN;
+          out.placementWarn = `${orphanN} source passage${orphanN === 1 ? '' : 's'} could not be placed in ${orphanN === 1 ? 'its' : 'their'} original location and ${orphanN === 1 ? 'is' : 'are'} gathered in the "Preserved source content" box at the end — the text is present but its reading order needs review. Review before distributing.`;
+        }
+      } catch (_) {}
+      return out;
+    } catch (_) { return null; }
   };
 
   // acceptFixedHtmlDetailed: strict guard that rejects AI fix outputs that silently shrink
@@ -9239,6 +9299,33 @@ var createDocPipeline = function(deps) {
   // them) and oversize images degrade to alt-only entries WITH the reason;
   // caps: 2.5 MB per image, 10 MB total per document.
   const _OFFICE_IMG_MIME = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', bmp: 'image/bmp', webp: 'image/webp', svg: 'image/svg+xml' };
+  // #17 (ChatGPT review 2026-07-10): OOXML decompression budgets. The 200 MB upload cap measures
+  // COMPRESSED input — a zip-bomb-shaped DOCX/PPTX can declare orders of magnitude more and the
+  // old flow paid the full inflation before any check. JSZip's central directory carries each
+  // entry's DECLARED uncompressed size without inflating anything, so budgets are enforced first.
+  // A violation is a TYPED error (isArchiveLimit) with a teacher-actionable message, not a generic
+  // extraction failure. Declared sizes can lie, so downstream per-part caps still hold.
+  const _ooxmlDeclaredSize = (f) => (f && f._data && typeof f._data.uncompressedSize === 'number') ? Math.max(0, f._data.uncompressedSize) : -1;
+  const _ooxmlGuardArchive = (zip, compressedBytes, label) => {
+    let reason = null;
+    try {
+      let entries = 0, total = 0, maxEntry = 0;
+      zip.forEach((_, f) => {
+        entries++;
+        const u = _ooxmlDeclaredSize(f);
+        if (u > 0) { total += u; if (u > maxEntry) maxEntry = u; }
+      });
+      if (entries > 8000) reason = 'the archive declares ' + entries.toLocaleString() + ' internal entries (limit 8,000)';
+      else if (maxEntry > 300 * 1024 * 1024) reason = 'a single internal entry declares ' + Math.round(maxEntry / 1048576) + ' MB uncompressed (limit 300 MB)';
+      else if (total > 1024 * 1024 * 1024) reason = 'the archive declares ' + Math.round(total / 1048576) + ' MB uncompressed in total (limit 1 GB)';
+      else if (compressedBytes > 0 && total > 200 * 1024 * 1024 && total / compressedBytes > 150) reason = 'its compression ratio is ' + Math.round(total / compressedBytes) + ':1 — zip-bomb shaped';
+    } catch (_) { /* central-directory shape surprises: the guard is best-effort, never a blocker on its own */ }
+    if (reason) {
+      const e = new Error('This ' + (label || 'Office') + ' file exceeds AlloFlow’s decompression safety limits: ' + reason + '. If this is a real document, re-save it in ' + (label === 'PowerPoint' ? 'PowerPoint' : 'Word') + ' (File → Save As) to normalize it, or export it to PDF and upload that instead.');
+      e.isArchiveLimit = true;
+      throw e;
+    }
+  };
   const _officeMediaFromPart = async (zip, relsPath, partXml, resolveTarget, slideNum, budget) => {
     const out = [];
     try {
@@ -9277,6 +9364,12 @@ var createDocPipeline = function(deps) {
         const ext = (path.split('.').pop() || '').toLowerCase();
         const mime = _OFFICE_IMG_MIME[ext];
         if (!mime) { out.push({ alt, slideNum, skipped: true, reason: ext.toUpperCase() + ' format (not web-renderable)' }); continue; }
+        // #17: check the DECLARED size BEFORE inflating — the old order paid the full decompression
+        // + base64 expansion just to discard the result. Headers can lie, so the post-decode checks
+        // below remain the authoritative gate.
+        const _declared = _ooxmlDeclaredSize(f);
+        if (_declared > 2.5 * 1024 * 1024) { out.push({ alt, slideNum, skipped: true, reason: 'too large (' + (_declared / 1048576).toFixed(1) + ' MB)' }); continue; }
+        if (_declared > 0 && budget.used + _declared > 10 * 1024 * 1024) { out.push({ alt, slideNum, skipped: true, reason: 'document image budget (10 MB) reached' }); continue; }
         const b64img = await f.async('base64');
         const rawLen = Math.floor(b64img.length * 3 / 4);
         if (rawLen > 2.5 * 1024 * 1024) { out.push({ alt, slideNum, skipped: true, reason: 'too large (' + (rawLen / 1048576).toFixed(1) + ' MB)' }); continue; }
@@ -9416,6 +9509,19 @@ var createDocPipeline = function(deps) {
   };
 
   const extractDocxTextDeterministic = async (base64) => {
+    // #17: decompression budgets BEFORE any inflating parser touches the bytes — mammoth unzips
+    // internally, so the guard must run first. loadAsync only reads the central directory here;
+    // nothing is inflated until a part is actually requested.
+    try {
+      await ensureJsZipLoaded();
+      if (window.JSZip) {
+        const _gBytes = _base64ToBytes(base64);
+        _ooxmlGuardArchive(await window.JSZip.loadAsync(_gBytes), _gBytes.length, 'Word');
+      }
+    } catch (_ge) {
+      if (_ge && _ge.isArchiveLimit) return { fullText: '', sourceCharCount: 0, method: 'failed', error: _ge.message, mediaImages: [] };
+      // JSZip unavailable / unreadable container: fall through — mammoth gets its own try below.
+    }
     // Body text via mammoth (primary path — best handling of styles/structure)
     let bodyText = '';
     let usedMammoth = false;
@@ -9557,6 +9663,7 @@ var createDocPipeline = function(deps) {
       if (!window.JSZip) throw new Error('jszip unavailable');
       const bytes = _base64ToBytes(base64);
       const zip = await window.JSZip.loadAsync(bytes);
+      _ooxmlGuardArchive(zip, bytes.length, 'PowerPoint'); // #17: typed archive-limit error before any part inflates
       const allNames = Object.keys(zip.files);
       const slideFiles = allNames
         .filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))
@@ -9711,10 +9818,12 @@ var createDocPipeline = function(deps) {
   const _AUDIT_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
   // Bump when the audit prompt OR pipeline correctness logic changes materially so users get fresh
   // results instead of stale cached ones. Format: YYYYMMDD-N.
-  // Last bump: 2026-07-10 (audit-cache finalization fix + key identity extension — the version had
-  // sat at 20260524-1 through six weeks of scoring/honesty changes, so cache hits could replay
-  // results produced by superseded logic).
-  const _PIPELINE_PROMPT_VERSION = '20260710-1';
+  // Last bump: 2026-07-10 -2 (Phase 3: audit-frame neutralization + external loads blocked in the
+  // frame, and the EA engine pinned to 3.1.83 — all three can shift deterministic scores, so cached
+  // results must not mix with fresh ones). Previous: -1 (audit-cache finalization fix + key
+  // identity extension — the version had sat at 20260524-1 through six weeks of scoring/honesty
+  // changes, so cache hits could replay results produced by superseded logic).
+  const _PIPELINE_PROMPT_VERSION = '20260710-2';
   // Cache identity must include the AI backend/model — a result produced by a local Ollama model is
   // not interchangeable with a Gemini one for the SAME bytes and settings. Best-effort, stable id.
   const _cacheBackendId = () => {
@@ -9769,6 +9878,25 @@ var createDocPipeline = function(deps) {
   // most one scan; failures never affect the write (same fail-soft posture as the writes below).
   const _PDF_CACHE_KEY_PREFIXES = ['pdf_audit_', 'pdf_remed_'];
   const _PDF_CACHE_MAX_ENTRIES = 200;
+  // #12 (ChatGPT review 2026-07-10): the entry cap alone let 200 image-heavy remediation results
+  // occupy an unbounded number of BYTES (each can carry a full accessibleHtml with data: images) —
+  // enough to exhaust the origin's IndexedDB quota and evict unrelated data. Eviction is now also
+  // byte-budgeted, using a cheap structural estimate (no full stringify — the sweep already has
+  // each record in hand for the TTL check).
+  const _PDF_CACHE_MAX_BYTES = 150 * 1024 * 1024;
+  const _approxCacheRecBytes = (rec) => {
+    try {
+      const a = rec && rec.audit;
+      if (!a) return 2048;
+      if (typeof a === 'string') return 2048 + a.length * 2;
+      let n = 4096;
+      for (const f of ['accessibleHtml', 'sourceText', 'finalText', 'summary']) {
+        if (typeof a[f] === 'string') n += a[f].length * 2;
+      }
+      if (Array.isArray(a.issues)) n += a.issues.length * 400;
+      return n;
+    } catch (_) { return 2048; }
+  };
   let _pdfCacheSweepRunning = false;
   let _lastPdfCacheSweepAt = 0;
   const _sweepPdfCacheStore = async () => {
@@ -9790,14 +9918,17 @@ var createDocPipeline = function(deps) {
           try { await window.idbKeyval.del(k); } catch (_) {}
           continue;
         }
-        survivors.push({ key: k, savedAt: rec.savedAt });
+        survivors.push({ key: k, savedAt: rec.savedAt, bytes: _approxCacheRecBytes(rec) });
       }
-      // LRU/size cap: evict oldest survivors until under the entry cap.
-      if (survivors.length > _PDF_CACHE_MAX_ENTRIES) {
+      // LRU cap: evict oldest survivors until under BOTH the entry cap and the byte budget (#12).
+      let _totalBytes = survivors.reduce((s, r) => s + r.bytes, 0);
+      if (survivors.length > _PDF_CACHE_MAX_ENTRIES || _totalBytes > _PDF_CACHE_MAX_BYTES) {
         survivors.sort((a, b) => a.savedAt - b.savedAt);
-        const toEvict = survivors.length - _PDF_CACHE_MAX_ENTRIES;
-        for (let i = 0; i < toEvict; i++) {
+        let i = 0;
+        while (i < survivors.length && (survivors.length - i > _PDF_CACHE_MAX_ENTRIES || _totalBytes > _PDF_CACHE_MAX_BYTES)) {
           try { await window.idbKeyval.del(survivors[i].key); } catch (_) {}
+          _totalBytes -= survivors[i].bytes;
+          i++;
         }
       }
     } catch (_) { /* sweep is best-effort; never break the write path */ }
@@ -11203,8 +11334,14 @@ Return ONLY valid JSON:
     }
     _batchTaggedCache.set(id, entry);
   };
+  // #13 (ChatGPT review 2026-07-10): export ownership lock — a double-click used to start a SECOND
+  // full ZIP build (duplicate per-file OCR/tagging work + a second download) on top of the first.
+  let _batchZipRunning = false;
   const downloadBatchResults = async () => {
     if (!window.JSZip) { addToast(t('toasts.zip_library_loaded'), 'error'); return; }
+    if (_batchZipRunning) { addToast(t('toasts.zip_already_running') || '📦 ZIP export is already being generated — one moment…', 'info'); return; }
+    _batchZipRunning = true;
+    try {
     // S1 step 7: snapshot the queue/summary/settings at entry — the CSV, telemetry, and HTML
     // report are built AFTER the per-file tagging awaits, where a new batch started mid-ZIP
     // used to be able to swap the queue under this run and corrupt the report/manifest.
@@ -11214,8 +11351,23 @@ Return ONLY valid JSON:
     const zip = new window.JSZip();
     const results = _zipQueue.filter(f => f.status === 'done');
 
+    // #13: collision-safe entry names. Sanitization can normalize DIFFERENT source names onto the
+    // SAME entry ("Report (1).pdf" and "Report [1].pdf" both → Report__1_) — JSZip keeps the LAST
+    // write, silently losing the earlier file's artifacts. Each file claims its name once (both
+    // the HTML and tagged loops read this map); collisions get a numeric suffix, and telemetry.json
+    // records the mapping so a teacher can trace every source file to its ZIP entries.
+    const _zipNameCounts = new Map();
+    const _zipNameFor = new Map();
     results.forEach(f => {
-      const safeName = f.fileName.replace(/\.(pdf|docx|pptx)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const base = f.fileName.replace(/\.(pdf|docx|pptx)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const k = base.toLowerCase();
+      const n = (_zipNameCounts.get(k) || 0) + 1;
+      _zipNameCounts.set(k, n);
+      _zipNameFor.set(f.id, n === 1 ? base : base + '-' + n);
+    });
+
+    results.forEach(f => {
+      const safeName = _zipNameFor.get(f.id);
       zip.file(`${safeName}_accessible.html`, f.result.accessibleHtml);
     });
 
@@ -11231,7 +11383,7 @@ Return ONLY valid JSON:
     let _taggedCount = 0;
     addToast(t('toasts.batch_tagging') || '📄 Generating tagged PDFs for the ZIP — scanned files take longer (OCR runs per file)…', 'info');
     for (const f of results) {
-      const safeName = f.fileName.replace(/\.(pdf|docx|pptx)$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const safeName = _zipNameFor.get(f.id);
       try {
         if (!f.result || !f.result.accessibleHtml) { _taggedNotes.set(f.id, 'skipped (no remediated HTML)'); continue; }
         // C4: byte-identical reuse — same remediated HTML → same tagged PDF; skip the
@@ -11239,7 +11391,9 @@ Return ONLY valid JSON:
         const _tagStamp = _auditMemoHash(String(f.result.accessibleHtml));
         const _tagHit = _batchTaggedCache.get(f.id);
         if (_tagHit && _tagHit.stamp === _tagStamp && _tagHit.bytes) {
-          zip.file(_tagHit.entryName, _tagHit.bytes);
+          // #13: write under THIS run's claimed name — the cached entryName was claimed on a
+          // previous click, when the queue (and so the collision suffixes) may have differed.
+          zip.file(safeName + (/_typeset_tagged\.pdf$/.test(_tagHit.entryName) ? '_typeset_tagged.pdf' : '_tagged.pdf'), _tagHit.bytes);
           _taggedCount++;
           _taggedNotes.set(f.id, _tagHit.note);
           continue;
@@ -11305,6 +11459,7 @@ Return ONLY valid JSON:
       summary: _zipSummary,
       files: _zipQueue.map(f => ({
         fileName: f.fileName, fileSize: f.fileSize, status: f.status, error: f.error || null,
+        zipName: _zipNameFor.get(f.id) || null, // #13: source-identity → ZIP-entry manifest (suffix-disambiguated on collision)
         taggedPdf: _taggedNotes.get(f.id) || null,
         result: f.result ? { beforeScore: f.result.beforeScore, afterScore: f.result.afterScore, improvement: (f.result.afterScore || 0) - (f.result.beforeScore || 0), autoFixPasses: f.result.autoFixPasses, axeViolations: f.result.axeViolations, secondEngine: f.result.secondEngineAudit ? { engine: f.result.secondEngineAudit.engine, failViolations: f.result.secondEngineAudit.failViolations, potentialViolations: f.result.secondEngineAudit.potentialViolations, score: f.result.secondEngineAudit.score } : null, scoreIsBlended: !!f.result._scoreIsBlended, needsExpertReview: f.result.needsExpertReview, elapsed: f.result.elapsed } : null,
       })),
@@ -11335,6 +11490,7 @@ Return ONLY valid JSON:
         addToast(`\u26a0 ${_noTagged.length} file${_noTagged.length === 1 ? ' has' : 's have'} NO tagged PDF in the ZIP (${_names}) \u2014 their HTML versions are included; the CSV's Tagged PDF column explains each.`, 'warning');
       }
     } catch (_) {}
+    } finally { _batchZipRunning = false; } // #13: release the export lock on EVERY exit
   };
 
 
@@ -11934,6 +12090,45 @@ HTML section ${chunkNum}/${chunks.length}:
     }
   };
 
+  // #16 (ChatGPT review 2026-07-10): defense-in-depth neutralization for the AUDIT iframes (axe +
+  // Equal Access). Both frames are same-origin BY DESIGN — axe is injected INTO the frame and EA
+  // checks the frame's Document from the host — so anything executable written into them would run
+  // with host privileges. Parse with DOMParser (an INERT document: nothing executes, and unlike a
+  // regex pass it cannot mangle text content that merely LOOKS like an attribute) and neutralize
+  // every execution vector while preserving DOM shape for the audit:
+  //   on* handlers → data-allo-neutralized-on* · javascript:/vbscript: URLs → about:blank ·
+  //   <script> removed (paired AND unclosed) · nested frame/plugin src/data disarmed ·
+  //   <meta refresh> removed · a CSP <meta> blocks all EXTERNAL loads (network beacons from a
+  //   hostile source doc; audits also become deterministic on school networks) while inline
+  //   styles + data: images still render and inline scripts stay allowed for the axe injection.
+  const _neutralizeForAuditFrame = (html) => {
+    try {
+      const inert = new DOMParser().parseFromString(String(html || ''), 'text/html');
+      inert.querySelectorAll('script').forEach((s) => s.remove());
+      inert.querySelectorAll('meta[http-equiv]').forEach((m) => { if (/refresh/i.test(m.getAttribute('http-equiv') || '')) m.remove(); });
+      inert.querySelectorAll('*').forEach((el) => {
+        Array.from(el.attributes || []).forEach((attr) => {
+          const n = attr.name;
+          if (/^on/i.test(n)) { try { el.setAttribute('data-allo-neutralized-' + n, attr.value); } catch (_) {} el.removeAttribute(n); }
+          else if (/^(href|src|action|formaction|data|xlink:href)$/i.test(n) && /^\s*(javascript|vbscript)\s*:/i.test(attr.value || '')) el.setAttribute(n, 'about:blank#neutralized');
+        });
+        const tag = el.tagName ? el.tagName.toLowerCase() : '';
+        if (tag === 'iframe' || tag === 'frame' || tag === 'embed' || tag === 'object') {
+          ['src', 'data'].forEach((a) => { if (el.hasAttribute(a)) { el.setAttribute('data-allo-neutralized-' + a, el.getAttribute(a) || ''); el.removeAttribute(a); } });
+        }
+      });
+      try {
+        const meta = inert.createElement('meta');
+        meta.setAttribute('http-equiv', 'Content-Security-Policy');
+        meta.setAttribute('content', "default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:; script-src 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com");
+        inert.head.insertBefore(meta, inert.head.firstChild);
+      } catch (_) {}
+      return '<!DOCTYPE html>' + (inert.documentElement ? inert.documentElement.outerHTML : String(html || ''));
+    } catch (_) {
+      // DOMParser unavailable (non-browser) → the legacy strip still removes script execution.
+      return String(html || '').replace(/<script[\s\S]*?<\/script\s*>/gi, '').replace(/<\/?script\b[^>]*>/gi, '');
+    }
+  };
   // ── axe-core Accessibility Checker (lazy-loaded from CDN) ──
   // Cache axe source text so each iframe audit injects it inline (no second CDN round-trip).
   var _axeSourceCache = null;
@@ -12002,9 +12197,10 @@ HTML section ${chunkNum}/${chunks.length}:
       let results;
       try {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-      // Strip <script> tags before writing — they can break document.write() parsing
-      // and aren't needed for accessibility auditing (axe-core only checks DOM structure)
-      const _safeHtml = htmlContent.replace(/<script[\s\S]*?<\/script>/gi, '');
+      // #16 (ChatGPT review 2026-07-10): full neutralization before writing — the old strip only
+      // removed PAIRED <script> blocks, leaving handlers/unclosed scripts/nested frames live in a
+      // frame that is same-origin BY DESIGN (axe is injected into it). See _neutralizeForAuditFrame.
+      const _safeHtml = _neutralizeForAuditFrame(htmlContent);
       iframeDoc.open();
       iframeDoc.write(_safeHtml);
       iframeDoc.close();
@@ -12154,6 +12350,17 @@ HTML section ${chunkNum}/${chunks.length}:
       }
     } catch (_) { /* fall through to the regex baseline */ }
     try { _ensureDOMPurify(); } catch (_) {} // warm it up for the next render/export
+    // #16 (ChatGPT review 2026-07-10) FAIL CLOSED on execution-shaped content: the regex baseline
+    // below cannot prove parity with DOMPurify against mutation-XSS / entity-encoded polyglots —
+    // exports open in recipients' NON-sandboxed browsers. A block that carries script/handler/
+    // frame/scheme vectors while DOMPurify is unavailable (blocked CDN, offline) is WITHHELD with
+    // a visible notice instead of riding the weaker sanitizer into a distributed file. Benign
+    // blocks (no execution vectors — even ones with forbidden-but-inert tags like <style> or form
+    // controls) still sanitize exactly as before, so offline export of normal content is unchanged.
+    const _execShaped = /<script\b|<iframe\b|<object\b|<embed\b|<svg\b|<math\b|[\s/]on[a-z]+\s*=|(?:javascript|vbscript)\s*:|data\s*:\s*text\/html/i.test(html);
+    if (_execShaped) {
+      return '<div role="note" data-allo-rawhtml-withheld="true" style="border:1px dashed #b45309;border-radius:6px;padding:8px 12px;background:#fffbeb;color:#92400e;font-size:0.9em;">An embedded HTML block was withheld from this export: it contained active content and the full HTML sanitizer could not be loaded (offline or blocked network). Re-export with network access to include the sanitized block.</div>';
+    }
     // Fallback baseline (used only in the narrow window before the DOMPurify CDN load
     // resolves). Kept in PARITY with _RAWHTML_PURIFY_CFG.FORBID_TAGS: strip paired
     // script/style, then EVERY forbidden tag (open or close) — incl. form controls and
@@ -12737,9 +12944,13 @@ HTML section ${chunkNum}/${chunks.length}:
   // ONCE into the host window and checks the iframe's Document directly —
   // no per-iframe source injection needed. Fail-soft: any failure returns
   // null and the pipeline behaves exactly as before (axe-only, disclosed).
+  // #16 (ChatGPT review 2026-07-10): PINNED — the floating @3 tag silently changed the rule set
+  // under the score whenever IBM published (same audit, different day, different number, and the
+  // cache couldn't tell). 3.1.83 = the @3 resolution verified 2026-07-10; bump deliberately, with
+  // _PIPELINE_PROMPT_VERSION, so cached scores and fresh scores always come from the same rules.
   const _ACE_CDN_URLS = [
-    'https://cdn.jsdelivr.net/npm/accessibility-checker-engine@3/ace.js',
-    'https://unpkg.com/accessibility-checker-engine@3/ace.js',
+    'https://cdn.jsdelivr.net/npm/accessibility-checker-engine@3.1.83/ace.js',
+    'https://unpkg.com/accessibility-checker-engine@3.1.83/ace.js',
   ];
   var _acePromise = null;
   const _ensureAce = () => {
@@ -12767,7 +12978,7 @@ HTML section ${chunkNum}/${chunks.length}:
       iframe.style.cssText = 'position:absolute;left:-9999px;width:1024px;height:768px;';
       document.body.appendChild(iframe);
       const doc = iframe.contentDocument || iframe.contentWindow.document;
-      doc.open(); doc.write(htmlContent); doc.close();
+      doc.open(); doc.write(_neutralizeForAuditFrame(htmlContent)); doc.close(); // #16: same neutralization as the axe frame
       await new Promise((r) => setTimeout(r, 150));
       const checker = new window.ace.Checker();
       const report = await _withTimeout(checker.check(doc, ['WCAG_2_1']), 30000, 'IBM Equal Access audit');
@@ -16380,13 +16591,23 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
     // (Mutable: we normalize to null below if the range covers the full doc.)
     let _pageRange = batchOverrides?.pageRange || null;
     const _startTime = Date.now();
+    // #15 (ChatGPT review 2026-07-10): a per-run identity. History rows used to be upserted on
+    // filename+baseline-score, which COLLAPSED distinct runs of the same document into one row —
+    // the reliability history undercounted. The host dedupes on runId when present.
+    const _runId = 'run-' + _startTime.toString(36) + '-' + Math.random().toString(36).slice(2, 8);
     // R5 (2026-07-03): in batch mode the runner wraps this whole call in an 8-min _withTimeout; carry the
     // per-file deadline so the throttle re-audit (fix B) can bail before it pushes a finished run past the
     // wall. 0 in single-file mode (no wall).
     const _perFileDeadlineTs = (batchOverrides && batchOverrides.perFileDeadlineTs) || 0;
 
-    // Reset pipeline telemetry for this run
+    // Reset pipeline telemetry for this run. #15: `retries` used to increment on TERMINAL failure
+    // (a permanent failure with no retry recorded 1; a recovered retry recorded 0) — the honest
+    // counters are transportRetries (real retry attempts), recoveredRetries (retries that then
+    // succeeded), and terminalFailures (calls that gave up). Snapshots expose all three plus
+    // authThrottles (previously counted but never surfaced).
     _pipelineStats.apiCalls = 0; _pipelineStats.visionCalls = 0; _pipelineStats.totalApiMs = 0; _pipelineStats.retries = 0;
+    _pipelineStats.transportRetries = 0; _pipelineStats.recoveredRetries = 0; _pipelineStats.terminalFailures = 0; _pipelineStats.authThrottles = 0;
+    _pipelineStats.runId = _runId;
     _pipelineStats.startTime = performance.now(); _pipelineStats.stepTimes = {};
     _pipelineStats.lastOpenStep = null; _pipelineStats.lastOpenStepLabel = '';
     // CB-1 (2026-06-21): clear the Gemini circuit-breaker so a storm from a PREVIOUS document in this
@@ -19682,11 +19903,9 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
       try {
         // Rejoin "exam-\nple" -> "example" (hyphen immediately after a letter, then whitespace,
         // then a letter — leaves real compounds like "well-being" untouched) + collapse whitespace.
-        const _normIntegrity = (s) => String(s || '')
-          .replace(/(\p{L})[-­]\s+(\p{L})/gu, '$1$2')
-          .replace(/­/g, '')
-          .replace(/\s+/g, ' ')
-          .trim();
+        // Single source with the #6 recompute helper: both passes MUST measure identically or the
+        // auto-continue recompute would report phantom gains/losses against this baseline.
+        const _normIntegrity = _alloNormForCoverage;
         // 2026-06-07: strip ALLO_SECTION markers from source before measurement so
         // DOCX/PPTX augmentation marker chars do not inflate the denominator and
         // trigger false "low fidelity" banners on extractor-augmented documents.
@@ -20209,12 +20428,27 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // teacher/coordinator gets an honest success/failure + retries/vision/
         // API-time denominator (the failure path carries the same via
         // getPipelineStats()).
+        // #15 (ChatGPT review 2026-07-10): per-run identity for history dedup — filename+baseline
+        // upserts collapsed distinct runs of the same document into one row.
+        runId: _runId,
         pipelineStats: {
-          outcome: 'success',
+          runId: _runId,
+          // #15: 'success' was HARD-CODED here — a run whose verifiers never completed still
+          // stamped success into the reliability history. The outcome now states evidence:
+          // 'success' only when the AI verification ran to full coverage AND the axe checker
+          // returned a result; anything less is 'incomplete'. (Score-vs-target policy stays with
+          // the host — this field feeds the run-history reliability rate defended to UMaine.)
+          outcome: (verification && typeof verification.score === 'number' &&
+            !verification._partialAudit && !verification._scoreDegraded && !verification.synthesized &&
+            axeResults && typeof axeResults.totalViolations === 'number') ? 'success' : 'incomplete',
           apiCalls: _pipelineStats.apiCalls,
           visionCalls: _pipelineStats.visionCalls,
           totalApiMs: Math.round(_pipelineStats.totalApiMs),
           retries: _pipelineStats.retries,
+          transportRetries: _pipelineStats.transportRetries || 0, // #15 honest counters — see _getPipelineStats
+          recoveredRetries: _pipelineStats.recoveredRetries || 0,
+          terminalFailures: _pipelineStats.terminalFailures || 0,
+          authThrottles: _pipelineStats.authThrottles || 0,
           durationMs: Date.now() - _startTime,
         },
       };
@@ -32615,6 +32849,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // Recompute the Resolved/Persisted/Newly-Introduced lists against a fresh audit after a follow-up
     // pass, so they reflect the CURRENT doc instead of going stale (recompute-on-incremental-commit).
     recomputeIssueResolution: _recomputeIssueResolution,
+    // #6-incremental: recompute integrityCoverage/placement against a mutated html (auto-continue
+    // rounds change accessibleHtml after the primary pass measured fidelity — see helper above).
+    recomputeContentFidelity: _wrap(_recomputeContentFidelity),
     generateAuditReportHtml: _wrap(generateAuditReportHtml),
     // Redaction infra (true removal + safety verify). Pure module-scope helpers; the UI flow
     // (select → confirm → redactDocument → block-if-not-clean) is wired separately. (redaction)
@@ -32706,11 +32943,6 @@ window.AlloModules.createDocPipeline.routeViolationsToChunks = _routeViolationsT
 window.AlloModules.createDocPipeline.applyToAxeTargetDoc = _applyToAxeTargetDoc; // static: P5 shared-doc applier (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.applyToAxeTarget = _applyToAxeTarget; // static: string-path applier (P5 equivalence tests)
 window.AlloModules.createDocPipeline.serializeDomEdit = _serializeDomEdit; // static: shape-matched serializer (P5 head-hoist pin)
-window.AlloModules.DocPipelineModule = true;
-console.log('[DocPipelineModule] Pipeline factory registered');
-
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.createDocPipeline = createDocPipeline;
 window.AlloModules.DocPipelineModule = true;
 console.log('[DocPipelineModule] Pipeline factory registered');
 })();
