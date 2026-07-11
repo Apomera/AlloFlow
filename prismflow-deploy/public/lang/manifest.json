@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generated": "2026-07-11T19:13:05.095Z",
+  "generated": "2026-07-11T19:41:44.021Z",
   "count": 63,
   "total_keys_expected": 9307,
   "available": [
@@ -21,8 +21,8 @@
     {
       "slug": "arabic",
       "display": "Arabic",
-      "keys": 18046,
-      "bytes": 2103993,
+      "keys": 18379,
+      "bytes": 2151095,
       "updated": "2026-07-11"
     },
     {
@@ -70,36 +70,36 @@
     {
       "slug": "dari",
       "display": "Dari",
-      "keys": 18065,
-      "bytes": 1879761,
+      "keys": 18233,
+      "bytes": 1897990,
       "updated": "2026-07-11"
     },
     {
       "slug": "dutch",
       "display": "Dutch",
-      "keys": 18106,
-      "bytes": 1775815,
+      "keys": 18274,
+      "bytes": 1789425,
       "updated": "2026-07-11"
     },
     {
       "slug": "esperanto",
       "display": "Esperanto",
-      "keys": 18106,
-      "bytes": 1692805,
+      "keys": 18274,
+      "bytes": 1706379,
       "updated": "2026-07-11"
     },
     {
       "slug": "farsi",
       "display": "Farsi",
-      "keys": 18275,
-      "bytes": 1913780,
+      "keys": 18443,
+      "bytes": 1932009,
       "updated": "2026-07-11"
     },
     {
       "slug": "french",
       "display": "French",
-      "keys": 18252,
-      "bytes": 1905610,
+      "keys": 18417,
+      "bytes": 1934446,
       "updated": "2026-07-11"
     },
     {
@@ -112,8 +112,8 @@
     {
       "slug": "german",
       "display": "German",
-      "keys": 18051,
-      "bytes": 1505962,
+      "keys": 18219,
+      "bytes": 1520017,
       "updated": "2026-07-11"
     },
     {
@@ -133,8 +133,8 @@
     {
       "slug": "haitian_creole",
       "display": "Haitian Creole",
-      "keys": 18256,
-      "bytes": 1554711,
+      "keys": 18589,
+      "bytes": 1596002,
       "updated": "2026-07-11"
     },
     {
@@ -147,8 +147,8 @@
     {
       "slug": "hebrew",
       "display": "Hebrew",
-      "keys": 18265,
-      "bytes": 2029603,
+      "keys": 18433,
+      "bytes": 2045438,
       "updated": "2026-07-11"
     },
     {
@@ -245,8 +245,8 @@
     {
       "slug": "latin",
       "display": "Latin",
-      "keys": 18062,
-      "bytes": 1681622,
+      "keys": 18230,
+      "bytes": 1695443,
       "updated": "2026-07-11"
     },
     {
@@ -301,8 +301,8 @@
     {
       "slug": "polish",
       "display": "Polish",
-      "keys": 18276,
-      "bytes": 1376776,
+      "keys": 18444,
+      "bytes": 1390822,
       "updated": "2026-07-11"
     },
     {
@@ -315,8 +315,8 @@
     {
       "slug": "portuguese_brazil",
       "display": "Portuguese (Brazil)",
-      "keys": 18252,
-      "bytes": 1807141,
+      "keys": 18417,
+      "bytes": 1835871,
       "updated": "2026-07-11"
     },
     {
@@ -336,15 +336,15 @@
     {
       "slug": "romanian",
       "display": "Romanian",
-      "keys": 18293,
-      "bytes": 1491548,
+      "keys": 18461,
+      "bytes": 1505945,
       "updated": "2026-07-11"
     },
     {
       "slug": "russian",
       "display": "Russian",
-      "keys": 18067,
-      "bytes": 1935288,
+      "keys": 18235,
+      "bytes": 1954978,
       "updated": "2026-07-11"
     },
     {
@@ -420,8 +420,8 @@
     {
       "slug": "ukrainian",
       "display": "Ukrainian",
-      "keys": 18254,
-      "bytes": 2095627,
+      "keys": 18422,
+      "bytes": 2114872,
       "updated": "2026-07-11"
     },
     {
