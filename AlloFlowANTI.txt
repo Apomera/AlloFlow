@@ -3254,8 +3254,8 @@ const GlobalMuteButton = React.memo(({ className = '' }) => {
             onClick={toggle}
             className={`flex items-center gap-2 ${className} ${muted ? 'ring-2 ring-red-400 !bg-red-500 !text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]' : ''}`}
             data-help-key="global_mute_toggle"
-            title={muted ? t('a11y.unmute_all_audio_title') : t('a11y.mute_all_audio_title')}
-            aria-label={muted ? t('a11y.unmute_all_audio') : t('a11y.mute_all_audio')}
+            title={(muted ? t('a11y.unmute_all_audio_title') : t('a11y.mute_all_audio_title')) || (muted ? 'Unmute all audio' : 'Mute all audio')}
+            aria-label={(muted ? t('a11y.unmute_all_audio') : t('a11y.mute_all_audio')) || (muted ? 'Unmute all audio' : 'Mute all audio')}
         >
             {muted ? <VolumeX size={18} className="animate-pulse" /> : <Volume2 size={18} />}
         </button>
@@ -32710,12 +32710,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           theme, udlInput, udlInputRef, udlMessages, udlScrollRef,
           udlStandardFramework, udlStandardGrade
         })}
-      <h1 className="sr-only">AlloFlow</h1>
       <main aria-label={t('common.main_content')}
         id="main-content"
         ref={mainContainerRef}
         className={`allo-docsuite flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-${theme} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''} ${isZenMode ? 'h-screen p-0' : 'h-[calc(100vh-80px)] p-4 md:p-6'}`}
       >
+        <h1 className="sr-only">AlloFlow</h1>
         {theme !== 'contrast' && (
         <div className="fixed inset-0 z-0 pointer-events-none">
             <div className="absolute inset-0 bg-dot-pattern opacity-50"></div>
@@ -36086,7 +36086,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           />
       )}
       {(!isCanvas || isCloudSyncEnabled) && (
-      <div className="fixed bottom-4 left-4 z-[1000] pointer-events-none select-none bg-white/90 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-slate-400 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest transition-all duration-500">
+      <div role="status" aria-live="polite" aria-atomic="true" className="fixed bottom-4 left-4 z-[1000] pointer-events-none select-none bg-white/90 backdrop-blur-md rounded-full px-4 py-2 shadow-lg border border-slate-400 flex items-center gap-3 text-[11px] font-black uppercase tracking-widest transition-all duration-500">
           {(isDraftSaving || pendingSync || studentWorkStatus === 'saving' || cloudSyncStatus === 'syncing') ? (
                <>
                    <span className="relative flex h-2.5 w-2.5">

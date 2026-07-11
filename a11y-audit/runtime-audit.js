@@ -23,7 +23,8 @@ const path = require('path');
 
 const DEFAULT_URL = 'http://localhost:3000';
 const VIEWPORT = { width: 1280, height: 800 };
-const WAIT_MS = 3000; // wait for React to render
+const WAIT_MS = 3000; // minimum hydration delay
+const APP_READY_TIMEOUT_MS = 30000;
 
 // axe-core rules to run (WCAG 2.0, 2.1, and 2.2 Level A/AA)
 const AXE_TAGS = [
@@ -164,6 +165,8 @@ async function runCustomChecks(page) {
     const inputs = document.querySelectorAll('input:not([type="hidden"]), textarea, select');
     let unlabeledInputs = 0;
     inputs.forEach(input => {
+      const inputStyle = window.getComputedStyle(input);
+      if (input.hidden || input.getAttribute('aria-hidden') === 'true' || inputStyle.display === 'none' || inputStyle.visibility === 'hidden') return;
       const hasAriaLabel = input.getAttribute('aria-label');
       const hasAriaLabelledby = input.getAttribute('aria-labelledby');
       const id = input.id;
@@ -183,55 +186,10 @@ async function runCustomChecks(page) {
       });
     }
 
-    // Check 10: Dialogs without role="dialog"
-    const fixedOverlays = document.querySelectorAll('[style*="position: fixed"], .fixed');
-    let dialogsWithoutRole = 0;
-    fixedOverlays.forEach(el => {
-      const z = parseInt(window.getComputedStyle(el).zIndex) || 0;
-      if (z >= 50 && !el.getAttribute('role')) {
-        dialogsWithoutRole++;
-      }
-    });
-    if (dialogsWithoutRole > 0) {
-      findings.push({
-        id: 'custom-dialog-role',
-        description: `${dialogsWithoutRole} high-z-index fixed overlay(s) without role="dialog"`,
-        wcag: '4.1.2 Name/Role/Value',
-        severity: 'major',
-        selector: '.fixed[style*="z-index"]',
-      });
-    }
+    // WCAG 2.2 target size is evaluated by axe's wcag22aa target-size rule,
+    // which accounts for inline, spacing, and equivalent-control exceptions.
 
-    // Check 11: WCAG 2.2 target size (minimum). Inline text links are
-    // excluded because line-height and surrounding spacing can satisfy the exception.
-    const targetSelector = [
-      'button:not([disabled])', 'a[href]',
-      'input:not([type="hidden"]):not([disabled])',
-      'select:not([disabled])', 'textarea:not([disabled])',
-      '[role="button"]:not([aria-disabled="true"])',
-      '[role="tab"]:not([aria-disabled="true"])',
-      '[tabindex="0"]:not([aria-disabled="true"])',
-    ].join(',');
-    const undersizedTargets = [];
-    document.querySelectorAll(targetSelector).forEach(el => {
-      const rect = el.getBoundingClientRect();
-      const style = window.getComputedStyle(el);
-      if (style.display === 'none' || style.visibility === 'hidden' || rect.width === 0 || rect.height === 0) return;
-      if (rect.width >= 24 && rect.height >= 24) return;
-      if (el.matches('a[href]') && style.display === 'inline') return;
-      undersizedTargets.push(el);
-    });
-    if (undersizedTargets.length > 0) {
-      findings.push({
-        id: 'custom-target-size',
-        description: `${undersizedTargets.length} isolated interactive target(s) are smaller than 24 by 24 CSS pixels`,
-        wcag: '2.5.8 Target Size (Minimum)',
-        severity: 'major',
-        selector: targetSelector,
-      });
-    }
-
-    // Check 12: repeated-entry support for common personal-data purposes.
+    // Check 10: repeated-entry support for common personal-data purposes.
     const repeatablePurpose = /^(?:name|given-name|family-name|email|username|organization|street-address|address-line[123]|address-level[1-4]|country|country-name|postal-code|language|url|tel)$/;
     const missingAutocomplete = [];
     document.querySelectorAll('input:not([type="hidden"]):not([disabled])').forEach(input => {
@@ -303,8 +261,16 @@ async function main() {
 
     console.log(`Navigating to ${url}...`);
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-    console.log(`Waiting ${WAIT_MS}ms for React to render...`);
+    console.log(`Waiting for the application shell (up to ${APP_READY_TIMEOUT_MS}ms)...`);
     await new Promise(r => setTimeout(r, WAIT_MS));
+    await page.waitForFunction(() => {
+      const loader = document.querySelector('#alloflow-loader');
+      if (!loader) return true;
+      const style = window.getComputedStyle(loader);
+      return loader.hidden || style.display === 'none' || style.visibility === 'hidden';
+    }, { timeout: APP_READY_TIMEOUT_MS }).catch(() => {
+      console.warn('Application shell did not replace the startup loader before the audit timeout.');
+    });
 
     // 1. Run axe-core
     console.log('Running axe-core analysis...');

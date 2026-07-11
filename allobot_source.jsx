@@ -1429,7 +1429,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       }
   };
   return (
-    <>
+    <aside aria-label={t('bot.assistant_landmark') || 'AlloBot assistant'}>
     <style>{`
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
         /* allo-talk keyframe removed — defined but never applied to any element. Audit confirmed dead code. */
@@ -2729,6 +2729,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           </div>
       </div>
     </div>
-    </>
+    </aside>
   );
 }));

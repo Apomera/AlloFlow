@@ -1458,7 +1458,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         ), /* @__PURE__ */ React.createElement("circle", { r: "2.5", fill: "#E0F2FE", className: "animate-pulse" }), /* @__PURE__ */ React.createElement("ellipse", { rx: "12", ry: "4", stroke: "#67E8F9", strokeWidth: "0.8", fill: "none" }), /* @__PURE__ */ React.createElement("ellipse", { rx: "12", ry: "4", stroke: "#67E8F9", strokeWidth: "0.8", fill: "none", transform: "rotate(60)" }), /* @__PURE__ */ React.createElement("ellipse", { rx: "12", ry: "4", stroke: "#67E8F9", strokeWidth: "0.8", fill: "none", transform: "rotate(120)" }));
     }
   };
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, `
+  return /* @__PURE__ */ React.createElement("aside", { "aria-label": t("bot.assistant_landmark") || "AlloBot assistant" }, /* @__PURE__ */ React.createElement("style", null, `
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
         /* allo-talk keyframe removed \u2014 defined but never applied to any element. Audit confirmed dead code. */
         @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180deg); } 100% { transform: translateY(0) rotate(-360deg); } }
