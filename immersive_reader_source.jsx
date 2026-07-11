@@ -1409,12 +1409,34 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
             // the spoken words (the "slightly off" highlight). Splitting the sentence
             // into per-word inline boxes lets the browser wrap naturally while the
             // fill advances strictly in reading order — matching the leveled-text
-            // reader's accuracy while preserving the karaoke sweep feel. Progress is
-            // mapped onto CHARACTER count (not word count) so long words take
-            // proportionally longer to fill, tracking speech pace more closely.
-            const totalChars = sText.length || 1;
-            const filledChars = (pct / 100) * totalChars;
+            // reader's accuracy while preserving the karaoke sweep feel.
+            //
+            // Pacing is PUNCTUATION-AWARE. Base weight is a word's character count
+            // (length ≈ speaking time), but Gemini TTS lingers at commas/periods
+            // while the audio clock keeps advancing — so we fold a pause "bonus"
+            // into the whitespace GAP that follows a punctuated word. That makes the
+            // pause belong to the gap: the word stays fully lit while the fill rests
+            // in the space, then resumes on the next word — instead of the sweep
+            // running ahead through the silence. Weights are character-equivalents;
+            // the bonuses mirror the Focus Reader's chunkDelayFor punctuation tiers.
             const parts = sText.split(/(\s+)/); // keep whitespace tokens so wrap points/spacing survive
+            const pauseBonus = (word) => {
+                const tail = String(word).replace(/["'”’\)\]]*$/, '').slice(-1);
+                if (/[.!?]/.test(tail)) return 5;   // sentence-ending: longest rest
+                if (/[,;:]/.test(tail)) return 3;   // clause break
+                if (/[—–]/.test(tail)) return 3;    // dash
+                return 0;
+            };
+            // First pass: weight each token. A whitespace gap inherits the pause
+            // bonus of the word immediately before it.
+            let prevWord = '';
+            const weights = parts.map((part) => {
+                if (/^\s+$/.test(part)) return part.length + pauseBonus(prevWord);
+                if (part !== '') prevWord = part;
+                return part.length;
+            });
+            const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+            const filledChars = (pct / 100) * totalWeight; // "filled weight" in the same units
             let charAcc = 0;
             return (
                 <span
@@ -1429,8 +1451,10 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                 >
                     {parts.map((part, pi) => {
                         const start = charAcc;
-                        charAcc += part.length;
+                        charAcc += weights[pi];
                         // Whitespace inherits color and only marks wrap points — no styling.
+                        // Its weight (incl. any pause bonus) still advances the fill so the
+                        // sweep rests in the gap during a punctuation pause.
                         if (/^\s+$/.test(part)) return part;
                         const end = charAcc;
                         if (end <= filledChars) {
@@ -1444,7 +1468,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                         // The word currently being spoken — fill it left-to-right with a
                         // gradient. A single word rarely wraps, so a horizontal gradient
                         // is accurate here and gives a smooth sub-word sweep.
-                        const wPct = Math.max(0, Math.min(100, ((filledChars - start) / (part.length || 1)) * 100));
+                        const wPct = Math.max(0, Math.min(100, ((filledChars - start) / (weights[pi] || 1)) * 100));
                         const wordBg = 'linear-gradient(to right, ' + c.sweep + ' 0%, ' + c.sweep + ' ' + wPct + '%, ' + c.dim + ' ' + wPct + '%, ' + c.dim + ' 100%)';
                         return (
                             <span key={pi} style={{

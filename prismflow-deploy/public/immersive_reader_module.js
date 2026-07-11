@@ -1256,9 +1256,22 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     const isPast = idx < sentenceIdx;
     if (isActive) {
       const pct = sweepPct;
-      const totalChars = sText.length || 1;
-      const filledChars = pct / 100 * totalChars;
       const parts = sText.split(/(\s+)/);
+      const pauseBonus = (word) => {
+        const tail = String(word).replace(/["'”’\)\]]*$/, "").slice(-1);
+        if (/[.!?]/.test(tail)) return 5;
+        if (/[,;:]/.test(tail)) return 3;
+        if (/[—–]/.test(tail)) return 3;
+        return 0;
+      };
+      let prevWord = "";
+      const weights = parts.map((part) => {
+        if (/^\s+$/.test(part)) return part.length + pauseBonus(prevWord);
+        if (part !== "") prevWord = part;
+        return part.length;
+      });
+      const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+      const filledChars = pct / 100 * totalWeight;
       let charAcc = 0;
       return /* @__PURE__ */ React.createElement(
         "span",
@@ -1287,7 +1300,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         },
         parts.map((part, pi) => {
           const start = charAcc;
-          charAcc += part.length;
+          charAcc += weights[pi];
           if (/^\s+$/.test(part)) return part;
           const end = charAcc;
           if (end <= filledChars) {
@@ -1296,7 +1309,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
           if (start >= filledChars) {
             return /* @__PURE__ */ React.createElement("span", { key: pi, style: { color: c.dim } }, part);
           }
-          const wPct = Math.max(0, Math.min(100, (filledChars - start) / (part.length || 1) * 100));
+          const wPct = Math.max(0, Math.min(100, (filledChars - start) / (weights[pi] || 1) * 100));
           const wordBg = "linear-gradient(to right, " + c.sweep + " 0%, " + c.sweep + " " + wPct + "%, " + c.dim + " " + wPct + "%, " + c.dim + " 100%)";
           return /* @__PURE__ */ React.createElement("span", { key: pi, style: {
             backgroundImage: wordBg,
