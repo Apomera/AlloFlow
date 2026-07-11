@@ -9008,18 +9008,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       checkStorage();
   }, []);
-  const [rosterKey, setRosterKey] = useState(null);
+  const [rosterKey, setRosterKey] = useState(() => {
+    try {
+      const saved = safeGetItem('alloflow_roster_key');
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      return parsed?.groups && typeof parsed.groups === 'object' ? parsed : null;
+    } catch(e) { return null; }
+  });
   const [isRosterKeyOpen, setIsRosterKeyOpen] = useState(false);
   const [isSubmissionInboxOpen, setIsSubmissionInboxOpen] = useState(false);
   useEffect(() => {
     try {
-      const saved = safeGetItem('alloflow_roster_key');
-      if (saved) { const parsed = JSON.parse(saved); if (parsed?.groups) setRosterKey(parsed); }
-    } catch(e) { /* Canvas sandbox - localStorage unavailable */ }
-  }, []);
-  useEffect(() => {
-    if (!rosterKey) return;
-    try { safeSetItem('alloflow_roster_key', JSON.stringify(rosterKey)); } catch(e) { /* Canvas */ }
+      if (rosterKey) safeSetItem('alloflow_roster_key', JSON.stringify(rosterKey));
+      else safeRemoveItem('alloflow_roster_key');
+    } catch(e) { /* Canvas */ }
   }, [rosterKey]);
   const [profiles, setProfiles] = useState([]);
   const [selectedProfileId, setSelectedProfileId] = useState('');
@@ -9276,15 +9279,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (typeof window.callTTS === 'function') return await window.callTTS(text, 'Puck', 1, _ttsOpts);
     } catch (e) { warnLog && warnLog('[handleAudio] TTS failed:', e); }
   }, []);
-  useEffect(() => {
-    if (!screenerSession || screenerSession.status !== 'interstitial') return;
-    const timer = setTimeout(() => {
-      const nextActivity = screenerSession.subtests[screenerSession.currentIndex];
-      setScreenerSession(prev => ({ ...prev, status: 'running' }));
-      launchBenchmarkProbe(screenerSession.grade, nextActivity, screenerSession.form);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [screenerSession?.status, screenerSession?.currentIndex]);
+  // The interstitial->running battery advance now lives INSIDE the StudentAnalytics
+  // module (which owns the real launchBenchmarkProbe). The old host effect here
+  // called a dead phantom-ref stub (launchBenchmarkProbe above) and stalled batteries
+  // after the first subtest; removed to avoid a double-advance race with the module.
   React.useEffect(() => {
     if (fluencyStatus !== 'complete' || !fluencyResult) return;
     if (!screenerSession || screenerSession.status !== 'running') return;
@@ -16803,10 +16801,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const handleSyncRosterToSession = async () => {
       if (!activeSessionCode || !rosterKey?.groups) return;
       try {
-          const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-          const updates = {};
+          const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+          const groups = {};
           Object.entries(rosterKey.groups).forEach(([gId, group]) => {
-              updates[`groups.${gId}`] = {
+              groups[gId] = {
                   name: group.name,
                   color: group.color || '#4F46E5',
                   readingLevel: group.profile?.readingLevel || '',
@@ -16819,7 +16817,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   visualDensity: group.profile?.visualDensity || ''
               };
           });
-          await updateDoc(sessionRef, updates);
+          // Replace the collection so groups removed from the roster do not remain live.
+          await updateDoc(sessionRef, { groups });
           addToast(t('roster.synced') || `Synced ${Object.keys(rosterKey.groups).length} groups to live session`, "success");
       } catch(e) {
           warnLog("Roster sync error:", e);
@@ -16830,11 +16829,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (!isTeacherMode || !rosterKey?.students || !activeSessionCode || !sessionData?.roster) return;
       const unassigned = Object.entries(sessionData.roster).filter(([_, s]) => !s.groupId && s.name);
       if (unassigned.length === 0) return;
-      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
       const updates = {};
       let count = 0;
+      const rosterGroupsByCodename = {};
+      Object.entries(rosterKey.students).forEach(([name, groupId]) => {
+          const normalized = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (normalized) rosterGroupsByCodename[normalized] = groupId;
+      });
       unassigned.forEach(([uid, student]) => {
-          const groupId = rosterKey.students[student.name];
+          const normalized = String(student.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const groupId = rosterGroupsByCodename[normalized];
           if (groupId && rosterKey.groups?.[groupId]) {
               updates[`roster.${uid}.groupId`] = groupId;
               count++;
@@ -35883,9 +35888,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               setRosterQueue={setRosterQueue}
               screenerSession={screenerSession}
               setScreenerSession={setScreenerSession}
+              setShowClassAnalytics={setShowClassAnalytics}
+              openReportWriter={() => setShowReportWriter(true)}
               onLaunchORF={handleLaunchORF}
               probeHistory={probeHistory}
               interventionLogs={interventionLogs}
+              rtiGoals={rtiGoals}
+              setRtiGoals={setRtiGoals}
+              saveInterventionLog={saveInterventionLog}
+              deleteInterventionLog={deleteInterventionLog}
               addToast={addToast}
               probeGradeLevel={probeGradeLevel}
               setProbeGradeLevel={setProbeGradeLevel}

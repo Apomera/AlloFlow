@@ -41,8 +41,17 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     reader.onload = (ev) => {
       try {
         const data = JSON.parse(ev.target.result);
-        if (data.groups || data.students) {
-          setRosterKey({ className: data.className || '', groups: data.groups || {}, students: data.students || {} });
+        if (data && typeof data === 'object' && !Array.isArray(data) && (data.groups || data.students)) {
+          const asRecord = (value) => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+          setRosterKey({
+            className: typeof data.className === 'string' ? data.className : '',
+            groups: asRecord(data.groups),
+            students: asRecord(data.students),
+            displayNames: asRecord(data.displayNames),
+            progressHistory: asRecord(data.progressHistory),
+            ...(data.submissionKey?.publicJwk ? { submissionKey: data.submissionKey } : {})
+          });
+          if (window.AlloFlowUX) window.AlloFlowUX.toast('Roster imported, including class settings and submission setup.', 'success');
         }
       } catch(err) { console.error('Invalid roster JSON:', err); }
     };
@@ -161,6 +170,13 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const handleAddStudent = () => {
     const codename = rosterAdj && rosterAnimal ? `${rosterAdj} ${rosterAnimal}` : '';
     if (!codename) return;
+    const normalizedCodename = codename.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const duplicate = Object.keys(students).some(name => name.toLowerCase().replace(/[^a-z0-9]/g, '') === normalizedCodename);
+    if (duplicate) {
+      if (window.AlloFlowUX) window.AlloFlowUX.toast('That codename is already in this roster. Generate another one.', 'warn');
+      randomizeRosterName();
+      return;
+    }
     const displayName = useCustomName && newStudentName.trim() ? newStudentName.trim() : '';
     setRosterKey(prev => ({
       ...(prev || { groups: {} }),
@@ -175,7 +191,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const handleRemoveStudent = (name) => {
     setRosterKey(prev => {
       const ns = { ...prev.students }; delete ns[name];
-      return { ...prev, students: ns };
+      const nd = { ...(prev.displayNames || {}) }; delete nd[name];
+      const np = { ...(prev.progressHistory || {}) }; delete np[name];
+      return { ...prev, students: ns, displayNames: nd, progressHistory: np };
     });
   };
   const handleMoveStudent = (name, toGroup) => {
@@ -268,7 +286,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             <Layers size={14} /> {t('roster.batch_generate') || 'Differentiate by Group'}
           </button>
           {activeSessionCode && (
-            <button onClick={onSyncToSession} disabled={!rosterKey || groupIds.length === 0} className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 ml-auto">
+            <button onClick={onSyncToSession} disabled={!rosterKey || groupIds.length === 0} title="Update this live session's group choices and differentiation settings from the roster." className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1.5 disabled:opacity-40 ml-auto">
               <RefreshCw size={14} /> {t('roster.sync_session') || 'Sync to Live Session'}
             </button>
           )}
@@ -282,6 +300,16 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               aria-label={t('roster.class_name') || 'Class name'}
               className="flex-1 px-3 py-1.5 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
           </div>
+          <details className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700">
+            <summary className="cursor-pointer font-bold text-indigo-800">How does this roster connect to AlloFlow?</summary>
+            <ul className="mt-2 ml-4 list-disc space-y-1">
+              <li>Students join with codenames; optional real names stay in this teacher-side roster.</li>
+              <li>Groups provide reusable differentiation settings and can be synced to an active live session.</li>
+              <li>Matching codenames are assigned to their roster group automatically when students join.</li>
+              <li>The same codenames help identify imported student submissions.</li>
+              <li>This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data.</li>
+            </ul>
+          </details>
           {groupIds.map(gId => {
             const group = groups[gId];
             const gStudents = getStudentsInGroup(gId);
