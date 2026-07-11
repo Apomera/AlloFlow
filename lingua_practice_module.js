@@ -8,7 +8,8 @@
   if (!React) { console.error('[LinguaPractice] React missing'); return; }
   var e = React.createElement, useState = React.useState, useEffect = React.useEffect;
   var useMemo = React.useMemo, useRef = React.useRef;
-  var PROFILE_KEY = 'allo_lingua_profile_v1', PROGRESS_KEY = 'allo_lingua_progress_v1', RECENT_KEY = 'allo_lingua_recent_v1', CHAT_KEY = 'allo_lingua_chat_v1';
+  var PROFILE_KEY = 'allo_lingua_profile_v1', PROGRESS_KEY = 'allo_lingua_progress_v1', RECENT_KEY = 'allo_lingua_recent_v1', CHAT_KEY = 'allo_lingua_chat_v1', SLOW_KEY = 'allo_lingua_slow_v1';
+  var SLOW_RATE = 0.65;
   var LEVELS = ['New to the language', 'Beginner', 'Developing', 'Intermediate', 'Advanced'];
   // Preset languages (name, BCP-47 code, rtl?). This is a convenience list, not
   // a limit — the Setup screen also accepts a free-typed "Other language", and
@@ -170,6 +171,21 @@
     b.forEach(function(token){counts[token]=(counts[token]||0)+1;});
     a.forEach(function(token){if(counts[token]){matches++;counts[token]--;}});
     return Math.round(((matches/a.length)*.7+(matches/b.length)*.3)*100);
+  }
+  // Per-unit match breakdown for the expected phrase: returns the ORIGINAL words
+  // (or characters, for CJK) each flagged matched/missed against what was heard,
+  // so the Speak tab can show WHICH words to work on — not just an overall %.
+  function matchBreakdown(expected, actual) {
+    var characterMode=usesCharacterMatching(expected);
+    var counts={};
+    matchTokens(actual,characterMode).forEach(function(t){counts[t]=(counts[t]||0)+1;});
+    var units=characterMode?Array.from(String(expected||'').replace(/\s+/g,'')):String(expected||'').split(/\s+/).filter(Boolean);
+    return units.map(function(u){
+      var norm=normalize(u).replace(/\s+/g,'');
+      var matched=!!(norm&&counts[norm]>0);
+      if(matched)counts[norm]--;
+      return {text:u,matched:matched};
+    });
   }
   var REVIEW_INTERVALS = [600000,86400000,259200000,604800000,1209600000,2592000000];
   function scheduleReview(item, rating, now) {
@@ -402,17 +418,19 @@
     }
     return { target: '', translation: '', pronunciation: '', tip: 'Live AI conversation is unavailable right now. Add an AI connection to chat, or practice with the Speak and Conversation tabs.' };
   }
-  function speak(text, code, name) {
+  function speak(text, code, name, rate) {
+    var r = typeof rate === 'number' && rate > 0 ? rate : 1;
     try {
       if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
         // The shared player expects a language NAME (e.g. 'Spanish'), which it
         // folds into the Gemini pronunciation prompt — NOT a BCP-47 code.
         // Passing 'es-ES' here produced a malformed prompt and dropped audio.
-        window.AlloSpeechPlayer.speak(text,{language:name||undefined}); return true;
+        // rate slows Gemini/Kokoro/browser playback for learners who need it.
+        window.AlloSpeechPlayer.speak(text,{language:name||undefined,rate:r}); return true;
       }
       if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
         window.speechSynthesis.cancel(); var u = new window.SpeechSynthesisUtterance(text);
-        u.lang = code || ''; window.speechSynthesis.speak(u); return true;
+        u.lang = code || ''; u.rate = r; window.speechSynthesis.speak(u); return true;
       }
     } catch (_) {}
     return false;
@@ -448,6 +466,13 @@
     // only for the module's own hardcoded-hex surfaces so they don't stay light
     // on a dark modal. Values match the docsuite dark palette (panel #1e293b,
     // deep #0f172a, borders #334155) with dark-emerald tints.
+    // Base text colour for the modal in dark / high-contrast so ANY text without
+    // its own text-* utility (which the shared docsuite remap can\'t reach — it
+    // targets descendants of .allo-docsuite that carry a colour class) stays
+    // legible instead of falling back to near-black. Elements with their own
+    // colour class override this via inheritance.
+    '.theme-dark .lingua-root{color:#e2e8f0}',
+    '.theme-contrast .lingua-root{color:#ffff00}',
     '.theme-dark .lingua-scene{background:radial-gradient(130% 90% at 50% -10%,#0b2f24 0%,#0f172a 46%)}',
     '.theme-dark .lingua-header{background:linear-gradient(180deg,#0f291f 0%,#1e293b 100%)}',
     '.theme-dark .lingua-card{background:#1e293b;border-color:#334155}',
@@ -556,6 +581,7 @@
     var chis=useState(''), chatInput=chis[0], setChatInput=chis[1];
     var chbs=useState(false), chatBusy=chbs[0], setChatBusy=chbs[1];
     var chls=useState(false), chatListening=chls[0], setChatListening=chls[1];
+    var sws=useState(function(){try{return localStorage.getItem(SLOW_KEY)==='1';}catch(_){return false;}}), audioSlow=sws[0], setAudioSlow=sws[1];
     var voiceRef=useRef(null), dialogRef=useRef(null), sectionHeadingRef=useRef(null), lastTabRef=useRef(null);
     var phraseRef=useRef(null), conversationPromptRef=useRef(null), reviewRegionRef=useRef(null), reviewAnswerRef=useRef(null);
     var previousIndexRef=useRef(0), previousTurnRef=useRef(0), reviewFocusPendingRef=useRef(false), captureCompletedRef=useRef(false);
@@ -566,6 +592,8 @@
     var recentLesson=recentLessons&&recentLessons[profile.target]&&recentLessons[profile.target].lesson?recentLessons[profile.target]:null;
     var phrase=lesson && lesson.phrases[index], convo=lesson && lesson.conversation[turn];
     var score=useMemo(function(){return phrase&&heard?similarity(phrase.target,heard):null;},[phrase,heard]), matchUnit=phrase&&usesCharacterMatching(phrase.target)?'character':'word';
+    var breakdown=useMemo(function(){return phrase&&heard?matchBreakdown(phrase.target,heard):[];},[phrase,heard]);
+    var missedUnits=breakdown.filter(function(b){return !b.matched;}).map(function(b){return b.text;});
     useEffect(function(){
       if(initialIncoming&&typeof props.onInitialSourceConsumed==='function')props.onInitialSourceConsumed();
     },[]);
@@ -620,7 +648,8 @@
       setProfile(function(old){var next=Object.assign({},old);next[key]=value;write(PROFILE_KEY,next);return next;});
     }
     function sectionTitle(text,className){return e('h3',{ref:sectionHeadingRef,tabIndex:-1,className:(className||'text-2xl font-bold')+' inline-block'+focusTargetClass},text);}
-    function play(text,code,name){if(!speak(text,code,name)){var message='Audio playback is unavailable in this browser.';setSpeechStatus(message);notify(props,message);}}
+    function play(text,code,name){if(!speak(text,code,name,audioSlow?SLOW_RATE:1)){var message='Audio playback is unavailable in this browser.';setSpeechStatus(message);notify(props,message);}}
+    function toggleSlow(){setAudioSlow(function(old){var next=!old;try{localStorage.setItem(SLOW_KEY,next?'1':'0');}catch(_){}setSpeechStatus(next?'Audio will play slowly.':'Audio will play at normal speed.');return next;});}
     function progressWith(fn){setProgress(function(old){var next=fn(old);write(PROGRESS_KEY,next);return next;});}
     async function generate(){
       var requestId=++generationRequestRef.current,requestedProfile=profile,made=null;
@@ -745,12 +774,14 @@
     var nav=[['setup','Setup','Settings'],['vocabulary','Vocabulary','BookOpen'],['speak','Speak','Mic'],['conversation','Conversation','MessageSquare'],['chat','Live chat','Sparkles'],['progress','Progress','BarChart3'],['review','Review'+(due.length?' ('+due.length+')':''),'RefreshCw'],['saved','Saved words','Star']];
     return e('div',{className:'fixed inset-0 z-[280] bg-slate-950/55 p-0 sm:p-4 flex items-center justify-center',style:{zIndex:280},
       onMouseDown:function(x){if(x.target===x.currentTarget&&props.onClose)props.onClose();}},
-      e('div',{ref:dialogRef,tabIndex:-1,className:'allo-docsuite bg-white w-full h-full sm:h-[92vh] sm:max-h-[900px] sm:max-w-6xl sm:rounded-xl shadow-2xl overflow-hidden flex flex-col focus:outline-none',role:'dialog','aria-modal':'true','aria-labelledby':'lingua-title'},
+      e('div',{ref:dialogRef,tabIndex:-1,className:'allo-docsuite lingua-root bg-white w-full h-full sm:h-[92vh] sm:max-h-[900px] sm:max-w-6xl sm:rounded-xl shadow-2xl overflow-hidden flex flex-col focus:outline-none',role:'dialog','aria-modal':'true','aria-labelledby':'lingua-title'},
         e('style',null,linguaStyleCss+forcedColorsCss),
         e('div',{className:'sr-only',role:'status','aria-live':'polite','aria-atomic':'true'},speechStatus),
         e('header',{className:'lingua-header min-h-16 shrink-0 border-b border-slate-200 px-4 py-2 sm:px-6 flex items-center gap-3'},
           e('div',{className:'lingua-badge w-10 h-10 rounded-xl text-white flex items-center justify-center font-black text-sm','aria-hidden':'true'},'A/文'),
           e('div',{className:'min-w-0 flex-1'},e('h2',{id:'lingua-title',className:'text-lg font-bold text-slate-900'},'Lingua Practice'),e('p',{className:'text-xs text-slate-600 truncate'},profile.target+' · '+profile.level)),
+          e('button',{type:'button',onClick:toggleSlow,'aria-pressed':audioSlow,title:audioSlow?'Playing audio slowly — tap for normal speed':'Play audio slowly','data-help-key':'lingua_slow_audio',
+            className:'shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-bold transition-colors '+(audioSlow?'border-emerald-300 bg-emerald-50 text-emerald-800':'border-slate-300 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-700')+focusClass},navIcon('Volume2'),'Slow'),
           e('span',{className:'hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1'},due.length+' due · '+(progress.saved||[]).length+' saved'),
           e(IconButton,{title:'Close Lingua Practice',onClick:props.onClose},'×')
         ),
@@ -812,7 +843,13 @@
               e('p',{className:'text-sm text-slate-600 mt-2 mb-7'},'The match checks the '+(matchUnit==='character'?'characters':'words')+' your browser heard, not your accent.'),
               e('section',{className:'lingua-panel px-6 py-10 text-center'},e('div',{ref:phraseRef,tabIndex:-1,className:'text-2xl sm:text-3xl font-bold leading-relaxed'+focusTargetClass,dir:target.rtl?'rtl':'ltr',lang:target.code},phrase.target),e(PronunciationGuide,{text:phrase.pronunciation}),e('p',{className:'text-sm text-slate-600 mt-2',dir:known.rtl?'rtl':'ltr',lang:known.code},phrase.translation),
                 e('div',{className:'flex justify-center gap-3 mt-6'},e('button',{type:'button',onClick:function(){play(phrase.target,target.code,target.name);},className:'h-11 px-4 rounded-lg border border-slate-300 text-sm font-bold'+focusClass},'▶ Listen'),e('button',{type:'button',onClick:function(){listen('phrase');},'aria-pressed':listening,className:primaryClass},listening?'■ Stop':'● Speak')),
-                e('div',{className:'mt-6 min-h-[80px]',role:'status','aria-live':'polite','aria-atomic':'true'},heard?e(React.Fragment,null,e('p',{className:'text-xs font-bold text-slate-500'},'Browser heard'),e('p',{className:'text-lg mt-1',dir:target.rtl?'rtl':'ltr',lang:target.code},heard),e('p',{className:'text-sm font-bold mt-2 '+(score>=75?'text-emerald-700':score>=45?'text-amber-700':'text-rose-700')},score+'% '+matchUnit+' match')):e('p',{className:'text-sm text-slate-500'},listening?'Listening…':'Your transcript will appear here.'))
+                e('div',{className:'mt-6 min-h-[80px]',role:'status','aria-live':'polite','aria-atomic':'true'},heard?e(React.Fragment,null,e('p',{className:'text-xs font-bold text-slate-500'},'Browser heard'),e('p',{className:'text-lg mt-1',dir:target.rtl?'rtl':'ltr',lang:target.code},heard),e('p',{className:'text-sm font-bold mt-2 '+(score>=75?'text-emerald-700':score>=45?'text-amber-700':'text-rose-700')},score+'% '+matchUnit+' match'),
+                  breakdown.length?e('div',{className:'mt-3'},
+                    e('p',{className:'text-xs font-bold text-slate-500 mb-1'},'Word by word'),
+                    e('p',{className:'text-base leading-relaxed',dir:target.rtl?'rtl':'ltr',lang:target.code,'aria-hidden':'true'},breakdown.map(function(b,i){return e('span',{key:i,className:(b.matched?'text-emerald-700':'text-amber-800 underline decoration-amber-400 decoration-2 underline-offset-2')+' font-semibold'},b.text+(matchUnit==='word'?' ':''));})),
+                    e('p',{className:'sr-only'},missedUnits.length?('Practice these '+matchUnit+'s: '+missedUnits.join(', ')):('All '+matchUnit+'s matched.'))
+                  ):null
+                ):e('p',{className:'text-sm text-slate-500'},listening?'Listening…':'Your transcript will appear here.'))
               ),
               e('div',{className:'flex justify-between items-center mt-6'},e('button',{type:'button',disabled:index===0,onClick:function(){setIndex(Math.max(0,index-1));setHeard('');},className:'h-10 px-4 rounded-lg border disabled:opacity-40'+focusClass},'Previous'),e('span',{className:'text-xs font-bold text-slate-500'},(index+1)+' of '+lesson.phrases.length),
                 index<lesson.phrases.length-1?e('button',{type:'button',onClick:function(){setIndex(index+1);setHeard('');},className:'h-10 px-4 rounded-lg bg-slate-900 text-white'+focusClass},'Next'):e('button',{type:'button',onClick:function(){setTab('conversation');},className:primaryClass},'Start conversation'))
@@ -948,6 +985,7 @@
   LinguaPractice._parseLesson=parseLesson;
   LinguaPractice._parseCoachFeedback=parseCoachFeedback;
   LinguaPractice._similarity=similarity;
+  LinguaPractice._matchBreakdown=matchBreakdown;
   LinguaPractice._usesCharacterMatching=usesCharacterMatching;
   LinguaPractice._normalizeText=normalize;
   LinguaPractice._buildLessonPrompt=lessonPrompt;

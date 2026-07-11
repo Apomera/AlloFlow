@@ -278,6 +278,37 @@ describe('Lingua Practice custom language', () => {
   });
 });
 
+describe('Lingua Practice slow audio', () => {
+  it('toggles slow playback, persists it, and passes a slower rate to the player', async () => {
+    const spoken = [];
+    window.AlloSpeechPlayer = { speak: (text, opts) => { spoken.push({ text, opts }); }, stop: () => {} };
+    try {
+      const lesson = {
+        title: 'At school', goal: 'g', scenario: 's',
+        vocabulary: [{ term: 'lápiz', meaning: 'pencil', example: 'Necesito un lápiz.', translation: 'I need a pencil.' }],
+        phrases: [{ target: 'Necesito un lápiz.', translation: 'x' }],
+        conversation: [{ coach: '¿Qué?', translation: 'What?', sample: 'x' }],
+      };
+      await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini: async () => JSON.stringify(lesson) }));
+
+      const slow = button('Slow');
+      expect(slow.getAttribute('aria-pressed')).toBe('false');
+      await act(async () => { slow.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(button('Slow').getAttribute('aria-pressed')).toBe('true');
+      expect(localStorage.getItem('allo_lingua_slow_v1')).toBe('1');
+
+      await act(async () => { button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); await Promise.resolve(); });
+      const listen = host.querySelector('button[title="Listen to lápiz"]');
+      await act(async () => { listen.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+      expect(spoken.length).toBe(1);
+      expect(spoken[0].opts.rate).toBeGreaterThan(0);
+      expect(spoken[0].opts.rate).toBeLessThan(1);
+    } finally {
+      delete window.AlloSpeechPlayer;
+    }
+  });
+});
+
 describe('Lingua Practice chat persistence and save-from-chat', () => {
   it('persists a conversation, saves a phrase, and restores it after remount', async () => {
     const callGemini = async () => JSON.stringify({

@@ -355,6 +355,23 @@ describe('Lingua Practice script-aware speech matching', () => {
     expect(Lingua._similarity('你好，我叫小明。', '你好小明')).toBeGreaterThan(40);
     expect(Lingua._similarity('Hola, me llamo Ana.', 'hola me llamo ana')).toBe(100);
   });
+
+  it('flags each expected word matched/missed against what was heard', () => {
+    const b = Lingua._matchBreakdown('Quisiera una ensalada, por favor.', 'quisiera una por favor');
+    expect(b.map((u) => u.text)).toEqual(['Quisiera', 'una', 'ensalada,', 'por', 'favor.']);
+    expect(b.map((u) => u.matched)).toEqual([true, true, false, true, true]);
+  });
+
+  it('does per-character breakdown for CJK', () => {
+    const b = Lingua._matchBreakdown('你好小明', '你好明');
+    expect(b.map((u) => u.text)).toEqual(['你', '好', '小', '明']);
+    expect(b.map((u) => u.matched)).toEqual([true, true, false, true]);
+  });
+
+  it('does not double-count a repeated expected word heard only once', () => {
+    const b = Lingua._matchBreakdown('por favor por', 'por favor');
+    expect(b.map((u) => u.matched)).toEqual([true, true, false]);
+  });
 });
 
 

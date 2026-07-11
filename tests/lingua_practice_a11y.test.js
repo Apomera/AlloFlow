@@ -160,7 +160,7 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
 
     await click('Saved words');
     await expectNoAxeViolations('empty saved words');
-  });
+  }, 20000); // 9 sequential axe sweeps — heavy under parallel CPU load
 
   it('has no axe violations in the revealed spaced-review state', async () => {
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({
