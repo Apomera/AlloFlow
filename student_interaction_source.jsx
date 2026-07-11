@@ -77,7 +77,7 @@ function getStudentInteractionThemeStyles(themeContext = {}) {
   };
 }
 
-const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], currentNickname = "" }) => {
+const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], currentNickname = "", submissionMethod = "download", submissionContext = "file" }) => {
   const { t } = useContext(LanguageContext);
   const themeContext = useContext(window.AlloThemeContext || StudentInteractionThemeFallbackContext);
   const styles = getStudentInteractionThemeStyles(themeContext);
@@ -85,6 +85,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   const titleId = 'student-submit-modal-title';
   const descId = 'student-submit-modal-desc';
   const summaryId = 'student-submit-summary-title';
+  const [submitting, setSubmitting] = useState(false);
   const adjectives = t('codenames.adjectives', { returnObjects: true }) || [];
   const animals = t('codenames.animals', { returnObjects: true }) || [];
   const parseNickname = useCallback((nickname) => {
@@ -170,11 +171,23 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     if (parts.length === 0) return t('modals.summary_details.empty');
     return parts.join(', ');
   };
-  const handleSubmit = () => {
+  const mailboxDelivery = submissionMethod === 'mailbox';
+  const submitLabel = mailboxDelivery ? 'Submit to teacher’s Drive' : (t('modals.download_submission') || 'Download submission file');
+  const submitHint = mailboxDelivery
+    ? 'Your complete work will be saved automatically as a JSON file in your teacher’s private “AlloFlow Class Mailbox” Drive folder. If delivery fails, a backup file downloads instead.'
+    : submissionContext === 'standard-live'
+      ? 'Live quiz and activity responses sync during class. Your complete portfolio downloads as a file for your teacher or LMS.'
+      : 'Your complete work downloads as a file. Send it to your teacher or upload it to your LMS.';
+  const handleSubmit = async () => {
     const fullName = getFullName();
-    if (!selectedAdj || !selectedAnimal) return;
-    onSubmit(fullName, stats);
-    onClose();
+    if (!selectedAdj || !selectedAnimal || submitting) return;
+    setSubmitting(true);
+    try {
+      const completed = await Promise.resolve(onSubmit(fullName, stats));
+      if (completed !== false) onClose();
+    } finally {
+      setSubmitting(false);
+    }
   };
   const handleDialogKeyDown = (e) => {
     if (e.key === 'Escape') {
@@ -296,21 +309,22 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         <div className="flex flex-col gap-3">
             <button
                 type="button"
-                aria-label={t('modals.download_submission')}
+                aria-label={submitLabel}
                 onClick={handleSubmit}
-                disabled={!selectedAdj || !selectedAnimal}
+                disabled={!selectedAdj || !selectedAnimal || submitting}
                 className={cx('w-full font-bold py-3 rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center gap-2', styles.primary)}
                 data-help-key="submit_confirm_btn"
             >
-                <Download size={18} aria-hidden="true" /> {t('modals.download_submission')}
+                {mailboxDelivery ? <Send size={18} aria-hidden="true" /> : <Download size={18} aria-hidden="true" />} {submitting ? 'Submitting…' : submitLabel}
             </button>
             <p className={cx('text-xs text-center font-medium px-4', styles.text)}>
-                {t('modals.upload_instruction')}
+                {submitHint}
             </p>
             <button
                 type="button"
                 aria-label={t('common.close')}
                 onClick={onClose}
+                disabled={submitting}
                 className={cx('w-full font-bold py-3 rounded-xl transition-all active:scale-95', styles.secondary)}
             >
                 {t('common.cancel')}

@@ -118,6 +118,40 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
         expect(call({ a: 'delpack', admin, id }).ok).toBe(true);
         expect(call({ a: 'getpack', id, k: PK }).e).toBe('no-pack');
     });
+    it('stores chunked live and hosted-homework submissions in the teacher Drive behind scoped capabilities', () => {
+        const { call, driveFiles } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const sessionSecret = 'k_secret_k_secret_20';
+        expect(call({ a: 'open', admin, c: 'ABC23', k: sessionSecret }).ok).toBe(true);
+        const joined = call({ a: 'join', c: 'ABC23', k: sessionSecret });
+        const livePayload = JSON.stringify({ studentName: 'Brave Fox', answers: { q1: 'A' }, content: [] });
+        const liveSid = 'SUB-12345678-1234-1234-1234-123456789012';
+        expect(call({ a: 'putsubmission', c: 'ABC23', uid: joined.uid, pt: 'wrong_wrong_wrong_wrong', sid: liveSid, part: 1, of: 1, data: livePayload }).e).toBe('denied');
+        const liveReceipt = call({ a: 'putsubmission', c: 'ABC23', uid: joined.uid, pt: joined.pt, sid: liveSid, part: 1, of: 1, data: livePayload });
+        expect(liveReceipt).toMatchObject({ ok: true, sourceKind: 'live' });
+        const liveFile = [...driveFiles.keys()].find(name => name.startsWith('submission-Brave_Fox-'));
+        expect(liveFile).toBeTruthy();
+        expect(JSON.parse(driveFiles.get(liveFile)).mailboxReceipt).toMatchObject({ sourceKind: 'live', sourceId: 'ABC23' });
+        const liveFileCount = [...driveFiles.keys()].filter(name => name.startsWith('submission-')).length;
+        const repeatedReceipt = call({ a: 'putsubmission', c: 'ABC23', uid: joined.uid, pt: joined.pt, sid: liveSid, part: 1, of: 1, data: livePayload });
+        expect(repeatedReceipt.filename).toBe(liveReceipt.filename);
+        expect([...driveFiles.keys()].filter(name => name.startsWith('submission-')).length).toBe(liveFileCount);
+
+        const packId = 'PK-12345678-1234-1234-1234-123456789012';
+        const packSecret = 'p_secret_p_secret_20';
+        expect(call({ a: 'putpack', admin, id: packId, k: packSecret, part: 1, of: 1, data: 'PACK', title: 'Cells' }).ok).toBe(true);
+        const hostedPayload = JSON.stringify({ studentName: 'Calm Otter', responses: { q2: 'B' }, content: [] });
+        const hostedSid = 'SUB-aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+        expect(call({ a: 'putsubmission', id: packId, k: 'wrong_wrong_wrong_20', sid: hostedSid, part: 1, of: 1, data: hostedPayload }).e).toBe('denied');
+        const firstHalf = hostedPayload.slice(0, Math.ceil(hostedPayload.length / 2));
+        const secondHalf = hostedPayload.slice(firstHalf.length);
+        expect(call({ a: 'putsubmission', id: packId, k: packSecret, sid: hostedSid, part: 1, of: 2, data: firstHalf }).ok).toBe(true);
+        const hostedReceipt = call({ a: 'putsubmission', id: packId, k: packSecret, sid: hostedSid, part: 2, of: 2, data: secondHalf });
+        expect(hostedReceipt).toMatchObject({ ok: true, sourceKind: 'homework' });
+        const hostedFile = [...driveFiles.keys()].find(name => name.startsWith('submission-Calm_Otter-'));
+        expect(JSON.parse(driveFiles.get(hostedFile)).mailboxReceipt).toMatchObject({ sourceKind: 'homework', sourceId: packId });
+        expect([...driveFiles.keys()].some(name => name.includes('wrong'))).toBe(false);
+    });
 });
 
 function sliceBetween(startMarker, endMarker) {
@@ -378,6 +412,14 @@ describe('ANTI wiring pins', () => {
         expect(anti).toMatch(/isMailboxSession=\{!!mbLive\}/);
         expect(anti).toMatch(/mailboxJoinUrl=\{mbLive\?\.joinUrl \|\| ''\}/);
         expect(anti).toMatch(/onEndMailboxSession=\{mbLive \? endMailboxLiveSession : null\}/);
+        expect(anti).toContain('Why might Google say “unverified app” or “unsafe”?');
+        expect(anti).toContain('A Google account alone does not make a workflow FERPA-compliant.');
+        expect(anti).toContain('What is stored, where, and for how long?');
+        expect(anti).toContain('How do student saving and submissions work in each mode?');
+        expect(anti).toContain('complete portfolio is intentionally not retained as a permanent Firebase record');
+        expect(anti).toContain("a: 'putsubmission'");
+        expect(anti).toContain('setMbHostedAssignment({ url: entry.u');
+        expect(anti).toContain('Mailbox submission upload failed; downloading a backup instead');
     });
 
     it('open/putpack are admin-gated in Code.gs and boxes are restricted to up/down', () => {

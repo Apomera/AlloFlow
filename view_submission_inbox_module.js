@@ -268,26 +268,32 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       const f = files[i];
       try {
         const text = await f.text();
-        // Plain-JSON submission (student saved offline with no class key) — the file
-        // content IS the decrypted payload, so add it as already-decrypted (no key needed).
         const looksJson = /\.json$/i.test(f.name || "") || text.trim().charAt(0) === "{";
         if (looksJson) {
           try {
             const p = JSON.parse(text);
-            if (p && p.responses && typeof p.responses === "object" && !p.ciphertext) {
+            if (p && (p.responses && typeof p.responses === "object" || p.answers && typeof p.answers === "object") && !p.ciphertext) {
+              const normalizedPayload = p.responses ? p : {
+                ...p,
+                nickname: p.nickname || p.studentName || "?",
+                timestamp: p.timestamp || p.submissionDate || null,
+                docTitle: p.docTitle || "AlloFlow assignment",
+                responses: p.answers || {}
+              };
               newRows.push({
                 fileName: f.name,
-                nickname: p.nickname || "?",
-                docTitle: p.docTitle || "",
-                timestamp: p.timestamp || null,
+                nickname: normalizedPayload.nickname || "?",
+                docTitle: normalizedPayload.docTitle || "",
+                timestamp: normalizedPayload.timestamp || null,
                 encryptedBlob: null,
-                payload: p,
+                payload: normalizedPayload,
                 status: "decrypted",
                 error: null
               });
               continue;
             }
-          } catch (e) { /* not plain JSON — fall through to encrypted-HTML parsing */ }
+          } catch (e2) {
+          }
         }
         const match = text.match(/<script type="application\/json" id="alloflow-submission">([\s\S]*?)<\/script>/);
         if (!match) {
@@ -854,7 +860,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               /* @__PURE__ */ React.createElement(
                 "div",
                 { style: { fontSize: "0.85rem", color: "#475569" } },
-                queue.length === 0 ? "Select the files students saved — encrypted .alloflow.html (needs the class key) or plain .json (no key needed)." : queue.length + " file" + (queue.length === 1 ? "" : "s") + " loaded \xB7 " + (counts.decrypted || 0) + " decrypted \xB7 " + (counts.pending || 0) + " pending \xB7 " + (counts.error || 0) + " error"
+                queue.length === 0 ? "Select the files students saved \u2014 encrypted .alloflow.html (needs the class key) or plain .json (no key needed)." : queue.length + " file" + (queue.length === 1 ? "" : "s") + " loaded \xB7 " + (counts.decrypted || 0) + " decrypted \xB7 " + (counts.pending || 0) + " pending \xB7 " + (counts.error || 0) + " error"
               )
             ),
             /* @__PURE__ */ React.createElement(

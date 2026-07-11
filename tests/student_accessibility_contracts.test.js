@@ -71,6 +71,11 @@ describe('student-facing accessibility contracts', () => {
     expect(src).toContain("theme === 'contrast'");
     expect(src).toContain("theme === 'dark'");
     expect(src).toContain('headerText');
+    expect(src).toContain("submissionMethod === 'mailbox'");
+    expect(src).toContain('Submit to teacher’s Drive');
+    expect(src).toContain('await Promise.resolve(onSubmit(fullName, stats))');
+    expect(src).toContain("submissionContext === 'standard-live'");
+    expect(src).toContain('If delivery fails, a backup file downloads instead.');
   });
 
   it('the inline student live-session lobby has dark and high-contrast branches', () => {

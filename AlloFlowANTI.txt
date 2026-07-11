@@ -1248,7 +1248,7 @@ const ALLO_MB_SCRIPT_SOURCE = `/**
  *    eligible for early eviction and expiring within 45 minutes to 6 hours.
  *  - Session markers/secrets: Script Properties for at most 6 hours so a
  *    teacher refresh can recover a class after cache eviction.
- *  - Homework packs: one small manifest plus chunk files in the owner's
+ *  - Homework packs and completed submission JSON: files in the owner's
  *    "AlloFlow Class Mailbox" Drive folder. Delete them any time.
  *
  * Access model (capability tokens, no student logins):
@@ -1263,7 +1263,7 @@ const ALLO_MB_SCRIPT_SOURCE = `/**
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 7;
+var VERSION = 8;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -1458,6 +1458,7 @@ function handle(p) {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
     return putPack(cache, p);
   }
+  if (a === 'putsubmission') return putSubmission(cache, props, p, admin);
   if (a === 'getpack') return getPack(cache, p);
   if (a === 'delpack') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
@@ -1984,6 +1985,84 @@ function replacePackFileV7(name, body, mime) {
   else packFolder().createFile(name, body, mime);
 }
 
+// v8: capability-authenticated student submissions. Live students use their
+// signed participant credential; hosted-homework students use the same
+// unguessable pack capability already present in their assignment QR. Files
+// land in the teacher-owned mailbox Drive folder as ordinary JSON. Uploads
+// are chunked so a complete portfolio does not hit Apps Script request/cache
+// value limits. No endpoint lists or downloads submissions.
+function putSubmission(cache, props, p, admin) {
+  var sourceKind = '';
+  var sourceId = '';
+  var rateIdentity = '';
+  if (p.c) {
+    var code = String(p.c || '').toUpperCase();
+    var secret = sessionSecretFor(code, cache, props);
+    if (!secret) return out({ ok: false, e: 'no-session' });
+    var actor = requestActor(p, code, secret, admin);
+    if (!actor || actor.role !== 'participant') return out({ ok: false, e: 'denied' });
+    sourceKind = 'live';
+    sourceId = code;
+    rateIdentity = actor.uid;
+  } else {
+    var packId = String(p.id || '');
+    if (!/^PK-[0-9a-f-]{36}$/i.test(packId)) return out({ ok: false, e: 'bad-request' });
+    var manifest = findPackFile(packId);
+    if (!manifest) return out({ ok: false, e: 'no-pack' });
+    var packMeta;
+    try { packMeta = JSON.parse(manifest.getBlob().getDataAsString()); } catch (e) { return out({ ok: false, e: 'corrupt' }); }
+    if (String(p.k || '') !== String(packMeta.k || '')) return out({ ok: false, e: 'denied' });
+    sourceKind = 'homework';
+    sourceId = packId;
+    rateIdentity = packId.slice(-12) + ':' + String(p.k || '').slice(0, 12);
+  }
+  if (!rateCheck(cache, 'r:submission:' + rateIdentity, 80)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
+  var sid = String(p.sid || '');
+  var part = parseInt(p.part, 10) || 0;
+  var of = parseInt(p.of, 10) || 0;
+  var data = String(p.data || '');
+  if (!/^SUB-[0-9a-f-]{36}$/i.test(sid) || part < 1 || of < 1 || part > of || of > 200
+      || !data || data.length > MAX_MSG_CHARS) return out({ ok: false, e: 'bad-part' });
+  var receiptKey = 'sr:' + sourceKind + ':' + sourceId + ':' + sid;
+  var priorReceipt = cache.get(receiptKey);
+  if (priorReceipt) {
+    try { return out(JSON.parse(priorReceipt)); } catch (receiptErr) { cache.remove(receiptKey); }
+  }
+  var cachePrefix = 'su:' + sid + ':';
+  cache.put(cachePrefix + part, data, UPLOAD_TTL_SEC);
+  if (part < of) return out({ ok: true, part: part });
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
+  try {
+    var keys = [];
+    for (var i = 1; i <= of; i++) keys.push(cachePrefix + i);
+    var found = cache.getAll(keys);
+    var pieces = [];
+    for (var j = 1; j <= of; j++) {
+      var piece = found[cachePrefix + j];
+      if (!piece) return out({ ok: false, e: 'missing-part', part: j });
+      pieces.push(piece);
+    }
+    var assembled = pieces.join('');
+    if (assembled.length > MAX_PACK_CHARS) return out({ ok: false, e: 'too-big' });
+    var payload;
+    try { payload = JSON.parse(assembled); } catch (parseErr) { return out({ ok: false, e: 'bad-data' }); }
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)
+        || typeof payload.studentName !== 'string' || payload.studentName.length > 80
+        || !validateJsonValue(payload, 0)) return out({ ok: false, e: 'bad-data' });
+    payload.mailboxReceipt = { sourceKind: sourceKind, sourceId: sourceId, receivedAt: new Date().toISOString() };
+    var safeName = String(payload.studentName || 'Student').replace(/[^A-Za-z0-9_-]+/g, '_').slice(0, 48) || 'Student';
+    var stamp = Utilities.formatDate ? Utilities.formatDate(new Date(), 'UTC', 'yyyyMMdd-HHmmss') : String(Date.now());
+    var filename = 'submission-' + safeName + '-' + stamp + '-' + sid.slice(-8) + '.json';
+    packFolder().createFile(filename, JSON.stringify(payload, null, 2), 'application/json');
+    for (var r = 1; r <= of; r++) cache.remove(cachePrefix + r);
+    var receipt = { ok: true, filename: filename, sourceKind: sourceKind, receivedAt: payload.mailboxReceipt.receivedAt };
+    cache.put(receiptKey, JSON.stringify(receipt), UPLOAD_TTL_SEC);
+    return out(receipt);
+  } finally { lock.releaseLock(); }
+}
 function putPack(cache, p) {
   var id = String(p.id || '');
   if (!/^PK-[0-9a-f-]{36}$/i.test(id) || !isToken(p.k)) return out({ ok: false, e: 'bad-request' });
@@ -7484,7 +7563,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=0e5f061d9');
     loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=0e5f061d9');
     loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=0e5f061d9');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=fa7dc48b');
+    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=e3efe3e6');
     loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=0e5f061d9');
     loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=0e5f061d9');
     loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=0e5f061d9');
@@ -13707,6 +13786,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const mbHostedPackFpRef = useRef('');
   const moduleAutoRetryRef = useRef(false);
   const [mbStudent, setMbStudent] = useState(null);
+  const [mbHostedAssignment, setMbHostedAssignment] = useState(null);
   const [mbJoinStatus, setMbJoinStatus] = useState('');
   const [mbJoinError, setMbJoinError] = useState(false);
   const [mbJoinAttempt, setMbJoinAttempt] = useState(0);
@@ -13914,8 +13994,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [mbConfig]);
   const startMailboxLiveSession = useCallback(async () => {
       if (!mbConfig?.url || !mbConfig?.admin) return;
-      if (Number(mbConfig.v || 0) < 7) {
-          setMbStatus('Update the mailbox script to v7 before starting a secure QR session.');
+      if (Number(mbConfig.v || 0) < 8) {
+          setMbStatus('Update the mailbox script to v8 before starting a secure QR session with automatic Drive submissions.');
           return;
       }
       setMbBusy(true);
@@ -23189,40 +23269,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           });
       }
   }, [generatedContent, studentResponses]);
-  const handleSubmitAssignment = (confirmedName, summaryStats) => {
-      // Whitelist of student-authored or student-engaged resource types that
-      // should ride the Save & Submit JSON to the teacher. Anything the student
-      // CREATED, FILLED IN, or ENGAGED WITH belongs here. Excluded: teacher-
-      // only tools (analysis, udl-advice, alignment-report, brainstorm,
-      // gemini-bridge) which would never be student-authored.
-      //
-      // Historical gap: note-taking + anchor-chart shipped May 2026 but were
-      // never added to this list, so student work in those tools never
-      // reached the teacher dashboard. Fixed May 2026.
-      const relevantTypes = [
-          'quiz', 'simplified', 'adventure', 'sentence-frames', 'timeline',
-          'concept-sort', 'math', 'lesson-plan', 'glossary', 'word-sounds',
-          'note-taking', 'anchor-chart', 'dbq', 'faq', 'outline', 'image',
-          'fluency-record',
-      ];
-      const filteredContent = history.filter(item => relevantTypes.includes(item.type));
-      const cleanContent = sanitizeSubmissionData(filteredContent);
-      const submissionData = {
-          studentName: confirmedName || studentNickname || studentProjectSettings.nickname || "Anonymous",
-          submissionDate: new Date().toISOString(),
-          stats: { ...calculateStudentStats(), summary: summaryStats },
-          content: cleanContent,
-          answers: studentResponses,
-          // Game-engagement data (concept-sort placements, memory match results,
-          // matching/timeline/crossword/etc. completions). Required for the
-          // teacher dashboard's cross-tool misconception detection — without
-          // this, concept-sort per-item misplacement data never reaches the
-          // teacher. Added May 2026 alongside the dashboard misconception work.
-          gameCompletions: gameCompletions,
-      };
-      const safeName = (submissionData.studentName).replace(/[^a-z0-9]/gi, '_');
-      const dateStr = new Date().toISOString().split('T')[0];
-      const filename = `${safeName}_${t('export.filenames.assignment')}_${dateStr}.json`;
+  const downloadSubmissionBackup = (submissionData, filename) => {
       const blob = new Blob([JSON.stringify(submissionData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -23232,8 +23279,74 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      addToast(t('toasts.submission_success'), "success");
+  };
+  const handleSubmitAssignment = async (confirmedName, summaryStats) => {
+      // Whitelist of student-authored or student-engaged resource types that
+      // should ride the submission. Teacher-only analysis/configuration stays
+      // out. Mailbox transports upload this same portable JSON directly to the
+      // teacher's Drive; other transports download it for LMS/email handoff.
+      const relevantTypes = [
+          'quiz', 'simplified', 'adventure', 'sentence-frames', 'timeline',
+          'concept-sort', 'math', 'lesson-plan', 'glossary', 'word-sounds',
+          'note-taking', 'anchor-chart', 'dbq', 'faq', 'outline', 'image',
+          'fluency-record', 'storyforge-submission', 'poettree-submission',
+          'litlab-submission',
+      ];
+      const filteredContent = history.filter(item => relevantTypes.includes(item.type));
+      const cleanContent = sanitizeSubmissionData(filteredContent);
+      const submissionData = {
+          kind: 'alloflow-student-submission',
+          schemaVersion: 2,
+          studentName: confirmedName || studentNickname || studentProjectSettings.nickname || 'Anonymous',
+          nickname: confirmedName || studentNickname || studentProjectSettings.nickname || 'Anonymous',
+          submissionDate: new Date().toISOString(),
+          timestamp: new Date().toISOString(),
+          docTitle: String(sourceTopic || generatedContent?.title || 'AlloFlow assignment').slice(0, 140),
+          stats: { ...calculateStudentStats(), summary: summaryStats },
+          content: cleanContent,
+          answers: studentResponses,
+          responses: studentResponses,
+          gameCompletions: gameCompletions,
+      };
+      const safeName = submissionData.studentName.replace(/[^a-z0-9]/gi, '_');
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `${safeName}_${t('export.filenames.assignment')}_${dateStr}.json`;
+      const mailboxTarget = mbStudent
+          ? { url: mbStudent.url, auth: { c: mbStudent.code, uid: mbStudent.uid, pt: mbStudent.participant } }
+          : mbHostedAssignment
+              ? { url: mbHostedAssignment.url, auth: { id: mbHostedAssignment.id, k: mbHostedAssignment.secret } }
+              : null;
+      if (mailboxTarget) {
+          try {
+              const serialized = JSON.stringify(submissionData);
+              if (serialized.length > 8 * 1024 * 1024) throw new Error('submission exceeds the 8 MB mailbox limit');
+              const parts = _alloSplitPackChunks(serialized, 60000);
+              const sid = 'SUB-' + generateUUID();
+              let receipt = null;
+              for (let i = 0; i < parts.length; i += 1) {
+                  receipt = await _alloMailboxCallWithRetry(mailboxTarget.url, {
+                      a: 'putsubmission', ...mailboxTarget.auth, sid,
+                      part: i + 1, of: parts.length, data: parts[i],
+                  }, 3, 700);
+              }
+              addToast('Submitted to your teacher’s AlloFlow Class Mailbox Drive folder' + (receipt?.filename ? ': ' + receipt.filename : '.'), 'success');
+              setIsSaveActionPulsing(false);
+              return true;
+          } catch (mailboxSubmitErr) {
+              warnLog('Mailbox submission upload failed; downloading a backup instead:', mailboxSubmitErr?.message);
+              downloadSubmissionBackup(submissionData, filename);
+              addToast('The mailbox could not receive the submission, so a backup file was downloaded. Send that file to your teacher or LMS.', 'warning');
+              setIsSaveActionPulsing(false);
+              return true;
+          }
+      }
+      downloadSubmissionBackup(submissionData, filename);
+      const standardLive = !!activeSessionCode && window.__alloQrStudentMode?.type !== 'mailbox-live';
+      addToast(standardLive
+          ? 'Live activity responses are synced. Your complete work file was downloaded for submission to your teacher or LMS.'
+          : 'Your work file was downloaded. Send it to your teacher or upload it to your LMS.', 'success');
       setIsSaveActionPulsing(false);
+      return true;
   };
   const executeSaveFile = () => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
@@ -24102,6 +24215,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   useEffect(() => {
       const entry = _alloReadMailboxEntryParam('allo_mbp');
       if (!entry || !entry.id || !entry.k) return undefined;
+      setMbHostedAssignment({ url: entry.u, id: entry.id, secret: String(entry.k) });
       let cancelled = false;
       window.__alloQrStudentMode = { type: 'assignment-pack-hosted', aiDisabled: true };
       window.__alloStudentAiDisabled = true;
@@ -31429,15 +31543,58 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative text-left max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <button onClick={() => setMbPanelOpen(false)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
             <h2 className="text-xl font-black text-slate-900 mb-1">Live class without accounts <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 align-middle">beta</span></h2>
-            <p className="text-xs text-slate-600 mb-4">Runs on a Class Mailbox you own (a free Google Apps Script in your account). Students scan a QR with no account or app. Live state stays in your Google Apps Script cache/properties; homework packs stay in your Drive.</p>
+            <p className="text-xs text-slate-600 mb-3">Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.</p>
+            <div className="space-y-2 mb-4">
+              <details className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
+                <summary className="cursor-pointer font-black">Why might Google say “unverified app” or “unsafe”?</summary>
+                <div className="mt-2 space-y-2 leading-relaxed">
+                  <p>Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when <b>you created this Apps Script project</b>, pasted code from the AlloFlow copy shown here, and recognize the Google account and project name. Cancel if the prompt is unexpected or belongs to someone else.</p>
+                  <p>The script requests Google Drive access to create the private “AlloFlow Class Mailbox” folder for hosted activities, admin-token recovery, and student submissions. You can review the code before authorizing and revoke access later from your Google Account connections.</p>
+                  <a href="https://developers.google.com/apps-script/guides/services/authorization" target="_blank" rel="noopener noreferrer" className="font-bold text-amber-900 underline underline-offset-2">Google’s Apps Script authorization explanation</a>
+                </div>
+              </details>
+              <details className="rounded-xl border border-indigo-200 bg-indigo-50 p-3 text-xs text-indigo-950">
+                <summary className="cursor-pointer font-black">K–12 privacy / FERPA checklist: is this appropriate for my class?</summary>
+                <div className="mt-2 space-y-2 leading-relaxed">
+                  <p><b>A Google account alone does not make a workflow FERPA-compliant.</b> Use a school-managed Google Workspace for Education account when available, confirm that Apps Script and this workflow are approved by your school or district, and follow local consent, records, security, and retention policies. If your administrator blocks “Anyone” web apps, ask IT rather than bypassing that control with a personal account.</p>
+                  <ul className="list-disc ml-4 space-y-1">
+                    <li>Use student codenames; do not ask students to enter names, emails, disability information, or other unnecessary identifiers.</li>
+                    <li>Treat each QR/link as a classroom invitation: anyone who receives it can attempt to join or submit until it expires.</li>
+                    <li>Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.</li>
+                    <li>Use only for students and purposes approved by your school. This checklist is practical guidance, not a legal determination.</li>
+                  </ul>
+                  <a href="https://studentprivacy.ed.gov/frequently-asked-questions" target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-900 underline underline-offset-2">U.S. Department of Education student-privacy FAQ</a>
+                </div>
+              </details>
+              <details className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800">
+                <summary className="cursor-pointer font-black">What is stored, where, and for how long?</summary>
+                <ul className="mt-2 list-disc ml-4 space-y-1 leading-relaxed">
+                  <li>Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.</li>
+                  <li>Session recovery marker and random secret: Script Properties for at most 6 hours.</li>
+                  <li>Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.</li>
+                  <li>Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.</li>
+                  <li>No mailbox content is stored on an AlloFlow-operated server.</li>
+                </ul>
+              </details>
+<details className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-950">
+                <summary className="cursor-pointer font-black">How do student saving and submissions work in each mode?</summary>
+                <ul className="mt-2 list-disc ml-4 space-y-1 leading-relaxed">
+                  <li><b>Mailbox live session or mailbox-hosted homework:</b> Save &amp; Submit uploads the complete student-work JSON automatically to your private Drive mailbox folder. If delivery fails, the student receives a backup download instead.</li>
+                  <li><b>Standard Firebase live session:</b> live quiz answers, progress signals, and supported activity responses sync during the session. The complete portfolio is intentionally not retained as a permanent Firebase record; Save &amp; Submit downloads a file for the LMS or teacher.</li>
+                  <li><b>Self-contained/non-live homework:</b> work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.</li>
+                  <li><b>Teacher review:</b> open Drive → “AlloFlow Class Mailbox,” download the submission JSON files, then use AlloFlow’s Submission Inbox to import, review, and grade them.</li>
+                </ul>
+              </details>
+            </div>
             {!mbConfig && (
               <div>
-                <p className="text-xs text-slate-700 mb-2 font-bold">One-time setup (~2 minutes):</p>
-                <ol className="text-xs text-slate-600 list-decimal ml-4 space-y-1 mb-3">
-                  <li>Copy the mailbox script: <button onClick={() => copyToClipboard(ALLO_MB_SCRIPT_SOURCE)} className="font-bold text-indigo-700 underline underline-offset-2">copy script code</button> — it ships inside AlloFlow, so this works offline and in Canvas (or <a href="https://alloflow-cdn.pages.dev/apps_script/session_mailbox/Code.gs" target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-700 underline underline-offset-2">view it online</a>).</li>
-                  <li>Open <a href="https://script.new" target="_blank" rel="noopener noreferrer" className="font-mono font-bold text-indigo-700 underline underline-offset-2">script.new</a> — a Google shortcut that creates a blank Apps Script project (sign into the Google account that should own the mailbox first; the long way is script.google.com → "New project"). Paste over the starter code and save.</li>
-                  <li>Deploy → New deployment → Web app → Execute as <b>Me</b>, access <b>Anyone</b> → Deploy → authorize (on the "unverified app" screen: Advanced → Go to project).</li>
-                  <li>Paste the /exec web app URL below.</li>
+<p className="text-xs text-slate-700 mb-2 font-bold">One-time setup (about 3–5 minutes):</p>
+                <ol className="text-xs text-slate-600 list-decimal ml-4 space-y-1.5 mb-3">
+                  <li>Sign into the <b>school-managed Google account</b> that should own the mailbox and confirm this use is allowed by your school or district.</li>
+                  <li>Copy and review the mailbox script: <button onClick={() => copyToClipboard(ALLO_MB_SCRIPT_SOURCE)} className="font-bold text-indigo-700 underline underline-offset-2">copy script code</button> (or <a href="https://alloflow-cdn.pages.dev/apps_script/session_mailbox/Code.gs" target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-700 underline underline-offset-2">view the same source online</a>).</li>
+                  <li>Open <a href="https://script.new" target="_blank" rel="noopener noreferrer" className="font-mono font-bold text-indigo-700 underline underline-offset-2">script.new</a>, paste over the starter code, name it “AlloFlow Class Mailbox,” and save.</li>
+                  <li>Choose Deploy → New deployment → Web app → Execute as <b>Me</b> → access <b>Anyone</b> → Deploy. Review the authorization prompt; if Google shows the unpublished-app warning, use the explanation above before deciding whether to continue.</li>
+                  <li>Copy the web app URL ending in <b>/exec</b>, paste it below, then run the self-test.</li>
                 </ol>
                 <input value={mbUrlInput} onChange={e => setMbUrlInput(e.target.value)} placeholder="https://script.google.com/macros/s/…/exec" className="w-full text-xs border border-slate-300 rounded-lg p-2 mb-2 font-mono" aria-label="Class Mailbox web app URL" />
                 <input value={mbAdminInput} onChange={e => setMbAdminInput(e.target.value)} placeholder="Admin token (only when reconnecting from a new device)" className="w-full text-xs border border-slate-200 rounded-lg p-2 mb-2 font-mono" aria-label="Class Mailbox admin token (optional)" />
@@ -31451,13 +31608,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 hand-raise) but lack the session-doc store that powers polls,
                 quiz, groups and Pictionary — tell the teacher how to update
                 (same URL, ~1 minute). */}
-            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 7 && (
+            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 8 && (
               <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
-                <p className="text-xs font-bold text-amber-800 mb-2">Your mailbox script is v{mbConfig.v}. Update it to v7 to securely unlock polls, quizzes, groups and Pictionary for QR students (about 1 minute, the URL stays the same):</p>
+                <p className="text-xs font-bold text-amber-800 mb-2">Your mailbox script is v{mbConfig.v}. Update it to v8 to unlock secure live tools and automatic student submissions to your Drive (about 1 minute, the URL stays the same):</p>
                 <ol className="list-decimal list-inside text-xs text-amber-900 space-y-1">
                   <li><button onClick={() => copyToClipboard(ALLO_MB_SCRIPT_SOURCE)} className="font-bold underline underline-offset-2">Copy the updated script</button> and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).</li>
                   <li>Deploy → Manage deployments → pencil icon → Version: <b>New version</b> → Deploy.</li>
-                  <li>Press "Connect &amp; self-test" here again — this notice disappears at v7.</li>
+                  <li>Press "Connect &amp; self-test" here again — this notice disappears at v8.</li>
                 </ol>
               </div>
             )}
@@ -31500,6 +31657,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     </div>
                   </div>
                 )}
+<p className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-[11px] font-semibold text-emerald-900">Completed student submissions save automatically as JSON files in your private Drive mailbox folder. Students receive a local backup download if delivery fails. To review them, download the JSON files from Drive and import them through AlloFlow’s Submission Inbox.</p>
                 <button onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl p-3 transition-all disabled:opacity-60">
                   {mbBusy ? 'Starting…' : 'Start live session'}
                 </button>
@@ -35366,6 +35524,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           onSubmit={handleSubmitAssignment}
           history={history}
           currentNickname={studentNickname || studentProjectSettings.nickname}
+          submissionMethod={(mbStudent || mbHostedAssignment) ? 'mailbox' : 'download'}
+          submissionContext={mbStudent ? 'mailbox-live' : mbHostedAssignment ? 'mailbox-homework' : activeSessionCode ? 'standard-live' : 'file'}
       />
       {showSaveModal && (
         <div ref={saveModalRef} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowSaveModalToFalse}>

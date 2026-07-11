@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
+const publicMailboxSource = fs.readFileSync(path.join(ROOT, 'prismflow-deploy', 'public', 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
 
 function sliceBetween(source, startMarker, endMarker) {
     const start = source.indexOf(startMarker);
@@ -588,6 +589,7 @@ describe('three-copy sync pins (Phase C sections)', () => {
             // is exercised exactly the way the browser will see it.
             const embedded = new Function('return ' + literal + ';')();
             expect(embedded).toBe(gsSource);
+            expect(publicMailboxSource).toBe(gsSource);
         });
     });
     it('every copy hands teachers the embedded script and nudges outdated deployments', () => {

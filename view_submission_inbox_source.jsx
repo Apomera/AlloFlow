@@ -310,14 +310,21 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
         if (looksJson) {
           try {
             const p = JSON.parse(text);
-            if (p && p.responses && typeof p.responses === 'object' && !p.ciphertext) {
+            if (p && ((p.responses && typeof p.responses === 'object') || (p.answers && typeof p.answers === 'object')) && !p.ciphertext) {
+              const normalizedPayload = p.responses ? p : {
+                ...p,
+                nickname: p.nickname || p.studentName || '?',
+                timestamp: p.timestamp || p.submissionDate || null,
+                docTitle: p.docTitle || 'AlloFlow assignment',
+                responses: p.answers || {},
+              };
               newRows.push({
                 fileName: f.name,
-                nickname: p.nickname || '?',
-                docTitle: p.docTitle || '',
-                timestamp: p.timestamp || null,
+                nickname: normalizedPayload.nickname || '?',
+                docTitle: normalizedPayload.docTitle || '',
+                timestamp: normalizedPayload.timestamp || null,
                 encryptedBlob: null,
-                payload: p,
+                payload: normalizedPayload,
                 status: 'decrypted',
                 error: null
               });

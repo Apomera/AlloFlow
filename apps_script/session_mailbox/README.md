@@ -23,12 +23,14 @@ remain in the Google account chosen by the teacher.
 3. Click **Deploy → New deployment**. Click the gear next to "Select type"
    and choose **Web app**.
 4. Set **Execute as: Me** and **Who has access: Anyone**. Click **Deploy**.
-5. Authorize when prompted. Google shows a "Google hasn't verified this app"
-   screen because this is your own unpublished script. Review the pasted code
-   first; then, if it matches the source you intended to deploy, choose
-   **Advanced → Go to AlloFlow Class Mailbox (unsafe)** and allow access. The
-   script uses Apps Script cache/properties for live sessions and the Drive
-   folder it creates for homework packs.
+5. Authorize when prompted. Google can show a "Google hasn't verified this app"
+   warning because this teacher-created script is an unpublished OAuth app.
+   That is expected, but it is not a blanket assurance of safety. Continue
+   only if you created the project, reviewed the pasted source, and recognize
+   the account and project name; otherwise cancel. Google explains this flow
+   at https://developers.google.com/apps-script/guides/services/authorization.
+   The script uses cache/properties for live sessions and Drive for hosted
+   homework, admin-token recovery, and completed student submissions.
 6. Copy the **Web app URL** (ends in `/exec`) and paste it into AlloFlow:
    **Student QR → Live class without accounts → Connect mailbox**. AlloFlow
    runs a self-test and claims the admin token automatically.
@@ -36,7 +38,8 @@ remain in the Google account chosen by the teacher.
 **Updating later:** paste new code, then Deploy → **Manage deployments** →
 pencil icon → Version: New version → Deploy. The URL stays the same.
 
-> **v7 (required for secure live QR sessions):** separates the QR join secret
+> **v8 (required for secure live QR sessions and automatic Drive submissions):**
+> separates the QR join secret
 > from teacher authority. Each student receives a signed, session-scoped
 > participant credential. Older scripts must be updated before new AlloFlow
 > builds will show a live-session QR.
@@ -48,6 +51,7 @@ pencil icon → Version: New version → Deploy. The URL stays the same.
 | Live messages and session documents | Apps Script cache in **your** Google account | eligible for early eviction; requested expiry at most 45 min or 6 h |
 | Live-session markers and random join secrets | Apps Script Properties in **your** Google account | at most 6 h |
 | Homework pack manifests and chunks | AlloFlow Class Mailbox folder in **your** Drive | until you delete them |
+| Completed mailbox student submissions (JSON) | the same private Drive folder | until you delete them according to school policy |
 | Admin token recovery note | the same private Drive folder | until rotated or deleted |
 
 No student accounts exist. A live QR carries a random **join-only secret**.
@@ -58,14 +62,19 @@ approved fields. The admin token is required for teacher broadcasts, complete
 class state, ending sessions, and pack management; it is never placed in a QR.
 Treat a QR like a classroom invitation and the admin token like a password.
 
-## School accounts
+## School accounts and student privacy
 
 Some Workspace districts disable "Anyone" access for Apps Script web apps.
-If the **Who has access** dropdown has no "Anyone" option, either ask IT to
-allow it for your account, or deploy from a personal Google account —
-live cache/properties and homework packs then live in that personal account.
-Use this only when school policy permits it; prefer the school account.
+If the **Who has access** dropdown has no "Anyone" option, ask school or
+district IT whether this workflow can be approved. Do not bypass an
+administrative control by moving student records to a personal account.
 
+A Google account or Workspace for Education account does not by itself make a
+workflow FERPA-compliant. The school remains responsible for approval,
+legitimate educational purpose, access controls, required notices or consent,
+and retention. Use codenames and avoid unnecessary student identifiers. See
+the U.S. Department of Education student-privacy FAQ:
+https://studentprivacy.ed.gov/frequently-asked-questions
 ## Your admin token (reconnecting from a new device)
 
 When AlloFlow first connects it claims an **admin token** and shows it to
@@ -135,3 +144,17 @@ their requested expiry. AlloFlow can re-seed teacher state after eviction and
 uses a version precondition so a stale recovery cannot overwrite a document
 that was already recreated. Very recent transient student activity can still
 need resubmission after a cache eviction.
+## Student submission behavior
+
+With a v8 mailbox, **Save & Submit** automatically uploads complete student
+work for mailbox live sessions and mailbox-hosted homework. The server accepts
+chunked JSON only when the caller proves either a signed live-session
+participant capability or the unguessable hosted-homework pack capability.
+Files are written to the teacher's private `AlloFlow Class Mailbox` Drive
+folder; no endpoint lists or downloads submissions. If upload fails, AlloFlow
+downloads a backup JSON file on the student device instead of discarding work.
+
+Teachers download those JSON files from Drive and import them through
+AlloFlow's **Submission Inbox**. Standard Firebase live sessions continue to
+sync supported live answers and signals, but complete portfolio submissions
+remain file-based rather than being retained permanently in Firebase.

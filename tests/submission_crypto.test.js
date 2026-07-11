@@ -14,6 +14,8 @@
 
 import { describe, it, beforeAll, expect } from 'vitest';
 import { webcrypto } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 let SC;
@@ -121,5 +123,15 @@ describe('submission_crypto — offline inline encryptor parity (no wire-format 
     const blob = await window.__alloflowEncryptSubmission(SAMPLE, publicJwk);
     const out = await SC.decryptSubmission(blob, privateJwk);
     expect(out).toEqual(SAMPLE);
+  });
+});
+
+describe('teacher inbox plain-JSON compatibility', () => {
+  it('normalizes app Save & Submit answers into the inbox response shape', () => {
+    const inbox = readFileSync(resolve(process.cwd(), 'view_submission_inbox_source.jsx'), 'utf8');
+    expect(inbox).toContain("p.answers && typeof p.answers === 'object'");
+    expect(inbox).toContain('nickname: p.nickname || p.studentName');
+    expect(inbox).toContain('responses: p.answers || {}');
+    expect(inbox).toContain('payload: normalizedPayload');
   });
 });
