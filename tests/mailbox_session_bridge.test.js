@@ -693,6 +693,8 @@ describe('mailbox live-resource parity: durable packRef self-heal', () => {
             expect(fn).toContain('return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current() : null;');
             // The old dead-end error toast is gone.
             expect(fn).not.toContain('too large for a self-contained link. Host it on your Class Mailbox (images OK) or use the HTML export');
+            // The redirect toast only fires when the mailbox is ready (no double toast).
+            expect(fn).toContain('if (mbConfig?.url && mbConfig?.admin) {');
             // Not-connected queues the host for after the connect self-test lands.
             const host = sliceBetween(source, 'const hostPackOnMailbox = useCallback', 'const toggleMbHand = useCallback');
             expect(host).toContain('mbPendingHostRef.current = true;');

@@ -14333,9 +14333,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }
           if (shareUrl.length > ALLO_QR_PACK_MAX_URL_CHARS) {
               // Too big for a URL, but the Class Mailbox is built for large packs
-              // (up to ~8MB via putpack). Route there instead of dead-ending;
-              // hostPackOnMailbox prompts to connect + opens setup when needed.
-              addToast('This activity is too large for a self-contained link — hosting it on your Class Mailbox instead (images included).', 'info');
+              // (up to ~8MB via putpack). Route there instead of dead-ending.
+              // Only announce the redirect when the mailbox is ready; otherwise
+              // let hostPackOnMailbox show the single "connect first" prompt +
+              // setup panel (avoids a misleading double toast).
+              if (mbConfig?.url && mbConfig?.admin) {
+                  addToast('This activity is too large for a self-contained link — hosting it on your Class Mailbox instead (images included).', 'info');
+              }
               return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current() : null;
           }
           copyToClipboard(shareUrl);
@@ -14354,7 +14358,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           addToast('Could not create a self-contained homework link.', 'error');
           return null;
       }
-  }, [buildAssignmentPackEncoded, copyToClipboard]);
+  }, [buildAssignmentPackEncoded, copyToClipboard, mbConfig]);
   // Mailbox-hosted variant: the full pack (images included) is chunk-uploaded
   // to the teacher's own Drive via their mailbox; the QR carries only a tiny
   // pointer, so it is always small enough to print.
