@@ -93,7 +93,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       portCoords: 'Sparks Wharf · 38.9784° N, 76.4922° W',
       landmarks: ['Thomas Point Shoal Light', 'Sandy Point', 'Kent Island', 'Severn River'],
       dmrAuthority: 'Maryland Department of Natural Resources',
-      complete: true
+      complete: false
     },
     pnw: {
       id: 'pnw', label: 'Pacific Northwest',
@@ -102,7 +102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       portCoords: 'Cap Sante Marina · 48.5186° N, 122.6083° W',
       landmarks: ['Lime Kiln Light', 'Burrows Island', 'Guemes Channel', 'Mount Baker View'],
       dmrAuthority: 'Washington Department of Fish and Wildlife',
-      complete: true
+      complete: false
     },
     greatlakes: {
       id: 'greatlakes', label: 'Great Lakes',
@@ -110,8 +110,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       portName: 'Sault Ste. Marie',
       portCoords: 'Soo Locks Marina · 46.5011° N, 84.3622° W',
       landmarks: ['Point Iroquois Light', 'Whitefish Point', 'St. Marys River', 'Round Island'],
-      dmrAuthority: 'Great Lakes Fishery Commission',
-      complete: true
+      dmrAuthority: 'Michigan Department of Natural Resources for the Sault Ste. Marie training port',
+      complete: false
     }
   };
   var DEFAULT_REGION = 'maine';
@@ -9304,8 +9304,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     icon: '🎣',
     color: 'cyan',
     category: 'science',
-    description: 'Pilot a Maine skiff from Portland Harbor out to the fishing grounds. Learn buoyage, charts, COLREGS, tides, and weather while fishing for cod, striper, mackerel, and pulling lobster traps. Full 3D simulator with Maine-default DMR regs and a region toggle.',
-    desc: 'Pilot a Maine skiff. Learn IALA-B buoyage, COLREGS, charts, tides, and Gulf of Maine fish ID + DMR regs in an immersive 3D sim.',
+    description: 'Pilot a Maine skiff from Portland Harbor out to the fishing grounds. Learn buoyage, charts, COLREGS, tides, weather, species identification, and stewardship through a 3D simulator with regional practice profiles and live-rule reminders.',
+    desc: 'Pilot a Maine skiff. Learn IALA-B buoyage, COLREGS, charts, tides, fish identification, and responsible harvest decisions in an immersive 3D sim.',
     tags: ['fishing', 'boating', 'navigation', 'maine', '3d', 'sim'],
     ready: true,
     render: function(ctx) { return _renderFisherLab(ctx); }
@@ -9320,6 +9320,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var stateInit = loadState();
     var tabHook = useState('home');
     var tab = tabHook[0], setTab = tabHook[1];
+    var tabSearchHook = useState('');
+    var tabSearch = tabSearchHook[0], setTabSearch = tabSearchHook[1];
     var regionHook = useState(stateInit.region);
     var region = regionHook[0], setRegion = regionHook[1];
     var simHook = useState({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
@@ -9358,7 +9360,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var checkpointScore = checkpointScoreHook[0], setCheckpointScore = checkpointScoreHook[1];
 
     function generateCheckpointSpecimen() {
-      var speciesList = getSpeciesForRegion(region);
+      var speciesList = getSpeciesForRegion(region).filter(function(sp) {
+        if (region === 'greatlakes' && sp.id === 'crayfish') return false;
+        return sp.group === 'shellfish' || sp.slot || typeof sp.minSize === 'number';
+      });
       if (!speciesList || speciesList.length === 0) return;
       var sp = speciesList[Math.floor(Math.random() * speciesList.length)];
       var length = 0;
@@ -9373,20 +9378,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           length = 4.0 + Math.random() * 2.5; // 4" to 6.5"
           hasSponge = isFemale && (Math.random() < 0.4);
           isKeeper = (length >= 5.0) && !hasSponge;
-          ruleText = 'Blue Crab regulations: Min width is 5". Female crabs with visible orange egg masses (sponges) are strictly protected.';
+          ruleText = 'Training profile: minimum width 5"; release females carrying a visible egg mass. Confirm the active jurisdiction and season before harvesting.';
         } else if (region === 'pnw') {
           length = 5.0 + Math.random() * 2.5; // 5" to 7.5"
           isKeeper = (length >= 6.25) && !isFemale; // male-only
-          ruleText = 'Dungeness Crab regulations: Min carapace width is 6.25". Only males may be kept; females must be released immediately.';
+          ruleText = 'Training profile: minimum carapace width 6.25" and male-only harvest. Confirm the active jurisdiction and season before harvesting.';
         } else if (region === 'greatlakes') {
           length = 2.0 + Math.random() * 2.5; // 2" to 4.5"
           isKeeper = (length >= 3.0);
-          ruleText = 'Crayfish regulations: Min body length is 3".';
+          ruleText = 'Great Lakes crayfish rules vary by jurisdiction, waterbody, species, and season; this specimen is not used for size-limit scoring.';
         } else { // maine
           length = 3.0 + Math.random() * 2.8; // 3" to 5.8"
           isVNotched = isFemale && (Math.random() < 0.3);
           isKeeper = (length >= 3.25) && (length <= 5.0) && !isVNotched;
-          ruleText = 'Maine Lobster regulations: Carapace must be between 3-1/4" and 5". V-notched females must be released.';
+          ruleText = 'Training profile: carapace between 3-1/4" and 5"; release V-notched females. Confirm current Maine DMR rules before harvesting.';
         }
       } else {
         // Finfish
@@ -9406,7 +9411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             isKeeper = (length >= minB && length <= maxB);
           }
         }
-        ruleText = sp.name + ' rules: ' + (sp.slot ? 'Slot limit ' + sp.slot : (sp.minSize ? 'Min size ' + sp.minSize + '"' : 'No size limit')) + '.';
+        ruleText = sp.name + ' training profile: ' + (sp.slot ? 'slot ' + sp.slot : 'minimum size ' + sp.minSize + '"') + '. Confirm current rules with ' + REGIONS[region].dmrAuthority + '.';
       }
 
       setCheckpointSpecimen({
@@ -9457,28 +9462,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       saveState(s);
     }, [region]);
 
+    function recordCatch(speciesId, length) {
+      var saved = loadState();
+      var priorLog = Array.isArray(saved.lifeLog) ? saved.lifeLog : (lifeLog || []);
+      var next = priorLog.concat([{ species: speciesId, length: length, ts: Date.now() }]);
+      saved.lifeLog = next;
+      saved.speciesCaught = saved.speciesCaught || {};
+      saved.speciesCaught[speciesId] = (saved.speciesCaught[speciesId] || 0) + 1;
+      saveState(saved);
+      setLifeLog(next);
+    }
+
     function pushStatus(ev) {
       setStatus(function(prev) {
         var next = (prev || []).concat([ev]).slice(-8);
         return next;
       });
       if (ev.type === 'fish' && ev.isKeeper) {
-        var newLog = lifeLog.concat([{ species: ev.species.id, length: ev.length, ts: Date.now() }]);
-        setLifeLog(newLog);
-        var ss = loadState();
-        ss.lifeLog = newLog;
-        ss.speciesCaught = ss.speciesCaught || {};
-        ss.speciesCaught[ev.species.id] = (ss.speciesCaught[ev.species.id] || 0) + 1;
-        saveState(ss);
+        recordCatch(ev.species.id, ev.length);
       }
       if (ev.type === 'lobster' && ev.isKeeper) {
-        var newLog = lifeLog.concat([{ species: 'lobster', length: ev.length, ts: Date.now() }]);
-        setLifeLog(newLog);
-        var ss = loadState();
-        ss.lifeLog = newLog;
-        ss.speciesCaught = ss.speciesCaught || {};
-        ss.speciesCaught['lobster'] = (ss.speciesCaught['lobster'] || 0) + 1;
-        saveState(ss);
+        recordCatch('lobster', ev.length);
       }
       if (ev.type === 'lobster-haul') {
         setActiveLobster(ev);
@@ -9681,16 +9685,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function tabBar() {
       var activeCatObj = CATEGORIES.find(function(c) { return c.tabs.indexOf(tab) !== -1; }) || CATEGORIES[0];
       var activeCat = activeCatObj.id;
+      var query = String(tabSearch || '').trim().toLocaleLowerCase();
+      var terms = query ? query.split(/\s+/) : [];
+      var matches = TABS.map(function(tabEntry) {
+        var category = CATEGORIES.find(function(cat) { return cat.tabs.indexOf(tabEntry.id) !== -1; }) || CATEGORIES[0];
+        return { tab: tabEntry, category: category };
+      }).filter(function(entry) {
+        if (!terms.length) return true;
+        var haystack = (entry.tab.id + ' ' + entry.tab.label + ' ' + entry.category.name + ' ' + entry.category.label).toLocaleLowerCase();
+        return terms.every(function(term) { return haystack.indexOf(term) !== -1; });
+      });
 
-      return h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
-        // Category grid
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 6 } },
+      function openTab(tabEntry) {
+        setTab(tabEntry.id);
+        setTabSearch('');
+        flAnnounce(tabEntry.label + ' section open');
+      }
+
+      return h('nav', { 'aria-label': 'FisherLab learning sections', style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+        h('div', { role: 'search', style: { display: 'grid', gridTemplateColumns: 'minmax(180px, 1fr) auto', gap: 7, alignItems: 'end' } },
+          h('label', { htmlFor: 'fl-section-search', style: { display: 'grid', gap: 4, fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text, #cbd5e1)' } },
+            h('span', null, 'Find a FisherLab section'),
+            h('input', {
+              id: 'fl-section-search',
+              type: 'search',
+              value: tabSearch,
+              placeholder: 'Try tides, species, safety, careers…',
+              onChange: function(e) { setTabSearch(e.target.value); },
+              'aria-describedby': 'fl-section-search-status',
+              style: { width: '100%', minWidth: 0, padding: '9px 11px', borderRadius: 7, border: '1px solid rgba(56,189,248,0.42)', background: '#071827', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12 }
+            })
+          ),
+          tabSearch ? h('button', {
+            type: 'button',
+            className: 'fl-btn',
+            onClick: function() { setTabSearch(''); flAnnounce('Section search cleared'); },
+            style: { minHeight: 36, padding: '7px 11px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.35)', background: 'rgba(15,23,42,0.72)', color: '#cbd5e1', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+          }, 'Clear') : h('span', null)
+        ),
+        h('div', {
+          id: 'fl-section-search-status',
+          role: 'status',
+          'aria-live': 'polite',
+          style: { fontSize: 11, color: query && !matches.length ? '#fbbf24' : 'var(--allo-stem-text-soft, #94a3b8)' }
+        }, query ? matches.length + (matches.length === 1 ? ' section found' : ' sections found') : TABS.length + ' sections across 8 learning areas'),
+        h('div', { 'aria-label': 'FisherLab learning areas', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 6 } },
           CATEGORIES.map(function(cat) {
             var isSelected = activeCat === cat.id;
             return h('button', {
               key: cat.id,
+              type: 'button',
+              'aria-pressed': isSelected,
               onClick: function() {
                 setTab(cat.tabs[0]);
+                setTabSearch('');
                 flAnnounce(cat.label + ' category open');
               },
               style: {
@@ -9710,23 +9758,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 boxShadow: isSelected ? '0 0 10px rgba(14,165,233,0.25)' : 'none'
               }
             },
-              h('span', { style: { fontSize: 14 } }, cat.icon),
+              h('span', { style: { fontSize: 14 }, 'aria-hidden': 'true' }, cat.icon),
               h('span', null, cat.name)
             );
           })
         ),
-        // Secondary sub-tab row (only for sub-tabs in active category)
-        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5, padding: 6, background: 'rgba(15,23,42,0.35)', borderRadius: 8, border: '1px solid rgba(56,189,248,0.1)' } },
+        !query && h('div', {
+          role: 'group',
+          'aria-label': activeCatObj.name + ' sections',
+          style: { display: 'flex', flexWrap: 'wrap', gap: 5, padding: 6, background: 'rgba(15,23,42,0.35)', borderRadius: 8, border: '1px solid rgba(56,189,248,0.1)' }
+        },
           activeCatObj.tabs.map(function(tId) {
             var tObj = TABS.find(function(tabEntry) { return tabEntry.id === tId; });
             if (!tObj) return null;
             var selected = tab === tId;
             return h('button', {
               key: tId,
-              role: 'tab',
-              'aria-selected': selected,
+              type: 'button',
+              'aria-current': selected ? 'page' : undefined,
               className: 'fl-btn',
-              onClick: function() { setTab(tId); flAnnounce(tObj.label + ' tab open'); },
+              onClick: function() { openTab(tObj); },
               style: {
                 padding: '6px 10px',
                 background: selected ? '#0ea5e9' : 'rgba(15,23,42,0.5)',
@@ -9739,7 +9790,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               }
             }, tObj.label);
           })
-        )
+        ),
+        query && matches.length > 0 && h('div', {
+          role: 'group',
+          'aria-label': 'Matching FisherLab sections',
+          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: 6 }
+        },
+          matches.map(function(entry) {
+            var selected = tab === entry.tab.id;
+            return h('button', {
+              key: entry.tab.id,
+              type: 'button',
+              'aria-current': selected ? 'page' : undefined,
+              onClick: function() { openTab(entry.tab); },
+              style: {
+                minWidth: 0,
+                padding: '9px 10px',
+                borderRadius: 7,
+                border: '1px solid ' + (selected ? '#38bdf8' : 'rgba(100,116,139,0.28)'),
+                background: selected ? 'rgba(14,165,233,0.22)' : 'rgba(15,23,42,0.58)',
+                color: '#e2e8f0',
+                textAlign: 'left',
+                cursor: 'pointer'
+              }
+            },
+              h('span', { style: { display: 'block', fontSize: 11, fontWeight: 800, overflowWrap: 'anywhere' } }, entry.tab.label),
+              h('span', { style: { display: 'block', marginTop: 3, fontSize: 10, color: '#94a3b8' } }, entry.category.name)
+            );
+          })
+        ),
+        query && matches.length === 0 && h('div', {
+          style: { padding: 12, border: '1px dashed rgba(251,191,36,0.48)', borderRadius: 7, color: '#fde68a', fontSize: 12 }
+        }, 'No section matches “' + tabSearch.trim() + '”. Try a broader topic such as navigation, biology, safety, or history.')
       );
     }
 
@@ -9748,12 +9830,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(15,23,42,0.55)', borderRadius: 10, marginBottom: 12, flexWrap: 'wrap' } },
         h('label', { htmlFor: 'fl-region-select', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Region:'),
         h('select', { id: 'fl-region-select', value: region,
+          'aria-describedby': !REGIONS[region].complete ? 'fl-region-preview-note' : undefined,
           onChange: function(e) { setRegion(e.target.value); flAnnounce('Region set to ' + REGIONS[e.target.value].label); },
           style: { background: '#0f1c2f', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid rgba(56,189,248,0.4)', borderRadius: 6, padding: '4px 8px', fontSize: 12 } },
           Object.keys(REGIONS).map(function(rk) {
             return h('option', { key: rk, value: rk }, REGIONS[rk].label + (REGIONS[rk].complete ? '' : ' (preview)'));
           })),
-        !REGIONS[region].complete ? h('span', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Preview region — full data coming in v1.1. Maine data still shown.') : null,
+        !REGIONS[region].complete ? h('span', { id: 'fl-region-preview-note', role: 'note', style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Preview region — regional species and practice profiles are partial; some curriculum sections remain Maine-focused.') : null,
         h('span', { style: { marginLeft: 'auto', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
           'Port: ', h('b', { style: { color: '#bae6fd' } }, REGIONS[region].portName || REGIONS.maine.portName),
           ' · Buoyage: ', h('b', { style: { color: '#bae6fd' } }, REGIONS[region].buoyage)));
@@ -9801,7 +9884,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, 'Column state: ' + sm.label + ' (' + topN + '/5 params fit for top species)'),
         h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
         // SVG: stacked species fitness bars
-        h('svg', { width: '100%', height: 140, viewBox: '0 0 320 140', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+        h('svg', {
+          width: '100%', height: 140, viewBox: '0 0 320 140',
+          role: 'img',
+          'aria-label': 'Species tolerance comparison. ' + fav[0].sp.name + ' currently matches ' + topN + ' of 5 selected conditions, the highest score in this teaching model.',
+          style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 }
+        },
           [1, 2, 3, 4].map(function(g) { return h('line', { key: 'g' + g, x1: 60 + g * 50, y1: 12, x2: 60 + g * 50, y2: 122, stroke: '#1e293b', strokeDasharray: '2 3' }); }),
           species.map(function(s, i) {
             var n = fitness(s);
@@ -9838,18 +9926,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           })
         ),
         h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-          h('button', { onClick: function() {
+          h('button', { type: 'button', onClick: function() {
             var t = new Date().toISOString().slice(11, 19);
             setIQ({ log: iq.log.concat([{ t: t, temp: iq.temp, sal: iq.salinity, o2: iq.oxygen, cur: iq.current, dep: iq.depth, top: fav[0].sp.name, state: sm.label }]) });
           }, style: { flex: 1, padding: 8, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this condition profile'),
-          h('button', { onClick: function() { setIQ({ temp: 12, salinity: 32, oxygen: 7, current: 1.5, depth: 30 }); }, style: { padding: '8px 12px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
+          h('button', { type: 'button', onClick: function() { setIQ({ temp: 12, salinity: 32, oxygen: 7, current: 1.5, depth: 30 }); }, style: { padding: '8px 12px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
         ),
-        iq.log.length > 0 && h('div', { style: { maxHeight: 100, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+        iq.log.length > 0 && h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': 'Recent condition profiles', style: { maxHeight: 100, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
           iq.log.slice(-6).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · top:' + e.top + ' · T' + e.temp + ' S' + e.sal + ' O' + e.o2 + ' C' + e.cur + ' D' + e.dep); })
         ),
         h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which parameter most often disqualifies a species?)'),
         h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., depth eliminates halibut on the inshore profile but rescued by salinity...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-        !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+        !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
         iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
           h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
           h('ul', { style: { margin: 0, paddingLeft: 16 } },
@@ -9994,7 +10082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },
             'Pilot a Maine skiff from Custom House Wharf out to the fishing grounds. Learn buoyage (red-right-returning), COLREGS rules of the road, chart reading, tides, and weather while fishing for cod, haddock, pollock, striper, and mackerel — and pulling lobster traps once you\'ve earned your apprenticeship.'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 10px', fontStyle: 'italic' } },
-            'Built for King Middle School EL Education place-based learning expeditions. Maine DMR rules are the default; a region toggle lets you preview other waters. Click any tab above to explore the curriculum modules, or jump straight into the 3D Sim.'),
+            'Built for King Middle School EL Education place-based learning expeditions. The regulation activities use instructional practice profiles rather than live legal advice; always verify current rules with the named authority. Use the region selector to preview other waters.'),
           h('div', { style: { display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(56,189,248,0.18)' } },
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#86efac' } }, completedCount),
@@ -10819,14 +10907,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         // Checkpoint quiz section
         checkpointSpecimen ? h('div', { style: Object.assign({}, cardStyle, { border: '2px solid rgba(14, 165, 233, 0.4)', background: 'linear-gradient(135deg, rgba(8, 25, 48, 0.95), rgba(4, 15, 30, 0.95))' }) },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
-            h('div', { style: headerStyle }, '📝 Hands-on Compliance Checkpoint'),
+            h('div', { style: headerStyle }, '📝 Harvest Decision Checkpoint'),
             h('div', { style: { fontSize: 11, color: '#38bdf8', fontWeight: 'bold' } }, 
               'Score: ' + checkpointScore.correctCount + ' / ' + checkpointScore.totalCount + 
               (checkpointScore.totalCount > 0 ? ' (' + Math.round(checkpointScore.correctCount / checkpointScore.totalCount * 100) + '%)' : '')
             )
           ),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
-            'Test your knowledge of the ' + currentAuthority + ' regulations. Examine the specimen below and decide if it is legal to keep.'
+            'Read the instructional practice profile, examine the specimen, and decide whether the profile permits harvest. Verify live rules with ' + currentAuthority + ' before fishing.'
           ),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 14, background: 'rgba(15,23,42,0.4)', padding: 12, borderRadius: 8, border: '1px solid rgba(56,189,248,0.1)', marginBottom: 12 } },
             h('div', { style: { flex: 1, minWidth: 150 } },
@@ -10849,41 +10937,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           ),
           
           checkpointResult ? h('div', { style: { padding: 10, borderRadius: 6, marginBottom: 12, border: '1px solid ' + (checkpointResult.correct ? '#10b981' : '#ef4444'), background: checkpointResult.correct ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: checkpointResult.correct ? '#34d399' : '#f87171', fontSize: 11.5 } },
-            h('div', { style: { fontWeight: 'bold', marginBottom: 2 } }, checkpointResult.correct ? '✓ Correct Decision!' : '✕ Incorrect Action!'),
+            h('div', { style: { fontWeight: 'bold', marginBottom: 2 } }, checkpointResult.correct ? '✓ Profile interpreted correctly' : '✕ Recheck the profile'),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, checkpointResult.feedback),
-            h('div', { style: { color: '#fb923c', marginTop: 4, fontStyle: 'italic' } }, 'Rule reference: ' + checkpointSpecimen.ruleText)
+            h('div', { style: { color: '#fb923c', marginTop: 4, fontStyle: 'italic' } }, 'Practice profile: ' + checkpointSpecimen.ruleText)
           ) : null,
 
           h('div', { style: { display: 'flex', gap: 10 } },
             !checkpointResult ? [
-              h('button', { key: 'keep', className: 'fl-btn',
+              h('button', { key: 'keep', type: 'button', className: 'fl-btn',
                 onClick: function() {
                   var correct = checkpointSpecimen.isKeeper;
-                  var fb = correct ? 
-                    'Correct! This ' + checkpointSpecimen.species.name + ' is a legal keeper.' :
-                    'Incorrect. You kept an illegal specimen! The rules require this specimen to be released.';
+                  var fb = correct ?
+                    'Correct. This specimen matches the scenario’s harvest profile.' :
+                    'This specimen falls outside the scenario’s harvest profile and should be released.';
                   setCheckpointScore(function(prev) { return { correctCount: prev.correctCount + (correct ? 1 : 0), totalCount: prev.totalCount + 1 }; });
                   setCheckpointResult({ correct: correct, feedback: fb });
                 },
                 style: { flex: 1, padding: '8px', background: '#10b981', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, '📥 Keep Specimen'),
-              h('button', { key: 'release', className: 'fl-btn',
+              h('button', { key: 'release', type: 'button', className: 'fl-btn',
                 onClick: function() {
                   var correct = !checkpointSpecimen.isKeeper;
                   var fb = correct ?
-                    'Correct! You released the specimen, complying with regulations.' :
-                    'Incorrect. You threw back a legal keeper! While conserving is fine, for this compliance check you want to keep legal catch.';
+                    'Correct. This specimen falls outside the scenario’s harvest profile.' :
+                    'Release is always permissible. For this scoring exercise, the profile would also have permitted harvest.';
                   setCheckpointScore(function(prev) { return { correctCount: prev.correctCount + (correct ? 1 : 0), totalCount: prev.totalCount + 1 }; });
                   setCheckpointResult({ correct: correct, feedback: fb });
                 },
                 style: { flex: 1, padding: '8px', background: '#64748b', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, '🌊 Release Overboard')
-            ] : h('button', { className: 'fl-btn',
+            ] : h('button', { type: 'button', className: 'fl-btn',
               onClick: generateCheckpointSpecimen,
               style: { flex: 1, padding: '8px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, 'Next Specimen ➔')
           )
         ) : null,
 
         h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, 'Conservation tools you\'ll see in the sim'),
+          h('div', { style: headerStyle }, 'Conservation tools represented in practice profiles'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, color: '#fbbf24' } }, 'These examples explain management strategies; they do not replace current agency rules for a particular date and waterbody.'),
           h('ul', { style: { margin: '0 0 0 20px', padding: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7 } },
             h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Slot limits — '), 'striped bass 19-24" (Chesapeake). Protects both juveniles AND big breeding-age fish.'),
             h('li', null, h('b', { style: { color: '#fbbf24' } }, 'Female-release rule (Dungeness) — '), 'Only male crabs may be harvested. Restricting take to males ensures that females are left in the ocean to reproduce.'),
@@ -12506,8 +12595,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── Main render
-    return h('div', { style: { padding: 16, background: '#031523', minHeight: 400 } },
+    var activeTabEntry = TABS.find(function(tabEntry) { return tabEntry.id === tab; }) || TABS[0];
+    return h('div', { style: { padding: 16, background: 'linear-gradient(180deg, #031523 0%, #06313a 52%, #071827 100%)', minHeight: 400 } },
       tabBar(),
+      h('section', {
+        id: 'fl-panel-' + tab,
+        role: 'region',
+        'aria-label': activeTabEntry.label,
+        style: { minWidth: 0 }
+      },
       tab === 'home' ? homeTab() :
       tab === 'aqcond' ? aqCondTab() :
       tab === 'sim' ? simTab() :
@@ -12615,7 +12711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       tab === 'achievements' ? achievementsTab() :
       tab === 'glossary' ? glossaryTab() :
       tab === 'quiz' ? quizTab() :
-      h('div', null, 'Unknown tab'));
+      h('div', null, 'Unknown tab')));
   }
 
 })();

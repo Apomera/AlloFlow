@@ -3,8 +3,8 @@
 The Class Mailbox is a tiny message-drop that runs on **your own Google
 account** (Google Apps Script). It lets students join live sessions and open
 image-rich homework QR codes **without any accounts, apps, or district IT** —
-AlloFlow's servers are never involved and nothing about your class touches
-infrastructure the school doesn't already trust.
+AlloFlow maintainer servers are never involved. Live state and hosted homework
+remain in the Google account chosen by the teacher.
 
 ## Deploy steps
 
@@ -24,10 +24,11 @@ infrastructure the school doesn't already trust.
    and choose **Web app**.
 4. Set **Execute as: Me** and **Who has access: Anyone**. Click **Deploy**.
 5. Authorize when prompted. Google shows a "Google hasn't verified this app"
-   screen because the script is your own unpublished code — click
-   **Advanced → Go to AlloFlow Class Mailbox (unsafe)** and allow. The code
-   you are authorizing is the ~200 reviewable lines you just pasted; it only
-   touches a Drive folder it creates itself.
+   screen because this is your own unpublished script. Review the pasted code
+   first; then, if it matches the source you intended to deploy, choose
+   **Advanced → Go to AlloFlow Class Mailbox (unsafe)** and allow access. The
+   script uses Apps Script cache/properties for live sessions and the Drive
+   folder it creates for homework packs.
 6. Copy the **Web app URL** (ends in `/exec`) and paste it into AlloFlow:
    **Student QR → Live class without accounts → Connect mailbox**. AlloFlow
    runs a self-test and claims the admin token automatically.
@@ -35,32 +36,35 @@ infrastructure the school doesn't already trust.
 **Updating later:** paste new code, then Deploy → **Manage deployments** →
 pencil icon → Version: New version → Deploy. The URL stays the same.
 
-> **v6 (recommended update):** adds the session document store that powers
-> roster, polls, quick-checks, live quiz, groups and Concept Pictionary over
-> the mailbox — the same class features Firestore-backed sessions have. Older
-> script versions keep working (resource push + hand-raise only); AlloFlow
-> detects the version automatically.
+> **v7 (required for secure live QR sessions):** separates the QR join secret
+> from teacher authority. Each student receives a signed, session-scoped
+> participant credential. Older scripts must be updated before new AlloFlow
+> builds will show a live-session QR.
 
 ## What it stores
 
 | Data | Where | Lifetime |
 | --- | --- | --- |
-| Live-session messages (join names, hand-raises, pushed resources) | In-memory script cache | auto-deleted ≤ 45 min |
-| Live-session codes | In-memory script cache | auto-deleted ≤ 6 h |
-| Homework packs (hosted QR assignments, may include images) | `AlloFlow Class Mailbox` folder in **your** Drive | until you delete them |
+| Live messages and session documents | Apps Script cache in **your** Google account | eligible for early eviction; requested expiry at most 45 min or 6 h |
+| Live-session markers and random join secrets | Apps Script Properties in **your** Google account | at most 6 h |
+| Homework pack manifests and chunks | AlloFlow Class Mailbox folder in **your** Drive | until you delete them |
+| Admin token recovery note | the same private Drive folder | until rotated or deleted |
 
-No student accounts exist; students are identified only by the nickname they
-type. Access is guarded by random tokens carried in your QR codes: only you
-(admin token) can open sessions or upload packs; only people with a specific
-QR can read that session or pack.
+No student accounts exist. A live QR carries a random **join-only secret**.
+The mailbox exchanges it for a signed participant credential bound to one
+random student id. Participants can send their own presence and activity
+signals, read a privacy-filtered session view, and modify only their own
+approved fields. The admin token is required for teacher broadcasts, complete
+class state, ending sessions, and pack management; it is never placed in a QR.
+Treat a QR like a classroom invitation and the admin token like a password.
 
 ## School accounts
 
 Some Workspace districts disable "Anyone" access for Apps Script web apps.
 If the **Who has access** dropdown has no "Anyone" option, either ask IT to
 allow it for your account, or deploy from a personal Google account —
-homework packs then live in that account's Drive, so prefer the school
-account when policy allows.
+live cache/properties and homework packs then live in that personal account.
+Use this only when school policy permits it; prefer the school account.
 
 ## Your admin token (reconnecting from a new device)
 
@@ -85,15 +89,18 @@ AlloFlow automatically upgrades each student to a direct device-to-device
 WebRTC channel using the mailbox only for the handshake. Upgraded students
 get instant pushes and hand-raises; students whose network blocks
 peer-to-peer stay on mailbox polling and everything still works, just a few
-seconds slower. Flood protection caps each session at ~900 messages/minute.
+seconds slower. Participant and class-wide rate limits, bounded replay rings,
+and retry guidance protect the teacher's Apps Script execution capacity.
 
 ## Capacity notes
 
-Designed for classroom scale: one poll every ~2.5 s per connected device
-(a 30-student class ≈ 12 requests/s, well inside Apps Script's 30 concurrent
-executions). Hosted homework packs are capped at ~8 MB each (a full
-image-rich lesson compresses well under that). Live messages cap at 90 KB
-each; AlloFlow chunks bigger payloads automatically.
+Designed for classroom-scale testing: one poll every ~2.5 seconds per
+connected device, with slower polling when idle or hidden and WebRTC as the
+fast path. Google currently limits simultaneous Apps Script executions per
+user, and quotas can change; request rate is not the same as concurrency.
+Monitor the Apps Script **Executions** dashboard during pilots. Hosted packs
+are capped at ~8 MB and stored as individual download chunks. Live messages
+cap at 90 KB; AlloFlow chunks larger resource pushes automatically.
 
 ## Two-device smoke test (after deploying or updating the script)
 
@@ -102,7 +109,7 @@ each; AlloFlow chunks bigger payloads automatically.
    few seconds and gain the ⚡ badge within ~10–30 s on open networks.
 2. Push a resource — it should appear on the phone; raise a hand on the
    phone — it should appear next to the codename.
-3. With a v6 script: open a Quick Check or Live Poll from the Live Session
+3. With a v7 script: open a Quick Check or Live Poll from the Live Session
    Center — the question should reach the phone and the answer should come
    back to the teacher dashboard.
 4. **Mid-session, refresh the teacher tab** — you should land back in your
@@ -110,3 +117,21 @@ each; AlloFlow chunks bigger payloads automatically.
    students' ⚡ returning within ~15–30 s (no student action needed).
 5. **Lock the student phone for a minute, then wake it** — it should
    reconnect on its own within ~30 s, without any taps.
+
+## Admin lifecycle and incident controls
+
+AlloFlow masks the saved admin token by default. Use **Rotate token** when a
+token may have been exposed; rotation invalidates the old token. Active
+sessions must be closed first. **Close all sessions** removes every durable
+session marker, causing participant requests to fail closed.
+
+Before AlloFlow displays a new live QR, it opens the session, obtains a real
+participant credential, and performs a privacy-filtered session read. A stale
+script or broken permission deployment therefore fails on the teacher device
+instead of producing a QR that students cannot use.
+
+Apps Script cache is intentionally ephemeral: Google may evict entries before
+their requested expiry. AlloFlow can re-seed teacher state after eviction and
+uses a version precondition so a stale recovery cannot overwrite a document
+that was already recreated. Very recent transient student activity can still
+need resubmission after a cache eviction.

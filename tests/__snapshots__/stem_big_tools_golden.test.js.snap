@@ -36,10 +36,10 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for birdLab 1`] = `
 {
   "buttons": 127,
-  "inputs": 0,
-  "lengthBucket": 718,
+  "inputs": 1,
+  "lengthBucket": 732,
   "selects": 0,
-  "sha": "4f8e650f475edb95",
+  "sha": "2312cb70c59402fe",
   "svgs": 2,
 }
 `;
@@ -47,10 +47,10 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for cephalopodLab 1`] = `
 {
   "buttons": 17,
-  "inputs": 0,
-  "lengthBucket": 67,
+  "inputs": 1,
+  "lengthBucket": 75,
   "selects": 0,
-  "sha": "4052c22b2baaf110",
+  "sha": "b26732be411f56c6",
   "svgs": 0,
 }
 `;

@@ -32,6 +32,7 @@ function ProjectSettingsView(props) {
 
   var presets = {
     guided: {
+      hideStudentAiFeatures: false,
       allowDictation: true,
       allowSocraticTutor: true,
       allowFreeResponse: false,
@@ -46,6 +47,7 @@ function ProjectSettingsView(props) {
       }
     },
     balanced: {
+      hideStudentAiFeatures: false,
       allowDictation: true,
       allowSocraticTutor: true,
       allowFreeResponse: true,
@@ -60,6 +62,7 @@ function ProjectSettingsView(props) {
       }
     },
     open: {
+      hideStudentAiFeatures: false,
       allowDictation: true,
       allowSocraticTutor: true,
       allowFreeResponse: true,
@@ -77,7 +80,7 @@ function ProjectSettingsView(props) {
 
   var presetMatches = function(name) {
     var preset = presets[name];
-    var settingKeys = ['allowDictation', 'allowSocraticTutor', 'allowFreeResponse', 'allowPersonaFreeResponse'];
+    var settingKeys = ['hideStudentAiFeatures', 'allowDictation', 'allowSocraticTutor', 'allowFreeResponse', 'allowPersonaFreeResponse'];
     var permissionKeys = Object.keys(preset.adventurePermissions);
     return settingKeys.every(function(key) {
       return studentProjectSettings[key] === preset[key];
@@ -91,6 +94,7 @@ function ProjectSettingsView(props) {
     setStudentProjectSettings(function(prev) {
       return {
         ...prev,
+        hideStudentAiFeatures: preset.hideStudentAiFeatures,
         allowDictation: preset.allowDictation,
         allowSocraticTutor: preset.allowSocraticTutor,
         allowFreeResponse: preset.allowFreeResponse,
@@ -226,6 +230,9 @@ function ProjectSettingsView(props) {
             </legend>
             <p className="mt-1 text-xs text-slate-600">{tx('project_settings.everyday_controls_desc', 'The settings teachers change most often for a lesson.')}</p>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                {renderFeatureToggle('proj-hide-student-ai', 'hideStudentAiFeatures', tx('project_settings.hide_student_ai', 'Hide student AI tools'), tx('project_settings.hide_student_ai_desc', 'Remove student-facing AI controls from this project. Teacher authoring tools remain available.'), false)}
+              </div>
               {renderFeatureToggle('proj-dictation', 'allowDictation', t('project_settings.enable_dictation'), t('project_settings.dictation_desc'), true)}
               {renderFeatureToggle('proj-socratic', 'allowSocraticTutor', t('project_settings.enable_socratic'), t('project_settings.socratic_desc'), true)}
               {renderFeatureToggle('proj-free-response', 'allowFreeResponse', t('project_settings.enable_free_response'), t('project_settings.free_response_desc'), true)}

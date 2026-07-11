@@ -243,7 +243,7 @@ function decodeEntities(s) {
 }
 
 function stripTags(html) {
-  return decodeEntities(
+  const text = decodeEntities(
     String(html)
       .replace(/<script[\s\S]*?<\/script>/gi, '')
       .replace(/<style[\s\S]*?<\/style>/gi, '')
@@ -255,6 +255,12 @@ function stripTags(html) {
     .replace(/ ?\n ?/g, '\n')
     .replace(/\n{2,}/g, '\n')
     .trim();
+
+  // A small number of upstream StoryWeaver pages contain a damaged fallback
+  // transliteration line even though the primary-script line is intact. Never
+  // ship Unicode replacement characters into the reader: drop only the
+  // damaged line and preserve the valid story text around it.
+  return text.split('\n').filter((line) => !line.includes('\uFFFD')).join('\n').trim();
 }
 
 // Pull the text content out of a StoryPage html blob. Two formats exist:
@@ -298,6 +304,10 @@ function parseVtt(vtt) {
   // Real narration VTTs are occasionally a few ms out of order; the reader's
   // findActiveCue early-breaks on a start-sorted list, so sort here.
   cues.sort((a, b) => a[1] - b[1]);
+  // Some otherwise valid StoryWeaver VTTs also contain an end timestamp that
+  // precedes its start. Clamp those windows so karaoke highlighting and page
+  // following never receive a negative-duration cue.
+  cues.forEach((cue) => { cue[2] = Math.max(cue[1], cue[2]); });
   return cues;
 }
 

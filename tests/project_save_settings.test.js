@@ -176,6 +176,7 @@ describe('project JSON saves', () => {
 
 describe('Project Settings progressive disclosure', () => {
   const defaultSettings = () => ({
+    hideStudentAiFeatures: false,
     allowDictation: true,
     allowSocraticTutor: true,
     allowFreeResponse: true,
@@ -225,11 +226,29 @@ describe('Project Settings progressive disclosure', () => {
 
     expect(html).toContain('Balanced');
     expect(html).toContain('Everyday controls');
+    expect(html).toContain('Hide student AI tools');
     expect(html).toContain('<details');
     expect(html).toContain('Advanced lesson configuration');
     expect(html).toContain('Preferred name or codename');
     expect(html).toContain('Allow cloud image storage');
     expect(html).toContain('aria-pressed="true"');
+  });
+
+  it('lets teachers hide student AI tools with one project-level control', () => {
+    let settings = defaultSettings();
+    const tree = ProjectSettingsView({
+      t: (key) => key,
+      studentProjectSettings: settings,
+      setStudentProjectSettings(updater) { settings = updater(settings); },
+      isTeacherMode: true,
+      handleSetIsProjectSettingsOpenToFalse() {}
+    });
+    const toggle = find(tree, (node) => node.type === 'input' && node.props.id === 'proj-hide-student-ai');
+
+    expect(toggle).toBeTruthy();
+    expect(toggle.props.checked).toBe(false);
+    toggle.props.onChange({ target: { checked: true } });
+    expect(settings.hideStudentAiFeatures).toBe(true);
   });
 
   it('applies presets without silently changing cloud-storage consent', () => {

@@ -591,7 +591,7 @@ function authorName(person) {
   return compact(person && person.name) || 'Project Gutenberg';
 }
 
-function curlText(url, accept, attempt) {
+function curlBytes(url, accept, attempt) {
   attempt = attempt || 1;
   try {
     return execFileSync('curl', [
@@ -604,18 +604,22 @@ function curlText(url, accept, attempt) {
       '-H',
       'Accept: ' + accept,
       url,
-    ], { encoding: 'utf8', maxBuffer: 96 * 1024 * 1024 });
+    ], { maxBuffer: 96 * 1024 * 1024 });
   } catch (err) {
-    if (attempt < 3) return curlText(url, accept, attempt + 1);
+    if (attempt < 3) return curlBytes(url, accept, attempt + 1);
     throw new Error('Could not fetch ' + url + ': ' + String(err.message || err).slice(0, 180));
   }
+}
+
+function curlText(url, accept) {
+  return curlBytes(url, accept).toString('utf8');
 }
 
 function getJson(url) {
   return JSON.parse(curlText(url, 'application/json'));
 }
 
-function choosePlainTextUrl(formats, id) {
+function choosePlainTextSource(formats, id) {
   const entries = Object.entries(formats || {}).filter(([mime, url]) =>
     /^text\/plain/i.test(mime) &&
     /\.txt($|\?)/i.test(String(url || '')) &&
@@ -626,7 +630,21 @@ function choosePlainTextUrl(formats, id) {
     entries.find(([, url]) => /\/files\/\d+\/\d+-0\.txt/i.test(url)) ||
     entries.find(([, url]) => /pg\d+\.txt/i.test(url)) ||
     entries[0];
-  return preferred ? preferred[1] : 'https://www.gutenberg.org/cache/epub/' + id + '/pg' + id + '.txt';
+  return preferred
+    ? { mime: preferred[0], url: preferred[1] }
+    : { mime: 'text/plain; charset=utf-8', url: 'https://www.gutenberg.org/cache/epub/' + id + '/pg' + id + '.txt' };
+}
+
+function fetchPlainText(source) {
+  const mime = String(source.mime || '').toLowerCase();
+  const url = String(source.url || '');
+  // Gutenberg's historical "-8.txt" files are ISO-8859-1 even when a client
+  // defaults to UTF-8. Decode bytes deliberately; otherwise accented letters,
+  // degree signs, and typographic punctuation become U+FFFD in AlloFlow.
+  const charset = /(?:iso-8859-1|latin-1|windows-1252)/i.test(mime) || /-8\.txt(?:$|\?)/i.test(url)
+    ? 'windows-1252'
+    : 'utf-8';
+  return new TextDecoder(charset).decode(curlBytes(url, 'text/plain'));
 }
 
 function stripGutenbergBoilerplate(raw) {
@@ -739,7 +757,7 @@ function pruneObsoleteCatalogCards(catalog) {
   });
 }
 
-function makeBook(metadata, textUrl, curation, catalogItem) {
+function makeBook(metadata, textSource, curation, catalogItem) {
   const title = compact(metadata.title);
   const authors = (metadata.authors || []).map(authorName).filter(Boolean);
   const subjects = (curation.subjects && curation.subjects.length ? curation.subjects : metadata.subjects || [])
@@ -747,7 +765,8 @@ function makeBook(metadata, textUrl, curation, catalogItem) {
     .filter(Boolean)
     .slice(0, 8);
   const slug = catalogItem ? catalogItem.slug : 'gutenberg-ebook-' + metadata.id + '-' + slugify(title);
-  const body = stripGutenbergBoilerplate(curlText(textUrl, 'text/plain'));
+  const textUrl = textSource.url;
+  const body = stripGutenbergBoilerplate(fetchPlainText(textSource));
   const paragraphs = normalizeParagraphs(body);
   const bodyWords = words(paragraphs.join(' '));
   if (bodyWords < 300) throw new Error('Text for #' + metadata.id + ' was too short after cleaning (' + bodyWords + ' words).');
@@ -817,9 +836,9 @@ async function main() {
     try {
       const metadata = getJson(GUTENDEX + curation.id);
       validateMetadata(metadata);
-      const textUrl = choosePlainTextUrl(metadata.formats, metadata.id);
+      const textSource = choosePlainTextSource(metadata.formats, metadata.id);
       const existingItem = catalogItemForId(catalog, metadata.id);
-      const book = makeBook(metadata, textUrl, curation, existingItem);
+      const book = makeBook(metadata, textSource, curation, existingItem);
       const file = existingItem ? existingItem.file : 'books/' + book.slug + '.json';
       if (!existingItem && !existingSlugs.has(book.slug)) {
         catalog.items.push({ slug: book.slug, file });

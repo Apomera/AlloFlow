@@ -1813,18 +1813,53 @@ describe('vsMuxWebm', () => {
   });
 });
 
+// ─── Demo Autopilot capture validation ───────────────────────────────────────
+describe('vsValidateDemoCapture', () => {
+  it('accepts only a browser tab identified as AlloFlow', () => {
+    expect(VS.vsValidateDemoCapture('browser', 'AlloFlow — Universal Design for Learning')).toEqual({
+      ok: true,
+      label: 'AlloFlow — Universal Design for Learning'
+    });
+    expect(VS.vsValidateDemoCapture('monitor', 'Entire screen').ok).toBe(false);
+    expect(VS.vsValidateDemoCapture('window', 'AlloFlow').ok).toBe(false);
+    expect(VS.vsValidateDemoCapture('browser', 'Student records').ok).toBe(false);
+    expect(VS.vsValidateDemoCapture('browser', '').ok).toBe(false);
+  });
+});
+
+// ─── Automatic narration placement ───────────────────────────────────────────
+describe('vsScheduleDemoNarrationClip', () => {
+  it('uses PCM duration and shifts later clips so narration never overlaps', () => {
+    const first = VS.vsScheduleDemoNarrationClip({ start: 1 }, 48000, 24000, 0, 10, 0.12);
+    expect(first).toEqual({ start: 1, duration: 1, end: 2, shifted: false, clipped: false });
+
+    const second = VS.vsScheduleDemoNarrationClip({ start: 1.5 }, 48000, 24000, first.end, 10, 0.12);
+    expect(second).toEqual({ start: 2.12, duration: 1, end: 3.12, shifted: true, clipped: false });
+  });
+
+  it('flags end clipping and rejects empty or out-of-range clips', () => {
+    expect(VS.vsScheduleDemoNarrationClip({ start: 2 }, 48000, 24000, 0, 2.5, 0.12)).toMatchObject({
+      start: 2,
+      end: 3,
+      clipped: true
+    });
+    expect(VS.vsScheduleDemoNarrationClip({ start: 0 }, 0, 24000, 0, 10, 0.12)).toBeNull();
+    expect(VS.vsScheduleDemoNarrationClip({ start: 10 }, 48000, 24000, 0, 10, 0.12)).toBeNull();
+  });
+});
+
 // ─── vsBuildDemoCaptionCues (Demo Autopilot, 2026-07-10) ─────────────────────
 describe('vsBuildDemoCaptionCues', () => {
   it('pairs start/done events into non-overlapping step cues', () => {
     const cues = VS.vsBuildDemoCaptionCues([
       { t: 2, index: 0, phase: 'start', label: 'Create a lesson' },
-      { t: 9.5, index: 0, phase: 'done', label: 'Create a lesson' },
+      { t: 9.5, index: 0, phase: 'done', label: 'Create a lesson', narration: 'The lesson is ready for review.' },
       { t: 12, index: 1, phase: 'start', label: 'Generate a quiz' },
-      { t: 20, index: 1, phase: 'done', label: 'Generate a quiz' },
+      { t: 20, index: 1, phase: 'done', label: 'Generate a quiz', narration: 'The quiz now uses the lesson content.' },
     ], 30);
     expect(cues).toEqual([
-      { start: 2, end: 9.5, text: 'Step 1: Create a lesson' },
-      { start: 12, end: 20, text: 'Step 2: Generate a quiz' },
+      { start: 2, end: 9.5, text: 'Step 1: Create a lesson. The lesson is ready for review.' },
+      { start: 12, end: 20, text: 'Step 2: Generate a quiz. The quiz now uses the lesson content.' },
     ]);
   });
   it('caps orphan cues at 8s, clips at the next cue and the take end', () => {
@@ -1969,12 +2004,16 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('id="demoAutopilotCard"');
     expect(html).toContain('id="demoGoal"');
     expect(html).toContain('id="demoPlanList"');
+    expect(html).toContain('id="demoAudioMode"');
+    expect(html).toContain('id="demoStatus" role="status" aria-live="polite"');
     expect(html).toContain("bridgeRequest('allostudio-demoplan-request'");
-    expect(html).toContain("bridgeRequest('allostudio-demorun-request'");
+    expect(html).toContain("'allostudio-official-tutorial-run-request' : 'allostudio-demorun-request'");
     expect(html).toContain("isOpenerMessage(ev, 'allostudio-demostep')");
     expect(html).toContain("postToOpener({ type: 'allostudio-demostop' });");
     expect(html).toContain('t: Math.max(0, elapsed)');
+    expect(html).toContain('narration: d.narration');
     expect(html).toContain('vsBuildDemoCaptionCues(demoState.events, dur)');
+    expect(html).toContain("bridgeRequest('allostudio-tts-request', { text: cue.text, voice: job.voice }");
     expect(html).toContain("take.name = 'Demo · ' + take.name;");
     // Module: relays with param clamping and single-flight.
     const m = moduleText();
@@ -1991,6 +2030,7 @@ describe('take persistence + export hardening wiring', () => {
     expect(anti).toContain('AC.runPlan(() => _alloCmdCtx(), [list[i]]');
     expect(anti).toContain("throw new Error('AlloBot is already running a plan — stop it first.');");
     expect(anti).toContain("document.visibilityState !== 'visible'");
+    expect(anti).toContain('The AlloFlow tab never became visible, so no automatic actions were run.');
   });
   it('Demo Autopilot hardening: every stop path halts the app, no stuck states', () => {
     const html = popup();
@@ -2003,6 +2043,15 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('var aliveTimer = setInterval(');
     expect(html).toContain('if (demoState.abandoned) { demoState.abandoned = false; return; }');
     expect(html).toContain("setTimeout(function () { demoRecoverLocal('AlloFlow did not confirm the stop'); }, 8000);");
+    expect(html).toContain('vsValidateDemoCapture(captureSurface, captureTrackLabel)');
+    expect(html).toContain("surface !== 'browser'");
+    expect(html).toContain("displaySurface: 'browser'");
+    expect(html).toContain("setMicEnabled(audioMode === 'mic')");
+    expect(html).toContain('vsScheduleDemoNarrationClip(cue, pcm.byteLength');
+    expect(html).toContain('take.demoNarrationPending = true');
+    expect(html).toContain("if (t.demoNarrationPending) { setStatus($('exportStatus')");
+    expect(html).toContain('Automatic narration is still being generated for a scene clip.');
+    expect(html).toContain('Wait for it to finish before saving the project bundle.');
     // Module clamp drops non-finite numbers.
     const m = moduleText();
     expect(m).toContain("(typeof pv === 'number' && isFinite(pv)) || typeof pv === 'boolean'");
@@ -2010,6 +2059,36 @@ describe('take persistence + export hardening wiring', () => {
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
     expect(anti).toContain('AC.routeUtterance(_alloCmdCtx(), cleanGoal, { allowAi: true, preview: true })');
     expect(anti).toContain('The command planner is still loading — wait a moment and try again.');
+  });
+  it('ships the fixture-safe official Text Adaptation tutorial and narration recovery controls', () => {
+    const html = popup();
+    expect(html).toContain('id="demoOfficialTextBtn"');
+    expect(html).toContain("bridgeRequest('allostudio-official-tutorial-request'");
+    expect(html).toContain("type: 'allostudio-official-tutorial-cleanup'");
+    expect(html).toContain('id="demoNarrCancelBtn"');
+    expect(html).toContain('id="demoNarrRetryBtn"');
+    expect(html).toContain('id="demoNarrCancelEditBtn"');
+    expect(html).toContain('id="demoNarrRetryEditBtn"');
+    expect(html).toContain("setEditorFocusMode('narrate', false)");
+    expect(html).toContain('demoNarrationJob.cancelRequested = true');
+    expect(html).toContain('demoNarrationFailed = failedCues.concat(remainingCues)');
+    expect(html).toContain('function regenerateDemoNarrationClip(take, clip)');
+    expect(html).toContain('demoNarrationCue: { start: Number(cue.start)');
+    const m = moduleText();
+    expect(m).toContain("ev.data.type === 'allostudio-official-tutorial-request'");
+    expect(m).toContain("ev.data.type === 'allostudio-official-tutorial-run-request'");
+    expect(m).toContain('propsRef.current.onCleanupOfficialTutorial');
+    const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf-8');
+    expect(anti).toContain("only: ['source-input', 'simplified']");
+    expect(anti).toContain('onRunOfficialTutorial: async (tutorialId, steps, hooks) => {');
+    expect(anti).toContain("source: 'official-tutorial'");
+    expect(anti).toContain('setInputText(snapshot.inputText)');
+    expect(anti).toContain('setGeneratedContent(snapshot.generatedContent)');
+  });  it('versions the popup from the loaded controller module instead of a stale fixed pin', () => {
+    const m = moduleText();
+    expect(m).toContain('document.currentScript && document.currentScript.src');
+    expect(m).toContain("searchParams.get('v') || 'dev'");
+    expect(m).not.toContain("video_studio/video_studio.html?v=1'");
   });
   it('popup re-encode cleans up on every exit and is cancelable', () => {
     const html = popup();

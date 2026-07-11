@@ -2465,6 +2465,43 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return out;
   }
 
+  // Demo Autopilot may drive the app only when the selected capture is clearly
+  // the AlloFlow browser tab. General-purpose recording can still use any
+  // surface; this stricter validator is intentionally limited to automation.
+  function vsValidateDemoCapture(displaySurface, trackLabel) {
+    var surface = String(displaySurface || '').trim().toLowerCase();
+    var label = String(trackLabel || '').trim().slice(0, 160);
+    if (surface !== 'browser') return { ok: false, reason: 'Demo Autopilot requires a browser tab, not a window or entire screen.' };
+    if (!label || !/alloflow/i.test(label)) {
+      return { ok: false, reason: 'The selected tab was not identified as AlloFlow' + (label ? ' (selected: “' + label + '”)' : '') + '. Stop and choose the AlloFlow tab.' };
+    }
+    return { ok: true, label: label };
+  }
+
+  // Place generated PCM narration without stacking clips on top of each other.
+  // PCM is mono 16-bit, so byte length gives an exact duration before WAV wrap.
+  function vsScheduleDemoNarrationClip(cue, pcmByteLength, sampleRate, previousEnd, takeDuration, gap) {
+    var bytes = Math.max(0, Math.floor(Number(pcmByteLength) || 0));
+    var rate = Math.max(8000, Math.min(96000, Math.floor(Number(sampleRate) || 24000)));
+    if (!bytes) return null;
+    var duration = bytes / (rate * 2);
+    if (!isFinite(duration) || duration <= 0) return null;
+    var cueStart = Math.max(0, Number(cue && cue.start) || 0);
+    var prior = Math.max(0, Number(previousEnd) || 0);
+    var spacing = Math.max(0, Math.min(1, Number(gap) || 0.12));
+    var start = Math.max(cueStart, prior > 0 ? prior + spacing : cueStart);
+    var limit = Math.max(0, Number(takeDuration) || 0);
+    if (limit > 0 && start >= limit - 0.05) return null;
+    var end = start + duration;
+    return {
+      start: Math.round(start * 1000) / 1000,
+      duration: Math.round(duration * 1000) / 1000,
+      end: Math.round(end * 1000) / 1000,
+      shifted: start > cueStart + 0.01,
+      clipped: limit > 0 && end > limit
+    };
+  }
+
   // Demo Autopilot captions: one cue per executed plan step, timed by the
   // recording clock at the moment the step ran. A 'start' event opens the
   // cue, the matching 'done' extends it to the completion moment; cues never
@@ -2473,15 +2510,26 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var evs = (Array.isArray(events) ? events : []).filter(function (e) {
       return e && isFinite(Number(e.t)) && Number(e.t) >= 0 && String(e.label || '').trim();
     }).map(function (e) {
-      return { t: Number(e.t), phase: e.phase === 'done' ? 'done' : 'start', index: Math.max(0, Math.round(Number(e.index) || 0)), label: String(e.label).trim().slice(0, 140) };
+      return {
+        t: Number(e.t),
+        phase: e.phase === 'done' ? 'done' : 'start',
+        index: Math.max(0, Math.round(Number(e.index) || 0)),
+        label: String(e.label).trim().replace(/[\r\n]+/g, ' ').slice(0, 140),
+        narration: String(e.narration || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 240)
+      };
     }).sort(function (a, b) { return a.t - b.t; });
     var cues = [];
     evs.forEach(function (e) {
+      var baseText = 'Step ' + (e.index + 1) + ': ' + e.label;
       if (e.phase === 'start') {
-        cues.push({ start: e.t, end: e.t + 8, text: 'Step ' + (e.index + 1) + ': ' + e.label, _i: e.index });
+        cues.push({ start: e.t, end: e.t + 8, text: baseText, _i: e.index, _label: e.label });
       } else {
         for (var i = cues.length - 1; i >= 0; i--) {
-          if (cues[i]._i === e.index) { cues[i].end = Math.max(cues[i].start + 0.8, e.t); break; }
+          if (cues[i]._i === e.index) {
+            cues[i].end = Math.max(cues[i].start + 0.8, e.t);
+            if (e.narration && e.narration.toLowerCase() !== cues[i]._label.toLowerCase()) cues[i].text = baseText + '. ' + e.narration;
+            break;
+          }
         }
       }
     });
@@ -2686,7 +2734,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     };
   }
 
-  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues };
+  var VS_HELPERS = { vsBuildStudioTakeRecord: vsBuildStudioTakeRecord, vsFormatTimestamp: vsFormatTimestamp, vsBuildVtt: vsBuildVtt, vsParseVtt: vsParseVtt, vsComputeSegments: vsComputeSegments, vsPatchWebmDuration: vsPatchWebmDuration, vsMakePackReference: vsMakePackReference, vsMediaLicenseProfile: vsMediaLicenseProfile, vsNormalizeMediaCredit: vsNormalizeMediaCredit, vsSanitizeMediaCredits: vsSanitizeMediaCredits, vsBuildMediaCredits: vsBuildMediaCredits, vsBuildMediaCreditsCard: vsBuildMediaCreditsCard, vsMediaSearchTargets: vsMediaSearchTargets, vsBuildPermissionAudit: vsBuildPermissionAudit, vsCrc32: vsCrc32, vsBuildZip: vsBuildZip, vsReadZip: vsReadZip, vsZoomState: vsZoomState, vsNormalizeMuteSpans: vsNormalizeMuteSpans, vsGainAt: vsGainAt, vsSanitizeMusicBed: vsSanitizeMusicBed, vsMusicGainAt: vsMusicGainAt, vsAudioPolishPreset: vsAudioPolishPreset, vsApplyAudioPolishPreset: vsApplyAudioPolishPreset, vsBuildAudioEditManifest: vsBuildAudioEditManifest, vsBuildProjectBundleReadme: vsBuildProjectBundleReadme, vsBuildProjectImportSummary: vsBuildProjectImportSummary, vsOverlayFrameState: vsOverlayFrameState, vsBuildResourceCues: vsBuildResourceCues, vsDetectFillerSpans: vsDetectFillerSpans, vsTranscriptWordAutoSelect: vsTranscriptWordAutoSelect, vsBuildTranscriptCleanupQueue: vsBuildTranscriptCleanupQueue, vsTranscriptSelectionRange: vsTranscriptSelectionRange, vsBuildTranscriptEditDecision: vsBuildTranscriptEditDecision, vsSanitizeTranscriptEdits: vsSanitizeTranscriptEdits, vsBuildTranscriptEditText: vsBuildTranscriptEditText, vsTranscriptWordsFromCues: vsTranscriptWordsFromCues, vsSanitizeTranscriptWords: vsSanitizeTranscriptWords, vsTranscriptWordsForTake: vsTranscriptWordsForTake, vsCaptionCuesFromTranscriptWords: vsCaptionCuesFromTranscriptWords, vsTranscriptWordSelectionRanges: vsTranscriptWordSelectionRanges, vsBuildRippleKeepSegments: vsBuildRippleKeepSegments, vsSanitizeAiSuggestions: vsSanitizeAiSuggestions, vsComputePeaks: vsComputePeaks, vsSanitizeNarrationCues: vsSanitizeNarrationCues, vsSanitizeVisualDescriptions: vsSanitizeVisualDescriptions, vsSanitizeLessonPlan: vsSanitizeLessonPlan, vsSanitizeLocalizedDraft: vsSanitizeLocalizedDraft, vsAnalyzeLocalizationDraft: vsAnalyzeLocalizationDraft, vsAnalyzeCaptionQuality: vsAnalyzeCaptionQuality, vsBuildFinishChecklist: vsBuildFinishChecklist, vsBuildExportReadinessSummary: vsBuildExportReadinessSummary, vsPickNextFinishItem: vsPickNextFinishItem, vsBuildTranscriptResource: vsBuildTranscriptResource, vsBuildStudentFamilyShareNote: vsBuildStudentFamilyShareNote, vsCleanCaptionText: vsCleanCaptionText, vsPolishCaptions: vsPolishCaptions, vsCaptionStylePreset: vsCaptionStylePreset, vsCaptionDisplayOptions: vsCaptionDisplayOptions, vsResolveCaptionStyle: vsResolveCaptionStyle, vsTitleCardPreset: vsTitleCardPreset, vsPipFramePreset: vsPipFramePreset, vsInsertCardLayout: vsInsertCardLayout, vsCaptionPreviewLines: vsCaptionPreviewLines, vsBuildChapters: vsBuildChapters, vsSanitizeTeachingInserts: vsSanitizeTeachingInserts, vsPcmToWav: vsPcmToWav, vsMuxWebm: vsMuxWebm, vsValidateDemoCapture: vsValidateDemoCapture, vsScheduleDemoNarrationClip: vsScheduleDemoNarrationClip, vsBuildDemoCaptionCues: vsBuildDemoCaptionCues };
   if (typeof module !== 'undefined' && module.exports) module.exports = VS_HELPERS;
   if (typeof window === 'undefined') return;
   if (typeof React === 'undefined' || !React.createElement) {
@@ -2700,7 +2748,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var h = React.createElement;
   var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef, useCallback = React.useCallback;
 
-  var STUDIO_URL = 'https://alloflow-cdn.pages.dev/video_studio/video_studio.html?v=1';
+  var STUDIO_VERSION = (function () {
+    try {
+      var scriptSrc = document.currentScript && document.currentScript.src;
+      return new URL(scriptSrc || '', window.location.href).searchParams.get('v') || 'dev';
+    } catch (_) { return 'dev'; }
+  })();
+  var STUDIO_URL = 'https://alloflow-cdn.pages.dev/video_studio/video_studio.html?v=' + encodeURIComponent(STUDIO_VERSION);
   var STUDIO_ORIGIN = (function () {
     try { return new URL(STUDIO_URL, window.location.href).origin; } catch (_) { return 'https://alloflow-cdn.pages.dev'; }
   })();
@@ -3228,6 +3282,26 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           } else {
             fRespond({ error: 'image-edit-unavailable' });
           }
+        } else if (ev.data.type === 'allostudio-official-tutorial-request') {
+          var otReq = ev.data;
+          var otReplyTo = studioWinRef.current;
+          var otRespond = function (payload) {
+            postToStudio(otReplyTo, Object.assign({ type: 'allostudio-official-tutorial-response', id: otReq.id }, payload));
+          };
+          var tutorialFn = propsRef.current.onGetOfficialTutorial;
+          if (typeof tutorialFn !== 'function') { otRespond({ error: 'official-tutorial-unavailable' }); return; }
+          Promise.resolve().then(function () { return tutorialFn(String(otReq.tutorialId || '').slice(0, 60)); }).then(function (out) {
+            var steps = (out && Array.isArray(out.steps) ? out.steps : []).slice(0, 8).map(function (s) {
+              var beats = Array.isArray(s && s.beats) ? s.beats.slice(0, 4).map(function (beat) {
+                return { kind: beat && beat.kind === 'success' ? 'success' : 'action', text: String((beat && beat.text) || '').slice(0, 220) };
+              }).filter(function (beat) { return beat.text; }) : [];
+              var stepId = String((s && (s.id || s.commandId)) || '').slice(0, 60);
+              return { id: stepId, commandId: stepId, anchorId: String((s && s.anchorId) || '').slice(0, 90), label: String((s && s.label) || stepId).slice(0, 90), why: 'Release-matched official tutorial', beats: beats };
+            }).filter(function (s) { return s.id && s.beats.length; });
+            otRespond({ steps: steps, generatedFrom: (out && out.generatedFrom) || 'GUIDED_STEPS' });
+          }).catch(function (e) {
+            otRespond({ error: String((e && e.message) || e).slice(0, 200) });
+          });
         } else if (ev.data.type === 'allostudio-demoplan-request') {
           // Demo Autopilot: goal TEXT only goes to the app's planner (which
           // reuses AlloBot's planUtterance over the command registry).
@@ -3245,6 +3319,37 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             dpRespond({ steps: steps });
           }).catch(function (e) {
             dpRespond({ error: String((e && e.message) || e).slice(0, 200) });
+          });
+        } else if (ev.data.type === 'allostudio-official-tutorial-run-request') {
+          var otrReq = ev.data;
+          var otrReplyTo = studioWinRef.current;
+          var otrRespond = function (payload) {
+            postToStudio(otrReplyTo, Object.assign({ type: 'allostudio-official-tutorial-run-response', id: otrReq.id }, payload));
+          };
+          var officialRunFn = propsRef.current.onRunOfficialTutorial;
+          if (typeof officialRunFn !== 'function') { otrRespond({ error: 'official-tutorial-runner-unavailable' }); return; }
+          if (demoRunRef.current.running) { otrRespond({ error: 'a demo is already running' }); return; }
+          var officialSteps = (Array.isArray(otrReq.steps) ? otrReq.steps : []).slice(0, 8).map(function (s) {
+            var beats = Array.isArray(s && s.beats) ? s.beats.slice(0, 4).map(function (beat) {
+              return { kind: beat && beat.kind === 'success' ? 'success' : 'action', text: String((beat && beat.text) || '').slice(0, 220) };
+            }).filter(function (beat) { return beat.text; }) : [];
+            return { id: String((s && (s.id || s.commandId)) || '').slice(0, 60), anchorId: String((s && s.anchorId) || '').slice(0, 90), label: String((s && s.label) || '').slice(0, 90), beats: beats };
+          }).filter(function (s) { return s.id && s.beats.length; });
+          if (!officialSteps.length) { otrRespond({ error: 'no tutorial steps' }); return; }
+          demoRunRef.current = { running: true, stop: false };
+          Promise.resolve().then(function () {
+            return officialRunFn(String(otrReq.tutorialId || '').slice(0, 60), officialSteps, {
+              shouldStop: function () { return demoRunRef.current.stop; },
+              onStep: function (i, phase, label, narration) {
+                postToStudio(otrReplyTo, { type: 'allostudio-demostep', id: otrReq.id, index: i, phase: phase, label: String(label || '').slice(0, 120), narration: String(narration || '').slice(0, 220) });
+              }
+            });
+          }).then(function (result) {
+            demoRunRef.current = { running: false, stop: false };
+            otrRespond({ ok: !!(result && result.ok), stopped: !!(result && result.stopped), completed: (result && result.completed != null) ? result.completed : null, reason: (result && result.reason) ? String(result.reason).slice(0, 200) : null });
+          }).catch(function (e) {
+            demoRunRef.current = { running: false, stop: false };
+            otrRespond({ error: String((e && e.message) || e).slice(0, 200) });
           });
         } else if (ev.data.type === 'allostudio-demorun-request') {
           var drReq = ev.data;
@@ -3287,6 +3392,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           });
         } else if (ev.data.type === 'allostudio-demostop') {
           demoRunRef.current.stop = true;
+        } else if (ev.data.type === 'allostudio-official-tutorial-cleanup') {
+          var cleanupFn = propsRef.current.onCleanupOfficialTutorial;
+          if (typeof cleanupFn === 'function') { try { cleanupFn(String(ev.data.tutorialId || '').slice(0, 60)); } catch (_) {} }
         } else if (ev.data.type === 'allostudio-resource-cues-request') {
           var creq = ev.data;
           var cReplyTo = studioWinRef.current;
@@ -3349,6 +3457,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
             addToast(T('video_studio.cinematic_unavailable', 'Cinematic Studio is not available from this view.'), 'error');
           }
         } else if (ev.data.type === 'allostudio-closed') {
+          var closeCleanupFn = propsRef.current.onCleanupOfficialTutorial;
+          if (typeof closeCleanupFn === 'function') { try { closeCleanupFn(); } catch (_) {} }
           studioWinRef.current = null;
           bridgeTokenRef.current = null;
           setStudioState('closed');

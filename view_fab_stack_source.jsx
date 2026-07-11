@@ -31,7 +31,8 @@ function FabStack(props) {
     isLineFocusMode, isStudyTimerRunning, isTeacherMode, readingRuler, runTour,
     setFocusedParagraphIndex, setInteractionMode, setIsCompareMode, setIsDictationMode,
     setIsFluencyMode, setIsLineFocusMode, setRevisionData, setSelectionMenu,
-    showSocraticChat, showVisualSupports, stopPlayback, studentProjectSettings, t,
+    showSocraticChat, showVisualSupports, stopPlayback, studentProjectSettings,
+    studentAiFeaturesHidden, t,
   } = props;
 
   return (
@@ -83,7 +84,7 @@ function FabStack(props) {
                 data-help-toggle="true"
                 className="alloflow-fab-panel flex flex-col gap-3 p-3 bg-white/90 backdrop-blur-md border border-slate-400 shadow-2xl rounded-full animate-in slide-in-from-bottom-4 fade-in duration-200 max-h-[75vh] overflow-y-auto custom-scrollbar"
               >
-                  {!isTeacherMode && studentProjectSettings.allowSocraticTutor && (
+                  {!isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && (
                       <button
                         onClick={handleToggleShowSocraticChat}
                         className={`px-4 py-3 rounded-full transition-all shadow-sm flex items-center gap-2 ${showSocraticChat ? 'bg-teal-700 text-white ring-2 ring-teal-400' : 'bg-teal-100 text-teal-700 hover:bg-teal-200 border border-teal-200'}`}

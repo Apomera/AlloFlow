@@ -1,0 +1,2999 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-11T00:35:12.602Z",
+  "packId": "eppp-part-one",
+  "packVersion": "0.7.0",
+  "standard": {
+    "label": "AlloFlow native test-prep content QA v1",
+    "checks": [
+      "authoritative-source",
+      "one-best-answer",
+      "distractor-quality",
+      "clue-resistance",
+      "rationale-quality",
+      "provenance"
+    ],
+    "meaning": "QA pass confirms cited answer support, one-best-answer structure, plausible distinct distractors, clue checks, explanatory rationale, and migration provenance.",
+    "limitation": "QA pass is not psychometric calibration, official exam approval, or independent licensed-psychologist validation."
+  },
+  "summary": {
+    "totalItems": 80,
+    "passedItems": 80,
+    "reviewRequiredItems": 0,
+    "domains": 8,
+    "answerPositions": {
+      "0": 20,
+      "1": 20,
+      "2": 20,
+      "3": 20
+    },
+    "packFindings": [],
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-pilot-biological-1",
+      "domainId": "biological",
+      "provenance": "native-original",
+      "legacySourceId": null,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/31066630/"
+      ]
+    },
+    {
+      "id": "eppp-pilot-cognitive-1",
+      "domainId": "cognitive-affective",
+      "provenance": "native-original",
+      "legacySourceId": null,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/34312672/"
+      ]
+    },
+    {
+      "id": "eppp-pilot-social-1",
+      "domainId": "social-cultural",
+      "provenance": "native-original",
+      "legacySourceId": null,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/about/policy/multicultural-guidelines.pdf"
+      ]
+    },
+    {
+      "id": "eppp-pilot-lifespan-1",
+      "domainId": "lifespan",
+      "provenance": "native-original",
+      "legacySourceId": null,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.cdc.gov/act-early/about/developmental-monitoring-and-screening.html"
+      ]
+    },
+    {
+      "id": "eppp-pilot-assessment-1",
+      "domainId": "assessment",
+      "provenance": "native-original",
+      "legacySourceId": null,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4975285/"
+      ]
+    },
+    {
+      "id": "eppp-pilot-intervention-1",
+      "domainId": "intervention",
+      "provenance": "native-original",
+      "legacySourceId": null,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.nimh.nih.gov/news/science-updates/2024/my-life-with-ocd"
+      ]
+    },
+    {
+      "id": "eppp-pilot-research-1",
+      "domainId": "research",
+      "provenance": "native-original",
+      "legacySourceId": null,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.nist.gov/glossary-term/34096"
+      ]
+    },
+    {
+      "id": "eppp-pilot-professional-1",
+      "domainId": "professional",
+      "provenance": "native-original",
+      "legacySourceId": null,
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code/manual-updates.html"
+      ]
+    },
+    {
+      "id": "eppp-migrated-biological-1",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-313b8d365ea7d566",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://ods.od.nih.gov/factsheets/Thiamin-HealthProfessional/"
+      ]
+    },
+    {
+      "id": "eppp-migrated-cognitive-1",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-58e2b0cbc9a5a944",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/11752477/"
+      ]
+    },
+    {
+      "id": "eppp-migrated-social-1",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-72ed1587c431c286",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://journals.sagepub.com/doi/10.1177/002200275800200106"
+      ]
+    },
+    {
+      "id": "eppp-migrated-lifespan-1",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-88a898f7ecad4728",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK356191/",
+        "https://www.routledge.com/Patterns-of-Attachment-A-Psychological-Study-of-the-Strange-Situation/Ainsworth-Blehar-Waters-Wall/p/book/9780415763202"
+      ]
+    },
+    {
+      "id": "eppp-migrated-assessment-1",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-99a87e55cde7389c",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://clep.collegeboard.org/for-educators/for-colleges/clep-scores/understanding-scores/reliability-and-validity"
+      ]
+    },
+    {
+      "id": "eppp-migrated-intervention-1",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-6e78b5d65f03b12f",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0085885"
+      ]
+    },
+    {
+      "id": "eppp-migrated-research-1",
+      "domainId": "research",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-eb578cc67e420b3f",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://europepmc.org/article/med/3806354",
+        "https://doi.org/10.1037/0022-3514.51.6.1173"
+      ]
+    },
+    {
+      "id": "eppp-migrated-professional-1",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-cacc8cba28891dbf",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code",
+        "https://www.apa.org/monitor/mar07/ethics.html"
+      ]
+    },
+    {
+      "id": "eppp-b001-biological-1",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-e30b25b07932f88a",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1126/science.275.5304.1293"
+      ]
+    },
+    {
+      "id": "eppp-b001-biological-2",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-33fe4538ef00c6b5",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1038/361031a0"
+      ]
+    },
+    {
+      "id": "eppp-b001-cognitive-1",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-5c065c523cb5951b",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/0033-2909.125.6.627"
+      ]
+    },
+    {
+      "id": "eppp-b001-cognitive-2",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-cb10abb773a98ded",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0045106"
+      ]
+    },
+    {
+      "id": "eppp-b001-social-1",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-9586ddfc5c43e6dc",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/0022-3514.69.5.797"
+      ]
+    },
+    {
+      "id": "eppp-b001-social-2",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-0fad7af34d4c7676",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0023552"
+      ]
+    },
+    {
+      "id": "eppp-b001-lifespan-1",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-2706e312055614f6",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1111/j.1469-7610.1976.tb00381.x"
+      ]
+    },
+    {
+      "id": "eppp-b001-lifespan-2",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-8e6f2437fa1200e9",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/0003-066X.55.5.469"
+      ]
+    },
+    {
+      "id": "eppp-b001-assessment-1",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-5504dc61fa94b123",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/0033-2909.86.2.420"
+      ]
+    },
+    {
+      "id": "eppp-b001-assessment-2",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-3b8651aa86aeb1bf",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/1040-3590.15.4.446"
+      ]
+    },
+    {
+      "id": "eppp-b001-intervention-1",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-bf5989a3a6ecc00c",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://aasm.org/new-guideline-supports-behavioral-psychological-treatments-for-insomnia/",
+        "https://doi.org/10.1146/annurev-clinpsy-042709-141220"
+      ]
+    },
+    {
+      "id": "eppp-b001-intervention-2",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-d04fbd8f6317ec34",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0025238"
+      ]
+    },
+    {
+      "id": "eppp-b001-research-1",
+      "domainId": "research",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-61725e7d44b6b919",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/0022-3514.51.6.1173"
+      ]
+    },
+    {
+      "id": "eppp-b001-research-2",
+      "domainId": "research",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-d5308e7b36b4c741",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.4103/2229-3485.83221"
+      ]
+    },
+    {
+      "id": "eppp-b001-professional-1",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-2df56cbc883f29da",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1521/ijgp.2006.56.4.455"
+      ]
+    },
+    {
+      "id": "eppp-b001-professional-2",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-bef7388eb3563a4e",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ]
+    },
+    {
+      "id": "eppp-b002-biological-1",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-e742287665281aba",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1098/rstb.2006.1934"
+      ]
+    },
+    {
+      "id": "eppp-b002-biological-2",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-b795d451d2cb832f",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1146/annurev-neuro-061010-113731"
+      ]
+    },
+    {
+      "id": "eppp-b002-cognitive-1",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-816b0b2b99e6109e",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.3758/BF03342209"
+      ]
+    },
+    {
+      "id": "eppp-b002-cognitive-2",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-48a1b2626002ce83",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1111/j.1467-9280.1993.tb00589.x"
+      ]
+    },
+    {
+      "id": "eppp-b002-social-1",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-107528b4937459f9",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0040525"
+      ]
+    },
+    {
+      "id": "eppp-b002-social-2",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-30d4173b9be1d4cc",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1002/ejsp.2420010202"
+      ]
+    },
+    {
+      "id": "eppp-b002-lifespan-1",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-44f03189e91ff738",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.2307/1127100"
+      ]
+    },
+    {
+      "id": "eppp-b002-lifespan-2",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-320bbf52083e37d6",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0074524"
+      ]
+    },
+    {
+      "id": "eppp-b002-assessment-1",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-f1e16942ee3cb7d5",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1023/B:NERV.0000009483.91468.fb"
+      ]
+    },
+    {
+      "id": "eppp-b002-assessment-2",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-87792049842c3012",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0046016"
+      ]
+    },
+    {
+      "id": "eppp-b002-intervention-1",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-dd3a9b9a5c52a956",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0040891"
+      ]
+    },
+    {
+      "id": "eppp-b002-intervention-2",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-889f10bd759d737b",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0045357"
+      ]
+    },
+    {
+      "id": "eppp-b002-research-1",
+      "domainId": "research",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-b4d4eb99b3778050",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1177/001316446002000104"
+      ]
+    },
+    {
+      "id": "eppp-b002-research-2",
+      "domainId": "research",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-03f0149df8a3b42c",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.3102/0013189X005010003"
+      ]
+    },
+    {
+      "id": "eppp-b002-professional-1",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-0398a980aadb762e",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ]
+    },
+    {
+      "id": "eppp-b002-professional-2",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-e594bed5401a95e4",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ]
+    },
+    {
+      "id": "eppp-b003-biological-1",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-bc1ccc130901b98a",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1002/cphy.c150015"
+      ]
+    },
+    {
+      "id": "eppp-b003-biological-2",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-3a3bd10080806b38",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1038/nrn1406"
+      ]
+    },
+    {
+      "id": "eppp-b003-cognitive-1",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-d8c90c45b53fae29",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0041593"
+      ]
+    },
+    {
+      "id": "eppp-b003-cognitive-2",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-8df586018620ff02",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1207/S15327957PSPR0504_2"
+      ]
+    },
+    {
+      "id": "eppp-b003-social-1",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-87162a8fa8462e77",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/0022-3514.74.6.1464"
+      ]
+    },
+    {
+      "id": "eppp-b003-social-2",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-241e24859ccfb1e2",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0025589"
+      ]
+    },
+    {
+      "id": "eppp-b003-lifespan-1",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-67214884904791ad",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1016/S0002-7138(09)62273-1"
+      ]
+    },
+    {
+      "id": "eppp-b003-lifespan-2",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-70ede06073b8d873",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.who.int/news-room/fact-sheets/detail/preterm-birth"
+      ]
+    },
+    {
+      "id": "eppp-b003-assessment-1",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-bb074c8d5595964d",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1080/13854046.2012.680913"
+      ]
+    },
+    {
+      "id": "eppp-b003-assessment-2",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-0f11e892d7d38fdc",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1080/00223980.1939.9917671"
+      ]
+    },
+    {
+      "id": "eppp-b003-intervention-1",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-288e92bad7e5b8f0",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1002/wps.20238"
+      ]
+    },
+    {
+      "id": "eppp-b003-intervention-2",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-04e71e4ac5252b53",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1002/j.1556-6676.1992.tb01642.x"
+      ]
+    },
+    {
+      "id": "eppp-b003-research-1",
+      "domainId": "research",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-d42208bfc1437b36",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1159/000270604"
+      ]
+    },
+    {
+      "id": "eppp-b003-research-2",
+      "domainId": "research",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-7e43b7e12b98e057",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1080/00031305.2016.1154108"
+      ]
+    },
+    {
+      "id": "eppp-b003-professional-1",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-c81a415f34699d32",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ]
+    },
+    {
+      "id": "eppp-b003-professional-2",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-f823831f6bb0d8ae",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/practice/guidelines/telepsychology-revisions.pdf"
+      ]
+    },
+    {
+      "id": "eppp-b004-biological-1",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-88deb6271c8fad0b",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1038/nrn2555"
+      ]
+    },
+    {
+      "id": "eppp-b004-biological-2",
+      "domainId": "biological",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-2526870af281e885",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.4088/JCP.tv17016ah4c"
+      ]
+    },
+    {
+      "id": "eppp-b004-cognitive-1",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-af63722de58fb322",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1017/S0140525X01003922"
+      ]
+    },
+    {
+      "id": "eppp-b004-cognitive-2",
+      "domainId": "cognitive-affective",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-2f1993dcee9088e7",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/0096-3445.104.3.192"
+      ]
+    },
+    {
+      "id": "eppp-b004-social-1",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-70d52e2c03b5c8e7",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x"
+      ]
+    },
+    {
+      "id": "eppp-b004-social-2",
+      "domainId": "social-cultural",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-581e7d35775c2b2a",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0093718"
+      ]
+    },
+    {
+      "id": "eppp-b004-lifespan-1",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-5f3bc6117ee4e61c",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/0882-7974.7.3.331"
+      ]
+    },
+    {
+      "id": "eppp-b004-lifespan-2",
+      "domainId": "lifespan",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-83cfcc38eec66892",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0023281"
+      ]
+    },
+    {
+      "id": "eppp-b004-assessment-1",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-6e9897a21a8f439e",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1007/BF02310555"
+      ]
+    },
+    {
+      "id": "eppp-b004-assessment-2",
+      "domainId": "assessment",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-6a8dbb6b4667303a",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/1040-3590.15.4.446"
+      ]
+    },
+    {
+      "id": "eppp-b004-intervention-1",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-68529f32b7c2e9fc",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/a0018378"
+      ]
+    },
+    {
+      "id": "eppp-b004-intervention-2",
+      "domainId": "intervention",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-9515822e75ab20fe",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/pst0000097"
+      ]
+    },
+    {
+      "id": "eppp-b004-research-1",
+      "domainId": "research",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-56b91ae08897af0a",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0040957"
+      ]
+    },
+    {
+      "id": "eppp-b004-research-2",
+      "domainId": "research",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-8d0bf407752ebe8e",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://doi.org/10.1037/h0043424"
+      ]
+    },
+    {
+      "id": "eppp-b004-professional-1",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-da7752ceccc5fc5a",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ]
+    },
+    {
+      "id": "eppp-b004-professional-2",
+      "domainId": "professional",
+      "provenance": "legacy-seeded-re-authored",
+      "legacySourceId": "legacy-b100b732273c4069",
+      "qaStatus": "pass",
+      "checks": [
+        {
+          "check": "authoritative-source",
+          "status": "pass"
+        },
+        {
+          "check": "one-best-answer",
+          "status": "pass"
+        },
+        {
+          "check": "distractor-quality",
+          "status": "pass"
+        },
+        {
+          "check": "clue-resistance",
+          "status": "pass"
+        },
+        {
+          "check": "rationale-quality",
+          "status": "pass"
+        },
+        {
+          "check": "provenance",
+          "status": "pass"
+        }
+      ],
+      "findings": [],
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ]
+    }
+  ]
+}

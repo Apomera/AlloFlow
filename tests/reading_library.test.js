@@ -303,46 +303,108 @@ describe('mirrored data contract (reading_library/)', () => {
     index.languages.forEach((l) => expect(byLang[l.name]).toBe(l.count));
   });
 
-  it('every book file exists, parses, and honors the book contract', () => {
-    index.books.forEach((entry) => {
-      const book = JSON.parse(fs.readFileSync(path.join(LIB_DIR, entry.file), 'utf8'));
-      expect(book.schema).toBe('allo-reading-book@1');
-      expect(book.license).toBeTruthy();
-      expect(book.licenseUrl).toMatch(/^https?:\/\//);
-      expect(book.source.url).toMatch(/^https?:\/\//);
-      const sourceId = book.sourceId || (book.source && book.source.id) || entry.sourceId || 'storyweaver';
-      if (sourceId === 'storyweaver') {
-        expect(book.license).toBe('CC BY 4.0');
-        expect(book.source.url).toMatch(/^https:\/\/storyweaver\.org\.in\//);
-      } else {
-        expect(entry.sourceId).toBe(sourceId);
-        expect(['frontiers', 'nasa', 'noaa', 'usgs', 'wikisource', 'loc', 'gutenberg', 'openstax']).toContain(sourceId);
-      }
-      expect(book.pages.length).toBeGreaterThan(0);
-      expect(book.title.length).toBeGreaterThan(0);
-      // no page is silently empty: image or text must be present
-      book.pages.forEach((p) => expect(!!(p.img || p.text)).toBe(true));
-      // every book has SOME readable text (generation + practice depend on it)
-      expect(book.stats.words).toBeGreaterThan(0);
-      if (book.audio) {
-        expect(book.audio.src).toMatch(/^https:\/\//);
-        if (book.audio.cues) {
-          for (let i = 1; i < book.audio.cues.length; i++) {
-            expect(book.audio.cues[i][1]).toBeGreaterThanOrEqual(book.audio.cues[i - 1][1]);
-          }
-        }
-      }
-      if (entry.isRtl) expect(book.isRtl).toBe(true);
-    });
+  it('registries, index, and physical files have exact one-to-one coverage', () => {
+    const curation = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'curation.json'), 'utf8'));
+    const openCatalog = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'open_catalog.json'), 'utf8'));
+    const registeredSlugs = curation.picks.map((item) => item.slug).concat(openCatalog.items.map((item) => item.slug));
+    const indexSlugs = index.books.map((item) => item.slug);
+    const indexFiles = index.books.map((item) => item.file);
+    const physicalFiles = fs.readdirSync(path.join(LIB_DIR, 'books'))
+      .filter((name) => name.endsWith('.json'))
+      .map((name) => 'books/' + name);
+
+    expect(new Set(registeredSlugs).size).toBe(registeredSlugs.length);
+    expect(new Set(indexSlugs).size).toBe(indexSlugs.length);
+    expect(new Set(indexFiles).size).toBe(indexFiles.length);
+    expect(indexSlugs.slice().sort()).toEqual(registeredSlugs.slice().sort());
+    expect(indexFiles.slice().sort()).toEqual(physicalFiles.slice().sort());
   });
 
-  it('public mirror of the data is in sync with the repo copy', () => {
-    const pub = path.join(ROOT, 'prismflow-deploy', 'public', 'reading_library');
-    const pubIndex = JSON.parse(fs.readFileSync(path.join(pub, 'index.json'), 'utf8'));
-    expect(pubIndex.generatedAt).toBe(index.generatedAt);
-    expect(pubIndex.books.length).toBe(index.books.length);
+  it('every book file parses, matches its index entry, and honors the full book contract', () => {
+    const errors = [];
+    const fail = (condition, message) => { if (!condition) errors.push(message); };
+    const same = (left, right) => JSON.stringify(left) === JSON.stringify(right);
+
     index.books.forEach((entry) => {
-      expect(fs.existsSync(path.join(pub, entry.file))).toBe(true);
+      fail(/^books\/[^/]+\.json$/.test(entry.file), entry.slug + ': unsafe file path');
+      const book = JSON.parse(fs.readFileSync(path.join(LIB_DIR, entry.file), 'utf8'));
+      const label = entry.file + ' (' + entry.slug + ')';
+      fail(book.schema === 'allo-reading-book@1', label + ': bad schema');
+      fail(book.slug === entry.slug, label + ': slug mismatch');
+      fail(!!book.license, label + ': missing license');
+      fail(/^https?:\/\//.test(book.licenseUrl || ''), label + ': bad license URL');
+      fail(/^https?:\/\//.test((book.source && book.source.url) || ''), label + ': bad source URL');
+      const sourceId = book.sourceId || (book.source && book.source.id) || entry.sourceId || 'storyweaver';
+      if (sourceId === 'storyweaver') {
+        fail(book.license === 'CC BY 4.0', label + ': StoryWeaver license drift');
+        fail(/^https:\/\/storyweaver\.org\.in\//.test(book.source.url), label + ': StoryWeaver source drift');
+      } else {
+        fail(entry.sourceId === sourceId, label + ': source id mismatch');
+        fail(['frontiers', 'nasa', 'noaa', 'usgs', 'wikisource', 'loc', 'gutenberg', 'openstax'].includes(sourceId), label + ': unknown source');
+      }
+      fail(Array.isArray(book.pages) && book.pages.length > 0, label + ': no pages');
+      fail(!!(book.title && book.title.length), label + ': no title');
+      (book.pages || []).forEach((page, pageIdx) => {
+        fail(page.n === pageIdx + 1, label + ': nonsequential page ' + pageIdx);
+        fail(!!(page.img || page.text), label + ': empty page ' + (pageIdx + 1));
+      });
+      const actualWords = (book.pages || []).reduce((sum, page) => (
+        sum + (String(page.text || '').trim().match(/\S+/g) || []).length
+      ), 0);
+      fail(book.stats && book.stats.pages === book.pages.length, label + ': page statistics mismatch');
+      fail(book.stats && book.stats.words === actualWords, label + ': word statistics mismatch');
+      fail(actualWords > 0, label + ': no readable words');
+      fail(!JSON.stringify(book).includes('\uFFFD'), label + ': replacement character in imported text');
+
+      const expectedIndexFields = {
+        title: book.title, description: book.description, language: book.language,
+        langCode: book.langCode, isRtl: book.isRtl, level: book.level, sourceId,
+        contentType: book.contentType || 'story', subjects: book.subjects || [],
+        license: book.license, licenseUrl: book.licenseUrl, source: book.source || null,
+        cover: book.cover && book.cover.card, authors: book.authors,
+        illustrators: book.illustrators, publisher: book.publisher,
+        hasAudio: !!book.audio, pageCount: book.stats && book.stats.pages,
+        wordCount: book.stats && book.stats.words,
+      };
+      Object.entries(expectedIndexFields).forEach(([key, value]) => {
+        fail(same(entry[key], value), label + ': index field drift: ' + key);
+      });
+
+      if (book.audio) {
+        fail(/^https:\/\//.test(book.audio.src || ''), label + ': bad audio URL');
+        if (book.audio.cues) {
+          book.audio.cues.forEach((cue, cueIdx) => {
+            fail(Array.isArray(cue) && cue.length >= 3, label + ': malformed cue ' + cueIdx);
+            fail(Number.isFinite(cue[1]) && Number.isFinite(cue[2]), label + ': nonnumeric cue ' + cueIdx);
+            fail(cue[2] >= cue[1], label + ': negative cue window ' + cueIdx);
+            if (cueIdx) fail(cue[1] >= book.audio.cues[cueIdx - 1][1], label + ': unsorted cue ' + cueIdx);
+          });
+        }
+      }
+      if (entry.isRtl) fail(book.isRtl === true, label + ': RTL mismatch');
     });
+
+    expect(errors).toEqual([]);
+  });
+
+  it('prefers the bundled catalog and provides a path beyond the first render batch', () => {
+    const source = fs.readFileSync(path.join(ROOT, 'reading_library_module.js'), 'utf8');
+    const bases = source.slice(source.indexOf('var DATA_BASES'), source.indexOf('var VISIBLE_BOOK_BATCH'));
+    expect(bases.indexOf("'./reading_library/'")).toBeGreaterThanOrEqual(0);
+    expect(bases.indexOf("'./reading_library/'")).toBeLessThan(bases.indexOf('alloflow-cdn.pages.dev'));
+    expect(source).toContain('setVisibleLimit(function (n) { return n + VISIBLE_BOOK_BATCH; })');
+    expect(source).toContain("tr('readinglib_show_more', 'Show more')");
+    expect(source).not.toContain('MAX_VISIBLE_BOOKS');
+  });
+
+  it('public mirror is byte-for-byte in sync with every runtime data file', () => {
+    const pub = path.join(ROOT, 'prismflow-deploy', 'public', 'reading_library');
+    const mismatches = [];
+    ['index.json', 'open_catalog.json'].concat(index.books.map((entry) => entry.file)).forEach((name) => {
+      const source = fs.readFileSync(path.join(LIB_DIR, name));
+      const deployed = fs.readFileSync(path.join(pub, name));
+      if (!source.equals(deployed)) mismatches.push(name);
+    });
+    expect(mismatches).toEqual([]);
   });
 });

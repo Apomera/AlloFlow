@@ -59,6 +59,7 @@ function FabStack(props) {
     showVisualSupports,
     stopPlayback,
     studentProjectSettings,
+    studentAiFeaturesHidden,
     t
   } = props;
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, `
@@ -107,7 +108,7 @@ function FabStack(props) {
       "data-help-toggle": "true",
       className: "alloflow-fab-panel flex flex-col gap-3 p-3 bg-white/90 backdrop-blur-md border border-slate-400 shadow-2xl rounded-full animate-in slide-in-from-bottom-4 fade-in duration-200 max-h-[75vh] overflow-y-auto custom-scrollbar"
     },
-    !isTeacherMode && studentProjectSettings.allowSocraticTutor && /* @__PURE__ */ React.createElement(
+    !isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: handleToggleShowSocraticChat,

@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-09T19:15:48.465Z",
+ "generatedAt": "2026-07-10T23:59:31.761Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -10852,7 +10852,7 @@
    "publisher": "The Asia Foundation",
    "hasAudio": false,
    "pageCount": 10,
-   "wordCount": 47,
+   "wordCount": 46,
    "file": "books/8892-pel-leng-komsan.json"
   },
   {
@@ -41534,7 +41534,7 @@
    "publisher": "The Asia Foundation",
    "hasAudio": false,
    "pageCount": 13,
-   "wordCount": 111,
+   "wordCount": 110,
    "file": "books/8896-haet-avey-khmom-bonleu-so-nguong-nuong.json"
   },
   {
@@ -52272,7 +52272,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "frontiers",
    "contentType": "science-article",
    "subjects": [
@@ -52298,7 +52298,7 @@
    "publisher": "Frontiers for Young Minds",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 125,
+   "wordCount": 116,
    "file": "books/frontiers-bacteria-greenhouse-gases-brief.json"
   },
   {
@@ -52332,7 +52332,7 @@
    "publisher": "NASA",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 119,
+   "wordCount": 96,
    "file": "books/nasa-learning-resources-catalog.json"
   },
   {
@@ -52366,7 +52366,7 @@
    "publisher": "National Oceanic and Atmospheric Administration",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 126,
+   "wordCount": 97,
    "file": "books/noaa-education-resource-collections.json"
   },
   {
@@ -52400,7 +52400,7 @@
    "publisher": "U.S. Geological Survey",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 152,
+   "wordCount": 140,
    "file": "books/usgs-science-of-earthquakes-excerpt.json"
   },
   {
@@ -52434,7 +52434,7 @@
    "publisher": "Wikisource",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 142,
+   "wordCount": 137,
    "file": "books/wikisource-declaration-of-sentiments-excerpt.json"
   },
   {
@@ -52468,7 +52468,7 @@
    "publisher": "Library of Congress",
    "hasAudio": false,
    "pageCount": 2,
-   "wordCount": 96,
+   "wordCount": 75,
    "file": "books/loc-primary-source-sets-catalog.json"
   },
   {
@@ -52502,7 +52502,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 2,
-   "wordCount": 88,
+   "wordCount": 69,
    "file": "books/gutenberg-nonfiction-catalog.json"
   },
   {
@@ -52538,7 +52538,7 @@
    "publisher": "OpenStax",
    "hasAudio": false,
    "pageCount": 2,
-   "wordCount": 91,
+   "wordCount": 71,
    "file": "books/openstax-biology-2e-catalog.json"
   },
   {
@@ -52573,7 +52573,7 @@
    "publisher": "Frontiers for Young Minds",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 105,
+   "wordCount": 93,
    "file": "books/frontiers-soil-microbes-microplastics-brief.json"
   },
   {
@@ -52609,7 +52609,7 @@
    "publisher": "Frontiers for Young Minds",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 115,
+   "wordCount": 90,
    "file": "books/frontiers-ocean-acidification-brief.json"
   },
   {
@@ -52643,7 +52643,7 @@
    "publisher": "Frontiers for Young Minds",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 101,
+   "wordCount": 83,
    "file": "books/frontiers-hidden-impacts-of-things-we-buy-brief.json"
   },
   {
@@ -52679,7 +52679,7 @@
    "publisher": "Frontiers for Young Minds",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 102,
+   "wordCount": 82,
    "file": "books/frontiers-rice-without-harming-planet-brief.json"
   },
   {
@@ -52713,7 +52713,7 @@
    "publisher": "NASA",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 115,
+   "wordCount": 81,
    "file": "books/nasa-climate-change-science-card.json"
   },
   {
@@ -52747,7 +52747,7 @@
    "publisher": "NASA",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 104,
+   "wordCount": 70,
    "file": "books/nasa-exoplanets-science-card.json"
   },
   {
@@ -52781,7 +52781,7 @@
    "publisher": "National Oceanic and Atmospheric Administration",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 111,
+   "wordCount": 73,
    "file": "books/noaa-climate-change-impacts-card.json"
   },
   {
@@ -52815,7 +52815,7 @@
    "publisher": "National Oceanic and Atmospheric Administration",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 97,
+   "wordCount": 68,
    "file": "books/noaa-coral-reef-ecosystems-card.json"
   },
   {
@@ -52849,7 +52849,7 @@
    "publisher": "U.S. Geological Survey",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 103,
+   "wordCount": 90,
    "file": "books/usgs-water-cycle-excerpt.json"
   },
   {
@@ -52883,7 +52883,7 @@
    "publisher": "U.S. Geological Survey",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 112,
+   "wordCount": 85,
    "file": "books/usgs-volcanoes-affect-climate-excerpt.json"
   },
   {
@@ -52917,7 +52917,7 @@
    "publisher": "Wikisource",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 84,
+   "wordCount": 80,
    "file": "books/wikisource-gettysburg-address-excerpt.json"
   },
   {
@@ -52951,7 +52951,7 @@
    "publisher": "Wikisource",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 100,
+   "wordCount": 83,
    "file": "books/wikisource-what-to-the-slave-fourth-july-excerpt.json"
   },
   {
@@ -52985,7 +52985,7 @@
    "publisher": "Library of Congress",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 103,
+   "wordCount": 78,
    "file": "books/loc-dust-bowl-migration-card.json"
   },
   {
@@ -53019,7 +53019,7 @@
    "publisher": "Library of Congress",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 88,
+   "wordCount": 66,
    "file": "books/loc-irish-immigration-relocation-card.json"
   },
   {
@@ -53055,7 +53055,7 @@
    "publisher": "OpenStax",
    "hasAudio": false,
    "pageCount": 2,
-   "wordCount": 76,
+   "wordCount": 52,
    "file": "books/openstax-astronomy-2e-catalog.json"
   },
   {
@@ -53094,7 +53094,7 @@
    "publisher": "OpenStax",
    "hasAudio": false,
    "pageCount": 2,
-   "wordCount": 78,
+   "wordCount": 54,
    "file": "books/openstax-us-history-catalog.json"
   },
   {
@@ -55768,7 +55768,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 1573,
-   "wordCount": 668986,
+   "wordCount": 668985,
    "file": "books/gutenberg-ebook-8419-the-journals-of-lewis-and-clark-1804-1806.json"
   },
   {
@@ -56657,7 +56657,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "5",
+   "level": "6",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [

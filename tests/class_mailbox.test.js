@@ -50,7 +50,11 @@ function makeGsSandbox() {
             return svc;
         })(),
         DriveApp: { getFoldersByName: () => ({ hasNext: () => true, next: () => folder }), createFolder: () => folder },
-        Utilities: { getUuid: () => `aaaaaaaa-bbbb-cccc-dddd-${String(uuidCounter++).padStart(12, '0')}` },
+        Utilities: {
+            getUuid: () => 'aaaaaaaa-bbbb-cccc-dddd-' + String(uuidCounter++).padStart(12, '0'),
+            computeHmacSha256Signature: (value, key) => Array.from(Buffer.from((String(key) + '|' + String(value)).repeat(8)).subarray(0, 32)),
+            base64EncodeWebSafe: bytes => Buffer.from(bytes).toString('base64url'),
+        },
     };
     const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle, doGet: doGet, doPost: doPost };');
     const gs = factory(...Object.values(services));
@@ -58,33 +62,40 @@ function makeGsSandbox() {
 }
 
 describe('Code.gs protocol (real source, mocked Google services)', () => {
-    it('runs the full live-session lifecycle with capability checks', () => {
+    it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).ok).toBe(true);
+        expect(call({ a: 'hello' }).v).toBeGreaterThanOrEqual(7);
         const claim = call({ a: 'claim' });
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);
         expect(call({ a: 'claim' }).e).toBe('claimed');
         expect(call({ a: 'open', c: 'ABC23', k: K }).e).toBe('not-admin');
         expect(call({ a: 'open', admin: claim.admin, c: 'ABC23', k: K }).ok).toBe(true);
-        const sent = call({ a: 'send', c: 'ABC23', k: K, from: 'mb-1', box: 'up', v: { kind: 'student', uid: 'mb-1', name: 'Ada', hand: true } });
-        expect(sent.i).toBe(1);
-        const recv = call({ a: 'recv', c: 'ABC23', k: K, box: 'up', since: '0' });
-        expect(recv.b.up.m.length).toBe(1);
-        expect(recv.b.up.m[0][1].v.name).toBe('Ada');
-        expect(recv.b.up.n).toBe(1);
-        // Cursor advances: nothing new on second poll.
-        expect(call({ a: 'recv', c: 'ABC23', k: K, box: 'up', since: String(recv.b.up.n) }).b.up.m.length).toBe(0);
-        // Capability checks.
-        expect(call({ a: 'recv', c: 'ABC23', k: 'x_wrong_x_wrong_x_20', box: 'up', since: '0' }).e).toBe('denied');
-        expect(call({ a: 'send', c: 'ABC23', k: K, box: 'sig', v: 1 }).e).toBe('bad-box');
-        expect(call({ a: 'recv', c: 'ZZZ99', k: K, box: 'up', since: '0' }).e).toBe('no-session');
-        // End tears down.
-        expect(call({ a: 'end', c: 'ABC23', k: K }).ok).toBe(true);
-        expect(call({ a: 'recv', c: 'ABC23', k: K, box: 'up', since: '0' }).e).toBe('no-session');
-    });
 
+        const joined = call({ a: 'join', c: 'ABC23', k: K });
+        expect(joined).toMatchObject({ ok: true });
+        expect(joined.uid).toMatch(/^mb-/);
+        expect(joined.pt.length).toBeGreaterThan(20);
+        const participant = { uid: joined.uid, pt: joined.pt };
+
+        const sent = call({ a: 'send', ...participant, c: 'ABC23', box: 'up', v: { kind: 'student', uid: 'forged', name: 'Ada', hand: true } });
+        expect(sent.i).toBe(1);
+        const recv = call({ a: 'recv', admin: claim.admin, c: 'ABC23', box: 'up', since: '0' });
+        expect(recv.b.up.m.length).toBe(1);
+        expect(recv.b.up.m[0][1].f).toBe(joined.uid);
+        expect(recv.b.up.m[0][1].v.name).toBe('Ada');
+        expect(call({ a: 'recv', admin: claim.admin, c: 'ABC23', box: 'up', since: String(recv.b.up.n) }).b.up.m.length).toBe(0);
+
+        expect(call({ a: 'send', ...participant, c: 'ABC23', box: 'down', v: { kind: 'end' } }).e).toBe('denied');
+        expect(call({ a: 'recv', ...participant, c: 'ABC23', box: 'up', since: '0' }).e).toBe('denied');
+        expect(call({ a: 'end', ...participant, c: 'ABC23' }).e).toBe('not-admin');
+        expect(call({ a: 'send', uid: joined.uid, pt: 'wrong_wrong_wrong_wrong', c: 'ABC23', box: 'up', v: 1 }).e).toBe('denied');
+        expect(call({ a: 'recv', admin: claim.admin, c: 'ZZZ99', box: 'up', since: '0' }).e).toBe('no-session');
+
+        expect(call({ a: 'end', admin: claim.admin, c: 'ABC23' }).ok).toBe(true);
+        expect(call({ a: 'recv', admin: claim.admin, c: 'ABC23', box: 'up', since: '0' }).e).toBe('no-session');
+    });
     it('assembles chunked pack uploads and serves sliced downloads behind the pack secret', () => {
         const { call, driveFiles } = makeGsSandbox();
         const admin = call({ a: 'claim' }).admin;
@@ -96,6 +107,8 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
         expect(fin.ok).toBe(true);
         expect(fin.chars).toBe(6);
         expect(driveFiles.has('pack-' + id + '.json')).toBe(true);
+        expect(JSON.parse(driveFiles.get('pack-' + id + '.json')).data).toBeUndefined();
+        expect(driveFiles.has('pack-' + id + '-1.txt')).toBe(true);
         const got = call({ a: 'getpack', id, k: PK, part: 1 });
         expect(got.data).toBe('AAABBB');
         expect(got.of).toBe(1);
@@ -200,17 +213,18 @@ describe('Code.gs hardening (v2)', () => {
         const K = 'k_secret_k_secret_20';
         const admin = call({ a: 'claim' }).admin;
         expect(call({ a: 'open', admin, c: 'EVICT', k: K }).ok).toBe(true);
-        expect(call({ a: 'send', c: 'EVICT', k: K, from: 's', box: 'up', v: 1 }).ok).toBe(true);
+        const joined = call({ a: 'join', c: 'EVICT', k: K });
+        expect(call({ a: 'send', uid: joined.uid, pt: joined.pt, c: 'EVICT', box: 'up', v: { kind: 'student', name: 'A' } }).ok).toBe(true);
         // Simulate CacheService eviction of the marker mid-class.
         gs.handle({ a: 'noop' }); // no-op to keep shape; eviction below
         rest.cacheStore.delete('s:EVICT');
-        expect(call({ a: 'recv', c: 'EVICT', k: K, box: 'up', since: '0' }).ok).toBe(true);
+        expect(call({ a: 'recv', admin, c: 'EVICT', box: 'up', since: '0' }).ok).toBe(true);
         // Rewarmed: marker is back in cache.
         expect(rest.cacheStore.has('s:EVICT')).toBe(true);
         // 'end' clears the durable copy too — session stays dead.
-        expect(call({ a: 'end', c: 'EVICT', k: K }).ok).toBe(true);
+        expect(call({ a: 'end', admin, c: 'EVICT' }).ok).toBe(true);
         rest.cacheStore.delete('s:EVICT');
-        expect(call({ a: 'recv', c: 'EVICT', k: K, box: 'up', since: '0' }).e).toBe('no-session');
+        expect(call({ a: 'recv', admin, c: 'EVICT', box: 'up', since: '0' }).e).toBe('no-session');
     });
 
     it("'mysessions' returns the admin's open sessions for server-side resume (v5)", () => {
@@ -229,22 +243,50 @@ describe('Code.gs hardening (v2)', () => {
         // Secrets are returned (caller proved admin) so the client can resume.
         expect(mine.sessions.find(s => s.c === 'ROOM1').k).toBe(K1);
         // Ended sessions drop off the list.
-        call({ a: 'end', c: 'ROOM1', k: K1 });
+        call({ a: 'end', admin, c: 'ROOM1' });
         expect(call({ a: 'mysessions', admin }).sessions.map(s => s.c)).toEqual(['ROOM2']);
     });
 
-    it('caps per-box sends at the flood limit', () => {
+    it('purges replay messages when a code is ended and later reused', () => {
         const { call } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const secret = 'reused_secret_reused_20';
+        call({ a: 'open', admin, c: 'REUSE', k: secret });
+        call({ a: 'send', admin, c: 'REUSE', box: 'down', v: { kind: 'end', stale: true } });
+        call({ a: 'end', admin, c: 'REUSE' });
+        call({ a: 'open', admin, c: 'REUSE', k: secret });
+        const joined = call({ a: 'join', c: 'REUSE', k: secret });
+        const fresh = call({ a: 'recv', uid: joined.uid, pt: joined.pt, c: 'REUSE', box: 'down', since: '0' });
+        expect(fresh.b.down.m).toEqual([]);
+        expect(fresh.b.down.latest).toBe(0);
+    });
+    it('rotates the admin token safely and closes active sessions only with explicit force', () => {
+        const { call } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        call({ a: 'open', admin, c: 'ROTAT', k: 'rotate_secret_rotate_20' });
+        expect(call({ a: 'rotateadmin', admin }).e).toBe('sessions-active');
+        const rotated = call({ a: 'rotateadmin', admin, force: true });
+        expect(rotated.ok).toBe(true);
+        expect(rotated.admin).not.toBe(admin);
+        expect(call({ a: 'auth', admin })).toMatchObject({ ok: true, admin: false });
+        expect(call({ a: 'auth', admin: rotated.admin })).toMatchObject({ ok: true, admin: true });
+        expect(call({ a: 'join', c: 'ROTAT', k: 'rotate_secret_rotate_20' }).e).toBe('no-session');
+    });
+    it('caps participant writes independently and bounds message cache slots', () => {
+        const { call, cacheStore } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
         const admin = call({ a: 'claim' }).admin;
         expect(call({ a: 'open', admin, c: 'FLOOD', k: K }).ok).toBe(true);
-        let lastOk = null;
-        for (let i = 0; i < 900; i += 1) lastOk = call({ a: 'send', c: 'FLOOD', k: K, from: 's', box: 'up', v: i });
-        expect(lastOk.ok).toBe(true);
-        const over = call({ a: 'send', c: 'FLOOD', k: K, from: 's', box: 'up', v: 'x' });
-        expect(over.e).toBe('rate-limited');
-        // The other box is unaffected.
-        expect(call({ a: 'send', c: 'FLOOD', k: K, from: 't', box: 'down', v: 'y' }).ok).toBe(true);
+        const joined = call({ a: 'join', c: 'FLOOD', k: K });
+        for (let i = 0; i < 120; i += 1) {
+            expect(call({ a: 'send', uid: joined.uid, pt: joined.pt, c: 'FLOOD', box: 'up', v: { kind: 'student', name: 'A' } }).ok).toBe(true);
+        }
+        expect(call({ a: 'send', uid: joined.uid, pt: joined.pt, c: 'FLOOD', box: 'up', v: { kind: 'student', name: 'A' } }).e).toBe('rate-limited');
+        for (let i = 0; i < 300; i += 1) {
+            expect(call({ a: 'send', admin, c: 'FLOOD', box: 'down', v: i }).ok).toBe(true);
+        }
+        const slots = [...cacheStore.keys()].filter(k => k.startsWith('m:FLOOD:down:'));
+        expect(slots.length).toBeLessThanOrEqual(240);
     });
 });
 

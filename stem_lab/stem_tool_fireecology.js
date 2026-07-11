@@ -131,8 +131,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
   var getGradeIntro = function(band) {
     if (band === 'k2') return 'Welcome! Some forests NEED fire to stay healthy. Let\u2019s learn how fire helps nature grow!';
-    if (band === 'g35') return 'For thousands of years, Indigenous peoples have used fire to care for the land. Explore how cultural burning keeps forests healthy and prevents wildfires.';
-    if (band === 'g68') return 'Investigate fire ecology \u2014 how fire shapes ecosystems, why Indigenous fire stewardship outperforms suppression, and how to plan a prescribed burn using weather, fuel, and terrain data.';
+    if (band === 'g35') return 'For thousands of years, Indigenous peoples have used fire to care for the land. Explore how cultural burning can support ecosystem goals and reduce some wildfire hazards.';
+    if (band === 'g68') return 'Investigate fire ecology \u2014 how fire shapes ecosystems, how Indigenous fire stewardship differs from blanket suppression, and how to plan a prescribed burn using weather, fuel, and terrain data.';
     return 'Analyze fire regime ecology, Indigenous land management systems spanning 65,000+ years, prescribed burn modeling with fuel moisture calculations, and the policy failures of total fire suppression.';
   };
 
@@ -311,13 +311,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     }
   }
 
-  // ── Badge definitions (14 total) ──
+  // ── Badge definitions (23 total) ──
   var BADGES = [
     { id: 'firstBurn', icon: '\uD83D\uDD25', label: 'First Cultural Burn', desc: 'Complete your first prescribed burn' },
     { id: 'firekeeper', icon: '\uD83E\uDEF6', label: 'Firekeeper', desc: 'Successfully manage 5 cultural burns' },
     { id: 'indigenousScholar', icon: '\uD83C\uDF0D', label: 'Indigenous Scholar', desc: 'Study fire practices from 8 different nations' },
     { id: 'ecologyExplorer', icon: '\uD83C\uDF32', label: 'Ecology Explorer', desc: 'Explore all 6 fire-adapted ecosystems' },
-    { id: 'burnPlanner', icon: '\uD83D\uDCCB', label: 'Burn Planner', desc: 'Create a safe prescribed burn plan' },
+    { id: 'burnPlanner', icon: '\uD83D\uDCCB', label: 'Burn Planner', desc: 'Complete the classroom burn-condition comparison' },
     { id: 'successionWatcher', icon: '\uD83C\uDF31', label: 'Succession Watcher', desc: 'Observe 50 years of forest succession' },
     { id: 'quizMaster', icon: '\uD83C\uDFC6', label: 'Fire Quiz Master', desc: 'Answer 8 quiz questions correctly' },
     { id: 'aiScholar', icon: '\uD83E\uDD16', label: 'AI Fire Scholar', desc: 'Use the AI tutor 3 times' },
@@ -433,7 +433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       years: '7,000+',
       practice: 'Pine Savanna / Understory Burning',
       description: 'The longleaf pine ecosystem \u2014 once the largest ecosystem in North America, stretching 90 million acres from Virginia to Texas \u2014 was maintained by Indigenous fire. Cherokee, Creek, Muscogee, and Seminole peoples burned the understory of longleaf pine forests every 1-3 years. This created open, park-like savannas with rich ground-cover plants including blueberries, wild strawberries, and medicinal herbs.',
-      science: 'Longleaf pine is a fire-dependent species with remarkable adaptations. Seedlings spend 5-7 years in a \u201Cgrass stage,\u201D looking like a clump of grass, with a thick root storing energy. When the root is large enough, the seedling \u201Cbolts\u201D upward 3-6 feet in a single season, racing its growing tip above fire height. Mature longleaf bark is 2-3 inches thick and nearly fireproof. Without fire, shade-tolerant oaks and sweetgum overtop longleaf seedlings, killing them. Only 3% of the original longleaf ecosystem remains.',
+      science: 'Longleaf pine is a fire-dependent species with remarkable adaptations. Seedlings spend 5-7 years in a \u201Cgrass stage,\u201D looking like a clump of grass, with a thick root storing energy. When the root is large enough, the seedling \u201Cbolts\u201D upward 3-6 feet in a single season, racing its growing tip above fire height. Mature longleaf bark can be 2-3 inches thick and is highly fire resistant. Without fire, shade-tolerant oaks and sweetgum overtop longleaf seedlings, killing them. Only 3% of the original longleaf ecosystem remains.',
       keyPractices: [
         'Annual to triennial understory burns during dormant season (winter)',
         'Maintain open savanna structure for wild fruit, tuber, and herb harvest',
@@ -725,7 +725,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       description: 'Fire behaves differently depending on where it burns in the forest structure. Understanding these types is key to both Indigenous fire management and modern prescribed burning.',
       elements: [
         { name: 'Ground Fire', icon: '\uD83E\uDEA8', desc: 'Smolders in organic soil layers (duff, peat). Very slow, hard to detect, can burn for weeks. Used by Amazonian peoples to create biochar.' },
-        { name: 'Surface Fire', icon: '\uD83C\uDF42', desc: 'Burns leaf litter and small fuels on the forest floor. LOW intensity. This is the type used in cultural burning \u2014 gentle enough that animals can walk away and trees survive.' },
+        { name: 'Surface Fire', icon: '\uD83C\uDF42', desc: 'Burns leaf litter and small fuels on the forest floor. LOW intensity. This is the type used in cultural burning \u2014 whose lower intensity can allow many mobile animals to move away and some mature trees to survive, depending on conditions.' },
         { name: 'Crown Fire', icon: '\uD83C\uDF32', desc: 'Burns through tree canopies. HIGH intensity, often lethal. Crown fires occur when fuel ladders (understory buildup from fire suppression) allow surface fire to climb into the canopy.' }
       ]
     },
@@ -733,21 +733,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
       id: 'fuelMoisture',
       name: 'Fuel Moisture & Fire Weather',
       icon: '\uD83D\uDCA7',
-      description: 'Fuel moisture content is the single most important factor in fire behavior. Indigenous practitioners have always understood this \u2014 choosing to burn when moisture levels allow controlled, low-intensity fire.',
+      description: 'Fuel moisture is one major influence on fire behavior, alongside fuel type and arrangement, weather, topography, and ignition pattern. Skilled practitioners interpret these factors together in a specific place.',
       elements: [
         { name: '1-Hour Fuels', icon: '\uD83C\uDF43', desc: 'Fine twigs < 0.25 inches. Respond to weather within 1 hour. Dry out fastest. Primary carrier of surface fire in cultural burns.' },
         { name: '10-Hour Fuels', icon: '\uD83E\uDEB5', desc: 'Branches 0.25-1 inch. Take ~10 hours to adjust moisture. Important for sustained burning.' },
         { name: '100-Hour Fuels', icon: '\uD83E\uDE9A', desc: 'Branches 1-3 inches. Heavy fuels that burn only in dry conditions. Cultural burning rarely consumes these.' },
-        { name: '1000-Hour Fuels', icon: '\uD83C\uDF33', desc: 'Logs > 3 inches. Only burn in severe drought. When these ignite, fire is too intense to control \u2014 this is wildfire territory.' }
+        { name: '1000-Hour Fuels', icon: '\uD83C\uDF33', desc: 'Logs > 3 inches. Respond slowly to changing weather and may remain moist longer than fine fuels. When dry enough to ignite, they can sustain heat and complicate control.' }
       ]
     },
     {
       id: 'succession',
       name: 'Post-Fire Succession',
       icon: '\uD83C\uDF31',
-      description: 'After fire, ecosystems recover in predictable stages. Indigenous fire practitioners understood and managed these stages to maximize biodiversity and food production.',
+      description: 'Post-fire change is often described in stages, but pathways vary with ecosystem, burn severity, climate, soils, surviving organisms, and later disturbance. Indigenous practitioners use place-based knowledge to steward these responses.',
       elements: [
-        { name: 'Stage 1: Pioneer (0\u20132 years)', icon: '\uD83C\uDF3E', desc: 'Fireweed, grasses, and annual wildflowers colonize bare ground. Soil fungi (morels!) fruit. Highest plant diversity.' },
+        { name: 'Stage 1: Pioneer (0\u20132 years)', icon: '\uD83C\uDF3E', desc: 'Fireweed, grasses, and annual wildflowers may colonize exposed ground, and some fungi fruit. Early-seral plant diversity can be high.' },
         { name: 'Stage 2: Shrub (3\u201310 years)', icon: '\uD83C\uDF3F', desc: 'Shrubs (huckleberry, ceanothus, hazel) establish. Berry production peaks. Deer and elk browse heavily.' },
         { name: 'Stage 3: Young Forest (10\u201350 years)', icon: '\uD83C\uDF32', desc: 'Trees overtop shrubs. Canopy begins to close. Shade-intolerant species decline. Berry production drops.' },
         { name: 'Stage 4: Mature Forest (50\u2013200+ years)', icon: '\uD83C\uDF33', desc: 'Closed canopy. Deep shade eliminates understory diversity. Fuel accumulates. Without fire, this stage is \u201Cstuck\u201D and vulnerable to catastrophic wildfire.' }
@@ -807,7 +807,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
   var QUIZ_QUESTIONS = [
     { q: 'How long have Aboriginal Australians used fire to manage the landscape?', choices: ['500 years', '5,000 years', '65,000+ years', '200 years'], answer: 2 },
     { q: 'What is a \u201Cserotinous\u201D cone?', choices: ['A cone that opens in water', 'A cone sealed with resin that opens only with fire heat', 'A cone that is poisonous', 'A cone that grows underground'], answer: 1 },
-    { q: 'What happens when fire is completely suppressed in a forest for 50+ years?', choices: ['The forest becomes healthier', 'Fuel accumulates, making catastrophic wildfire inevitable', 'Trees grow faster', 'Animals thrive'], answer: 1 },
+    { q: 'What can decades of fire exclusion contribute to in some fire-adapted forests?', choices: ['Every forest becomes healthier', 'Fuel and ladder buildup that can increase potential fire severity under conducive conditions', 'All trees grow faster', 'Every animal population increases'], answer: 1 },
     { q: 'What is \u201Cterra preta\u201D?', choices: ['A type of volcanic rock', 'Extremely fertile dark soil created by Indigenous Amazonian peoples using fire and charcoal', 'A fire-resistant tree species', 'A Spanish word for fire'], answer: 1 },
     { q: 'The longleaf pine savanna once covered 90 million acres. What percentage remains today?', choices: ['50%', '25%', '3%', '75%'], answer: 2 },
     { q: 'Why did Plains Nations burn the prairie?', choices: ['To destroy enemy camps', 'To attract bison to nutritious new grass growth', 'To create charcoal', 'To signal for rain'], answer: 1 },
@@ -1034,7 +1034,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     '\u2744\uFE0F The S\u00E1mi people of northern Scandinavia burned boreal forest to grow reindeer lichen \u2014 connecting fire management to one of Europe\u2019s last nomadic pastoral traditions.',
     '\uD83E\uDD97 The black-backed woodpecker depends ENTIRELY on recently burned forest. It can detect fires from 50+ miles away and flies toward them to colonize newly burned trees.',
     '\uD83C\uDF3A California fire poppies can remain dormant in soil for over 50 years, waiting for the smoke signal to germinate. When they do, entire hillsides turn orange overnight.',
-    '\uD83D\uDCCA The US fire suppression budget has grown from $1 billion/year in 2000 to over $4 billion/year \u2014 and fire seasons have only gotten worse. Suppression doesn\u2019t work.',
+    '\uD83D\uDCCA The US fire suppression budget has grown from $1 billion/year in 2000 to over $4 billion/year \u2014 while damaging fire seasons remain a major challenge. Suppression alone cannot address fuels, climate, land-use patterns, and community exposure.',
     '\uD83C\uDF3F The gopher tortoise\u2019s 40-foot-deep burrows provide fire refugia for over 350 other species, including indigo snakes, burrowing owls, and gopher frogs.',
     '\uD83C\uDF0D Martu women in the Western Desert of Australia use fire as a hunting tool. Research shows their burning increases biodiversity by 70% compared to unmanaged lands.',
     '\u26AB Biochar (charcoal) in soil sequesters carbon for 1,000-4,000+ years AND improves soil fertility. Indigenous Amazonian fire management was both agriculture AND climate engineering.'
@@ -1057,8 +1057,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     { q: 'What is \u201Cepicormic sprouting\u201D?', choices: ['Seeds germinating after fire', 'Dormant buds beneath bark that sprout new growth after fire kills the canopy', 'A type of fire spread', 'Mushrooms growing after rain'], answer: 1 },
     { q: 'Cultural burning protects watersheds by:', choices: ['Building dams', 'Keeping trees alive so roots stabilize soil and prevent debris flows', 'Adding chemicals to streams', 'Increasing snowpack'], answer: 1 },
     { q: 'In the 2018 Camp Fire, the town of Paradise was destroyed in:', choices: ['3 days', 'Less than 4 hours', '2 weeks', '1 month'], answer: 1 },
-    { q: 'What is the \u201Cfuel debt\u201D?', choices: ['Money owed for firefighting', 'The accumulated fuel load from decades of fire suppression that makes catastrophic wildfire inevitable', 'The cost of prescribed burns', 'A tax on logging'], answer: 1 },
-    { q: 'How do beaver dams help during wildfire?', choices: ['Beavers fight fires', 'Beaver ponds create fireproof wetland refugia where vegetation stays green', 'Beavers warn other animals', 'They don\u2019t help at all'], answer: 1 },
+    { q: 'What does the teaching term \u201Cfuel debt\u201D describe?', choices: ['Money owed for firefighting', 'Fuel accumulated during fire exclusion that may contribute to more severe fire behavior', 'The cost of prescribed burns', 'A tax on logging'], answer: 1 },
+    { q: 'How do beaver dams help during wildfire?', choices: ['Beavers fight fires', 'Beaver ponds can create wetter refugia that sometimes burn less severely than surrounding areas', 'Beavers warn other animals', 'They don\u2019t help at all'], answer: 1 },
     { q: 'Emily Fairfax\u2019s satellite research showed that during wildfire, beaver-dammed areas:', choices: ['Burned faster than surrounding land', 'Stayed green and acted as fire refugia for wildlife', 'Dried up completely', 'Were abandoned by all animals'], answer: 1 },
     { q: 'The fur trade\u2019s near-elimination of beavers across North America:', choices: ['Had no ecological effect', 'Drained millions of acres of wetlands, increasing wildfire vulnerability', 'Made forests healthier', 'Increased beaver populations'], answer: 1 },
     { q: 'What is a Beaver Dam Analog (BDA)?', choices: ['A computer model of beaver behavior', 'A human-built structure that mimics a beaver dam to restore wetlands in fire-prone areas', 'A type of fire extinguisher', 'A beaver-shaped robot'], answer: 1 }
@@ -1070,12 +1070,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
   var BEAVER_FIRE = {
     title: 'Nature\u2019s Firefighters: How Beavers Protect Landscapes from Wildfire',
-    intro: 'The North American beaver (Castor canadensis) is increasingly recognized as one of the most important allies in wildfire resilience. Beaver dams create wetlands that act as fireproof refugia, store water that sustains landscapes through drought, and slow post-fire debris flows. Indigenous peoples across North America managed beaver populations as part of their holistic land stewardship \u2014 and the fur trade\u2019s near-elimination of beavers is directly linked to increased wildfire vulnerability.',
+    intro: 'The North American beaver (Castor canadensis) is increasingly recognized as one of the most important allies in wildfire resilience. Beaver dams create wetlands that can act as comparatively fire-resistant refugia, store water that may sustain surrounding vegetation through drought, and slow post-fire debris flows. Indigenous peoples across North America managed beaver populations as part of their holistic land stewardship \u2014 and the fur trade\u2019s near-elimination of beavers is directly linked to increased wildfire vulnerability.',
     science: [
       {
         name: 'Beaver Ponds as Fire Refugia',
         icon: '\uD83D\uDCA7',
-        desc: 'In 2020, fire ecologist Emily Fairfax (California State University Channel Islands) published groundbreaking satellite research showing that during wildfires, beaver-dammed river corridors stayed green and lush while everything around them burned. Beaver ponds raise the water table, saturating surrounding soil and vegetation. This creates a \u201Cfireproof\u201D ribbon of green along waterways that wildlife can shelter in during fire.',
+        desc: 'In 2020, fire ecologist Emily Fairfax (California State University Channel Islands) published groundbreaking satellite research showing that during wildfires, beaver-dammed river corridors stayed green and lush while everything around them burned. Beaver ponds raise the water table, saturating surrounding soil and vegetation. This can create a wetter, more fire-resistant corridor along waterways that may provide wildlife refuge during some fires.',
         stat: 'Beaver-dammed areas had 3x more green vegetation during wildfire than similar undammed streams.',
         color: '#0ea5e9'
       },
@@ -1255,7 +1255,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
     { condition: function(gs) { return gs.waterYield < 50; }, tip: '\uD83D\uDCA7 Watershed Advisor: "Water yield is dangerously low. Consider beaver dam analogs \u2014 they\u2019re the cheapest and most effective way to raise water tables in fire-prone landscapes."', icon: '\uD83E\uDDAB' },
     { condition: function(gs) { return gs.biodiversity > 85 && gs.fuelLoad < 20; }, tip: '\u2B50 Elder Advisor: "The land is healthy \u2014 diverse, moist, open. This is what our ancestors maintained for thousands of years. You are walking the right path."', icon: '\uD83C\uDF0D' },
     { condition: function(gs) { return gs.wildfires > 0 && gs.biodiversity < 50; }, tip: '\uD83C\uDF31 Ecology Advisor: "After wildfire, the land needs gentle care. Cultural burning actually HELPS recovery by stimulating fire-adapted seeds and clearing debris. Don\u2019t be afraid to use good fire."', icon: '\uD83C\uDF3F' },
-    { condition: function(gs) { return gs.understoryDensity > 60; }, tip: '\uD83C\uDF32 Forestry Advisor: "Understory density is dangerously high. This is the fuel ladder that turns gentle surface fires into catastrophic crown fires. Burning or thinning the understory is the single most important action right now."', icon: '\uD83E\uDE93' },
+    { condition: function(gs) { return gs.understoryDensity > 60; }, tip: '\uD83C\uDF32 Forestry Advisor: "High understory density can create ladder fuels that help a surface fire move into the canopy. Appropriate treatment depends on local ecology, objectives, conditions, and qualified planning."', icon: '\uD83E\uDE93' },
     { condition: function(gs) { return gs.totalBurns === 0 && gs.year >= 30; }, tip: '\u26D4 Elder Advisor: "30 years and no fire? The forest is forgetting what fire means. The longer you wait, the harder the first burn becomes. Start small \u2014 but start."', icon: '\uD83C\uDF0D' },
     { condition: function(gs) { return gs.villageHealth < 60; }, tip: '\uD83C\uDFE0 Community Advisor: "The village is losing faith. Another wildfire could be the end. Every burn you do now is an investment in their safety \u2014 show them that good fire prevents bad fire."', icon: '\uD83E\uDD1D' },
     { condition: function(gs) { return gs.soilHealth < 40; }, tip: '\uD83E\uDEB5 Soil Advisor: "Soil health is critically low. Years of intense fire or no fire have depleted the soil microbiome. Cultural burning with biochar production could begin rebuilding it \u2014 the Amazonian terra preta approach."', icon: '\uD83C\uDF3F' },
@@ -1718,11 +1718,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
         function renderTabNav() {
           var TAB_META = {
-            indigenous: { accent: '#fb923c', soft: 'rgba(251,146,60,0.10)', icon: '\uD83C\uDF0D', title: t('stem.fireecology.indigenous_fire_knowledge', 'Indigenous fire knowledge'), hint: t('stem.fireecology.cultural_burning_predates_colonization', 'Cultural burning predates colonization by 65,000+ years across Australia, North America, and Africa. Western fire science is finally reading what Indigenous practitioners always knew.') },
+            indigenous: { accent: '#fb923c', soft: 'rgba(251,146,60,0.10)', icon: '\uD83C\uDF0D', title: t('stem.fireecology.indigenous_fire_knowledge', 'Indigenous fire knowledge'), hint: t('stem.fireecology.cultural_burning_predates_colonization', 'Cultural burning predates colonization by 65,000+ years across Australia, North America, and Africa. Center Indigenous practitioners as living authorities while comparing their place-based knowledge with contemporary fire ecology.') },
             ecosystems: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '\uD83C\uDF32', title: t('stem.fireecology.fire_adapted_ecosystems', 'Fire-adapted ecosystems'), hint: t('stem.fireecology.some_ecosystems_need_fire_to_function_', 'Some ecosystems need fire to function. Compare the adaptations, return intervals, and risks that shape each landscape.') },
             simulator: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)', icon: '\uD83C\uDFAE', title: t('stem.fireecology.forest_simulator_2', 'Forest simulator'), hint: t('stem.fireecology.cellular_automaton_fire_spread_each_ce', 'Test how cultural burning, prescribed burning, and suppression change fuel, biodiversity, and wildfire risk over decades.') },
             mosaic: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83E\uDDE9', title: t('stem.fireecology.cultural_mosaic_wabanaki_stewardship', 'Cultural mosaic - Wabanaki stewardship'), hint: t('stem.fireecology.a_real_indigenous_approach_is_patchwor', 'Steward a patchwork of habitats with distinct fire-return intervals and management needs.') },
-            burnPlan: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCCB', title: t('stem.fireecology.burn_planner_cultural_burn_safety', 'Burn planner - cultural burn safety'), hint: t('stem.fireecology.indigenous_modern_burn_planners_read_t', 'Read temperature, humidity, wind, and fuel moisture together to evaluate whether conditions are safe.') },
+            burnPlan: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCCB', title: t('stem.fireecology.burn_planner_cultural_burn_safety', 'Burn conditions - classroom comparison'), hint: t('stem.fireecology.indigenous_modern_burn_planners_read_t', 'Compare four weather and fuel inputs in a simplified classroom model; real burn decisions require a site-specific approved plan and qualified personnel.') },
             science: { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)', icon: '\uD83D\uDD2C', title: t('stem.fireecology.fire_science_the_chemistry', 'Fire science - the chemistry'), hint: t('stem.fireecology.the_fire_triangle_fuel_oxygen_heat_com', 'Investigate combustion, the fire triangle, heat transfer, and flashover.') },
             smokeSeeds: { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDF3A', title: t('stem.fireecology.smoke_seeds_2', 'Smoke + seeds'), hint: t('stem.fireecology.many_plants_need_smoke_chemicals_karri', 'Explore karrikins, fire-followers, and seed banks that wait decades for the right signal.') },
             watershed: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCA7', title: t('stem.fireecology.fire_watersheds', 'Fire + watersheds'), hint: t('stem.fireecology.burn_scars_trigger_debris_flows_hydrop', 'Connect burn severity to hydrophobic soils, runoff, debris flows, and recovery.') },
@@ -2345,9 +2345,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             else if (burnFuelMoisture < 8) { score += 0; notes.push('\u274C Fuel moisture critically low \u2014 wildfire risk extreme'); }
             else { score += 10; notes.push('\u26A0\uFE0F Fuel moisture high \u2014 fire may not sustain'); }
 
-            var verdict = score >= 85 ? { label: t('stem.fireecology.go_excellent_conditions_for_cultural_b', 'GO \u2014 Excellent conditions for cultural burning'), color: '#22c55e', icon: '\u2705' } :
-                          score >= 60 ? { label: t('stem.fireecology.caution_proceed_with_extra_care', 'CAUTION \u2014 Proceed with extra care'), color: '#f59e0b', icon: '\u26A0\uFE0F' } :
-                          { label: t('stem.fireecology.no_go_conditions_unsafe_for_burning', 'NO-GO \u2014 Conditions unsafe for burning'), color: '#ef4444', icon: '\u274C' };
+            var verdict = score >= 85 ? { label: t('stem.fireecology.go_excellent_conditions_for_cultural_b', 'Four classroom ranges matched'), color: '#22c55e', icon: '\u2705' } :
+                          score >= 60 ? { label: t('stem.fireecology.caution_proceed_with_extra_care', 'Some classroom ranges matched'), color: '#f59e0b', icon: '\u26A0\uFE0F' } :
+                          { label: t('stem.fireecology.no_go_conditions_unsafe_for_burning', 'Few classroom ranges matched'), color: '#ef4444', icon: '\u274C' };
 
             updMulti({ burnResult: { score: score, notes: notes, verdict: verdict } });
             awardStemXP('fire_burn_plan', 15, 'Burn plan evaluation');
@@ -2375,7 +2375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           return h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, marginBottom: 16, borderLeft: '3px solid #f59e0b' } },
               h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
-                t('stem.fireecology.indigenous_fire_practitioners_read_the', 'Indigenous fire practitioners read the land, sky, and wind to determine the right moment to burn. Modern prescribed burn planners use the same principles with instruments. Adjust the conditions below and evaluate your burn plan.')
+                t('stem.fireecology.indigenous_fire_practitioners_read_the', 'Indigenous fire practitioners read the land, sky, and wind to determine the right moment to burn. Modern prescribed burn planners use the same principles with instruments. Compare the four inputs below, then identify what additional local information and professional planning a real decision would require.')
               )
             ),
 
@@ -2388,8 +2388,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 color: '#fde68a', fontSize: 13, lineHeight: 1.55
               }
             },
-              h('strong', { style: { color: '#fbbf24' } }, 'Goal: '),
-              t('stem.fireecology.land_all_four_sliders_inside_their_ide', 'land all four sliders inside their ideal range to score 85+ (GO). Score 60 to 84 prints CAUTION; under 60 prints NO-GO.'),
+              h('strong', { style: { color: '#fbbf24' } }, 'Classroom task: '),
+              t('stem.fireecology.land_all_four_sliders_inside_their_ide', 'compare how four inputs affect this classroom score. A high score is not authorization or evidence that a real burn is safe.'),
               h('div', { style: { marginTop: 6, fontSize: 12.5, color: '#fef3c7', lineHeight: 1.55 } },
                 h('div', null, 'Ideal Temperature: 50 to 70 ' + '\u00B0F'),
                 h('div', null, t('stem.fireecology.ideal_humidity_30_to_55_percent', 'Ideal Humidity: 30 to 55 percent')),
@@ -2405,12 +2405,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               slider('Fuel Moisture Content', burnFuelMoisture, 2, 40, 1, '%', 'burnFuelMoisture', '#22c55e')
             ),
 
-            h('button', { 'aria-label': t('stem.fireecology.evaluate_burn_plan', 'Evaluate Burn Plan'),
+            h('button', { 'aria-label': t('stem.fireecology.evaluate_burn_plan', 'Compare Classroom Conditions'),
               onClick: evaluateBurn,
               style: { width: '100%', padding: '14px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: '#c2410c', color: '#fff', fontWeight: 700, fontSize: 16, marginBottom: 16 }
-            }, t('stem.fireecology.evaluate_burn_plan_2', '\uD83D\uDD25 Evaluate Burn Plan')),
+            }, t('stem.fireecology.evaluate_burn_plan_2', '\uD83D\uDD25 Compare Classroom Conditions')),
 
-            burnResult ? h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, border: '2px solid ' + burnResult.verdict.color } },
+            burnResult ? h('div', { role: 'status', 'aria-live': 'polite', style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 16, border: '2px solid ' + burnResult.verdict.color } },
               (function() {
                 var rad = 32, circ = 2 * Math.PI * rad;
                 var dashOff = circ - (burnResult.score / 100) * circ;
@@ -2419,8 +2419,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 var cautionAngleEnd = (60 / 100) * 360 - 90;
                 return h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, flexWrap: 'wrap' } },
                   h('div', { style: { position: 'relative', width: 84, height: 84, flexShrink: 0 } },
-                    h('svg', { viewBox: '0 0 100 100', width: 84, height: 84,
-                      'aria-label': 'Safety score: ' + burnResult.score + ' out of 100. ' + burnResult.verdict.label
+                    h('svg', { viewBox: '0 0 100 100', width: 84, height: 84, role: 'img',
+                      'aria-label': 'Classroom condition score: ' + burnResult.score + ' out of 100. ' + burnResult.verdict.label
                     },
                       h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.18)', strokeWidth: 8 }),
                       // Threshold tick marks at 60 (CAUTION) and 85 (GO)
@@ -2448,9 +2448,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     h('div', null,
                       h('div', { style: { fontWeight: 700, color: burnResult.verdict.color, fontSize: 17, lineHeight: 1.2 } }, burnResult.verdict.label),
                       h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginTop: 4, lineHeight: 1.5 } },
-                        burnResult.score >= 85 ? 'All four conditions in safe range.'
-                        : burnResult.score >= 60 ? 'Threshold for GO is 85. Adjust the slider for the worst-flagged condition.'
-                        : 'Threshold for CAUTION is 60. Multiple conditions need adjustment before this is safe to burn.'
+                        burnResult.score >= 85 ? 'All four inputs match this activity\'s example ranges; this is not a safety determination.'
+                        : burnResult.score >= 60 ? 'Compare the flagged input with this activity\'s example ranges.'
+                        : 'Several inputs fall outside this activity\'s example ranges.'
                       )
                     )
                   )
@@ -2461,7 +2461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }),
               h('div', { style: { marginTop: 12, padding: 12, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 8, fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
                 h('strong', { style: { color: '#f59e0b' } }, t('stem.fireecology.indigenous_wisdom', 'Indigenous Wisdom: ')),
-                t('stem.fireecology.traditional_fire_practitioners_burn_on', 'Traditional fire practitioners burn on days with light dew, gentle breeze, and rising humidity. They start fires at the edges and burn toward the center, letting the fire creep slowly. If conditions change, they let the fire die naturally. This patience \u2014 working WITH the weather rather than against it \u2014 is what makes cultural burning so safe and effective.')
+                t('stem.fireecology.traditional_fire_practitioners_burn_on', 'Cultural burning knowledge is place-based, relational, and held by specific communities. Weather readings are only part of that knowledge. Learn from local Indigenous fire practitioners and qualified fire professionals; this classroom activity cannot represent or authorize their practice.')
               )
             ) : null
           );
@@ -2618,7 +2618,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 var border = !answered ? '#334155' :
                              (isCorrect ? '#22c55e' : (isSelected ? '#ef4444' : '#334155'));
 
-                return h('button', { 'aria-label': t('stem.fireecology.select_answer', 'Select Answer'),
+                return h('button', { 'aria-label': 'Answer ' + String.fromCharCode(65 + ci) + ': ' + choice,
                   key: ci,
                   onClick: function() { selectAnswer(ci); },
                   disabled: answered,
@@ -5403,19 +5403,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             function setIQ(patch) { upd('regimeHunt', Object.assign({}, iq, patch)); }
             var risk = (iq.fuel * iq.drought) / iq.interval;
             var state;
-            if (risk > 2.5) state = 'mega';
+            if (iq.interval < 5) state = 'typeConv';
+            else if (risk > 2.5) state = 'mega';
             else if (risk > 1.2) state = 'dangerous';
-            else if (iq.interval > 70 && iq.fuel < 3) state = 'typeConv';
             else state = 'healthy';
             var sm = {
-              healthy:   { label: t('stem.fireecology.healthy_ecosystem', '🌲 Healthy ecosystem'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.fireecology.fuel_fire_balance_maintained_cultural_', 'Fuel/fire balance maintained. Cultural-burn equivalent.') },
-              dangerous: { label: t('stem.fireecology.dangerous_fuel_buildup', '⚠️ Dangerous fuel buildup'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.fireecology.decades_of_fire_suppression_next_ignit', 'Decades of fire-suppression. Next ignition is bad.') },
-              mega:      { label: t('stem.fireecology.megafire_risk', '🔥 Megafire risk'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.fireecology.high_fuel_drought_suppression_catastro', 'High fuel + drought + suppression = catastrophic event.') },
-              typeConv:  { label: t('stem.fireecology.type_conversion_forest_grassland', '🌾 Type conversion (forest → grassland)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.fireecology.frequent_low_fuel_burns_convert_forest', 'Frequent low-fuel burns convert forest permanently.') }
+              healthy:   { label: t('stem.fireecology.healthy_ecosystem', '🌲 Lower modeled concern'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.fireecology.fuel_fire_balance_maintained_cultural_', 'Lower concern in this classroom index; this is not an ecosystem-health determination.') },
+              dangerous: { label: t('stem.fireecology.dangerous_fuel_buildup', '⚠️ Dangerous fuel buildup'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.fireecology.decades_of_fire_suppression_next_ignit', 'Elevated classroom index. Actual fire behavior also depends on fuels, weather, topography, and ignition.') },
+              mega:      { label: t('stem.fireecology.megafire_risk', '🔥 Megafire risk'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.fireecology.high_fuel_drought_suppression_catastro', 'High classroom index, not a forecast of ignition, spread, severity, or impacts.') },
+              typeConv:  { label: t('stem.fireecology.type_conversion_forest_grassland', '🌾 Very short interval flag'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.fireecology.frequent_low_fuel_burns_convert_forest', 'A very short interval may alter some communities, but outcomes depend on ecosystem, season, severity, and stewardship goals.') }
             }[state];
             return h('div', { className: 'p-4 rounded-xl bg-white border border-orange-300 shadow-sm space-y-3' },
               h('h3', { className: 'text-sm font-black text-orange-700' }, t('stem.fireecology.fire_regime_discovery', '🔥 Fire regime discovery')),
-              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, t('stem.fireecology.sliders_for_fuel_accumulation_fire_ret', 'Sliders for fuel accumulation, fire return interval, drought severity. Discrete 4-state regime. No score, no reveal.')),
+              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, t('stem.fireecology.sliders_for_fuel_accumulation_fire_ret', 'Explore an arbitrary classroom index built from fuel accumulation, return interval, and drought severity. It is not a fire-behavior or ecosystem forecast.')),
               h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                 h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                 h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc)
@@ -5440,15 +5440,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.fireecology.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
               iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
-                  h('li', null, t('stem.fireecology.cultural_burns_used_5_10_yr_intervals_', 'Cultural burns used 5-10 yr intervals. Investigate the science.')),
-                  h('li', null, t('stem.fireecology.why_does_80_year_fire_suppression_crea', 'Why does 80-year fire suppression create catastrophic risk?')))),
+                  h('li', null, t('stem.fireecology.cultural_burns_used_5_10_yr_intervals_', 'Compare intervals only after naming the ecosystem, season, and stewardship objective.')),
+                  h('li', null, t('stem.fireecology.why_does_80_year_fire_suppression_crea', 'How can long fire exclusion alter fuels in some fire-adapted ecosystems?')))),
               h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
                 h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.fireecology.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.fireecology.explain_how_fuel_load_fire_interval_an', 'Explain how fuel load, fire interval, and drought jointly determine fire regime.'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-              h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.fireecology.design_note_discrete_4_state_fire_regi', 'Design note: discrete 4-state fire regime marker; no acres-burned score; no reveal — by design.'))
+              h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.fireecology.design_note_discrete_4_state_fire_regi', 'Model limit: arbitrary index = fuel accumulation x drought severity / return interval. It omits fuel type and arrangement, wind, slope, ignition, season, prior treatments, and local ecology; labels are inquiry prompts, not predictions.'))
             );
           })() : null),
 

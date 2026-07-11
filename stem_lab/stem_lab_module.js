@@ -187,6 +187,23 @@
           try { rendered = tool.render(ctx); }
           catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
           if (rendered == null) return null;
+          // ── Keyless-list guard ──
+          // If a tool's render() returns a BARE ARRAY (fragment-style, e.g.
+          // `return [headerEl, bodyEl]`), React treats the elements as a list.
+          // Passed as a child below (or returned directly on the lightBackground
+          // path), those elements lack keys → "Each child in a list should have
+          // a unique key" — attributed to the StemPluginBridge fiber because
+          // renderTool is inlined there. Wrap bare arrays in a Fragment and give
+          // each element a stable per-index key so the warning can't originate
+          // from any tool, regardless of how its render was authored.
+          if (Array.isArray(rendered) && ctx && ctx.React) {
+            rendered = ctx.React.createElement(ctx.React.Fragment, null,
+              rendered.map(function(child, i) {
+                return (child != null && typeof child === 'object' && ctx.React.isValidElement && ctx.React.isValidElement(child) && child.key == null)
+                  ? ctx.React.cloneElement(child, { key: 'stem-frag-' + i })
+                  : child;
+              }));
+          }
           // ── WCAG dark-shell auto-wrap ──
           // Every STEM tool's text palette was designed for a dark navy
           // substrate (#86efac, #94a3b8, #cbd5e1, #e2e8f0 etc.). When the

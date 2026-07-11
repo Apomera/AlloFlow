@@ -55,7 +55,7 @@ window.StemLab = window.StemLab || {
   // ── Vocabulary dictionary ──
   var CELL_VOCAB = {
     nucleus: { term: 'Nucleus', def: 'The control center of eukaryotic cells containing DNA, which carries genetic instructions.' },
-    mitochondria: { term: 'Mitochondria', def: 'The powerhouse organelle that produces ATP energy through cellular respiration.' },
+    mitochondria: { term: 'Mitochondria', def: 'Organelles that transfer energy from nutrients into ATP through cellular respiration.' },
     ribosome: { term: 'Ribosome', def: 'Tiny molecular machines that translate genetic code to synthesize proteins.' },
     chloroplast: { term: 'Chloroplast', def: 'The site of photosynthesis in plant cells, converting sunlight into chemical energy.' },
     cellMembrane: { term: 'Cell Membrane', def: 'The selectively permeable phospholipid bilayer controlling what enters and exits the cell.' },
@@ -672,9 +672,9 @@ var d = labToolData.cell || {};
               kingdom: "Animal Cell",
               cellType: "Eukaryote",
               size: "12-20 μm",
-              description: "Immune cell that defends against pathogens through phagocytosis, antibody production, and other mechanisms.",
+              description: "White blood cells are a diverse group: neutrophils and monocytes/macrophages are major phagocytes, while B-cell descendants called plasma cells secrete antibodies.",
               habitat: "Blood + lymph + tissues",
-              feeding: "Engulfs pathogens",
+              feeding: "Varies by subtype; some engulf pathogens",
               reproduction: "Stem cell differentiation",
               movement: "Chemotaxis + amoeboid",
               discovered: "Various neutrophils, lymphocytes, monocytes",
@@ -756,13 +756,13 @@ var d = labToolData.cell || {};
               kingdom: "Animal",
               cellType: "Eukaryote",
               size: "0.5-1 mm",
-              description: "Water bear. Microscopic 8-legged animal. Can survive extreme conditions: vacuum of space, intense radiation, near-absolute zero, boiling water.",
+              description: "Water bear. Some tardigrade species can survive brief extreme exposures by entering cryptobiosis; this is endurance, not active life in those conditions.",
               habitat: "Moss + lichen + water",
               feeding: "Plant cells + bacteria",
               reproduction: "Eggs",
               movement: "Walking with claws",
               discovered: "1773 by Goeze",
-              relevance: "Most resilient animal known"
+              relevance: "Model for cryptobiosis and stress tolerance"
             },
             {
               id: 11,
@@ -1009,7 +1009,7 @@ var d = labToolData.cell || {};
               kingdom: "Animal",
               cellType: "Eukaryote",
               size: "1-30 mm",
-              description: "Cnidarian (jellyfish relative). Has stinging cells. Can regenerate from any piece. Possibly biologically immortal.",
+              description: "Cnidarian (jellyfish relative) with stinging cells. Many fragments containing the right cell populations can regenerate. Laboratory populations of Hydra vulgaris show negligible senescence, but that does not make every hydra literally immortal.",
               habitat: "Freshwater",
               feeding: "Small crustaceans",
               reproduction: "Budding + sexual",
@@ -1065,13 +1065,13 @@ var d = labToolData.cell || {};
               kingdom: "Animal",
               cellType: "Eukaryote",
               size: "0.1-0.5 mm",
-              description: "Rotifer that has reproduced asexually for ~40 million years. Survives desiccation. Steals DNA from environment.",
+              description: "Bdelloid rotifer that usually reproduces by parthenogenesis and tolerates desiccation. Its long-standing 'ancient asexual' status is debated because genomic studies suggest genetic exchange.",
               habitat: "Aquatic + moist soil",
               feeding: "Bacteria",
-              reproduction: "Parthenogenetic only",
+              reproduction: "Predominantly parthenogenetic; possible rare genetic exchange",
               movement: "Ciliary",
               discovered: "Studied since 1700s",
-              relevance: "Evolution puzzle - no sex for 40M years"
+              relevance: "Evolution puzzle: how much genetic exchange occurs?"
             },
             {
               id: 33,
@@ -16592,7 +16592,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'wbc', label: 'White Blood Cell', icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Immune cell (leukocyte) that patrols the body and destroys invading pathogens.', speed: 0.5, size: 24, activity: 'Immune Defense', activityDesc: 'Chase and engulf bacteria!', xp: 6, facts: ['Part of the immune system', 'Uses chemotaxis to find pathogens', 'Can squeeze through blood vessel walls', 'Neutrophils are most common type', 'Produces antibodies to tag invaders'],
+              id: 'wbc', label: 'Neutrophil (White Blood Cell)', icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Short-lived phagocytic white blood cell that rapidly responds to many bacterial and fungal infections.', speed: 0.5, size: 24, activity: 'Phagocytosis', activityDesc: 'Track and engulf bacteria!', xp: 6, facts: ['Neutrophils are the most abundant white blood cell in human blood', 'Uses chemotaxis to find infection signals', 'Can squeeze through blood vessel walls', 'Engulfs microbes and damaged material', 'Antibodies are secreted by plasma cells, not neutrophils'],
 
               anatomy: [
 
@@ -16632,7 +16632,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Has all organelles found in animal cells plus more', 'Connected to neighbors via plasmodesmata'],
+              id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Shares many organelles with animal cells, but most plant cells lack centrioles and typical lysosomes', 'Connected to neighbors via plasmodesmata'],
 
               anatomy: [
 
@@ -16712,7 +16712,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'tardigrade', label: 'Tardigrade', icon: '\u{1F43B}', color: '#d946ef', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Microscopic "water bear" with 8 legs. Nearly indestructible - survives space, radiation, extreme temps.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Survive extreme zones!', xp: 7, facts: ['Can survive temperatures from -272°C to 150°C', 'Survived exposure to outer space', 'Enter cryptobiosis - suspend all metabolism', 'Have 8 legs with tiny claws', 'Can live without water for over 10 years'],
+              id: 'tardigrade', label: 'Tardigrade', icon: '\u{1F43B}', color: '#d946ef', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Some species survive severe dehydration and brief extreme exposures by entering cryptobiosis; active tardigrades are much less tolerant.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Enter and leave the tun state!', xp: 7, facts: ['Cryptobiosis reduces metabolism to near-undetectable levels', 'Some species survived direct exposure to space', 'Extreme-temperature survival depends on species, state, and exposure time', 'Have eight unjointed legs with claws', 'They are stress-tolerant, not indestructible'],
 
               anatomy: [
 
@@ -16724,7 +16724,7 @@ var d = labToolData.cell || {};
 
                 { name: 'Tun State', fn: 'Dormant form assumed during cryptobiosis. The body contracts, loses nearly all water, and halts metabolism, allowing survival in extreme environments.', icon: '\uD83D\uDFE4', lx: 0, ly: 0.3 },
 
-                { name: 'Dsup Protein', fn: 'Damage Suppressor protein that binds directly to DNA. Shields the chromosome from radiation damage and free radical oxidation.', icon: '\u2B50', lx: -0.3, ly: -0.3 }
+                { name: 'DNA-protective Proteins', fn: 'Some tardigrade species produce proteins such as Dsup that can reduce DNA damage from radiation and oxidative stress; these proteins are not universal to every tardigrade.', icon: '\u2B50', lx: -0.3, ly: -0.3 }
 
               ]
 
@@ -21411,6 +21411,27 @@ var d = labToolData.cell || {};
                 return concepts;
               }
 
+              function parseSizeMicrometers(sizeText) {
+                var normalized = String(sizeText || '').toLowerCase().replace(/[µμ]/g, 'u');
+                var values = normalized.match(/\d+(?:\.\d+)?/g);
+                if (!values || values.length === 0) return null;
+
+                var multiplier = /\bmm\b/.test(normalized) ? 1000 : (/\bnm\b/.test(normalized) ? 0.001 : 1);
+                var low = parseFloat(values[0]) * multiplier;
+                var high = (values.length > 1 ? parseFloat(values[1]) : parseFloat(values[0])) * multiplier;
+                if (!isFinite(low) || !isFinite(high) || low <= 0 || high <= 0) return null;
+
+                return Math.sqrt(Math.min(low, high) * Math.max(low, high));
+              }
+
+              function formatMicrometers(sizeUm) {
+                if (sizeUm >= 1000) {
+                  var millimeters = sizeUm / 1000;
+                  return (millimeters >= 10 ? Math.round(millimeters) : millimeters.toFixed(1).replace(/\.0$/, '')) + ' mm';
+                }
+                if (sizeUm >= 10) return Math.round(sizeUm) + ' μm';
+                return sizeUm.toFixed(1).replace(/\.0$/, '') + ' μm';
+              }
               var idx = (d._encyclopediaIdx != null) ? d._encyclopediaIdx : 0;
               var filterK = d._encyclopediaFilter || 'all';
               var search = d._encyclopediaSearch || '';
@@ -21424,25 +21445,30 @@ var d = labToolData.cell || {};
               var kingdoms = ['all'].concat(ORGANISM_DB.map(function(o) { return o.kingdom; }).filter(function(v, i, a) { return a.indexOf(v) === i; }));
 
               var theme = item ? getKingdomTheme(item.kingdom) : null;
-              var parsedSize = item ? parseFloat(item.size) : 10;
-              var percentage = item ? Math.min(100, Math.max(5, Math.round((Math.log10(parsedSize) / Math.log10(1000)) * 100))) : 0;
+              var sizeUm = item ? parseSizeMicrometers(item.size) : null;
+              var scaleMinUm = 0.5;
+              var scaleMaxUm = 30000;
+              var percentage = sizeUm == null ? null : Math.max(0, Math.min(100,
+                ((Math.log10(sizeUm) - Math.log10(scaleMinUm)) / (Math.log10(scaleMaxUm) - Math.log10(scaleMinUm))) * 100
+              ));
+              var formattedSize = sizeUm == null ? null : formatMicrometers(sizeUm);
 
               return React.createElement('div', { className: 'mt-4 bg-white rounded-xl border-2 border-green-300 p-4 space-y-3 shadow-md' },
                 React.createElement('div', { className: 'flex items-baseline justify-between mb-2' },
                   React.createElement('h3', { className: 'text-base font-bold text-green-700 flex items-center gap-1.5' }, '📚 Organism Encyclopedia'),
                   React.createElement('span', { className: 'text-xs text-slate-600 font-mono bg-slate-100 px-2 py-0.5 rounded-full' }, filtered.length + ' organisms')
                 ),
-                React.createElement('input', { type: 'text', placeholder: 'Search organisms...', value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-500' }),
-                React.createElement('div', { className: 'flex flex-wrap gap-1' },
+                React.createElement('input', { type: 'text', 'aria-label': 'Search organism encyclopedia', placeholder: 'Search organisms...', value: search, onChange: function(e) { upd('_encyclopediaSearch', e.target.value); upd('_encyclopediaIdx', 0); }, className: 'w-full px-2 py-1 text-xs border-2 border-green-200 rounded focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-green-500' }),
+                React.createElement('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': 'Filter organisms by group' },
                   kingdoms.map(function(k) {
                     var sel = filterK === k;
-                    return React.createElement('button', { key: k, onClick: function() { upd('_encyclopediaFilter', k); upd('_encyclopediaIdx', 0); }, className: 'px-2 py-1 rounded text-xs font-bold transition-all ' + (sel ? 'bg-green-600 text-white shadow-sm' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-green-100 active:scale-[0.97]') }, k);
+                    return React.createElement('button', { type: 'button', key: k, 'aria-pressed': sel ? 'true' : 'false', onClick: function() { upd('_encyclopediaFilter', k); upd('_encyclopediaIdx', 0); }, className: 'px-2 py-1 rounded text-xs font-bold transition-all ' + (sel ? 'bg-green-600 text-white shadow-sm' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-green-100 active:scale-[0.97]') }, k);
                   })
                 ),
-                React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded border border-slate-200' },
+                React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded border border-slate-200', role: 'group', 'aria-label': 'Choose an organism' },
                   filtered.map(function(o, i) {
                     var sel = idx === i;
-                    return React.createElement('button', { key: o.id, onClick: function() { upd('_encyclopediaIdx', i); }, className: 'px-2 py-1 rounded text-[10px] font-bold transition-all ' + (sel ? 'bg-green-700 text-white shadow-sm' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-green-50 hover:border-green-400 active:scale-[0.97]'), title: o.name }, o.name);
+                    return React.createElement('button', { type: 'button', key: o.id, 'aria-current': sel ? 'true' : undefined, onClick: function() { upd('_encyclopediaIdx', i); }, className: 'px-2 py-1 rounded text-[10px] font-bold transition-all ' + (sel ? 'bg-green-700 text-white shadow-sm' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-green-50 hover:border-green-400 active:scale-[0.97]'), title: o.name }, o.name);
                   })
                 ),
                 item && React.createElement('div', { className: 'border-2 rounded-xl p-4 space-y-3 shadow-inner ' + theme.bg + ' ' + theme.border },
@@ -21456,20 +21482,32 @@ var d = labToolData.cell || {};
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed font-medium bg-white/60 p-2.5 rounded-lg border border-white/80' }, item.description),
                   
                   React.createElement('div', { className: 'p-2.5 bg-white/80 border rounded-lg shadow-sm ' + theme.border },
-                    React.createElement('div', { className: 'flex justify-between items-center text-[10px] text-slate-500 font-bold mb-1' },
+                    React.createElement('div', { className: 'flex justify-between items-center gap-3 text-[10px] text-slate-500 font-bold mb-2' },
                       React.createElement('span', null, '🔬 Scale Comparison'),
-                      React.createElement('span', { className: theme.text + ' font-mono' }, item.size)
+                      React.createElement('span', { className: theme.text + ' font-mono text-right' }, item.size)
                     ),
-                    React.createElement('div', { className: 'w-full bg-slate-200 h-2 rounded-full overflow-hidden' },
-                      React.createElement('div', {
-                        className: 'bg-green-600 h-full transition-all duration-300',
-                        style: { width: percentage + '%' }
+                    React.createElement('div', {
+                      className: 'relative w-full bg-slate-200 h-2 rounded-full',
+                      role: 'img',
+                      'aria-label': formattedSize
+                        ? item.name + ' has an approximate size midpoint of ' + formattedSize + ' on a logarithmic scale from 0.5 micrometers to 30 millimeters.'
+                        : item.name + ' has no single numeric size available for this scale comparison.'
+                    },
+                      percentage == null ? null : React.createElement('span', {
+                        className: 'absolute top-1/2 w-3 h-3 rounded-full bg-green-700 border-2 border-white shadow -translate-y-1/2 transition-all duration-300',
+                        style: { left: 'calc(' + percentage + '% - 6px)' },
+                        'aria-hidden': 'true'
                       })
                     ),
-                    React.createElement('div', { className: 'flex justify-between text-[10px] text-slate-600 font-mono mt-0.5' },
-                      React.createElement('span', null, '1 μm (Bacteria)'),
-                      React.createElement('span', null, '100 μm (Protist)'),
-                      React.createElement('span', null, '1000 μm (Water Bear)')
+                    React.createElement('div', { className: 'flex justify-between gap-2 text-[10px] text-slate-600 font-mono mt-1' },
+                      React.createElement('span', null, '0.5 μm'),
+                      React.createElement('span', null, '100 μm'),
+                      React.createElement('span', null, '30 mm')
+                    ),
+                    React.createElement('div', { className: 'mt-1.5 text-[10px] text-slate-600' },
+                      formattedSize
+                        ? 'Approximate midpoint on a logarithmic scale: ' + formattedSize + '.'
+                        : 'Size varies; no single marker is shown.'
                     )
                   ),
 
@@ -21508,6 +21546,7 @@ var d = labToolData.cell || {};
                       React.createElement('span', { className: 'text-[10px] font-bold text-slate-500 flex items-center gap-1 w-full' }, '📇 Key concepts to study:'),
                       matched.map(function(key) {
                         return React.createElement('button', {
+                          type: 'button',
                           key: key,
                           onClick: function() { upd('_studyConcept', key); },
                           className: 'px-2.5 py-1 text-[10px] bg-white text-emerald-800 border border-emerald-400 rounded-lg font-bold hover:bg-emerald-50 hover:scale-[1.02] shadow-sm transition-all flex items-center gap-1 active:scale-[0.97]'

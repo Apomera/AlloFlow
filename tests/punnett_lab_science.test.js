@@ -49,4 +49,44 @@ describe('punnett — Punnett square table a11y', () => {
     expect(/scope="col"/.test(html)).toBe(true);
     expect(/scope="row"/.test(html)).toBe(true);
   });
+
+  it('states the equal-gamete and independent-assortment model limits', () => {
+    const html = renderCross({});
+    expect(html).toContain('The square is a model.');
+    expect(html).toContain('Equal boxes assume equal gamete frequencies');
+  });
+});
+
+describe('punnett — refined inheritance explanations', () => {
+  it('does not claim all-intermediate offspring require heterozygous parents', () => {
+    const html = renderCross({ inheritMode: 'incomplete', parent1: ['R', 'R'], parent2: ['r', 'r'] });
+    expect(html).toContain('100% intermediate phenotype');
+    expect(html).toContain('parents contribute different homozygous alleles');
+    expect(html).not.toContain('100% blended phenotype');
+  });
+
+  it('identifies classic classroom human traits as complex rather than Mendelian', () => {
+    const html = renderTool('punnett', { punnett: { subtool: 'traits', _traitSelected: 0 } });
+    expect(html).toContain('Tongue Rolling');
+    expect(html).toContain('Complex trait; do not infer a genotype');
+    expect(html).toContain('Filter traits by inheritance model');
+  });
+});
+
+describe('punnett — population readout', () => {
+  it('uses the latest simulated p value for genotype frequencies', () => {
+    const html = renderTool('punnett', { punnett: { subtool: 'population', popFreqA: 0.5, popHistory: [0.5, 0.8] } });
+    expect(html).toContain('Current modeled genotype frequencies at p 0.80');
+    expect(html).toContain('64.0%');
+    expect(html).toContain('32.0%');
+    expect(html).toContain('4.0%');
+  });
+
+  it('associates population sliders with labels and names the sample graphic', () => {
+    const html = renderTool('punnett', { punnett: { subtool: 'population' } });
+    expect(html).toContain('for="punnett-pop-frequency"');
+    expect(html).toContain('id="punnett-pop-frequency"');
+    expect(html).toContain('role="img"');
+    expect(html).toContain('Illustrative sample of');
+  });
 });

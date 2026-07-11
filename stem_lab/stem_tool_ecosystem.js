@@ -241,7 +241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     document.head.appendChild(ecoStyle);
   }
 
-  // ── Badge definitions (14 total) ──
+  // ── Badge definitions (20 total) ──
   var BADGES = [
     { id: 'firstSim',          icon: '\u2B50',       label: 'First Simulation',    desc: 'Run your first graph simulation' },
     { id: 'presetExplorer',    icon: '\uD83C\uDF0D', label: 'Preset Explorer',     desc: 'Try all 4 presets' },
@@ -259,9 +259,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     { id: 'carryCapExplorer',  icon: '\uD83C\uDF31', label: 'Capacity Explorer',   desc: 'Change carrying capacity 3 times' },
     // Conservation Manager badges
     { id: 'wolfReintroducer',  icon: '\uD83D\uDC3A', label: 'Wolf Reintroducer',   desc: 'Successfully reintroduce wolves to Maine in the Conservation Manager' },
-    { id: 'beaverEngineer',    icon: '\uD83E\uDDAB', label: 'Beaver Engineer',     desc: 'Bring beaver population above 75 in the Conservation Manager' },
-    { id: 'salmonChampion',    icon: '\uD83D\uDC1F', label: 'Salmon Champion',     desc: 'Bring Atlantic salmon population above 50 in the Conservation Manager' },
-    { id: 'troutDefender',     icon: '\uD83D\uDC20', label: 'Brook Trout Defender', desc: 'Bring brook trout population above 70 in the Conservation Manager' },
+    { id: 'beaverEngineer',    icon: '\uD83E\uDDAB', label: 'Beaver Engineer',     desc: 'Bring the beaver population index above 75 in the Conservation Manager' },
+    { id: 'salmonChampion',    icon: '\uD83D\uDC1F', label: 'Salmon Champion',     desc: 'Bring the Atlantic salmon population index above 50 in the Conservation Manager' },
+    { id: 'troutDefender',     icon: '\uD83D\uDC20', label: 'Brook Trout Defender', desc: 'Bring the brook trout population index above 70 in the Conservation Manager' },
     { id: 'cascadeMaster',     icon: '\uD83D\uDD04', label: 'Cascade Master',      desc: 'Trigger a full trophic cascade (wolves up, deer down, habitat recovers) in the Conservation Manager' },
     { id: 'directorRank',      icon: '\uD83C\uDFC6', label: 'Conservation Director', desc: 'Complete a 10-year Conservation Manager campaign on Director difficulty' }
   ];
@@ -269,7 +269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
   // ── Quiz questions ──
   var QUIZ_QUESTIONS = [
     {
-      q: 'In a predator-prey relationship, what happens to predator populations when prey populations increase?',
+      q: 'In this simplified predator-prey model, what commonly happens after prey availability increases?',
       choices: ['Predators decrease', 'Predators increase after a lag', 'Predators stay the same', 'Predators immediately double'],
       answer: 1,
       concept: 'Lotka-Volterra cycle',
@@ -305,13 +305,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       ]
     },
     {
-      q: 'What is carrying capacity in an ecosystem?',
-      choices: ['The weight an animal can lift', 'The maximum population an environment can sustain', 'The speed of population growth', 'The number of species in an area'],
+      q: 'In a population model, what does carrying capacity (K) represent?',
+      choices: ['The weight an animal can lift', 'A limiting population level under specified environmental conditions', 'The speed of population growth', 'The number of species in an area'],
       answer: 1,
       concept: 'Carrying capacity',
       wrongFeedback: [
         'Incorrect. That is physical strength, not an ecological metric.',
-        'Correct! Carrying capacity (represented by K) is the maximum population size that resources can sustain indefinitely.',
+        'Correct! K represents a limiting population level under a specified set of environmental conditions. Real carrying capacity can change as resources, habitat, climate, and species interactions change.',
         'Incorrect. Population growth rate is a separate parameter (r).',
         'Incorrect. The number of species in an area is biodiversity or species richness.'
       ]
@@ -540,7 +540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
     { id: 'wolfSuppressesDeer', when: function(s) { return getSp(s, 'grayWolf').pop > 25; }, apply: function(s) { var d = getSp(s, 'deer'); d.pop = clamp(d.pop - 8, 0, 100); }, msg: 'Wolves suppressed deer browse pressure.' },
     { id: 'deerHyperBrowse',    when: function(s) { return getSp(s, 'deer').pop > 75; }, apply: function(s) { s.forEach(function(sp) { sp.habitat = clamp(sp.habitat - 2, 0, 100); }); }, msg: 'Deer overbrowsing degraded forest habitat across the board.' },
     { id: 'beaverHelpsFish',    when: function(s) { return getSp(s, 'beaver').pop > 55; }, apply: function(s) { var bt = getSp(s, 'brookTrout'); var sa = getSp(s, 'salmon'); bt.habitat = clamp(bt.habitat + 4, 0, 100); sa.habitat = clamp(sa.habitat + 3, 0, 100); }, msg: 'Beaver wetlands raised water tables and shaded streams.' },
-    { id: 'salmonFeedsTrout',   when: function(s) { return getSp(s, 'salmon').pop > 35; }, apply: function(s) { var bt = getSp(s, 'brookTrout'); bt.pop = clamp(bt.pop + 3, 0, 100); }, msg: 'Salmon-derived marine nutrients fed brook trout populations.' }
+    { id: 'salmonFeedsTrout',   when: function(s) { return getSp(s, 'salmon').pop > 35; }, apply: function(s) { var bt = getSp(s, 'brookTrout'); bt.pop = clamp(bt.pop + 3, 0, 100); }, msg: 'Marine-derived nutrients from returning salmon can subsidize stream food webs in this teaching rule.' }
   ];
 
   function getSp(species, id) {
@@ -612,7 +612,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       { id: 'run_100_steps', label: 'Run the simulation for 100+ steps', icon: '\u25B6\uFE0F', check: function(d) { d = d.ecosystem || d; return (d.steps || 0) >= 100; }, progress: function(d) { d = d.ecosystem || d; return (d.steps || 0) + '/100 steps'; } },
       { id: 'quiz_3_correct', label: 'Answer 3+ ecology quiz questions correctly', icon: '\uD83E\uDDE0', check: function(d) { d = d.ecosystem || d; return (d.quizCorrect || 0) >= 3; }, progress: function(d) { d = d.ecosystem || d; return (d.quizCorrect || 0) + '/3'; } },
       { id: 'use_3_presets', label: 'Try 3 different ecosystem presets', icon: '\uD83C\uDF0D', check: function(d) { d = d.ecosystem || d; return Object.keys(d.presetsUsed || {}).length >= 3; }, progress: function(d) { d = d.ecosystem || d; return Object.keys(d.presetsUsed || {}).length + '/3 presets'; } },
-      { id: 'use_all_graph_views', label: 'View all graph types (population, phase, energy)', icon: '\uD83D\uDCCA', check: function(d) { d = d.ecosystem || d; return Object.keys(d.graphViewsUsed || {}).length >= 3; }, progress: function(d) { d = d.ecosystem || d; return Object.keys(d.graphViewsUsed || {}).length + '/3 views'; } }
+      { id: 'use_all_graph_views', label: 'View both live graph modes (population and environment)', icon: '\uD83D\uDCCA', check: function(d) { d = d.ecosystem || d; var v = d.graphViewsUsed || {}; return !!(v.population && v.environment); }, progress: function(d) { d = d.ecosystem || d; var v = d.graphViewsUsed || {}; return ((v.population ? 1 : 0) + (v.environment ? 1 : 0)) + '/2 views'; } }
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
@@ -715,7 +715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var ECO_VOCAB = {
         'Trophic level': 'The position that an organism occupies in a food chain (such as producer, primary consumer, or secondary consumer).',
         'Lotka-Volterra cycle': 'A mathematical model describing how predator and prey populations oscillate out of phase with each other.',
-        'Carrying capacity': 'The maximum population size of a species that an environment can sustain indefinitely given the available resources.',
+        'Carrying capacity': 'A limiting population level that an environment can support over time under a specified set of conditions. Real carrying capacity can change.',
         'Predation': 'An ecological interaction where one organism (the predator) kills and eats another (the prey).',
         'Primary producers': 'Organisms, like plants or algae, that produce their own organic food from sunlight or chemistry.',
         'Food web': 'A network of interconnecting food chains representing all the energy pathways in an ecosystem.',
@@ -860,9 +860,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         var K = carryingCapacity;
         var simData = [{ step: 0, prey: prey, pred: pred }];
         for (var i = 1; i <= 100; i++) {
-          var logisticFactor = Math.max(0, 1 - prey / K);
-          var newPrey = Math.max(1, prey + preyBirth * prey * logisticFactor - preyDeath * prey * pred);
-          var newPred = Math.max(1, pred + predBirth * prey * pred - predDeath * pred);
+          var logisticFactor = 1 - prey / K;
+          var newPrey = Math.max(0, prey + preyBirth * prey * logisticFactor - preyDeath * prey * pred);
+          var newPred = Math.max(0, pred + predBirth * prey * pred - predDeath * pred);
           prey = Math.min(500, Math.round(newPrey));
           pred = Math.min(500, Math.round(newPred));
           simData.push({ step: i, prey: prey, pred: pred });
@@ -929,7 +929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         // Carrying capacity dashed line
         var carryY = sy(carryingCapacity);
 
-        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 } },
+        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 }, role: 'img', 'aria-label': 'Predator and prey population trajectories over ' + (data.length - 1) + ' modeled time steps.' },
           h('defs', null,
             h('linearGradient', { id: 'eco-prey-grad', x1: '0', y1: '0', x2: '0', y2: '1' },
               h('stop', { offset: '0%', stopColor: '#22c55e', stopOpacity: 0.4 }),
@@ -1013,7 +1013,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         }
 
         return h('div', null,
-          h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 } },
+          h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 }, role: 'img', 'aria-label': 'Phase portrait of predator abundance versus prey abundance across ' + (data.length - 1) + ' modeled time steps.' },
             phaseGrid,
             // Axes
             h('line', { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: '#475569', strokeWidth: 1 }),
@@ -1055,7 +1055,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         var lastVeg = hist[hist.length - 1].vegHealth !== undefined ? hist[hist.length - 1].vegHealth : 0.5;
         var lastDay = hist[hist.length - 1].dayPhase !== undefined ? hist[hist.length - 1].dayPhase : 0.5;
 
-        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 } },
+        return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 200 }, role: 'img', 'aria-label': 'Vegetation-health and day-phase indices over ' + hist.length + ' live samples.' },
           // Grid
           h('line', { x1: pad, y1: pad, x2: pad, y2: H - pad, stroke: '#334155', strokeWidth: 0.5 }),
           h('line', { x1: pad, y1: H - pad, x2: W - pad, y2: H - pad, stroke: '#334155', strokeWidth: 0.5 }),
@@ -3178,9 +3178,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var TAB_META = {
             explore: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '\uD83C\uDF3F', title: 'Explore the food web',          hint: 'Click any species to see what it eats and what eats it. Trophic-level cascades become obvious \u2014 remove a top predator and watch the system reorganize.' },
             sandbox: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83E\uDDEA', title: 'Sandbox \u2014 your ecosystem', hint: 'Drop in producers, consumers, and predators; watch population dynamics emerge. Lotka-Volterra cycles appear when you have one predator + one prey + nothing else.' },
-            conserve: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83C\uDF32', title: 'Conservation Manager \u2014 Maine campaign', hint: 'Steward a real Maine ecosystem across 10 years. Six species (wolf, beaver, moose, deer, salmon, brook trout) with population, habitat, and public-support metrics. Trophic-cascade rules tie them together.' },
+            conserve: { accent: '#15803d', soft: 'rgba(21,128,61,0.10)', icon: '\uD83C\uDF32', title: 'Conservation Manager \u2014 Maine scenario', hint: 'Explore a Maine-inspired 10-year teaching scenario. Population, habitat, and public-support values are 0-100 indices, and hand-authored cascade rules are not forecasts.' },
             inquiry: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)', icon: '\u2754', title: 'Inquiry \u2014 predator-prey dynamics', hint: 'Adjust predator birth, prey lifespan, and resource scarcity. Watch which discrete regime the system settles into. No score, no reveal, no answer dump \u2014 just slider sweep and observation.' },
-            quiz:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\u2753', title: 'Quiz \u2014 concepts in context',     hint: 'Multi-choice items on energy flow (10% rule), keystone species, biomagnification, succession. Each question links back to the explore + sandbox modes.' },
+            quiz:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\u2753', title: 'Quiz \u2014 foundational concepts', hint: 'Six questions cover predator-prey lag, model purpose, predation, carrying capacity, primary producers, and trophic levels.' },
             badges:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC5', title: 'Badges \u2014 what you have learned', hint: 'Achievements track which ecological concepts you have demonstrated, not just visited. Trophic-cascade badge requires you to actually trigger one in the sandbox.' }
           };
           var meta = TAB_META[tab] || TAB_META.explore;
@@ -3216,7 +3216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }
           },
             h('strong', { style: { color: '#16a34a' } }, 'Goal: '),
-            'find the slider settings that produce stable predator-prey cycles instead of collapse. Watch the population graph for the lag pattern: prey peaks first, then predators peak about a quarter-cycle later. Trigger an event (drought, disease) and see how long the system takes to recover. If predators win, prey crashes; if prey wins, the biome hits carrying capacity (K) and starves.'
+            'compare settings that produce cycles, damping, or collapse in these teaching models. Predator peaks often lag prey peaks, but the amount of lag depends on the parameters. The animated canvas uses separate stochastic rules; the graph below uses a deterministic logistic predator-prey equation.'
           ),
 
           // Canvas container
@@ -3415,7 +3415,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   var predAreaPts2 = pad.toFixed(1) + ',' + (H - pad).toFixed(1) + ' ' + predPts + ' ' + (W - pad).toFixed(1) + ',' + (H - pad).toFixed(1);
                   // Carrying capacity dashed line Y position
                   var kcLineY = lsy(carryingCapacity);
-                  return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 180 } },
+                  return h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', style: { maxHeight: 180 }, role: 'img', 'aria-label': 'Live predator and prey population history over ' + hist.length + ' samples.' },
                     h('defs', null,
                       h('linearGradient', { id: 'eco-live-prey', x1: '0', y1: '0', x2: '0', y2: '1' },
                         h('stop', { offset: '0%', stopColor: '#22c55e', stopOpacity: 0.35 }),
@@ -3528,7 +3528,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // ── Description ──
           h('div', { className: 'flex items-start gap-2' },
             h('p', { className: 'text-xs text-slate-600 dark:text-slate-200 flex-1' },
-              'Model predator\u2013prey dynamics using the Lotka\u2013Volterra equations. Adjust starting populations and interaction rates to observe oscillations, extinction events, and equilibrium states.'
+              'Explore a logistic extension of the Lotka-Volterra predator-prey model. Adjust initial populations and coefficients to compare cycles, density dependence, and extinction in a discrete Euler approximation.'
             ),
             callTTS && h('button', { 'aria-label': 'Read aloud',
               className: 'transition-colors p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 active:scale-[0.97]',
@@ -3540,7 +3540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           // ── Preset buttons ──
           h('div', { className: 'flex gap-1 flex-wrap' },
             presetNames.map(function(name, idx) {
-              return h('button', { 'aria-label': 'Apply Preset',
+              return h('button', { 'aria-label': 'Apply ' + presetLabels[idx] + ' preset',
                 key: name,
                 className: 'flex-1 min-w-[70px] px-2 py-1.5 text-[11px] font-semibold rounded-lg border transition-all ' +
                   (presetsUsed[name]
@@ -3582,11 +3582,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // Prey Birth Rate
             h('div', { className: 'space-y-1' },
               h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
-                h('span', null, 'Prey Birth Rate'),
+                h('span', null, 'Prey intrinsic growth (r)'),
                 h('span', { className: 'text-green-600 font-bold' }, preyBirth.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': 'prey birth', min: 0.01, max: 0.3, step: 0.005, value: preyBirth,
+                type: 'range', 'aria-label': 'prey intrinsic growth rate r', min: 0.01, max: 0.3, step: 0.005, value: preyBirth,
                 className: 'w-full h-1.5 accent-green-500',
                 onChange: function(e) { upd('preyBirth', parseFloat(e.target.value)); }
               })
@@ -3594,11 +3594,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // Pred Death Rate
             h('div', { className: 'space-y-1' },
               h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
-                h('span', null, 'Pred Death Rate'),
+                h('span', null, 'Predator mortality (d)'),
                 h('span', { className: 'text-red-600 font-bold' }, predDeath.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': 'pred death', min: 0.01, max: 0.3, step: 0.005, value: predDeath,
+                type: 'range', 'aria-label': 'predator mortality coefficient d', min: 0.01, max: 0.3, step: 0.005, value: predDeath,
                 className: 'w-full h-1.5 accent-red-500',
                 onChange: function(e) { upd('predDeath', parseFloat(e.target.value)); }
               })
@@ -3606,11 +3606,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // Prey Death Rate (interaction)
             h('div', { className: 'space-y-1' },
               h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
-                h('span', null, 'Prey Death Rate'),
+                h('span', null, 'Predation coefficient (a)'),
                 h('span', { className: 'text-orange-600 font-bold' }, preyDeath.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': 'prey death', min: 0.001, max: 0.05, step: 0.001, value: preyDeath,
+                type: 'range', 'aria-label': 'predation coefficient a', min: 0.001, max: 0.05, step: 0.001, value: preyDeath,
                 className: 'w-full h-1.5 accent-orange-500',
                 onChange: function(e) { upd('preyDeath', parseFloat(e.target.value)); }
               })
@@ -3618,15 +3618,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             // Pred Birth Rate (interaction)
             h('div', { className: 'space-y-1' },
               h('label', { className: 'text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex justify-between' },
-                h('span', null, 'Pred Birth Rate'),
+                h('span', null, 'Predator conversion (b)'),
                 h('span', { className: 'text-blue-600 font-bold' }, predBirth.toFixed(3))
               ),
               h('input', {
-                type: 'range', 'aria-label': 'predator birth rate from prey capture', min: 0.001, max: 0.05, step: 0.001, value: predBirth,
+                type: 'range', 'aria-label': 'predator conversion coefficient b', min: 0.001, max: 0.05, step: 0.001, value: predBirth,
                 className: 'w-full h-1.5 accent-blue-500',
                 onChange: function(e) { upd('predBirth', parseFloat(e.target.value)); }
               })
             )
+          ),
+
+          h('div', { className: 'rounded-lg border border-cyan-300 bg-cyan-50 p-3 text-[11px] text-slate-700 leading-relaxed' },
+            h('div', { className: 'font-mono font-bold text-cyan-900' }, 'ΔN = rN(1 − N/K) − aNP    ΔP = bNP − dP'),
+            h('div', { className: 'mt-1' }, 'Teaching model: one-step Euler updates with rounded counts. It omits age structure, space, seasons, stochasticity, handling time, disease, and changing K; parameter values are illustrative rather than fitted to rabbits and foxes.')
           ),
 
           // ── Run Graph Simulation button ──
@@ -3638,7 +3643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Lotka-Volterra graph (post-simulation) ──
           data && data.length > 1 && h('div', { className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-3 space-y-2' },
-            h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDCC8 Lotka\u2013Volterra Simulation'),
+            h('p', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, '\uD83D\uDCC8 Logistic Predator-Prey Approximation'),
             buildPopSVG(),
             // Legend
             h('div', { className: 'flex gap-4 justify-center text-[11px]' },
@@ -4219,7 +4224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', null, 'Food web: cascade rules active in real time'),
                 h('span', { style: { marginLeft: 'auto', fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, 'Click any species for deep-dive →')
               ),
-              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }, 'aria-label': 'Food-web diagram of the 6 Maine species' },
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }, role: 'img', 'aria-label': 'Food-web diagram of the 6 Maine species' },
                 h('rect', { x: 0, y: 0, width: w, height: hgt, fill: '#020617', rx: 6 }),
                 // Cascade arrows. Each one is rendered dim by default and
                 // brightened + colored when its rule fires this year.
@@ -4371,7 +4376,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             }
             return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 12, marginBottom: 14, border: '1px solid var(--allo-stem-border, #1e293b)' } },
               h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8 } }, '📈 Population trends across the campaign'),
-              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, 'aria-label': 'Population trend chart by species year-by-year' },
+              h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block' }, role: 'img', 'aria-label': 'Population-index trend chart by species year-by-year' },
                 // gridlines
                 [0, 25, 50, 75, 100].map(function(g, gi) {
                   var y = padT + iy - (g / 100) * iy;
@@ -4522,9 +4527,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   )
                 ),
                 h('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
-                  'You are the lead manager for a real Maine ecosystem. Six species. Ten years. The catch: ',
+                  'You are the lead manager in a Maine-inspired teaching scenario. Six species. Ten modeled years. The catch: ',
                   h('strong', null, 'these species are connected.'),
-                  ' Wolves suppress deer. Deer overbrowse degrades forests. Beavers engineer wetlands that help salmon and brook trout. Salmon-derived nutrients feed trout. This is trophic cascade in motion, not just predator-prey curves.'
+                  ' The scenario links wolves, deer browse, beaver wetlands, migratory fish, and stream habitat through hand-authored rules. Population, habitat, and support values are relative indices, not animal counts; outcomes are not forecasts or management recommendations.'
                 )
               ),
 
@@ -4825,9 +4830,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           var collapseIndex = scarcity * 1.3 - prey * 0.5;
           var outcome = collapseIndex > 0.4 ? 'collapse' : (boomIndex > 0.25 ? 'boom' : 'balanced');
           var outcomeMeta = {
-            boom: { label: '📈 Predator Boom', desc: 'High predator birth + low resource scarcity → predators overshoot, prey crash later.', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-            balanced: { label: '🔄 Balanced Cycle', desc: 'Predator and prey oscillate in a Lotka-Volterra rhythm. Neither dominates indefinitely.', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
-            collapse: { label: '⬇️ Prey Collapse', desc: 'Resource scarcity outpaces prey lifespan → prey die off → predators starve.', color: '#b91c1c', bg: '#fef2f2', border: '#fb7185' }
+            boom: { label: '📈 Predator-weighted regime', desc: 'In this teaching rule, the predator-birth input outweighs prey-lifespan and scarcity terms.', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
+            balanced: { label: '🔄 Middle weighted regime', desc: 'Neither arbitrary score crosses the classifier threshold; this does not demonstrate ecological equilibrium.', color: '#059669', bg: '#ecfdf5', border: '#86efac' },
+            collapse: { label: '⬇️ Scarcity-weighted regime', desc: 'In this teaching rule, the scarcity score crosses its classifier threshold.', color: '#b91c1c', bg: '#fef2f2', border: '#fb7185' }
           }[outcome];
           function logObs() {
             var obs = { pb: iq.predBirth, pl: iq.preyLife, rs: iq.resScarcity, out: outcome };
@@ -4837,9 +4842,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('div', { className: 'p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm' },
               h('h4', { className: 'text-sm font-black text-slate-800 dark:text-slate-200 mb-1' }, '❔ Predator-prey discovery'),
               h('p', { className: 'text-[12px] text-slate-700 dark:text-slate-300 mb-3 leading-relaxed' },
-                'Three sliders: predator birth rate, prey lifespan, resource scarcity. Sweep them. The ecosystem will settle into one of three discrete regimes (no numeric score). There is no right answer — and no reveal. Log observations. Type what you discover about the trade-offs.'),
+                'Sweep three conceptual sliders and compare an arbitrary weighted classifier. The labels are prompts for inquiry, not Lotka-Volterra solutions, population forecasts, or measured ecological rates.'),
               // Discrete outcome marker
-              h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: outcomeMeta.bg, border: '2px solid ' + outcomeMeta.border } },
+              h('div', { className: 'mb-3 p-3 rounded-lg text-center', role: 'status', 'aria-live': 'polite', style: { background: outcomeMeta.bg, border: '2px solid ' + outcomeMeta.border } },
                 h('div', { className: 'text-lg font-black mb-1 tracking-tight', style: { color: outcomeMeta.color } }, outcomeMeta.label),
                 h('div', { className: 'text-[11px] text-slate-700' }, outcomeMeta.desc)
               ),
@@ -4870,7 +4875,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 dark:text-slate-300' },
                   h('thead', null, h('tr', { className: 'bg-slate-100 dark:bg-slate-700' },
                     ['pred birth %', 'prey life %', 'resource scarcity %', 'outcome'].map(function(c, i) {
-                      return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 dark:border-slate-600 text-left' }, c);
+                      return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 dark:border-slate-600 text-left' }, c);
                     }))),
                   h('tbody', null, iq.log.map(function(o, idx) {
                     var rowBg = o.out === 'balanced' ? 'rgba(16,185,129,0.08)' : (o.out === 'boom' ? 'rgba(220,38,38,0.08)' : 'rgba(127,29,29,0.10)');
@@ -4902,7 +4907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     h('li', null, 'Set predator birth high (80%). Can you save the system by changing ONLY prey lifespan? What if you change only resource scarcity?'),
                     h('li', null, 'Try to find TWO different settings that both produce a balanced cycle. What do they have in common?'),
                     h('li', null, 'Log 4-5 observations of each regime (boom, balanced, collapse). Look for patterns in the table — are there single-variable thresholds, or do they interact?'),
-                    h('li', null, 'In real ecology, the "10% rule" says only ~10% of energy passes between trophic levels. What does that imply about how easily a top-predator population can swing the system?')),
+                    h('li', null, 'Ecological transfer efficiency varies among systems; about 10% is only a rough teaching heuristic. What additional information would you need to connect energy flow to predator abundance?')),
                   h('div', { className: 'text-[10px] italic text-amber-700 dark:text-amber-400 mt-2' }, 'No answers will be revealed. Investigate.'))
               ),
               // Self-mark
@@ -4919,7 +4924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   '✓ Saved. Notice — nobody checked your answer. That is what learner-driven inquiry looks like.')
               ),
               h('div', { className: 'mt-3 p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] italic text-slate-600 dark:text-slate-400' },
-                'Design note: no numeric population graph, no reveal button, no quiz validation. Outcome is shown as a discrete 3-regime marker (boom / balanced / collapse), not a continuous indicator — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.')
+                'Model limit: two arbitrary weighted scores create three regime labels. This inquiry widget is not a population-dynamics model, does not calculate trophic energy transfer, and should not be interpreted as a forecast.')
             )
           );
         })(),
@@ -4937,14 +4942,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           },
             h('summary', { style: { fontWeight: 700, color: '#a855f7', cursor: 'pointer', fontSize: 14 } }, '📜 What this quiz covers'),
             h('div', { style: { marginTop: 8, color: '#f3e8ff' } },
-              h('div', null, '12 multi-choice items on the core ecology concepts:'),
+              h('div', null, '6 multiple-choice questions on foundational ecology concepts:'),
               h('ul', { style: { margin: '6px 0 0 18px', padding: 0, lineHeight: 1.7 } },
-                h('li', null, 'Energy flow and the 10% rule across trophic levels'),
-                h('li', null, 'Predator-prey lag and the Lotka-Volterra cycle'),
-                h('li', null, 'Carrying capacity (K) and density-dependent limits'),
-                h('li', null, 'Keystone species, trophic cascades, and biomagnification'),
-                h('li', null, 'Succession (primary vs secondary) and disturbance recovery'),
-                h('li', null, 'Niche, competition, and competitive exclusion')
+                h('li', null, 'Predator response after prey availability increases'),
+                h('li', null, 'What the Lotka-Volterra family of models represents'),
+                h('li', null, 'Predation as an ecological interaction'),
+                h('li', null, 'Carrying capacity under specified conditions'),
+                h('li', null, 'Primary producers'),
+                h('li', null, 'Trophic levels in food chains and webs')
               ),
               h('div', { style: { marginTop: 8 } }, 'Each question links back to behavior you can produce in Explore or Sandbox. If a concept feels abstract, swap to Sandbox and rebuild the scenario.')
             )
@@ -4972,7 +4977,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 } else if (showResult && isCorrectChoice) {
                   bgClass = 'border-green-400 bg-green-50/50 dark:bg-green-900/20';
                 }
-                return h('button', { 'aria-label': 'Answer Quiz',
+                return h('button', { 'aria-label': 'Answer ' + String.fromCharCode(65 + idx) + ': ' + choice,
                   key: idx,
                   className: 'w-full text-left px-3 py-2 rounded-lg border text-xs transition-all ' + bgClass,
                   disabled: quizAnswer !== -1,

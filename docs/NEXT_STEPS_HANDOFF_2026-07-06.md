@@ -75,12 +75,13 @@ The pieces already exist: **Guided Mode tours** (`GUIDED_TOUR_MAP`, spotlight st
 
 **SCAFFOLD SHIPPED (2026-07-06, Opus):** `tutorial_compiler_module.js` — the
 manifest builder is REAL + tested (turns `GUIDED_STEPS` + `GUIDED_TOUR_MAP`
-into `{steps:[{anchorId, beats:[{kind, text, seconds}]}]}`, localized via t());
-the capture→narrate→composite pipeline is documented stubs naming each seam
-(Video Studio recorder, callTTS/Kokoro voice, Remotion composite). NOT yet in
-the ANTI boot list (zero boot cost until fleshed out) — activation steps are in
-the file header. Next: wire one flow end-to-end, suggest `simplified` (Text
-Adaptation). Captions from beat text are free accessibility — do them.
+into `{steps:[{anchorId, beats:[{kind, text, seconds}]}]}`, localized via t()).
+The adapter-driven runner now guarantees capture cleanup, propagates narration
+and spotlight failures, requires a deterministic `performStep` adapter, and
+records actual beat timing for captions/compositing. It is still NOT in the ANTI
+boot list: production capture, Guided Mode action, TTS, and compositor adapters
+must first be wired for one end-to-end flow. Next: prototype `simplified` (Text
+Adaptation), then add real-browser capture/playback smoke coverage.
 
 ### 8. Read-aloud audio: reuse + share (pre-warm SHIPPED; sharing = a decision)
 Aaron's insight: the generated read-aloud audio is a wasted asset — students

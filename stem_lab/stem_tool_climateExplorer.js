@@ -354,7 +354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { id: 'consistent', icon: '\uD83D\uDD25', label: t('stem.climateExplorer.on_the_streak', 'On the Streak'), desc: t('stem.climateExplorer.check_in_on_a_pledge_7_times', 'Check in on a pledge 7+ times') },
         { id: 'reporter', icon: '\uD83D\uDCC4', label: t('stem.climateExplorer.climate_reporter', 'Climate Reporter'), desc: t('stem.climateExplorer.export_your_climate_report', 'Export your climate report') },
         { id: 'planner', icon: '\uD83C\uDFAF', label: t('stem.climateExplorer.drawdown_planner', 'Drawdown Planner'), desc: t('stem.climateExplorer.stack_5_drawdown_solutions', 'Stack 5+ Drawdown solutions') },
-        { id: 'gigaton', icon: '\uD83D\uDCAB', label: t('stem.climateExplorer.gigaton_thinker', 'Gigaton Thinker'), desc: t('stem.climateExplorer.build_a_solution_mix_totaling_200_gt', 'Build a solution mix totaling 200+ Gt') }
+        { id: 'gigaton', icon: '\uD83D\uDCAB', label: t('stem.climateExplorer.gigaton_thinker', 'Gigaton Thinker'), desc: t('stem.climateExplorer.build_a_solution_mix_totaling_200_gt', 'Reach the classroom 200-point threshold using displayed scenario estimates') }
       ];
 
       // ── Hope Meter milestones (moved after carbonTotal() definition) ──
@@ -913,7 +913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { ppm: 315, label: t('stem.climateExplorer.keeling_starts_measuring_1958', 'Keeling starts measuring (1958)'), note: t('stem.climateExplorer.charles_david_keeling_begins_continuou', 'Charles David Keeling begins continuous CO\u2082 monitoring at Mauna Loa. His curve proved human-caused warming was real.') },
         { ppm: 350, label: t('stem.climateExplorer.350_ppm_1988', '350 ppm (1988)'), note: t('stem.climateExplorer.climate_scientist_james_hansen_tells_u', 'Climate scientist James Hansen tells US Congress warming has begun. 350 ppm is considered the "safe" ceiling by 350.org.') },
         { ppm: 400, label: t('stem.climateExplorer.400_ppm_2013', '400 ppm (2013)'), note: t('stem.climateExplorer.first_time_atmospheric_co_crossed_400_', 'First time atmospheric CO\u2082 crossed 400 ppm in 3+ million years. Earth\'s last 400 ppm era: tropical forests at the poles.') },
-        { ppm: 420, label: t('stem.climateExplorer.420_ppm_2023', '420 ppm (2023)'), note: t('stem.climateExplorer.current_level_highest_in_at_least_800_', 'Current level. Highest in at least 800,000 years (from ice cores). Equivalent to ~1.2\u00B0C warming.') },
+        { ppm: 420, label: t('stem.climateExplorer.420_ppm_2023', '420 ppm (2023)'), note: t('stem.climateExplorer.current_level_highest_in_at_least_800_', 'Around the 2023 annual level. Concentrations are the highest in at least 800,000 years in ice-core records; temperature is not determined by one concentration value alone.') },
         { ppm: 450, label: t('stem.climateExplorer.450_ppm_projected_2035', '450 ppm (projected ~2035)'), note: t('stem.climateExplorer.threshold_associated_with_2_c_warming_', 'Threshold associated with 2\u00B0C warming if sustained. Paris Agreement target: keep below 1.5\u00B0C.') }
       ];
 
@@ -1347,11 +1347,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             heroTicker = t('stem.climateExplorer.hero_footprint', 'Your footprint:') + ' ' + Math.round(heroKg).toLocaleString() + ' kg CO₂e/yr · ' + t('stem.climateExplorer.hero_paris', 'Paris target: 2,300');
           } else {
             heroSignal = 0.42;
-            heroTicker = t('stem.climateExplorer.hero_ppm', 'CO₂ today: ~424 ppm — the highest in over 3 million years');
+            heroTicker = t('stem.climateExplorer.hero_ppm', 'NOAA Mauna Loa monthly mean, June 2026: 431.44 ppm CO\u2082');
           }
           return el('div', { style: { margin: '10px 24px 0', position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.25)' } },
             el('canvas', {
-              'aria-hidden': 'true',
+              role: 'img', tabIndex: 0,
+              'aria-label': heroTicker + '. Atmospheric visualization responding to the current activity values.',
               ref: function(cv) {
                 if (!cv) return;
                 cv._ceSignal = heroSignal; // refreshed every render — the rAF loop reads live
@@ -1571,7 +1572,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             tipping:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.12)',  icon: '\u26A0\uFE0F', title: t('stem.climateExplorer.climate_tipping_points', 'Climate tipping points'), hint: t('stem.climateExplorer.thresholds_where_the_system_shifts_sta', 'Thresholds where the system shifts state and stays there \u2014 Greenland melt, Amazon dieback, AMOC slowdown. Recent work suggests several may be closer than thought.') },
             justice:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.12)', icon: '\u2696\uFE0F',  title: t('stem.climateExplorer.climate_justice_2', 'Climate justice'),       hint: t('stem.climateExplorer.the_countries_that_emitted_the_least_f', 'The countries that emitted the least face the worst impacts. Climate is an equity issue first \u2014 vulnerability tracks income, geography, and historical responsibility.') },
             solutions:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.12)', icon: '\uD83D\uDCA1', title: t('stem.climateExplorer.solutions_toolkit', 'Solutions toolkit'),     hint: t('stem.climateExplorer.drawdown_ranks_100_solutions_by_gigato', 'Drawdown ranks 100 solutions by gigatons of CO\u2082 avoided. Refrigerants, food waste, and educating girls top the list \u2014 not what most people guess.') },
-            pathways:   { accent: '#15803d', soft: 'rgba(21,128,61,0.12)', icon: '\uD83D\uDDFA\uFE0F', title: t('stem.climateExplorer.climate_policy_pathways_40_year_maine_', 'Climate Policy Pathways: 40-year Maine campaign'), hint: 'You are the state\'s lead climate strategist. Six sectors (grid, transport, buildings, working lands, adaptation, justice). 2025 to 2065 in 5-year periods. Inter-sector feedback rules tie the whole system together.' }
+            pathways:   { accent: '#15803d', soft: 'rgba(21,128,61,0.12)', icon: '\uD83D\uDDFA\uFE0F', title: t('stem.climateExplorer.climate_policy_pathways_40_year_maine_', 'Climate Policy Pathways: 40-year Maine campaign'), hint: 'You are the state\'s lead climate strategist in an illustrative scenario. Six sectors use hand-authored 0-100 indices and feedback rules; results are not forecasts, official targets, or policy recommendations.' },
+            forceHunt: { accent: '#0891b2', soft: 'rgba(8,145,178,0.12)', icon: '\u2600\uFE0F', title: t('stem.climateExplorer.radiative_forcing', 'Radiative Forcing'), hint: 'Compare an arbitrary teaching index. The controls are not measured forcing values and the output is not a climate projection.' }
           };
           var meta = TAB_META[tab] || TAB_META.carbon;
           return el('div', {
@@ -2196,7 +2198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 var last = KEELING_DATA[KEELING_DATA.length - 1];
                 var lastT = GLOBAL_TEMP[GLOBAL_TEMP.length - 1];
                 c.fillStyle = '#fbbf24'; c.font = 'bold 11px system-ui'; c.textAlign = 'right';
-                c.fillText('Today: ' + last.ppm + ' ppm', w - padR - 4, y2py(last.ppm) - 8);
+                c.fillText('2024 annual mean: ' + last.ppm + ' ppm', w - padR - 4, y2py(last.ppm) - 8);
                 c.fillStyle = '#fca5a5'; c.font = 'bold 11px system-ui'; c.textAlign = 'right';
                 c.fillText('+' + lastT.t.toFixed(2) + '°C', w - padR - 4, t2py(lastT.t) + 14);
                 // Legend
@@ -2218,7 +2220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 12 } },
               el('div', { style: { color: '#fca5a5', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '🔥 CO₂ drives warming — the two lines track together'),
               el('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 10, lineHeight: 1.6 } },
-                'Atmospheric CO\u2082 has risen from 315 ppm (1958) to ' + KEELING_DATA[KEELING_DATA.length - 1].ppm + ' ppm today. Global temperature has risen from near 0°C to +' + GLOBAL_TEMP[GLOBAL_TEMP.length - 1].t.toFixed(2) + '°C above pre-industrial. This correlation isn\'t coincidence — it\'s causation, proven by physics (the greenhouse effect) and observation (matching patterns over 800,000 years of ice-core records).')
+                'Atmospheric CO\u2082 has risen from 315 ppm (1958) to ' + KEELING_DATA[KEELING_DATA.length - 1].ppm + ' ppm in the 2024 annual mean. Global temperature has risen from near 0°C to +' + GLOBAL_TEMP[GLOBAL_TEMP.length - 1].t.toFixed(2) + '°C above pre-industrial. This correlation isn\'t coincidence — it\'s causation, proven by physics (the greenhouse effect) and observation (matching patterns over 800,000 years of ice-core records).')
             ),
             // CL3: weather vs. climate — the sawtooth IS the teachable contrast
             el('div', { style: { padding: 10, borderRadius: 10, background: 'rgba(6,182,212,0.07)', border: '1px solid rgba(6,182,212,0.22)', marginBottom: 12 } },
@@ -2369,7 +2371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
             // Warming-level scale visual
             el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(248,113,113,0.2)', marginBottom: 16 } },
-              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 10, textAlign: 'center', fontWeight: 700 } }, 'Global warming above pre-industrial (°C) \u2014 we are here: ~1.2°C (2024)'),
+              el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 10, textAlign: 'center', fontWeight: 700 } }, 'Global warming above pre-industrial (degrees C) - scenario values and ranges shown for comparison'),
               el('div', { style: { position: 'relative', height: 40, borderRadius: 6, background: 'linear-gradient(to right, #22c55e 0%, #fbbf24 30%, #f97316 55%, #ef4444 80%, #991b1b 100%)', marginBottom: 8 } },
                 // Tick markers at 1, 1.5, 2, 3, 4°C
                 [1.0, 1.5, 2.0, 3.0, 4.0].map(function(temp) {
@@ -3441,10 +3443,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 var sol = DRAWDOWN_SOLUTIONS.find(function(s) { return s.id === id; });
                 return sum + (sol ? sol.gt : 0);
               }, 0);
-              // Global emissions per year ≈ 40 Gt. 1.5°C carbon budget ≈ 250 Gt remaining. 2°C budget ≈ 900 Gt.
-              var budget15 = 250;
-              var budget20 = 900;
-              var pctOf15 = Math.min(100, (totalGt / budget15) * 100);
+              // Display-only arithmetic; integrated Drawdown models handle interactions and resource constraints.
+              var catalogTotal = DRAWDOWN_SOLUTIONS.reduce(function(sum, sol) { return sum + sol.gt; }, 0);
+              var pctOfCatalog = catalogTotal > 0 ? Math.min(100, (totalGt / catalogTotal) * 100) : 0;
               function togglePick(id) {
                 var next = Object.assign({}, picked);
                 next[id] = !next[id];
@@ -3462,7 +3463,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
                   el('div', null,
                     el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900 } }, '🎯 Solution Stack Builder'),
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, '🏅 Goal: stack to 200 Gt to earn the Gigaton badge. Select solutions — see combined impact in gigatons of CO\u2082 avoided by 2050 (Project Drawdown data)')
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10 } }, '🏅 Goal: reach the classroom 200-point threshold. Select solutions to compare displayed 2020 Project Drawdown scenario estimates; the simple sum is not a modeled portfolio.')
                   ),
                   el('div', { style: { textAlign: 'right' } },
                     el('div', { style: { color: totalGt >= 200 ? '#fbbf24' : '#4ade80', fontSize: 24, fontWeight: 900, fontFamily: 'monospace' } }, Math.round(totalGt) + ' Gt'),
@@ -3472,23 +3473,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 // Budget progress bar
                 el('div', { style: { marginBottom: 6 } },
                   el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginBottom: 2 } },
-                    'Your stack = ' + pctOf15.toFixed(0) + '% of the remaining 1.5°C budget (' + budget15 + ' Gt)'),
+                    'Selected rows = ' + pctOfCatalog.toFixed(0) + '% of the sum of estimates displayed in this activity'),
                   el('div', { style: { height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.04)', overflow: 'hidden', position: 'relative' } },
-                    el('div', { style: { width: pctOf15 + '%', height: '100%', background: pctOf15 >= 100 ? 'linear-gradient(90deg, #4ade80, #22c55e)' : pctOf15 >= 50 ? 'linear-gradient(90deg, #60a5fa, #4ade80)' : '#60a5fa', transition: 'width 0.4s' } })
+                    el('div', { style: { width: pctOfCatalog + '%', height: '100%', background: pctOfCatalog >= 100 ? 'linear-gradient(90deg, #4ade80, #22c55e)' : pctOfCatalog >= 50 ? 'linear-gradient(90deg, #60a5fa, #4ade80)' : '#60a5fa', transition: 'width 0.4s' } })
                   )
                 ),
                 // Status message
                 totalGt > 0 && el('div', { style: { marginBottom: 8, padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.04)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.5 } },
-                  totalGt >= budget15 ? '🎉 Your stack alone would close the 1.5°C gap. In reality, we need all of these PLUS rapid fossil-fuel phase-out.' :
-                  totalGt >= 100 ? '✨ Strong stack. With all solutions combined we can still keep warming below 2°C.' :
-                  '🌱 Good start. Stack more solutions to cross 100 Gt.'),
+                  totalGt >= 200 ? '🎉 Classroom threshold reached. This arithmetic does not establish a temperature outcome or replace an integrated mitigation pathway.' :
+                  totalGt >= 100 ? '✨ Broad classroom portfolio selected. Compare sectors and look for interactions, constraints, and shared baselines.' :
+                  '🌱 Add solutions to compare sectors; treat the displayed total as a classroom index, not a forecast.'),
                 // Solutions grid (checkbox cards)
                 el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 } },
                   DRAWDOWN_SOLUTIONS.slice().sort(function(a, b) { return b.gt - a.gt; }).map(function(sol) {
                     var isPicked = !!picked[sol.id];
                     return el('button', { key: sol.id, onClick: function() { togglePick(sol.id); },
                       'aria-pressed': isPicked,
-                      'aria-label': (isPicked ? 'Deselect ' : 'Select ') + sol.label + ' — ' + sol.gt + ' gigatons CO2 avoidance potential',
+                      'aria-label': (isPicked ? 'Deselect ' : 'Select ') + sol.label + ' — ' + sol.gt + ' gigatons CO2 scenario estimate',
                       title: sol.note,
                       style: { textAlign: 'left', padding: 10, borderRadius: 10, border: '1px solid ' + (isPicked ? 'rgba(34,197,94,0.5)' : 'rgba(255,255,255,0.08)'), background: isPicked ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.03)', color: isPicked ? '#e2e8f0' : '#cbd5e1', fontSize: 11, cursor: 'pointer', transition: 'all 0.15s' } },
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
@@ -3502,7 +3503,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 ),
                 // Educational footnote
                 el('div', { style: { marginTop: 10, padding: 8, borderRadius: 8, background: 'rgba(148,163,184,0.06)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.5 } },
-                  '📚 Project Drawdown (drawdown.org) is a nonprofit research group that ranks climate solutions by their gigaton-scale CO\u2082 avoidance potential from 2020-2050. Gt = gigatons (1 billion tons). Current global emissions: ~40 Gt/year. Remaining budget for 1.5°C: ~250 Gt.')
+                  '📚 These values reproduce selected Project Drawdown 2020 scenario estimates for 2020-2050. Gt = gigatons (1 billion metric tons). Do not compare their simple sum with a remaining carbon budget or infer a temperature outcome: solutions interact, share baselines, and face resource constraints.')
               );
             })(),
 
@@ -3948,7 +3949,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('p', { style: { margin: '8px 0 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },
                     'Eight 5-year periods. Six policy sectors. ',
                     el('strong', null, 'Inter-sector feedback rules'),
-                    ' tie the whole system together: clean grid unlocks decarbonization in transport and buildings; low climate justice drags support down everywhere; healthy working forests boost adaptation; adaptation deficit erodes public trust during disaster years.'
+                    ' tie this teaching system together: clean-grid progress boosts transport and buildings; low justice support reduces other support indices; working-lands progress boosts adaptation; and adaptation gaps reduce support during modeled disasters. Values are hand-authored 0-100 indices, not measured emissions, probabilities, forecasts, or policy recommendations.'
                   )
                 ),
                 el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10, marginBottom: 14 } },
@@ -4188,18 +4189,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           tab === 'forceHunt' && (function() {
             var iq = d.forceHunt || { albedo: 30, cloudFB: 0, ghg: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
             function setIQ(patch) { upd({ forceHunt: Object.assign({}, iq, patch) }); }
-            // Simplified forcing: ghg adds W/m², albedo subtracts, cloudFB amplifies/dampens
-            var forcingWm2 = (iq.ghg - 50) * 0.05 - (iq.albedo - 30) * 0.05 + iq.cloudFB * 0.02;
+            // Arbitrary classroom index; coefficients are teaching weights, not physical forcing values.
+            var forcingIndex = (iq.ghg - 50) * 0.05 - (iq.albedo - 30) * 0.05 + iq.cloudFB * 0.02;
             var state;
-            if (forcingWm2 > 1.5) state = 'runaway';
-            else if (forcingWm2 < -1.5) state = 'cooling';
-            else if (Math.abs(forcingWm2) < 0.5) state = 'stable';
+            if (forcingIndex > 1.5) state = 'runaway';
+            else if (forcingIndex < -1.5) state = 'cooling';
+            else if (Math.abs(forcingIndex) < 0.5) state = 'stable';
             else state = 'paradox';
             var sm = {
-              runaway: { label: t('stem.climateExplorer.strong_warming', '🔥 Strong warming'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.climateExplorer.positive_feedback_dominates_earth_warm', 'Positive feedback dominates; Earth warms toward a hotter equilibrium. (A true "runaway" greenhouse — oceans boiling away — is a Venus scenario, not Earth at these forcings.)') },
-              cooling: { label: t('stem.climateExplorer.rapid_cooling', '🧊 Rapid cooling'),   color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.climateExplorer.high_albedo_negative_feedback_ice_age_', 'High albedo + negative feedback. Ice-age trajectory.') },
-              stable:  { label: t('stem.climateExplorer.stable_climate', '🟢 Stable climate'),  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.climateExplorer.net_forcing_0_w_m_earth_equilibrium', 'Net forcing ≈ 0 W/m². Earth equilibrium.') },
-              paradox: { label: t('stem.climateExplorer.albedo_paradox', '⚖️ Albedo paradox'),  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.climateExplorer.forcings_partially_offset_climate_slow', 'Forcings partially offset. Climate slowly drifts.') }
+              runaway: { label: t('stem.climateExplorer.strong_warming', '🔥 Strong warming'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.climateExplorer.positive_feedback_dominates_earth_warm', 'High positive value in this classroom index; it is not a temperature or equilibrium calculation.') },
+              cooling: { label: t('stem.climateExplorer.rapid_cooling', '🧊 Rapid cooling'),   color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.climateExplorer.high_albedo_negative_feedback_ice_age_', 'Negative value in this classroom index; it is not an ice-age projection.') },
+              stable:  { label: t('stem.climateExplorer.stable_climate', '🟢 Stable climate'),  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.climateExplorer.net_forcing_0_w_m_earth_equilibrium', 'Index near zero relative to the activity baseline; this does not establish climate equilibrium.') },
+              paradox: { label: t('stem.climateExplorer.albedo_paradox', '⚖️ Albedo paradox'),  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.climateExplorer.forcings_partially_offset_climate_slow', 'Inputs partly offset in this classroom index; no rate of climate change is calculated.') }
             }[state];
             return el('div', { style: { padding: 16, background: 'rgba(255,255,255,0.03)', borderRadius: 12, border: '1px solid rgba(148,163,184,0.2)' } },
               el('h3', { style: { fontSize: 14, fontWeight: 800, color: '#67e8f9', margin: '0 0 6px 0' } }, '☀️ Radiative forcing discovery'),
@@ -4235,11 +4236,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       el('span', { style: { fontSize: 10.5, color: 'var(--allo-stem-text, #cbd5e1)' } }, mc.f));
                   }))),
 
-              el('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, 'Now experiment: sliders for albedo, cloud feedback, and GHG forcing drive a discrete 4-state climate regime. No score, no reveal.'),
+              el('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, 'Now experiment with an arbitrary linear index using albedo, cloud-feedback, and greenhouse-gas controls. It is a qualitative comparison, not a radiative-transfer model or temperature projection.'),
               el('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 10 } },
                 el('div', { style: { fontSize: 15, fontWeight: 900, color: sm.color } }, sm.label),
                 el('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc),
-                el('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } }, 'Net forcing ≈ ' + forcingWm2.toFixed(2) + ' W/m²')
+                el('div', { style: { fontSize: 10, color: '#64748b', marginTop: 4, fontFamily: 'monospace' } }, 'Relative forcing index = ' + forcingIndex.toFixed(2) + ' teaching units')
               ),
               el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
                 [{ k: 'albedo', l: 'Albedo (%)', mn: 0, mx: 100, st: 1 },
@@ -4253,7 +4254,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 })
               ),
               el('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
-                el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.albedo, c: iq.cloudFB, g: iq.ghg, f: forcingWm2.toFixed(2), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
+                el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.albedo, c: iq.cloudFB, g: iq.ghg, f: forcingIndex.toFixed(2), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
                 el('button', { onClick: function() { setIQ({ albedo: 30, cloudFB: 0, ghg: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
               ),
               el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.climateExplorer.hypothesis_when_does_albedo_overcome_g', 'Hypothesis: When does albedo overcome GHG forcing?'),
@@ -4262,12 +4263,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               iq.stuckRevealed && el('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 8 } },
                 el('ul', { style: { margin: 0, paddingLeft: 18 } },
                   el('li', null, 'Real Earth albedo ≈ 30%. What if it drops to 15%?'),
-                  el('li', null, 'Cloud feedback uncertainty is the biggest climate-projection uncertainty. Investigate why.'))),
+                  el('li', null, 'Cloud feedback is one important source of climate-projection uncertainty. Investigate why.'))),
               el('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
                 el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
               iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.climateExplorer.explain_how_albedo_cloud_feedback_and_', 'Explain how albedo, cloud feedback, and GHGs jointly drive climate state.'),
                 style: { width: '100%', minHeight: 60, padding: 6, background: '#fff', color: '#1e293b', border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-              el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Design note: discrete 4-state climate marker; no temperature score; no reveal — by design.')
+              el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Model limit: arbitrary classroom index = GHG control - albedo control + cloud-feedback control. It omits spectral absorption, latitude, seasons, oceans, ice dynamics, carbon-cycle feedbacks, response times, and uncertainty; labels are prompts, not predictions.')
             );
           })()
         )

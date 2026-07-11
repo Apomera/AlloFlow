@@ -28,9 +28,11 @@ if (window.AlloModules && window.AlloModules.TutorialCompilerModule) { console.l
 // convert the tour data into a clean, testable tutorial script today. Feed
 // them GUIDED_STEPS and GUIDED_TOUR_MAP (both live in AlloFlowANTI.txt).
 //
-// WHAT IS STUBBED: compileTutorial's capture→narrate→composite pipeline. Each
-// stage names the exact existing seam to call. Build ONE feature end-to-end
-// first (suggest 'simplified' — Text Adaptation, the flagship flow).
+// WHAT IS ADAPTER-DRIVEN: compileTutorial's capture→drive→narrate→composite
+// pipeline. The execution order, cleanup, actual beat timing, and failure
+// propagation are live here; production still needs adapters for one real
+// Guided Mode flow. Build ONE feature end-to-end first (suggest 'simplified'
+// — Text Adaptation, the flagship flow).
 //
 // TO ACTIVATE: (a) add loadModule('TutorialCompilerModule', '<cdn>/tutorial_
 // compiler_module.js?v=<hash>') to the ANTI boot list; (b) enroll a build pair
@@ -100,7 +102,7 @@ if (window.AlloModules && window.AlloModules.TutorialCompilerModule) { console.l
     };
   }
 
-  // ── Pipeline (STUB) — drive → narrate → capture → composite ───────────────
+  // ── Pipeline adapter — capture → narrate/drive → composite ───────────────
   // Deterministic tour execution beats AI improv here: accuracy over fluency
   // when teaching software. Use Gemini/Codex only to DRAFT/polish the narration
   // strings offline, never to drive the UI live.
@@ -118,8 +120,8 @@ if (window.AlloModules && window.AlloModules.TutorialCompilerModule) { console.l
     // STAGE 2 — STAGE+VOICE: for each step, spotlight its anchor and speak its
     //   beats in lockstep.
     //   Seam A (spotlight): the guided/spotlight tour engine already scrolls to
-    //   + highlights GUIDED_TOUR_MAP[id]. Drive it step-by-step, or scrollIntoView
-    //   + a highlight ring on document.getElementById(step.anchorId).
+    //   + highlights GUIDED_TOUR_MAP[id]. deps.spotlight() frames the target;
+    //   deps.performStep() executes the deterministic, fixture-safe action.
     //   Seam B (voice): deps.speak(text) → callTTS(text) (Kokoro locally). Await
     //   each beat so the spotlight dwell matches beat.seconds.
     // STAGE 3 — COMPOSITE: stop capture, mux the narration track, add captions
@@ -127,26 +129,68 @@ if (window.AlloModules && window.AlloModules.TutorialCompilerModule) { console.l
     //   Seam: the NotebookLM→Remotion editor already in the tree (doc→video).
     //   Feed it { videoBlob, beats:[{text,startSec,endSec}] }.
     //
-    // Below is the executable ORDER with the calls stubbed — wire the seams and
-    // this loop produces a real tutorial. Kept intentionally thin.
+    // Below is the executable order. The adapters remain outside this module so
+    // browser capture, Playwright release capture, and local TTS can share the
+    // same deterministic compiler contract.
     log('would compile ' + manifest.steps.length + ' step(s), ~' + Math.round(manifest.totalSeconds) + 's total');
-    if (typeof deps.startCapture !== 'function' || typeof deps.speak !== 'function') {
-      return { ok: false, reason: 'scaffold', note: 'Wire deps.startCapture()/deps.speak()/deps.composite() to produce a video. See stage comments.' };
+    if (typeof deps.startCapture !== 'function' || typeof deps.speak !== 'function' || typeof deps.performStep !== 'function') {
+      return { ok: false, reason: 'adapters-missing', note: 'Wire deps.startCapture()/deps.speak()/deps.performStep(); add deps.composite() for a finished tutorial.' };
     }
     var session = await deps.startCapture();
+    if (!session || typeof session.stop !== 'function') {
+      throw new Error('compileTutorial: startCapture() must return a session with stop().');
+    }
+    var nowSeconds = typeof deps.now === 'function'
+      ? deps.now
+      : function () { return (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()) / 1000; };
+    var startedAt = Number(nowSeconds()) || 0;
+    var timeline = [];
+    var pipelineError = null;
+    var videoBlob = null;
     try {
       for (var i = 0; i < manifest.steps.length; i++) {
         var step = manifest.steps[i];
-        if (typeof deps.spotlight === 'function') { try { await deps.spotlight(step.anchorId, step.id); } catch (_) {} }
+        if (typeof deps.spotlight === 'function') await deps.spotlight(step.anchorId, step.id);
+        var performed = false;
         for (var j = 0; j < step.beats.length; j++) {
-          await deps.speak(step.beats[j].text); // resolves when the audio finishes
+          var beat = step.beats[j];
+          // Action narration comes first; then the deterministic tour adapter
+          // performs the real UI step before the success narration is spoken.
+          if (!performed && beat.kind === 'success') {
+            await deps.performStep(step, i);
+            performed = true;
+            if (timeline.length && timeline[timeline.length - 1].stepId === step.id) {
+              timeline[timeline.length - 1].endSec = Math.max(timeline[timeline.length - 1].endSec, (Number(nowSeconds()) || startedAt) - startedAt);
+            }
+          }
+          var beatStart = Math.max(0, (Number(nowSeconds()) || startedAt) - startedAt);
+          await deps.speak(beat.text, { step: step, stepIndex: i, beat: beat, beatIndex: j });
+          var beatEnd = Math.max(beatStart, (Number(nowSeconds()) || startedAt) - startedAt);
+          timeline.push({ stepId: step.id, kind: beat.kind, text: beat.text, startSec: beatStart, endSec: beatEnd });
+        }
+        if (!performed) {
+          await deps.performStep(step, i);
+          if (timeline.length && timeline[timeline.length - 1].stepId === step.id) {
+            timeline[timeline.length - 1].endSec = Math.max(timeline[timeline.length - 1].endSec, (Number(nowSeconds()) || startedAt) - startedAt);
+          }
         }
       }
-    } finally {
-      var videoBlob = await session.stop();
-      if (typeof deps.composite === 'function') return await deps.composite(videoBlob, manifest);
-      return { ok: true, videoBlob: videoBlob, manifest: manifest };
+    } catch (e) {
+      pipelineError = e instanceof Error ? e : new Error(String(e || 'Tutorial compilation failed.'));
     }
+    // Capture duration ends before stop()/mux finalization; encoder shutdown can
+    // take seconds and must not inflate caption or tutorial timeline duration.
+    var actualSeconds = Math.max(0, (Number(nowSeconds()) || startedAt) - startedAt);
+    try {
+      videoBlob = await session.stop();
+    } catch (stopError) {
+      if (!pipelineError) pipelineError = stopError instanceof Error ? stopError : new Error(String(stopError || 'Capture stop failed.'));
+      else pipelineError.stopError = String((stopError && stopError.message) || stopError || 'Capture stop failed.');
+    }
+    if (pipelineError) throw pipelineError;
+    var compiledManifest = Object.assign({}, manifest, { actualSeconds: actualSeconds, timeline: timeline });
+    if (typeof deps.composite === 'function') return await deps.composite(videoBlob, compiledManifest);
+    return { ok: true, videoBlob: videoBlob, manifest: compiledManifest, timeline: timeline };
   }
 
   window.AlloModules = window.AlloModules || {};
@@ -157,5 +201,5 @@ if (window.AlloModules && window.AlloModules.TutorialCompilerModule) { console.l
     compileTutorial: compileTutorial
   };
   window.AlloModules.TutorialCompilerModule = true;
-  console.log('[TutorialCompiler] scaffold registered (manifest builder live; capture/narrate/composite stubbed — handoff task #7)');
+  console.log('[TutorialCompiler] adapter-driven compiler registered (production Guided Mode adapters still required)');
 })();

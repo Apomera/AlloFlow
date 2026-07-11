@@ -933,19 +933,23 @@ function main() {
   catalog.items = catalog.items || [];
   const existing = new Set(catalog.items.map((item) => item.slug));
   const added = [];
+  let written = 0;
 
   for (const entry of ENTRIES) {
-    if (existing.has(entry.slug)) continue;
     const book = makeBook(entry);
     const file = 'books/' + entry.slug + '.json';
+    // Refresh existing cards too: fixes to metadata, classroom text, rights,
+    // and derived statistics must propagate instead of being skipped forever.
     writeJson(path.join(ROOT, file), book);
+    written++;
+    if (existing.has(entry.slug)) continue;
     catalog.items.push({ slug: entry.slug, file });
     existing.add(entry.slug);
     added.push(entry.slug);
   }
 
   writeJson(OPEN_CATALOG_PATH, catalog);
-  console.log('Added ' + added.length + ' non-StoryWeaver source cards.');
+  console.log('Wrote ' + written + ' non-StoryWeaver source cards (' + added.length + ' newly registered).');
   if (added.length) console.log(added.join('\n'));
 }
 

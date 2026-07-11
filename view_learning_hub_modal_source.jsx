@@ -10,7 +10,7 @@
  */
 function LearningHubModal(props) {
   const {
-    setIsAlloHavenOpen, setIsOpenGrooveOpen, setIsTimelineStudioOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
+    setIsAlloHavenOpen, setIsLinguaPracticeOpen, setIsOpenGrooveOpen, setIsTestPrepHubOpen, setIsTimelineStudioOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
     setShowMindMap, setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
     setStemLabTab, showLearningHub,
     // Family Bridge launcher (2026-06-28): opens live two-way translation. Optional
@@ -24,6 +24,10 @@ function LearningHubModal(props) {
     setIsReadingLibraryOpen,
     t,
   } = props;
+  const tr = (key, fallback) => {
+    try { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; }
+    catch (_) { return fallback; }
+  };
   return (
         <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} onClick={() => setShowLearningHub(false)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setShowLearningHub(false); }}>
           {/* allo-docsuite: this modal is a portal rendered OUTSIDE the main .allo-docsuite
@@ -82,6 +86,24 @@ function LearningHubModal(props) {
                   <div>
                     <h3 className="font-bold text-sky-800">{t('learning_hub.reading_library_title') || 'Reading Library'}</h3>
                     <p className="text-xs text-sky-700 mt-1">{t('learning_hub.reading_library_desc') || 'Real picture books in 10 languages — read along, listen, and practice'}</p>
+                  </div>
+                </button>
+              )}
+              {typeof setIsLinguaPracticeOpen === 'function' && (
+                <button onClick={() => { setShowLearningHub(false); setIsLinguaPracticeOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="w-12 h-12 rounded-lg bg-emerald-700 text-white flex items-center justify-center text-sm font-black" aria-hidden="true">A/文</span>
+                  <div>
+                    <h3 className="font-bold text-emerald-900">{tr('learning_hub.lingua_title', 'Lingua Practice')}</h3>
+                    <p className="text-xs text-emerald-800 mt-1">{tr('learning_hub.lingua_desc', 'Build vocabulary, practice speaking, and rehearse real conversations')}</p>
+                  </div>
+                </button>
+              )}
+              {typeof setIsTestPrepHubOpen === 'function' && (
+                <button onClick={() => { setShowLearningHub(false); setIsTestPrepHubOpen(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+                  <span className="text-4xl" aria-hidden="true">{'\uD83E\uDDED'}</span>
+                  <div>
+                    <h3 className="font-bold text-indigo-900">{tr('learning_hub.test_prep_title', 'Test Prep Hub')}</h3>
+                    <p className="text-xs text-indigo-800 mt-1">{tr('learning_hub.test_prep_desc', 'Accessible practice packs for licensure, vocational, and professional exams')}</p>
                   </div>
                 </button>
               )}

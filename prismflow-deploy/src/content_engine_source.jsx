@@ -1761,7 +1761,9 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
                 Phrase: "${originalText}",
                 Output Language: ${outputLang}.
                 ${outputLang !== 'English' ? `Provide the explanation in ${outputLang} first. Then add a new line with "**English:**" followed by the English explanation.` : ''}
-                IMPORTANT: Do NOT include bare URLs in your explanation. Reference sources only by name.
+                IMPORTANT: Do not include URLs, citations, source names, or source attributions.
+                Do not say "according to" a dictionary or imply that you consulted an external source.
+                This is an AI-generated, context-aware explanation for the student's reading level.
                 ${dialectInstruction}
                 Return ONLY the explanation.
               `;
@@ -1818,7 +1820,9 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             Output Language: ${outputLang}.
             ${outputLang !== 'English' ? `Provide the definition in ${outputLang} first. Then add a new line with "**English:**" followed by the English definition.` : ''}
             ${outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese'), use that region's conventions.` : ''}
-            IMPORTANT: Do NOT include bare URLs in your definition. Reference sources only by name.
+            IMPORTANT: Do not include URLs, citations, source names, or source attributions.
+            Do not say "according to" a dictionary or imply that you consulted an external source.
+            This is an AI-generated, context-aware explanation for the student's reading level.
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
           const result = await callGemini(prompt);
@@ -2049,6 +2053,9 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
             Output Language: ${outputLang}.
             ${outputLang !== 'English' ? `Provide the definition in ${outputLang} first. Then add a new line with "**English:**" followed by the English definition.` : ''}
             ${outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese'), use that region's conventions.` : ''}
+            IMPORTANT: Do not include URLs, citations, source names, or source attributions.
+            Do not say "according to" a dictionary or imply that you consulted an external source.
+            This is an AI-generated, context-aware explanation for the student's reading level.
             Return ONLY the definition. Keep it concise (1-2 sentences).
           `;
           const result = await callGemini(prompt);

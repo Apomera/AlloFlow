@@ -5,25 +5,26 @@
  * AlloFlow's servers and no student accounts are involved.
  *
  * What it stores, where:
- *  - Live-session messages: in-memory script cache only (CacheService),
- *    auto-expire <= 45 minutes; session markers <= 6 hours. Never written to
- *    Drive, never persisted.
- *  - Homework packs: single JSON files in a Drive folder named
- *    "AlloFlow Class Mailbox" in the OWNER's Drive. Delete them any time.
+ *  - Live messages and documents: bounded Apps Script CacheService entries,
+ *    eligible for early eviction and expiring within 45 minutes to 6 hours.
+ *  - Session markers/secrets: Script Properties for at most 6 hours so a
+ *    teacher refresh can recover a class after cache eviction.
+ *  - Homework packs: one small manifest plus chunk files in the owner's
+ *    "AlloFlow Class Mailbox" Drive folder. Delete them any time.
  *
- * Access model (capability tokens, no logins):
- *  - admin token: created once via {a:'claim'} the first time AlloFlow
- *    connects, before the URL is ever shared with students. Required to open
- *    live sessions and upload packs. To reset: Apps Script editor > Project
- *    Settings > Script properties > delete "admin", then reconnect.
- *  - session secret / pack secret: random per session/pack, carried only in
- *    the teacher's QR. Required to send/receive/fetch.
+ * Access model (capability tokens, no student logins):
+ *  - admin token: required for teacher broadcasts, full class state, session
+ *    lifecycle, and pack management. It never appears in a student QR.
+ *  - session join secret: carried in the QR and accepted only by {a:'join'}.
+ *    The server returns a signed participant token bound to a random uid.
+ *  - participant token: permits student-up messages, privacy-filtered reads,
+ *    own roster/answer/reaction/vote updates, and own signaling only.
  *
  * All requests are POSTed as text/plain JSON (avoids CORS preflight, which
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 6;
+var VERSION = 7;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -33,8 +34,14 @@ var MAX_DGET_DOCS = 12;                 // watched docs per poll
 var MAX_PACK_CHARS = 8 * 1024 * 1024;   // ~8MB assembled pack ceiling
 var GET_PART_CHARS = 150 * 1024;        // pack download slice size
 var MAX_RECV_MSGS = 50;                 // per box per poll
-var RATE_LIMIT_MSGS = 900;              // sends per box per ~minute (rolling cache window)
+var RATE_LIMIT_MSGS = 900;              // teacher sends per box per ~minute
 var RATE_LIMIT_TTL_SEC = 60;
+var MESSAGE_RING_SIZE = 240;             // hard bound per box; prevents cache-wide eviction
+var PARTICIPANT_READS_PER_MIN = 120;
+var PARTICIPANT_WRITES_PER_MIN = 120;
+var SESSION_READS_PER_MIN = 1800;
+var MAX_PATCH_FIELDS = 60;
+var MAX_JSON_DEPTH = 12;
 var FOLDER_NAME = 'AlloFlow Class Mailbox';
 
 function doGet() {
@@ -57,7 +64,36 @@ function out(obj) {
 
 function isToken(v, min, max) {
   var s = String(v || '');
-  return s.length >= (min || 10) && s.length <= (max || 64) && /^[A-Za-z0-9_-]+$/.test(s);
+  return s.length >= (min || 10) && s.length <= (max || 96) && /^[A-Za-z0-9_-]+$/.test(s);
+}
+
+function newToken() {
+  return Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
+}
+
+function participantToken(admin, code, uid, secret) {
+  var bytes = Utilities.computeHmacSha256Signature(code + '|' + uid + '|' + secret, admin);
+  return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/g, '');
+}
+
+function requestActor(p, code, secret, admin) {
+  if (admin && String(p.admin || '') === admin) return { role: 'teacher', uid: 'teacher' };
+  var uid = String(p.uid || '');
+  var pt = String(p.pt || '');
+  if (!/^mb-[A-Za-z0-9_-]{8,48}$/.test(uid) || !isToken(pt, 20, 96)) return null;
+  var expected = participantToken(admin, code, uid, secret);
+  return pt === expected ? { role: 'participant', uid: uid } : null;
+}
+
+function rateCheck(cache, key, limit) {
+  var used = (parseInt(cache.get(key), 10) || 0) + 1;
+  if (used > limit) return false;
+  cache.put(key, String(used), RATE_LIMIT_TTL_SEC);
+  return true;
+}
+
+function actorRateKey(code, actor, kind) {
+  return 'r:' + code + ':' + kind + ':' + (actor.role === 'teacher' ? 't' : actor.uid.slice(0, 32));
 }
 
 function handle(p) {
@@ -70,7 +106,7 @@ function handle(p) {
     if (!lock.tryLock(5000)) return out({ ok: false, e: 'busy' });
     try {
       if (props.getProperty('admin')) return out({ ok: false, e: 'claimed' });
-      var token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
+      var token = newToken();
       props.setProperty('admin', token);
       saveTokenNote(token);
       return out({ ok: true, admin: token, t: Date.now() });
@@ -89,52 +125,71 @@ function handle(p) {
     return out({ ok: true, admin: !!isAdmin, claimed: !!admin, t: Date.now() });
   }
 
+  if (a === 'rotateadmin') {
+    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    pruneExpiredSessions(props);
+    var active = listSessions(props);
+    if (active.length && !p.force) return out({ ok: false, e: 'sessions-active', count: active.length });
+    if (active.length) closeAllSessions(cache, props);
+    var rotated = newToken();
+    props.setProperty('admin', rotated);
+    saveTokenNote(rotated);
+    return out({ ok: true, admin: rotated, t: Date.now() });
+  }
+  if (a === 'closeall') {
+    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    return out({ ok: true, closed: closeAllSessions(cache, props), t: Date.now() });
+  }
+
   if (a === 'open') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
     var code = String(p.c || '').toUpperCase();
     if (!/^[A-Z0-9]{4,8}$/.test(code) || !isToken(p.k)) return out({ ok: false, e: 'bad-request' });
+    // A reused code must not resurface messages, documents, or signaling from
+    // a previous class that happened to use the same short code.
+    clearSessionEphemeral(cache, code);
     cache.put('s:' + code, String(p.k), SESSION_TTL_SEC);
-    // A reused code must not resurface a previous class's session document.
-    cache.remove('d:' + code + ':s');
-    cache.remove('dw:' + code);
-    // Durable copy: CacheService is best-effort and can evict a live session
-    // marker under memory pressure, kicking the whole class out mid-lesson.
-    // PropertiesService survives; lookups rewarm the cache from it.
     props.setProperty('sess_' + code, String(p.k) + '|' + Date.now());
     pruneExpiredSessions(props);
     return out({ ok: true, t: Date.now() });
+  }
+
+  if (a === 'join') {
+    var jcode = String(p.c || '').toUpperCase();
+    var jsecret = sessionSecretFor(jcode, cache, props);
+    if (!jsecret) return out({ ok: false, e: 'no-session' });
+    if (String(p.k || '') !== jsecret) return out({ ok: false, e: 'denied' });
+    if (!rateCheck(cache, 'r:' + jcode + ':join', 120)) return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+    var juid = 'mb-' + Utilities.getUuid().replace(/-/g, '').slice(-20);
+    return out({ ok: true, uid: juid, pt: participantToken(admin, jcode, juid, jsecret), t: Date.now() });
   }
 
   if (a === 'send' || a === 'recv' || a === 'end') {
     var sc = String(p.c || '').toUpperCase();
     var secret = sessionSecretFor(sc, cache, props);
     if (!secret) return out({ ok: false, e: 'no-session' });
-    if (String(p.k || '') !== secret) return out({ ok: false, e: 'denied' });
-    if (a === 'send') return send(cache, sc, p);
-    if (a === 'recv') return recv(cache, sc, p);
-    cache.remove('s:' + sc);
-    cache.remove('d:' + sc + ':s');
-    cache.remove('dw:' + sc);
-    try { props.deleteProperty('sess_' + sc); } catch (e2) {}
-    return out({ ok: true });
+    var actor = requestActor(p, sc, secret, admin);
+    if (!actor) return out({ ok: false, e: 'denied' });
+    if (a === 'end') {
+      if (actor.role !== 'teacher') return out({ ok: false, e: 'not-admin' });
+      closeSession(cache, props, sc);
+      return out({ ok: true });
+    }
+    if (a === 'send') return send(cache, sc, p, actor);
+    return recv(cache, sc, p, actor);
   }
 
-  // Session document store (v6): a tiny Firestore stand-in scoped to one live
-  // session, so the SAME session UI (roster, polls, quiz, pictionary
-  // signaling) runs unchanged over the mailbox. Documents are JSON envelopes
-  // {w: version, d: data} under short path tokens the client chooses ('s' =
-  // the session doc, 'g:<sig>:<uid>' = a signaling doc, 'c:<sig>' = a
-  // collection index of {id: version}). dget doubles as the delta poll: a doc
-  // whose version still matches the caller's known one comes back without its
-  // body. Everything lives in CacheService only (live-session posture — same
-  // as boxes); the teacher client re-seeds the session doc after an eviction.
+  // Session document store (v7): teacher and participant capabilities are
+  // distinct. Participants see a privacy-filtered session view and may write
+  // only their own roster/answer/reaction/vote/signaling surfaces.
   if (a === 'dget' || a === 'dset' || a === 'dpatch' || a === 'ddel') {
     var dcode = String(p.c || '').toUpperCase();
     var dsecret = sessionSecretFor(dcode, cache, props);
     if (!dsecret) return out({ ok: false, e: 'no-session' });
-    if (String(p.k || '') !== dsecret) return out({ ok: false, e: 'denied' });
-    if (a === 'dget') return docGet(cache, dcode, p);
-    return docWrite(cache, dcode, a, p);
+    var dactor = requestActor(p, dcode, dsecret, admin);
+    if (!dactor) return out({ ok: false, e: 'denied' });
+    if (a === 'dget') return docGet(cache, dcode, p, dactor);
+    return docWrite(cache, dcode, a, p, dactor);
   }
 
   // Server-side session recovery (v5): the durable sess_<code> markers ARE
@@ -164,7 +219,7 @@ function handle(p) {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
     return putPack(cache, p);
   }
-  if (a === 'getpack') return getPack(p);
+  if (a === 'getpack') return getPack(cache, p);
   if (a === 'delpack') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
     return delPack(p);
@@ -175,6 +230,55 @@ function handle(p) {
 function cleanBox(v) {
   var b = String(v || '');
   return (b === 'up' || b === 'down') ? b : '';
+}
+
+function listSessions(props) {
+  var sessions = [];
+  try {
+    var all = props.getProperties();
+    Object.keys(all).forEach(function(key) {
+      if (key.indexOf('sess_') !== 0) return;
+      var val = all[key];
+      var sep = val.indexOf('|');
+      sessions.push({ c: key.slice(5), k: sep > -1 ? val.slice(0, sep) : val, at: sep > -1 ? (parseInt(val.slice(sep + 1), 10) || 0) : 0 });
+    });
+  } catch (e) {}
+  sessions.sort(function(a, b) { return b.at - a.at; });
+  return sessions;
+}
+
+function removeCacheKeys(cache, keys) {
+  if (!keys.length) return;
+  if (typeof cache.removeAll === 'function') cache.removeAll(keys);
+  else keys.forEach(function(key) { cache.remove(key); });
+}
+
+function clearSessionEphemeral(cache, code) {
+  var keys = ['d:' + code + ':s', 'dw:' + code, 'n:' + code + ':up', 'n:' + code + ':down'];
+  ['up', 'down'].forEach(function(box) {
+    for (var i = 0; i < MESSAGE_RING_SIZE; i++) keys.push('m:' + code + ':' + box + ':' + i);
+  });
+  ['signaling', 'pictionary-signaling', 'quiz-signaling'].forEach(function(sig) {
+    var col = 'c:' + sig;
+    var env = readDocEnvelope(cache, code, col);
+    if (env && env.d && typeof env.d === 'object') {
+      Object.keys(env.d).forEach(function(uid) { keys.push('d:' + code + ':g:' + sig + ':' + uid); });
+    }
+    keys.push('d:' + code + ':' + col);
+  });
+  removeCacheKeys(cache, keys);
+}
+
+function closeSession(cache, props, code) {
+  clearSessionEphemeral(cache, code);
+  cache.remove('s:' + code);
+  try { props.deleteProperty('sess_' + code); } catch (e) {}
+}
+
+function closeAllSessions(cache, props) {
+  var sessions = listSessions(props);
+  sessions.forEach(function(s) { closeSession(cache, props, s.c); });
+  return sessions.length;
 }
 
 // Session secret lookup: cache first, durable PropertiesService fallback
@@ -207,31 +311,63 @@ function pruneExpiredSessions(props) {
   } catch (e) { /* best-effort */ }
 }
 
-function send(cache, code, p) {
+function normalizeParticipantMessage(value, uid) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  if (value.kind === 'student') {
+    return {
+      kind: 'student',
+      uid: uid,
+      name: String(value.name || 'Student').slice(0, 40),
+      hand: value.hand === true
+    };
+  }
+  if (value.kind === 'rtc' && value.sdp && value.sdp.type === 'offer'
+      && typeof value.sdp.sdp === 'string' && value.sdp.sdp.length <= 70000) {
+    return { kind: 'rtc', uid: uid, sdp: { type: 'offer', sdp: value.sdp.sdp } };
+  }
+  return null;
+}
+function send(cache, code, p, actor) {
   var box = cleanBox(p.box);
   if (!box) return out({ ok: false, e: 'bad-box' });
-  var text = JSON.stringify({ f: String(p.from || '').slice(0, 60), t: Date.now(), v: p.v === undefined ? null : p.v });
-  if (text.length > MAX_MSG_CHARS) return out({ ok: false, e: 'too-big' });
+  if ((actor.role === 'teacher' && box !== 'down') || (actor.role === 'participant' && box !== 'up')) {
+    return out({ ok: false, e: 'denied' });
+  }
+  var from = actor.role === 'teacher' ? 'teacher' : actor.uid;
+  var value = p.v === undefined ? null : p.v;
+  if (actor.role === 'participant') {
+    value = normalizeParticipantMessage(value, actor.uid);
+    if (!value) return out({ ok: false, e: 'denied' });
+  }
+  if (!validateJsonValue(value, 0)) return out({ ok: false, e: 'bad-data' });
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) return out({ ok: false, e: 'busy' });
   try {
-    // Rolling ~1-minute flood cap per box: a leaked QR lets a student write
-    // to this session, but not drown it. Normal classroom load (heartbeats,
-    // hand-raises, chunked pushes, RTC signaling) stays far below this.
-    var rKey = 'r:' + code + ':' + box;
-    var used = (parseInt(cache.get(rKey), 10) || 0) + 1;
-    if (used > RATE_LIMIT_MSGS) return out({ ok: false, e: 'rate-limited' });
-    cache.put(rKey, String(used), RATE_LIMIT_TTL_SEC);
+    var limit = actor.role === 'teacher' ? RATE_LIMIT_MSGS : PARTICIPANT_WRITES_PER_MIN;
+    if (!rateCheck(cache, actorRateKey(code, actor, 'send'), limit)) {
+      return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+    }
     var nKey = 'n:' + code + ':' + box;
     var next = (parseInt(cache.get(nKey), 10) || 0) + 1;
-    cache.put('m:' + code + ':' + box + ':' + next, text, MESSAGE_TTL_SEC);
+    var text = JSON.stringify({ i: next, f: from, t: Date.now(), v: value });
+    if (text.length > MAX_MSG_CHARS) return out({ ok: false, e: 'too-big' });
+    var slot = next % MESSAGE_RING_SIZE;
+    cache.put('m:' + code + ':' + box + ':' + slot, text, MESSAGE_TTL_SEC);
     cache.put(nKey, String(next), SESSION_TTL_SEC);
     return out({ ok: true, i: next });
   } finally { lock.releaseLock(); }
 }
 
-function recv(cache, code, p) {
-  var boxes = String(p.box || '').split(',');
+function recv(cache, code, p, actor) {
+  var requested = String(p.box || '');
+  if ((actor.role === 'teacher' && requested !== 'up') || (actor.role === 'participant' && requested !== 'down')) {
+    return out({ ok: false, e: 'denied' });
+  }
+  if (!rateCheck(cache, actorRateKey(code, actor, 'read'), PARTICIPANT_READS_PER_MIN)
+      || !rateCheck(cache, 'r:' + code + ':read:all', SESSION_READS_PER_MIN)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
+  var boxes = requested.split(',');
   var sinceList = String(p.since || '').split(',');
   var result = {};
   for (var bi = 0; bi < boxes.length && bi < 4; bi++) {
@@ -239,9 +375,9 @@ function recv(cache, code, p) {
     if (!box) continue;
     var since = parseInt(sinceList[bi], 10) || 0;
     var latest = parseInt(cache.get('n:' + code + ':' + box), 10) || 0;
-    if (latest - since > 400) since = latest - 400; // fast-forward long-dead cursors
+    if (latest - since > MESSAGE_RING_SIZE) since = latest - MESSAGE_RING_SIZE;
     var keys = [];
-    for (var i = since + 1; i <= latest && keys.length < MAX_RECV_MSGS; i++) keys.push('m:' + code + ':' + box + ':' + i);
+    for (var i = since + 1; i <= latest && keys.length < MAX_RECV_MSGS; i++) keys.push('m:' + code + ':' + box + ':' + (i % MESSAGE_RING_SIZE));
     var found = keys.length ? cache.getAll(keys) : {};
     var msgs = [];
     var cursor = since;
@@ -249,7 +385,7 @@ function recv(cache, code, p) {
       cursor = since + 1 + j;
       var raw = found[keys[j]];
       if (!raw) continue; // expired gap
-      try { msgs.push([cursor, JSON.parse(raw)]); } catch (err2) {}
+      try { var parsed = JSON.parse(raw); if (parsed.i === cursor) msgs.push([cursor, parsed]); } catch (err2) {}
     }
     result[box] = { n: Math.max(cursor, since), m: msgs, latest: latest };
   }
@@ -259,15 +395,60 @@ function recv(cache, code, p) {
   // request volume. Old clients do not send ps; old servers ignore it and
   // clients fall back to their own dget pump. NOTE: keep backticks out of
   // this file — it ships embedded in the app as a template literal.
-  if (Array.isArray(p.ps) && p.ps.length) response.docs = collectDocEntries(cache, code, p.ps);
+  if (Array.isArray(p.ps) && p.ps.length) {
+    if (!canReadDocEntries(p.ps, actor)) return out({ ok: false, e: 'denied' });
+    response.docs = collectDocEntries(cache, code, p.ps, actor);
+  }
   return out(response);
 }
 
-// ── Session document store (v6) ─────────────────────────────────────────────
+// ── Session document store (v7) ─────────────────────────────────────────────
 
 function cleanDocPath(v) {
   var s = String(v || '');
   return /^[A-Za-z0-9_.:-]{1,80}$/.test(s) ? s : '';
+}
+
+function isReservedSegment(v) {
+  return v === '__proto__' || v === 'prototype' || v === 'constructor';
+}
+
+function validateJsonValue(value, depth) {
+  if (depth > MAX_JSON_DEPTH) return false;
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') return true;
+  if (typeof value === 'number') return isFinite(value);
+  if (Array.isArray(value)) {
+    if (value.length > 1000) return false;
+    for (var i = 0; i < value.length; i++) if (!validateJsonValue(value[i], depth + 1)) return false;
+    return true;
+  }
+  if (!value || typeof value !== 'object') return false;
+  var keys = Object.keys(value);
+  if (keys.length > 500) return false;
+  for (var j = 0; j < keys.length; j++) {
+    if (isReservedSegment(keys[j]) || keys[j].length > 120) return false;
+    if (!validateJsonValue(value[keys[j]], depth + 1)) return false;
+  }
+  return true;
+}
+
+function validatePatchUpdates(updates) {
+  if (!updates || typeof updates !== 'object' || Array.isArray(updates)) return false;
+  var keys = Object.keys(updates);
+  if (keys.length < 1 || keys.length > MAX_PATCH_FIELDS) return false;
+  for (var i = 0; i < keys.length; i++) {
+    var key = String(keys[i]);
+    var segs = key.split('.');
+    if (!key || segs.length > MAX_JSON_DEPTH) return false;
+    for (var j = 0; j < segs.length; j++) {
+      if (!segs[j] || segs[j].length > 80 || isReservedSegment(segs[j])) return false;
+    }
+    var value = updates[key];
+    if (value && typeof value === 'object' && value.__op === 'deleteField') {
+      if (Object.keys(value).length !== 1) return false;
+    } else if (!validateJsonValue(value, 0)) return false;
+  }
+  return true;
 }
 
 function readDocEnvelope(cache, code, p) {
@@ -279,8 +460,6 @@ function readDocEnvelope(cache, code, p) {
 function writeDocEnvelope(cache, code, p, env) {
   var text = JSON.stringify(env);
   if (text.length > MAX_DOC_CHARS) return false;
-  // The session doc lives as long as the session; signaling docs are
-  // handshake-transient and ride the message TTL.
   cache.put('d:' + code + ':' + p, text, p === 's' ? SESSION_TTL_SEC : MESSAGE_TTL_SEC);
   return true;
 }
@@ -292,23 +471,56 @@ function nextDocVersion(cache, code) {
   return w;
 }
 
-// Collection membership index: a doc at the collection's own path token whose
-// data is {childId: version}. Watching a collection = watching this doc.
-function bumpDocIndex(cache, code, col, id, w, removed) {
-  if (!col || !id) return;
-  var env = readDocEnvelope(cache, code, col);
-  if (!env || !env.d || typeof env.d !== 'object') env = { w: 0, d: {} };
-  if (removed) delete env.d[id];
-  else env.d[id] = w;
-  env.w = nextDocVersion(cache, code);
-  writeDocEnvelope(cache, code, col, env);
+function peerPathParts(tok) {
+  var parts = String(tok || '').split(':');
+  if (parts.length !== 3 || parts[0] !== 'g') return null;
+  if (!/^(?:[a-z0-9_-]+-)?signaling$/.test(parts[1])) return null;
+  if (!/^mb-[A-Za-z0-9_-]{8,48}$/.test(parts[2])) return null;
+  return { sig: parts[1], uid: parts[2], col: 'c:' + parts[1] };
 }
 
-// Firestore updateDoc parity: dot-separated paths address nested fields and
-// {__op:'deleteField'} removes one. Arrays are replaced wholesale, like
-// Firestore.
+function canReadDocPath(tok, actor) {
+  if (actor.role === 'teacher') return true;
+  if (tok === 's') return true;
+  var peer = peerPathParts(tok);
+  return !!peer && peer.uid === actor.uid;
+}
+
+function canReadDocEntries(entries, actor) {
+  if (!Array.isArray(entries) || entries.length > MAX_DGET_DOCS) return false;
+  for (var i = 0; i < entries.length; i++) {
+    var tok = cleanDocPath(entries[i] && entries[i].p);
+    if (!tok || !canReadDocPath(tok, actor)) return false;
+  }
+  return true;
+}
+
+function ownMap(map, uid) {
+  var outMap = {};
+  if (map && typeof map === 'object' && Object.prototype.hasOwnProperty.call(map, uid)) outMap[uid] = map[uid];
+  return outMap;
+}
+
+function projectSessionForParticipant(data, uid) {
+  var copy;
+  try { copy = JSON.parse(JSON.stringify(data || {})); } catch (e) { return {}; }
+  copy.participantCount = copy.roster && typeof copy.roster === 'object' ? Object.keys(copy.roster).length : 0;
+  copy.roster = ownMap(copy.roster, uid);
+  if (copy.quizState && typeof copy.quizState === 'object') {
+    copy.quizState.allResponses = ownMap(copy.quizState.allResponses, uid);
+    copy.quizState.responses = ownMap(copy.quizState.responses, uid);
+    copy.quizState.teams = ownMap(copy.quizState.teams, uid);
+  }
+  copy.bridgeReactions = ownMap(copy.bridgeReactions, uid);
+  if (copy.democracy && typeof copy.democracy === 'object') copy.democracy.votes = ownMap(copy.democracy.votes, uid);
+  if (copy.escapeRoomState && typeof copy.escapeRoomState === 'object') {
+    copy.escapeRoomState.teams = ownMap(copy.escapeRoomState.teams, uid);
+  }
+  return copy;
+}
+
 function applyDocUpdates(target, updates) {
-  Object.keys(updates || {}).forEach(function(key) {
+  Object.keys(updates).forEach(function(key) {
     var value = updates[key];
     var segs = String(key).split('.');
     var node = target;
@@ -324,7 +536,17 @@ function applyDocUpdates(target, updates) {
   return target;
 }
 
-function collectDocEntries(cache, code, entries) {
+function bumpDocIndex(cache, code, col, id, w, removed) {
+  if (!col || !id) return;
+  var env = readDocEnvelope(cache, code, col);
+  if (!env || !env.d || typeof env.d !== 'object') env = { w: 0, d: {} };
+  if (removed) delete env.d[id];
+  else env.d[id] = w;
+  env.w = nextDocVersion(cache, code);
+  writeDocEnvelope(cache, code, col, env);
+}
+
+function collectDocEntries(cache, code, entries, actor) {
   var docs = [];
   for (var i = 0; i < entries.length && i < MAX_DGET_DOCS; i++) {
     var tok = cleanDocPath(entries[i] && entries[i].p);
@@ -332,62 +554,149 @@ function collectDocEntries(cache, code, entries) {
     var known = parseInt(entries[i] && entries[i].w, 10) || 0;
     var env = readDocEnvelope(cache, code, tok);
     if (!env) { docs.push({ p: tok, w: 0, missing: true }); continue; }
-    if (env.w > known) docs.push({ p: tok, w: env.w, d: env.d });
-    else docs.push({ p: tok, w: env.w });
+    if (env.w > known) {
+      var body = actor.role === 'participant' && tok === 's' ? projectSessionForParticipant(env.d, actor.uid) : env.d;
+      docs.push({ p: tok, w: env.w, d: body });
+    } else docs.push({ p: tok, w: env.w });
   }
   return docs;
 }
 
-function docGet(cache, code, p) {
-  return out({ ok: true, docs: collectDocEntries(cache, code, Array.isArray(p.ps) ? p.ps : []), t: Date.now() });
+function docGet(cache, code, p, actor) {
+  var entries = Array.isArray(p.ps) ? p.ps : [];
+  if (!canReadDocEntries(entries, actor)) return out({ ok: false, e: 'denied' });
+  if (!rateCheck(cache, actorRateKey(code, actor, 'dget'), PARTICIPANT_READS_PER_MIN)
+      || !rateCheck(cache, 'r:' + code + ':read:all', SESSION_READS_PER_MIN)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
+  return out({ ok: true, docs: collectDocEntries(cache, code, entries, actor), t: Date.now() });
 }
 
-function docWrite(cache, code, action, p) {
+function pathStarts(key, root) {
+  return key === root || key.indexOf(root + '.') === 0;
+}
+
+function validParticipantRosterField(field, value, uid) {
+  if (value && typeof value === 'object' && value.__op === 'deleteField') return field !== 'uid';
+  if (field === 'uid') return value === uid;
+  if (field === 'name') return typeof value === 'string' && value.length <= 40;
+  if (field === 'joinedAt') return typeof value === 'string' && value.length <= 40;
+  if (field === 'status') return value === 'active';
+  if (field === 'xp') return typeof value === 'number' && isFinite(value) && value >= 0 && value <= 10000000;
+  if (field === 'signal') return value === null || value === 'stuck' || value === 'slow' || value === 'repeat' || value === 'ready';
+  if (field === 'signalAt' || field === 'viewingAt') return value === null || (typeof value === 'number' && isFinite(value) && value >= 0);
+  if (field === 'viewingResourceId') return value === null || (typeof value === 'string' && value.length <= 100);
+  return false;
+}
+function participantCanPatchSession(updates, uid) {
+  var keys = Object.keys(updates);
+  var rosterRoot = 'roster.' + uid;
+  var rosterFields = {
+    uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
+    signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1
+  };
+  var roots = [
+    'quizState.allResponses.' + uid,
+    'quizState.responses.' + uid,
+    'quizState.teams.' + uid,
+    'bridgeReactions.' + uid,
+    'democracy.votes.' + uid,
+    'escapeRoomState.teams.' + uid,
+    'escapeRoomState.teamProgress'
+  ];
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    if (pathStarts(key, rosterRoot)) {
+      var rest = key === rosterRoot ? '' : key.slice(rosterRoot.length + 1);
+      if (rest) {
+        var field = rest.split('.')[0];
+        if (!rosterFields[field] || rest.indexOf('.') !== -1 || !validParticipantRosterField(field, updates[key], uid)) return false;
+      } else {
+        var entry = updates[key];
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
+        var entryKeys = Object.keys(entry);
+        for (var e = 0; e < entryKeys.length; e++) {
+          if (!rosterFields[entryKeys[e]] || !validParticipantRosterField(entryKeys[e], entry[entryKeys[e]], uid)) return false;
+        }
+      }
+      continue;
+    }
+    var allowed = false;
+    for (var j = 0; j < roots.length; j++) if (pathStarts(key, roots[j])) { allowed = true; break; }
+    if (!allowed) return false;
+  }
+  return true;
+}
+
+function participantCanWritePeer(tok, actor, action, payload) {
+  var peer = peerPathParts(tok);
+  if (!peer || peer.uid !== actor.uid) return false;
+  if (action === 'ddel') return true;
+  var allowed = { offer: 1, codename: 1, createdAt: 1, expiresAt: 1, iceFromGuest: 1 };
+  var body = action === 'dpatch' ? payload.u : payload.d;
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return false;
+  var keys = Object.keys(body);
+  for (var i = 0; i < keys.length; i++) {
+    var top = String(keys[i]).split('.')[0];
+    if (!allowed[top]) return false;
+  }
+  return true;
+}
+
+function docWrite(cache, code, action, p, actor) {
   var tok = cleanDocPath(p.p);
   if (!tok) return out({ ok: false, e: 'bad-path' });
-  var col = cleanDocPath(p.col);
-  var id = String(p.id || '').slice(0, 80);
+  var updates = p.u;
+  if (action === 'dpatch' && !validatePatchUpdates(updates)) return out({ ok: false, e: 'bad-data' });
+  if (action === 'dset' && !validateJsonValue(p.d === undefined ? null : p.d, 0)) return out({ ok: false, e: 'bad-data' });
+
+  if (actor.role === 'participant') {
+    if (tok === 's') {
+      if (action !== 'dpatch' || !participantCanPatchSession(updates, actor.uid)) return out({ ok: false, e: 'denied' });
+    } else if (!participantCanWritePeer(tok, actor, action, p)) {
+      return out({ ok: false, e: 'denied' });
+    }
+  }
+
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) return out({ ok: false, e: 'busy' });
   try {
-    // Doc writes share the session's flood posture (their own rolling bucket,
-    // same ceiling): a leaked QR can scribble on this session, not drown the
-    // script.
-    var rKey = 'r:' + code + ':doc';
-    var used = (parseInt(cache.get(rKey), 10) || 0) + 1;
-    if (used > RATE_LIMIT_MSGS) return out({ ok: false, e: 'rate-limited' });
-    cache.put(rKey, String(used), RATE_LIMIT_TTL_SEC);
+    var limit = actor.role === 'teacher' ? RATE_LIMIT_MSGS : PARTICIPANT_WRITES_PER_MIN;
+    if (!rateCheck(cache, actorRateKey(code, actor, 'doc'), limit)) {
+      return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+    }
+    var current = readDocEnvelope(cache, code, tok);
+    if (p.xw !== undefined) {
+      var actual = current ? (parseInt(current.w, 10) || 0) : 0;
+      if ((parseInt(p.xw, 10) || 0) !== actual) return out({ ok: false, e: 'conflict', w: actual });
+    }
+    var peer = peerPathParts(tok);
     if (action === 'ddel') {
       cache.remove('d:' + code + ':' + tok);
-      bumpDocIndex(cache, code, col, id, 0, true);
+      if (peer) bumpDocIndex(cache, code, peer.col, peer.uid, 0, true);
       return out({ ok: true, t: Date.now() });
     }
     if (action === 'dset') {
       var data = p.d === undefined ? null : p.d;
-      if (p.merge) {
-        var prev = readDocEnvelope(cache, code, tok);
-        if (prev && prev.d && typeof prev.d === 'object' && data && typeof data === 'object') {
-          var mergedData = prev.d;
-          Object.keys(data).forEach(function(k2) { mergedData[k2] = data[k2]; });
-          data = mergedData;
-        }
+      if (p.merge && current && current.d && typeof current.d === 'object' && data && typeof data === 'object') {
+        var mergedData = current.d;
+        Object.keys(data).forEach(function(k) { mergedData[k] = data[k]; });
+        data = mergedData;
       }
       var env = { w: nextDocVersion(cache, code), d: data };
       if (!writeDocEnvelope(cache, code, tok, env)) return out({ ok: false, e: 'too-big' });
-      bumpDocIndex(cache, code, col, id, env.w, false);
+      if (peer) bumpDocIndex(cache, code, peer.col, peer.uid, env.w, false);
       return out({ ok: true, w: env.w, t: Date.now() });
     }
-    // dpatch — rejects on a missing doc, exactly like Firestore updateDoc.
-    var existing = readDocEnvelope(cache, code, tok);
-    if (!existing || !existing.d || typeof existing.d !== 'object') return out({ ok: false, e: 'no-doc' });
-    var patched = applyDocUpdates(existing.d, p.u && typeof p.u === 'object' ? p.u : {});
+    if (!current || !current.d || typeof current.d !== 'object') return out({ ok: false, e: 'no-doc' });
+    var patched = applyDocUpdates(current.d, updates);
     var env2 = { w: nextDocVersion(cache, code), d: patched };
     if (!writeDocEnvelope(cache, code, tok, env2)) return out({ ok: false, e: 'too-big' });
-    bumpDocIndex(cache, code, col, id, env2.w, false);
-    return out({ ok: true, w: env2.w, d: env2.d, t: Date.now() });
+    if (peer) bumpDocIndex(cache, code, peer.col, peer.uid, env2.w, false);
+    var responseData = actor.role === 'participant' && tok === 's' ? projectSessionForParticipant(env2.d, actor.uid) : env2.d;
+    return out({ ok: true, w: env2.w, d: responseData, t: Date.now() });
   } finally { lock.releaseLock(); }
 }
-
 function packFolder() {
   var it = DriveApp.getFoldersByName(FOLDER_NAME);
   return it.hasNext() ? it.next() : DriveApp.createFolder(FOLDER_NAME);
@@ -419,6 +728,23 @@ function findPackFile(id) {
   return it.hasNext() ? it.next() : null;
 }
 
+// v7 pack storage: manifests stay small and each download reads only one
+// Drive chunk.
+function findNamedPackFileV7(name) {
+  var it = packFolder().getFilesByName(name);
+  return it.hasNext() ? it.next() : null;
+}
+
+function packChunkNameV7(id, part) {
+  return 'pack-' + id + '-' + part + '.txt';
+}
+
+function replacePackFileV7(name, body, mime) {
+  var existing = findNamedPackFileV7(name);
+  if (existing) existing.setContent(body);
+  else packFolder().createFile(name, body, mime);
+}
+
 function putPack(cache, p) {
   var id = String(p.id || '');
   if (!/^PK-[0-9a-f-]{36}$/i.test(id) || !isToken(p.k)) return out({ ok: false, e: 'bad-request' });
@@ -428,7 +754,6 @@ function putPack(cache, p) {
   if (part < 1 || of < 1 || part > of || of > 200 || !data || data.length > MAX_MSG_CHARS) return out({ ok: false, e: 'bad-part' });
   cache.put('u:' + id + ':' + part, data, UPLOAD_TTL_SEC);
   if (part < of) return out({ ok: true, part: part });
-  // Final part received: assemble under lock and write one Drive file.
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
   try {
@@ -443,39 +768,67 @@ function putPack(cache, p) {
     }
     var assembled = pieces.join('');
     if (assembled.length > MAX_PACK_CHARS) return out({ ok: false, e: 'too-big' });
-    var body = JSON.stringify({ k: String(p.k), t: Date.now(), title: String(p.title || '').slice(0, 140), data: assembled });
-    var existing = findPackFile(id);
-    if (existing) existing.setContent(body);
-    else packFolder().createFile('pack-' + id + '.json', body, 'application/json');
+
+    var oldCount = 0;
+    var oldManifest = findPackFile(id);
+    if (oldManifest) {
+      try { oldCount = parseInt(JSON.parse(oldManifest.getBlob().getDataAsString()).of, 10) || 0; } catch (e) {}
+    }
+    var downloadParts = Math.max(1, Math.ceil(assembled.length / GET_PART_CHARS));
+    for (var d = 1; d <= downloadParts; d++) {
+      replacePackFileV7(packChunkNameV7(id, d), assembled.slice((d - 1) * GET_PART_CHARS, d * GET_PART_CHARS), 'text/plain');
+    }
+    for (var stale = downloadParts + 1; stale <= oldCount; stale++) {
+      var staleFile = findNamedPackFileV7(packChunkNameV7(id, stale));
+      if (staleFile) staleFile.setTrashed(true);
+    }
+    replacePackFileV7('pack-' + id + '.json', JSON.stringify({
+      v: 2, k: String(p.k), t: Date.now(), title: String(p.title || '').slice(0, 140),
+      chars: assembled.length, of: downloadParts
+    }), 'application/json');
     for (var r = 1; r <= of; r++) cache.remove('u:' + id + ':' + r);
-    return out({ ok: true, id: id, chars: assembled.length });
+    return out({ ok: true, id: id, chars: assembled.length, of: downloadParts });
   } finally { lock.releaseLock(); }
 }
 
-function getPack(p) {
+function getPack(cache, p) {
   var id = String(p.id || '');
   if (!/^PK-[0-9a-f-]{36}$/i.test(id)) return out({ ok: false, e: 'bad-request' });
+  if (!rateCheck(cache, 'r:pack:' + id.slice(-12) + ':' + String(p.k || '').slice(0, 12), PARTICIPANT_READS_PER_MIN)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
   var file = findPackFile(id);
   if (!file) return out({ ok: false, e: 'no-pack' });
   var body;
   try { body = JSON.parse(file.getBlob().getDataAsString()); } catch (err) { return out({ ok: false, e: 'corrupt' }); }
   if (String(p.k || '') !== String(body.k || '')) return out({ ok: false, e: 'denied' });
-  var data = String(body.data || '');
   var part = Math.max(1, parseInt(p.part, 10) || 1);
-  var of = Math.max(1, Math.ceil(data.length / GET_PART_CHARS));
-  if (part > of) return out({ ok: false, e: 'bad-part' });
-  return out({
-    ok: true,
-    id: id,
-    title: String(body.title || ''),
-    part: part,
-    of: of,
-    data: data.slice((part - 1) * GET_PART_CHARS, part * GET_PART_CHARS),
-  });
+  if (body.data !== undefined) {
+    var legacy = String(body.data || '');
+    var legacyOf = Math.max(1, Math.ceil(legacy.length / GET_PART_CHARS));
+    if (part > legacyOf) return out({ ok: false, e: 'bad-part' });
+    return out({ ok: true, id: id, title: String(body.title || ''), part: part, of: legacyOf,
+      chars: legacy.length, data: legacy.slice((part - 1) * GET_PART_CHARS, part * GET_PART_CHARS) });
+  }
+  var chunkCount = Math.max(1, parseInt(body.of, 10) || 1);
+  if (part > chunkCount) return out({ ok: false, e: 'bad-part' });
+  var chunk = findNamedPackFileV7(packChunkNameV7(id, part));
+  if (!chunk) return out({ ok: false, e: 'corrupt', part: part });
+  return out({ ok: true, id: id, title: String(body.title || ''), part: part, of: chunkCount,
+    chars: parseInt(body.chars, 10) || 0, data: chunk.getBlob().getDataAsString() });
 }
 
 function delPack(p) {
-  var file = findPackFile(String(p.id || ''));
-  if (file) file.setTrashed(true);
+  var id = String(p.id || '');
+  var file = findPackFile(id);
+  var count = 0;
+  if (file) {
+    try { count = parseInt(JSON.parse(file.getBlob().getDataAsString()).of, 10) || 0; } catch (e) {}
+    file.setTrashed(true);
+  }
+  for (var i = 1; i <= count; i++) {
+    var chunk = findNamedPackFileV7(packChunkNameV7(id, i));
+    if (chunk) chunk.setTrashed(true);
+  }
   return out({ ok: true });
 }

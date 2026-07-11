@@ -61,7 +61,11 @@ function makeGsSandbox() {
             return svc;
         })(),
         DriveApp: { getFoldersByName: () => ({ hasNext: () => true, next: () => folder }), createFolder: () => folder },
-        Utilities: { getUuid: () => `aaaaaaaa-bbbb-cccc-dddd-${String(uuidCounter++).padStart(12, '0')}` },
+        Utilities: {
+            getUuid: () => 'aaaaaaaa-bbbb-cccc-dddd-' + String(uuidCounter++).padStart(12, '0'),
+            computeHmacSha256Signature: (value, key) => Array.from(Buffer.from((String(key) + '|' + String(value)).repeat(8)).subarray(0, 32)),
+            base64EncodeWebSafe: bytes => Buffer.from(bytes).toString('base64url'),
+        },
     };
     const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle };');
     const gs = factory(...Object.values(services));
@@ -72,41 +76,47 @@ function openedSandbox(code = 'AB2CD', secret = 'k_secret_k_secret_20') {
     const sandbox = makeGsSandbox();
     const admin = sandbox.call({ a: 'claim' }).admin;
     expect(sandbox.call({ a: 'open', admin, c: code, k: secret }).ok).toBe(true);
-    return { ...sandbox, admin, code, secret };
+    const teacherCall = payload => sandbox.call({ admin, ...payload });
+    const joinParticipant = () => {
+        const joined = sandbox.call({ a: 'join', c: code, k: secret });
+        expect(joined.ok).toBe(true);
+        return { uid: joined.uid, pt: joined.pt };
+    };
+    return { ...sandbox, admin, code, secret, teacherCall, joinParticipant };
 }
 
-describe('Code.gs v6 session document store (real source)', () => {
+describe('Code.gs v7 role-aware session document store (real source)', () => {
     it('reports v6 and keeps the doc store behind the session secret', () => {
         const sb = makeGsSandbox();
-        expect(sb.call({ a: 'hello' }).v).toBeGreaterThanOrEqual(6);
+        expect(sb.call({ a: 'hello' }).v).toBeGreaterThanOrEqual(7);
         expect(sb.call({ a: 'dget', c: 'AB2CD', k: 'k_secret_k_secret_20', ps: [{ p: 's' }] }).e).toBe('no-session');
         const opened = openedSandbox();
         expect(opened.call({ a: 'dget', c: opened.code, k: 'x_wrong_x_wrong_x_20', ps: [{ p: 's' }] }).e).toBe('denied');
-        expect(opened.call({ a: 'dset', c: opened.code, k: opened.secret, p: 'bad path!', d: {} }).e).toBe('bad-path');
+        expect(opened.teacherCall({ a: 'dset', c: opened.code, k: opened.secret, p: 'bad path!', d: {} }).e).toBe('bad-path');
     });
 
     it('dset/dget round-trips with version-delta short-circuiting', () => {
         const sb = openedSandbox();
-        const set = sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {} } });
+        const set = sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {} } });
         expect(set.ok).toBe(true);
         expect(set.w).toBe(1);
-        const fresh = sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's' }] });
+        const fresh = sb.teacherCall({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's' }] });
         expect(fresh.docs[0].w).toBe(1);
         expect(fresh.docs[0].d.mode).toBe('sync');
         // Caller already has w=1: body omitted (the poll stays cheap).
-        const cached = sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's', w: 1 }] });
+        const cached = sb.teacherCall({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's', w: 1 }] });
         expect(cached.docs[0].w).toBe(1);
         expect(cached.docs[0].d).toBeUndefined();
         // Unknown docs report missing (never an error).
-        const missing = sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 'g:signaling:u1' }] });
+        const missing = sb.teacherCall({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 'g:signaling:u1' }] });
         expect(missing.docs[0].missing).toBe(true);
     });
 
     it('dpatch applies dot paths, nested creation and deleteField like Firestore updateDoc', () => {
         const sb = openedSandbox();
-        expect(sb.call({ a: 'dpatch', c: sb.code, k: sb.secret, p: 's', u: { x: 1 } }).e).toBe('no-doc');
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { roster: {}, quizState: { isActive: false } } });
-        const patched = sb.call({ a: 'dpatch', c: sb.code, k: sb.secret, p: 's', u: {
+        expect(sb.teacherCall({ a: 'dpatch', c: sb.code, k: sb.secret, p: 's', u: { x: 1 } }).e).toBe('no-doc');
+        sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { roster: {}, quizState: { isActive: false } } });
+        const patched = sb.teacherCall({ a: 'dpatch', c: sb.code, k: sb.secret, p: 's', u: {
             'roster.mb-1.name': 'Brave Fox',
             'roster.mb-1.xp': 40,
             'quizState.isActive': true,
@@ -115,7 +125,7 @@ describe('Code.gs v6 session document store (real source)', () => {
         expect(patched.d.roster['mb-1'].name).toBe('Brave Fox');
         expect(patched.d.quizState.isActive).toBe(true);
         expect(patched.w).toBe(2);
-        const removed = sb.call({ a: 'dpatch', c: sb.code, k: sb.secret, p: 's', u: {
+        const removed = sb.teacherCall({ a: 'dpatch', c: sb.code, k: sb.secret, p: 's', u: {
             'roster.mb-1.xp': { __op: 'deleteField' },
         } });
         expect(removed.d.roster['mb-1'].xp).toBeUndefined();
@@ -124,45 +134,112 @@ describe('Code.gs v6 session document store (real source)', () => {
 
     it('dset merge, collection indexes and ddel maintain the membership doc', () => {
         const sb = openedSandbox();
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 'g:quiz-signaling:u1', d: { offer: { sdp: 'o1' } }, col: 'c:quiz-signaling', id: 'u1' });
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 'g:quiz-signaling:u2', d: { offer: { sdp: 'o2' } }, col: 'c:quiz-signaling', id: 'u2' });
-        let index = sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 'c:quiz-signaling' }] }).docs[0];
-        expect(Object.keys(index.d).sort()).toEqual(['u1', 'u2']);
+        sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 'g:quiz-signaling:mb-user00001', d: { offer: { sdp: 'o1' } }, col: 'c:quiz-signaling', id: 'mb-user00001' });
+        sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 'g:quiz-signaling:mb-user00002', d: { offer: { sdp: 'o2' } }, col: 'c:quiz-signaling', id: 'mb-user00002' });
+        let index = sb.teacherCall({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 'c:quiz-signaling' }] }).docs[0];
+        expect(Object.keys(index.d).sort()).toEqual(['mb-user00001', 'mb-user00002']);
         // Host answers with a merge-set: guest fields survive.
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 'g:quiz-signaling:u1', d: { answer: { sdp: 'a1' } }, merge: 1, col: 'c:quiz-signaling', id: 'u1' });
-        const child = sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 'g:quiz-signaling:u1' }] }).docs[0];
+        sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 'g:quiz-signaling:mb-user00001', d: { answer: { sdp: 'a1' } }, merge: 1, col: 'c:quiz-signaling', id: 'mb-user00001' });
+        const child = sb.teacherCall({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 'g:quiz-signaling:mb-user00001' }] }).docs[0];
         expect(child.d.offer.sdp).toBe('o1');
         expect(child.d.answer.sdp).toBe('a1');
-        sb.call({ a: 'ddel', c: sb.code, k: sb.secret, p: 'g:quiz-signaling:u1', col: 'c:quiz-signaling', id: 'u1' });
-        index = sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 'c:quiz-signaling' }] }).docs[0];
-        expect(Object.keys(index.d)).toEqual(['u2']);
+        sb.teacherCall({ a: 'ddel', c: sb.code, k: sb.secret, p: 'g:quiz-signaling:mb-user00001', col: 'c:quiz-signaling', id: 'mb-user00001' });
+        index = sb.teacherCall({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 'c:quiz-signaling' }] }).docs[0];
+        expect(Object.keys(index.d)).toEqual(['mb-user00002']);
     });
 
     it('recv piggybacks the doc watch list: one poll returns messages AND changed docs', () => {
         const sb = openedSandbox();
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {} } });
-        sb.call({ a: 'send', c: sb.code, k: sb.secret, from: 'mb-1', box: 'up', v: { kind: 'student', uid: 'mb-1', name: 'Ada' } });
-        const res = sb.call({ a: 'recv', c: sb.code, k: sb.secret, box: 'up', since: '0', ps: [{ p: 's' }] });
+        sb.teacherCall({ a: 'dset', c: sb.code, p: 's', d: { mode: 'sync', roster: {} } });
+        const guest = sb.joinParticipant();
+        sb.call({ a: 'send', ...guest, c: sb.code, box: 'up', v: { kind: 'student', name: 'Ada' } });
+        const res = sb.teacherCall({ a: 'recv', c: sb.code, box: 'up', since: '0', ps: [{ p: 's' }] });
         expect(res.b.up.m.length).toBe(1);
         expect(res.docs[0].d.mode).toBe('sync');
         // Known version: the piggyback stays cheap (no body).
-        const cached = sb.call({ a: 'recv', c: sb.code, k: sb.secret, box: 'up', since: String(res.b.up.n), ps: [{ p: 's', w: res.docs[0].w }] });
+        const cached = sb.teacherCall({ a: 'recv', c: sb.code, k: sb.secret, box: 'up', since: String(res.b.up.n), ps: [{ p: 's', w: res.docs[0].w }] });
         expect(cached.docs[0].d).toBeUndefined();
         // No ps → no docs key at all (old-client shape unchanged).
-        expect(sb.call({ a: 'recv', c: sb.code, k: sb.secret, box: 'up', since: '0' }).docs).toBeUndefined();
+        expect(sb.teacherCall({ a: 'recv', c: sb.code, k: sb.secret, box: 'up', since: '0' }).docs).toBeUndefined();
     });
 
     it('rejects oversized docs, clears docs on end, and re-open does not resurrect a previous class', () => {
         const sb = openedSandbox();
-        expect(sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { blob: 'x'.repeat(90 * 1024) } }).e).toBe('too-big');
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync' } });
-        expect(sb.call({ a: 'end', c: sb.code, k: sb.secret }).ok).toBe(true);
-        expect(sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's' }] }).e).toBe('no-session');
+        expect(sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { blob: 'x'.repeat(90 * 1024) } }).e).toBe('too-big');
+        sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync' } });
+        expect(sb.teacherCall({ a: 'end', c: sb.code, k: sb.secret }).ok).toBe(true);
+        expect(sb.teacherCall({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's' }] }).e).toBe('no-session');
         // Same code re-opened later (random collision): the old doc is gone.
-        expect(sb.call({ a: 'open', admin: sb.admin, c: sb.code, k: sb.secret }).ok).toBe(true);
-        expect(sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's' }] }).docs[0].missing).toBe(true);
+        expect(sb.teacherCall({ a: 'open', admin: sb.admin, c: sb.code, k: sb.secret }).ok).toBe(true);
+        expect(sb.teacherCall({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's' }] }).docs[0].missing).toBe(true);
     });
-});
+
+    it('projects private class state and rejects cross-student or teacher-only operations', () => {
+        const sb = openedSandbox();
+        const one = sb.joinParticipant();
+        const two = sb.joinParticipant();
+        sb.teacherCall({ a: 'dset', c: sb.code, p: 's', d: {
+            mode: 'sync',
+            roster: {
+                [one.uid]: { name: 'One', groupId: 'g1' },
+                [two.uid]: { name: 'Two', signal: 'stuck' },
+            },
+            quizState: {
+                allResponses: { [one.uid]: { 0: 'A' }, [two.uid]: { 0: 'B' } },
+                responses: { [one.uid]: 1, [two.uid]: 2 },
+                teams: { [one.uid]: 'red', [two.uid]: 'blue' },
+            },
+            bridgeReactions: { [one.uid]: { emoji: 'ok' }, [two.uid]: { emoji: 'help' } },
+            democracy: { votes: { [one.uid]: 'A', [two.uid]: 'B' } },
+        } });
+        const view = sb.call({ a: 'dget', ...one, c: sb.code, ps: [{ p: 's' }] }).docs[0].d;
+        expect(Object.keys(view.roster)).toEqual([one.uid]);
+        expect(view.participantCount).toBe(2);
+        expect(Object.keys(view.quizState.allResponses)).toEqual([one.uid]);
+        expect(Object.keys(view.bridgeReactions)).toEqual([one.uid]);
+        expect(Object.keys(view.democracy.votes)).toEqual([one.uid]);
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['roster.' + one.uid + '.name']: 'Updated',
+        } }).ok).toBe(true);
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['roster.' + two.uid + '.name']: 'Forged',
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['roster.' + one.uid + '.groupId']: 'teacher-group',
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: { mode: 'async' } }).e).toBe('denied');
+        expect(sb.call({ a: 'ddel', ...one, c: sb.code, p: 's' }).e).toBe('denied');
+        expect(sb.call({ a: 'end', ...one, c: sb.code }).e).toBe('not-admin');
+    });
+
+    it('scopes signaling to the issued participant and rejects hostile patch keys', () => {
+        const sb = openedSandbox();
+        const one = sb.joinParticipant();
+        const two = sb.joinParticipant();
+        sb.teacherCall({ a: 'dset', c: sb.code, p: 's', d: { roster: {} } });
+        const ownPath = 'g:quiz-signaling:' + one.uid;
+        const otherPath = 'g:quiz-signaling:' + two.uid;
+        expect(sb.call({ a: 'dset', ...one, c: sb.code, p: ownPath, d: { offer: { sdp: 'one' } } }).ok).toBe(true);
+        expect(sb.call({ a: 'dget', ...one, c: sb.code, ps: [{ p: ownPath }] }).docs[0].d.offer.sdp).toBe('one');
+        expect(sb.call({ a: 'dget', ...two, c: sb.code, ps: [{ p: ownPath }] }).e).toBe('denied');
+        expect(sb.call({ a: 'dset', ...one, c: sb.code, p: otherPath, d: { offer: { sdp: 'forged' } } }).e).toBe('denied');
+        expect(sb.call({ a: 'dget', ...one, c: sb.code, ps: [{ p: 'c:quiz-signaling' }] }).e).toBe('denied');
+        const poison = {};
+        Object.defineProperty(poison, 'roster.' + one.uid + '.__proto__.polluted', { value: true, enumerable: true });
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: poison }).e).toBe('bad-data');
+        expect(sb.teacherCall({ a: 'dset', c: sb.code, p: 'g:quiz-signaling:mb-hostile001', d:
+            JSON.parse('{"offer":{"constructor":{"polluted":true}}}') }).e).toBe('bad-data');
+        expect({}.polluted).toBeUndefined();
+    });
+
+    it('supports compare-and-swap recovery so a stale re-seed cannot overwrite a recreated document', () => {
+        const sb = openedSandbox();
+        const first = sb.teacherCall({ a: 'dset', c: sb.code, p: 's', d: { mode: 'sync' } });
+        expect(first.w).toBe(1);
+        const conflict = sb.teacherCall({ a: 'dset', c: sb.code, p: 's', d: { mode: 'stale' }, xw: 0 });
+        expect(conflict).toMatchObject({ ok: false, e: 'conflict', w: 1 });
+        expect(sb.teacherCall({ a: 'dget', c: sb.code, ps: [{ p: 's' }] }).docs[0].d.mode).toBe('sync');
+    });});
 
 // ── Bridge (real ANTI adapter) ↔ real Code.gs, end to end ──────────────────
 
@@ -249,41 +326,41 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
             await api.setDoc(ref, { resources: [{ id: 'r1', data: 'huge' }], mode: 'sync', roster: {}, quizState: { isActive: false } });
             expect(api.state().code).toBe('ZZ9XY');
             expect(calls.some(c => c.a === 'open' && c.c === 'ZZ9XY')).toBe(true);
-            const stored = sb.call({ a: 'dget', c: 'ZZ9XY', k: sb.secret, ps: [{ p: 's' }] }).docs[0];
+            const stored = sb.teacherCall({ a: 'dget', c: 'ZZ9XY', k: sb.secret, ps: [{ p: 's' }] }).docs[0];
             expect(stored.d.mode).toBe('sync');
             expect(stored.d.resources).toBeUndefined(); // pack channel carries content
         } finally { api.teardown(); }
     });
 
-    it('student flow: getDoc, dot-path roster updateDoc, deleteField translation, local echo to watchers', async () => {
+    it('student flow uses a participant capability and can update only its own roster entry', async () => {
         const { api, sb } = makeBridge();
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {}, isActive: true } });
-        api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, isTeacher: false, uid: 'mb-stu1' });
+        sb.teacherCall({ a: 'dset', c: sb.code, p: 's', d: { mode: 'sync', roster: {}, isActive: true } });
+        const guest = sb.joinParticipant();
+        api.install({ url: 'https://mb/exec', code: sb.code, participant: guest.pt, isTeacher: false, uid: guest.uid });
         try {
-            expect(api.bridgeUser().uid).toBe('mb-stu1');
+            expect(api.bridgeUser().uid).toBe(guest.uid);
             const ref = api.doc(...sessionArgs(sb.code));
             const snap = await api.getDoc(ref);
             expect(snap.exists()).toBe(true);
             expect(snap.data().mode).toBe('sync');
             const seen = [];
-            api.onSnapshot(ref, s => seen.push(s.data()));
+            api.onSnapshot(ref, value => seen.push(value.data()));
             await api.updateDoc(ref, {
-                'roster.mb-stu1.name': 'Brave Fox',
-                'roster.mb-stu1.signal': { __testDelete: true },
-                resources: [{ id: 'nope' }], // stripped for session refs
+                ['roster.' + guest.uid + '.name']: 'Brave Fox',
+                ['roster.' + guest.uid + '.signal']: { __testDelete: true },
+                resources: [{ id: 'nope' }],
             });
-            // Local echo: our own write lands on watchers without waiting for a poll.
             expect(seen.length).toBeGreaterThan(0);
-            expect(seen[seen.length - 1].roster['mb-stu1'].name).toBe('Brave Fox');
-            const stored = sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's' }] }).docs[0];
-            expect(stored.d.roster['mb-stu1'].name).toBe('Brave Fox');
+            expect(seen[seen.length - 1].roster[guest.uid].name).toBe('Brave Fox');
+            const stored = sb.teacherCall({ a: 'dget', c: sb.code, ps: [{ p: 's' }] }).docs[0];
+            expect(stored.d.roster[guest.uid].name).toBe('Brave Fox');
             expect(stored.d.resources).toBeUndefined();
+            await expect(api.updateDoc(ref, { mode: 'async' })).rejects.toMatchObject({ code: 'allo/mailbox-denied' });
         } finally { api.teardown(); }
     });
-
     it('doc watchers receive remote changes via the pump', async () => {
         const { api, sb } = makeBridge();
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {} } });
+        sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {} } });
         api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, admin: sb.admin, isTeacher: true });
         try {
             const ref = api.doc(...sessionArgs(sb.code));
@@ -292,7 +369,7 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
             await api.pump();
             expect(seen.length).toBe(1); // initial state pulled
             // A student patches server-side (as their own bridge would).
-            sb.call({ a: 'dpatch', c: sb.code, k: sb.secret, p: 's', u: { 'roster.mb-9.name': 'Calm Owl' } });
+            sb.teacherCall({ a: 'dpatch', c: sb.code, k: sb.secret, p: 's', u: { 'roster.mb-9.name': 'Calm Owl' } });
             await api.pump();
             expect(seen[seen.length - 1].roster['mb-9'].name).toBe('Calm Owl');
             // Nothing new: the pump must not re-fire watchers.
@@ -304,7 +381,7 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
 
     it('signaling handshake: collection docChanges, merge answers, delete removal', async () => {
         const { api, sb } = makeBridge();
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync' } });
+        sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync' } });
         api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, admin: sb.admin, isTeacher: true });
         try {
             const colRef = api.collection(...peersColArgs(sb.code));
@@ -314,63 +391,54 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
                 snap.docChanges().forEach(ch => events.push({ type: ch.type, id: ch.doc.id, data: ch.doc.data(), ref: ch.doc.ref }));
             });
             // Guest writes an offer (their bridge does exactly this dset).
-            const guestRef = api.doc(...peerArgs(sb.code, 'mb-g1'));
+            const guestRef = api.doc(...peerArgs(sb.code, 'mb-guest0001'));
             expect(guestRef.__alloMbRef).toBe('peer');
             await api.setDoc(guestRef, { offer: { type: 'offer', sdp: 'sdp-1' }, codename: 'Brave Fox' });
             await api.pump();
-            const added = events.find(e => e.type === 'added' && e.id === 'mb-g1');
+            const added = events.find(e => e.type === 'added' && e.id === 'mb-guest0001');
             expect(added).toBeTruthy();
             expect(added.data.offer.sdp).toBe('sdp-1');
             // Host answers on the change ref with a merge-set, like LivePolling does.
             await api.setDoc(added.ref, { answer: { type: 'answer', sdp: 'sdp-a' } }, { merge: true });
-            const child = sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 'g:quiz-signaling:mb-g1' }] }).docs[0];
+            const child = sb.teacherCall({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 'g:quiz-signaling:mb-guest0001' }] }).docs[0];
             expect(child.d.offer.sdp).toBe('sdp-1');
             expect(child.d.answer.sdp).toBe('sdp-a');
             // Cleanup deletion surfaces as a 'removed' change.
             await api.deleteDoc(added.ref);
             await api.pump();
-            expect(events.some(e => e.type === 'removed' && e.id === 'mb-g1')).toBe(true);
+            expect(events.some(e => e.type === 'removed' && e.id === 'mb-guest0001')).toBe(true);
         } finally { api.teardown(); }
     });
 
-    it('session end on the server exits through the standard ended pathway (exists() === false)', async () => {
+    it('session end on the server exits through the standard ended pathway', async () => {
         const { api, sb } = makeBridge();
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync' } });
-        api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, isTeacher: false, uid: 'mb-stu1' });
+        sb.teacherCall({ a: 'dset', c: sb.code, p: 's', d: { mode: 'sync' } });
+        const guest = sb.joinParticipant();
+        api.install({ url: 'https://mb/exec', code: sb.code, participant: guest.pt, isTeacher: false, uid: guest.uid });
         try {
             const ref = api.doc(...sessionArgs(sb.code));
             const snaps = [];
-            api.onSnapshot(ref, s => snaps.push(s.exists()));
+            api.onSnapshot(ref, value => snaps.push(value.exists()));
             await api.pump();
             expect(snaps[snaps.length - 1]).toBe(true);
-            sb.call({ a: 'end', c: sb.code, k: sb.secret });
+            sb.teacherCall({ a: 'end', c: sb.code });
             await api.pump();
             expect(snaps[snaps.length - 1]).toBe(false);
         } finally { api.teardown(); }
     });
-
-    it('pre-v6 mailbox (bad-action) degrades silently to the legacy flows', async () => {
-        const sbReal = openedSandbox();
-        const legacy = {
-            ...sbReal,
-            call: p => (String(p.a).startsWith('d') ? { ok: false, e: 'bad-action' } : sbReal.call(p)),
-        };
-        const { api } = makeBridge(legacy);
-        api.install({ url: 'https://mb/exec', code: legacy.code, secret: legacy.secret, isTeacher: false, uid: 'mb-stu1' });
+    it('participant calls fail closed when the bridge has no issued credential', async () => {
+        const { api, sb } = makeBridge();
+        api.install({ url: 'https://mb/exec', code: sb.code, isTeacher: false, uid: 'mb-missing0001' });
         try {
-            const ref = api.doc(...sessionArgs(legacy.code));
-            const snaps = [];
-            api.onSnapshot(ref, s => snaps.push(s));
-            await api.pump(); // must swallow bad-action, fire nothing, stop pumping
-            expect(snaps.length).toBe(0);
-            expect(api.active()).toBe(true);
+            const ref = api.doc(...sessionArgs(sb.code));
+            await expect(api.getDoc(ref)).rejects.toMatchObject({ code: 'allo/mailbox-denied' });
         } finally { api.teardown(); }
     });
-
     it('recv-fed deliveries update watchers and idle the pump; a nudge overrides the idle skip', async () => {
         const { api, sb, calls } = makeBridge();
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {} } });
-        api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, isTeacher: false, uid: 'mb-stu1' });
+        sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {} } });
+        const guest = sb.joinParticipant();
+        api.install({ url: 'https://mb/exec', code: sb.code, participant: guest.pt, isTeacher: false, uid: guest.uid });
         try {
             const ref = api.doc(...sessionArgs(sb.code));
             const seen = [];
@@ -378,7 +446,7 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
             // A recv loop would fetch with the watch list and hand docs back:
             const ps = api.recvPs();
             expect(Array.isArray(ps) && ps.length).toBeTruthy();
-            const recvRes = sb.call({ a: 'recv', c: sb.code, k: sb.secret, box: 'down', since: '0', ps });
+            const recvRes = sb.call({ a: 'recv', ...guest, c: sb.code, box: 'down', since: '0', ps });
             await api.deliver(recvRes.docs);
             expect(seen.length).toBe(1);
             expect(seen[0].mode).toBe('sync');
@@ -387,17 +455,17 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
             await api.pump();
             expect(calls.filter(c => c.a === 'dget').length).toBe(dgetsBefore);
             // A nudge means a change is waiting NOW → the pump pulls anyway.
-            sb.call({ a: 'dpatch', c: sb.code, k: sb.secret, p: 's', u: { 'roster.mb-9.name': 'Calm Owl' } });
+            sb.teacherCall({ a: 'dpatch', c: sb.code, k: sb.secret, p: 's', u: { 'roster.mb-9.name': 'Calm Owl' } });
             api.nudge();
             await api.pump();
             expect(calls.filter(c => c.a === 'dget').length).toBe(dgetsBefore + 1);
-            expect(seen[seen.length - 1].roster['mb-9'].name).toBe('Calm Owl');
+            expect(seen[seen.length - 1].roster[guest.uid]).toBeUndefined();
         } finally { api.teardown(); }
     });
 
     it('sheds the quiz fallback store and retries when a patch hits the doc size ceiling', async () => {
         const { api, sb } = makeBridge();
-        sb.call({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {}, quizState: { isActive: true, allResponses: { filler: 'x'.repeat(60 * 1024) } } } });
+        sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {}, quizState: { isActive: true, allResponses: { filler: 'x'.repeat(60 * 1024) } } } });
         api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, admin: sb.admin, isTeacher: true });
         try {
             const ref = api.doc(...sessionArgs(sb.code));
@@ -405,7 +473,7 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
             // quizState.allResponses (P2P carries answers normally) and retry
             // instead of leaving every subsequent session write failing.
             await api.updateDoc(ref, { 'quizState.bigField': 'y'.repeat(40 * 1024), 'quizState.phase': 'answering' });
-            const stored = sb.call({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's' }] }).docs[0];
+            const stored = sb.teacherCall({ a: 'dget', c: sb.code, k: sb.secret, ps: [{ p: 's' }] }).docs[0];
             expect(stored.d.quizState.phase).toBe('answering');
             expect(stored.d.quizState.bigField.length).toBe(40 * 1024);
             expect(Object.keys(stored.d.quizState.allResponses || {})).toEqual([]);
@@ -414,7 +482,8 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
 
     it('only session-scoped refs reroute; foreign codes and other collections stay on Firestore', () => {
         const { api, sb } = makeBridge();
-        api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, isTeacher: false, uid: 'mb-stu1' });
+        const guest = sb.joinParticipant();
+        api.install({ url: 'https://mb/exec', code: sb.code, participant: guest.pt, isTeacher: false, uid: guest.uid });
         try {
             expect(api.doc(...sessionArgs('OTHER'))?.__alloMbRef).toBeUndefined();
             expect(api.doc(DB, 'artifacts', 'app', 'public', 'data', 'conceptMastery', 'u1')?.__alloMbRef).toBeUndefined();
@@ -437,7 +506,7 @@ describe('three-copy sync pins (Phase C sections)', () => {
         const sections = source => [
             sliceBetween(source, '// ── Class Mailbox session-document bridge (Phase C: single-pathway unification) ──', 'let WebSearchProvider = null;'),
             sliceBetween(source, 'const startMailboxLiveSession = useCallback', 'const _mbCloseTeacherPeers'),
-            sliceBetween(source, '// Phase C — unified session pathway', 'return () => {'),
+            sliceBetween(source, '// Mailbox live-session student entry (?allo_mb=…)', '// Keep the announced nickname current'),
         ].join('\n--- SECTION ---\n');
         const [root, prismflow, appJsx] = copies.map(sections);
         expect(prismflow).toBe(root);
@@ -447,7 +516,7 @@ describe('three-copy sync pins (Phase C sections)', () => {
         copies.forEach(source => {
             expect(source).toContain("if (parsed && parsed.kind === 'sdocv') { _alloMbNudge(); return; }");
             expect(source).toContain("dc.send(JSON.stringify({ kind: 'sdocv' }))");
-            expect(source).toContain('_alloMbInstallBridge({ url: entry.u, code: mbJoinCode');
+            expect(source).toContain('participant: student.participant');
             expect(source).toContain('joinClassSession(mbJoinCode)');
             expect(source).toContain('await startClassSessionRef.current();');
             expect(source).toContain("updateDoc(sessionRef, { isActive: false, status: 'ended' })");

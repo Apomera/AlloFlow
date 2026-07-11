@@ -323,16 +323,29 @@
     </div>
     <div class="card" id="demoAutopilotCard">
       <h2>🤖 Demo Autopilot (beta)</h2>
-      <div class="status">Describe what to show, review the step plan, then AlloFlow drives itself while this window records the tab — each step becomes a caption. Your goal text (never video) goes to Gemini to pick steps from AlloFlow’s own command list; nothing runs until you approve the plan. Before starting: close anything with student data, and pick the <strong>AlloFlow tab</strong> in the share dialog.</div>
+      <div class="status">Describe what to show, review the step plan, then AlloFlow drives itself while this window records the tab — each step becomes a caption. Your goal text (never video) goes to Gemini to pick steps from AlloFlow’s own command list; nothing runs until you approve the plan. Automatic voice keeps the microphone off and sends only the finished step text through your configured speech provider after recording. Before starting: close anything with student data, and pick the <strong>AlloFlow tab</strong> in the share dialog.</div>
       <label for="demoGoal" style="display:block;margin:8px 0 6px">What should the demo show?</label>
       <textarea id="demoGoal" rows="2" placeholder="Example: Create a 5th-grade lesson about volcanoes, then generate a quiz and a glossary from it." style="width:100%;box-sizing:border-box;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;resize:vertical"></textarea>
       <div class="row" style="margin:8px 0">
+        <label for="demoAudioMode">Narration
+          <select id="demoAudioMode" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+            <option value="auto-Kore">Automatic voice: Kore</option>
+            <option value="auto-Puck">Automatic voice: Puck</option>
+            <option value="mic">My microphone</option>
+            <option value="captions">Captions only</option>
+          </select>
+        </label>
         <button class="quiet" id="demoPlanBtn">1 · Draft the step plan</button>
         <button class="action" id="demoStartBtn" disabled>2 · Record the demo</button>
         <button class="danger" id="demoStopBtn" hidden>🛑 Stop demo</button>
       </div>
+      <div class="row" style="margin:0 0 8px">
+        <button class="quiet" id="demoOfficialTextBtn">Use official Text Adaptation tutorial</button>
+        <button class="quiet" id="demoNarrCancelBtn" hidden>Cancel narration</button>
+        <button class="quiet" id="demoNarrRetryBtn" hidden>Retry failed lines</button>
+      </div>
       <div id="demoPlanList" role="group" aria-label="Demo plan steps"></div>
-      <div class="status" id="demoStatus"></div>
+      <div class="status" id="demoStatus" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
     <div class="stage" id="stage">
       <div class="placeholder" id="stagePlaceholder">Press <strong>Start recording</strong> — you’ll pick what to share, then a 3-second countdown runs.</div>
@@ -624,6 +637,10 @@
             <button class="quiet" id="recClipBtn">🎙 Record clip at playhead</button>
           </div>
           <div id="clipList"></div>
+          <div class="row" style="margin:8px 0">
+            <button class="quiet" id="demoNarrCancelEditBtn" hidden>Cancel automatic narration</button>
+            <button class="quiet" id="demoNarrRetryEditBtn" hidden>Retry failed narration lines</button>
+          </div>
           <div class="row" style="margin:10px 0 8px">
             <button class="quiet" id="aiNarrateBtn" title="Gemini reads a contact sheet of sampled frames plus your captions — never the raw video — and drafts a narration script you edit before anything is added.">🤖 AI narration (no mic needed)</button>
             <select id="ttsVoice" aria-label="Spoken narration voice" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
@@ -3488,6 +3505,43 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return out;
   }
 
+  // Demo Autopilot may drive the app only when the selected capture is clearly
+  // the AlloFlow browser tab. General-purpose recording can still use any
+  // surface; this stricter validator is intentionally limited to automation.
+  function vsValidateDemoCapture(displaySurface, trackLabel) {
+    var surface = String(displaySurface || '').trim().toLowerCase();
+    var label = String(trackLabel || '').trim().slice(0, 160);
+    if (surface !== 'browser') return { ok: false, reason: 'Demo Autopilot requires a browser tab, not a window or entire screen.' };
+    if (!label || !/alloflow/i.test(label)) {
+      return { ok: false, reason: 'The selected tab was not identified as AlloFlow' + (label ? ' (selected: “' + label + '”)' : '') + '. Stop and choose the AlloFlow tab.' };
+    }
+    return { ok: true, label: label };
+  }
+
+  // Place generated PCM narration without stacking clips on top of each other.
+  // PCM is mono 16-bit, so byte length gives an exact duration before WAV wrap.
+  function vsScheduleDemoNarrationClip(cue, pcmByteLength, sampleRate, previousEnd, takeDuration, gap) {
+    var bytes = Math.max(0, Math.floor(Number(pcmByteLength) || 0));
+    var rate = Math.max(8000, Math.min(96000, Math.floor(Number(sampleRate) || 24000)));
+    if (!bytes) return null;
+    var duration = bytes / (rate * 2);
+    if (!isFinite(duration) || duration <= 0) return null;
+    var cueStart = Math.max(0, Number(cue && cue.start) || 0);
+    var prior = Math.max(0, Number(previousEnd) || 0);
+    var spacing = Math.max(0, Math.min(1, Number(gap) || 0.12));
+    var start = Math.max(cueStart, prior > 0 ? prior + spacing : cueStart);
+    var limit = Math.max(0, Number(takeDuration) || 0);
+    if (limit > 0 && start >= limit - 0.05) return null;
+    var end = start + duration;
+    return {
+      start: Math.round(start * 1000) / 1000,
+      duration: Math.round(duration * 1000) / 1000,
+      end: Math.round(end * 1000) / 1000,
+      shifted: start > cueStart + 0.01,
+      clipped: limit > 0 && end > limit
+    };
+  }
+
   // Demo Autopilot captions: one cue per executed plan step, timed by the
   // recording clock at the moment the step ran. A 'start' event opens the
   // cue, the matching 'done' extends it to the completion moment; cues never
@@ -3496,15 +3550,26 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var evs = (Array.isArray(events) ? events : []).filter(function (e) {
       return e && isFinite(Number(e.t)) && Number(e.t) >= 0 && String(e.label || '').trim();
     }).map(function (e) {
-      return { t: Number(e.t), phase: e.phase === 'done' ? 'done' : 'start', index: Math.max(0, Math.round(Number(e.index) || 0)), label: String(e.label).trim().slice(0, 140) };
+      return {
+        t: Number(e.t),
+        phase: e.phase === 'done' ? 'done' : 'start',
+        index: Math.max(0, Math.round(Number(e.index) || 0)),
+        label: String(e.label).trim().replace(/[\r\n]+/g, ' ').slice(0, 140),
+        narration: String(e.narration || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 240)
+      };
     }).sort(function (a, b) { return a.t - b.t; });
     var cues = [];
     evs.forEach(function (e) {
+      var baseText = 'Step ' + (e.index + 1) + ': ' + e.label;
       if (e.phase === 'start') {
-        cues.push({ start: e.t, end: e.t + 8, text: 'Step ' + (e.index + 1) + ': ' + e.label, _i: e.index });
+        cues.push({ start: e.t, end: e.t + 8, text: baseText, _i: e.index, _label: e.label });
       } else {
         for (var i = cues.length - 1; i >= 0; i--) {
-          if (cues[i]._i === e.index) { cues[i].end = Math.max(cues[i].start + 0.8, e.t); break; }
+          if (cues[i]._i === e.index) {
+            cues[i].end = Math.max(cues[i].start + 0.8, e.t);
+            if (e.narration && e.narration.toLowerCase() !== cues[i]._label.toLowerCase()) cues[i].text = baseText + '. ' + e.narration;
+            break;
+          }
         }
       }
     });
@@ -4077,6 +4142,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       $('exportPlanDetail').textContent = 'The plan updates as you choose captions, size, and container.';
       return;
     }
+    if (t.demoNarrationPending) {
+      $('exportPlanSummary').textContent = 'Automatic narration is still being generated.';
+      $('exportPlanDetail').textContent = 'Export and project saving will unlock when every narration clip is ready.';
+      return;
+    }
     var sourceW = $('editVideo') && $('editVideo').videoWidth ? $('editVideo').videoWidth : 1280;
     var sourceH = $('editVideo') && $('editVideo').videoHeight ? $('editVideo').videoHeight : 720;
     var format = exportCanvasSizeFor(currentExportFormatKey(), sourceW, sourceH);
@@ -4492,6 +4562,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // ── Record settings ──
   var srcMode = 'screen'; // screen | pip | cam
   var micOn = true, capOn = true;
+  function setMicEnabled(next) {
+    micOn = !!next;
+    $('micBtn').setAttribute('aria-pressed', String(micOn));
+    $('micBtn').textContent = micOn ? '🎙️ Microphone on' : '🎙️ Microphone off';
+    if (!micOn && capOn) setStatus($('capNote'), 'Live captions pause while the microphone is off (they listen through the mic). You can still auto-caption afterwards in the Edit tab.');
+    else if (SR && capOn) setStatus($('capNote'), 'Heads-up: live captions use the browser’s speech service (audio is processed by Google while recording).');
+  }
   function syncSrcButtons() {
     $('srcScreen').setAttribute('aria-pressed', String(srcMode === 'screen'));
     $('srcPip').setAttribute('aria-pressed', String(srcMode === 'pip'));
@@ -4500,13 +4577,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('srcScreen').addEventListener('click', function () { srcMode = 'screen'; syncSrcButtons(); });
   $('srcPip').addEventListener('click', function () { srcMode = 'pip'; syncSrcButtons(); });
   $('srcCam').addEventListener('click', function () { srcMode = 'cam'; syncSrcButtons(); });
-  $('micBtn').addEventListener('click', function () {
-    micOn = !micOn;
-    $('micBtn').setAttribute('aria-pressed', String(micOn));
-    $('micBtn').textContent = micOn ? '🎙️ Microphone on' : '🎙️ Microphone off';
-    if (!micOn && capOn) setStatus($('capNote'), 'Live captions pause while the microphone is off (they listen through the mic). You can still auto-caption afterwards in the Edit tab.');
-    else if (SR && capOn) setStatus($('capNote'), 'Heads-up: live captions use the browser’s speech service (audio is processed by Google while recording).');
-  });
+  $('micBtn').addEventListener('click', function () { setMicEnabled(!micOn); });
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
   if (!SR) { capOn = false; $('capBtn').disabled = true; $('capBtn').textContent = '💬 Captions unavailable'; setStatus($('capNote'), 'Live captions need Chrome/Edge speech recognition. You can still add captions by hand in the Edit tab.'); }
   $('capBtn').addEventListener('click', function () {
@@ -4523,6 +4594,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var sceneItems = [];       // ordered clips/cards for Scene builder exports
   var rec = null, recChunks = [], recBytes = 0;
   var recStreams = [];       // raw streams to stop on teardown
+  var captureSurface = '', captureTrackLabel = '';
   var audioCtx = null;
   var pipRaf = 0;
   var elapsed = 0, tickTimer = 0, lastTickAt = 0, paused = false;
@@ -4583,11 +4655,22 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var camStream = null;
 
     if (srcMode === 'screen' || srcMode === 'pip') {
-      var disp = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: true });
+      var disp = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 30, displaySurface: 'browser' },
+        audio: true,
+        preferCurrentTab: false,
+        selfBrowserSurface: 'exclude',
+        surfaceSwitching: 'exclude',
+        monitorTypeSurfaces: 'exclude'
+      });
       recStreams.push(disp);
       videoTrackStream = disp;
+      var displayTrack = disp.getVideoTracks()[0];
+      var displaySettings = displayTrack && displayTrack.getSettings ? displayTrack.getSettings() : {};
+      captureSurface = String((displaySettings && displaySettings.displaySurface) || '');
+      captureTrackLabel = String((displayTrack && displayTrack.label) || '').trim().slice(0, 160);
       if (disp.getAudioTracks().length) parts.push(new MediaStream(disp.getAudioTracks()));
-      disp.getVideoTracks()[0].addEventListener('ended', function () { if (rec && rec.state !== 'inactive') stopRecording(); });
+      displayTrack.addEventListener('ended', function () { if (rec && rec.state !== 'inactive') stopRecording(); });
     }
     if (srcMode === 'pip' || srcMode === 'cam') {
       camStream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false });
@@ -4768,6 +4851,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('previewVideo').hidden = true; $('previewVideo').srcObject = null;
     $('pipCanvas').hidden = true;
     $('stagePlaceholder').style.display = '';
+    captureSurface = ''; captureTrackLabel = '';
   }
 
   function finalizeTake() {
@@ -4785,6 +4869,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       // early return would rename and caption the NEXT unrelated take.
       if (demoState.active) {
         demoState.active = false; demoState.events = [];
+        cleanupOfficialTutorial();
+        restoreDemoMicPreference();
         setStatus($('demoStatus'), 'The demo take was empty — nothing was captured.', 'warn');
       }
       setStatus($('recStatus'), 'That take was empty — nothing was captured.', 'warn');
@@ -4799,12 +4885,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       };
       // Demo Autopilot: the take that ends a demo gets its step captions
       // (timed by the recording clock) and a recognizable name.
+      var demoCuesForVoice = [], autoNarrationVoice = '';
       if (demoState.active) {
         var demoCues = vsBuildDemoCaptionCues(demoState.events, dur);
         if (demoCues.length) take.captions = demoCues;
         take.name = 'Demo · ' + take.name;
+        demoCuesForVoice = demoCues.slice();
+        autoNarrationVoice = demoState.voice || '';
         demoState.active = false; demoState.events = [];
-        setStatus($('demoStatus'), demoCues.length ? 'Demo take saved with ' + demoCues.length + ' step captions — review them in Edit & Captions before exporting.' : 'Demo take saved (no step captions were recorded).', 'ok');
+        cleanupOfficialTutorial();
+        restoreDemoMicPreference();
+        setStatus($('demoStatus'), demoCues.length ? 'Demo take saved with ' + demoCues.length + ' instructional captions — review them in Edit & Captions before exporting.' : 'Demo take saved (no step captions were recorded).', demoCues.length ? 'ok' : 'warn');
         announce('Demo take saved');
       }
       takes.push(take);
@@ -4814,6 +4905,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       setStatus($('recStatus'), 'Take saved (' + fmtBytes(blob.size) + '). Jumping to Edit…', 'ok');
       announce('Take saved');
       showTab('tabEdit');
+      if (autoNarrationVoice && demoCuesForVoice.length) {
+        setEditorFocusMode('narrate', false);
+        addDemoNarrationToTake(take, demoCuesForVoice, autoNarrationVoice);
+      }
     });
   }
 
@@ -5199,6 +5294,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   function downloadProjectFromTake(t) {
     if (!t) { setStatus($('projectStatus'), 'Select a take before saving a project bundle.', 'warn'); return; }
+    if (t.demoNarrationPending) { setStatus($('projectStatus'), 'Automatic narration is still being generated. Wait for it to finish before saving the project bundle.', 'warn'); return; }
     var title = ($('titleInput') && $('titleInput').value.trim()) || t.name || 'Teacher video';
     var vtt = t.captions && t.captions.length ? vsBuildVtt(t.captions) : null;
     downloadProjectFromBlob(t.blob, title, t.duration, vtt, null, t.visualDescriptions || [], t.chapters || [], t.inserts || [], t.visualPrompts || [], t.musicBed || null, t.localizations || [], null, t.mediaCredits || [], t.transcriptEdits || [], t.transcriptWords || [], t.audio || null, true, t.narration || null, t.audioClips || []).then(function () {
@@ -6839,12 +6935,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         a.addEventListener('ended', function () { URL.revokeObjectURL(a.src); });
       });
       row.appendChild(prev);
+      if (c.demoNarrationCue) {
+        var regen = document.createElement('button'); regen.className = 'quiet'; regen.textContent = 'Regenerate';
+        regen.setAttribute('aria-label', 'Regenerate narration clip ' + (idx + 1));
+        regen.addEventListener('click', function () { regenerateDemoNarrationClip(t, c); });
+        row.appendChild(regen);
+      }
       var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
       del.setAttribute('aria-label', 'Delete clip ' + (idx + 1));
       del.addEventListener('click', function () { t.audioClips.splice(t.audioClips.indexOf(c), 1); saveDraft(t); resetPreviewAudio(); renderClips(); });
       row.appendChild(del);
       host.appendChild(row);
     });
+    updateDemoNarrationControls(t);
     drawWave();
   }
   $('addClipFileBtn').addEventListener('click', function () { $('clipFileInput').click(); });
@@ -8894,6 +8997,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   async function exportSceneMontage() {
     if (!sceneItems.length) { setStatus($('sceneStatus'), 'Add at least one clip or card before preparing a scene export.', 'warn'); return; }
+    var pendingNarration = sceneItems.filter(function (item) { var take = item.type === 'clip' ? sceneItemTake(item) : null; return !!(take && take.demoNarrationPending); });
+    if (pendingNarration.length) { setStatus($('sceneStatus'), 'Automatic narration is still being generated for a scene clip. Wait for it to finish before exporting.', 'warn'); return; }
     var missing = sceneItems.filter(function (item) { return item.type === 'clip' && !sceneItemTake(item); });
     if (missing.length) { setStatus($('sceneStatus'), 'Remove missing clips before exporting the scene.', 'warn'); return; }
     var btn = $('sceneExportBtn');
@@ -10195,7 +10300,143 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // AlloBot (when-guards rechecked per step, destructive commands never
   // auto-run) while this window records the tab. Step events arrive over the
   // bridge stamped with the recording clock and become caption cues.
-  var demoState = { steps: null, active: false, events: [], running: false, abandoned: false };
+  var demoState = { steps: null, active: false, events: [], running: false, abandoned: false, voice: '', previousMicOn: null, officialId: null };
+  function restoreDemoMicPreference() {
+    if (demoState.previousMicOn == null) return;
+    var previous = demoState.previousMicOn;
+    demoState.previousMicOn = null;
+    setMicEnabled(previous);
+  }
+  function demoCaptureProblem() {
+    var validation = vsValidateDemoCapture(captureSurface, captureTrackLabel);
+    return validation.ok ? '' : validation.reason;
+  }
+  function setDemoNarrationStatus(message, kind) {
+    setStatus($('demoStatus'), message, kind);
+    if ($('aiNarrStatus')) setStatus($('aiNarrStatus'), message, kind);
+  }
+  var demoNarrationJob = null;
+  function updateDemoNarrationControls(take) {
+    var active = !!(demoNarrationJob && demoNarrationJob.take === take && take && take.demoNarrationPending);
+    var canRetry = !!(take && !take.demoNarrationPending && Array.isArray(take.demoNarrationFailed) && take.demoNarrationFailed.length);
+    ['demoNarrCancelBtn', 'demoNarrCancelEditBtn'].forEach(function (id) { if ($(id)) $(id).hidden = !active; });
+    ['demoNarrRetryBtn', 'demoNarrRetryEditBtn'].forEach(function (id) { if ($(id)) $(id).hidden = !canRetry; });
+  }
+  async function addDemoNarrationToTake(take, cues, voice) {
+    cues = (Array.isArray(cues) ? cues : []).filter(function (cue) { return cue && String(cue.text || '').trim(); });
+    if (!take || !cues.length || take.demoNarrationPending) return;
+    var made = 0, failed = 0, shifted = 0, clipped = 0;
+    var failedCues = [], remainingCues = [];
+    var existingDemoClips = (take.audioClips || []).filter(function (clip) { return !!clip.demoNarrationCue; });
+    var scheduledEnd = existingDemoClips.reduce(function (end, clip) { return Math.max(end, (Number(clip.t) || 0) + (Number(clip.dur) || 0)); }, 0);
+    var job = { take: take, voice: voice || 'Kore', cancelRequested: false };
+    demoNarrationJob = job;
+    take.demoNarrationPending = true;
+    take.demoNarrationFailed = [];
+    updateDemoNarrationControls(take);
+    refreshExportDecisionPreview();
+    setDemoNarrationStatus('Generating automatic narration for ' + cues.length + ' demo step' + (cues.length === 1 ? '' : 's') + '...');
+    try {
+      for (var i = 0; i < cues.length; i++) {
+        if (job.cancelRequested || takes.indexOf(take) < 0) { remainingCues = cues.slice(i); break; }
+        var cue = cues[i];
+        setDemoNarrationStatus('Generating automatic narration ' + (i + 1) + ' of ' + cues.length + '...');
+        try {
+          var resp = await bridgeRequest('allostudio-tts-request', { text: cue.text, voice: job.voice }, 60000);
+          if (job.cancelRequested || takes.indexOf(take) < 0) { remainingCues = cues.slice(i); break; }
+          if (resp.error || !resp.pcm) { failed += 1; failedCues.push(cue); continue; }
+          var pcm = resp.pcm instanceof Uint8Array ? resp.pcm : new Uint8Array(resp.pcm);
+          var sampleRate = resp.sampleRate || 24000;
+          var placement = vsScheduleDemoNarrationClip(cue, pcm.byteLength, sampleRate, scheduledEnd, take.duration, 0.12);
+          if (!placement) { failed += 1; failedCues.push(cue); continue; }
+          var wav = vsPcmToWav(pcm, sampleRate);
+          (take.audioClips = take.audioClips || []).push({
+            id: 'demo' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+            name: 'Demo narration - ' + cue.text.slice(0, 42) + (cue.text.length > 42 ? '...' : ''),
+            blob: new Blob([wav], { type: 'audio/wav' }),
+            t: placement.start,
+            dur: placement.duration,
+            volume: 1,
+            demoNarrationCue: { start: Number(cue.start) || 0, end: Number(cue.end) || 0, text: String(cue.text || '') },
+            demoNarrationVoice: job.voice
+          });
+          scheduledEnd = placement.end;
+          if (placement.shifted) shifted += 1;
+          if (placement.clipped) clipped += 1;
+          made += 1;
+        } catch (_) {
+          failed += 1;
+          failedCues.push(cue);
+        }
+      }
+    } finally {
+      take.demoNarrationPending = false;
+      take.demoNarrationFailed = failedCues.concat(remainingCues);
+      if (demoNarrationJob === job) demoNarrationJob = null;
+      if (takes.indexOf(take) >= 0) {
+        saveDraft(take);
+        if (selectedTakeId === take.id) { resetPreviewAudio(); renderClips(); }
+      }
+      updateDemoNarrationControls(currentTake());
+      refreshExportDecisionPreview();
+    }
+    if (job.cancelRequested) {
+      setDemoNarrationStatus('Automatic narration cancelled. The remaining ' + take.demoNarrationFailed.length + ' line' + (take.demoNarrationFailed.length === 1 ? '' : 's') + ' can be retried.', 'warn');
+      announce('Automatic narration cancelled');
+      return;
+    }
+    var timingNote = shifted ? ' ' + shifted + ' clip' + (shifted === 1 ? ' was' : 's were') + ' shifted slightly to prevent overlap.' : '';
+    if (clipped) timingNote += ' ' + clipped + ' final clip' + (clipped === 1 ? ' reaches' : 's reach') + ' the end of the take; review timing.';
+    setDemoNarrationStatus(made
+      ? made + ' automatic narration clip' + (made === 1 ? '' : 's') + ' added. Review the caption timing and audio mix before export.' + timingNote + (failed ? ' ' + failed + ' line' + (failed === 1 ? '' : 's') + ' could not be voiced.' : '')
+      : 'The demo was saved with captions, but automatic narration could not be generated. Use Retry failed lines to try again.',
+      failed || shifted || clipped ? 'warn' : 'ok');
+    announce(made ? made + ' automatic narration clips added' : 'Automatic narration was unavailable');
+  }
+  async function regenerateDemoNarrationClip(take, clip) {
+    if (!take || !clip || !clip.demoNarrationCue || take.demoNarrationPending) return;
+    take.demoNarrationPending = true;
+    updateDemoNarrationControls(take);
+    refreshExportDecisionPreview();
+    setDemoNarrationStatus('Regenerating one narration line...');
+    try {
+      var cue = clip.demoNarrationCue;
+      var resp = await bridgeRequest('allostudio-tts-request', { text: cue.text, voice: clip.demoNarrationVoice || 'Kore' }, 60000);
+      if (resp.error || !resp.pcm) throw new Error(resp.error || 'No audio returned.');
+      if (takes.indexOf(take) < 0 || (take.audioClips || []).indexOf(clip) < 0) return;
+      var pcm = resp.pcm instanceof Uint8Array ? resp.pcm : new Uint8Array(resp.pcm);
+      var sampleRate = resp.sampleRate || 24000;
+      var placement = vsScheduleDemoNarrationClip(cue, pcm.byteLength, sampleRate, 0, take.duration, 0.12);
+      if (!placement) throw new Error('The regenerated line does not fit in this take.');
+      clip.blob = new Blob([vsPcmToWav(pcm, sampleRate)], { type: 'audio/wav' });
+      clip.t = placement.start;
+      clip.dur = placement.duration;
+      clip.demoNarrationVoice = clip.demoNarrationVoice || 'Kore';
+      saveDraft(take);
+      resetPreviewAudio();
+      renderClips();
+      setDemoNarrationStatus('Narration line regenerated. Review its timing before export.', placement.clipped ? 'warn' : 'ok');
+    } catch (e) {
+      setDemoNarrationStatus('Could not regenerate that narration line: ' + String((e && e.message) || e).slice(0, 140), 'warn');
+    } finally {
+      take.demoNarrationPending = false;
+      updateDemoNarrationControls(currentTake());
+      refreshExportDecisionPreview();
+    }
+  }
+  function cancelDemoNarration() {
+    if (!demoNarrationJob) return;
+    demoNarrationJob.cancelRequested = true;
+    setDemoNarrationStatus('Cancelling automatic narration after the current line...', 'warn');
+  }
+  function retryDemoNarration() {
+    var take = currentTake();
+    if (!take || take.demoNarrationPending || !Array.isArray(take.demoNarrationFailed) || !take.demoNarrationFailed.length) return;
+    var failed = take.demoNarrationFailed.slice();
+    addDemoNarrationToTake(take, failed, (take.audioClips || []).filter(function (clip) { return clip.demoNarrationVoice; }).map(function (clip) { return clip.demoNarrationVoice; })[0] || 'Kore');
+  }
+  ['demoNarrCancelBtn', 'demoNarrCancelEditBtn'].forEach(function (id) { $(id).addEventListener('click', cancelDemoNarration); });
+  ['demoNarrRetryBtn', 'demoNarrRetryEditBtn'].forEach(function (id) { $(id).addEventListener('click', retryDemoNarration); });
   function approvedDemoSteps() {
     if (!demoState.steps) return [];
     var boxes = $('demoPlanList').querySelectorAll('input[type="checkbox"]');
@@ -10209,7 +10450,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     (demoState.steps || []).forEach(function (s, i) {
       var row = document.createElement('label');
       row.style.cssText = 'display:flex;gap:8px;align-items:baseline;padding:4px 2px';
-      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = true;
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = true; cb.disabled = !!demoState.officialId;
       cb.setAttribute('aria-label', 'Include step ' + (i + 1));
       var span = document.createElement('span');
       span.textContent = (i + 1) + '. ' + (s.label || s.commandId) + (s.why ? ' — ' + s.why : '');
@@ -10222,6 +10463,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var goal = $('demoGoal').value.trim();
     if (!goal) { setStatus($('demoStatus'), 'Describe what the demo should show first.', 'warn'); return; }
     if (!opener || opener.closed) { setStatus($('demoStatus'), 'Demo Autopilot needs the AlloFlow window (it uses the app’s command registry and Gemini connection).', 'warn'); return; }
+    cleanupOfficialTutorial();
     var btn = $('demoPlanBtn'); btn.disabled = true;
     setStatus($('demoStatus'), 'Asking Gemini to plan steps from AlloFlow’s command list (your goal text only — no video)…');
     try {
@@ -10231,7 +10473,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       } else if (!resp.steps || !resp.steps.length) {
         setStatus($('demoStatus'), 'Gemini couldn’t map that goal to app commands. Describe concrete actions — for example “create a lesson about X, then generate a quiz from it”.', 'warn');
       } else {
-        demoState.steps = resp.steps;
++
++        renderDemoPlan();
         renderDemoPlan();
         setStatus($('demoStatus'), resp.steps.length + ' steps drafted. Untick any you don’t want, then press “Record the demo”.', 'ok');
         announce('Demo plan ready: ' + resp.steps.length + ' steps');
@@ -10241,11 +10484,35 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     btn.disabled = false;
   });
-  window.addEventListener('message', function (ev) {
+  $('demoOfficialTextBtn').addEventListener('click', async function () {
+    if (!opener || opener.closed) { setStatus($('demoStatus'), 'The official tutorial needs the AlloFlow window.', 'warn'); return; }
+    var btn = $('demoOfficialTextBtn'); btn.disabled = true;
+    setStatus($('demoStatus'), 'Loading the release-matched Text Adaptation tutorial...');
+    try {
+      var resp = await bridgeRequest('allostudio-official-tutorial-request', { tutorialId: 'text-adaptation' }, 30000);
+      if (resp.error) throw new Error(resp.error);
+      if (!resp.steps || !resp.steps.length) throw new Error('The tutorial manifest was empty.');
+      demoState.officialId = 'text-adaptation';
+      demoState.steps = resp.steps;
+      $('demoGoal').value = 'Official tutorial: adapt a short science passage for Grade 5 readers';
+      renderDemoPlan();
+      setStatus($('demoStatus'), 'Official Text Adaptation tutorial ready. It uses fixture content and restores your workspace after recording.', 'ok');
+      announce('Official Text Adaptation tutorial ready');
+    } catch (e) {
+      setStatus($('demoStatus'), 'Could not load the official tutorial: ' + String((e && e.message) || e).slice(0, 140), 'bad');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+  function cleanupOfficialTutorial() {
+    if (!demoState.officialId) return;
+    postToOpener({ type: 'allostudio-official-tutorial-cleanup', tutorialId: demoState.officialId });
+    demoState.officialId = null;
+  }  window.addEventListener('message', function (ev) {
     if (!isOpenerMessage(ev, 'allostudio-demostep')) return;
     if (!demoState.active) return;
     var d = ev.data;
-    demoState.events.push({ t: Math.max(0, elapsed), index: d.index, phase: d.phase, label: d.label });
+    demoState.events.push({ t: Math.max(0, elapsed), index: d.index, phase: d.phase, label: d.label, narration: d.narration });
     setStatus($('demoStatus'), (d.phase === 'start' ? '⏳' : '✅') + ' Step ' + ((Number(d.index) || 0) + 1) + ': ' + String(d.label || '').slice(0, 120), 'ok');
   });
   $('demoStartBtn').addEventListener('click', async function () {
@@ -10255,6 +10522,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (rec && rec.state !== 'inactive') { setStatus($('demoStatus'), 'Already recording — stop the current take first.', 'warn'); return; }
     if (demoState.running) return;
     srcMode = 'screen'; syncSrcButtons();
+    var audioMode = $('demoAudioMode').value || 'auto-Kore';
+    demoState.previousMicOn = micOn;
+    demoState.voice = audioMode.indexOf('auto-') === 0 ? audioMode.slice(5) : '';
+    setMicEnabled(audioMode === 'mic');
     setStatus($('demoStatus'), 'Pick the AlloFlow TAB in the share dialog, then switch to that tab — the demo starts on its own.', 'ok');
     demoState.active = true; demoState.events = []; demoState.running = true;
     $('demoStartBtn').disabled = true;
@@ -10262,9 +10533,23 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       await startRecording();
       if (!rec || rec.state === 'inactive') {
         demoState.active = false;
+        cleanupOfficialTutorial();
+        restoreDemoMicPreference();
         setStatus($('demoStatus'), 'Recording didn’t start, so the demo was cancelled.', 'warn');
         return;
       }
+      var captureProblem = demoCaptureProblem();
+      if (captureProblem) {
+        demoState.active = false;
+        demoState.running = false;
+        cleanupOfficialTutorial();
+        restoreDemoMicPreference();
+        stopRecording();
+        setStatus($('demoStatus'), captureProblem + ' No automatic actions were run.', 'bad');
+        announce('Demo cancelled because the AlloFlow tab was not selected');
+        return;
+      }
+      setStatus($('demoStatus'), 'Verified tab capture: ' + captureTrackLabel + '. Switch to that tab now; AlloFlow will wait until it is visible.', 'ok');
       $('demoStopBtn').hidden = false;
       // Liveness watchdog: if the AlloFlow tab closes or reloads mid-run, its
       // response never comes — recover locally instead of wedging the panel
@@ -10276,7 +10561,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           demoRecoverLocal('The AlloFlow window closed mid-demo');
         }
       }, 1500);
-      var resp = await bridgeRequest('allostudio-demorun-request', { steps: steps }, 1800000);
+      var runRequestType = demoState.officialId ? 'allostudio-official-tutorial-run-request' : 'allostudio-demorun-request';
+      var resp = await bridgeRequest(runRequestType, { steps: steps, tutorialId: demoState.officialId || null }, 1800000);
       clearInterval(aliveTimer);
       if (demoState.abandoned) { demoState.abandoned = false; return; }
       if (resp.error) setStatus($('demoStatus'), 'Demo problem: ' + resp.error + ' — the recording is still yours; stop it when you’re ready.', 'warn');
@@ -10357,6 +10643,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   async function doExport() {
     var t = currentTake();
     if (!t) { setStatus($('exportStatus'), 'Record (or select) a take first.', 'warn'); return; }
+    if (t.demoNarrationPending) { setStatus($('exportStatus'), 'Automatic narration is still being generated. Wait for it to finish before exporting.', 'warn'); return; }
     var title = $('titleInput').value.trim() || 'Teacher video';
     var capMode = $('capMode').value;
     var captionStyleKey = currentCaptionStyleKey();

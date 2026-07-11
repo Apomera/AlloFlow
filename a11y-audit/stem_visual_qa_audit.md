@@ -1,27 +1,25 @@
 # STEM Visual QA Audit
 
-> **Generated audit snapshot (2026-07-09):** This report captures one harness run from the generated timestamp below. Rerun the relevant visual QA harness before treating pass/fail counts, drift status, or monitored-marker coverage as current.
-
-Generated: 2026-07-08T21:20:53.613Z
+Generated: 2026-07-11T00:00:31.590Z
 
 ## Scope
 
 - Registered STEM tools: 121
 - STEM tool files: 118
-- Monitored student-facing visual markers: 49
+- Monitored student-facing visual markers: 62
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 49 |
+| Marker passes | 62 |
 | Marker failures | 0 |
-| Monitored first-screen findings | 13 |
+| Monitored first-screen findings | 11 |
 | High-confidence monitored errors | 0 |
 | Source/public drift | 0 |
-| Any source/public/build drift | 4 |
-| Monitored file drift | 1 |
+| Any source/public/build drift | 5 |
+| Monitored file drift | 4 |
 
 ## Visual Marker Coverage
 
@@ -39,6 +37,16 @@ Generated: 2026-07-08T21:20:53.613Z
 | pass | `cellularLab` | `data-cellularlab-focus-panel` | Rendered |
 | pass | `companionPlanting` | `data-companion-workspace-stage` | Rendered |
 | pass | `dnaLab` | `data-dna-mission` | Rendered |
+| pass | `alphaFoldExplorer` | `data-alphafold-mission` | Rendered |
+| pass | `swimLab` | `data-swimlab-readiness` | Rendered |
+| pass | `firstResponse` | `data-firstresponse-readiness` | Rendered |
+| pass | `stewardshipHub` | `data-stewardship-mission` | Rendered |
+| pass | `spaceColony` | `data-spacecolony-life-support` | Rendered |
+| pass | `fireEcology` | `data-fireecology-mission` | Rendered |
+| pass | `behaviorLab` | `data-behaviorlab-mission` | Rendered |
+| pass | `beehive` | `data-beehive-command` | Rendered |
+| pass | `migration` | `data-migration-mission` | Rendered |
+| pass | `petsLab` | `data-petslab-mission` | Rendered |
 | pass | `cell` | `data-cell-mission` | Rendered |
 | pass | `evoLab` | `data-evolab-command` | Rendered |
 | pass | `dinoLab` | `data-dinolab-command` | Rendered |
@@ -57,6 +65,8 @@ Generated: 2026-07-08T21:20:53.613Z
 | pass | `waterCycle` | `data-watercycle-focus` | Rendered |
 | pass | `playlab` | `data-playlab-gameplan` | Rendered |
 | pass | `plateTectonics` | `data-pt-sim-focus` | Rendered |
+| pass | `astronomy` | `data-astronomy-command` | Rendered |
+| pass | `rockCycle` | `data-rockcycle-command` | Rendered |
 | pass | `aquarium` | `data-aquarium-focus-panel` | Rendered |
 | pass | `moonMission` | `data-moonmission-control` | Rendered |
 | pass | `solarSystem` | `data-solarsystem-command-center` | Rendered |
@@ -68,6 +78,7 @@ Generated: 2026-07-08T21:20:53.613Z
 | pass | `punnett` | `data-punnett-cross-focus` | Rendered |
 | pass | `circuit` | `data-circuit-bench` | Rendered |
 | pass | `chemBalance` | `data-chembalance-command` | Rendered |
+| pass | `titrationLab` | `data-titration-command` | Rendered |
 | pass | `areamodel` | `data-areamodel-focus` | Rendered |
 | pass | `numberline` | `data-numberline-focus` | Rendered |
 | pass | `moneyMath` | `data-moneymath-focus` | Rendered |
@@ -83,17 +94,17 @@ Generated: 2026-07-08T21:20:53.613Z
 | --- | --- | ---: | --- |
 | warning | `heading` | 2 | `cellularLab`, `bikeLab` |
 | warning | `canvas-focus` | 1 | `bikeLab` |
-| warning | `canvas-name` | 1 | `climateExplorer` |
-| notice | `horizontal-overflow-risk` | 9 | `opticsLab`, `renewablesLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation` |
+| notice | `horizontal-overflow-risk` | 8 | `opticsLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation` |
 
 ## Sync Drift
 
 | Status | File | Monitored | Hashes |
 | --- | --- | --- | --- |
-| build-drift | `stem_tool_alphafold.js` | no | source `961AACABFC3D`, public `961AACABFC3D`, build `null` |
-| build-drift | `stem_tool_brainatlas.js` | yes | source `8A97BC41F8C3`, public `8A97BC41F8C3`, build `D113D7E77AB6` |
-| build-drift | `stem_tool_geosandbox.js` | no | source `CEC58F724169`, public `CEC58F724169`, build `5A99A0628A2B` |
-| build-drift | `stem_tool_roadready.js` | no | source `666A3DD3954B`, public `666A3DD3954B`, build `91D37DAEE248` |
+| build-drift | `stem_tool_birdlab.js` | yes | source `201D77C757F0`, public `201D77C757F0`, build `CCABD7BECBE2` |
+| build-drift | `stem_tool_cell.js` | yes | source `2433EA10FC97`, public `2433EA10FC97`, build `6A89FB48A090` |
+| build-drift | `stem_tool_cephalopodlab.js` | no | source `AAB1C1265B3E`, public `AAB1C1265B3E`, build `C25FCED0641A` |
+| build-drift | `stem_tool_fisherlab.js` | yes | source `5E8E157BF4BB`, public `5E8E157BF4BB`, build `C89E05857D36` |
+| build-drift | `stem_tool_microbiology.js` | yes | source `389ACB3D9297`, public `389ACB3D9297`, build `CF3007BDFE0F` |
 
 ## Gate Policy
 

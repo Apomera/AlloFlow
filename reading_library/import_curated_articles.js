@@ -641,6 +641,12 @@ const have = new Set(catalog.items.map((i) => i.slug));
 let wrote = 0, registered = 0;
 for (const book of ENTRIES) {
   const file = "books/" + book.slug + ".json";
+  // Keep hand-authored entries easy to edit without allowing stale, manually
+  // counted totals to leak into the browse index.
+  book.stats = {
+    pages: book.pages.length,
+    words: book.pages.reduce((sum, page) => sum + String(page.text || "").trim().split(/\s+/).filter(Boolean).length, 0),
+  };
   fs.writeFileSync(path.join(ROOT, file), JSON.stringify(book));
   wrote++;
   if (!have.has(book.slug)) {

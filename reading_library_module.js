@@ -10,7 +10,8 @@
  *   - Exports window.AlloModules.ReadingLibrary — React component.
  *   - Props: isOpen, onClose, addToast(msg, type), t (optional),
  *     callGemini(prompt) (optional), handleGenerate(type, lang, keep, text)
- *     (optional), setInputText(text) (optional), isTeacherMode (optional).
+ *     (optional), setInputText(text) (optional), onPracticeLanguage(selection)
+ *     (optional), isTeacherMode (optional).
  *   - No bare t() calls (free-t crash class): tr() guards window.__alloT and
  *     falls back to English when the key echoes back untranslated.
  *   - Theme: root carries .allo-docsuite so .theme-dark/.theme-contrast CSS
@@ -33,15 +34,15 @@
   var useCallback = React.useCallback;
 
   // Data bases tried in order; the first index.json that loads wins and its
-  // base serves the per-book files too. CDN first (same origin as this
-  // script), GitHub raw second (live as soon as main is pushed), relative
-  // last (local dev / future School Box vendoring).
+  // base serves the per-book files too. Prefer the catalog bundled with the
+  // running AlloFlow build so a stale external mirror can never hide newly
+  // imported entries. Remote mirrors remain resilient fallbacks.
   var DATA_BASES = [
+    './reading_library/',
     'https://alloflow-cdn.pages.dev/reading_library/',
     'https://raw.githubusercontent.com/Apomera/AlloFlow/main/reading_library/',
-    './reading_library/',
   ];
-  var MAX_VISIBLE_BOOKS = 240;
+  var VISIBLE_BOOK_BATCH = 240;
 
   // StoryWeaver reading levels with their approximate grade bands (their own
   // guidance: L1 emergent, L2 early, L3 fluent-ish, L4 confident). Bands are a
@@ -963,6 +964,20 @@
       props.onExit && props.onExit(true);
     };
 
+    // Open the displayed scope directly in Lingua Practice. The host owns the
+    // cross-tool transition; Reading Library only emits clean text + context.
+    var openInLingua = function () {
+      if (typeof props.onPracticeLanguage !== 'function') return;
+      props.onPracticeLanguage({
+        text: selectedSource.text,
+        title: displayTitle,
+        selectionLabel: selectedSource.label,
+        language: displayLanguage || book.language || '',
+      });
+      props.addToast && props.addToast('"' + displayTitle + '" is ready in Lingua Practice.', 'success');
+      props.onExit && props.onExit(true);
+    };
+
     // AI-translate the whole book in one call (consistent names/terms across
     // pages). Page count must round-trip exactly so page turns stay aligned
     // with the artwork; parseTranslation rejects anything else.
@@ -1259,6 +1274,11 @@
           onClick: function () { setShowPractice(!showPractice); },
           'aria-pressed': showPractice,
         }, '🎙️ ' + tr('readinglib_practice', 'Practice')),
+        typeof props.onPracticeLanguage === 'function' ? e('button', {
+          className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100',
+          onClick: openInLingua,
+          title: tr('readinglib_lingua_hint', 'Practice this reading with vocabulary, speaking, and conversation activities'),
+        }, 'A/文 ' + tr('readinglib_lingua', 'Lingua Practice')) : null,
         props.isTeacherMode && typeof props.onSaveToLesson === 'function' ? e('button', {
           className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100',
           onClick: saveToLesson,
@@ -1565,6 +1585,7 @@
     var _loadingBook = useState(null); var loadingBook = _loadingBook[0]; var setLoadingBook = _loadingBook[1];
     var _opt = useState(false); var optionsOpen = _opt[0]; var setOptionsOpen = _opt[1];
     var _collection = useState(null); var selectedCollectionId = _collection[0]; var setSelectedCollectionId = _collection[1];
+    var _visible = useState(VISIBLE_BOOK_BATCH); var visibleLimit = _visible[0]; var setVisibleLimit = _visible[1];
     var containerRef = useRef(null);
 
     useEffect(function () {
@@ -1629,7 +1650,8 @@
       };
       return list.sort(sorters[filters.sort] || byLevel);
     }, [collectionBooks, filters]);
-    var visibleBooks = filtered.length > MAX_VISIBLE_BOOKS ? filtered.slice(0, MAX_VISIBLE_BOOKS) : filtered;
+    useEffect(function () { setVisibleLimit(VISIBLE_BOOK_BATCH); }, [selectedCollectionId, filters]);
+    var visibleBooks = filtered.length > visibleLimit ? filtered.slice(0, visibleLimit) : filtered;
 
     var languages = useMemo(function () {
       var source = selectedCollection ? collectionBooks : books;
@@ -1710,6 +1732,7 @@
         setInputText: props.setInputText,
         isTeacherMode: props.isTeacherMode,
         onSaveToLesson: props.onSaveToLesson,
+        onPracticeLanguage: props.onPracticeLanguage,
       });
     } else if (!selectedCollection) {
       body = e('div', { className: 'flex flex-col h-full min-h-0' },
@@ -1801,6 +1824,13 @@
               return e(BookCard, { key: b.slug, book: b, onOpen: openBookBySlug });
             })
           ),
+          visibleBooks.length < filtered.length ? e('div', { className: 'flex justify-center py-3' },
+            e('button', {
+              className: 'rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-800 hover:bg-indigo-100',
+              onClick: function () { setVisibleLimit(function (n) { return n + VISIBLE_BOOK_BATCH; }); },
+              'aria-label': tr('readinglib_show_more_aria', 'Show more reading catalog entries'),
+            }, tr('readinglib_show_more', 'Show more') + ' (' + (filtered.length - visibleBooks.length) + ' ' + tr('readinglib_remaining', 'remaining') + ')')
+          ) : null,
           loadingBook ? e('div', { className: 'text-sm text-slate-500 italic py-2' }, tr('readinglib_opening', 'Opening book…')) : null
         ),
         index.data && index.data.attribution ? e('p', { className: 'text-[11px] text-slate-500 pt-2 border-t border-slate-200' },
