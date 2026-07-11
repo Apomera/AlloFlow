@@ -51,6 +51,9 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain('if (detached3d && !detached3d.isConnected && detached3d._wc3dCleanup)');
       expect(source).toContain('WebGL is unavailable on this device. Use the 2D Cycle view instead.');
       expect(source).toContain('"Return to 2D Cycle"');
+      expect(source).toContain('canvasEl._wc3dResetCamera = function()');
+      expect(source).toContain('canvasEl._wc3dResetCamera = null;');
+      expect(source).toContain('"aria-label": "Resume guided camera"');
     });
   });
 
@@ -64,6 +67,11 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain('"aria-live": "polite"');
       expect(source).toContain('illustrative scale');
       expect(source).toContain('Three-dimensional tracked water parcel');
+      expect(source).toContain('var journeyLensMap = {');
+      expect(source).toContain('"aria-label": "Current water parcel state"');
+      expect(source).toContain("driver: 'Hydraulic gradient'");
+      expect(source).toContain("driver: 'Water-potential gradient'");
+      expect(source).toContain("pace: 'Path dependent'");
     });
   });
 });

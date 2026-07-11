@@ -196,8 +196,16 @@
       '.wc-view-segments button[aria-pressed="true"]{background:#0369a1;color:#fff;box-shadow:0 3px 10px rgba(3,105,161,.28)}',
       '.wc-journey-3d{position:absolute;inset:0;width:100%;height:100%;display:block;background:#041a2b}',
       '.wc-3d-status{font-size:11px;font-weight:800;color:#0369a1}',
+      '.wc-view-status{display:flex;align-items:center;gap:6px}',
+      '.wc-camera-reset{width:32px;height:32px;display:grid;place-items:center;border-radius:6px;background:#0369a1;color:#fff;font-size:18px;font-weight:900}',
+      '.wc-journey-lens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:-2px 0 10px;border-left:3px solid #0ea5e9;background:rgba(14,165,233,.16)}',
+      '.wc-journey-lens div{padding:8px 10px;background:rgba(255,255,255,.88)}',
+      '.wc-journey-lens span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b}',
+      '.wc-journey-lens strong{display:block;margin-top:2px;font-size:12px;line-height:1.3;color:#0f172a}',
       '.wc-3d-loading{position:absolute;z-index:6;inset:0;display:grid;place-items:center;background:#041a2b;color:#bae6fd;font-size:12px;font-weight:800}',
       '.dark .wc-view-segments{background:#0f172a;border-color:#334155}.dark .wc-view-segments button{color:#cbd5e1}.dark .wc-3d-status{color:#7dd3fc}',
+      '.dark .wc-journey-lens div{background:rgba(15,23,42,.9)}.dark .wc-journey-lens strong{color:#f8fafc}.dark .wc-journey-lens span{color:#94a3b8}',
+      '@media(max-width:560px){.wc-journey-lens{grid-template-columns:1fr}}',
       '.wc-canvas-topbar{position:absolute;z-index:4;top:10px;left:10px;right:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;pointer-events:none}',
       '.wc-canvas-title{border-radius:12px;padding:8px 10px;background:rgba(15,23,42,.68);border:1px solid rgba(125,211,252,.28);backdrop-filter:blur(8px);color:#e0f2fe}',
       '.wc-canvas-title span{display:block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc}',
@@ -4204,6 +4212,9 @@ const d = labToolData.waterCycle || {};
               controls3d.maxPolarAngle = Math.PI * 0.86;
               controls3d.addEventListener('start', function() { userOrbit3d = true; });
             }
+            canvasEl._wc3dResetCamera = function() {
+              userOrbit3d = false;
+            };
 
             var clock3d = new THREE.Clock();
             var resizeObserver3d = null;
@@ -4280,6 +4291,7 @@ const d = labToolData.waterCycle || {};
               });
               renderer.dispose();
               canvasEl._wc3dCleanup = null;
+              canvasEl._wc3dResetCamera = null;
             }
 
             canvasEl._wc3dCleanup = cleanupJourney3d;
@@ -4335,6 +4347,25 @@ const d = labToolData.waterCycle || {};
           var journeyLabel = d.journeyActive
             ? ((d.journeyState || 'ocean').replace(/_/g, ' '))
             : 'Ready to start';
+          var lensStageMap = {
+            evaporation: 'evaporating', condensation: 'condensing', precipitation: 'precipitating',
+            collection: 'ocean', transpiration: 'transpiring', infiltration: 'infiltrating'
+          };
+          var lensState = d.journeyActive ? (d.journeyState || 'ocean') : (lensStageMap[d.activeStage || 'evaporation'] || 'ocean');
+          var journeyLensMap = {
+            ocean: { state: 'Liquid storage', driver: 'Solar energy begins the next transfer', pace: 'Variable residence' },
+            evaporating: { state: 'Liquid to gas', driver: 'Net surface energy', pace: 'Energy dependent' },
+            condensing: { state: 'Gas to liquid or ice', driver: 'Cooling toward saturation', pace: 'Cloud microphysics' },
+            precipitating: { state: 'Liquid or solid', driver: 'Gravity after particle growth', pace: 'Minutes to hours' },
+            ground_choice: { state: 'Liquid at the surface', driver: 'Gravity plus land properties', pace: 'Path dependent' },
+            river_runoff: { state: 'Liquid surface flow', driver: 'Gravity over terrain', pace: 'Usually fast' },
+            infiltrating: { state: 'Liquid in pore spaces', driver: 'Gravity plus capillarity', pace: 'Soil dependent' },
+            aquifer_flow: { state: 'Groundwater', driver: 'Hydraulic gradient', pace: 'Often slow' },
+            plant_absorb: { state: 'Liquid in xylem', driver: 'Water-potential gradient', pace: 'Biology plus weather' },
+            transpiring: { state: 'Liquid to gas', driver: 'Solar energy plus stomata', pace: 'Daytime responsive' },
+            complete: { state: 'Liquid storage', driver: 'Cycle continues', pace: 'No fixed endpoint' }
+          };
+          var journeyLens = journeyLensMap[lensState] || journeyLensMap.ocean;
           var weatherLabel = currentTemp < 0 ? 'Cold-surface scenario' :
             currentTemp > 30 ? 'Hot-surface scenario' :
             currentSolar < 0.3 ? 'Night cycle' :
@@ -4479,14 +4510,46 @@ const d = labToolData.waterCycle || {};
                   onClick: function() { upd('journeyView', '3d'); }
                 }, "3D Journey")
               ),
-              React.createElement("div", {
-                className: "wc-3d-status",
-                role: "status",
-                "aria-live": "polite",
-                "aria-atomic": "true"
-              }, journeyView === '3d'
-                ? "Immersive stage: " + journeyLabel + " | illustrative scale"
-                : "Systems view: six connected water-cycle processes")
+              React.createElement("div", { className: "wc-view-status" },
+                React.createElement("div", {
+                  className: "wc-3d-status",
+                  role: "status",
+                  "aria-live": "polite",
+                  "aria-atomic": "true"
+                }, journeyView === '3d'
+                  ? "Immersive stage: " + journeyLabel + " | illustrative scale"
+                  : "Systems view: six connected water-cycle processes"),
+                journeyView === '3d' && React.createElement("button", {
+                  type: "button",
+                  className: "wc-camera-reset",
+                  title: "Resume guided camera",
+                  "aria-label": "Resume guided camera",
+                  onClick: function() {
+                    var journeyCanvas = document.getElementById('wcJourney3d');
+                    if (journeyCanvas && journeyCanvas._wc3dResetCamera) journeyCanvas._wc3dResetCamera();
+                    if (typeof announceToSR === 'function') announceToSR('Guided 3D camera resumed.');
+                  }
+                }, "\u21BA")
+              )
+            ),
+
+            journeyView === '3d' && React.createElement("div", {
+              className: "wc-journey-lens",
+              role: "region",
+              "aria-label": "Current water parcel state"
+            },
+              React.createElement("div", null,
+                React.createElement("span", null, "State"),
+                React.createElement("strong", null, journeyLens.state)
+              ),
+              React.createElement("div", null,
+                React.createElement("span", null, "Dominant driver"),
+                React.createElement("strong", null, journeyLens.driver)
+              ),
+              React.createElement("div", null,
+                React.createElement("span", null, "Relative pace"),
+                React.createElement("strong", null, journeyLens.pace)
+              )
             ),
 
             React.createElement("div", {
