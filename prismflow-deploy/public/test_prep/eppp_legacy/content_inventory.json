@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-11T00:35:12.933Z",
+  "summary": {
+    "legacyQuestions": 2933,
+    "nativeQaQuestions": 80,
+    "nativeOriginalQaQuestions": 8,
+    "legacyReviewPassedQuestions": 72,
+    "nativeTargetQuestions": 2933,
+    "nativeRemainingToTarget": 2861,
+    "flashcards": 415,
+    "memoryAids": 255,
+    "textbookChapters": 49,
+    "textbookSections": 278,
+    "knowledgeChecks": 76,
+    "diagramTemplates": 25,
+    "diagramPlacements": 45,
+    "termDefinitions": 1583,
+    "chapterReferences": 266,
+    "aiReflectiveCodas": 49,
+    "learnerModes": 14
+  },
+  "flashcardsByDomain": [
+    {
+      "domainId": 1,
+      "domainName": "Biological Bases of Behavior",
+      "count": 58
+    },
+    {
+      "domainId": 2,
+      "domainName": "Cognitive-Affective Bases of Behavior",
+      "count": 55
+    },
+    {
+      "domainId": 3,
+      "domainName": "Social & Cultural Bases of Behavior",
+      "count": 49
+    },
+    {
+      "domainId": 4,
+      "domainName": "Growth & Lifespan Development",
+      "count": 51
+    },
+    {
+      "domainId": 5,
+      "domainName": "Assessment & Diagnosis",
+      "count": 51
+    },
+    {
+      "domainId": 6,
+      "domainName": "Treatment, Intervention & Prevention",
+      "count": 51
+    },
+    {
+      "domainId": 7,
+      "domainName": "Research Methods & Statistics",
+      "count": 49
+    },
+    {
+      "domainId": 8,
+      "domainName": "Ethical, Legal & Professional Issues",
+      "count": 51
+    }
+  ],
+  "memoryAidTypes": {
+    "mnemonic": 218,
+    "analogy": 37
+  },
+  "chaptersByDomain": [
+    {
+      "domain": "Assessment & Diagnosis",
+      "count": 6
+    },
+    {
+      "domain": "Ethical, Legal & Professional Issues",
+      "count": 6
+    },
+    {
+      "domain": "Treatment, Intervention & Prevention",
+      "count": 7
+    },
+    {
+      "domain": "Biological Bases of Behavior",
+      "count": 5
+    },
+    {
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "count": 6
+    },
+    {
+      "domain": "Social & Cultural Bases of Behavior",
+      "count": 5
+    },
+    {
+      "domain": "Growth & Lifespan Development",
+      "count": 5
+    },
+    {
+      "domain": "Research Methods & Statistics",
+      "count": 6
+    },
+    {
+      "domain": "Integrative & Test Strategy",
+      "count": 1
+    },
+    {
+      "domain": "Integrative Seminars",
+      "count": 2
+    }
+  ],
+  "migrationTracks": [
+    {
+      "contentType": "legacy questions",
+      "count": 2933,
+      "status": "active-full-review",
+      "nextGate": "re-author or correct, source QA, item-writing QA, accessibility, independent expert validation"
+    },
+    {
+      "contentType": "textbook chapters",
+      "count": 49,
+      "status": "legacy-preserved-review-not-started",
+      "nextGate": "claim-level source audit, instructional edit, accessibility and expert review"
+    },
+    {
+      "contentType": "interactive diagrams",
+      "count": 25,
+      "status": "legacy-preserved-review-not-started",
+      "nextGate": "concept accuracy, labels, keyboard/screen-reader alternative, reduced-motion review"
+    },
+    {
+      "contentType": "flashcards",
+      "count": 415,
+      "status": "legacy-preserved-review-not-started",
+      "nextGate": "deduplication, atomic-answer review, source support and clue check"
+    },
+    {
+      "contentType": "memory aids",
+      "count": 255,
+      "status": "legacy-preserved-review-not-started",
+      "nextGate": "oversimplification, outdated clinical guidance, bias and source review"
+    },
+    {
+      "contentType": "term definitions",
+      "count": 1583,
+      "status": "legacy-preserved-review-not-started",
+      "nextGate": "definition/source/version audit and cross-link review"
+    }
+  ],
+  "learnerModes": [
+    "diagnostic",
+    "study",
+    "textbook",
+    "flashcards",
+    "quiz",
+    "exam",
+    "cat",
+    "analytics",
+    "goals",
+    "memory_aids",
+    "bookmarks",
+    "search",
+    "reflections",
+    "menu"
+  ],
+  "nativeRoadmap": {
+    "targetQuestions": 2933,
+    "stages": [
+      100,
+      300,
+      1000,
+      2000,
+      2933
+    ],
+    "domainTargets": [
+      {
+        "domainId": 1,
+        "nativeDomainId": "biological",
+        "domainName": "Biological Bases of Behavior",
+        "weightPercent": 10,
+        "legacySharePercent": 17,
+        "target": 500,
+        "currentQaPassed": 9,
+        "remaining": 491
+      },
+      {
+        "domainId": 2,
+        "nativeDomainId": "cognitive-affective",
+        "domainName": "Cognitive-Affective Bases of Behavior",
+        "weightPercent": 13,
+        "legacySharePercent": 11.7,
+        "target": 344,
+        "currentQaPassed": 9,
+        "remaining": 335
+      },
+      {
+        "domainId": 3,
+        "nativeDomainId": "social-cultural",
+        "domainName": "Social & Cultural Bases of Behavior",
+        "weightPercent": 11,
+        "legacySharePercent": 11.4,
+        "target": 335,
+        "currentQaPassed": 9,
+        "remaining": 326
+      },
+      {
+        "domainId": 4,
+        "nativeDomainId": "lifespan",
+        "domainName": "Growth & Lifespan Development",
+        "weightPercent": 12,
+        "legacySharePercent": 12.4,
+        "target": 364,
+        "currentQaPassed": 9,
+        "remaining": 355
+      },
+      {
+        "domainId": 5,
+        "nativeDomainId": "assessment",
+        "domainName": "Assessment & Diagnosis",
+        "weightPercent": 16,
+        "legacySharePercent": 11.6,
+        "target": 341,
+        "currentQaPassed": 9,
+        "remaining": 332
+      },
+      {
+        "domainId": 6,
+        "nativeDomainId": "intervention",
+        "domainName": "Treatment, Intervention & Prevention",
+        "weightPercent": 15,
+        "legacySharePercent": 12.9,
+        "target": 378,
+        "currentQaPassed": 9,
+        "remaining": 369
+      },
+      {
+        "domainId": 7,
+        "nativeDomainId": "research",
+        "domainName": "Research Methods & Statistics",
+        "weightPercent": 7,
+        "legacySharePercent": 11.7,
+        "target": 343,
+        "currentQaPassed": 9,
+        "remaining": 334
+      },
+      {
+        "domainId": 8,
+        "nativeDomainId": "professional",
+        "domainName": "Ethical, Legal & Professional Issues",
+        "weightPercent": 16,
+        "legacySharePercent": 11.2,
+        "target": 328,
+        "currentQaPassed": 9,
+        "remaining": 319
+      }
+    ],
+    "practiceSampling": "Build practice sets using blueprint weights even though the reviewed source pool is not distributed in those proportions."
+  },
+  "chapterScripts": [
+    "js/textbook_ch5_1.js",
+    "js/textbook_ch5_2.js",
+    "js/textbook_ch5_3.js",
+    "js/textbook_ch4.js",
+    "js/textbook_ch5.js",
+    "js/textbook_ch6.js",
+    "js/textbook_ch7.js",
+    "js/textbook_ch8.js",
+    "js/textbook_ch9.js",
+    "js/textbook_ch10.js",
+    "js/textbook_ch11.js",
+    "js/textbook_ch12.js",
+    "js/textbook_ch13.js",
+    "js/textbook_ch14.js",
+    "js/textbook_ch15.js",
+    "js/textbook_ch16.js",
+    "js/textbook_ch17.js",
+    "js/textbook_ch18.js",
+    "js/textbook_ch19.js",
+    "js/textbook_ch20.js",
+    "js/textbook_ch21.js",
+    "js/textbook_ch22.js",
+    "js/textbook_ch23.js",
+    "js/textbook_ch24.js",
+    "js/textbook_ch25.js",
+    "js/textbook_ch26.js",
+    "js/textbook_ch27.js",
+    "js/textbook_ch28.js",
+    "js/textbook_ch29.js",
+    "js/textbook_ch30.js",
+    "js/textbook_ch31.js",
+    "js/textbook_ch32.js",
+    "js/textbook_ch33.js",
+    "js/textbook_ch34.js",
+    "js/textbook_ch35.js",
+    "js/textbook_ch36.js",
+    "js/textbook_ch37.js",
+    "js/textbook_ch38.js",
+    "js/textbook_ch39.js",
+    "js/textbook_ch40.js",
+    "js/textbook_ch41.js",
+    "js/textbook_ch42.js",
+    "js/textbook_ch43.js",
+    "js/textbook_ch44.js",
+    "js/textbook_ch45.js",
+    "js/textbook_ch46.js",
+    "js/textbook_ch47.js",
+    "js/textbook_ch48.js",
+    "js/textbook_ch49.js"
+  ],
+  "migrationNote": "Counts describe the preserved legacy workspace. Only content that passes native source, instructional, accessibility, and QA review should be promoted into AlloFlow-native learning tools."
+}

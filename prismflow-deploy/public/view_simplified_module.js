@@ -90,6 +90,24 @@ function renderDictionaryPanel(dict, t) {
   }, kids);
 }
 
+// Lead with the accessible explanation students asked for, while clearly
+// distinguishing it from the sourced dictionary entry that follows.
+function renderReadingLevelExplanation(definitionData, t, renderFormattedText) {
+  if (!definitionData || !definitionData.text) return null;
+  return React.createElement('div', {
+    className: 'rounded-lg bg-indigo-50/60 border border-indigo-100 px-3 py-2.5',
+    'aria-label': t('glossary.popups.reading_level_explanation') || 'Reading-level explanation'
+  }, React.createElement('div', {
+    className: 'flex items-center gap-2 mb-1.5 flex-wrap'
+  }, React.createElement('span', {
+    className: 'text-[10px] font-bold uppercase tracking-wide text-indigo-700'
+  }, t('glossary.popups.reading_level_explanation') || 'Reading-level explanation'), React.createElement('span', {
+    className: 'text-[10px] font-semibold text-indigo-600 bg-white border border-indigo-200 rounded-full px-1.5 py-0.5'
+  }, t('glossary.popups.ai_generated') || 'AI-generated')), React.createElement('div', {
+    className: 'text-sm text-slate-700 leading-relaxed'
+  }, renderFormattedText(definitionData.text, false)));
+}
+
 // Authoritative pronunciation row for the phonics popup: real Wiktionary recording
 // + authoritative IPA, shown quietly beside the AI phonics. Pure fn; null when absent.
 function renderPhonicsDictRow(phonicsData, t) {
@@ -1570,9 +1588,7 @@ function SimplifiedView(props) {
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 14
-  }))), definitionData.text ? /*#__PURE__*/React.createElement("div", {
-    className: "text-sm text-slate-700 leading-relaxed"
-  }, renderFormattedText(definitionData.text, false)) : /*#__PURE__*/React.createElement("div", {
+  }))), definitionData.text ? renderReadingLevelExplanation(definitionData, t, renderFormattedText) : /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 text-xs text-indigo-500"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,

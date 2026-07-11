@@ -333,6 +333,7 @@ const handleLoadProject = (e, deps) => {
                 }
                 if (rawData.settings) {
                     setStudentProjectSettings({
+                        hideStudentAiFeatures: rawData.settings.hideStudentAiFeatures ?? false,
                         allowDictation: rawData.settings.allowDictation ?? true,
                         allowSocraticTutor: rawData.settings.allowSocraticTutor ?? true,
                         allowFreeResponse: rawData.settings.allowFreeResponse ?? true,
@@ -361,6 +362,7 @@ const handleLoadProject = (e, deps) => {
                     }
                 } else {
                     setStudentProjectSettings({
+                        hideStudentAiFeatures: false,
                         allowDictation: true,
                         allowSocraticTutor: true,
                         allowFreeResponse: true,

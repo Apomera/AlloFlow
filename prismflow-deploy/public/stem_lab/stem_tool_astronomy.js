@@ -7007,15 +7007,41 @@
         default:               body = renderTonight();
       }
 
+      var currentTabMeta = TABS.find(function(tab) { return tab.id === d.tab; }) || TABS[0];
+      var observingCount = (d.observingList || []).length;
+      var nextSkyMission = d.tab === 'tonight' ? { icon: '🧭', title: 'Open the computed sky map', detail: 'Set place and time, then identify what is actually above your horizon.' }
+        : d.tab === 'skymap' ? { icon: '⭐', title: 'Choose one target to recognize', detail: 'Move from position data to a constellation, planet, Moon feature, or bright star.' }
+        : observingCount === 0 ? { icon: '🔭', title: 'Build a one-target observing plan', detail: 'Save one realistic target before trying to learn the whole sky.' }
+        : { icon: '📝', title: 'Observe, record, and compare', detail: 'Use your saved list and record conditions, evidence, and change over time.' };
+
+
       return h('div', { className: 'selh-astronomy', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: '#e2e8f0' } },
         // WCAG style block (focus rings, reduced-motion respect)
         wcagStyleBlock(),
         // Header
         h('div', { style: { padding: '12px 16px', borderBottom: '1px solid #1e293b', background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', display: 'flex', alignItems: 'center', gap: 12 } },
+          h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM tools', className: 'astr-focus astr-btn', style: { width: 40, height: 40, borderRadius: 12, border: '1px solid #334155', background: 'rgba(15,23,42,.7)', color: '#cbd5e1', cursor: 'pointer', fontSize: 18, flexShrink: 0 } }, '←'),
           h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, '🔭'),
           h('div', null,
             h('h2', { style: { margin: 0, color: '#c7d2fe', fontSize: 20, fontWeight: 900 } }, __alloT('stem.astronomy.night_sky_astronomy', 'Night Sky & Astronomy')),
             h('div', { style: { fontSize: 12, color: '#94a3b8', marginTop: 2 } }, __alloT('stem.astronomy.earth_space_science_ngss_ms_ess1_hs_es', 'Earth & Space Science · NGSS MS-ESS1 · HS-ESS1'))
+          )
+        ),
+        h('section', { 'data-astronomy-command': 'true', 'aria-labelledby': 'astronomy-command-title', style: { margin: '12px 14px 10px', padding: 16, borderRadius: 16, border: '1px solid rgba(99,102,241,.35)', background: 'linear-gradient(135deg, rgba(49,46,129,.55), rgba(15,23,42,.92) 60%, rgba(8,47,73,.65))', position: 'relative', overflow: 'hidden' } },
+          h('div', { style: { position: 'absolute', right: -10, top: -30, fontSize: 100, opacity: .05 }, 'aria-hidden': 'true' }, '🌌'),
+          h('div', { className: 'relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]' },
+            h('div', null,
+              h('div', { style: { fontSize: 10, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '.15em', fontWeight: 900 } }, 'Observation command · ' + currentTabMeta.label),
+              h('h2', { id: 'astronomy-command-title', style: { margin: '7px 0 3px', color: '#fff', fontSize: 20, fontWeight: 900 } }, nextSkyMission.icon + ' ' + nextSkyMission.title),
+              h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, nextSkyMission.detail),
+              h('div', { className: 'mt-3 grid grid-cols-3 gap-2', 'aria-label': 'Astronomy learning progress' },
+                [[TABS.length, 'Sections'], [observingCount, 'Saved targets'], [d.bortleClass || 5, 'Bortle class']].map(function(metric) { return h('div', { key: metric[1], style: { padding: '9px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,.09)', background: 'rgba(255,255,255,.045)' } }, h('div', { style: { color: '#fff', fontSize: 17, fontWeight: 900 } }, metric[0]), h('div', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 700 } }, metric[1])); })
+              )
+            ),
+            h('aside', { style: { padding: 12, borderRadius: 12, background: 'rgba(2,6,23,.35)', border: '1px solid rgba(56,189,248,.18)' }, 'aria-label': 'Observation evidence route' },
+              h('div', { style: { color: '#67e8f9', fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.1em' } }, 'Evidence route'),
+              h('ol', { style: { margin: '9px 0 0', paddingLeft: 18, color: '#cbd5e1', fontSize: 11, lineHeight: 1.75 } }, h('li', null, 'Locate with place and time'), h('li', null, 'Recognize a pattern or object'), h('li', null, 'Record change and conditions'))
+            )
           )
         ),
         tabBar,

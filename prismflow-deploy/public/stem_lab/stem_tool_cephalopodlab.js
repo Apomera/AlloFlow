@@ -392,6 +392,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
   function defaultState() {
     return {
       activeSection: 'hub',
+      sectionSearch: '',
       // Field Guide
       fieldGuideSpeciesId: 'commonOcto',
       // Hunter Sim
@@ -716,20 +717,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     border: '1px solid rgba(167,139,250,0.3)', padding: '2px 8px', borderRadius: 9999, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   TAB_GROUPS.length + ' areas · ' + TAB_SECTION_COUNT + ' sections')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.5 } },
-                __alloT('stem.cephalopodlab.the_biology_of_intelligent_invertebrat', 'The biology of intelligent invertebrates. Octopuses + squid + cuttlefish + nautilus — chromatophore camouflage, distributed neural intelligence, hunting strategy, 500M-year evolution.')))));
+                __alloT('stem.cephalopodlab.evidence_based_cephalopod_biology', 'Evidence-based cephalopod biology: dynamic skin, distributed neural control, hunting strategies, diverse life histories, and deep evolutionary history.')))));
       }
       function renderTabs() {
-        // ── Two-level navigation ──
-        // 91 sections in one flat bar was an unreadable wall. Now the top row is
-        // the dozen TOPIC AREAS (from the canonical TAB_GROUPS); selecting one
-        // reveals only that area's sections in the second row. The open area is
-        // derived from the active section (groupOfSection), so deep-links and
-        // in-content jumps always reveal the correct area — no separate state to
-        // drift. Clicking an area label lands on its first section.
+        // Two-level navigation plus a global section finder.
         var openGroup = groupOfSection(section);
+        var sectionSearch = String(d.sectionSearch || '');
+        var sectionSearchQuery = sectionSearch.trim().toLocaleLowerCase();
+        var sectionSearchTerms = sectionSearchQuery ? sectionSearchQuery.split(/\s+/) : [];
+        var sectionMatches = [];
+        if (sectionSearchTerms.length) {
+          TAB_GROUPS.forEach(function(g) {
+            g.tabs.forEach(function(t) {
+              var haystack = (g.label + ' ' + t.label + ' ' + t.id).toLocaleLowerCase();
+              if (sectionSearchTerms.every(function(term) { return haystack.indexOf(term) !== -1; })) {
+                sectionMatches.push({ group: g, tab: t });
+              }
+            });
+          });
+        }
+        function openSearchResult(result) {
+          var patch = { activeSection: result.tab.id, sectionSearch: '' };
+          patch['clViewed' + result.tab.id.charAt(0).toUpperCase() + result.tab.id.slice(1)] = true;
+          setCL(patch);
+          awardXP(1);
+          clAnnounce('Opened ' + result.tab.label + ' in ' + result.group.label);
+        }
         function renderGroupBtn(g) {
           var on = g.id === openGroup.id;
-          return h('button', { key: g.id, role: 'tab', 'aria-selected': on ? 'true' : 'false',
+          return h('button', { key: g.id, type: 'button', role: 'tab', 'aria-selected': on ? 'true' : 'false',
             'aria-label': g.label + ' (' + g.tabs.length + ' section' + (g.tabs.length === 1 ? '' : 's') + ')',
             onClick: function() { setSection(g.tabs[0].id); awardXP(1); },
             style: {
@@ -746,7 +762,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
         function renderTab(t, accentColor) {
           var active = section === t.id;
-          return h('button', { key: t.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+          return h('button', { key: t.id, type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false',
             onClick: function() { setSection(t.id); awardXP(2); },
             style: {
               padding: '8px 12px',
@@ -762,44 +778,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           }, h('span', { 'aria-hidden': 'true' }, t.icon), t.label);
         }
         return h('div', { style: { padding: '8px 16px 0', borderBottom: '1px solid rgba(99,102,241,0.25)', position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 8 } },
-          // Row 1 — topic areas
-          h('div', { role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.cephalopod_lab_topic_areas', 'Cephalopod Lab topic areas'),
+          h('div', { style: { display: 'flex', alignItems: 'end', gap: 8, flexWrap: 'wrap' } },
+            h('label', { htmlFor: 'cl-section-search', style: { fontSize: 11, fontWeight: 800, color: '#cbd5e1', minWidth: 84, paddingBottom: 7 } },
+              __alloT('stem.cephalopodlab.find_a_section', 'Find a section')),
+            h('div', { style: { position: 'relative', flex: '1 1 240px', maxWidth: 520 } },
+              h('input', {
+                id: 'cl-section-search', type: 'search', value: sectionSearch,
+                onChange: function(e) { setCL({ sectionSearch: e.target.value }); },
+                placeholder: __alloT('stem.cephalopodlab.search_sections_placeholder', 'Search camouflage, anatomy, ethics, lessons...'),
+                autoComplete: 'off',
+                'aria-controls': 'cl-section-search-results',
+                'aria-describedby': 'cl-section-search-status',
+                style: { width: '100%', boxSizing: 'border-box', padding: '7px 34px 7px 10px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.5)', background: 'rgba(15,23,42,0.78)', color: '#f1f5f9', fontSize: 12, fontFamily: 'inherit' }
+              }),
+              sectionSearch && h('button', { type: 'button', onClick: function() { setCL({ sectionSearch: '' }); },
+                'aria-label': __alloT('stem.cephalopodlab.clear_section_search', 'Clear section search'),
+                style: { position: 'absolute', right: 3, top: 3, width: 28, height: 28, border: 'none', borderRadius: 5, background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontSize: 18, lineHeight: 1 } }, '×')),
+            h('div', { id: 'cl-section-search-status', role: 'status', 'aria-live': 'polite', style: { fontSize: 10, color: '#94a3b8', paddingBottom: 7 } },
+              sectionSearchQuery ? sectionMatches.length + (sectionMatches.length === 1 ? ' section found' : ' sections found') : TAB_SECTION_COUNT + ' sections')),
+          !sectionSearchQuery && h('div', { role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.cephalopod_lab_topic_areas', 'Cephalopod Lab topic areas'),
             style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
             TAB_GROUPS.map(renderGroupBtn)),
-          // Row 2 — sections within the open topic area
-          h('div', { role: 'tablist', 'aria-label': openGroup.label + ' sections',
+          !sectionSearchQuery && h('div', { role: 'tablist', 'aria-label': openGroup.label + ' sections',
             style: { display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center', paddingTop: 2 } },
             h('span', { 'aria-hidden': 'true',
               style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
                 color: openGroup.color, paddingRight: 6, marginRight: 2, borderRight: '1px solid ' + openGroup.color + '33', flexShrink: 0 } },
               openGroup.label),
-            openGroup.tabs.map(function(t) { return renderTab(t, openGroup.color); })));
+            openGroup.tabs.map(function(t) { return renderTab(t, openGroup.color); })),
+          sectionSearchQuery && h('div', { id: 'cl-section-search-results', role: 'group', 'aria-label': 'Matching Cephalopod Lab sections', style: { display: 'flex', flexWrap: 'wrap', gap: 6, paddingBottom: 8 } },
+            sectionMatches.length ? sectionMatches.map(function(result) {
+              return h('button', { key: result.tab.id, type: 'button',
+                onClick: function() { openSearchResult(result); },
+                'aria-label': 'Open ' + result.tab.label + ' in ' + result.group.label,
+                style: { padding: '7px 10px', borderRadius: 7, border: '1px solid ' + result.group.color + '66', background: result.group.color + '16', color: result.group.color, fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                h('span', { 'aria-hidden': 'true' }, result.tab.icon),
+                h('span', null, result.tab.label),
+                h('span', { style: { color: '#94a3b8', fontSize: 9, fontWeight: 600 } }, result.group.label));
+            }) : h('div', { role: 'status', style: { color: '#94a3b8', fontSize: 11, padding: '6px 0' } },
+              __alloT('stem.cephalopodlab.no_matching_sections', 'No matching sections. Try a broader biology, activity, or teaching term.'))));
       }
-
       // ═══════════════════════════════════════════════════════
       // SECTION 1 — HUB
       // ═══════════════════════════════════════════════════════
       function renderHub() {
         return h('div', null,
           panelHeader('🐙 Welcome to Cephalopod Lab',
-            'Octopuses, squid, cuttlefish, and nautilus — the smartest invertebrates on Earth, with bodies and behaviors that look more alien than animal. They\'ve been evolving separately from vertebrates for 500 million years and built intelligence from a completely different starting point.'),
+            __alloT('stem.cephalopodlab.welcome_evidence_based_intro', 'Octopuses, squid, cuttlefish, and nautiluses are marine mollusks with unusual nervous systems, dynamic skin, and diverse life histories. Explore what evidence supports, where groups differ, and which popular claims are only metaphors.')),
 
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.what_makes_cephalopods_remarkable', '🧠 What makes cephalopods remarkable')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 } },
               [
-                { icon: '🧠', title: __alloT('stem.cephalopodlab.9_brains_3_hearts_blue_blood', '9 brains, 3 hearts, blue blood'),
-                  body: __alloT('stem.cephalopodlab.octopuses_have_a_central_brain_8_arm_g', 'Octopuses have a central brain + 8 arm ganglia. 2/3 of all their neurons live in the arms. Blood is copper-based (hemocyanin) — blue, not red.') },
-                { icon: '🎨', title: __alloT('stem.cephalopodlab.skin_that_sees', 'Skin that sees'),
-                  body: __alloT('stem.cephalopodlab.chromatophores_iridophores_leucophores', 'Chromatophores + iridophores + leucophores let them change color in milliseconds. They\'re mostly color-blind themselves, possibly seeing color via skin-distributed opsins.') },
+                { icon: '🧠', title: __alloT('stem.cephalopodlab.one_brain_distributed_control', 'One brain, distributed control'),
+                  body: __alloT('stem.cephalopodlab.octopus_distributed_nervous_system_correction', 'An octopus has one central brain plus large nerve cords and ganglia in its arms, where much sensory and motor processing occurs. "Nine brains" is a metaphor, not anatomy. Octopuses also have one systemic and two branchial hearts; oxygenated hemocyanin appears blue.') },
+                { icon: '🎨', title: __alloT('stem.cephalopodlab.dynamic_light_sensitive_skin', 'Dynamic, light-sensitive skin'),
+                  body: __alloT('stem.cephalopodlab.cephalopod_skin_opsin_correction', 'Nerves control pigment-filled chromatophores while iridophores and leucophores reflect light. Skin opsins are associated with local light responses, but current evidence does not show image-forming skin vision or full color vision through the skin.') },
                 { icon: '🎭', title: __alloT('stem.cephalopodlab.mimicry_tool_use', 'Mimicry + tool use'),
-                  body: __alloT('stem.cephalopodlab.mimic_octopus_impersonates_15_species_', 'Mimic octopus impersonates 15+ species. Coconut octopus carries shells as portable homes. Both are unprecedented in invertebrates.') },
-                { icon: '⏳', title: __alloT('stem.cephalopodlab.live_fast_die_young', 'Live fast, die young'),
-                  body: __alloT('stem.cephalopodlab.most_octopuses_live_1_2_years_they_mat', 'Most octopuses live 1-2 years. They mate once, brood eggs without eating, then die. Semelparous reproduction is the cephalopod default.') },
-                { icon: '🌊', title: __alloT('stem.cephalopodlab.climate_winners', 'Climate winners'),
-                  body: __alloT('stem.cephalopodlab.cephalopod_populations_are_rising_glob', 'Cephalopod populations are RISING globally as fish stocks decline. Short lifespan + rapid reproduction + ecological flexibility makes them well-suited to the changing ocean.') },
-                { icon: '🦴', title: __alloT('stem.cephalopodlab.500_million_years', '500 million years'),
-                  body: __alloT('stem.cephalopodlab.cephalopods_diverged_from_their_snail_', 'Cephalopods diverged from their snail/clam cousins ~500M years ago. Nautilus is essentially unchanged for 500M years — a true living fossil.') }
+                  body: __alloT('stem.cephalopodlab.mimicry_tool_use_correction', 'Mimic octopuses shift posture, movement, and pattern in ways resembling several other animals. Veined octopuses carry coconut or shell halves as portable shelter — an important example of invertebrate tool use, but not the only one.') },
+                { icon: '⏳', title: __alloT('stem.cephalopodlab.short_lives_with_exceptions', 'Mostly short lives, with exceptions'),
+                  body: __alloT('stem.cephalopodlab.cephalopod_lifespan_exceptions', 'Many coleoids live months to a few years and reproduce once. Nautiluses can live for decades and reproduce repeatedly, and some deep-sea cephalopods also depart from the once-and-die pattern.') },
+                { icon: '🌊', title: __alloT('stem.cephalopodlab.fast_responses_mixed_outcomes', 'Fast responses, mixed outcomes'),
+                  body: __alloT('stem.cephalopodlab.global_abundance_trend_caution', 'A 2016 analysis found broad increases in cephalopod catch-rate indices over six decades, but that does not make every species a climate winner. Temperature, oxygen, acidification, fishing, and prey changes can produce different regional outcomes.') },
+                { icon: '🦴', title: __alloT('stem.cephalopodlab.ancient_lineage_still_evolving', 'Ancient lineage, still evolving'),
+                  body: __alloT('stem.cephalopodlab.nautilus_living_fossil_correction', 'Cephalopod lineages extend back more than 500 million years. Living nautiluses retain an external shell, but they have continued evolving and diversifying; "living fossil" is shorthand, not evidence of an unchanged animal.') }
               ].map(function(c, i) {
                 return h('div', { key: i,
                   style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #a78bfa', padding: '12px 14px', borderRadius: 8 } },
@@ -811,16 +853,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.what_you_can_do_here', '🎯 What you can do here')),
             h('ul', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, lineHeight: 1.8, margin: 0, padding: '0 0 0 20px' } },
-              h('li', null, h('b', { style: { color: '#c7d2fe' } }, __alloT('stem.cephalopodlab.field_guide_2', 'Field Guide: ')), __alloT('stem.cephalopodlab.compare_10_species_across_intelligence', 'Compare 10 species across intelligence + camouflage + hunting style. Each has a "weird thing" — the trait that makes biologists stop everything.')),
+              h('li', null, h('b', { style: { color: '#c7d2fe' } }, __alloT('stem.cephalopodlab.field_guide_2', 'Field Guide: ')), __alloT('stem.cephalopodlab.compare_field_guide_species_evidence', 'Compare all field-guide species across body plan, habitat, camouflage, movement, and hunting strategy. Relative simulation profiles are labeled as teaching models rather than scientific rankings.')),
               h('li', null, h('b', { style: { color: '#c7d2fe' } }, __alloT('stem.cephalopodlab.hunter_sim_2', 'Hunter Sim: ')), __alloT('stem.cephalopodlab.play_a_cephalopod_hunter_pick_species_', 'Play a cephalopod hunter. Pick species, habitat, prey, tactic. Match your skin to the substrate. Time the strike. Get judged on whether your tactic was species-appropriate.')),
               h('li', null, h('b', { style: { color: '#c7d2fe' } }, 'Resources: '), __alloT('stem.cephalopodlab.glossary_sources_conservation_status_t', 'Glossary, sources, conservation status, the science behind chromatophore biology.')))),
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginTop: 20 } },
-            h('button', { onClick: function() { setSection('field'); awardXP(3); },
+            h('button', { type: 'button', onClick: function() { setSection('field'); awardXP(3); },
               style: { padding: '12px 24px', background: '#4f46e5', color: 'white', boxShadow: '0 4px 12px rgba(79,70,229,0.35)', transition: 'box-shadow 0.15s, transform 0.15s',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
               __alloT('stem.cephalopodlab.browse_the_field_guide', '📖 Browse the field guide')),
-            h('button', { onClick: function() { setSection('hunt'); awardXP(3); },
+            h('button', { type: 'button', onClick: function() { setSection('hunt'); awardXP(3); },
               style: { padding: '12px 24px', background: '#a78bfa', color: '#1c1410',
                 border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
               __alloT('stem.cephalopodlab.start_hunting', '🎯 Start hunting')))
@@ -835,7 +877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var selected = SPECIES.find(function(s) { return s.id === selectedId; }) || SPECIES[0];
         return h('div', null,
           panelHeader('📖 Species Field Guide',
-            'Ten cephalopod species. Click any to see its biology, hunting style, and the trait biologists find most striking.'),
+            SPECIES.length + ' cephalopod species. Select one to examine its biology, hunting style, and evidence-based natural-history profile.'),
 
           // Species grid (compact)
           h('div', { style: cardStyle() },
@@ -844,7 +886,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               SPECIES.map(function(s) {
                 var active = s.id === selectedId;
                 var groupColor = s.group === 'octopus' ? '#a78bfa' : s.group === 'squid' ? '#38bdf8' : s.group === 'cuttlefish' ? '#fbbf24' : '#86efac';
-                return h('button', { key: s.id,
+                return h('button', { key: s.id, type: 'button',
                   onClick: function() { setCL({ fieldGuideSpeciesId: s.id }); awardXP(1); clAnnounce('Selected ' + s.name); },
                   'aria-pressed': active ? 'true' : 'false',
                   style: {
@@ -872,14 +914,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('b', null, 'Group: '), selected.group, ' • ',
                   h('b', null, 'Size: '), selected.size, ' • ',
                   h('b', null, 'Lifespan: '), selected.lifespan))),
+            h('div', { role: 'note', style: { background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.28)', borderRadius: 8, padding: '9px 11px', marginBottom: 10, color: '#bae6fd', fontSize: 10.5, lineHeight: 1.5 } },
+              h('b', null, __alloT('stem.cephalopodlab.relative_teaching_profiles', 'Relative teaching profiles: ')),
+              __alloT('stem.cephalopodlab.profile_scores_not_standardized_measurements', 'These bars tune comparisons inside this lab; they are not standardized scientific measurements. Cognition especially depends on the task, context, age, and evidence available for each species.')),
             // Stat bars
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
               [
-                { lbl: '🧠 Intelligence', val: selected.intelligence, max: 10, color: '#a78bfa' },
-                { lbl: '🎨 Camouflage', val: selected.camouflageRank, max: 10, color: '#fbbf24' },
-                { lbl: '🚀 Jet Speed', val: selected.jetSpeed, max: 10, color: '#38bdf8' }
+                { lbl: '🧠 Behavioral flexibility', val: selected.intelligence, max: 10, color: '#a78bfa' },
+                { lbl: '🎨 Camouflage versatility', val: selected.camouflageRank, max: 10, color: '#fbbf24' },
+                { lbl: '🚀 Burst-swimming profile', val: selected.jetSpeed, max: 10, color: '#38bdf8' }
               ].map(function(stat, i) {
-                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', padding: '10px 12px', borderRadius: 8 } },
+                return h('div', { key: i, role: 'meter', 'aria-label': stat.lbl + ', relative teaching profile ' + stat.val + ' of ' + stat.max, 'aria-valuemin': 0, 'aria-valuemax': stat.max, 'aria-valuenow': stat.val, style: { background: 'rgba(15,23,42,0.5)', padding: '10px 12px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, display: 'flex', justifyContent: 'space-between' } },
                     h('span', null, stat.lbl),
                     h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: stat.color } }, stat.val + ' / ' + stat.max)),

@@ -313,10 +313,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ring: 'ring-amber-500/40'
           },
           {
-            id: 'speciation', title: t('stem.evolab.speciation_simulator', 'Speciation Simulator'), icon: '🌗',
-            subtitle: t('stem.evolab.watch_one_species_split_into_two', 'Watch one species split into two'),
-            desc: t('stem.evolab.a_single_ancestral_population_splits_i', 'A single ancestral population splits in half across a geographic barrier. Each half evolves under its own pressure. Over generations they diverge until they can no longer interbreed — speciation. Reproduces the allopatric model behind Galápagos finches and Lake Victoria cichlids.'),
-            bullets: ['Two side-by-side populations from a single source', 'Independent selection on each side', 'Live "compatibility" score', 'Speciation event detection + replay'],
+            id: 'speciation', title: t('stem.evolab.trait_divergence_model', 'Trait Divergence Model'), icon: '🌗',
+            subtitle: t('stem.evolab.explore_divergence_not_species_proof', 'Explore divergence without treating one trait as proof of speciation'),
+            desc: t('stem.evolab.trait_divergence_model_overview', 'A geographic barrier separates two teaching populations and selection shifts one quantitative trait on each side. The overlap score is a visualization of trait divergence, not a measurement of reproductive isolation or proof of separate species.'),
+            bullets: ['Two side-by-side populations from a single source', 'Independent selection on each side', 'Live trait-overlap proxy', 'Divergence milestone + replay'],
             color: 'from-indigo-500 to-blue-700',
             ring: 'ring-indigo-500/40'
           },
@@ -333,14 +333,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           {
             id: 'hardyWeinberg', title: 'Hardy-Weinberg', icon: '🧮',
             subtitle: t('stem.evolab.allele_frequency_equilibrium', 'Allele frequency equilibrium'),
-            desc: t('stem.evolab.visualize_p_2pq_q_1_with_adjustable_al', 'Visualize p² + 2pq + q² = 1 with adjustable allele frequencies. Toggle selection / mutation / drift / migration to see equilibrium break.'),
+            desc: t('stem.evolab.hwe_expected_proportions_menu', 'Calculate expected random-mating genotype proportions, then apply selection, one-way mutation, or migration to track how allele frequency p changes. Genetic drift is explored in its own lab.'),
             color: 'from-cyan-500 to-blue-600',
             ring: 'ring-cyan-500/40'
           },
           {
             id: 'geneticDrift', title: t('stem.evolab.genetic_drift', 'Genetic Drift'), icon: '🎲',
             subtitle: t('stem.evolab.random_allele_change_in_small_populati', 'Random allele change in small populations'),
-            desc: t('stem.evolab.50_50_starting_alleles_no_selection_ju', '50/50 starting alleles, no selection — just random sampling. Smaller populations drift hard; larger populations stay near 50/50. Demonstrates founder effects and bottlenecks.'),
+            desc: t('stem.evolab.drift_sampling_model_menu', '50/50 starting alleles, no selection — just random sampling. Smaller populations show larger fluctuations; larger populations usually stay closer to 50/50. Connects repeated drift to founder effects and bottlenecks.'),
             color: 'from-rose-500 to-pink-600',
             ring: 'ring-rose-500/40'
           },
@@ -354,7 +354,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           {
             id: 'antibioticLab', title: t('stem.evolab.antibiotic_resistance', 'Antibiotic Resistance'), icon: '💊',
             subtitle: t('stem.evolab.watch_bacteria_evolve_resistance', 'Watch bacteria evolve resistance'),
-            desc: t('stem.evolab.apply_antibiotic_pulses_to_a_bacterial', 'Apply antibiotic pulses to a bacterial population. Resistant strains survive and reproduce. Real-world public health: this is why finishing your prescription matters.'),
+            desc: t('stem.evolab.antibiotic_exactly_as_prescribed', 'Apply antibiotic pulses to a simplified bacterial population and observe selection on resistance. In real life, use antibiotics only when needed and take them exactly as prescribed.'),
             color: 'from-fuchsia-500 to-pink-700',
             ring: 'ring-fuchsia-500/40'
           },
@@ -783,8 +783,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         };
 
         var anyForce = selCoef > 0 || mutRate > 0 || migRate > 0;
-        var equilibriumStatus = !anyForce && gen > 0 ? '✓ Hardy-Weinberg equilibrium maintained' :
-          anyForce && gen > 0 ? '⚠ Forces active — equilibrium broken' : 'Set p, then add forces or step generations';
+        var priorSnapshot = history.length > 1 ? history[history.length - 2] : null;
+        var alleleChanged = !!(priorSnapshot && Math.abs(p - priorSnapshot.p) > 1e-9);
+        var equilibriumStatus = gen === 0 ? 'Set p, configure forces, then step generations' :
+          !anyForce ? 'No modeled forces: allele frequency p remained constant' :
+          alleleChanged ? 'Modeled forces changed allele frequency p this generation' :
+          'Forces are configured, but p did not change in the latest step';
 
         // Render the 3-bar genotype chart.
         var renderBars = function() {
@@ -815,14 +819,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-3' },
             // Equation header — now with a motivating question instead
             // of just stating the formula. Hardy-Weinberg's value to a
-            // student is "watch equilibrium break when a force turns on",
+            // student task is tracking allele-frequency change under modeled forces,
             // not the bare algebra. The old hero only stated the formula
             // and a definition; this asks them to test it.
             h('div', { className: 'bg-gradient-to-br from-cyan-500 to-blue-700 rounded-2xl p-5 text-white shadow-lg text-center' },
               h('div', { className: 'text-3xl font-black mb-1', style: { fontFamily: 'serif' } }, t('stem.evolab.p_2pq_q_1', 'p² + 2pq + q² = 1')),
-              h('div', { className: 'text-sm opacity-95 mb-2' }, t('stem.evolab.in_a_non_evolving_population_genotype_', 'In a non-evolving population, genotype frequencies are predicted by allele frequencies.')),
+              h('div', { className: 'text-sm opacity-95 mb-2' }, t('stem.evolab.hwe_expected_random_mating', 'Under random mating, p², 2pq, and q² are the expected genotype proportions for the current allele frequencies.')),
               h('div', { className: 'text-[12px] font-bold bg-white/15 rounded-lg px-3 py-1.5 inline-block' },
-                t('stem.evolab.your_job_turn_on_selection_mutation_or', '🎯 Your job: turn on selection, mutation, or migration and watch this equation BREAK.'))
+                t('stem.evolab.hwe_track_allele_change', 'Your job: apply a modeled force, track whether p changes, and watch the expected genotype proportions recalculate.'))
             ),
             // ── How to use this calculator (collapsible primer) ──
             h('details', {
@@ -832,10 +836,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none text-cyan-800' }, t('stem.evolab.how_to_use_this_calculator_click_to_to', '📜 How to use this calculator (click to toggle)')),
               h('div', { className: 'px-3 pb-3 space-y-2 text-[11px] text-slate-700' },
                 h('p', { className: 'leading-relaxed' },
-                  h('strong', null, t('stem.evolab.hardy_weinberg_equilibrium', 'Hardy-Weinberg equilibrium')), t('stem.evolab.describes_the_genotype_frequencies_you', ' describes the genotype frequencies you should see in a population that is NOT evolving. If reality matches the equation, the population is stable. If reality drifts away from it, ONE of the five forces is acting:')),
+                  h('strong', null, t('stem.evolab.hardy_weinberg_equilibrium', 'Hardy-Weinberg equilibrium')), t('stem.evolab.hwe_proportions_do_not_prove_stability', ' gives expected genotype proportions after random mating. Matching those proportions at one time point does not by itself prove that allele frequencies are stable; testing evolution requires comparing allele frequencies across generations. The classic baseline assumes:')),
                 h('ul', { className: 'list-disc list-inside space-y-1' },
                   h('li', null, h('strong', null, t('stem.evolab.selection_against_aa', 'Selection against aa')), t('stem.evolab.aa_individuals_leave_fewer_offspring_a', ': aa individuals leave fewer offspring. Allele q drops over generations.')),
-                  h('li', null, h('strong', null, t('stem.evolab.mutation_rate', 'Mutation rate')), t('stem.evolab.a_randomly_flips_to_a_or_vice_versa_pe', ': A randomly flips to a (or vice versa) per generation. Slow but constant.')),
+                  h('li', null, h('strong', null, t('stem.evolab.mutation_rate', 'Mutation rate')), t('stem.evolab.one_way_mutation_model', ': this simplified control models A → a only. Reverse mutation is not included.')),
                   h('li', null, h('strong', null, t('stem.evolab.migration', 'Migration')), t('stem.evolab.new_alleles_arrive_from_outside_the_po', ': new alleles arrive from outside the population. Pushes p toward the migrant frequency.')),
                   h('li', null, h('strong', null, t('stem.evolab.non_random_mating', 'Non-random mating')), t('stem.evolab.not_modeled_here_and_small_population_', ' (not modeled here) and small population size (genetic drift) are the other two.'))
                 ),
@@ -848,12 +852,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h(StatCard, { label: t('stem.evolab.p_a', 'p (A)'), value: p.toFixed(3), color: 'text-emerald-600' }),
               h(StatCard, { label: t('stem.evolab.q_a', 'q (a)'), value: q.toFixed(3), color: 'text-rose-600' }),
               h(StatCard, { label: t('stem.evolab.generation', 'Generation'), value: gen, color: 'text-cyan-600' }),
-              h(StatCard, { label: t('stem.evolab.status', 'Status'), value: anyForce ? 'Evolving' : 'Equilibrium', color: anyForce ? 'text-amber-600' : 'text-emerald-600' })
+              h(StatCard, { label: t('stem.evolab.status', 'Status'), value: gen === 0 ? 'Ready' : alleleChanged ? 'p changed' : 'p unchanged', color: alleleChanged ? 'text-amber-600' : 'text-emerald-600' })
             ),
-            // Bar chart
+            // Expected genotype proportions for the current p and q
+            h('p', { className: 'text-xs text-slate-600' }, 'Bars show Hardy-Weinberg expectations after random mating; they are not sampled observed counts.'),
             renderBars(),
             // Status banner
-            h('div', { 'aria-live': 'polite', className: 'p-3 rounded-lg text-center font-bold ' + (anyForce && gen > 0 ? 'bg-amber-50 border-2 border-amber-400 text-amber-800' : 'bg-emerald-50 border-2 border-emerald-400 text-emerald-800') },
+            h('div', { role: 'status', 'aria-live': 'polite', className: 'p-3 rounded-lg text-center font-bold ' + (alleleChanged ? 'bg-amber-50 border-2 border-amber-400 text-amber-800' : 'bg-emerald-50 border-2 border-emerald-400 text-emerald-800') },
               equilibriumStatus
             ),
             // Sliders grid
@@ -873,7 +878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 valueText: selCoef === 0 ? 'No selection' : 's = ' + selCoef.toFixed(2),
                 valueColor: selCoef > 0 ? 'text-rose-700' : 'text-slate-600',
                 accent: 'accent-rose-500',
-                hint: t('stem.evolab.how_much_aa_offspring_survive_less_tha', 'How much aa offspring survive less than AA / Aa. 0 = no selection; 1 = aa is lethal.')
+                hint: t('stem.evolab.selection_coefficient_relative_survival', 'Relative reduction in aa survival compared with AA and Aa. 0 = equal survival in this model; 1 = no aa survivors.')
               }),
               h(LabeledSlider, {
                 label: t('stem.evolab.3_mutation_rate_a_a', '3. Mutation Rate (A → a)'),
@@ -882,7 +887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 valueText: mutRate === 0 ? 'No mutation' : 'μ = ' + mutRate.toFixed(3) + ' / gen',
                 valueColor: mutRate > 0 ? 'text-amber-700' : 'text-slate-600',
                 accent: 'accent-amber-500',
-                hint: t('stem.evolab.rate_at_which_a_mutates_to_a_per_gener', 'Rate at which A mutates to a per generation. Real biology: ~10⁻⁶ per gene; here exaggerated to be visible.')
+                hint: t('stem.evolab.one_way_mutation_rate_model_limit', 'One-way A → a mutation probability per modeled generation. Real rates vary by organism and locus and are generally far below this deliberately exaggerated teaching range.')
               }),
               h(LabeledSlider, {
                 label: t('stem.evolab.4_migration_in_allele_a_from_outside', '4. Migration In (allele A from outside)'),
@@ -915,10 +920,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-cyan-50 border border-cyan-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-cyan-800 mb-2' }, t('stem.evolab.why_hardy_weinberg_matters', '📖 Why Hardy-Weinberg Matters')),
               h('p', { className: 'text-sm text-slate-700 mb-2' },
-                t('stem.evolab.hardy_weinberg_is_the_no_evolution_bas', 'Hardy-Weinberg is the "no-evolution baseline." If p² + 2pq + q² holds across generations, the population is NOT evolving. Real populations always violate at least one of the five HW assumptions: no selection, no mutation, no migration, infinite population (no drift), random mating.')),
+                t('stem.evolab.hwe_baseline_model_limit', 'Hardy-Weinberg equilibrium is an idealized baseline: random mating, a very large population, and no selection, mutation, or migration at the locus. The equation always sums to one algebraically; its biological use is predicting genotype proportions from p and q and testing whether allele frequencies remain constant across generations.')),
               h('p', { className: 'text-sm text-slate-700' },
                 h('strong', null, t('stem.evolab.the_point', 'The point: ')),
-                t('stem.evolab.evolution_any_change_in_allele_frequen', 'evolution = any change in allele frequencies over time. Watching HW break is watching evolution happen.'))
+                t('stem.evolab.evolution_allele_frequency_change', 'evolution at this scale means allele frequencies change across generations. This model shows that change directly in p; the bars remain Hardy-Weinberg expectations for each new p.'))
             ),
             // Try-this experiments — concrete prompts so students don't stare at sliders.
             h('div', { className: 'bg-white border-2 border-cyan-400 rounded-xl p-4' },
@@ -935,7 +940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('span', { className: 'text-2xl' }, '🎲'),
               h('div', null,
                 h('strong', null, t('stem.evolab.next_up', 'Next up: ')),
-                t('stem.evolab.hardy_weinberg_assumes_infinite_popula', 'Hardy-Weinberg assumes infinite population size. In small populations, RANDOM sampling changes allele frequencies even without selection. The Genetic Drift lab shows you exactly how much.')
+                t('stem.evolab.finite_population_drift_link', 'The idealized Hardy-Weinberg baseline assumes a very large population. In finite populations, random sampling changes allele frequencies even without selection. The Genetic Drift lab explores that process.')
               )
             ),
             h(TeacherNotes, {
@@ -1121,8 +1126,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
                 h('li', null, h('strong', null, t('stem.evolab.tiny_population_n_10', 'Tiny population (N=10): ')), t('stem.evolab.run_5_lineages_over_100_generations_mo', 'Run 5 lineages over 100 generations. Most lineages "fix" — alleles go to 0 or 1 by chance. Repeat the run and notice the END states are different each time even though all started identically.')),
                 h('li', null, h('strong', null, t('stem.evolab.big_population_n_1000', 'Big population (N=1000): ')), t('stem.evolab.same_100_generations_lineages_stay_nea', 'Same 100 generations. Lineages stay near p=0.5 — drift can\'t move them much because random sampling from many individuals smooths out.')),
-                h('li', null, h('strong', null, t('stem.evolab.long_term_tiny_population', 'Long-term tiny population: ')), t('stem.evolab.set_n_10_and_generations_500_watch_how', 'Set N=10 and generations=500. Watch how lineages settle on whichever allele was lucky early. This is the founder effect playing out.')),
-                h('li', null, h('strong', null, t('stem.evolab.compare_outcomes', 'Compare outcomes: ')), t('stem.evolab.run_n_10_three_times_then_n_1000_three', 'Run N=10 three times, then N=1000 three times. The N=10 outcomes vary wildly between runs; the N=1000 outcomes are nearly identical. Drift\'s power scales as 1/N.'))
+                h('li', null, h('strong', null, t('stem.evolab.long_term_tiny_population', 'Long-term tiny population: ')), t('stem.evolab.long_term_drift_not_founder', 'Set N=10 and generations=500. Watch lineages drift toward loss or fixation. This is repeated random sampling, not a founder event by itself.')),
+                h('li', null, h('strong', null, t('stem.evolab.compare_outcomes', 'Compare outcomes: ')), t('stem.evolab.drift_variance_scaling', 'Run N=10 three times, then N=1000 three times. The N=10 outcomes vary widely; N=1000 trajectories usually fluctuate less. Per-generation sampling variance is p(1-p)/(2N), so typical fluctuation scales roughly with 1/√N.'))
               )
             ),
             // Cross-module suggestion
@@ -1142,7 +1147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 'Drift is "random" but selection is "non-random." Why do both still count as evolution?'
               ],
               misconceptions: [
-                'Students sometimes think drift only affects "tiny" populations. Drift happens in every population, but its effects scale with 1/N — invisible in big populations, dominant in small ones.',
+                'Students sometimes think drift only affects "tiny" populations. Drift occurs in every finite population. Its per-generation variance is p(1-p)/(2N), so fluctuations are usually smaller, not absent, in large populations.',
                 'Students may think drift gives a population an "advantage." Drift is directionless — it can take a population either way, and is just as likely to lose a beneficial allele as a harmful one.'
               ],
               extension: 'Research the genetic bottleneck of cheetahs (~10,000 years ago) or northern elephant seals (1890s, ~20 individuals). What are the modern genetic-diversity consequences?'
@@ -1549,6 +1554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 ref: canvasRef,
                 width: 800, height: 280,
                 className: 'w-full block',
+                tabIndex: 0,
                 role: 'img',
                 'aria-label': 'Selection sandbox population: ' + creaturesRef.current.length + ' creatures, mean trait ' + latest.mean.toFixed(2) + ', generation ' + generation
               })
@@ -2001,7 +2007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('span', { className: 'text-2xl' }, '🌗'),
               h('div', null,
                 h('strong', null, t('stem.evolab.next_up_4', 'Next up: ')),
-                t('stem.evolab.you_watched_one_species_change_the_spe', 'You watched one species CHANGE. The Speciation Simulator shows what happens next — when an isolated population diverges far enough that it becomes a SECOND species. This is how the Galápagos got 14 finch species from one ancestor.')
+                t('stem.evolab.you_watched_one_species_change_the_spe', 'You watched one species CHANGE. The Trait Divergence Model shows what happens next — when an isolated population diverges far enough that it becomes a SECOND species. This is how the Galápagos got 14 finch species from one ancestor.')
               )
             ),
             h(TeacherNotes, {
@@ -2966,7 +2972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // hours: bacteria reproduce, mutations occasionally produce resistant
       // strains, and the player can apply antibiotic pulses that kill the
       // susceptible. Over weeks of treatment, resistant strains take over.
-      // Real-world hooks: MRSA, TB, the importance of finishing prescriptions.
+      // Real-world hooks: MRSA, TB, and taking antibiotics exactly as prescribed.
       function AntibioticLab() {
         var POP_CAP = 150;
         // Bacteria carry a continuous resistance trait r ∈ [0, 1]:
@@ -3216,7 +3222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('span', { className: 'text-4xl' }, '💊'),
                 h('div', null,
                   h('h2', { className: 'text-xl font-black' }, t('stem.evolab.evolution_on_a_human_timescale', 'Evolution on a human timescale')),
-                  h('p', { className: 'text-sm text-pink-50 mt-1' }, t('stem.evolab.bacteria_divide_every_20_30_minutes_ap', 'Bacteria divide every 20-30 minutes. Apply an antibiotic, kill 99% of them, and the 1% that survive — usually carrying a rare resistance mutation — repopulate. Within days you have a fully resistant strain. This is happening in real hospitals right now.'))
+                  h('p', { className: 'text-sm text-pink-50 mt-1' }, t('stem.evolab.antibiotic_model_limit', 'Apply an antibiotic in this simplified model and susceptible cells are more likely to die while more-resistant survivors reproduce. The continuous resistance trait, mutation rate, growth, and timing are exaggerated for visibility; real resistance can also involve horizontal gene transfer and many drug-specific mechanisms.'))
                 )
               )
             ),
@@ -3233,6 +3239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 ref: canvasRef,
                 width: 800, height: 240,
                 className: 'w-full block',
+                tabIndex: 0,
                 role: 'img',
                 'aria-label': 'Petri dish with ' + pop.length + ' bacteria. ' + resistantPct + ' percent resistant. Antibiotic ' + (antibiotic ? 'active' : 'off') + '.'
               })
@@ -3274,7 +3281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 onChange: function(v) { setDoseStrength(v); },
                 valueText: 'Dose ' + Math.round(doseStrength * 100) + '% lethal',
                 accent: 'accent-pink-500',
-                hint: t('stem.evolab.higher_dose_kills_more_susceptible_bac', 'Higher dose kills more susceptible bacteria each tick. But it also selects more strongly for resistance.')
+                hint: t('stem.evolab.antibiotic_dose_model_limit', 'In this model, increasing dose lowers survival more strongly for susceptible cells. Real dose-response and resistance selection depend on the drug, organism, exposure, and prescribed regimen.')
               }),
               h(LabeledSlider, {
                 label: t('stem.evolab.mutation_rate_2', 'Mutation Rate'),
@@ -3290,7 +3297,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 onChange: function(v) { setStartRes(v); },
                 valueText: Math.round(startRes * 100) + '% start resistant',
                 accent: 'accent-fuchsia-500',
-                hint: t('stem.evolab.fraction_of_the_initial_population_tha', 'Fraction of the initial population that\'s already resistant. Even 1-2% is enough to seed full resistance under treatment.')
+                hint: t('stem.evolab.antibiotic_starting_resistance_limit', 'Fraction of the initial modeled population above the resistance threshold. Outcomes vary stochastically; a small resistant minority can expand under selection but is not guaranteed to do so.')
               })
             ),
             // Try-this experiments
@@ -3298,8 +3305,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-fuchsia-800 mb-3' }, t('stem.evolab.try_these_experiments_5', '🧪 Try these experiments')),
               h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
                 h('li', null, h('strong', null, t('stem.evolab.watch_resistance_evolve', 'Watch resistance evolve: ')), t('stem.evolab.reset_apply_antibiotic_auto_run_for_30', 'Reset. Apply Antibiotic. Auto-Run for ~30 ticks. Watch the population crash, then rebuild from the few resistant survivors. By tick 30 the dish is mostly red.')),
-                h('li', null, h('strong', null, t('stem.evolab.finish_your_prescription', '"Finish your prescription": ')), t('stem.evolab.apply_antibiotic_for_10_ticks_populati', 'Apply Antibiotic for 10 ticks (population shrinks but isn\'t gone). Turn antibiotic OFF. The remaining bacteria — already partly resistant — repopulate fast. Restart the antibiotic; it\'s less effective now. This is exactly why doctors say "finish all the pills."')),
-                h('li', null, h('strong', null, t('stem.evolab.dose_makes_the_poison', 'Dose makes the poison: ')), t('stem.evolab.reset_set_dose_to_0_4_low_apply_antibi', 'Reset. Set Dose to 0.4 (low). Apply antibiotic and Auto-Run. Notice resistance rises slowly. Now Reset and try Dose = 1.0 (max). Resistance evolves FASTER under stronger selection — counterintuitive but true.')),
+                h('li', null, h('strong', null, t('stem.evolab.follow_prescribed_regimen', 'Follow the prescribed regimen: ')), t('stem.evolab.interrupted_exposure_model_limit', 'Apply Antibiotic for 10 ticks, turn it off, and watch survivors regrow. This demonstrates interrupted exposure inside this model, not a universal treatment rule. Real patients should take antibiotics exactly as prescribed and ask their clinician before changing duration.')),
+                h('li', null, h('strong', null, t('stem.evolab.dose_makes_the_poison', 'Dose makes the poison: ')), t('stem.evolab.compare_dose_without_clinical_generalization', 'Compare Dose = 0.4 with Dose = 1.0. In this model, stronger exposure often enriches resistant survivors faster, but it can also drive the small population extinct. Do not generalize this slider directly to clinical dosing.')),
                 h('li', null, h('strong', null, t('stem.evolab.stop_using_it_altogether', 'Stop using it altogether: ')), t('stem.evolab.after_resistance_reaches_100_turn_anti', 'After resistance reaches 100%, turn antibiotic OFF and Auto-Run. Watch resistance slowly decline if there\'s a "fitness cost" of being resistant — but in this model there isn\'t one, so resistance stays. (In real bacteria, fitness costs are sometimes present, sometimes not.)')),
                 h('li', null, h('strong', null, t('stem.evolab.mutation_rate_matters_2', 'Mutation rate matters: ')), t('stem.evolab.reset_set_mutation_rate_to_0_apply_ant', 'Reset. Set Mutation Rate to 0. Apply Antibiotic. Population goes extinct — no resistance can evolve from scratch. Now set Mutation Rate to 0.15. Resistance evolves nearly instantly. Real-world: bacteria with higher mutation rates evolve resistance faster.'))
               )
@@ -3308,11 +3315,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-fuchsia-50 border border-fuchsia-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-fuchsia-800 mb-2' }, t('stem.evolab.real_world_public_health', '📖 Real-world public health')),
               h('div', { className: 'text-sm text-slate-700 space-y-2' },
-                h('p', null, h('strong', null, 'MRSA: '), t('stem.evolab.methicillin_resistant_staphylococcus_a', 'Methicillin-resistant Staphylococcus aureus. First seen in 1961, two years after methicillin was introduced. Now common in hospitals worldwide. Annually causes ~10,000+ deaths in the US alone.')),
-                h('p', null, h('strong', null, 'TB: '), t('stem.evolab.multidrug_resistant_tuberculosis_mdr_t', 'Multidrug-resistant tuberculosis (MDR-TB) and extensively drug-resistant (XDR-TB) emerged because TB requires 6-9 months of treatment — patients who stop early select for resistance.')),
+                h('p', null, h('strong', null, 'MRSA: '), t('stem.evolab.mrsa_current_context', 'Methicillin-resistant Staphylococcus aureus was identified soon after methicillin entered use and remains an important healthcare- and community-associated pathogen.')),
+                h('p', null, h('strong', null, 'TB: '), t('stem.evolab.drug_resistant_tb_context', 'Drug-resistant tuberculosis can be selected by inadequate or interrupted effective therapy and can also spread directly between people. TB treatment requires a disease-specific multidrug regimen taken exactly as directed.')),
                 h('p', null, h('strong', null, t('stem.evolab.c_difficile', 'C. difficile: ')), t('stem.evolab.often_emerges_after_antibiotic_treatme', 'Often emerges AFTER antibiotic treatment for something else. The antibiotic kills off normal gut bacteria, leaving room for resistant C. diff to take over. ~12,800 US deaths/year.')),
-                h('p', null, h('strong', null, t('stem.evolab.why_this_matters', 'Why this matters: ')), t('stem.evolab.the_cdc_estimates_antibiotic_resistant', 'The CDC estimates antibiotic-resistant infections kill ~35,000 Americans per year. WHO calls antibiotic resistance one of the top 10 public health threats. Every prescription not finished, every antibiotic taken for a viral infection, every drop in livestock feed adds selection pressure.')),
-                h('p', null, h('strong', null, t('stem.evolab.what_you_can_do', 'What you can do: ')), t('stem.evolab.finish_prescriptions_even_if_you_feel_', 'Finish prescriptions even if you feel better. Don\'t demand antibiotics for viral infections (they don\'t work on viruses). Don\'t share or save antibiotics. The selection pressure you create today shapes the resistance landscape your kids will inherit.'))
+                h('p', null, h('strong', null, t('stem.evolab.why_this_matters', 'Why this matters: ')), t('stem.evolab.amr_global_context', 'Antimicrobial resistance causes substantial illness and death worldwide. Unnecessary or inappropriate antimicrobial use in people, animals, and agriculture adds selection pressure, while resistant organisms can also spread between hosts and environments.')),
+                h('p', null, h('strong', null, t('stem.evolab.what_you_can_do', 'What you can do: ')), t('stem.evolab.antibiotic_exactly_as_directed_actions', 'Use antibiotics only when prescribed, take them exactly as directed, and do not share or save them. Antibiotics do not treat viral infections. Ask the prescriber before changing or stopping a regimen.'))
               )
             ),
             // Cross-module suggestion
@@ -3327,13 +3334,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               standards: ['HS-LS4-4', 'HS-LS4-5', 'HS-LS2-7'],
               questions: [
                 'In the "stop the prescription early" experiment, why does the second course of antibiotics work less well than the first?',
-                'Counterintuitively, HIGHER doses select for resistance FASTER than lower doses. Why?',
+                'Why does this model sometimes enrich resistance faster at a higher dose? Which real clinical factors does the slider omit?',
                 'What policies could we put in place — at the patient level, hospital level, agricultural level — to slow the rise of antibiotic resistance?',
                 'Why does the CDC consider antibiotic resistance one of the top 10 public health threats globally?'
               ],
               misconceptions: [
                 '"Bacteria LEARN to resist antibiotics." They don\'t learn — they evolve. Random mutations occasionally produce resistance; antibiotics select FOR those mutations. The bacteria themselves don\'t change in response to the drug.',
-                '"You only get resistance if you take antibiotics often." Even a single under-completed course can select for resistance. And resistance can spread between bacteria (and even between species) via horizontal gene transfer.',
+                '"Resistance only comes from a patient taking antibiotics often." Selection can occur during antimicrobial exposure, and resistant organisms or genes can spread between bacteria, hosts, and environments. This model does not include horizontal gene transfer.',
                 '"My antibiotic stopped working — I need a stronger one." Sometimes the right answer is a different antibiotic class entirely, not a stronger version of the same one. Resistance is often class-specific.'
               ],
               extension: 'Research the WHO\'s "Antibiotic Stewardship" guidelines. List 3 specific policies and explain the evolutionary logic behind each one.'
@@ -3348,8 +3355,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // Allopatric speciation: a single ancestral population is split by a
       // geographic barrier. Each half evolves under its own selection pressure.
       // Over generations, the two means diverge until they can no longer
-      // interbreed — speciation. Compatibility = overlap of trait distributions;
-      // when overlap drops below 30%, the model declares them separate species.
+      // diverge in one modeled trait. The overlap proxy is not reproductive isolation;
+      // 30% is a teaching milestone only, not a biological species threshold.
       // Real-world template: Galápagos finches (all 14 from one ancestor across
       // 14 islands), Lake Victoria cichlids (~500 species in a single lake from
       // a small founder pool ~14,000 years ago).
@@ -3415,7 +3422,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           setSpeciatedAt(null);
         };
 
-        // Compatibility = how much the two trait distributions overlap.
+        // Trait-overlap proxy: a simplified comparison of two modeled distributions.
         // Computed as 1 - normalized distance between means (penalized by std).
         // Returns 1.0 when populations are identical, ~0.0 when fully diverged.
         var computeCompatibility = function(lMean, rMean, lStd, rStd) {
@@ -3485,9 +3492,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             setSpeciated(true);
             setSpeciatedAt(nextGen);
             setAutoRun(false); // pause for the moment
-            announce('Speciation event! At generation ' + nextGen + ', the two populations have diverged enough to be considered separate species.');
+            announce('Trait-divergence milestone reached at generation ' + nextGen + '. This model does not test reproductive isolation.');
           } else if (!silent) {
-            announce('Generation ' + nextGen + '. Compatibility ' + Math.round(compat * 100) + ' percent.');
+            announce('Generation ' + nextGen + '. Trait-overlap proxy ' + Math.round(compat * 100) + ' percent.');
           }
         };
 
@@ -3592,7 +3599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var compat = computeCompatibility(lStats.mean, rStats.mean, lStats.std, rStats.std);
         var compatPct = Math.round(compat * 100);
 
-        // SVG history chart — both means + compatibility line.
+        // SVG history chart — both means plus the trait-overlap proxy.
         var renderHistoryChart = function() {
           var hist = historyRef.current;
           var W = 600, H = 160, padL = 36, padR = 12, padT = 12, padB = 24;
@@ -3604,7 +3611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var cPath = hist.map(function(pt, i) { return (i === 0 ? 'M ' : 'L ') + toX(i) + ' ' + toY(pt.compat); }).join(' ');
           return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.trait_means_compatibility_over_time', 'Trait Means + Compatibility Over Time')),
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.trait_means_overlap_proxy_over_time', 'Trait Means + Overlap Proxy Over Time')),
               h('div', { className: 'flex gap-3 text-[10px]' },
                 h('span', { className: 'flex items-center gap-1' },
                   h('span', { style: { width: 12, height: 2, backgroundColor: '#3b82f6', display: 'inline-block' } }),
@@ -3616,7 +3623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 ),
                 h('span', { className: 'flex items-center gap-1' },
                   h('span', { style: { width: 12, height: 2, backgroundColor: '#10b981', display: 'inline-block' } }),
-                  h('span', null, t('stem.evolab.compatibility', 'Compatibility'))
+                  h('span', null, t('stem.evolab.trait_overlap_proxy', 'Overlap proxy'))
                 )
               )
             ),
@@ -3624,14 +3631,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               viewBox: '0 0 ' + W + ' ' + H,
               className: 'w-full',
               role: 'img',
-              'aria-label': 'Two trait means and a compatibility line over generations. Compatibility currently ' + compatPct + ' percent.'
+              'aria-label': 'Two trait means and a trait-overlap proxy over generations. The proxy is currently ' + compatPct + ' percent.'
             },
               h('rect', { x: 0, y: 0, width: W, height: H, fill: '#f8fafc' }),
               h('line', { x1: padL, y1: padT, x2: padL, y2: H - padB, stroke: '#94a3b8' }),
               h('line', { x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: '#94a3b8' }),
-              // Speciation threshold at 0.3 compatibility
+              // Arbitrary teaching milestone at 0.3 overlap; not a species boundary
               h('line', { x1: padL, y1: toY(0.3), x2: W - padR, y2: toY(0.3), stroke: '#dc2626', strokeDasharray: '4,2', strokeWidth: 1 }),
-              h('text', { x: W - padR - 110, y: toY(0.3) - 4, fontSize: '9', fill: '#dc2626' }, t('stem.evolab.speciation_threshold_30', 'speciation threshold (30%)')),
+              h('text', { x: W - padR - 110, y: toY(0.3) - 4, fontSize: '9', fill: '#dc2626' }, t('stem.evolab.trait_divergence_milestone_30', 'teaching milestone (30%)')),
               h('text', { x: 4, y: toY(1) + 4, fontSize: '10', fill: '#475569' }, '1.0'),
               h('text', { x: 4, y: toY(0.5) + 4, fontSize: '10', fill: '#475569' }, '0.5'),
               h('text', { x: 4, y: toY(0) + 4, fontSize: '10', fill: '#475569' }, '0.0'),
@@ -3643,15 +3650,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         };
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
-          h(BackBar, { icon: '🌗', title: t('stem.evolab.speciation_simulator_2', 'Speciation Simulator') }),
+          h(BackBar, { icon: '🌗', title: t('stem.evolab.trait_divergence_model_2', 'Trait Divergence Model') }),
           h('div', { className: 'p-4 max-w-6xl mx-auto w-full space-y-3' },
             // Hero
             h('div', { className: 'bg-gradient-to-br from-indigo-600 to-blue-800 rounded-2xl p-4 text-white shadow-lg' },
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-4xl' }, '🌗'),
                 h('div', null,
-                  h('h2', { className: 'text-xl font-black' }, t('stem.evolab.how_one_species_becomes_two', 'How one species becomes two')),
-                  h('p', { className: 'text-sm text-indigo-50 mt-1' }, t('stem.evolab.a_geographic_barrier_splits_an_ancestr', 'A geographic barrier splits an ancestral population. Each half evolves under its own pressure. When trait distributions diverge enough that the two can no longer interbreed (compatibility < 30%), they\'re separate species. This is the textbook allopatric model behind Galápagos finches, Lake Victoria cichlids, and ring species.'))
+                  h('h2', { className: 'text-xl font-black' }, t('stem.evolab.from_separation_to_trait_divergence', 'From separation to trait divergence')),
+                  h('p', { className: 'text-sm text-indigo-50 mt-1' }, t('stem.evolab.trait_divergence_milestone_limit', 'A geographic barrier splits an ancestral population. Each half evolves under its own pressure. This simplified model marks a teaching milestone when one trait\'s overlap proxy falls below 30%. Real speciation requires evidence of independently evolving lineages and reproductive isolation or other species criteria; this activity does not test mating.'))
                 )
               )
             ),
@@ -3660,14 +3667,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h(StatCard, { label: t('stem.evolab.generation_3', 'Generation'), value: generation, color: 'text-indigo-700' }),
               h(StatCard, { label: t('stem.evolab.left_mean_2', 'Left Mean'), value: lStats.mean.toFixed(2), color: 'text-blue-700' }),
               h(StatCard, { label: t('stem.evolab.right_mean_2', 'Right Mean'), value: rStats.mean.toFixed(2), color: 'text-amber-700' }),
-              h(StatCard, { label: t('stem.evolab.compatibility_2', 'Compatibility'), value: compatPct + '%', color: compat < 0.3 ? 'text-rose-700' : compat < 0.6 ? 'text-amber-700' : 'text-emerald-700' })
+              h(StatCard, { label: t('stem.evolab.trait_overlap_proxy_2', 'Trait overlap proxy'), value: compatPct + '%', color: compat < 0.3 ? 'text-rose-700' : compat < 0.6 ? 'text-amber-700' : 'text-emerald-700' })
             ),
             // Speciation banner
             speciated && h('div', { 'aria-live': 'polite', className: 'bg-gradient-to-r from-rose-500 to-pink-700 rounded-2xl p-4 text-white shadow-lg flex items-center gap-3' },
               h('span', { className: 'text-4xl' }, '🎉'),
               h('div', null,
-                h('div', { className: 'text-lg font-black' }, 'SPECIATION!'),
-                h('div', { className: 'text-sm opacity-95' }, 'At generation ' + speciatedAt + ', the two populations have diverged enough that they\'d no longer interbreed in nature. They\'re now separate species. Reset to try again with different settings.')
+                h('div', { className: 'text-lg font-black' }, 'TRAIT-DIVERGENCE MILESTONE'),
+                h('div', { className: 'text-sm opacity-95' }, 'At generation ' + speciatedAt + ', the overlap proxy crossed this model\'s arbitrary 30% teaching marker. This does not demonstrate reproductive isolation. Reset to compare settings.')
               )
             ),
             // Canvas (two-population view with barrier)
@@ -3676,8 +3683,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 ref: canvasRef,
                 width: 800, height: 280,
                 className: 'w-full block',
+                tabIndex: 0,
                 role: 'img',
-                'aria-label': 'Two populations separated by a barrier. Left mean ' + lStats.mean.toFixed(2) + ', right mean ' + rStats.mean.toFixed(2) + '. Compatibility ' + compatPct + ' percent.'
+                'aria-label': 'Two populations separated by a barrier. Left mean ' + lStats.mean.toFixed(2) + ', right mean ' + rStats.mean.toFixed(2) + '. Trait-overlap proxy ' + compatPct + ' percent.'
               })
             ),
             // History chart
@@ -3698,7 +3706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 onChange: function(v) { setIdealRight(v); },
                 valueText: 'Ideal = ' + idealRight.toFixed(2),
                 accent: 'accent-amber-500',
-                hint: t('stem.evolab.what_trait_value_selection_favors_on_t_2', 'What trait value selection favors on the right (hot/dry) side. The greater the gap from left ideal, the faster speciation.')
+                hint: t('stem.evolab.right_trait_optimum_divergence', 'What trait value selection favors on the right (hot/dry) side. A larger gap usually produces faster divergence in the modeled trait.')
               }),
               h(LabeledSlider, {
                 label: t('stem.evolab.selection_strength_both_sides', 'Selection Strength (both sides)'),
@@ -3706,7 +3714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 onChange: function(v) { setSelStrength(v); },
                 valueText: selStrength === 0 ? 'Off (drift only)' : 'Strength = ' + selStrength.toFixed(2),
                 accent: 'accent-emerald-500',
-                hint: t('stem.evolab.how_strongly_each_side_selects_toward_', 'How strongly each side selects toward its ideal. With selection off, drift alone may still cause speciation in small populations — eventually.')
+                hint: t('stem.evolab.selection_off_trait_drift_limit', 'How strongly each side selects toward its ideal. With selection off, random sampling may still separate the modeled trait means. That alone does not establish speciation.')
               }),
               h(LabeledSlider, {
                 label: t('stem.evolab.mutation_size_2', 'Mutation Size'),
@@ -3714,7 +3722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 onChange: function(v) { setMutSize(v); },
                 valueText: 'σ = ' + mutSize.toFixed(2),
                 accent: 'accent-violet-500',
-                hint: t('stem.evolab.higher_mutation_faster_response_to_sel', 'Higher mutation = faster response to selection AND more variance maintained = somewhat slower full speciation.')
+                hint: t('stem.evolab.offspring_variation_model_limit', 'Larger offspring variation can speed movement toward an optimum while also maintaining broader trait distributions. This slider is not a biological mutation-rate estimate.')
               })
             ),
             // Controls
@@ -3743,11 +3751,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-white border-2 border-indigo-400 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-indigo-800 mb-3' }, t('stem.evolab.try_these_experiments_6', '🧪 Try these experiments')),
               h('ol', { className: 'list-decimal list-inside space-y-2 text-sm text-slate-700' },
-                h('li', null, h('strong', null, t('stem.evolab.default_fast_speciation', 'Default fast speciation: ')), t('stem.evolab.left_ideal_0_3_right_0_7_selection_0_7', 'Left ideal = 0.3, right = 0.7, selection = 0.7. Auto-run. Speciation usually triggers within 15-25 generations.')),
-                h('li', null, h('strong', null, t('stem.evolab.same_ideal_no_divergence', 'Same ideal, no divergence: ')), t('stem.evolab.set_both_ideals_to_0_5_same_selection_', 'Set BOTH ideals to 0.5 (same selection pressure on both sides). Auto-run for 50 generations — populations stay compatible. Speciation needs DIFFERENT pressures.')),
-                h('li', null, h('strong', null, t('stem.evolab.drift_only_speciation', 'Drift-only speciation: ')), t('stem.evolab.set_selection_to_0_on_both_sides_auto_', 'Set selection to 0 on both sides. Auto-run for 80+ generations. Even without selection, populations drift apart by chance — this is exactly how some island species formed.')),
-                h('li', null, h('strong', null, t('stem.evolab.reverse_a_near_speciation', 'Reverse a near-speciation: ')), t('stem.evolab.run_until_compatibility_40_set_both_id', 'Run until compatibility ≈ 40%. Set BOTH ideals to 0.5 and resume. The populations partially merge back — but only if you stop in time. Past the threshold, divergence accumulates faster than mixing can reverse.')),
-                h('li', null, h('strong', null, t('stem.evolab.slow_vs_fast_speciation', 'Slow vs fast speciation: ')), t('stem.evolab.compare_selection_1_0_strong_vs_0_3_we', 'Compare selection = 1.0 (strong) vs 0.3 (weak). Stronger selection causes faster trait divergence and faster speciation.'))
+                h('li', null, h('strong', null, t('stem.evolab.default_fast_speciation', 'Default fast divergence: ')), t('stem.evolab.default_trait_divergence_experiment', 'Left ideal = 0.3, right = 0.7, selection = 0.7. Auto-run and note when the arbitrary overlap milestone is reached.')),
+                h('li', null, h('strong', null, t('stem.evolab.same_ideal_no_divergence', 'Same ideal, no divergence: ')), t('stem.evolab.same_optimum_trait_experiment', 'Set both ideals to 0.5. The trait means usually remain closer, although random sampling can still separate them.')),
+                h('li', null, h('strong', null, t('stem.evolab.drift_only_speciation', 'Drift-only divergence: ')), t('stem.evolab.drift_only_trait_divergence_limit', 'Set selection to 0 on both sides. Auto-run for 80+ generations. Random sampling can separate trait means, but the model cannot show whether reproductive isolation evolves.')),
+                h('li', null, h('strong', null, t('stem.evolab.reverse_a_near_speciation', 'Reverse trait divergence: ')), t('stem.evolab.reverse_trait_divergence_no_mixing', 'Run until the overlap proxy is about 40%, then set both ideals to 0.5. The means may converge independently; no migration or population mixing occurs in this model.')),
+                h('li', null, h('strong', null, t('stem.evolab.slow_vs_fast_speciation', 'Slow vs fast divergence: ')), t('stem.evolab.selection_strength_trait_divergence', 'Compare selection = 1.0 with 0.3. Stronger selection usually moves this modeled trait toward different optima faster; it does not by itself prove faster speciation.'))
               )
             ),
             // Real-world examples
@@ -3772,8 +3780,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               standards: ['HS-LS4-2', 'HS-LS4-4', 'HS-LS4-5'],
               questions: [
                 'What\'s the difference between allopatric, sympatric, and parapatric speciation? Which does this simulator model?',
-                'In the "drift-only" experiment, populations still speciate eventually. What does this tell us about the necessity of selection?',
-                'Compatibility falls below 30% — that\'s the model\'s threshold. What real-world tests would scientists actually use to declare two populations separate species?',
+                'In the drift-only experiment, trait means may diverge. Why is that not enough evidence by itself to conclude speciation occurred?',
+                'The overlap proxy falls below the model\'s arbitrary 30% marker. What evidence would scientists need before concluding that populations are separate species?',
                 'Why is allopatric speciation more common than sympatric in the wild?'
               ],
               misconceptions: [
@@ -4105,6 +4113,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 ref: canvasRef,
                 width: 800, height: 280,
                 className: 'w-full block',
+                tabIndex: 0,
                 role: 'img',
                 'aria-label': 'Predator-prey simulation. ' + predRef.current.length + ' red predators chasing ' + preyRef.current.length + ' blue prey. Mean predator speed ' + predMean.toFixed(2) + ', prey ' + preyMean.toFixed(2) + '.'
               })
@@ -4719,6 +4728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 ref: canvasRef,
                 width: 800, height: 280,
                 className: 'w-full block',
+                tabIndex: 0,
                 role: 'img',
                 'aria-label': 'Climate landscape with ' + pop.length + ' creatures. Temperature ' + temperature.toFixed(2) + '. Mean tolerance ' + mean.toFixed(2) + '.' + (extinct ? ' EXTINCTION OCCURRED.' : '')
               })
@@ -5415,6 +5425,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (closestIdx >= 0) killPrey(pop[closestIdx].id);
         };
 
+        // Keyboard-equivalent selection pressure: remove the live prey whose
+        // trait is farthest from the current camouflage optimum.
+        var huntMostVisible = function() {
+          if (phaseRef.current !== 'hunting') return;
+          var live = popRef.current.filter(function(prey) { return prey.alive; });
+          if (!live.length) return;
+          var target = live.reduce(function(best, prey) {
+            return Math.abs(prey.trait - env.idealTrait) > Math.abs(best.trait - env.idealTrait) ? prey : best;
+          }, live[0]);
+          killPrey(target.id);
+        };
+
         // History chart of mean trait over rounds
         var renderHistoryChart = function() {
           var hist = historyRef.current;
@@ -5520,11 +5542,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 ref: canvasRef,
                 width: 800, height: 300,
                 onClick: onCanvasClick,
+                onKeyDown: function(e) {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    huntMostVisible();
+                  }
+                },
                 className: 'w-full block cursor-crosshair',
+                tabIndex: 0,
                 role: 'img',
-                'aria-label': 'Hunting field with ' + pop.length + ' camouflaged prey on ' + env.label + ' background. Click prey to eat them.',
+                'aria-label': 'Hunting field with ' + pop.length + ' camouflaged prey on ' + env.label + ' background. Click a prey, or press Enter or Space to hunt the prey farthest from the camouflage optimum.',
                 style: { imageRendering: 'crisp-edges' }
               })
+            ),
+            h('div', { className: 'flex flex-wrap items-center gap-2 text-xs text-slate-600' },
+              h('button', {
+                type: 'button',
+                onClick: huntMostVisible,
+                disabled: phase !== 'hunting',
+                className: 'px-3 py-2 rounded-lg font-bold bg-lime-100 text-lime-800 border border-lime-400 disabled:opacity-50 disabled:cursor-not-allowed'
+              }, t('stem.evolab.hunt_most_visible_prey', 'Hunt most-visible prey')),
+              h('span', null, t('stem.evolab.keyboard_hunt_model_note', 'Keyboard mode removes the trait farthest from the camouflage optimum; it models the same selection direction without visual-search timing.'))
             ),
             // Two charts side-by-side
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
@@ -5668,7 +5706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           { id: 4, scenario: 'On a small Pacific island, a rare blue flower-color variant became the dominant color over 5 generations after a hurricane killed most of the parent generation. The blue color provides no apparent advantage.', correct: 'drift',
             why: 'Bottleneck event + small population + no fitness advantage = genetic drift. Random sampling (the hurricane) shifted allele frequencies by chance. Population size is the giveaway — drift dominates in small populations even when there\'s no selection pressure.' },
           { id: 5, scenario: 'Antibiotic-resistant E. coli strains have become increasingly common in hospitals worldwide over 30 years of widespread penicillin and methicillin use.', correct: 'natural-directional',
-            why: 'Antibiotics are a survival pressure favoring one extreme (resistance). Population mean shifts toward higher resistance. Not artificial — humans aren\'t deliberately breeding resistant bacteria; they\'re creating a survival pressure that selects for them. (This is why "finishing your prescription" matters.)' },
+            why: 'Antibiotics are a survival pressure favoring one extreme (resistance). Population mean shifts toward higher resistance. Not artificial — humans aren\'t deliberately breeding resistant bacteria; they\'re creating a survival pressure that selects for them. (In real care, antibiotics should be taken exactly as prescribed.)' },
           { id: 6, scenario: 'Most human babies cluster around 7–8 lbs at birth. Babies that are very small (premature) or very large (gestational diabetes) have higher mortality. Average-weight babies have the highest survival rate.', correct: 'natural-stabilizing',
             why: 'Pressure against BOTH extremes — small AND large — favoring the average. The population narrows around the optimum. Classic textbook example of stabilizing selection. Birthweight has remained relatively stable in human populations for millennia.' },
           { id: 7, scenario: 'In a finch population, small-beaked birds eat small soft seeds; large-beaked birds crack hard seeds; medium-beaked birds can\'t do either well and have lower fitness.', correct: 'natural-disruptive',
@@ -6854,7 +6892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             color: 'indigo',
             warmup: 'Show a map of the Galápagos islands with species ranges. Ask: "How did one ancestral finch become 14 species?" Have students hypothesize before any explanation.',
             modules: [
-              { id: 'speciation', label: t('stem.evolab.speciation_simulator_3', 'Speciation Simulator'), minutes: 18 },
+              { id: 'speciation', label: t('stem.evolab.trait_divergence_model_3', 'Trait Divergence Model'), minutes: 18 },
               { id: 'coevolution', label: t('stem.evolab.coevolution_lab_3', 'Coevolution Lab'), minutes: 18 }
             ],
             discussion: [
@@ -7050,13 +7088,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       if (view === 'moduleMap') return h(ModuleMap);
       if (view === 'standardsCrosswalk') return h(StandardsCrosswalk);
       if (view === 'pressureHunt') return h(function() {
-        var iq = (toolData.evoLab && toolData.evoLab.pressureHunt) || { camouflage: 50, vision: 50, harshness: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var iq = d.pressureHunt || { camouflage: 50, vision: 50, harshness: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) {
-          setToolData(function(prev) {
-            var prior = (prev && prev.evoLab) || {};
-            var st = Object.assign({}, prior.pressureHunt || iq, patch);
-            return Object.assign({}, prev, { evoLab: Object.assign({}, prior, { pressureHunt: st }) });
-          });
+          upd('pressureHunt', Object.assign({}, iq, patch));
         }
         var preyFitness = iq.camouflage * 0.4 + (100 - iq.harshness) * 0.3;
         var predatorFitness = iq.vision * 0.5 + iq.harshness * 0.2;
@@ -7066,25 +7100,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         else if (balance < -12) state = 'predDom';
         else state = 'balanced';
         var stateMeta = {
-          preyDom:  { label: t('stem.evolab.prey_dominated', '🌿 Prey-dominated'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.evolab.prey_camouflage_low_harshness_outpace_', 'Prey camouflage + low harshness outpace predator vision. Prey population stable.') },
-          balanced: { label: t('stem.evolab.coevolutionary_balance', '⚖️ Coevolutionary balance'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.evolab.both_pressures_roughly_equal_classic_r', 'Both pressures roughly equal. Classic Red Queen arms race.') },
-          predDom:  { label: t('stem.evolab.predator_dominated', '🦅 Predator-dominated'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.evolab.predator_vision_environmental_stress_o', 'Predator vision + environmental stress overwhelm prey defenses. Prey decline.') }
+          preyDom:  { label: t('stem.evolab.prey_dominated', '🌿 Prey-dominated'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.evolab.pressure_model_prey_weighted_regime', 'In this teaching rule, camouflage and lower harshness outweigh predator vision.') },
+          balanced: { label: t('stem.evolab.coevolutionary_balance', '⚖️ Coevolutionary balance'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.evolab.pressure_model_balanced_regime_limit', 'The teaching scores are similar; real coevolution depends on inheritance, demography, behavior, and changing environments.') },
+          predDom:  { label: t('stem.evolab.predator_dominated', '🦅 Predator-dominated'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.evolab.pressure_model_predator_weighted_regime', 'In this teaching rule, predator vision and environmental harshness outweigh camouflage.') }
         }[state];
         function logObs() {
           setIQ({ log: (iq.log || []).concat([{ c: iq.camouflage, v: iq.vision, h: iq.harshness, st: state }]).slice(-8) });
         }
         var H = function(t, p, c) { return c === undefined ? React.createElement(t, p) : React.createElement.apply(null, arguments); };
         return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
-          H('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Back to menu'),
+          H('button', { onClick: function() { setView('menu'); upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Back to menu'),
           H('div', { style: { padding: 16, background: 'rgba(15,23,42,0.6)', borderRadius: 10, border: '1px solid rgba(16,185,129,0.3)', color: '#e2e8f0' } },
             H('h3', { style: { fontSize: 16, fontWeight: 800, color: '#34d399', margin: '0 0 6px 0' } }, '🌿 Selection pressure discovery'),
             H('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 12 } },
-              'Adjust prey camouflage, predator vision, and environmental harshness. Widget shows one of three discrete coevolutionary regimes. No score, no reveal — sweep and notice.'),
-            H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: stateMeta.bg, border: '2px solid ' + stateMeta.border, marginBottom: 12 } },
+              'Adjust three conceptual pressures and compare the resulting teaching regimes. These weighted sliders are not measured fitness values or a prediction of real population size.'),
+            H('div', { role: 'status', 'aria-live': 'polite', style: { padding: 12, borderRadius: 8, textAlign: 'center', background: stateMeta.bg, border: '2px solid ' + stateMeta.border, marginBottom: 12 } },
               H('div', { style: { fontSize: 15, fontWeight: 900, color: stateMeta.color } }, stateMeta.label),
               H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, stateMeta.desc)
             ),
-            H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 } },
+            H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 12 } },
               [
                 { key: 'camouflage', label: t('stem.evolab.prey_camouflage', 'Prey camouflage (%)'),   val: iq.camouflage },
                 { key: 'vision',     label: t('stem.evolab.predator_vision_2', 'Predator vision (%)'),   val: iq.vision },
@@ -7104,7 +7138,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               (iq.log || []).length > 0 && H('span', { style: { fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } }, (iq.log || []).length + ' logged')
             ),
             (iq.log || []).length > 0 && H('table', { style: { fontSize: 10, width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: 12 } },
-              H('thead', null, H('tr', { style: { background: '#1e293b' } }, ['camou', 'vision', 'harsh', 'state'].map(function(c, i) { return H('th', { key: 'h' + i, style: { padding: '4px 6px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
+              H('thead', null, H('tr', { style: { background: '#1e293b' } }, ['camou', 'vision', 'harsh', 'state'].map(function(c, i) { return H('th', { key: 'h' + i, scope: 'col', style: { padding: '4px 6px', borderBottom: '1px solid rgba(100,116,139,0.4)', textAlign: 'left' } }, c); }))),
               H('tbody', null, iq.log.map(function(o, idx) {
                 return H('tr', { key: 'lr' + idx },
                   H('td', { style: { padding: '4px 6px', fontFamily: 'monospace' } }, o.c),
@@ -7128,7 +7162,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.evolab.explain_how_camouflage_predator_vision', 'Explain how camouflage, predator vision, and environment co-determine population outcomes.'),
                 style: { width: '100%', minHeight: 80, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 4 })),
             H('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,28,47,0.5)', borderRadius: 4, fontSize: 10, fontStyle: 'italic', color: '#64748b' } },
-              'Design note: discrete 3-state regime marker; no fitness score; no reveal — by design.')
+              'Model limit: three arbitrary weighted sliders produce a conceptual regime label. This is not a population-dynamics or measured-fitness model.')
           )
         );
       });

@@ -51,7 +51,7 @@
       role: 'mostly-pathogenic',
       where: 'About 30% of healthy people carry it harmlessly on skin or in the nose. Can cause infection if it gets through the skin.',
       what: 'Causes skin infections, food poisoning, sepsis, MRSA. The methicillin-resistant strain (MRSA) is a leading hospital-acquired infection.',
-      sciFact: 'MRSA evolved primarily through horizontal gene transfer (acquiring resistance genes from other bacteria, not just vertical mutation). One reason resistance can spread fast.'
+      sciFact: 'MRSA acquired the mecA resistance determinant through mobile genetic elements, while mutation, selection, clonal spread, and horizontal gene transfer all shape antimicrobial resistance.'
     },
     {
       id: 'rhizobium', name: 'Rhizobium', shape: 'rod',
@@ -294,7 +294,7 @@
     {
       id: 'mrsa', name: 'MRSA - antibiotic resistance evolves', year: '1959-present', icon: '🦠',
       what: 'Methicillin introduced in 1959 to treat penicillin-resistant Staph aureus. The first methicillin-resistant strain appeared in 1960. By the 1990s, MRSA was widespread in hospitals; by the 2000s, in the community ("community-acquired MRSA").',
-      why: 'Antibiotics select for resistance. Every time we use an antibiotic, we kill the susceptible bacteria and let the resistant survivors multiply. Overuse + misuse (incomplete courses, antibiotics in animal feed) accelerates resistance.',
+      why: 'Antibiotics create selection pressure: susceptible bacteria are removed more readily while resistant survivors can reproduce. Unnecessary use and misuse - including the wrong drug, dose, or duration - accelerate resistance.',
       lesson: 'Evolution is not in the past. It is happening right now, in your bathroom, on hospital walls, in factory farms. We are losing antibiotics faster than we can develop new ones. The CDC calls antibiotic resistance one of the great public-health threats of our century.'
     },
     {
@@ -440,63 +440,41 @@
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(239,68,68,0.18)', border: '1.5px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🧫'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5' } }, 'Antibiotic resistance - petri-dish evolution sim'),
-          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Apply selection pressure. Watch resistant strains take over the population. Real evolution in 14 ticks.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Model selection acting on pre-existing resistant cells across repeated exposure rounds.')
         )
       ),
       hh('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) minmax(180px, 1fr)', gap: 12, marginBottom: 12 } },
         hh('div', { style: { background: 'var(--allo-stem-deeper, rgba(2,6,23,0.7))', borderRadius: 10, padding: 8 } },
-          hh('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, textAlign: 'center' } }, 'Petri dish · Day ' + day + ' of ' + duration),
-          hh('svg', { viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', 'aria-label': 'Petri dish showing bacterial population', style: { width: '100%', maxWidth: 240, display: 'block', margin: '0 auto' } },
+          hh('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, textAlign: 'center' } }, 'Petri dish · Round ' + day + ' of ' + duration),
+          hh('svg', { viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': 'Petri dish model at exposure round ' + day + '. ' + totalAlive + ' cells remain; ' + pctRes + '% are resistant. Circles are sensitive cells and diamonds are resistant cells.', style: { width: '100%', maxWidth: 240, display: 'block', margin: '0 auto' } },
             hh('defs', null, hh('radialGradient', { id: 'dishBg', cx: '50%', cy: '50%', r: '50%' }, hh('stop', { offset: '0%', stopColor: '#1e293b' }), hh('stop', { offset: '100%', stopColor: '#0f172a' }))),
             hh('circle', { cx: 100, cy: 100, r: 95, fill: 'url(#dishBg)', stroke: '#475569', strokeWidth: 1.5 }),
             day < duration && day > 0 ? hh('circle', { cx: 100, cy: 100, r: 95, fill: '#fbbf24', opacity: 0.04 + (dose / 100) * 0.10 }) : null,
             bact.map(function(b, i) {
               if (!b.alive) return hh('circle', { key: 'b-' + i, cx: b.x, cy: b.y, r: 1.2, fill: '#475569', opacity: 0.18 });
-              var color = b.resistant ? '#ef4444' : '#22d3ee';
-              return hh('circle', { key: 'b-' + i, cx: b.x, cy: b.y, r: 2.2 * b.jitter, fill: color, opacity: 0.85 });
+              if (b.resistant) {
+                var size = 3.2 * b.jitter;
+                return hh('rect', { key: 'b-' + i, x: b.x - size / 2, y: b.y - size / 2, width: size, height: size, fill: '#ef4444', stroke: '#fecaca', strokeWidth: 0.45, opacity: 0.9, transform: 'rotate(45 ' + b.x + ' ' + b.y + ')' });
+              }
+              return hh('circle', { key: 'b-' + i, cx: b.x, cy: b.y, r: 2.2 * b.jitter, fill: '#22d3ee', opacity: 0.85 });
             })
           ),
           hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginTop: 6, fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-            hh('span', null, hh('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#22d3ee', marginRight: 4, verticalAlign: 'middle' } }), 'sensitive'),
-            hh('span', null, hh('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#ef4444', marginRight: 4, verticalAlign: 'middle' } }), 'resistant')
+            hh('span', null, hh('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#22d3ee', marginRight: 4, verticalAlign: 'middle' } }), 'sensitive circles'),
+            hh('span', null, hh('span', { style: { display: 'inline-block', width: 7, height: 7, background: '#ef4444', border: '1px solid #fecaca', transform: 'rotate(45deg)', marginRight: 5, verticalAlign: 'middle' } }), 'resistant diamonds')
           )
         ),
         hh('div', { style: { background: 'var(--allo-stem-deeper, rgba(2,6,23,0.7))', borderRadius: 10, padding: 10 } },
           hh('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, textAlign: 'center' } }, '% resistant over time'),
-          hh('svg', { viewBox: '0 0 100 60', preserveAspectRatio: 'none', 'aria-hidden': 'true', style: { width: '100%', height: 100, display: 'block' } },
+          hh('svg', { viewBox: '0 0 100 60', preserveAspectRatio: 'none', role: 'img', 'aria-label': 'Resistance trend from round 0 to round ' + day + '. Current resistant share is ' + pctRes + '%.', style: { width: '100%', height: 100, display: 'block' } },
             hh('line', { x1: 4, y1: 56, x2: 96, y2: 56, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
             hh('line', { x1: 4, y1: 4, x2: 4, y2: 56, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
             hh('line', { x1: 4, y1: 4, x2: 96, y2: 4, stroke: 'rgba(239,68,68,0.20)', strokeWidth: 0.3, strokeDasharray: '1,1' }),
-            // Absolute-population stacked areas: cyan = sensitive, red = resistant.
-            // Reveals the population crash + slow recovery from resistant survivors —
-            // not just the ratio change captured by the % line.
-            (function() {
-              if (history.length < 2) return null;
-              var popMax = 0;
-              history.forEach(function(p) { var total = p.sensitive + p.resistant; if (total > popMax) popMax = total; });
-              if (popMax < 80) popMax = 80;
-              var xOf = function(i) { return 4 + (i / Math.max(1, duration)) * 92; };
-              var yOfCount = function(count) { return 56 - (count / popMax) * 52; };
-              var sensPts = history.map(function(p, i) { return xOf(i) + ',' + yOfCount(p.sensitive).toFixed(2); });
-              var totalPts = history.map(function(p, i) { return xOf(i) + ',' + yOfCount(p.sensitive + p.resistant).toFixed(2); });
-              var sensClose = xOf(history.length - 1) + ',56 4,56';
-              var resBaseRev = history.slice().reverse().map(function(p, ri) {
-                var i = history.length - 1 - ri;
-                return xOf(i) + ',' + yOfCount(p.sensitive).toFixed(2);
-              });
-              return [
-                hh('polygon', { key: 'sensA', points: sensPts.concat([sensClose]).join(' '), fill: 'rgba(34,211,238,0.30)', stroke: 'none' }),
-                hh('polygon', { key: 'resA', points: totalPts.concat(resBaseRev).join(' '), fill: 'rgba(239,68,68,0.28)', stroke: 'none' }),
-                hh('polyline', { key: 'sensL', points: sensPts.join(' '), fill: 'none', stroke: '#22d3ee', strokeWidth: 0.7, opacity: 0.85 }),
-                hh('polyline', { key: 'totL', points: totalPts.join(' '), fill: 'none', stroke: '#94a3b8', strokeWidth: 0.5, strokeDasharray: '1.5,1', opacity: 0.7 }),
-                hh('text', { key: 'popLbl', x: 94, y: 8, fontSize: 3, fill: '#94a3b8', textAnchor: 'end' }, 'pop ' + popMax)
-              ];
-            })(),
             history.length > 1 ? hh('polyline', { points: history.map(function(p, i) { var alive = p.sensitive + p.resistant; var pct = alive > 0 ? p.resistant / alive : 0; var x = 4 + (i / Math.max(1, duration)) * 92; var y = 56 - pct * 52; return x + ',' + y; }).join(' '), fill: 'none', stroke: '#ef4444', strokeWidth: 1.2 }) : null,
             hh('circle', { cx: 4 + (day / Math.max(1, duration)) * 92, cy: 56 - (pctRes / 100) * 52, r: 1.8, fill: '#ef4444', stroke: '#fff', strokeWidth: 0.4 }),
             hh('text', { x: 6, y: 8, fontSize: 3.5, fill: '#fca5a5' }, '100%'),
             hh('text', { x: 6, y: 54, fontSize: 3.5, fill: '#94a3b8' }, '0%'),
-            hh('text', { x: 50, y: 59, fontSize: 3, fill: '#94a3b8', textAnchor: 'middle' }, 'days')
+            hh('text', { x: 50, y: 59, fontSize: 3, fill: '#94a3b8', textAnchor: 'middle' }, 'exposure rounds')
           ),
           hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 8 } },
             hh('div', { style: { padding: 6, borderRadius: 6, background: 'rgba(34,211,238,0.10)', border: '1px solid rgba(34,211,238,0.30)' } },
@@ -510,14 +488,15 @@
           )
         )
       ),
+      hh('div', { role: 'note', style: { padding: 9, marginBottom: 10, borderRadius: 7, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a', fontSize: 10.5, lineHeight: 1.5 } }, 'Model boundary: resistant cells are present at the start. The simulation omits mutation, horizontal gene transfer, drug concentration over time, immune responses, and patient dosing. It demonstrates selection, not a treatment recommendation.'),
       hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
-          hh('div', { style: { marginBottom: 4 } }, 'Antibiotic dose: ', hh('strong', { style: { color: '#fbbf24' } }, dose + '%')),
-          hh('input', { type: 'range', 'aria-label': 'Antibiotic dose', 'aria-valuetext': dose + '%', min: 0, max: 100, step: 5, value: dose, disabled: day > 0, onChange: function(e) { setDose(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })
+          hh('div', { style: { marginBottom: 4 } }, 'Exposure strength: ', hh('strong', { style: { color: '#fbbf24' } }, dose + '/100')),
+          hh('input', { type: 'range', 'aria-label': 'Antibiotic exposure strength in the teaching model', 'aria-valuetext': dose + ' out of 100', min: 0, max: 100, step: 5, value: dose, disabled: day > 0, onChange: function(e) { setDose(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })
         ),
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
-          hh('div', { style: { marginBottom: 4 } }, 'Treatment duration: ', hh('strong', { style: { color: '#22d3ee' } }, duration + ' days')),
-          hh('input', { type: 'range', 'aria-label': 'Treatment duration', 'aria-valuetext': duration + ' days', min: 3, max: 30, step: 1, value: duration, disabled: day > 0, onChange: function(e) { setDuration(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })
+          hh('div', { style: { marginBottom: 4 } }, 'Exposure rounds: ', hh('strong', { style: { color: '#22d3ee' } }, duration)),
+          hh('input', { type: 'range', 'aria-label': 'Number of exposure rounds in the teaching model', 'aria-valuetext': duration + ' exposure rounds', min: 3, max: 30, step: 1, value: duration, disabled: day > 0, onChange: function(e) { setDuration(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })
         ),
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('div', { style: { marginBottom: 4 } }, 'Initial resistance: ', hh('strong', { style: { color: '#ef4444' } }, initRes + '%')),
@@ -525,15 +504,15 @@
         )
       ),
       hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 10, flexWrap: 'wrap' } },
-        hh('button', { onClick: function() { if (day === 0) seed(); setPlaying(function(p) { return !p; }); }, disabled: day >= duration, style: { padding: '8px 18px', borderRadius: 8, background: playing ? '#ef4444' : 'rgba(239,68,68,0.18)', color: playing ? '#fff' : '#fca5a5', border: '1.5px solid #ef4444', fontSize: 11, fontWeight: 800, cursor: day >= duration ? 'default' : 'pointer', opacity: day >= duration ? 0.4 : 1 } }, playing ? '⏸ Pause' : '▶ Play'),
-        hh('button', { onClick: function() { setPlaying(false); step(); }, disabled: day >= duration, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: day >= duration ? 'default' : 'pointer', opacity: day >= duration ? 0.4 : 1 } }, '⏭ Step day'),
-        hh('button', { onClick: reset, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '↺ Reset')
+        hh('button', { type: 'button', onClick: function() { if (day === 0) seed(); setPlaying(function(p) { return !p; }); }, disabled: day >= duration, style: { padding: '8px 18px', borderRadius: 8, background: playing ? '#ef4444' : 'rgba(239,68,68,0.18)', color: playing ? '#fff' : '#fca5a5', border: '1.5px solid #ef4444', fontSize: 11, fontWeight: 800, cursor: day >= duration ? 'default' : 'pointer', opacity: day >= duration ? 0.4 : 1 } }, playing ? '⏸ Pause' : '▶ Play'),
+        hh('button', { type: 'button', onClick: function() { setPlaying(false); step(); }, disabled: day >= duration, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: day >= duration ? 'default' : 'pointer', opacity: day >= duration ? 0.4 : 1 } }, 'Step round'),
+        hh('button', { type: 'button', onClick: reset, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '↺ Reset')
       ),
       day >= duration && history.length > 1 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#22c55e' } }, '🎓 What you just saw: '),
-        'You started with ' + initialPct + '% resistant bacteria. After ' + duration + ' days at ' + dose + '% dose, the population is ' + pctRes + '% resistant. The drug killed sensitive bacteria - but the resistant minority had no competition and took over the dish. ',
-        (pctRes >= 80 ? 'This is selection at work. The next round of the same antibiotic would barely dent this population.' : pctRes >= 40 ? 'A meaningful resistance shift. In a hospital, this is the start of the failed-second-course pattern.' : 'Modest shift - likely because dose was too low to apply real selection pressure, OR initial resistance was very rare. Try increasing dose.'),
-        ' Now do the inverse: re-run with a SHORTER duration. Watch resistance climb LESS - but if you stop too early, surviving sensitive bacteria can rebound and the cycle repeats.'
+        hh('strong', { style: { color: '#22c55e' } }, 'What the model shows: '),
+        'The dish started with ' + initialPct + '% resistant cells. After ' + duration + ' exposure rounds at strength ' + dose + '/100, ' + totalAlive + ' cells remain and ' + pctRes + '% of them are resistant. Susceptible cells were removed more often, so resistant survivors contributed a larger share of later rounds. ',
+        (pctRes >= 80 ? 'Selection strongly changed the population composition.' : pctRes >= 40 ? 'Selection produced a clear resistance shift.' : 'The resistance shift was modest in this run.'),
+        ' Real resistance also emerges and spreads through mutation and horizontal gene transfer. For personal care, antibiotics should be taken exactly as prescribed by a clinician.'
       ) : null
     );
   }
@@ -938,17 +917,17 @@
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(16,185,129,0.18)', border: '1.5px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🔬'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
           hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#6ee7b7' } }, 'Virtual microscope · swap slides'),
-          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Pick an organism. Crank the magnification. Adjust focus knob. Watch structure emerge.')
+          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Schematic teaching slides, not micrographs. Compare scale, visibility threshold, and focus.')
         ),
         hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.12)', color: '#6ee7b7', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, 'Slides seen: ' + seen.size + '/5')
       ),
-      hh('div', { role: 'tablist', 'aria-label': 'Organism slides', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
+      hh('div', { role: 'group', 'aria-label': 'Organism slides', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
         ORGANISMS.map(function(o) {
           var active = o.id === organism;
           return hh('button', {
             key: 'sl-' + o.id,
-            role: 'tab',
-            'aria-selected': active ? 'true' : 'false',
+            type: 'button',
+            'aria-current': active ? 'true' : undefined,
             onClick: function() {
               setOrganism(o.id);
               // Randomize focus target so each slide starts slightly out of focus
@@ -957,14 +936,14 @@
             className: 'microscope-slide-btn' + (active ? ' active' : ''),
             style: { '--slide-color': o.color }
           },
-            hh('div', { style: { fontSize: 16, marginBottom: 2 } }, o.icon),
+            hh('div', { 'aria-hidden': 'true', style: { fontSize: 16, marginBottom: 2 } }, o.icon),
             hh('div', null, o.name),
             hh('div', { style: { fontSize: 8, opacity: 0.7, marginTop: 2 } }, o.kingdom)
           );
         })
       ),
       hh('div', { style: { background: 'var(--allo-stem-deeper, #0a0e1a)', borderRadius: '50%', width: '100%', maxWidth: 320, height: 280, margin: '0 auto 12px', position: 'relative', overflow: 'hidden', border: '4px solid #1f2937', boxShadow: 'inset 0 0 55px rgba(0,0,0,0.45), inset 0 0 40px rgba(16,185,129,0.10), 0 0 30px rgba(0,0,0,0.5)' } },
-        hh('svg', { viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', 'aria-label': 'Microscope view of ' + sel.name + ' at ' + mag + 'x', style: { width: '100%', height: '100%', display: 'block' } },
+        hh('svg', { viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': 'Microscope teaching illustration of ' + sel.name + ' at ' + mag + 'x magnification. ' + (canSee ? (isFocused ? 'The specimen is in focus.' : 'The specimen is visible but out of focus.') : 'The specimen is below the visibility threshold.'), style: { width: '100%', height: '100%', display: 'block' } },
           hh('defs', null, hh('pattern', { id: 'mscope-grid', x: 0, y: 0, width: 20, height: 20, patternUnits: 'userSpaceOnUse' }, hh('path', { d: 'M 20 0 L 0 0 0 20', fill: 'none', stroke: '#1e293b', strokeWidth: 0.3 }))),
           hh('rect', { x: 0, y: 0, width: 200, height: 200, fill: 'url(#mscope-grid)' }),
           canSee ? hh('g', {
@@ -986,7 +965,7 @@
       ),
       hh('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 12, flexWrap: 'wrap' } },
         [10, 100, 400, 1000, 10000, 100000].map(function(level) {
-          return hh('button', { key: 'q-' + level, onClick: function() { setMag(level); }, style: { padding: '4px 10px', borderRadius: 6, background: mag === level ? '#10b981' : 'rgba(16,185,129,0.10)', color: mag === level ? '#0f172a' : '#6ee7b7', border: '1px solid #10b981', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, level >= 1000 ? (level / 1000) + 'k×' : level + '×');
+          return hh('button', { key: 'q-' + level, type: 'button', 'aria-pressed': mag === level, onClick: function() { setMag(level); }, style: { padding: '4px 10px', borderRadius: 6, background: mag === level ? '#10b981' : 'rgba(16,185,129,0.10)', color: mag === level ? '#0f172a' : '#6ee7b7', border: '1px solid #10b981', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, level >= 1000 ? (level / 1000) + 'k×' : level + '×');
         })
       ),
       hh('div', { style: { padding: '0 4px', marginBottom: 14 } },
@@ -1034,6 +1013,7 @@
     quizSubmitted: false,
     quizCorrect: 0,
     growthLab: {
+      profile: 'ecoli',
       tempC: 30,
       pH: 7,
       oxygen: 50,
@@ -1078,32 +1058,10 @@
 
       function renderMicroscopeLink(type, id) {
         var mapping = {
-          ecoli: { slide: 'ecoli', mag: 1000 },
-          lactobacillus: { slide: 'ecoli', mag: 1000 },
-          cyanobacteria: { slide: 'ecoli', mag: 400 },
-          mtb: { slide: 'ecoli', mag: 1000 },
-          staph: { slide: 'strep', mag: 1000 },
-          rhizobium: { slide: 'ecoli', mag: 400 },
-          covid: { slide: 'phage', mag: 100000 },
-          flu: { slide: 'phage', mag: 100000 },
-          hiv: { slide: 'phage', mag: 100000 },
-          phage: { slide: 'phage', mag: 100000 },
-          measles: { slide: 'phage', mag: 100000 },
-          yeast: { slide: 'parame', mag: 400 },
-          penicillium: { slide: 'parame', mag: 400 },
-          candida: { slide: 'parame', mag: 400 },
-          aspergillus: { slide: 'parame', mag: 400 },
-          mycorrhiza: { slide: 'parame', mag: 100 },
-          ergot: { slide: 'parame', mag: 400 },
-          plasmodium: { slide: 'plasmo', mag: 1000 },
-          amoeba: { slide: 'parame', mag: 400 },
-          paramecium: { slide: 'parame', mag: 400 },
-          euglena: { slide: 'parame', mag: 400 },
-          diatom: { slide: 'parame', mag: 400 },
-          giardia: { slide: 'plasmo', mag: 1000 },
-          halophile: { slide: 'ecoli', mag: 1000 },
-          methanogen: { slide: 'ecoli', mag: 1000 },
-          thermophile: { slide: 'ecoli', mag: 1000 }
+          ecoli: { slide: 'ecoli', mag: 1000, scope: 'lightbright' },
+          phage: { slide: 'phage', mag: 100000, scope: 'em' },
+          plasmodium: { slide: 'plasmo', mag: 1000, scope: 'lightbright' },
+          paramecium: { slide: 'parame', mag: 400, scope: 'lightbright' }
         };
 
         var link = mapping[id];
@@ -1120,11 +1078,13 @@
 
         return h('div', { style: { marginTop: 12, display: 'flex', justifyContent: 'flex-end' } },
           h('button', {
+            type: 'button',
             onClick: function() {
               upd({
                 tab: 'microscope',
                 scopeOrganism: link.slide,
                 magnification: link.mag,
+                selectedScope: link.scope,
                 microscopeFocus: 10,
                 microscopeTargetFocus: Math.floor(Math.random() * 60) + 20
               });
@@ -1180,10 +1140,56 @@
         plasmo: 'Plasmodium',
         phage: 'T4 phage'
       };
+      var MICRO_GROWTH_PROFILES = {
+        ecoli: {
+          id: 'ecoli', label: 'E. coli (facultative anaerobe)', short: 'E. coli',
+          temp: [8, 37, 45], pH: [4.5, 7, 9], oxygenMode: 'facultative',
+          oxygenNote: 'Grows with or without oxygen, but this teaching profile grows faster when oxygen is available.'
+        },
+        lactobacillus: {
+          id: 'lactobacillus', label: 'Lactobacillus (aerotolerant fermenter)', short: 'Lactobacillus',
+          temp: [10, 37, 45], pH: [3.5, 5.5, 7.5], oxygenMode: 'aerotolerant',
+          oxygenNote: 'Relies mainly on fermentation; oxygen is tolerated rather than required in this teaching profile.'
+        },
+        methanogen: {
+          id: 'methanogen', label: 'Mesophilic methanogen (obligate anaerobe)', short: 'Methanogen',
+          temp: [20, 37, 45], pH: [6, 7, 8.2], oxygenMode: 'anaerobe',
+          oxygenNote: 'Oxygen suppresses growth. Methanogens are archaea, not bacteria.'
+        },
+        thermus: {
+          id: 'thermus', label: 'Thermus aquaticus (thermophilic aerobe)', short: 'T. aquaticus',
+          temp: [40, 70, 80], pH: [5, 7.5, 9], oxygenMode: 'aerobe',
+          oxygenNote: 'High temperature is favored; oxygen supports aerobic growth in this teaching profile.'
+        }
+      };
+      function microEnvelopeScore(value, envelope) {
+        var min = envelope[0], optimum = envelope[1], max = envelope[2];
+        if (value <= min || value >= max) return 0;
+        if (value === optimum) return 1;
+        return value < optimum ? (value - min) / (optimum - min) : (max - value) / (max - optimum);
+      }
+      function microOxygenScore(value, mode) {
+        var oxygen = Math.max(0, Math.min(100, value || 0));
+        if (mode === 'anaerobe') return oxygen >= 10 ? 0 : 1 - oxygen / 10;
+        if (mode === 'aerotolerant') return 0.85;
+        if (mode === 'facultative') return 0.65 + 0.35 * (oxygen / 100);
+        return 0.15 + 0.85 * (oxygen / 100);
+      }
+      function microGrowthScoreFor(values, profile) {
+        return microEnvelopeScore(values.tempC, profile.temp) *
+          microEnvelopeScore(values.pH, profile.pH) *
+          microOxygenScore(values.oxygen, profile.oxygenMode);
+      }
+      function microProfileDefaults(profile) {
+        return {
+          tempC: profile.temp[1],
+          pH: profile.pH[1],
+          oxygen: profile.oxygenMode === 'anaerobe' ? 0 : (profile.oxygenMode === 'aerotolerant' ? 20 : 80)
+        };
+      }
       var microGrowthLab = d.growthLab || DEFAULT_MICROBIOLOGY_STATE.growthLab;
-      var microTempScore = (microGrowthLab.tempC > 15 && microGrowthLab.tempC < 45) ? 1 - Math.abs(microGrowthLab.tempC - 37) / 30 : 0;
-      var microPhScore = (microGrowthLab.pH > 4 && microGrowthLab.pH < 9) ? 1 - Math.abs(microGrowthLab.pH - 7) / 5 : 0;
-      var microGrowthScore = microTempScore * microPhScore * ((microGrowthLab.oxygen || 0) / 100);
+      var microGrowthProfile = MICRO_GROWTH_PROFILES[microGrowthLab.profile] || MICRO_GROWTH_PROFILES.ecoli;
+      var microGrowthScore = microGrowthScoreFor(microGrowthLab, microGrowthProfile);
       var microGrowthLabel = microGrowthScore < 0.05 ? __alloT('stem.microbiology.growth_status_none', 'No growth') :
         (microGrowthScore < 0.25 ? __alloT('stem.microbiology.growth_status_slow', 'Slow') :
         (microGrowthScore < 0.6 ? __alloT('stem.microbiology.growth_status_healthy', 'Healthy') :
@@ -1193,7 +1199,7 @@
       var microStatusCards = [
         { label: __alloT('stem.microbiology.status_mode', 'Mode'), value: currentMicroTab.label || 'Home', note: showFullMicroNav ? __alloT('stem.microbiology.full_library_visible', 'Full library visible') : __alloT('stem.microbiology.core_tools_visible', 'Core tools visible') },
         { label: __alloT('stem.microbiology.status_specimen', 'Specimen'), value: microOrganismLabel, note: microScopeLabel + ' at ' + (d.magnification || DEFAULT_MICROBIOLOGY_STATE.magnification) + 'x' },
-        { label: __alloT('stem.microbiology.status_growth', 'Growth'), value: microGrowthLabel, note: (microGrowthLab.tempC || 0) + 'C, pH ' + (microGrowthLab.pH || 0) + ', O2 ' + (microGrowthLab.oxygen || 0) + '%' },
+        { label: __alloT('stem.microbiology.status_growth', 'Growth'), value: microGrowthLabel, note: microGrowthProfile.short + ': ' + (microGrowthLab.tempC || 0) + 'C, pH ' + (microGrowthLab.pH || 0) + ', O2 ' + (microGrowthLab.oxygen || 0) + '%' },
         { label: __alloT('stem.microbiology.status_quiz', 'Quiz'), value: microAnsweredCount + '/' + QUIZ_QUESTIONS.length, note: d.quizSubmitted ? __alloT('stem.microbiology.quiz_submitted', 'Submitted') : __alloT('stem.microbiology.quiz_in_progress', 'In progress') }
       ];
       var MICRO_ROUTES = [
@@ -1204,13 +1210,13 @@
         { id: 'growthLab', tag: 'Test', accent: '#34d399', title: __alloT('stem.microbiology.route_growth', 'Growth Lab'), copy: __alloT('stem.microbiology.route_growth_copy', 'Adjust temperature, pH, and oxygen to test a hypothesis.') }
       ];
 
-      var tabBar = h('div', {
-        role: 'tablist', 'aria-label': __alloT('stem.microbiology.microbiology_sections', 'Microbiology sections'),
+      var tabBar = h('nav', {
+        'aria-label': __alloT('stem.microbiology.microbiology_sections', 'Microbiology sections'),
         className: 'micro-tab-list'
       },
         visibleMicroTabs.map(function(t) {
           var active = d.tab === t.id;
-          return h('button', { key: t.id, role: 'tab', 'aria-selected': active, 'aria-label': t.label,
+          return h('button', { key: t.id, type: 'button', 'aria-current': active ? 'page' : undefined, 'aria-label': t.label,
             className: 'micro-tab-btn' + (active ? ' active' : ''),
             onClick: function() { upd({ tab: t.id }); }
           }, t.icon + ' ' + t.label);
@@ -2241,7 +2247,7 @@
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             SCOPES.map(function(s) {
               var active = d.selectedScope === s.id;
-              return h('button', { key: s.id,
+              return h('button', { key: s.id, type: 'button', 'aria-pressed': active,
                 onClick: function() { upd({ selectedScope: s.id }); },
                 style: { padding: '6px 12px', borderRadius: 8, background: active ? 'rgba(16,185,129,0.20)' : '#1e293b', border: '1px solid ' + (active ? EMERALD : '#334155'), color: active ? '#6ee7b7' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, s.name);
@@ -2489,7 +2495,7 @@
           sectionCard('What accelerates resistance',
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8 } },
               h('li', null, __alloT('stem.microbiology.antibiotics_prescribed_for_viral_infec', 'Antibiotics prescribed for viral infections (antibiotics don\'t work on viruses).')),
-              h('li', null, __alloT('stem.microbiology.not_finishing_the_full_course_kills_th', 'Not finishing the full course (kills the susceptible, leaves the partially-resistant).')),
+              h('li', null, __alloT('stem.microbiology.not_finishing_the_full_course_kills_th', 'Using the wrong antibiotic, dose, or duration - including changing a prescription without clinical guidance.')),
               h('li', null, __alloT('stem.microbiology.antibiotics_in_animal_feed_for_growth_', 'Antibiotics in animal feed for growth promotion (now banned in EU; still common elsewhere).')),
               h('li', null, __alloT('stem.microbiology.poor_sanitation_crowded_conditions_in_', 'Poor sanitation + crowded conditions in hospitals + jails + refugee camps.')),
               h('li', null, __alloT('stem.microbiology.lack_of_new_antibiotic_development_the', 'Lack of new antibiotic development. The pipeline has slowed for 40 years.'))
@@ -2497,7 +2503,7 @@
           ),
           sectionCard('What helps',
             h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.8 } },
-              h('li', null, h('strong', null, __alloT('stem.microbiology.for_you', 'For you: ')), __alloT('stem.microbiology.take_antibiotics_only_when_prescribed_', 'Take antibiotics only when prescribed; finish the course exactly. Don\'t demand antibiotics for colds or flu. Don\'t take leftover antibiotics or someone else\'s.')),
+              h('li', null, h('strong', null, __alloT('stem.microbiology.for_you', 'For you: ')), __alloT('stem.microbiology.take_antibiotics_only_when_prescribed_', 'Use antibiotics only when prescribed and take them exactly as directed. Do not shorten, extend, share, save, or reuse them without clinical guidance.')),
               h('li', null, h('strong', null, __alloT('stem.microbiology.for_the_world', 'For the world: ')), __alloT('stem.microbiology.public_investment_in_new_antibiotic_de', 'Public investment in new antibiotic development. Restrictions on agricultural use. Phage therapy research. Better infection control in hospitals. Vaccines that prevent infection in the first place.')),
               h('li', null, h('strong', null, __alloT('stem.microbiology.big_picture', 'Big picture: ')), __alloT('stem.microbiology.stop_treating_antibiotics_as_a_renewab', 'Stop treating antibiotics as a renewable resource. Each one is a one-shot weapon; once resistance is widespread, that antibiotic is gone forever.'))
             )
@@ -4579,8 +4585,8 @@
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.microbiology.antibiotic_stewardship_checklist', 'Antibiotic stewardship checklist')),
               h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: '#0f172a', lineHeight: 1.7 } },
                 h('li', null, __alloT('stem.microbiology.antibiotics_only_when_prescribed_by_a_', '□ Antibiotics only when prescribed by a clinician.')),
-                h('li', null, __alloT('stem.microbiology.antibiotics_never_for_viral_infections', '□ Antibiotics never for viral infections (colds, flu, most sore throats, most ear infections). Ask if it could be viral.')),
-                h('li', null, __alloT('stem.microbiology.finish_the_full_course_exactly_as_pres', '□ Finish the FULL course exactly as prescribed, even if you feel better.')),
+                h('li', null, __alloT('stem.microbiology.antibiotics_never_for_viral_infections', '□ Antibiotics do not treat viral infections such as colds and flu. Some ear and sinus infections improve without antibiotics; ask a clinician.')),
+                h('li', null, __alloT('stem.microbiology.finish_the_full_course_exactly_as_pres', '□ Take antibiotics exactly as prescribed. Do not change the dose or duration without clinical guidance.')),
                 h('li', null, __alloT('stem.microbiology.never_share_antibiotics_or_take_leftov', '□ Never share antibiotics or take leftover doses.')),
                 h('li', null, __alloT('stem.microbiology.ask_what_specific_bacterium_is_being_t', '□ Ask what specific bacterium is being treated and whether a narrow-spectrum option is available.')),
                 h('li', null, __alloT('stem.microbiology.don_t_demand_antibiotics_trust_the_dia', '□ Don\'t demand antibiotics. Trust the diagnosis.'))
@@ -4639,70 +4645,148 @@
         case 'quiz':       body = renderQuiz(); break;
         case 'print':      body = renderPrint(); break;
         case 'growthLab':  body = (function() {
-          var iq = d.growthLab || { tempC: 30, pH: 7, oxygen: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-          function setIQ(patch) { upd({ growthLab: Object.assign({}, iq, patch) }); } // upd is patch-only — the old upd('growthLab', X) dropped X and made the whole tab a no-op
-          var tempScore = (iq.tempC > 15 && iq.tempC < 45) ? 1 - Math.abs(iq.tempC - 37) / 30 : 0;
-          var phScore = (iq.pH > 4 && iq.pH < 9) ? 1 - Math.abs(iq.pH - 7) / 5 : 0;
-          var growth = tempScore * phScore * (iq.oxygen / 100);
+          var iq = d.growthLab || DEFAULT_MICROBIOLOGY_STATE.growthLab;
+          function setIQ(patch) { upd({ growthLab: Object.assign({}, iq, patch) }); }
+          var profile = MICRO_GROWTH_PROFILES[iq.profile] || MICRO_GROWTH_PROFILES.ecoli;
+          var growth = microGrowthScoreFor(iq, profile);
           var state;
           if (growth < 0.05) state = 'noGrowth';
           else if (growth < 0.25) state = 'slow';
           else if (growth < 0.6) state = 'normal';
           else state = 'optimal';
-          // Labels describe the CONDITION envelope (steady-state), not a culture's time-course. The old
-          // labels borrowed lag/log/death-phase names, which are stages of one growing culture over time.
-          // Card re-themed to the tool's dark surface (was light pastels with low-contrast #475569 text).
           var sm = {
-            noGrowth: { label: __alloT('stem.microbiology.no_growth', '⛔ No growth'), color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.45)', desc: __alloT('stem.microbiology.conditions_are_outside_this_microbe_s_', 'Conditions are outside this microbe\'s survival envelope.') },
-            slow:     { label: __alloT('stem.microbiology.slow_growth', '🟡 Slow growth'), color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.45)', desc: __alloT('stem.microbiology.marginal_conditions_slow_doubling', 'Marginal conditions — slow doubling.') },
-            normal:   { label: __alloT('stem.microbiology.healthy_growth', '🟢 Healthy growth'), color: '#34d399', bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.45)', desc: __alloT('stem.microbiology.good_conditions_steady_exponential_dou', 'Good conditions — steady exponential doubling.') },
-            optimal:  { label: __alloT('stem.microbiology.optimal_growth', '🚀 Optimal growth'), color: '#a78bfa', bg: 'rgba(167,139,250,0.14)', border: 'rgba(167,139,250,0.5)', desc: __alloT('stem.microbiology.peak_conditions_for_this_organism', 'Peak conditions for this organism.') }
+            noGrowth: { label: __alloT('stem.microbiology.no_growth', 'No growth predicted'), color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.45)', desc: 'One or more conditions fall outside this profile\'s teaching envelope.' },
+            slow:     { label: __alloT('stem.microbiology.slow_growth', 'Slow growth predicted'), color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.45)', desc: 'Conditions are tolerated, but at least one is far from the profile optimum.' },
+            normal:   { label: __alloT('stem.microbiology.healthy_growth', 'Strong growth predicted'), color: '#34d399', bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.45)', desc: 'The selected conditions fit most of this organism profile\'s envelope.' },
+            optimal:  { label: __alloT('stem.microbiology.optimal_growth', 'Near-optimum growth predicted'), color: '#a78bfa', bg: 'rgba(167,139,250,0.14)', border: 'rgba(167,139,250,0.5)', desc: 'Temperature, pH, and oxygen are all near this profile\'s modeled optimum.' }
           }[state];
           var H = React.createElement;
           return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
             H('div', { style: { padding: 16, background: '#0f172a', borderRadius: 10, color: '#e2e8f0', border: '1px solid #34d399' } },
-              H('h3', { style: { fontSize: 14, fontWeight: 800, color: '#34d399', margin: '0 0 6px 0' } }, '🧪 Microbial growth discovery'),
-              H('p', { style: { fontSize: 12, color: '#cbd5e1', marginBottom: 12 } }, 'Sliders for temp, pH, oxygen. Discrete 4-state growth phase. No score, no reveal.'),
-              H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
-                H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
+              H('h3', { style: { fontSize: 14, fontWeight: 800, color: '#34d399', margin: '0 0 6px 0' } }, 'Microbial growth discovery'),
+              H('p', { style: { fontSize: 12, color: '#cbd5e1', margin: '0 0 12px' } }, 'Compare organism-specific teaching profiles. Oxygen can help, be tolerated, or prevent growth depending on metabolism.'),
+              H('label', { htmlFor: 'gl-profile', style: { display: 'grid', gap: 4, marginBottom: 10, fontSize: 11, fontWeight: 700, color: '#cbd5e1' } },
+                H('span', null, 'Organism profile'),
+                H('select', {
+                  id: 'gl-profile',
+                  value: profile.id,
+                  onChange: function(e) {
+                    var nextProfile = MICRO_GROWTH_PROFILES[e.target.value] || MICRO_GROWTH_PROFILES.ecoli;
+                    var defaults = microProfileDefaults(nextProfile);
+                    setIQ({
+                      profile: nextProfile.id,
+                      tempC: defaults.tempC,
+                      pH: defaults.pH,
+                      oxygen: defaults.oxygen,
+                      log: [],
+                      hypothesis: '',
+                      stuckRevealed: false,
+                      understood: false,
+                      explanation: ''
+                    });
+                  },
+                  style: { width: '100%', padding: '7px 9px', borderRadius: 6, border: '1px solid rgba(52,211,153,0.45)', background: '#1e293b', color: '#e2e8f0', fontSize: 12 }
+                },
+                  Object.keys(MICRO_GROWTH_PROFILES).map(function(key) {
+                    var item = MICRO_GROWTH_PROFILES[key];
+                    return H('option', { key: item.id, value: item.id }, item.label);
+                  })
+                )
+              ),
+              H('div', { role: 'status', 'aria-live': 'polite', style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 10 } },
+                H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label + ' - ' + profile.short),
                 H('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 4 } }, sm.desc)
               ),
-              H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
-                [{ k: 'tempC', l: 'Temp (°C)', mn: 0, mx: 60, st: 1 },
-                 { k: 'pH', l: 'pH', mn: 3, mx: 10, st: 0.1 },
-                 { k: 'oxygen', l: 'O₂ (%)', mn: 0, mx: 100, st: 5 }].map(function(s) {
-                  return H('div', { key: s.k },
-                    H('label', { htmlFor: 'gl-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: '#34d399', fontFamily: 'monospace' } }, iq[s.k])),
-                    H('input', { id: 'gl-' + s.k, type: 'range', 'aria-valuetext': (iq[s.k] + ' ' + ((String(s.l).match(/\(([^)]+)\)/) || ['', ''])[1])), min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
-                      onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
-                      style: { width: '100%' }, 'aria-label': s.l }));
+              H('div', { role: 'note', style: { padding: 9, borderRadius: 6, background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.25)', color: '#bae6fd', fontSize: 11, lineHeight: 1.5, marginBottom: 10 } }, profile.oxygenNote),
+              H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 10 } },
+                [{ k: 'tempC', l: 'Temperature', unit: '°C', mn: 0, mx: 90, st: 1 },
+                 { k: 'pH', l: 'pH', unit: '', mn: 3, mx: 10, st: 0.1 },
+                 { k: 'oxygen', l: 'Oxygen', unit: '%', mn: 0, mx: 100, st: 5 }].map(function(s) {
+                  return H('label', { key: s.k, htmlFor: 'gl-' + s.k, style: { display: 'grid', gap: 4, fontSize: 11, fontWeight: 700, color: '#cbd5e1' } },
+                    H('span', null, s.l + ': ', H('span', { style: { color: '#34d399', fontFamily: 'monospace' } }, iq[s.k] + s.unit)),
+                    H('input', {
+                      id: 'gl-' + s.k,
+                      type: 'range',
+                      'aria-valuetext': iq[s.k] + (s.unit ? ' ' + s.unit : ''),
+                      min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                      onChange: function(e) { var patch = {}; patch[s.k] = parseFloat(e.target.value); setIQ(patch); },
+                      style: { width: '100%' }
+                    })
+                  );
                 })
               ),
               H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
-                H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ t: iq.tempC, p: iq.pH, o: iq.oxygen, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
-                H('button', { onClick: function() { setIQ({ tempC: 30, pH: 7, oxygen: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+                H('button', {
+                  type: 'button',
+                  onClick: function() {
+                    setIQ({ log: (iq.log || []).concat([{ profile: profile.short, t: iq.tempC, p: iq.pH, o: iq.oxygen, state: sm.label }]).slice(-8) });
+                  },
+                  style: { padding: '6px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                }, 'Log conditions'),
+                H('button', {
+                  type: 'button',
+                  onClick: function() {
+                    var defaults = microProfileDefaults(profile);
+                    setIQ({ tempC: defaults.tempC, pH: defaults.pH, oxygen: defaults.oxygen, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' });
+                  },
+                  style: { padding: '6px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 6, fontSize: 11, cursor: 'pointer' }
+                }, 'Reset profile')
               ),
-              H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.microbiology.hypothesis_which_condition_is_most_res', 'Hypothesis: Which condition is most restrictive for growth?'),
-                style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
-              !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
-              iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
+              (iq.log || []).length > 0 && H('div', {
+                role: 'log',
+                'aria-live': 'polite',
+                'aria-label': 'Recent growth condition profiles',
+                style: { padding: 8, marginBottom: 10, borderRadius: 6, background: '#111827', border: '1px solid #334155', fontSize: 10, color: '#cbd5e1', lineHeight: 1.5 }
+              },
+                iq.log.map(function(entry, index) {
+                  return H('div', { key: index }, entry.profile + ': ' + entry.t + '°C, pH ' + entry.p + ', O2 ' + entry.o + '% - ' + entry.state);
+                })
+              ),
+              H('label', { htmlFor: 'gl-hypothesis', style: { display: 'grid', gap: 4, fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } },
+                H('span', null, 'Hypothesis: Which condition most restricts this organism?'),
+                H('textarea', {
+                  id: 'gl-hypothesis',
+                  value: iq.hypothesis || '',
+                  onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
+                  style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' },
+                  rows: 2
+                })
+              ),
+              !iq.stuckRevealed && H('button', {
+                type: 'button',
+                onClick: function() { setIQ({ stuckRevealed: true }); },
+                style: { padding: '6px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 8 }
+              }, 'Show investigation prompts'),
+              iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 6, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
                 H('ul', { style: { margin: 0, paddingLeft: 18 } },
-                  H('li', null, 'Thermophiles love 70°C. Investigate why.'),
-                  H('li', null, 'Anaerobes need 0% oxygen. What does that imply?'))),
-              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
-                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-              iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.microbiology.explain_microbial_growth_envelopes', 'Explain microbial growth envelopes.'),
-                style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-              H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state growth marker; no CFU score; no reveal — by design.')
+                  H('li', null, 'Keep temperature and pH constant. What changes when oxygen moves from 0% to 100%?'),
+                  H('li', null, 'Apply the same conditions to two profiles. Which metabolic difference explains the result?'),
+                  H('li', null, 'Move one variable just beyond the profile envelope. Which boundary is sharpest?')
+                )
+              ),
+              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#34d399', cursor: 'pointer' } },
+                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                H('span', null, 'I can explain this organism\'s growth envelope')
+              ),
+              iq.understood && H('label', { htmlFor: 'gl-explanation', style: { display: 'grid', gap: 4, marginTop: 6, fontSize: 11, color: '#cbd5e1' } },
+                H('span', null, 'Explanation'),
+                H('textarea', {
+                  id: 'gl-explanation',
+                  value: iq.explanation || '',
+                  onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                  style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' },
+                  rows: 3
+                })
+              ),
+              H('div', { role: 'note', style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } }, 'Illustrative relative-growth model only. It does not predict colony-forming units, doubling time, infection risk, or clinical outcomes.')
             )
           );
-        })(); break;
-        default:           body = renderHome();
+        })(); break;        default:           body = renderHome();
       }
 
       return h('div', { className: 'selh-microbiology', 'data-microbiology-tool': 'true', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: 'var(--allo-stem-text, #e2e8f0)' } },
         h('style', null,
-          '.micro-focus-panel { position: relative; overflow: hidden; margin: 12px 16px 10px; padding: 14px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.30); background: radial-gradient(circle at 78% 18%, rgba(56,189,248,0.18), transparent 28%), linear-gradient(135deg, rgba(6,78,59,0.78), rgba(15,23,42,0.96)); box-shadow: 0 18px 42px rgba(2,8,23,0.28); }\n' +
+          '.micro-focus-panel { position: relative; overflow: hidden; margin: 12px 16px 10px; padding: 14px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.30); background: linear-gradient(135deg, rgba(6,78,59,0.84), rgba(8,47,73,0.90) 55%, rgba(15,23,42,0.96)); box-shadow: 0 18px 42px rgba(2,8,23,0.28); }\n' +
           '.micro-focus-panel::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, #10b981, #38bdf8, #f59e0b, #a78bfa); }\n' +
           '.micro-focus-grid { position: relative; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(250px, 0.8fr); gap: 14px; align-items: stretch; }\n' +
           '.micro-focus-kicker { margin: 0 0 4px; font-size: 10px; font-weight: 900; letter-spacing: 0; text-transform: uppercase; color: #6ee7b7; }\n' +
@@ -4728,7 +4812,7 @@
           '.micro-scope-cell { position: absolute; display: block; border-radius: 999px; background: #6ee7b7; border: 1px solid rgba(2,6,23,0.55); box-shadow: 0 0 14px rgba(110,231,183,0.34); }\n' +
           '.micro-library-toggle { width: 100%; margin-top: 8px; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(110,231,183,0.32); background: rgba(16,185,129,0.10); color: #a7f3d0; font-size: 11px; font-weight: 900; cursor: pointer; }\n' +
           '@media (max-width: 760px) { .micro-focus-grid { grid-template-columns: 1fr; } .micro-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }\n' +
-          '.micro-tab-list { display: flex; gap: 6px; padding: 10px 16px; border-bottom: 1px solid rgba(30, 41, 59, 0.5); overflow-x: auto; flex-shrink: 0; background: rgba(10, 14, 26, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); scrollbar-width: none; }\n' +
+          '.micro-tab-list { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-bottom: 1px solid rgba(30, 41, 59, 0.5); flex-shrink: 0; background: rgba(10, 14, 26, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }\n' +
           '.micro-tab-list::-webkit-scrollbar { display: none; }\n' +
           '.micro-tab-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: #94a3b8; font-weight: 500; font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 6px; position: relative; }\n' +
           '.micro-tab-btn:hover { background: rgba(16, 185, 129, 0.08); color: #a7f3d0; border-color: rgba(16, 185, 129, 0.15); }\n' +
@@ -4751,6 +4835,7 @@
           '.water-pipe-flow { animation: pipeFlow 1.5s infinite linear; }\n' +
           '@keyframes miasmaFloat { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(6px, -4px) scale(1.05); } 100% { transform: translate(0, 0) scale(1); } }\n' +
           '.miasma-cloud-float { animation: miasmaFloat 10s infinite ease-in-out; }\n' +
+          '@media (prefers-reduced-motion: reduce) { .micro-wiggle, .micro-swim, .micro-phage-float, .water-flow-anim, .water-pipe-flow, .miasma-cloud-float { animation: none !important; } .micro-route-card, .micro-tab-btn, .microscope-slide-btn, .quiz-choice-card { transition: none !important; transform: none !important; } }\n' +
           '.quiz-choice-card { display: block; width: 100%; text-align: left; padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; background: #0f172a; border: 1px solid #334155; color: var(--allo-stem-text, #e2e8f0); font-size: 13px; cursor: pointer; line-height: 1.5; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }\n' +
           '.quiz-choice-card:hover { background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.4); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.05); }\n' +
           '.quiz-choice-card.selected { background: rgba(16, 185, 129, 0.15); border-color: #10b981; color: #6ee7b7; font-weight: 600; box-shadow: 0 0 12px rgba(16, 185, 129, 0.1); }\n' +
@@ -4814,7 +4899,7 @@
           )
         ),
         tabBar,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, body)
+        h('section', { role: 'region', 'aria-label': currentMicroTab.label, style: { flex: 1, overflow: 'auto', minWidth: 0 } }, body)
       );
     }
   });

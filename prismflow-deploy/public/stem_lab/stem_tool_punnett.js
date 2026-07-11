@@ -89,13 +89,13 @@ window.StemLab = window.StemLab || {
 
   // ── Vocabulary dictionary ──
   var PUNNETT_VOCAB = {
-    genotype: { term: 'Genotype', def: 'The genetic makeup of an organism, represented by letters (like BB, Bb, or bb) that code for traits.' },
-    phenotype: { term: 'Phenotype', def: 'The physical or observable characteristics of an organism (like brown eyes or height) resulting from its genotype.' },
-    allele: { term: 'Allele', def: 'A different or alternative version of a gene (like a dominant "B" vs recessive "b" version).' },
-    heterozygous: { term: 'Heterozygous', def: 'Having two different alleles for a specific gene (like Bb or XhY).' },
-    homozygous: { term: 'Homozygous', def: 'Having two identical alleles for a specific gene (like BB or bb).' },
-    codominance: { term: 'Codominance', def: 'An inheritance pattern where both alleles in a heterozygote are fully and equally expressed (like AB blood type).' },
-    incompleteDominance: { term: 'Incomplete Dominance', def: 'An inheritance pattern where the heterozygote shows a blended, intermediate phenotype (like red and white crossing to make pink flowers).' },
+    genotype: { term: 'Genotype', def: 'The allele combination or DNA sequence an organism has at one or more genomic locations, often modeled with symbols such as BB, Bb, or bb.' },
+    phenotype: { term: 'Phenotype', def: 'The observable traits of an organism, shaped by its genotype, its environment, and interactions between them.' },
+    allele: { term: 'Allele', def: 'One of two or more versions of a gene or genomic sequence at the same locus. Dominance describes a relationship between alleles, not an allele being inherently stronger.' },
+    heterozygous: { term: 'Heterozygous', def: 'In a diploid organism, having two different alleles at a locus, such as Bb. An XY individual with one X-linked copy is hemizygous, not heterozygous.' },
+    homozygous: { term: 'Homozygous', def: 'In a diploid organism, having two identical alleles at a locus, such as BB or bb.' },
+    codominance: { term: 'Codominance', def: 'An inheritance pattern where both alleles in a heterozygote make distinguishable contributions to the phenotype, as with A and B antigens in type AB blood.' },
+    incompleteDominance: { term: 'Incomplete Dominance', def: 'An inheritance pattern where the heterozygote has an intermediate phenotype. The alleles remain distinct; they do not physically blend.' },
     pedigree: { term: 'Pedigree', def: 'A family tree showing inheritance patterns of traits across generations.' },
     geneticDrift: { term: 'Genetic Drift', def: 'A change in allele frequencies in a population due to random chance events, rather than natural selection.' }
   };
@@ -114,7 +114,7 @@ window.StemLab = window.StemLab || {
     { id: 'cross', icon: '\uD83E\uDDEC', label: 'Punnett Cross', desc: 'Predict offspring with 4 inheritance modes' },
     { id: 'pedigree', icon: '\uD83D\uDC6A', label: 'Pedigree', desc: 'Build family trees & trace inheritance' },
     { id: 'population', icon: '\uD83D\uDCCA', label: 'Population', desc: 'Hardy-Weinberg equilibrium simulator' },
-    { id: 'traits', icon: '\uD83D\uDD2C', label: 'Trait Explorer', desc: 'Real genetic traits catalog' },
+    { id: 'traits', icon: '\uD83D\uDD2C', label: 'Trait Explorer', desc: 'Compare simple and complex inheritance' },
     { id: 'dna2protein', icon: '\uD83E\uDDEA', label: 'DNA\u2192Protein', desc: 'Codon table & translation' },
     { id: 'challenge', icon: '\uD83C\uDFC6', label: 'Challenge', desc: 'Test your genetics knowledge' },
     { id: 'battle', icon: '\u2694\uFE0F', label: 'Gene Defense', desc: 'Battle with genetics questions' },
@@ -144,18 +144,18 @@ window.StemLab = window.StemLab || {
 
   // ── Inheritance mode info ──
   var MODE_INFO = {
-    complete: { icon: '\uD83E\uDDEC', label: 'Complete Dominance', desc: 'One allele fully masks the other. Heterozygotes look like the dominant homozygote.' },
-    incomplete: { icon: '\uD83C\uDF38', label: 'Incomplete Dominance', desc: 'Neither allele fully dominates. Heterozygotes show a blended intermediate phenotype.' },
-    codominant: { icon: '\uD83E\uDE78', label: 'Codominance', desc: 'Both alleles are fully expressed. Heterozygotes show both traits simultaneously.' },
-    sexLinked: { icon: '\u2640\u2642', label: 'Sex-Linked (X-Linked)', desc: 'Trait is carried on the X chromosome. This models X-linked RECESSIVE inheritance (e.g. hemophilia, red-green color blindness): males (XY) need only one copy to express it; females (XX) need two.' }
+    complete: { icon: '\uD83E\uDDEC', label: 'Complete Dominance', desc: 'In this model, one allele is sufficient for the phenotype, so heterozygotes match the homozygous-dominant phenotype.' },
+    incomplete: { icon: '\uD83C\uDF38', label: 'Incomplete Dominance', desc: 'Neither allele is completely dominant. Heterozygotes show an intermediate phenotype without the alleles blending.' },
+    codominant: { icon: '\uD83E\uDE78', label: 'Codominance', desc: 'Both alleles make distinguishable contributions, so the heterozygote shows products or effects from each.' },
+    sexLinked: { icon: '\u2640\u2642', label: 'X-Linked Recessive', desc: 'This simplified XX/XY model tracks a recessive allele on the X chromosome. An XY offspring is hemizygous and can express the trait with one copy; an XX offspring usually needs two copies.' }
   };
 
   // ── Trait presets by mode ──
   var PRESETS_BY_MODE = {
     complete: [
       { label: '\uD83C\uDF31 Peas (Tt \u00D7 Tt)', p1: ['T', 't'], p2: ['T', 't'], trait: 'Tall vs Short', domEmoji: '\uD83C\uDF31', recEmoji: '\uD83C\uDF3F', domLabel: 'Tall', recLabel: 'Short', tip: 'Mendel\'s classic 3:1 ratio of tall to short pea plants' },
-      { label: '\uD83C\uDF38 Flower (Rr \u00D7 Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Red vs White', domEmoji: '\uD83C\uDF39', recEmoji: '\uD83E\uDEB7', domLabel: 'Red', recLabel: 'White', tip: 'Red flower color is dominant over white' },
-      { label: '\uD83D\uDFE4 Eyes (Bb \u00D7 Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Brown vs Blue', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Brown', recLabel: 'Blue', tip: 'Brown eye color is dominant over blue (simplified)' },
+      { label: '\uD83C\uDF38 Model Flower (Rr \u00D7 Rr)', p1: ['R', 'r'], p2: ['R', 'r'], trait: 'Model flower color', domEmoji: '\uD83C\uDF39', recEmoji: '\uD83E\uDEB7', domLabel: 'Red', recLabel: 'White', tip: 'A classroom one-gene model; dominance relationships depend on the species and alleles being studied' },
+      { label: '\uD83D\uDFE4 Eye Pigment Model (Bb \u00D7 Bb)', p1: ['B', 'b'], p2: ['B', 'b'], trait: 'Simplified eye-pigment model', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'More pigment', recLabel: 'Less pigment', tip: 'A one-gene classroom model only; human eye color is polygenic and cannot be predicted by this square' },
       { label: '\uD83D\uDCA0 Test Cross (Bb \u00D7 bb)', p1: ['B', 'b'], p2: ['b', 'b'], trait: 'Test cross', domEmoji: '\uD83D\uDFE4', recEmoji: '\uD83D\uDD35', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'Test cross reveals heterozygosity - 1:1 ratio' },
       { label: '\uD83E\uDD47 BB \u00D7 bb (All Hetero)', p1: ['B', 'B'], p2: ['b', 'b'], trait: 'Pure cross', domEmoji: '\uD83D\uDFE2', recEmoji: '\uD83D\uDD34', domLabel: 'Dominant', recLabel: 'Recessive', tip: 'F1 generation: 100% heterozygous, all dominant' }
     ],
@@ -189,7 +189,7 @@ window.StemLab = window.StemLab || {
       id: 'ad', label: 'Autosomal Dominant',
       example: 'Huntington\'s Disease',
       answer: 'autosomal_dominant',
-      explanation: 'Affected individuals appear in every generation. Affected father can pass trait to sons AND daughters equally. Unaffected parents never have affected children.',
+      explanation: 'In this simplified, fully penetrant autosomal-dominant example, the trait appears in each generation and can pass to offspring of any sex. Real pedigrees can differ because of reduced penetrance, new variants, or limited family size.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: true, carrier: false, genotype: 'Aa', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: false, carrier: false, genotype: 'aa', label: 'I-2' },
@@ -210,7 +210,7 @@ window.StemLab = window.StemLab || {
       id: 'ar', label: 'Autosomal Recessive',
       example: 'Cystic Fibrosis',
       answer: 'autosomal_recessive',
-      explanation: 'Trait skips generations. Both parents of an affected child are carriers (unaffected). Males and females are affected equally.',
+      explanation: 'In this example, two unaffected carriers have an affected child and the trait can skip generations. Autosomal-recessive traits can affect any sex; an affected child may also have an affected parent in other families.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: false, carrier: true, genotype: 'Cc', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: false, carrier: true, genotype: 'Cc', label: 'I-2' },
@@ -230,7 +230,7 @@ window.StemLab = window.StemLab || {
       id: 'xr', label: 'X-Linked Recessive',
       example: 'Hemophilia',
       answer: 'x_linked_recessive',
-      explanation: 'More males are affected than females. Affected males get the allele from their carrier mothers. Carrier females pass the trait to ~50% of sons.',
+      explanation: 'In this simplified X-linked-recessive example, more XY individuals are affected because one altered X-linked copy can be expressed. There is no father-to-son X transmission; each pregnancy is an independent event.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: false, carrier: false, genotype: 'X\u1D34Y', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: false, carrier: true, genotype: 'X\u1D34X\u02B0', label: 'I-2' },
@@ -248,10 +248,10 @@ window.StemLab = window.StemLab || {
       ]
     },
     {
-      id: 'sc', label: 'Codominant / Carrier Visible',
+      id: 'sc', label: 'Codominant Protein Expression',
       example: 'Sickle Cell Trait',
       answer: 'codominant',
-      explanation: 'Carriers show a distinct intermediate phenotype (sickle cell trait). Both alleles are partially expressed in heterozygotes. Three distinct phenotypes are visible: normal, trait (carrier), and disease.',
+      explanation: 'HbA and HbS are both produced in an AS heterozygote, demonstrating codominance at the protein level. People with sickle cell trait usually do not have sickle cell disease symptoms, while SS is one cause of sickle cell anemia.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: false, carrier: true, genotype: 'AS', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: false, carrier: true, genotype: 'AS', label: 'I-2' },
@@ -268,7 +268,7 @@ window.StemLab = window.StemLab || {
       id: 'mt', label: 'Mitochondrial Inheritance',
       example: 'Leber Optic Neuropathy',
       answer: 'mitochondrial',
-      explanation: 'Mitochondrial DNA is inherited exclusively from the mother. ALL children of an affected mother are affected. An affected father NEVER passes the trait to children. No male-to-child transmission.',
+      explanation: 'Mitochondrial DNA variants are inherited through egg cells, not sperm. A mother can pass a variant to children of any sex, while fathers do not transmit mtDNA; heteroplasmy can make inheritance and symptom severity vary among siblings.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: false, carrier: false, genotype: 'Normal', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: true, carrier: false, genotype: 'mt-mut', label: 'I-2' },
@@ -289,9 +289,9 @@ window.StemLab = window.StemLab || {
     },
     {
       id: 'yl', label: 'Y-Linked Inheritance',
-      example: 'Hairy Ear Rims (Hypertrichosis pinnae)',
+      example: 'Hypothetical Y-linked marker',
       answer: 'y_linked',
-      explanation: 'Y-linked traits pass exclusively from father to ALL sons. No daughters are ever affected. Every affected male has an affected father. The trait appears in every generation through the male line.',
+      explanation: 'In this simplified, fully penetrant model, a Y-linked marker passes from a father to each son and not to daughters. Real Y-linked conditions are rare, and penetrance or new variants can complicate a pedigree.',
       members: [
         { id: 1, sex: 'M', x: 140, y: 35, affected: true, carrier: false, genotype: 'X Y*', label: 'I-1' },
         { id: 2, sex: 'F', x: 220, y: 35, affected: false, carrier: false, genotype: 'XX', label: 'I-2' },
@@ -312,26 +312,26 @@ window.StemLab = window.StemLab || {
 
   // ── Trait catalog ──
   var TRAIT_CATALOG = [
-    { name: 'Tongue Rolling', mode: 'complete', dom: 'Can roll', rec: 'Cannot roll', icon: '\uD83D\uDC45', freq: '~65-81% can roll', desc: 'Ability to curl the tongue into a tube shape. Once thought to be simple Mendelian, now known to be influenced by environment too.' },
-    { name: 'Widow\'s Peak', mode: 'complete', dom: 'Widow\'s peak', rec: 'Straight hairline', icon: '\uD83D\uDC71', freq: '~35% have peak', desc: 'A V-shaped point in the hairline at the center of the forehead. Dominant over straight hairline.' },
-    { name: 'Hitchhiker\'s Thumb', mode: 'complete', dom: 'Straight thumb', rec: 'Hitchhiker (>50\u00B0 bend)', icon: '\uD83D\uDC4D', freq: '~25% hitchhiker', desc: 'Ability to bend the thumb backwards more than 50 degrees. Often taught as straight-dominant, but — like earlobes — this is a classic teaching example actually influenced by multiple genes.' },
+    { name: 'Tongue Rolling', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83D\uDC45', freq: 'Varies by population and study', desc: 'Tongue rolling is influenced by genetics and environment, but family and twin studies do not support a single dominant allele.', pattern: 'Complex trait; do not infer a genotype from whether someone can roll their tongue.' },
+    { name: 'Widow\'s Peak', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83D\uDC71', freq: 'Varies by population and measurement', desc: 'Hairline shape varies continuously. No scientific evidence supports the common classroom claim that a widow\'s peak is controlled by one dominant allele.', pattern: 'Complex variation; a one-gene Punnett square is not appropriate.' },
+    { name: 'Hitchhiker\'s Thumb', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83D\uDC4D', freq: 'A continuous range of joint angles', desc: 'Thumb-joint angle varies continuously rather than forming two clean categories. It is not established as a single-gene dominant/recessive trait.', pattern: 'Complex variation; measured angle is more informative than a binary label.' },
     { name: 'Polydactyly', mode: 'complete', dom: 'Extra digits', rec: 'Normal (5)', icon: '\u270B', freq: '~1 in 500-1000', desc: 'Having extra fingers or toes. Autosomal dominant with variable expressivity and reduced penetrance.' },
     { name: 'Huntington\'s Disease', mode: 'complete', dom: 'Affected', rec: 'Normal', icon: '\uD83E\uDDE0', freq: '~1 in 10,000', desc: 'Progressive neurological disorder caused by CAG repeat expansion on chromosome 4. Autosomal dominant with late onset.' },
     { name: 'Cystic Fibrosis', mode: 'recessive', dom: 'Normal/Carrier', rec: 'Affected', icon: '\uD83E\uDEC1', freq: '~1 in 3,500 (Caucasian)', desc: 'Thick mucus production affecting lungs and pancreas. Caused by mutations in the CFTR gene on chromosome 7.' },
-    { name: 'Sickle Cell Anemia', mode: 'codominant', dom: 'Normal RBC', rec: 'Sickle-shaped RBC', icon: '\uD83E\uDE78', freq: '~1 in 365 (African American)', desc: 'Hemoglobin S mutation causes red blood cells to sickle. Carriers (AS) have sickle cell trait - partial protection from malaria.' },
+    { name: 'Sickle Cell Trait and Disease', mode: 'codominant', dom: 'HbA protein', rec: 'HbS protein', icon: '\uD83E\uDE78', freq: 'Varies by ancestry and region', desc: 'HbA and HbS are both produced in people with AS sickle cell trait. Trait is not a mild form of sickle cell disease; people with trait usually have no disease symptoms.', pattern: 'Codominant at the hemoglobin-protein level; clinical outcomes depend on the full hemoglobin genotype and conditions.' },
     { name: 'ABO Blood Type', mode: 'codominant', dom: 'A or B antigen', rec: 'No antigen (O)', icon: '\uD83C\uDD8E', freq: 'O: 44%, A: 42%, B: 10%, AB: 4%', desc: 'Three alleles (I\u1D2C, I\u1D2E, i) control blood type. I\u1D2C and I\u1D2E are codominant; both dominant over i.' },
     { name: 'Snapdragon Flower Color', mode: 'incomplete', dom: 'Red', rec: 'White', icon: '\uD83C\uDF3A', freq: 'n/a (plant)', desc: 'Classic incomplete dominance. Red (RR) \u00D7 White (rr) = Pink (Rr). The 1:2:1 ratio produces red, pink, and white flowers.' },
-    { name: 'Color Blindness', mode: 'x_linked', dom: 'Normal vision', rec: 'Color blind', icon: '\uD83D\uDC41', freq: '~8% males, ~0.5% females', desc: 'Red-green color blindness is X-linked recessive. Males need only one copy; females need two. Carrier females have normal vision.' },
+    { name: 'Color Blindness', mode: 'x_linked', dom: 'Normal vision', rec: 'Color blind', icon: '\uD83D\uDC41', freq: '~8% males, ~0.5% females', desc: 'Red-green color blindness is X-linked recessive. Males need only one copy; females need two. Heterozygous XX individuals are usually unaffected, although expression can vary because of X-inactivation.' },
     { name: 'Hemophilia A', mode: 'x_linked', dom: 'Normal clotting', rec: 'Hemophilia', icon: '\uD83E\uDE79', freq: '~1 in 5,000 males', desc: 'Blood clotting factor VIII deficiency. X-linked recessive. Famous in European royal families descended from Queen Victoria.' },
     { name: 'Duchenne Muscular Dystrophy', mode: 'x_linked', dom: 'Normal', rec: 'Affected', icon: '\uD83E\uDDBE', freq: '~1 in 3,500 males', desc: 'Progressive muscle degeneration caused by dystrophin gene mutations on the X chromosome. Primarily affects boys.' },
-    { name: 'Skin Color', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83C\uDF0D', freq: 'Continuous range', desc: 'Determined by multiple genes (at least 15) that additively affect melanin production. Classic example of polygenic inheritance.' },
+    { name: 'Skin Pigmentation', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83C\uDF0D', freq: 'Continuous variation', desc: 'Many genetic variants influence melanin amount and type, and environmental exposure such as ultraviolet light also changes pigmentation.', pattern: 'Polygenic and environmentally influenced; there is no single dominant skin-color allele.' },
     { name: 'Height', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83D\uDCCF', freq: 'Bell curve distribution', desc: 'Influenced by hundreds of genes plus environmental factors (nutrition, health). Shows continuous variation in populations.' },
     { name: 'Albinism', mode: 'recessive', dom: 'Normal pigment', rec: 'No pigment', icon: '\uD83E\uDDD1', freq: '~1 in 20,000', desc: 'Lack of melanin production due to mutations in genes controlling melanin synthesis pathway. Multiple types exist.' },
     { name: 'PKU (Phenylketonuria)', mode: 'recessive', dom: 'Normal', rec: 'PKU', icon: '\uD83E\uDDEA', freq: '~1 in 10,000', desc: 'Cannot metabolize phenylalanine. Treatable with diet. Newborn screening catches it early. Autosomal recessive on chromosome 12.' },
     { name: 'Tay-Sachs Disease', mode: 'recessive', dom: 'Normal', rec: 'Tay-Sachs', icon: '\uD83E\uDDE0', freq: '~1 in 3,600 (Ashkenazi Jewish)', desc: 'Fatal lysosomal storage disorder. Missing hexosaminidase A enzyme causes lipid buildup in neurons. Autosomal recessive on chromosome 15.' },
     { name: 'Marfan Syndrome', mode: 'complete', dom: 'Affected', rec: 'Normal', icon: '\uD83E\uDDBF', freq: '~1 in 5,000', desc: 'Connective tissue disorder caused by mutations in the fibrillin-1 gene (FBN1). Autosomal dominant with variable expressivity. Affects heart, eyes, skeleton.' },
     { name: 'Rh Blood Factor', mode: 'complete', dom: 'Rh+ (D antigen)', rec: 'Rh\u2212 (no D)', icon: '\uD83E\uDE78', freq: 'Rh+: ~85%, Rh\u2212: ~15%', desc: 'Rh factor is determined by the RHD gene. Rh+ is dominant. Important in pregnancy: Rh\u2212 mother with Rh+ fetus can develop antibodies (erythroblastosis fetalis).' },
-    { name: 'Ear Lobe Shape', mode: 'complete', dom: 'Free (detached)', rec: 'Attached', icon: '\uD83D\uDC42', freq: '~64% free lobes', desc: 'Free (detached) earlobes are dominant over attached earlobes. A classic example used in introductory genetics, though actually influenced by multiple genes.' }
+    { name: 'Earlobe Attachment', mode: 'polygenic', dom: '-', rec: '-', icon: '\uD83D\uDC42', freq: 'A continuous range of attachment', desc: 'Earlobe attachment ranges from attached to detached with many intermediate forms. Genomic studies support contributions from multiple loci.', pattern: 'Complex variation; detached earlobes are not explained by one dominant allele.' }
   ];
 
   // ── Codon table ──
@@ -386,7 +386,7 @@ window.StemLab = window.StemLab || {
           'Incorrect. Having identical alleles is homozygous.',
           '',
           'Incorrect. Organisms inherit at least one allele per gene from each parent.',
-          'Incorrect. Normal diploid organisms have two alleles per gene.'
+          'Incorrect. This diploid autosomal model tracks two alleles at the locus, one inherited through each parent.'
         ]
       },
       {
@@ -632,15 +632,15 @@ window.StemLab = window.StemLab || {
         ]
       },
       {
-        q: 'Which parent determines the sex of offspring?',
-        a: ['Mother (XX)', 'Father (XY)', 'Both equally', 'Neither'],
+        q: 'In the simplified human XX/XY model, which gamete determines whether an embryo receives X or Y?',
+        a: ['Egg cell', 'Sperm cell', 'Both gametes can carry Y', 'Neither gamete'],
         correct: 1,
         concept: 'heterozygous',
         wrongFeedback: [
-          'Incorrect. Mothers can only pass on an X chromosome.',
+          'Incorrect. In the simplified XX/XY model, an egg contributes X.',
           '',
-          'Incorrect. The father\'s sperm carries either X or Y, which determines sex.',
-          'Incorrect. The father\'s genetic contribution determines sex.'
+          'Incorrect. In this model, the sperm contributes either X or Y.',
+          'Incorrect. In this model, an X-bearing or Y-bearing sperm sets the chromosome combination.'
         ]
       },
       {
@@ -1069,13 +1069,13 @@ window.StemLab = window.StemLab || {
       title: 'Genes & Alleles', icon: '\uD83C\uDFAF',
       k2: 'Genes are small sections of DNA that tell your body to make specific things, like blue eyes or curly hair. You get one copy from your mom and one from your dad! Different versions of a gene are called alleles.',
       g35: 'A gene is a segment of DNA that codes for a specific protein or trait. You inherit two copies (alleles) of each gene - one from each parent. If both alleles are the same, you\'re homozygous (BB or bb). If they\'re different, you\'re heterozygous (Bb). The allele combination is your genotype; what you actually look like is your phenotype.',
-      g68: 'Genes occupy specific positions (loci) on chromosomes. Humans have ~20,000 protein-coding genes across 23 chromosome pairs. Alleles arise from mutations creating different DNA sequences at the same locus. Dominant alleles produce their phenotype with just one copy; recessive alleles need two copies. Some genes show incomplete dominance, codominance, or multiple alleles (like ABO blood type with three alleles: I\u1D2C, I\u1D2E, i).',
+      g68: 'Genes occupy specific positions (loci) on chromosomes. Humans have about 20,000 protein-coding genes across 23 chromosome pairs. Alleles are sequence variants at the same locus. In complete-dominance models one copy can be sufficient for a phenotype, but many traits instead involve incomplete dominance, codominance, multiple alleles, many genes, or environmental effects.',
       g912: 'Gene expression involves transcription (DNA \u2192 mRNA by RNA polymerase) and translation (mRNA \u2192 protein by ribosomes). Regulatory elements (promoters, enhancers, silencers) control when and where genes are expressed. Epigenetic modifications (DNA methylation, histone acetylation) alter gene expression without changing the DNA sequence. Pleiotropy (one gene, many effects) and polygenic inheritance (many genes, one trait) add complexity beyond simple Mendelian genetics.'
     },
     {
       title: 'Inheritance Patterns', icon: '\uD83D\uDCCA',
       k2: 'Each parent gives you one gene for a trait. When your two genes are different, the dominant one is the trait you SEE. But dominant does NOT mean stronger, better, or more common - it just means "the one that shows." The hidden (recessive) gene is still there and can show up in your own kids someday!',
-      g35: 'Mendel discovered three laws: (1) Law of Dominance - one allele can mask another. (2) Law of Segregation - allele pairs separate during gamete formation. (3) Law of Independent Assortment - genes on different chromosomes sort independently. A Punnett square predicts offspring ratios: Bb \u00D7 Bb gives a 3:1 dominant:recessive ratio.',
+      g35: 'Mendel showed that allele pairs separate when gametes form. Genes on different chromosomes usually assort independently, while linked genes can travel together. A Punnett square predicts probabilities for a stated inheritance model: Bb \u00D7 Bb gives a 3:1 phenotype ratio only under complete dominance.',
       g68: 'Beyond simple dominance, inheritance patterns include: Incomplete dominance (red \u00D7 white = pink snapdragons), Codominance (AB blood type), Sex-linked (hemophilia on X chromosome), and Polygenic (height, skin color). Linked genes on the same chromosome violate independent assortment but recombination during crossing over creates new combinations. Pedigree charts trace traits through generations.',
       g912: 'Complex inheritance includes epistasis (gene interaction where one gene modifies another\'s expression), penetrance (% showing phenotype), and expressivity (degree of expression). Quantitative trait loci (QTL) analysis maps polygenic traits. Mitochondrial inheritance is maternal. Genomic imprinting means some genes are expressed only from the maternal or paternal copy. Genetic linkage and recombination frequencies are used to map gene positions on chromosomes.'
     },
@@ -1495,9 +1495,9 @@ window.StemLab = window.StemLab || {
           var countEntries = countKeys.map(function(k) { return k + ': ' + counts[k] + '/4'; });
           var genotypeRatioStr = 'Genotype Ratios: ' + countEntries.join(' | ');
           var modeInfo = MODE_INFO[inheritMode];
-          var displayDomLabel = activePreset && activePreset.domLabel ? activePreset.domLabel : (isSexLinked ? 'Unaffected/typical' : 'Dominant');
-          var displayRecLabel = activePreset && activePreset.recLabel ? activePreset.recLabel : (isSexLinked ? 'Affected/recessive' : 'Recessive');
-          var displayBlendLabel = activePreset && activePreset.blendLabel ? activePreset.blendLabel : (inheritMode === 'incomplete' ? 'Blended' : 'Codominant');
+          var displayDomLabel = activePreset && activePreset.domLabel ? activePreset.domLabel : (isSexLinked ? 'Unaffected in model' : 'Dominant');
+          var displayRecLabel = activePreset && activePreset.recLabel ? activePreset.recLabel : (isSexLinked ? 'Affected in model' : 'Recessive');
+          var displayBlendLabel = activePreset && activePreset.blendLabel ? activePreset.blendLabel : (inheritMode === 'incomplete' ? 'Intermediate' : 'Codominant');
           var parent1Gametes = isSexLinked ? ['X' + parent1[0], 'X' + parent1[1]] : parent1.slice();
           var parent2Gametes = isSexLinked ? ['X' + parent2[0], 'Y'] : parent2.slice();
           var phenotypeMix = [
@@ -1512,7 +1512,7 @@ window.StemLab = window.StemLab || {
             return item.count === maximumPhenotypeCount;
           });
           var outcomeHeadline = maximumPhenotypeCount <= 0
-            ? 'Each square is one equally likely offspring outcome.'
+            ? 'Under this model, each square is one equally likely offspring outcome.'
             : leadingPhenotypes.length > 1
               ? leadingPhenotypes.map(function(item) { return item.label; }).join(' and ') + ' are equally likely at ' + (maximumPhenotypeCount * 25) + '% each.'
               : leadingPhenotypes[0].label + ' is most likely at ' + (maximumPhenotypeCount * 25) + '%.';
@@ -1530,7 +1530,7 @@ window.StemLab = window.StemLab || {
             if (inheritMode === 'codominant') return 'Heterozygous offspring show both expressed alleles side by side instead of blending them together.';
             if (domCount === 3 && recCount === 1) return 'This is the classic heterozygote cross: three offspring choices show the dominant trait and one shows the recessive trait.';
             if (domCount === 2 && recCount === 2) return 'This reads like a test cross: each offspring has an equal chance of the dominant or recessive phenotype.';
-            return 'Each square is one equally likely offspring outcome. The color mix turns the four squares into phenotype probabilities.';
+            return 'Assuming equal gamete frequencies, each square is equally likely. The color mix turns the four squares into phenotype probabilities.';
           })();
 
           // ═══════════════════════════════════════
@@ -1623,6 +1623,7 @@ window.StemLab = window.StemLab || {
           var popMutation = d.popMutation || 0;
           var popRunning = d.popRunning || false;
           var popHistory = d.popHistory || null;
+          var displayedPopFreqA = popHistory && popHistory.length ? popHistory[popHistory.length - 1] : popFreqA;
 
           React.useEffect(function() {
             if (!popRunning || !popHistory) return;
@@ -1849,7 +1850,7 @@ window.StemLab = window.StemLab || {
                 h('div', null,
                   h('p', { className: 'text-[11px] font-bold text-violet-700 uppercase tracking-wider mb-1' }, 'Lab guide'),
                   h('h2', { id: 'punnett-command-title', className: 'text-lg font-black text-slate-800 m-0' }, 'Predict inheritance in three moves'),
-                  h('p', { className: 'text-xs text-slate-600 mt-1 max-w-2xl' }, 'Choose an inheritance pattern, set two parent genotypes, then read each equally likely offspring outcome.')
+                  h('p', { className: 'text-xs text-slate-600 mt-1 max-w-2xl' }, 'Choose an inheritance pattern, set two parent genotypes, then compare offspring probabilities under the model assumptions.')
                 ),
                 h('button', {
                   onClick: function() { upd('_showLabGuide', false); },
@@ -2183,7 +2184,7 @@ window.StemLab = window.StemLab || {
                 h('span', { className: 'punnett-step-number', 'aria-hidden': 'true' }, '3'),
                 h('div', null,
                   h('h3', { className: 'text-sm font-black text-slate-800 m-0' }, 'Read the offspring probabilities'),
-                  h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, 'Rows and columns are parent gametes; every result square has an equal chance.')
+                  h('p', { className: 'text-[11px] text-slate-600 mt-0.5' }, 'Rows and columns are parent gametes; squares are equally likely when each modeled gamete is equally frequent.')
                 )
               ),
 
@@ -2258,7 +2259,7 @@ window.StemLab = window.StemLab || {
                         var isCarrierDaughter = femaleAlleles.length === 2 && femaleAlleles[0] !== femaleAlleles[1] && p !== 'Recessive';
                         var cellLabel = isSexLinked
                           ? (g.indexOf('Y') !== -1 ? 'Son' : 'Daughter') + ' - ' + (p === 'Recessive' ? 'affected' : isCarrierDaughter ? 'carrier' : 'unaffected')
-                          : p === 'Blended' ? 'Blended phenotype'
+                          : p === 'Blended' ? 'Intermediate phenotype'
                             : p === 'Codominant' ? 'Codominant phenotype'
                               : g[0] === g[1] ? (p === 'Dominant' ? 'Homozygous dominant' : 'Homozygous recessive') : 'Heterozygous';
                         var cellEmoji = activePreset ? (p === 'Blended' || p === 'Codominant' ? (activePreset.blendEmoji || activePreset.domEmoji) : (p === 'Dominant' ? activePreset.domEmoji : activePreset.recEmoji)) : null;
@@ -2361,7 +2362,7 @@ window.StemLab = window.StemLab || {
                     var p = phenotype(g);
                     var pc = phenoColor(p);
                     var emoji = (p === 'Blended' || p === 'Codominant') ? (activePreset.blendEmoji || activePreset.domEmoji) : (p === 'Dominant' ? activePreset.domEmoji : activePreset.recEmoji);
-                    var label = (p === 'Blended' || p === 'Codominant') ? (activePreset.blendLabel || 'Mixed') : (p === 'Dominant' ? activePreset.domLabel : activePreset.recLabel);
+                    var label = (p === 'Blended' || p === 'Codominant') ? (activePreset.blendLabel || (inheritMode === 'incomplete' ? 'Intermediate' : 'Both expressed')) : (p === 'Dominant' ? activePreset.domLabel : activePreset.recLabel);
                     return h('div', { key: i, className: 'text-center p-2 rounded-lg border-2 transition-all ' + pc.bg + ' ' + pc.border, style: { minWidth: '60px' } },
                       h('span', { className: 'text-2xl block mb-1' }, emoji),
                       h('span', { className: 'text-[11px] font-bold block ' + pc.text }, g),
@@ -2375,9 +2376,9 @@ window.StemLab = window.StemLab || {
               !isDihybrid && h('p', { className: 'mt-3 text-xs text-slate-600 italic' },
                 (function() {
                   if (inheritMode === 'incomplete') {
-                    if (blendCount === 4) return '\uD83D\uDCA1 100% blended phenotype! Both parents are heterozygous - classic incomplete dominance 1:2:1 ratio.';
-                    if (blendCount === 2) return '\uD83D\uDCA1 50% blended. Some offspring express intermediate traits!';
-                    return '\uD83D\uDCA1 Incomplete dominance: heterozygotes show a blend of both parental traits.';
+                    if (blendCount === 4) return '\uD83D\uDCA1 100% intermediate phenotype. Every modeled offspring is heterozygous; this can occur when the parents contribute different homozygous alleles.';
+                    if (blendCount === 2) return '\uD83D\uDCA1 50% intermediate phenotype. Half of the modeled offspring are heterozygous.';
+                    return '\uD83D\uDCA1 Incomplete dominance: heterozygotes show an intermediate phenotype, while the alleles remain distinct.';
                   }
                   if (inheritMode === 'codominant') {
                     if (blendCount > 0) return '\uD83D\uDCA1 ' + (blendCount * 25) + '% of offspring express both alleles simultaneously - that\u2019s codominance!';
@@ -2401,9 +2402,10 @@ window.StemLab = window.StemLab || {
                 h('summary', null, '⚠️ Common genetics mix-ups'),
 
                 h('ul', { className: 'space-y-1.5 text-xs text-amber-900 list-disc list-inside marker:text-amber-500' },
-                  h('li', null, h('b', null, 'Dominant \u2260 stronger or more common. '), 'A dominant allele simply masks the recessive one when both are present. It is not "better," and it does not spread through a population over time \u2014 plenty of common traits are recessive.'),
+                  h('li', null, h('b', null, 'Dominant \u2260 stronger or more common. '), 'Dominance describes the phenotype of a heterozygote under a particular model. It does not mean an allele is stronger, better, or more common, and dominance alone does not make an allele spread.'),
                   h('li', null, h('b', null, 'A 3:1 ratio is a probability, not a promise. '), 'Each child is an independent 75% / 25% outcome. A family of four can easily come out all-dominant or two-and-two \u2014 the same way four coin flips are not always exactly two heads.'),
-                  h('li', null, h('b', null, 'Codominance \u2260 blending. '), 'In codominance BOTH alleles show fully and separately (type-AB blood carries A and B markers). In incomplete dominance they blend to an in-between (red + white = pink).')
+                  h('li', null, h('b', null, 'Codominance \u2260 blending. '), 'In codominance both alleles are expressed (type AB blood has A and B antigens). In incomplete dominance the heterozygote has an intermediate phenotype; the alleles themselves do not blend.'),
+                  h('li', null, h('b', null, 'The square is a model. '), 'Equal boxes assume equal gamete frequencies; a 9:3:3:1 dihybrid ratio also assumes independent assortment. Linkage, penetrance, gene interactions, and environment can change observed outcomes.')
                 )
               ),
 
@@ -2617,8 +2619,8 @@ window.StemLab = window.StemLab || {
                   // Dihybrid educational callout
                   h('p', { className: 'mt-3 text-xs text-slate-600 italic' },
                     diPreset
-                      ? '\uD83D\uDCA1 ' + diPreset.t1name + ' (' + diPreset.domLabel1 + '/' + diPreset.recLabel1 + ') and ' + diPreset.t2name + ' (' + diPreset.domLabel2 + '/' + diPreset.recLabel2 + ') are inherited independently.'
-                      : '\uD83D\uDCA1 In dihybrid crosses, each parent forms 4 gamete types. The 4\u00D74 grid shows all 16 possible offspring combinations.'
+                      ? '\uD83D\uDCA1 This model assumes independent assortment for ' + diPreset.t1name + ' (' + diPreset.domLabel1 + '/' + diPreset.recLabel1 + ') and ' + diPreset.t2name + ' (' + diPreset.domLabel2 + '/' + diPreset.recLabel2 + ').'
+                      : '\uD83D\uDCA1 In this dihybrid model, each parent forms four equally frequent gamete types and the genes assort independently, producing 16 equally weighted combinations.'
                   )
                 )
               )
@@ -2846,9 +2848,9 @@ window.StemLab = window.StemLab || {
 
                 // Allele frequency
                 h('div', { className: 'mb-2' },
-                  h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Allele Frequency (p = ' + popFreqA.toFixed(2) + ', q = ' + (1 - popFreqA).toFixed(2) + ')'),
+                  h('label', { htmlFor: 'punnett-pop-frequency', className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Starting Allele Frequency (p = ' + popFreqA.toFixed(2) + ', q = ' + (1 - popFreqA).toFixed(2) + ')'),
                   h('input', {
-                    type: 'range', min: '0.01', max: '0.99', step: '0.01', value: popFreqA,
+                    id: 'punnett-pop-frequency', type: 'range', min: '0.01', max: '0.99', step: '0.01', value: popFreqA,
                     onChange: function(e) { upd('popFreqA', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -2856,9 +2858,9 @@ window.StemLab = window.StemLab || {
 
                 // Population size
                 h('div', { className: 'mb-2' },
-                  h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Population Size: ' + popSize),
+                  h('label', { htmlFor: 'punnett-pop-size', className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Population Size: ' + popSize),
                   h('input', {
-                    type: 'range', min: '10', max: '1000', step: '10', value: popSize,
+                    id: 'punnett-pop-size', type: 'range', min: '10', max: '1000', step: '10', value: popSize,
                     onChange: function(e) { upd('popSize', parseInt(e.target.value, 10)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -2866,9 +2868,9 @@ window.StemLab = window.StemLab || {
 
                 // Generations
                 h('div', { className: 'mb-2' },
-                  h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Generations: ' + popGens),
+                  h('label', { htmlFor: 'punnett-pop-generations', className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Generations: ' + popGens),
                   h('input', {
-                    type: 'range', min: '10', max: '100', step: '5', value: popGens,
+                    id: 'punnett-pop-generations', type: 'range', min: '10', max: '100', step: '5', value: popGens,
                     onChange: function(e) { upd('popGens', parseInt(e.target.value, 10)); },
                     className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -2876,9 +2878,9 @@ window.StemLab = window.StemLab || {
 
                 // Selection coefficient
                 (band === 'g68' || band === 'g912') && h('div', { className: 'mb-2' },
-                  h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Selection Against Recessive (s = ' + popSelection.toFixed(2) + ')'),
+                  h('label', { htmlFor: 'punnett-pop-selection', className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Selection Against aa Genotype (s = ' + popSelection.toFixed(2) + ')'),
                   h('input', {
-                    type: 'range', min: '0', max: '1', step: '0.05', value: popSelection,
+                    id: 'punnett-pop-selection', type: 'range', min: '0', max: '1', step: '0.05', value: popSelection,
                     onChange: function(e) { upd('popSelection', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -2886,9 +2888,9 @@ window.StemLab = window.StemLab || {
 
                 // Mutation rate
                 band === 'g912' && h('div', { className: 'mb-2' },
-                  h('label', { className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Mutation Rate (\u03BC = ' + popMutation.toFixed(4) + ')'),
+                  h('label', { htmlFor: 'punnett-pop-mutation', className: 'text-[11px] font-bold text-slate-600 block mb-1' }, 'Symmetric Mutation Rate (\u03BC = ' + popMutation.toFixed(4) + ')'),
                   h('input', {
-                    type: 'range',  min: '0', max: '0.01', step: '0.0005', value: popMutation,
+                    id: 'punnett-pop-mutation', type: 'range', min: '0', max: '0.01', step: '0.0005', value: popMutation,
                     onChange: function(e) { upd('popMutation', parseFloat(e.target.value)); },
                     className: 'w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer'
                   })
@@ -2896,7 +2898,7 @@ window.StemLab = window.StemLab || {
 
                 // Drift toggle
                 h('div', { className: 'flex items-center gap-2 mb-2' },
-                  h('button', { 'aria-label': 'Random genetic drift (stronger in small populations)',
+                  h('button', { type: 'button', 'aria-label': 'Random genetic drift (stronger in small populations)', 'aria-pressed': popDrift ? 'true' : 'false',
                     onClick: function() { upd('popDrift', !popDrift); },
                     className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (popDrift ? 'bg-sky-100 text-sky-700 border-sky-600' : 'bg-slate-50 text-slate-600 border-slate-200')
                   }, popDrift ? '\uD83C\uDFB2 Drift ON' : '\uD83C\uDFB2 Drift OFF'),
@@ -2905,7 +2907,7 @@ window.StemLab = window.StemLab || {
 
                 // Run / Reset buttons
                 h('div', { className: 'flex gap-2' },
-                  h('button', { onClick: function() {
+                  h('button', { type: 'button', onClick: function() {
                       if (popRunning) {
                         upd('popRunning', false);
                       } else {
@@ -2916,7 +2918,7 @@ window.StemLab = window.StemLab || {
                     },
                     className: 'px-4 py-1.5 text-xs font-bold text-white rounded-lg transition-all ' + (popRunning ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-700 hover:bg-emerald-800')
                   }, popRunning ? '\u23F8 Pause' : '\u25B6 Simulate'),
-                  h('button', { 'aria-label': 'Reset',
+                  h('button', { type: 'button', 'aria-label': 'Reset population simulation',
                     onClick: function() { updMulti({ popHistory: null, popRunning: false }); },
                     className: 'px-4 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200'
                   }, '\u21BA Reset')
@@ -2924,28 +2926,28 @@ window.StemLab = window.StemLab || {
               ),
 
               // HW Equilibrium display
-              h('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
+              h('div', { className: 'grid grid-cols-3 gap-2 mb-3', role: 'group', 'aria-label': 'Current modeled genotype frequencies at p ' + displayedPopFreqA.toFixed(2) },
                 h('div', { className: 'bg-emerald-50 rounded-xl p-2 text-center border border-emerald-200' },
                   h('p', { className: 'text-[11px] font-bold text-emerald-600' }, 'AA (p\u00B2)'),
-                  h('p', { className: 'text-lg font-bold text-emerald-700' }, (popFreqA * popFreqA * 100).toFixed(1) + '%'),
-                  h('p', { className: 'text-[11px] text-emerald-500' }, 'Homozygous Dom')
+                  h('p', { className: 'text-lg font-bold text-emerald-700' }, (displayedPopFreqA * displayedPopFreqA * 100).toFixed(1) + '%'),
+                  h('p', { className: 'text-[11px] text-emerald-500' }, 'AA genotype')
                 ),
                 h('div', { className: 'bg-sky-50 rounded-xl p-2 text-center border border-sky-200' },
                   h('p', { className: 'text-[11px] font-bold text-sky-600' }, 'Aa (2pq)'),
-                  h('p', { className: 'text-lg font-bold text-sky-700' }, (2 * popFreqA * (1 - popFreqA) * 100).toFixed(1) + '%'),
+                  h('p', { className: 'text-lg font-bold text-sky-700' }, (2 * displayedPopFreqA * (1 - displayedPopFreqA) * 100).toFixed(1) + '%'),
                   h('p', { className: 'text-[11px] text-sky-500' }, 'Heterozygous')
                 ),
                 h('div', { className: 'bg-amber-50 rounded-xl p-2 text-center border border-amber-200' },
                   h('p', { className: 'text-[11px] font-bold text-amber-600' }, 'aa (q\u00B2)'),
-                  h('p', { className: 'text-lg font-bold text-amber-700' }, ((1 - popFreqA) * (1 - popFreqA) * 100).toFixed(1) + '%'),
-                  h('p', { className: 'text-[11px] text-amber-500' }, 'Homozygous Rec')
+                  h('p', { className: 'text-lg font-bold text-amber-700' }, ((1 - displayedPopFreqA) * (1 - displayedPopFreqA) * 100).toFixed(1) + '%'),
+                  h('p', { className: 'text-[11px] text-amber-500' }, 'aa genotype')
                 )
               ),
 
               // Population visualization (dot field)
               h('div', { className: 'bg-white rounded-xl border p-3 mb-3' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDC65 Population Sample (n=' + Math.min(popSize, 100) + ')'),
-                h('svg', { viewBox: '0 0 300 60', className: 'w-full' },
+                h('svg', { viewBox: '0 0 300 60', className: 'w-full', role: 'img', 'aria-label': 'Illustrative sample of ' + Math.min(popSize, 100) + ' individuals at allele frequency p ' + displayedPopFreqA.toFixed(2) },
                   (function() {
                     var dots = [];
                     var p = popHistory && popHistory.length > 0 ? popHistory[popHistory.length - 1] : popFreqA;
@@ -2953,7 +2955,7 @@ window.StemLab = window.StemLab || {
                     var n = Math.min(popSize, 100);
                     var cols = 20;
                     for (var i = 0; i < n; i++) {
-                      var rand = Math.random();
+                      var rand = (0.5 + i * 0.61803398875) % 1;
                       var color = rand < p * p ? '#22c55e' : rand < p * p + 2 * p * q ? '#38bdf8' : '#f59e0b';
                       var cx = 10 + (i % cols) * 14.5;
                       var cy = 8 + Math.floor(i / cols) * 12;
@@ -2972,7 +2974,7 @@ window.StemLab = window.StemLab || {
               // Allele frequency graph
               popHistory && popHistory.length > 1 && h('div', { className: 'bg-white rounded-xl border p-3' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, '\uD83D\uDCC8 Allele Frequency Over Generations'),
-                h('svg', { viewBox: '0 0 340 160', className: 'w-full' },
+                h('svg', { viewBox: '0 0 340 160', className: 'w-full', role: 'img', 'aria-label': 'Allele frequencies p and q across ' + (popHistory.length - 1) + ' simulated generations; current p is ' + displayedPopFreqA.toFixed(2) + ' and q is ' + (1 - displayedPopFreqA).toFixed(2) },
                   // Grid
                   h('line', { x1: 30, y1: 10, x2: 30, y2: 140, stroke: '#e2e8f0', strokeWidth: 1 }),
                   h('line', { x1: 30, y1: 140, x2: 330, y2: 140, stroke: '#e2e8f0', strokeWidth: 1 }),
@@ -3002,8 +3004,8 @@ window.StemLab = window.StemLab || {
                     }).join(' ')
                   }),
                   // Labels
-                  h('text', { x: 335, y: 140 - popHistory[popHistory.length - 1] * 130, style: { fontSize: '11px', fontWeight: 'bold', fill: '#22c55e' } }, 'p'),
-                  h('text', { x: 335, y: 140 - (1 - popHistory[popHistory.length - 1]) * 130, style: { fontSize: '11px', fontWeight: 'bold', fill: '#f59e0b' } }, 'q')
+                  h('text', { x: 328, textAnchor: 'end', y: Math.max(12, 136 - popHistory[popHistory.length - 1] * 124), style: { fontSize: '11px', fontWeight: 'bold', fill: '#22c55e' } }, 'p'),
+                  h('text', { x: 328, textAnchor: 'end', y: Math.max(20, 144 - (1 - popHistory[popHistory.length - 1]) * 124), style: { fontSize: '11px', fontWeight: 'bold', fill: '#f59e0b' } }, 'q')
                 ),
                 h('p', { className: 'text-[11px] text-slate-600 mt-1 text-center' },
                   'Gen ' + (popHistory.length - 1) + ': p = ' + popHistory[popHistory.length - 1].toFixed(4) + ', q = ' + (1 - popHistory[popHistory.length - 1]).toFixed(4)
@@ -3018,14 +3020,14 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-slate-600 italic mb-3' },
                 gradeText(
                   'Look at all these cool traits that get passed down in families!',
-                  'Explore real genetic traits and how they are inherited. Click on a trait to learn more!',
-                  'Browse a catalog of genetic traits organized by inheritance pattern. Understand how each follows specific Mendelian or non-Mendelian rules.',
-                  'Analyze inheritance patterns of real genetic conditions including autosomal, sex-linked, codominant, and polygenic traits.'
+                  'Compare traits that fit simple inheritance models with traits that require more complex explanations. Select one to inspect the evidence.',
+                  'Compare Mendelian models with complex traits, and notice when a one-gene Punnett square is or is not appropriate.',
+                  'Analyze where simplified autosomal, X-linked, codominant, and polygenic models are useful, and where penetrance, multiple genes, or environment limit them.'
                 )(band)
               ),
 
               // Filter buttons
-              h('div', { className: 'flex flex-wrap gap-1 mb-3' },
+              h('div', { className: 'flex flex-wrap gap-1 mb-3', role: 'group', 'aria-label': 'Filter traits by inheritance model' },
                 [
                   { val: 'all', label: 'All Traits' },
                   { val: 'complete', label: 'Dominant/Rec' },
@@ -3035,7 +3037,7 @@ window.StemLab = window.StemLab || {
                   { val: 'x_linked', label: 'X-Linked' },
                   { val: 'polygenic', label: 'Polygenic' }
                 ].map(function(f) {
-                  return h('button', { key: f.val,
+                  return h('button', { type: 'button', key: f.val,
                     onClick: function() { upd('_traitFilter', f.val); },
                     className: 'punnett-touch-choice px-3 py-2 text-[11px] font-bold rounded-lg border ' +
                       (traitFilter === f.val ? 'bg-violet-700 text-white border-violet-700' : 'bg-white text-slate-700 border-slate-200 hover:border-violet-600'),
@@ -3063,6 +3065,8 @@ window.StemLab = window.StemLab || {
                       (isSelected ? 'bg-' + mc + '-50 border-' + mc + '-300 shadow-md' : 'bg-white border-slate-200 hover:border-' + mc + '-200')
                   },
                     h('button', {
+                      type: 'button',
+                      id: 'punnett-trait-button-' + globalIdx,
                       onClick: function() { upd('_traitSelected', isSelected ? -1 : globalIdx); punnettSound('preset'); },
                       className: 'punnett-touch-choice w-full p-3 text-left',
                       'aria-expanded': isSelected,
@@ -3077,10 +3081,12 @@ window.StemLab = window.StemLab || {
                         t.mode === 'complete' ? 'Dominant' : t.mode === 'recessive' ? 'Recessive' : t.mode === 'codominant' ? 'Codominant' : t.mode === 'incomplete' ? 'Incomplete' : t.mode === 'x_linked' ? 'X-Linked' : 'Polygenic'
                       )
                     ),
-                    isSelected && h('div', { id: detailId, className: 'mx-3 mb-3 pt-2 border-t border-' + mc + '-200', role: 'region' },
+                    isSelected && h('div', { id: detailId, className: 'mx-3 mb-3 pt-2 border-t border-' + mc + '-200', role: 'region', 'aria-labelledby': 'punnett-trait-button-' + globalIdx },
                       h('p', { className: 'text-[11px] text-slate-600 mb-1' }, t.desc),
-                      h('p', { className: 'text-[11px] text-slate-600' }, '🟢 Dominant: ' + t.dom + ' | 🟡 Recessive: ' + t.rec),
-                      h('p', { className: 'text-[11px] text-slate-600' }, '📊 Frequency: ' + t.freq)
+                      t.pattern
+                        ? h('p', { className: 'text-[11px] font-semibold text-slate-700 mb-1' }, 'Inheritance evidence: ' + t.pattern)
+                        : h('p', { className: 'text-[11px] text-slate-600' }, 'Simplified model labels: ' + t.dom + ' / ' + t.rec),
+                      h('p', { className: 'text-[11px] text-slate-600' }, 'Frequency: ' + t.freq)
                     )
                   );
                 })

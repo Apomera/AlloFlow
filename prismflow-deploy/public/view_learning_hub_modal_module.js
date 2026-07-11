@@ -14,7 +14,9 @@
 function LearningHubModal(props) {
   const {
     setIsAlloHavenOpen,
+    setIsLinguaPracticeOpen,
     setIsOpenGrooveOpen,
+    setIsTestPrepHubOpen,
     setIsTimelineStudioOpen,
     setSelHubTab,
     setShowLearningHub,
@@ -39,6 +41,14 @@ function LearningHubModal(props) {
     setIsReadingLibraryOpen,
     t
   } = props;
+  const tr = (key, fallback) => {
+    try {
+      const value = typeof t === "function" ? t(key) : "";
+      return value && value !== key ? value : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, onClick: () => setShowLearningHub(false), role: "button", tabIndex: 0, onKeyDown: (e) => {
     if (e.key === "Escape") setShowLearningHub(false);
   } }, /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-8", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-label": t("learning_hub.title") || "Learning Tools", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, "\u{1F9E9}", " ", t("learning_hub.title") || "Learning Tools"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("learning_hub.subtitle") || "Choose a tool to explore")), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowLearningHub(false), className: "p-2 -m-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": t("learning_hub.close_aria") || "Close learning hub" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-4" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
@@ -57,7 +67,13 @@ function LearningHubModal(props) {
   }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F4D6}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-rose-800" }, t("learning_hub.storyforge_title") || "StoryForge"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-rose-600 mt-1" }, t("learning_hub.storyforge_desc") || "Create illustrated stories with AI writing tools"))), typeof setIsReadingLibraryOpen === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setShowLearningHub(false);
     setIsReadingLibraryOpen(true);
-  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-blue-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F4DA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-sky-800" }, t("learning_hub.reading_library_title") || "Reading Library"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-sky-700 mt-1" }, t("learning_hub.reading_library_desc") || "Real picture books in 10 languages \u2014 read along, listen, and practice"))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-sky-50 to-blue-50 border border-sky-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F4DA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-sky-800" }, t("learning_hub.reading_library_title") || "Reading Library"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-sky-700 mt-1" }, t("learning_hub.reading_library_desc") || "Real picture books in 10 languages \u2014 read along, listen, and practice"))), typeof setIsLinguaPracticeOpen === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    setShowLearningHub(false);
+    setIsLinguaPracticeOpen(true);
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "w-12 h-12 rounded-lg bg-emerald-700 text-white flex items-center justify-center text-sm font-black", "aria-hidden": "true" }, "A/\u6587"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-emerald-900" }, tr("learning_hub.lingua_title", "Lingua Practice")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-800 mt-1" }, tr("learning_hub.lingua_desc", "Build vocabulary, practice speaking, and rehearse real conversations")))), typeof setIsTestPrepHubOpen === "function" && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    setShowLearningHub(false);
+    setIsTestPrepHubOpen(true);
+  }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl", "aria-hidden": "true" }, "\u{1F9ED}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-900" }, tr("learning_hub.test_prep_title", "Test Prep Hub")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-800 mt-1" }, tr("learning_hub.test_prep_desc", "Accessible practice packs for licensure, vocational, and professional exams")))), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setShowLearningHub(false);
     setShowLitLab(true);
   }, className: "flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl" }, "\u{1F3AD}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-violet-800" }, t("learning_hub.litlab_title") || "LitLab"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-600 mt-1" }, t("learning_hub.litlab_desc") || "Bring stories to life with character voices & literary analysis"))), setShowMindMap && /* @__PURE__ */ React.createElement("button", { onClick: () => {

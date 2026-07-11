@@ -318,9 +318,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       choices: ['~30%', '~50%', '~75–85%', '~99%'],
       correct: 2, why: 'Pumped hydro recovers about 75–85% of the electricity used to pump water up. It’s old tech (1890s) and still ~95% of the world’s installed grid storage — batteries are catching up fast but pumped hydro dwarfs them in total MWh stored.' },
     { id: 'q11', icon: '🌐',
-      stem: 'The North American grid runs at exactly 60 Hz. If demand suddenly spikes and generation lags, what happens to grid frequency?',
+      stem: 'The North American grid operates near a nominal 60 Hz. If demand suddenly spikes and generation lags, what initially happens to grid frequency?',
       choices: ['It stays at 60 Hz — the grid auto-corrects instantly', 'It drops below 60 Hz', 'It rises above 60 Hz', 'It oscillates between 50 and 70 Hz'],
-      correct: 1, why: 'When demand exceeds supply, the spinning generators slow down slightly to compensate, dropping frequency. Operators must add generation (or shed load) within seconds. Batteries excel at this because they respond in milliseconds.' },
+      correct: 1, why: 'When demand exceeds supply, synchronized rotating machines initially slow and frequency tends to drop. Controls, reserves, storage, and sometimes load shedding respond on different timescales.' },
     { id: 'q12', icon: '🦆',
       stem: 'In a high-solar grid like California\'s, the daytime "net load" curve looks like a duck — solar floods the grid mid-day, then drops out at sunset just as demand peaks. What is this called and what fixes it?',
       choices: ['The "swan song" — fixed by more nuclear', 'The "duck curve" — fixed by storage, demand response, and load-shifting', 'The "death spiral" — fixed by removing solar', 'The "sunset wall" — fixed by more transmission'],
@@ -506,7 +506,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
     { term: 'COP (Coefficient of Performance)', def: 'For heat pumps: heat moved per unit of electricity used. Maine ground-source units typically run COP 3–5 — 3 to 5 units of heat for every unit of electricity.' },
     { term: 'Round-trip efficiency', def: 'For storage: energy you get OUT divided by energy you put IN. Li-ion: 85–95%. Pumped hydro: 75–85%. Green hydrogen: 30–40%.' },
     { term: 'Behind-the-meter', def: 'Generation or storage on the customer side of the utility meter (your rooftop solar, your home battery). The utility doesn\'t see the kWh — only the net.' },
-    { term: 'Frequency regulation', def: 'Sub-second adjustments to keep the grid at exactly 60 Hz. Batteries are uniquely good at this — they respond in milliseconds.' },
+    { term: 'Frequency regulation', def: 'Rapid adjustments that keep grid frequency close to its nominal value. Batteries can respond quickly, alongside other controls and resources.' },
     { term: 'Cost-per-kWh-stored', def: 'For batteries: $/kWh of capacity. Li-ion fell from ~$1100/kWh (2010) to ~$140/kWh (2024) — driving the storage boom.' }
   ];
 
@@ -1687,7 +1687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         { id: 'siteSelector', icon: '🕵️',  label: __alloT('stem.renewables.site_selector', 'Site Selector'),     desc: __alloT('stem.renewables.10_location_profiles_for_each_pick_the', '10 location profiles. For each, pick the best renewable from 8 options (rooftop solar / utility solar / onshore wind / offshore wind / hydro / geothermal / wave-tidal / biomass). Maine + global scenarios; tests siting reasoning.') },
         { id: 'resources',   icon: '📚',     label: __alloT('stem.renewables.resources', 'Resources'),         desc: __alloT('stem.renewables.every_org_cited_in_this_tool', 'Every org cited in this tool.') },
         // Inquiry-pattern widget (H7b'' validated design)
-        { id: 'gridBalance', icon: '⚡',     label: __alloT('stem.renewables.grid_balance_discovery', 'Grid balance discovery'), desc: __alloT('stem.renewables.adjust_generation_demand_storage_disco', 'Adjust generation, demand, storage. Discover the 3 regimes (blackout/balanced/curtailed). No score, no reveal — open inquiry.') }
+        { id: 'gridBalance', icon: '⚡',     label: __alloT('stem.renewables.grid_balance_discovery', 'Grid balance discovery'), desc: __alloT('stem.renewables.adjust_generation_demand_storage_disco', 'Compare generation, demand, storage duration, and state of charge across three classroom states.') }
       ];
 
       function renderMenu() {
@@ -1741,7 +1741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.6 } }, suggestion.body)
           );
         }
-        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: '62.5rem', width: '100%', margin: '0 auto', color: T.text } },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 10 } },
             h('h2', { style: { margin: 0, fontSize: 22 } }, __alloT('stem.renewables.renewables_lab', '⚡ Renewables Lab')),
             h('div', { style: { fontSize: 12, color: T.dim } },
@@ -2776,7 +2776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           for (var i = 0; i < 5; i++) dots += i < n ? '●' : '○';
           return dots;
         }
-        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: '62.5rem', width: '100%', margin: '0 auto', color: T.text } },
           backBar('📊 Compare All Sources'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.first_what_is_capacity_factor_and_why_', 'First — what is "capacity factor" and why does it matter?')),
@@ -4646,7 +4646,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.the_bedrock_fact_about_electricity', 'The bedrock fact about electricity')),
             h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
               h('strong', { style: { color: T.accentHi } }, __alloT('stem.renewables.generation_must_equal_consumption_ever', 'Generation must equal consumption every single second.')),
-              __alloT('stem.renewables.electricity_in_the_grid_travels_at_the', ' Electricity in the grid travels at ~⅔ the speed of light and there is essentially no buffer. If a power plant trips offline, frequency drops within seconds; if a city loses load, frequency rises. Grid operators run a perpetual real-time balancing act.')),
+              __alloT('stem.renewables.electricity_in_the_grid_travels_at_the', ' Electrical disturbances propagate quickly, while the bulk network itself stores little usable energy. Inertia, storage, responsive generation, demand response, and protection systems help operators balance supply and demand across multiple timescales.')),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
               __alloT('stem.renewables.for_most_of_grid_history_balancing_mea', 'For most of grid history, "balancing" meant adjusting a few large dispatchable plants. As wind + solar grow, the grid is becoming a million-piece orchestra instead of a string quartet — and '),
               h('strong', { style: { color: T.text } }, __alloT('stem.renewables.smart_grid_technology', 'smart-grid technology')),
@@ -4946,7 +4946,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       // TEACHER GUIDE
       // ─────────────────────────────────────────
       function renderTeacher() {
-        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: '62.5rem', width: '100%', margin: '0 auto', color: T.text } },
           backBar('🎓 Teacher Guide'),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -5051,7 +5051,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             })
           );
         }
-        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { style: { padding: 20, maxWidth: '62.5rem', width: '100%', margin: '0 auto', color: T.text } },
           backBar('🌱 Take Action'),
           h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.renewables.from_knowledge_to_agency', 'From knowledge to agency')),
@@ -5339,10 +5339,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
       // === H7b'' inquiry widget: grid balance discovery ===
       function renderGridBalance() {
-        var iq = d.gridHunt || { gen: 1000, demand: 1000, storage: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var iq = d.gridHunt || { gen: 1000, demand: 1000, storage: 200, duration: 2, soc: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) { upd('gridHunt', Object.assign({}, iq, patch)); }
         var imbalance = iq.gen - iq.demand;
-        var bufferCapacity = iq.storage * 10; // MW absorbed/released
+        var storageDuration = Math.max(0.5, iq.duration || 2);
+        var storageSocPct = iq.soc != null ? iq.soc : 50;
+        var storagePowerMW = iq.storage / storageDuration;
+        var storageCanAct = imbalance < 0 ? storageSocPct > 0 : imbalance > 0 ? storageSocPct < 100 : true;
+        var bufferCapacity = storageCanAct ? storagePowerMW : 0;
         var absImbalance = Math.abs(imbalance);
         var bufferedImbalance = Math.max(0, absImbalance - bufferCapacity);
         var state;
@@ -5350,54 +5354,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         else if (imbalance < 0) state = 'blackout';
         else state = 'curtailed';
         var stateMeta = {
-          balanced:  { label: __alloT('stem.renewables.grid_balanced', '🟢 Grid balanced'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.renewables.supply_meets_demand_within_buffer_tole', 'Supply meets demand within buffer tolerance. Frequency stable.') },
-          blackout:  { label: __alloT('stem.renewables.brownout_blackout_risk', '🔴 Brownout / blackout risk'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.renewables.demand_exceeds_generation_storage_disc', 'Demand exceeds generation + storage discharge. Frequency falling.') },
-          curtailed: { label: __alloT('stem.renewables.excess_generation_curtailed', '🟡 Excess generation curtailed'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.renewables.generation_exceeds_demand_storage_abso', 'Generation exceeds demand + storage absorption. Renewables shut off.') }
+          balanced:  { label: __alloT('stem.renewables.grid_balanced', '🟢 Within modeled balance band'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.renewables.supply_meets_demand_within_buffer_tole', 'Residual imbalance is within this activity\'s arbitrary 50 MW band; no frequency is calculated.') },
+          blackout:  { label: __alloT('stem.renewables.brownout_blackout_risk', '🔴 Modeled demand shortage'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.renewables.demand_exceeds_generation_storage_disc', 'Modeled demand shortage remains after the available storage power is applied.') },
+          curtailed: { label: __alloT('stem.renewables.excess_generation_curtailed', '🟡 Modeled supply surplus'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.renewables.generation_exceeds_demand_storage_abso', 'Modeled supply surplus remains after available charging power; real operators may curtail, export, or shift demand.') }
         }[state];
         function logObs() {
-          setIQ({ log: (iq.log || []).concat([{ g: iq.gen, d: iq.demand, s: iq.storage, st: state }]).slice(-8) });
+          setIQ({ log: (iq.log || []).concat([{ g: iq.gen, d: iq.demand, s: iq.storage, p: Math.round(storagePowerMW), soc: storageSocPct, st: state }]).slice(-8) });
         }
         return h('div', { className: 'p-4 rounded-xl bg-white border border-emerald-200 shadow-sm' },
           h('h3', { className: 'text-sm font-black text-emerald-700 mb-1' }, __alloT('stem.renewables.grid_balance_discovery_2', '⚡ Grid balance discovery')),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
-            'You are a grid operator. Adjust generation, demand, and storage capacity. The grid will show one of three discrete states: balanced / blackout / curtailed. No score, no reveal — sweep and notice.'),
-          h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
+            'Compare generation and demand with a simplified storage system. Energy capacity (MWh), duration (h), and state of charge determine available power (MW). The three labels are classroom categories, not grid forecasts.'),
+          h('div', { className: 'mb-3 p-3 rounded-lg text-center', role: 'status', 'aria-live': 'polite', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
             h('div', { className: 'text-lg font-black', style: { color: stateMeta.color } }, stateMeta.label),
             h('div', { className: 'text-[11px] text-slate-700 mt-1' }, stateMeta.desc)
           ),
-          h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
+          h('div', { className: 'mb-3 p-2 rounded bg-slate-50 border border-slate-200 text-[11px] text-slate-700' },
+            h('strong', null, 'Storage rating: '), Math.round(storagePowerMW) + ' MW = ' + iq.storage + ' MWh / ' + storageDuration + ' h. ' +
+            'Current stored energy: ' + (iq.storage * storageSocPct / 100).toFixed(1) + ' MWh at ' + storageSocPct + '% state of charge.'),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-5 gap-3 mb-3' },
             [
-              { key: 'gen',     label: __alloT('stem.renewables.generation_mw', 'Generation (MW)'), val: iq.gen,     min: 0,    max: 2500, step: 50 },
-              { key: 'demand',  label: __alloT('stem.renewables.demand_mw', 'Demand (MW)'),     val: iq.demand,  min: 0,    max: 2500, step: 50 },
-              { key: 'storage', label: __alloT('stem.renewables.storage_mwh', 'Storage (MWh)'),   val: iq.storage, min: 0,    max: 200,  step: 5  }
+              { key: 'gen',      label: __alloT('stem.renewables.generation_mw', 'Generation (MW)'), val: iq.gen, min: 0, max: 2500, step: 50 },
+              { key: 'demand',   label: __alloT('stem.renewables.demand_mw', 'Demand (MW)'), val: iq.demand, min: 0, max: 2500, step: 50 },
+              { key: 'storage',  label: 'Storage energy capacity (MWh)', val: iq.storage, min: 0, max: 800, step: 25 },
+              { key: 'duration', label: 'Storage duration at rated power (h)', val: storageDuration, min: 0.5, max: 8, step: 0.5 },
+              { key: 'soc',      label: 'State of charge (%)', val: storageSocPct, min: 0, max: 100, step: 5 }
             ].map(function(s) {
               return h('div', { key: s.key },
                 h('label', { htmlFor: 'gb-' + s.key, className: 'block text-[11px] font-bold text-slate-700 mb-1' },
                   s.label + ': ', h('span', { className: 'font-mono text-emerald-700' }, s.val)),
                 h('input', { id: 'gb-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
-                  onChange: function(e) { var p = {}; p[s.key] = parseInt(e.target.value, 10); setIQ(p); },
+                  onChange: function(e) { var p = {}; p[s.key] = parseFloat(e.target.value); setIQ(p); },
                   className: 'w-full', 'aria-label': s.label }));
             })
           ),
           h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
             h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.renewables.log', '📋 Log')),
-            h('button', { onClick: function() { setIQ({ gen: 1000, demand: 1000, storage: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+            h('button', { onClick: function() { setIQ({ gen: 1000, demand: 1000, storage: 200, duration: 2, soc: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
               className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.renewables.reset_2', '↺ Reset')),
             (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
           ),
-          (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-3' },
+          (iq.log || []).length > 0 && h('table', { className: 'text-[10px] w-full border-collapse text-slate-700 mb-3', 'aria-label': 'Logged grid balance comparisons' },
             h('thead', null, h('tr', { className: 'bg-slate-100' },
-              ['gen MW', 'demand MW', 'storage MWh', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, className: 'px-1 border border-slate-200 text-left' }, c); }))),
+              ['gen MW', 'demand MW', 'energy MWh', 'power MW', 'SoC %', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', className: 'px-1 border border-slate-200 text-left' }, c); }))),
             h('tbody', null, iq.log.map(function(o, idx) {
               return h('tr', { key: 'lr' + idx },
                 h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.g),
                 h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.d),
                 h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.s),
+                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.p != null ? o.p : '—'),
+                h('td', { className: 'px-1 border border-slate-200 font-mono' }, o.soc != null ? o.soc : '—'),
                 h('td', { className: 'px-1 border border-slate-200' }, o.st));
             }))
           ),
           h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-            placeholder: __alloT('stem.renewables.hypothesis_free_text_how_much_storage_', 'Hypothesis (free text): How much storage offsets a given gen-demand mismatch?'),
+            placeholder: __alloT('stem.renewables.hypothesis_free_text_how_much_storage_', 'Hypothesis: How do energy capacity, duration, and state of charge limit the power available for a mismatch?'),
             className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
             className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' },
@@ -5406,8 +5417,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('ul', { className: 'list-disc pl-5 space-y-1' },
               h('li', null, __alloT('stem.renewables.hold_two_sliders_steady_move_the_third', 'Hold two sliders steady. Move the third. Watch.')),
               h('li', null, __alloT('stem.renewables.find_two_settings_that_produce_the_sam', 'Find two settings that produce the same state. What do they share?')),
-              h('li', null, __alloT('stem.renewables.renewables_are_intermittent_investigat', 'Renewables are intermittent. Investigate how storage size affects the band.')),
-              h('li', null, __alloT('stem.renewables.real_grids_run_at_1_frequency_why_migh', 'Real grids run at ±1% frequency. Why might that be?')))),
+              h('li', null, __alloT('stem.renewables.renewables_are_intermittent_investigat', 'Wind and solar output are variable. Investigate how storage power and energy ratings affect the modeled band.')),
+              h('li', null, __alloT('stem.renewables.real_grids_run_at_1_frequency_why_migh', 'Real grids operate near a nominal frequency within tight reliability limits. What controls help keep them there?')))),
           h('div', { className: 'p-3 rounded bg-emerald-50 border border-emerald-200' },
             h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
@@ -5416,7 +5427,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               placeholder: __alloT('stem.renewables.explain_how_generation_demand_and_stor', 'Explain how generation, demand, and storage interact to determine grid state.'),
               className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
           h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
-            __alloT('stem.renewables.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no numeric stability score; no reveal — discourages optimization-gaming.'))
+            __alloT('stem.renewables.design_note_discrete_3_state_outcome_n', 'Model limit: one-instant classroom classifier with an arbitrary 50 MW tolerance. It omits network constraints, reserves, ramp rates, losses, state evolution, market dispatch, protection systems, and actual frequency dynamics; labels are prompts, not predictions.'))
         );
       }
 

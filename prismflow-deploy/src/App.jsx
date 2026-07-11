@@ -253,7 +253,7 @@ _applyLanSessionAdapter(); // Boot wrap; re-applied after every _alloShimInit up
 // doc/setDoc/updateDoc/getDoc/deleteDoc/onSnapshot/collection bindings reroute
 // (1) the session doc artifacts/{appId}/public/data/sessions/{code} and
 // (2) WebRTC signaling docs artifacts/{appId}/public/data/{*-signaling}/{code}/peers/{uid}
-// to the mailbox's v6 doc store (dget/dset/dpatch/ddel — see
+// to the mailbox's v7 doc store (dget/dset/dpatch/ddel — see
 // apps_script/session_mailbox/Code.gs). Every session call site and CDN module
 // (window.__alloFirebase) inherits the reroute, so polls, quiz, pictionary and
 // the whole SessionModal run UNCHANGED over the mailbox. onSnapshot is emulated
@@ -273,6 +273,7 @@ function _alloMbInstallBridge(cfg) {
     code,
     secret: String(cfg.secret || ''),
     admin: String(cfg.admin || ''),
+    participant: String(cfg.participant || ''),
     uid: String(cfg.uid || ('T-' + Math.random().toString(36).slice(2, 10))),
     isTeacher: !!cfg.isTeacher,
     watchers: new Map(),      // path token -> Set({cb, errCb, ref})
@@ -371,7 +372,8 @@ async function _alloMbDocCall(payload, useRetry) {
     err.code = 'allo/mailbox-bridge-missing';
     throw err;
   }
-  const body = Object.assign({ c: st.code, k: st.secret }, payload);
+  const auth = st.isTeacher ? { admin: st.admin } : { uid: st.uid, pt: st.participant };
+  const body = Object.assign({ c: st.code }, auth, payload);
   return useRetry ? _alloMailboxCallWithRetry(st.url, body) : _alloMailboxCall(st.url, body);
 }
 // Teacher adopt-on-create: the FIRST session-doc setDoc (from the standard
@@ -476,7 +478,7 @@ async function _alloMbProcessDocs(st, docsArr) {
       // session doc from its last known state; students just keep waiting.
       if (entry.p === 's' && st.isTeacher && st.lastSessionDoc && Date.now() - st.reseedAt > 8000) {
         st.reseedAt = Date.now();
-        _alloMbDocCall({ a: 'dset', p: 's', d: st.lastSessionDoc }, true)
+        _alloMbDocCall({ a: 'dset', p: 's', d: st.lastSessionDoc, xw: 0 }, true)
           .then((r) => { if (_alloMbBridgeState === st && r && r.w) st.docs.set('s', { w: r.w, d: st.lastSessionDoc, missing: false }); })
           .catch((e) => console.warn('[MB bridge] session doc re-seed failed', e && e.message));
       }
@@ -559,7 +561,7 @@ async function _alloMbPumpTick(st) {
       return;
     }
     if (codeStr.includes('bad-action')) {
-      // Pre-v6 mailbox script: no doc store. Stop pumping quietly — the
+      // Pre-v7 mailbox script: secure participant protocol unavailable. Stop pumping quietly — the
       // legacy pack/presence flows continue to carry the session.
       st.pumpBusy = false;
       return;
@@ -1242,25 +1244,26 @@ const ALLO_MB_SCRIPT_SOURCE = `/**
  * AlloFlow's servers and no student accounts are involved.
  *
  * What it stores, where:
- *  - Live-session messages: in-memory script cache only (CacheService),
- *    auto-expire <= 45 minutes; session markers <= 6 hours. Never written to
- *    Drive, never persisted.
- *  - Homework packs: single JSON files in a Drive folder named
- *    "AlloFlow Class Mailbox" in the OWNER's Drive. Delete them any time.
+ *  - Live messages and documents: bounded Apps Script CacheService entries,
+ *    eligible for early eviction and expiring within 45 minutes to 6 hours.
+ *  - Session markers/secrets: Script Properties for at most 6 hours so a
+ *    teacher refresh can recover a class after cache eviction.
+ *  - Homework packs: one small manifest plus chunk files in the owner's
+ *    "AlloFlow Class Mailbox" Drive folder. Delete them any time.
  *
- * Access model (capability tokens, no logins):
- *  - admin token: created once via {a:'claim'} the first time AlloFlow
- *    connects, before the URL is ever shared with students. Required to open
- *    live sessions and upload packs. To reset: Apps Script editor > Project
- *    Settings > Script properties > delete "admin", then reconnect.
- *  - session secret / pack secret: random per session/pack, carried only in
- *    the teacher's QR. Required to send/receive/fetch.
+ * Access model (capability tokens, no student logins):
+ *  - admin token: required for teacher broadcasts, full class state, session
+ *    lifecycle, and pack management. It never appears in a student QR.
+ *  - session join secret: carried in the QR and accepted only by {a:'join'}.
+ *    The server returns a signed participant token bound to a random uid.
+ *  - participant token: permits student-up messages, privacy-filtered reads,
+ *    own roster/answer/reaction/vote updates, and own signaling only.
  *
  * All requests are POSTed as text/plain JSON (avoids CORS preflight, which
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 6;
+var VERSION = 7;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -1270,8 +1273,14 @@ var MAX_DGET_DOCS = 12;                 // watched docs per poll
 var MAX_PACK_CHARS = 8 * 1024 * 1024;   // ~8MB assembled pack ceiling
 var GET_PART_CHARS = 150 * 1024;        // pack download slice size
 var MAX_RECV_MSGS = 50;                 // per box per poll
-var RATE_LIMIT_MSGS = 900;              // sends per box per ~minute (rolling cache window)
+var RATE_LIMIT_MSGS = 900;              // teacher sends per box per ~minute
 var RATE_LIMIT_TTL_SEC = 60;
+var MESSAGE_RING_SIZE = 240;             // hard bound per box; prevents cache-wide eviction
+var PARTICIPANT_READS_PER_MIN = 120;
+var PARTICIPANT_WRITES_PER_MIN = 120;
+var SESSION_READS_PER_MIN = 1800;
+var MAX_PATCH_FIELDS = 60;
+var MAX_JSON_DEPTH = 12;
 var FOLDER_NAME = 'AlloFlow Class Mailbox';
 
 function doGet() {
@@ -1294,7 +1303,36 @@ function out(obj) {
 
 function isToken(v, min, max) {
   var s = String(v || '');
-  return s.length >= (min || 10) && s.length <= (max || 64) && /^[A-Za-z0-9_-]+$/.test(s);
+  return s.length >= (min || 10) && s.length <= (max || 96) && /^[A-Za-z0-9_-]+$/.test(s);
+}
+
+function newToken() {
+  return Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
+}
+
+function participantToken(admin, code, uid, secret) {
+  var bytes = Utilities.computeHmacSha256Signature(code + '|' + uid + '|' + secret, admin);
+  return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/g, '');
+}
+
+function requestActor(p, code, secret, admin) {
+  if (admin && String(p.admin || '') === admin) return { role: 'teacher', uid: 'teacher' };
+  var uid = String(p.uid || '');
+  var pt = String(p.pt || '');
+  if (!/^mb-[A-Za-z0-9_-]{8,48}$/.test(uid) || !isToken(pt, 20, 96)) return null;
+  var expected = participantToken(admin, code, uid, secret);
+  return pt === expected ? { role: 'participant', uid: uid } : null;
+}
+
+function rateCheck(cache, key, limit) {
+  var used = (parseInt(cache.get(key), 10) || 0) + 1;
+  if (used > limit) return false;
+  cache.put(key, String(used), RATE_LIMIT_TTL_SEC);
+  return true;
+}
+
+function actorRateKey(code, actor, kind) {
+  return 'r:' + code + ':' + kind + ':' + (actor.role === 'teacher' ? 't' : actor.uid.slice(0, 32));
 }
 
 function handle(p) {
@@ -1307,7 +1345,7 @@ function handle(p) {
     if (!lock.tryLock(5000)) return out({ ok: false, e: 'busy' });
     try {
       if (props.getProperty('admin')) return out({ ok: false, e: 'claimed' });
-      var token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
+      var token = newToken();
       props.setProperty('admin', token);
       saveTokenNote(token);
       return out({ ok: true, admin: token, t: Date.now() });
@@ -1326,52 +1364,71 @@ function handle(p) {
     return out({ ok: true, admin: !!isAdmin, claimed: !!admin, t: Date.now() });
   }
 
+  if (a === 'rotateadmin') {
+    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    pruneExpiredSessions(props);
+    var active = listSessions(props);
+    if (active.length && !p.force) return out({ ok: false, e: 'sessions-active', count: active.length });
+    if (active.length) closeAllSessions(cache, props);
+    var rotated = newToken();
+    props.setProperty('admin', rotated);
+    saveTokenNote(rotated);
+    return out({ ok: true, admin: rotated, t: Date.now() });
+  }
+  if (a === 'closeall') {
+    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    return out({ ok: true, closed: closeAllSessions(cache, props), t: Date.now() });
+  }
+
   if (a === 'open') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
     var code = String(p.c || '').toUpperCase();
     if (!/^[A-Z0-9]{4,8}$/.test(code) || !isToken(p.k)) return out({ ok: false, e: 'bad-request' });
+    // A reused code must not resurface messages, documents, or signaling from
+    // a previous class that happened to use the same short code.
+    clearSessionEphemeral(cache, code);
     cache.put('s:' + code, String(p.k), SESSION_TTL_SEC);
-    // A reused code must not resurface a previous class's session document.
-    cache.remove('d:' + code + ':s');
-    cache.remove('dw:' + code);
-    // Durable copy: CacheService is best-effort and can evict a live session
-    // marker under memory pressure, kicking the whole class out mid-lesson.
-    // PropertiesService survives; lookups rewarm the cache from it.
     props.setProperty('sess_' + code, String(p.k) + '|' + Date.now());
     pruneExpiredSessions(props);
     return out({ ok: true, t: Date.now() });
+  }
+
+  if (a === 'join') {
+    var jcode = String(p.c || '').toUpperCase();
+    var jsecret = sessionSecretFor(jcode, cache, props);
+    if (!jsecret) return out({ ok: false, e: 'no-session' });
+    if (String(p.k || '') !== jsecret) return out({ ok: false, e: 'denied' });
+    if (!rateCheck(cache, 'r:' + jcode + ':join', 120)) return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+    var juid = 'mb-' + Utilities.getUuid().replace(/-/g, '').slice(-20);
+    return out({ ok: true, uid: juid, pt: participantToken(admin, jcode, juid, jsecret), t: Date.now() });
   }
 
   if (a === 'send' || a === 'recv' || a === 'end') {
     var sc = String(p.c || '').toUpperCase();
     var secret = sessionSecretFor(sc, cache, props);
     if (!secret) return out({ ok: false, e: 'no-session' });
-    if (String(p.k || '') !== secret) return out({ ok: false, e: 'denied' });
-    if (a === 'send') return send(cache, sc, p);
-    if (a === 'recv') return recv(cache, sc, p);
-    cache.remove('s:' + sc);
-    cache.remove('d:' + sc + ':s');
-    cache.remove('dw:' + sc);
-    try { props.deleteProperty('sess_' + sc); } catch (e2) {}
-    return out({ ok: true });
+    var actor = requestActor(p, sc, secret, admin);
+    if (!actor) return out({ ok: false, e: 'denied' });
+    if (a === 'end') {
+      if (actor.role !== 'teacher') return out({ ok: false, e: 'not-admin' });
+      closeSession(cache, props, sc);
+      return out({ ok: true });
+    }
+    if (a === 'send') return send(cache, sc, p, actor);
+    return recv(cache, sc, p, actor);
   }
 
-  // Session document store (v6): a tiny Firestore stand-in scoped to one live
-  // session, so the SAME session UI (roster, polls, quiz, pictionary
-  // signaling) runs unchanged over the mailbox. Documents are JSON envelopes
-  // {w: version, d: data} under short path tokens the client chooses ('s' =
-  // the session doc, 'g:<sig>:<uid>' = a signaling doc, 'c:<sig>' = a
-  // collection index of {id: version}). dget doubles as the delta poll: a doc
-  // whose version still matches the caller's known one comes back without its
-  // body. Everything lives in CacheService only (live-session posture — same
-  // as boxes); the teacher client re-seeds the session doc after an eviction.
+  // Session document store (v7): teacher and participant capabilities are
+  // distinct. Participants see a privacy-filtered session view and may write
+  // only their own roster/answer/reaction/vote/signaling surfaces.
   if (a === 'dget' || a === 'dset' || a === 'dpatch' || a === 'ddel') {
     var dcode = String(p.c || '').toUpperCase();
     var dsecret = sessionSecretFor(dcode, cache, props);
     if (!dsecret) return out({ ok: false, e: 'no-session' });
-    if (String(p.k || '') !== dsecret) return out({ ok: false, e: 'denied' });
-    if (a === 'dget') return docGet(cache, dcode, p);
-    return docWrite(cache, dcode, a, p);
+    var dactor = requestActor(p, dcode, dsecret, admin);
+    if (!dactor) return out({ ok: false, e: 'denied' });
+    if (a === 'dget') return docGet(cache, dcode, p, dactor);
+    return docWrite(cache, dcode, a, p, dactor);
   }
 
   // Server-side session recovery (v5): the durable sess_<code> markers ARE
@@ -1401,7 +1458,7 @@ function handle(p) {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
     return putPack(cache, p);
   }
-  if (a === 'getpack') return getPack(p);
+  if (a === 'getpack') return getPack(cache, p);
   if (a === 'delpack') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
     return delPack(p);
@@ -1412,6 +1469,55 @@ function handle(p) {
 function cleanBox(v) {
   var b = String(v || '');
   return (b === 'up' || b === 'down') ? b : '';
+}
+
+function listSessions(props) {
+  var sessions = [];
+  try {
+    var all = props.getProperties();
+    Object.keys(all).forEach(function(key) {
+      if (key.indexOf('sess_') !== 0) return;
+      var val = all[key];
+      var sep = val.indexOf('|');
+      sessions.push({ c: key.slice(5), k: sep > -1 ? val.slice(0, sep) : val, at: sep > -1 ? (parseInt(val.slice(sep + 1), 10) || 0) : 0 });
+    });
+  } catch (e) {}
+  sessions.sort(function(a, b) { return b.at - a.at; });
+  return sessions;
+}
+
+function removeCacheKeys(cache, keys) {
+  if (!keys.length) return;
+  if (typeof cache.removeAll === 'function') cache.removeAll(keys);
+  else keys.forEach(function(key) { cache.remove(key); });
+}
+
+function clearSessionEphemeral(cache, code) {
+  var keys = ['d:' + code + ':s', 'dw:' + code, 'n:' + code + ':up', 'n:' + code + ':down'];
+  ['up', 'down'].forEach(function(box) {
+    for (var i = 0; i < MESSAGE_RING_SIZE; i++) keys.push('m:' + code + ':' + box + ':' + i);
+  });
+  ['signaling', 'pictionary-signaling', 'quiz-signaling'].forEach(function(sig) {
+    var col = 'c:' + sig;
+    var env = readDocEnvelope(cache, code, col);
+    if (env && env.d && typeof env.d === 'object') {
+      Object.keys(env.d).forEach(function(uid) { keys.push('d:' + code + ':g:' + sig + ':' + uid); });
+    }
+    keys.push('d:' + code + ':' + col);
+  });
+  removeCacheKeys(cache, keys);
+}
+
+function closeSession(cache, props, code) {
+  clearSessionEphemeral(cache, code);
+  cache.remove('s:' + code);
+  try { props.deleteProperty('sess_' + code); } catch (e) {}
+}
+
+function closeAllSessions(cache, props) {
+  var sessions = listSessions(props);
+  sessions.forEach(function(s) { closeSession(cache, props, s.c); });
+  return sessions.length;
 }
 
 // Session secret lookup: cache first, durable PropertiesService fallback
@@ -1444,31 +1550,63 @@ function pruneExpiredSessions(props) {
   } catch (e) { /* best-effort */ }
 }
 
-function send(cache, code, p) {
+function normalizeParticipantMessage(value, uid) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  if (value.kind === 'student') {
+    return {
+      kind: 'student',
+      uid: uid,
+      name: String(value.name || 'Student').slice(0, 40),
+      hand: value.hand === true
+    };
+  }
+  if (value.kind === 'rtc' && value.sdp && value.sdp.type === 'offer'
+      && typeof value.sdp.sdp === 'string' && value.sdp.sdp.length <= 70000) {
+    return { kind: 'rtc', uid: uid, sdp: { type: 'offer', sdp: value.sdp.sdp } };
+  }
+  return null;
+}
+function send(cache, code, p, actor) {
   var box = cleanBox(p.box);
   if (!box) return out({ ok: false, e: 'bad-box' });
-  var text = JSON.stringify({ f: String(p.from || '').slice(0, 60), t: Date.now(), v: p.v === undefined ? null : p.v });
-  if (text.length > MAX_MSG_CHARS) return out({ ok: false, e: 'too-big' });
+  if ((actor.role === 'teacher' && box !== 'down') || (actor.role === 'participant' && box !== 'up')) {
+    return out({ ok: false, e: 'denied' });
+  }
+  var from = actor.role === 'teacher' ? 'teacher' : actor.uid;
+  var value = p.v === undefined ? null : p.v;
+  if (actor.role === 'participant') {
+    value = normalizeParticipantMessage(value, actor.uid);
+    if (!value) return out({ ok: false, e: 'denied' });
+  }
+  if (!validateJsonValue(value, 0)) return out({ ok: false, e: 'bad-data' });
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) return out({ ok: false, e: 'busy' });
   try {
-    // Rolling ~1-minute flood cap per box: a leaked QR lets a student write
-    // to this session, but not drown it. Normal classroom load (heartbeats,
-    // hand-raises, chunked pushes, RTC signaling) stays far below this.
-    var rKey = 'r:' + code + ':' + box;
-    var used = (parseInt(cache.get(rKey), 10) || 0) + 1;
-    if (used > RATE_LIMIT_MSGS) return out({ ok: false, e: 'rate-limited' });
-    cache.put(rKey, String(used), RATE_LIMIT_TTL_SEC);
+    var limit = actor.role === 'teacher' ? RATE_LIMIT_MSGS : PARTICIPANT_WRITES_PER_MIN;
+    if (!rateCheck(cache, actorRateKey(code, actor, 'send'), limit)) {
+      return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+    }
     var nKey = 'n:' + code + ':' + box;
     var next = (parseInt(cache.get(nKey), 10) || 0) + 1;
-    cache.put('m:' + code + ':' + box + ':' + next, text, MESSAGE_TTL_SEC);
+    var text = JSON.stringify({ i: next, f: from, t: Date.now(), v: value });
+    if (text.length > MAX_MSG_CHARS) return out({ ok: false, e: 'too-big' });
+    var slot = next % MESSAGE_RING_SIZE;
+    cache.put('m:' + code + ':' + box + ':' + slot, text, MESSAGE_TTL_SEC);
     cache.put(nKey, String(next), SESSION_TTL_SEC);
     return out({ ok: true, i: next });
   } finally { lock.releaseLock(); }
 }
 
-function recv(cache, code, p) {
-  var boxes = String(p.box || '').split(',');
+function recv(cache, code, p, actor) {
+  var requested = String(p.box || '');
+  if ((actor.role === 'teacher' && requested !== 'up') || (actor.role === 'participant' && requested !== 'down')) {
+    return out({ ok: false, e: 'denied' });
+  }
+  if (!rateCheck(cache, actorRateKey(code, actor, 'read'), PARTICIPANT_READS_PER_MIN)
+      || !rateCheck(cache, 'r:' + code + ':read:all', SESSION_READS_PER_MIN)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
+  var boxes = requested.split(',');
   var sinceList = String(p.since || '').split(',');
   var result = {};
   for (var bi = 0; bi < boxes.length && bi < 4; bi++) {
@@ -1476,9 +1614,9 @@ function recv(cache, code, p) {
     if (!box) continue;
     var since = parseInt(sinceList[bi], 10) || 0;
     var latest = parseInt(cache.get('n:' + code + ':' + box), 10) || 0;
-    if (latest - since > 400) since = latest - 400; // fast-forward long-dead cursors
+    if (latest - since > MESSAGE_RING_SIZE) since = latest - MESSAGE_RING_SIZE;
     var keys = [];
-    for (var i = since + 1; i <= latest && keys.length < MAX_RECV_MSGS; i++) keys.push('m:' + code + ':' + box + ':' + i);
+    for (var i = since + 1; i <= latest && keys.length < MAX_RECV_MSGS; i++) keys.push('m:' + code + ':' + box + ':' + (i % MESSAGE_RING_SIZE));
     var found = keys.length ? cache.getAll(keys) : {};
     var msgs = [];
     var cursor = since;
@@ -1486,7 +1624,7 @@ function recv(cache, code, p) {
       cursor = since + 1 + j;
       var raw = found[keys[j]];
       if (!raw) continue; // expired gap
-      try { msgs.push([cursor, JSON.parse(raw)]); } catch (err2) {}
+      try { var parsed = JSON.parse(raw); if (parsed.i === cursor) msgs.push([cursor, parsed]); } catch (err2) {}
     }
     result[box] = { n: Math.max(cursor, since), m: msgs, latest: latest };
   }
@@ -1496,15 +1634,60 @@ function recv(cache, code, p) {
   // request volume. Old clients do not send ps; old servers ignore it and
   // clients fall back to their own dget pump. NOTE: keep backticks out of
   // this file — it ships embedded in the app as a template literal.
-  if (Array.isArray(p.ps) && p.ps.length) response.docs = collectDocEntries(cache, code, p.ps);
+  if (Array.isArray(p.ps) && p.ps.length) {
+    if (!canReadDocEntries(p.ps, actor)) return out({ ok: false, e: 'denied' });
+    response.docs = collectDocEntries(cache, code, p.ps, actor);
+  }
   return out(response);
 }
 
-// ── Session document store (v6) ─────────────────────────────────────────────
+// ── Session document store (v7) ─────────────────────────────────────────────
 
 function cleanDocPath(v) {
   var s = String(v || '');
   return /^[A-Za-z0-9_.:-]{1,80}$/.test(s) ? s : '';
+}
+
+function isReservedSegment(v) {
+  return v === '__proto__' || v === 'prototype' || v === 'constructor';
+}
+
+function validateJsonValue(value, depth) {
+  if (depth > MAX_JSON_DEPTH) return false;
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') return true;
+  if (typeof value === 'number') return isFinite(value);
+  if (Array.isArray(value)) {
+    if (value.length > 1000) return false;
+    for (var i = 0; i < value.length; i++) if (!validateJsonValue(value[i], depth + 1)) return false;
+    return true;
+  }
+  if (!value || typeof value !== 'object') return false;
+  var keys = Object.keys(value);
+  if (keys.length > 500) return false;
+  for (var j = 0; j < keys.length; j++) {
+    if (isReservedSegment(keys[j]) || keys[j].length > 120) return false;
+    if (!validateJsonValue(value[keys[j]], depth + 1)) return false;
+  }
+  return true;
+}
+
+function validatePatchUpdates(updates) {
+  if (!updates || typeof updates !== 'object' || Array.isArray(updates)) return false;
+  var keys = Object.keys(updates);
+  if (keys.length < 1 || keys.length > MAX_PATCH_FIELDS) return false;
+  for (var i = 0; i < keys.length; i++) {
+    var key = String(keys[i]);
+    var segs = key.split('.');
+    if (!key || segs.length > MAX_JSON_DEPTH) return false;
+    for (var j = 0; j < segs.length; j++) {
+      if (!segs[j] || segs[j].length > 80 || isReservedSegment(segs[j])) return false;
+    }
+    var value = updates[key];
+    if (value && typeof value === 'object' && value.__op === 'deleteField') {
+      if (Object.keys(value).length !== 1) return false;
+    } else if (!validateJsonValue(value, 0)) return false;
+  }
+  return true;
 }
 
 function readDocEnvelope(cache, code, p) {
@@ -1516,8 +1699,6 @@ function readDocEnvelope(cache, code, p) {
 function writeDocEnvelope(cache, code, p, env) {
   var text = JSON.stringify(env);
   if (text.length > MAX_DOC_CHARS) return false;
-  // The session doc lives as long as the session; signaling docs are
-  // handshake-transient and ride the message TTL.
   cache.put('d:' + code + ':' + p, text, p === 's' ? SESSION_TTL_SEC : MESSAGE_TTL_SEC);
   return true;
 }
@@ -1529,23 +1710,56 @@ function nextDocVersion(cache, code) {
   return w;
 }
 
-// Collection membership index: a doc at the collection's own path token whose
-// data is {childId: version}. Watching a collection = watching this doc.
-function bumpDocIndex(cache, code, col, id, w, removed) {
-  if (!col || !id) return;
-  var env = readDocEnvelope(cache, code, col);
-  if (!env || !env.d || typeof env.d !== 'object') env = { w: 0, d: {} };
-  if (removed) delete env.d[id];
-  else env.d[id] = w;
-  env.w = nextDocVersion(cache, code);
-  writeDocEnvelope(cache, code, col, env);
+function peerPathParts(tok) {
+  var parts = String(tok || '').split(':');
+  if (parts.length !== 3 || parts[0] !== 'g') return null;
+  if (!/^(?:[a-z0-9_-]+-)?signaling$/.test(parts[1])) return null;
+  if (!/^mb-[A-Za-z0-9_-]{8,48}$/.test(parts[2])) return null;
+  return { sig: parts[1], uid: parts[2], col: 'c:' + parts[1] };
 }
 
-// Firestore updateDoc parity: dot-separated paths address nested fields and
-// {__op:'deleteField'} removes one. Arrays are replaced wholesale, like
-// Firestore.
+function canReadDocPath(tok, actor) {
+  if (actor.role === 'teacher') return true;
+  if (tok === 's') return true;
+  var peer = peerPathParts(tok);
+  return !!peer && peer.uid === actor.uid;
+}
+
+function canReadDocEntries(entries, actor) {
+  if (!Array.isArray(entries) || entries.length > MAX_DGET_DOCS) return false;
+  for (var i = 0; i < entries.length; i++) {
+    var tok = cleanDocPath(entries[i] && entries[i].p);
+    if (!tok || !canReadDocPath(tok, actor)) return false;
+  }
+  return true;
+}
+
+function ownMap(map, uid) {
+  var outMap = {};
+  if (map && typeof map === 'object' && Object.prototype.hasOwnProperty.call(map, uid)) outMap[uid] = map[uid];
+  return outMap;
+}
+
+function projectSessionForParticipant(data, uid) {
+  var copy;
+  try { copy = JSON.parse(JSON.stringify(data || {})); } catch (e) { return {}; }
+  copy.participantCount = copy.roster && typeof copy.roster === 'object' ? Object.keys(copy.roster).length : 0;
+  copy.roster = ownMap(copy.roster, uid);
+  if (copy.quizState && typeof copy.quizState === 'object') {
+    copy.quizState.allResponses = ownMap(copy.quizState.allResponses, uid);
+    copy.quizState.responses = ownMap(copy.quizState.responses, uid);
+    copy.quizState.teams = ownMap(copy.quizState.teams, uid);
+  }
+  copy.bridgeReactions = ownMap(copy.bridgeReactions, uid);
+  if (copy.democracy && typeof copy.democracy === 'object') copy.democracy.votes = ownMap(copy.democracy.votes, uid);
+  if (copy.escapeRoomState && typeof copy.escapeRoomState === 'object') {
+    copy.escapeRoomState.teams = ownMap(copy.escapeRoomState.teams, uid);
+  }
+  return copy;
+}
+
 function applyDocUpdates(target, updates) {
-  Object.keys(updates || {}).forEach(function(key) {
+  Object.keys(updates).forEach(function(key) {
     var value = updates[key];
     var segs = String(key).split('.');
     var node = target;
@@ -1561,7 +1775,17 @@ function applyDocUpdates(target, updates) {
   return target;
 }
 
-function collectDocEntries(cache, code, entries) {
+function bumpDocIndex(cache, code, col, id, w, removed) {
+  if (!col || !id) return;
+  var env = readDocEnvelope(cache, code, col);
+  if (!env || !env.d || typeof env.d !== 'object') env = { w: 0, d: {} };
+  if (removed) delete env.d[id];
+  else env.d[id] = w;
+  env.w = nextDocVersion(cache, code);
+  writeDocEnvelope(cache, code, col, env);
+}
+
+function collectDocEntries(cache, code, entries, actor) {
   var docs = [];
   for (var i = 0; i < entries.length && i < MAX_DGET_DOCS; i++) {
     var tok = cleanDocPath(entries[i] && entries[i].p);
@@ -1569,62 +1793,149 @@ function collectDocEntries(cache, code, entries) {
     var known = parseInt(entries[i] && entries[i].w, 10) || 0;
     var env = readDocEnvelope(cache, code, tok);
     if (!env) { docs.push({ p: tok, w: 0, missing: true }); continue; }
-    if (env.w > known) docs.push({ p: tok, w: env.w, d: env.d });
-    else docs.push({ p: tok, w: env.w });
+    if (env.w > known) {
+      var body = actor.role === 'participant' && tok === 's' ? projectSessionForParticipant(env.d, actor.uid) : env.d;
+      docs.push({ p: tok, w: env.w, d: body });
+    } else docs.push({ p: tok, w: env.w });
   }
   return docs;
 }
 
-function docGet(cache, code, p) {
-  return out({ ok: true, docs: collectDocEntries(cache, code, Array.isArray(p.ps) ? p.ps : []), t: Date.now() });
+function docGet(cache, code, p, actor) {
+  var entries = Array.isArray(p.ps) ? p.ps : [];
+  if (!canReadDocEntries(entries, actor)) return out({ ok: false, e: 'denied' });
+  if (!rateCheck(cache, actorRateKey(code, actor, 'dget'), PARTICIPANT_READS_PER_MIN)
+      || !rateCheck(cache, 'r:' + code + ':read:all', SESSION_READS_PER_MIN)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
+  return out({ ok: true, docs: collectDocEntries(cache, code, entries, actor), t: Date.now() });
 }
 
-function docWrite(cache, code, action, p) {
+function pathStarts(key, root) {
+  return key === root || key.indexOf(root + '.') === 0;
+}
+
+function validParticipantRosterField(field, value, uid) {
+  if (value && typeof value === 'object' && value.__op === 'deleteField') return field !== 'uid';
+  if (field === 'uid') return value === uid;
+  if (field === 'name') return typeof value === 'string' && value.length <= 40;
+  if (field === 'joinedAt') return typeof value === 'string' && value.length <= 40;
+  if (field === 'status') return value === 'active';
+  if (field === 'xp') return typeof value === 'number' && isFinite(value) && value >= 0 && value <= 10000000;
+  if (field === 'signal') return value === null || value === 'stuck' || value === 'slow' || value === 'repeat' || value === 'ready';
+  if (field === 'signalAt' || field === 'viewingAt') return value === null || (typeof value === 'number' && isFinite(value) && value >= 0);
+  if (field === 'viewingResourceId') return value === null || (typeof value === 'string' && value.length <= 100);
+  return false;
+}
+function participantCanPatchSession(updates, uid) {
+  var keys = Object.keys(updates);
+  var rosterRoot = 'roster.' + uid;
+  var rosterFields = {
+    uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
+    signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1
+  };
+  var roots = [
+    'quizState.allResponses.' + uid,
+    'quizState.responses.' + uid,
+    'quizState.teams.' + uid,
+    'bridgeReactions.' + uid,
+    'democracy.votes.' + uid,
+    'escapeRoomState.teams.' + uid,
+    'escapeRoomState.teamProgress'
+  ];
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    if (pathStarts(key, rosterRoot)) {
+      var rest = key === rosterRoot ? '' : key.slice(rosterRoot.length + 1);
+      if (rest) {
+        var field = rest.split('.')[0];
+        if (!rosterFields[field] || rest.indexOf('.') !== -1 || !validParticipantRosterField(field, updates[key], uid)) return false;
+      } else {
+        var entry = updates[key];
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
+        var entryKeys = Object.keys(entry);
+        for (var e = 0; e < entryKeys.length; e++) {
+          if (!rosterFields[entryKeys[e]] || !validParticipantRosterField(entryKeys[e], entry[entryKeys[e]], uid)) return false;
+        }
+      }
+      continue;
+    }
+    var allowed = false;
+    for (var j = 0; j < roots.length; j++) if (pathStarts(key, roots[j])) { allowed = true; break; }
+    if (!allowed) return false;
+  }
+  return true;
+}
+
+function participantCanWritePeer(tok, actor, action, payload) {
+  var peer = peerPathParts(tok);
+  if (!peer || peer.uid !== actor.uid) return false;
+  if (action === 'ddel') return true;
+  var allowed = { offer: 1, codename: 1, createdAt: 1, expiresAt: 1, iceFromGuest: 1 };
+  var body = action === 'dpatch' ? payload.u : payload.d;
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return false;
+  var keys = Object.keys(body);
+  for (var i = 0; i < keys.length; i++) {
+    var top = String(keys[i]).split('.')[0];
+    if (!allowed[top]) return false;
+  }
+  return true;
+}
+
+function docWrite(cache, code, action, p, actor) {
   var tok = cleanDocPath(p.p);
   if (!tok) return out({ ok: false, e: 'bad-path' });
-  var col = cleanDocPath(p.col);
-  var id = String(p.id || '').slice(0, 80);
+  var updates = p.u;
+  if (action === 'dpatch' && !validatePatchUpdates(updates)) return out({ ok: false, e: 'bad-data' });
+  if (action === 'dset' && !validateJsonValue(p.d === undefined ? null : p.d, 0)) return out({ ok: false, e: 'bad-data' });
+
+  if (actor.role === 'participant') {
+    if (tok === 's') {
+      if (action !== 'dpatch' || !participantCanPatchSession(updates, actor.uid)) return out({ ok: false, e: 'denied' });
+    } else if (!participantCanWritePeer(tok, actor, action, p)) {
+      return out({ ok: false, e: 'denied' });
+    }
+  }
+
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) return out({ ok: false, e: 'busy' });
   try {
-    // Doc writes share the session's flood posture (their own rolling bucket,
-    // same ceiling): a leaked QR can scribble on this session, not drown the
-    // script.
-    var rKey = 'r:' + code + ':doc';
-    var used = (parseInt(cache.get(rKey), 10) || 0) + 1;
-    if (used > RATE_LIMIT_MSGS) return out({ ok: false, e: 'rate-limited' });
-    cache.put(rKey, String(used), RATE_LIMIT_TTL_SEC);
+    var limit = actor.role === 'teacher' ? RATE_LIMIT_MSGS : PARTICIPANT_WRITES_PER_MIN;
+    if (!rateCheck(cache, actorRateKey(code, actor, 'doc'), limit)) {
+      return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+    }
+    var current = readDocEnvelope(cache, code, tok);
+    if (p.xw !== undefined) {
+      var actual = current ? (parseInt(current.w, 10) || 0) : 0;
+      if ((parseInt(p.xw, 10) || 0) !== actual) return out({ ok: false, e: 'conflict', w: actual });
+    }
+    var peer = peerPathParts(tok);
     if (action === 'ddel') {
       cache.remove('d:' + code + ':' + tok);
-      bumpDocIndex(cache, code, col, id, 0, true);
+      if (peer) bumpDocIndex(cache, code, peer.col, peer.uid, 0, true);
       return out({ ok: true, t: Date.now() });
     }
     if (action === 'dset') {
       var data = p.d === undefined ? null : p.d;
-      if (p.merge) {
-        var prev = readDocEnvelope(cache, code, tok);
-        if (prev && prev.d && typeof prev.d === 'object' && data && typeof data === 'object') {
-          var mergedData = prev.d;
-          Object.keys(data).forEach(function(k2) { mergedData[k2] = data[k2]; });
-          data = mergedData;
-        }
+      if (p.merge && current && current.d && typeof current.d === 'object' && data && typeof data === 'object') {
+        var mergedData = current.d;
+        Object.keys(data).forEach(function(k) { mergedData[k] = data[k]; });
+        data = mergedData;
       }
       var env = { w: nextDocVersion(cache, code), d: data };
       if (!writeDocEnvelope(cache, code, tok, env)) return out({ ok: false, e: 'too-big' });
-      bumpDocIndex(cache, code, col, id, env.w, false);
+      if (peer) bumpDocIndex(cache, code, peer.col, peer.uid, env.w, false);
       return out({ ok: true, w: env.w, t: Date.now() });
     }
-    // dpatch — rejects on a missing doc, exactly like Firestore updateDoc.
-    var existing = readDocEnvelope(cache, code, tok);
-    if (!existing || !existing.d || typeof existing.d !== 'object') return out({ ok: false, e: 'no-doc' });
-    var patched = applyDocUpdates(existing.d, p.u && typeof p.u === 'object' ? p.u : {});
+    if (!current || !current.d || typeof current.d !== 'object') return out({ ok: false, e: 'no-doc' });
+    var patched = applyDocUpdates(current.d, updates);
     var env2 = { w: nextDocVersion(cache, code), d: patched };
     if (!writeDocEnvelope(cache, code, tok, env2)) return out({ ok: false, e: 'too-big' });
-    bumpDocIndex(cache, code, col, id, env2.w, false);
-    return out({ ok: true, w: env2.w, d: env2.d, t: Date.now() });
+    if (peer) bumpDocIndex(cache, code, peer.col, peer.uid, env2.w, false);
+    var responseData = actor.role === 'participant' && tok === 's' ? projectSessionForParticipant(env2.d, actor.uid) : env2.d;
+    return out({ ok: true, w: env2.w, d: responseData, t: Date.now() });
   } finally { lock.releaseLock(); }
 }
-
 function packFolder() {
   var it = DriveApp.getFoldersByName(FOLDER_NAME);
   return it.hasNext() ? it.next() : DriveApp.createFolder(FOLDER_NAME);
@@ -1656,6 +1967,23 @@ function findPackFile(id) {
   return it.hasNext() ? it.next() : null;
 }
 
+// v7 pack storage: manifests stay small and each download reads only one
+// Drive chunk.
+function findNamedPackFileV7(name) {
+  var it = packFolder().getFilesByName(name);
+  return it.hasNext() ? it.next() : null;
+}
+
+function packChunkNameV7(id, part) {
+  return 'pack-' + id + '-' + part + '.txt';
+}
+
+function replacePackFileV7(name, body, mime) {
+  var existing = findNamedPackFileV7(name);
+  if (existing) existing.setContent(body);
+  else packFolder().createFile(name, body, mime);
+}
+
 function putPack(cache, p) {
   var id = String(p.id || '');
   if (!/^PK-[0-9a-f-]{36}$/i.test(id) || !isToken(p.k)) return out({ ok: false, e: 'bad-request' });
@@ -1665,7 +1993,6 @@ function putPack(cache, p) {
   if (part < 1 || of < 1 || part > of || of > 200 || !data || data.length > MAX_MSG_CHARS) return out({ ok: false, e: 'bad-part' });
   cache.put('u:' + id + ':' + part, data, UPLOAD_TTL_SEC);
   if (part < of) return out({ ok: true, part: part });
-  // Final part received: assemble under lock and write one Drive file.
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
   try {
@@ -1680,43 +2007,70 @@ function putPack(cache, p) {
     }
     var assembled = pieces.join('');
     if (assembled.length > MAX_PACK_CHARS) return out({ ok: false, e: 'too-big' });
-    var body = JSON.stringify({ k: String(p.k), t: Date.now(), title: String(p.title || '').slice(0, 140), data: assembled });
-    var existing = findPackFile(id);
-    if (existing) existing.setContent(body);
-    else packFolder().createFile('pack-' + id + '.json', body, 'application/json');
+
+    var oldCount = 0;
+    var oldManifest = findPackFile(id);
+    if (oldManifest) {
+      try { oldCount = parseInt(JSON.parse(oldManifest.getBlob().getDataAsString()).of, 10) || 0; } catch (e) {}
+    }
+    var downloadParts = Math.max(1, Math.ceil(assembled.length / GET_PART_CHARS));
+    for (var d = 1; d <= downloadParts; d++) {
+      replacePackFileV7(packChunkNameV7(id, d), assembled.slice((d - 1) * GET_PART_CHARS, d * GET_PART_CHARS), 'text/plain');
+    }
+    for (var stale = downloadParts + 1; stale <= oldCount; stale++) {
+      var staleFile = findNamedPackFileV7(packChunkNameV7(id, stale));
+      if (staleFile) staleFile.setTrashed(true);
+    }
+    replacePackFileV7('pack-' + id + '.json', JSON.stringify({
+      v: 2, k: String(p.k), t: Date.now(), title: String(p.title || '').slice(0, 140),
+      chars: assembled.length, of: downloadParts
+    }), 'application/json');
     for (var r = 1; r <= of; r++) cache.remove('u:' + id + ':' + r);
-    return out({ ok: true, id: id, chars: assembled.length });
+    return out({ ok: true, id: id, chars: assembled.length, of: downloadParts });
   } finally { lock.releaseLock(); }
 }
 
-function getPack(p) {
+function getPack(cache, p) {
   var id = String(p.id || '');
   if (!/^PK-[0-9a-f-]{36}$/i.test(id)) return out({ ok: false, e: 'bad-request' });
+  if (!rateCheck(cache, 'r:pack:' + id.slice(-12) + ':' + String(p.k || '').slice(0, 12), PARTICIPANT_READS_PER_MIN)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
   var file = findPackFile(id);
   if (!file) return out({ ok: false, e: 'no-pack' });
   var body;
   try { body = JSON.parse(file.getBlob().getDataAsString()); } catch (err) { return out({ ok: false, e: 'corrupt' }); }
   if (String(p.k || '') !== String(body.k || '')) return out({ ok: false, e: 'denied' });
-  var data = String(body.data || '');
   var part = Math.max(1, parseInt(p.part, 10) || 1);
-  var of = Math.max(1, Math.ceil(data.length / GET_PART_CHARS));
-  if (part > of) return out({ ok: false, e: 'bad-part' });
-  return out({
-    ok: true,
-    id: id,
-    title: String(body.title || ''),
-    part: part,
-    of: of,
-    data: data.slice((part - 1) * GET_PART_CHARS, part * GET_PART_CHARS),
-  });
+  if (body.data !== undefined) {
+    var legacy = String(body.data || '');
+    var legacyOf = Math.max(1, Math.ceil(legacy.length / GET_PART_CHARS));
+    if (part > legacyOf) return out({ ok: false, e: 'bad-part' });
+    return out({ ok: true, id: id, title: String(body.title || ''), part: part, of: legacyOf,
+      chars: legacy.length, data: legacy.slice((part - 1) * GET_PART_CHARS, part * GET_PART_CHARS) });
+  }
+  var chunkCount = Math.max(1, parseInt(body.of, 10) || 1);
+  if (part > chunkCount) return out({ ok: false, e: 'bad-part' });
+  var chunk = findNamedPackFileV7(packChunkNameV7(id, part));
+  if (!chunk) return out({ ok: false, e: 'corrupt', part: part });
+  return out({ ok: true, id: id, title: String(body.title || ''), part: part, of: chunkCount,
+    chars: parseInt(body.chars, 10) || 0, data: chunk.getBlob().getDataAsString() });
 }
 
 function delPack(p) {
-  var file = findPackFile(String(p.id || ''));
-  if (file) file.setTrashed(true);
+  var id = String(p.id || '');
+  var file = findPackFile(id);
+  var count = 0;
+  if (file) {
+    try { count = parseInt(JSON.parse(file.getBlob().getDataAsString()).of, 10) || 0; } catch (e) {}
+    file.setTrashed(true);
+  }
+  for (var i = 1; i <= count; i++) {
+    var chunk = findNamedPackFileV7(packChunkNameV7(id, i));
+    if (chunk) chunk.setTrashed(true);
+  }
   return out({ ok: true });
-}
-`;
+}`;
 const ALLO_MB_URL_KEY = 'alloflow_session_mailbox_url';
 const ALLO_MB_ADMIN_KEY = 'alloflow_session_mailbox_admin';
 const ALLO_MB_LIVE_KEY = 'alloflow_mb_live_session';
@@ -1775,6 +2129,7 @@ async function _alloMailboxCall(execUrl, payload, timeoutMs = 12000) {
         const reason = parsed && parsed.e ? String(parsed.e) : ('http-' + res.status);
         const err = new Error('Mailbox error: ' + reason);
         err.code = 'allo/mailbox-' + reason;
+        err.retryAfterMs = Math.max(0, Number(parsed && parsed.retryAfterMs) || 0);
         throw err;
     }
     return parsed;
@@ -1840,7 +2195,8 @@ async function _alloMailboxCallWithRetry(execUrl, payload, tries = 3, delayMs = 
             const code = String(e?.code || '');
             const transient = code.includes('http-') || code.includes('unreachable') || code.includes('timeout') || code.includes('busy') || code.includes('rate-limited') || code.includes('server');
             if (!transient || attempt === tries - 1) throw e;
-            await new Promise(resolve => setTimeout(resolve, delayMs * (attempt + 1)));
+            const serverDelay = Math.min(60000, Math.max(0, Number(e?.retryAfterMs) || 0));
+            await new Promise(resolve => setTimeout(resolve, Math.max(serverDelay, delayMs * (attempt + 1))));
         }
     }
     throw lastError;
@@ -5593,6 +5949,7 @@ const AlloFlowContent = () => {
     }
   }, []);
   const [studentProjectSettings, setStudentProjectSettings] = useState({
+      hideStudentAiFeatures: false,
       allowDictation: true,
       allowSocraticTutor: true,
       socraticCustomInstructions: '',
@@ -5622,6 +5979,9 @@ const AlloFlowContent = () => {
   const setStandardDeckLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'standardDeckLang', value: v });
   const setTargetTranslationLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'targetTranslationLang', value: v });
   const [isTeacherMode, setIsTeacherMode] = useState(true);
+  const studentAiFeaturesHidden = !isTeacherMode && (
+      _isQrStudentAiDisabled() || studentProjectSettings.hideStudentAiFeatures === true
+  );
   const [showClassAnalytics, setShowClassAnalytics] = useState(false);
   const [isHelpMode, setIsHelpMode] = useState(false);
   const [showHelpOnboarding, setShowHelpOnboarding] = useState(false);
@@ -6587,6 +6947,34 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       _setIsTimelineStudioOpenRaw(v);
     }
   }, []);
+  const [isLinguaPracticeOpen, _setIsLinguaPracticeOpenRaw] = useState(false);
+  const setIsLinguaPracticeOpen = React.useCallback((v) => {
+    var trigger = function() {
+      if (typeof window.__alloLazyLinguaPractice === 'function') {
+        try { window.__alloLazyLinguaPractice(); } catch(_) {}
+      }
+    };
+    if (typeof v === 'function') {
+      _setIsLinguaPracticeOpenRaw(function(prev) { var next = v(prev); if (next) trigger(); return next; });
+    } else {
+      if (v) trigger();
+      _setIsLinguaPracticeOpenRaw(v);
+    }
+  }, []);
+  const [isTestPrepHubOpen, _setIsTestPrepHubOpenRaw] = useState(false);
+  const setIsTestPrepHubOpen = React.useCallback((v) => {
+    var trigger = function() {
+      if (typeof window.__alloLazyTestPrepHub === 'function') {
+        try { window.__alloLazyTestPrepHub(); } catch(_) {}
+      }
+    };
+    if (typeof v === 'function') {
+      _setIsTestPrepHubOpenRaw(function(prev) { var next = v(prev); if (next) trigger(); return next; });
+    } else {
+      if (v) trigger();
+      _setIsTestPrepHubOpenRaw(v);
+    }
+  }, []);
   const [showLearningHub, _setShowLearningHubRaw] = useState(false);
   const setShowLearningHub = React.useCallback((v) => { if (v && window.__alloLazyLearningHubModal) { try { window.__alloLazyLearningHubModal(); } catch(_) {} } _setShowLearningHubRaw(v); }, []);
   const [showSelHub, _setShowSelHubRaw] = useState(false);
@@ -6609,6 +6997,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isReadingLibraryOpen, setIsReadingLibraryOpen] = useState(false);
   // Deep-open slug for a lesson-pinned book (set by restore/sync, consumed by the module).
   const [pendingReadingBookSlug, setPendingReadingBookSlug] = useState(null);
+  const [pendingLinguaSource, setPendingLinguaSource] = useState(null);
   const [readingLibraryIndexForBot, setReadingLibraryIndexForBot] = useState(null);
   useEffect(() => {
     let cancelled = false;
@@ -6809,7 +7198,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '470824d3a';
+    var pluginCdnVersion = '07267d550';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -7031,38 +7420,38 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=470824d3a');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=470824d3a');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=470824d3a');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=470824d3a');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=470824d3a');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=470824d3a');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=470824d3a');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=470824d3a');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=470824d3a');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=470824d3a');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=470824d3a');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=470824d3a');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=470824d3a');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=470824d3a');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=470824d3a');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=470824d3a');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=470824d3a');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=470824d3a');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=470824d3a');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=470824d3a');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=470824d3a');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=470824d3a');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=470824d3a');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=470824d3a');
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=07267d550');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=07267d550');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=07267d550');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=07267d550');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=07267d550');
+    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=07267d550');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=07267d550');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=07267d550');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=07267d550');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=07267d550');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=07267d550');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=07267d550');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=07267d550');
+    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=07267d550');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=07267d550');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=07267d550');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=07267d550');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=07267d550');
+    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=07267d550');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=07267d550');
+    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=07267d550');
+    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=07267d550');
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=07267d550');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=07267d550');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=470824d3a'); }; })();
-    window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=470824d3a'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=470824d3a'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=07267d550'); }; })();
+    window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=07267d550'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=07267d550'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
@@ -7071,80 +7460,82 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=470824d3a');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=470824d3a');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=470824d3a');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=470824d3a');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=470824d3a');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=470824d3a');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=470824d3a');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=470824d3a');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=470824d3a');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=470824d3a');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=470824d3a');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=470824d3a');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=470824d3a');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=470824d3a'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=470824d3a'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=470824d3a'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=470824d3a'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=07267d550');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=07267d550');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=07267d550');
+    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=07267d550');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=07267d550');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=07267d550');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=07267d550');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=07267d550');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=07267d550');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=07267d550');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=07267d550');
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=07267d550');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=07267d550');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=07267d550'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=07267d550'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=07267d550'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=07267d550'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=470824d3a');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=470824d3a');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=470824d3a');
+    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=07267d550');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=07267d550');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=07267d550');
     loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=fa7dc48b');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=470824d3a');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=470824d3a');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=470824d3a');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=470824d3a');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=470824d3a');
+    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=07267d550');
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=07267d550');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=07267d550');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=07267d550');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=07267d550');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=470824d3a'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=07267d550'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=470824d3a');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=07267d550');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=470824d3a');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=470824d3a'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=470824d3a'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=470824d3a'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=470824d3a'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=470824d3a'); }; })();
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=07267d550');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=07267d550'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=07267d550'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=07267d550'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=07267d550'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=07267d550'); }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=470824d3a'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=470824d3a');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=470824d3a');
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=07267d550'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=07267d550');
+    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=07267d550');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
     loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=470824d3a');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=470824d3a');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=470824d3a');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=470824d3a');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=470824d3a');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=470824d3a'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=470824d3a'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=470824d3a'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=470824d3a'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=470824d3a'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=470824d3a'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=470824d3a'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=470824d3a'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=470824d3a'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=470824d3a'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=470824d3a');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=470824d3a');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=470824d3a');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=07267d550');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=07267d550');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=07267d550');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=07267d550');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=07267d550');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=07267d550'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=07267d550'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=07267d550'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=07267d550'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=07267d550'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=07267d550'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=07267d550'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=07267d550'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=07267d550'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=07267d550'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=07267d550'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=07267d550'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=07267d550');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=07267d550');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=07267d550');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=470824d3a');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=470824d3a');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=470824d3a');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=470824d3a');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=470824d3a');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=470824d3a');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=470824d3a');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=470824d3a');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=470824d3a');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=07267d550');
+    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=07267d550');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=07267d550');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=07267d550');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=07267d550');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=07267d550');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=07267d550');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=07267d550');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=07267d550');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -7181,64 +7572,64 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=470824d3a');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=470824d3a');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=470824d3a');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=07267d550');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=07267d550');
+    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=07267d550');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=470824d3a');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=470824d3a');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=470824d3a');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=470824d3a');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=470824d3a');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=470824d3a');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=470824d3a');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=470824d3a');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=470824d3a');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=470824d3a');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=07267d550');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=07267d550');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=07267d550');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=07267d550');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=07267d550');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=07267d550');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=07267d550');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=07267d550');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=07267d550');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=07267d550');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=9dadb72f1');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=470824d3a');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=470824d3a');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=470824d3a');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=470824d3a');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=470824d3a');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=470824d3a');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=470824d3a');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=470824d3a');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=470824d3a');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=470824d3a');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=470824d3a');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=470824d3a');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=470824d3a');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=470824d3a');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=470824d3a');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=470824d3a');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=470824d3a');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=470824d3a');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=470824d3a');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=470824d3a');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=470824d3a');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=470824d3a');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=470824d3a');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=470824d3a');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=470824d3a');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=470824d3a');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=470824d3a');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=470824d3a');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=470824d3a');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=470824d3a');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=07267d550');
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=07267d550');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=07267d550');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=07267d550');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=07267d550');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=07267d550');
+    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=07267d550');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=07267d550');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=07267d550');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=07267d550');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=07267d550');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=07267d550');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=07267d550');
+    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=07267d550');
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=07267d550');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=07267d550');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=07267d550');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=07267d550');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=07267d550');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=07267d550');
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=07267d550');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=07267d550');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=07267d550');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=07267d550');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=07267d550');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=07267d550');
+    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=07267d550');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=07267d550');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=07267d550');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=07267d550');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=470824d3a');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=470824d3a');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=470824d3a');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=470824d3a');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=470824d3a');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=470824d3a');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=470824d3a');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=470824d3a');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=470824d3a');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=470824d3a');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=07267d550');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=07267d550');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=07267d550');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=07267d550');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=07267d550');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=07267d550');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=07267d550');
+    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=07267d550');
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=07267d550');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=07267d550');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -7829,6 +8220,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [dismissedVerifications, setDismissedVerifications] = useState(() => new Set());
   const [showSocraticChat, _setShowSocraticChatRaw] = useState(false);
   const setShowSocraticChat = React.useCallback((v) => { if (v && window.__alloLazySocraticChat) { try { window.__alloLazySocraticChat(); } catch(_) {} } _setShowSocraticChatRaw(v); }, []);
+  useEffect(() => {
+      if (studentAiFeaturesHidden) _setShowSocraticChatRaw(false);
+  }, [studentAiFeaturesHidden]);
   const [isSocraticThinking, setIsSocraticThinking] = useState(false);
   const [socraticInput, setSocraticInput] = useState('');
   const [socraticMessages, setSocraticMessages] = useState([
@@ -7849,11 +8243,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [t]);
   const [isPersonaFreeResponse, setIsPersonaFreeResponse] = useState(true);
   useEffect(() => {
-      if (!isTeacherMode && !studentProjectSettings.allowPersonaFreeResponse) {
+      if (!isTeacherMode && (studentAiFeaturesHidden || !studentProjectSettings.allowPersonaFreeResponse)) {
           setIsPersonaFreeResponse(false);
           setShowPersonaHints(true);
       }
-  }, [isTeacherMode, studentProjectSettings.allowPersonaFreeResponse]);
+  }, [isTeacherMode, studentAiFeaturesHidden, studentProjectSettings.allowPersonaFreeResponse]);
   const [showPersonaHints, setShowPersonaHints] = useState(false);
   const [personaTurnHintsViewed, setPersonaTurnHintsViewed] = useState(false);
   const showPersonaHintsRef = useRef(showPersonaHints);
@@ -13251,6 +13645,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [mbRoster, setMbRoster] = useState({});
   const [mbQrSvg, setMbQrSvg] = useState('');
   const [mbAdminInput, setMbAdminInput] = useState('');
+  const [mbShowAdmin, setMbShowAdmin] = useState(false);
   const [mbNow, setMbNow] = useState(0);
   const mbUpCursorRef = useRef(0);
   const mbPeersRef = useRef({});
@@ -13337,7 +13732,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               if (admin) localStorage.setItem(ALLO_MB_ADMIN_KEY, admin);
           } catch (_) {}
           setMbAdminInput('');
-          setMbConfig({ url: execUrl, admin, v: Number(mbHello && mbHello.v) || 0 });
+          setMbConfig({ url: execUrl, admin, v: Number(mbHello && mbHello.v) || 0, latencyMs: Date.now() - t0 });
           setMbStatus('Connected — round-trip ' + (Date.now() - t0) + 'ms.' + (freshlyClaimed ? ' SAVE YOUR ADMIN TOKEN (shown below): you will paste it to reconnect from a new device or a fresh Canvas.' : ' Ready for live sessions and hosted homework QR.'));
           // Server-side resume: ask the mailbox for any still-open sessions
           // this admin owns. Works in Canvas where local storage does not.
@@ -13354,8 +13749,43 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       }
       setMbBusy(false);
   }, [mbUrlInput, mbAdminInput]);
-  const startMailboxLiveSession = useCallback(async () => {
+  const rotateMailboxAdmin = useCallback(async () => {
       if (!mbConfig?.url || !mbConfig?.admin) return;
+      setMbBusy(true);
+      try {
+          const rotated = await _alloMailboxCall(mbConfig.url, { a: 'rotateadmin', admin: mbConfig.admin });
+          const admin = String(rotated.admin || '');
+          if (!admin) throw new Error('rotation returned no token');
+          try { localStorage.setItem(ALLO_MB_ADMIN_KEY, admin); } catch (_) {}
+          setMbConfig(prev => prev ? { ...prev, admin } : prev);
+          setMbShowAdmin(true);
+          setMbStatus('Admin token rotated. Save the new token; the old one no longer works.');
+      } catch (e) {
+          const active = String(e?.code || '').includes('sessions-active');
+          setMbStatus(active
+              ? 'Close or resume the mailbox sessions listed above before rotating the admin token.'
+              : 'Could not rotate the admin token: ' + (e?.message || e));
+      }
+      setMbBusy(false);
+  }, [mbConfig]);
+  const closeAllMailboxSessions = useCallback(async () => {
+      if (!mbConfig?.url || !mbConfig?.admin) return;
+      if (typeof window !== 'undefined' && !window.confirm('Close every live session remembered by this mailbox? Students will be disconnected.')) return;
+      setMbBusy(true);
+      try {
+          const result = await _alloMailboxCall(mbConfig.url, { a: 'closeall', admin: mbConfig.admin });
+          setMbResumable([]);
+          setMbStatus('Closed ' + (result.closed || 0) + ' mailbox session(s).');
+      } catch (e) {
+          setMbStatus('Could not close mailbox sessions: ' + (e?.message || e));
+      }
+      setMbBusy(false);
+  }, [mbConfig]);  const startMailboxLiveSession = useCallback(async () => {
+      if (!mbConfig?.url || !mbConfig?.admin) return;
+      if (Number(mbConfig.v || 0) < 7) {
+          setMbStatus('Update the mailbox script to v7 before starting a secure QR session.');
+          return;
+      }
       setMbBusy(true);
       setMbStatus('Opening live session…');
       try {
@@ -13386,6 +13816,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               setShowSessionModal(true);
               code = (_alloMbBridgeState && _alloMbBridgeState.code) || freshCode;
           }
+          // Fail before showing a QR if the deployed script cannot issue and
+          // honor a participant capability. This catches stale deployments
+          // and permission mistakes on the teacher device.
+          const preflight = await _alloMailboxCall(mbConfig.url, { a: 'join', c: code, k: secret });
+          if (!preflight?.uid || !preflight?.pt) throw new Error('mailbox v7 participant preflight failed');
+          const preflightRead = await _alloMailboxCall(mbConfig.url, {
+              a: 'dget', c: code, uid: preflight.uid, pt: preflight.pt, ps: [{ p: 's' }]
+          });
+          if (!Array.isArray(preflightRead.docs) || preflightRead.docs[0]?.missing) {
+              throw new Error('mailbox student read preflight failed');
+          }
           const joinUrl = _buildAlloMailboxEntryUrl('allo_mb', { u: mbConfig.url, c: code, k: secret });
           if (!joinUrl) throw new Error('no student app URL is configured for the QR');
           mbUpCursorRef.current = 0;
@@ -13398,8 +13839,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setMbStatus('');
       } catch (e) {
           warnLog('Mailbox live start failed', e);
-          if (!(_alloMbBridgeState && _alloMbBridgeState.code)) _alloMbTeardownBridge();
-          setMbStatus('Could not start: ' + (e?.message || e));
+          const failedCode = _alloMbBridgeState && _alloMbBridgeState.code;
+          if (failedCode) {
+              try { await _alloMailboxCall(mbConfig.url, { a: 'end', admin: mbConfig.admin, c: failedCode }); } catch (_) {}
+          }
+          _alloMbTeardownBridge();
+          setActiveSessionCode(null);
+          setShowSessionModal(false);
+          setMbStatus('Could not start securely: ' + (e?.message || e));
       }
       setMbBusy(false);
   }, [mbConfig, history, activeSessionAppId, user]);
@@ -13422,7 +13869,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // the server-held session doc, so the roster and any live quiz/poll
       // state repopulate immediately after a refresh (not on the next
       // heartbeat). Recreate the doc if the mailbox evicted it or the
-      // teacher's script pre-dates v6.
+      // teacher's script pre-dates v7.
       _alloMbInstallBridge({ url: mbConfig.url, admin: mbConfig.admin || '', secret, code, isTeacher: true });
       try {
           const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', code);
@@ -13479,8 +13926,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   await updateDoc(sessionRef, { isActive: false, status: 'ended' });
               } catch (_) {}
           }
-          try { await _alloMailboxCall(mbConfig.url, { a: 'send', c: live.code, k: live.secret, from: 'teacher', box: 'down', v: { kind: 'end' } }); } catch (_) {}
-          try { await _alloMailboxCall(mbConfig.url, { a: 'end', c: live.code, k: live.secret }); } catch (_) {}
+          try { await _alloMailboxCall(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: live.code, from: 'teacher', box: 'down', v: { kind: 'end' } }); } catch (_) {}
+          try { await _alloMailboxCall(mbConfig.url, { a: 'end', admin: mbConfig.admin, c: live.code }); } catch (_) {}
       }
       _alloMbTeardownBridge();
       if (live && activeSessionCode === live.code) {
@@ -13522,7 +13969,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           } catch (dcErr) { warnLog('Channel push failed for one student (mailbox copy still covers them):', dcErr?.message); }
       }
       for (let i = 0; i < parts.length; i += 1) {
-          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet } });
+          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet } });
       }
       return { rtcCount };
   }, [mbLive, mbConfig]);
@@ -13569,7 +14016,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           } catch (e) { warnLog('Pack share failed for one resource:', e?.message); }
       }
       try {
-          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'packdone', count: shared } });
+          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'packdone', count: shared } });
       } catch (_) {}
       addToast('Shared ' + shared + ' of ' + candidates.length + ' resources with the class.', shared ? 'success' : 'error');
       setMbBusy(false);
@@ -13590,7 +14037,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               const removedIds = Object.keys(seen).filter(id => !currentIds.has(id));
               if (removedIds.length) {
                   removedIds.forEach(id => { delete seen[id]; });
-                  await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'res-remove', ids: removedIds } });
+                  await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res-remove', ids: removedIds } });
               }
               for (const item of candidates) {
                   const fp = _alloQuickHash(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })) || '');
@@ -13661,7 +14108,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               await pc.setRemoteDescription(v.sdp);
               await pc.setLocalDescription(await pc.createAnswer());
               await _alloWaitIceComplete(pc);
-              await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', c: mbLive.code, k: mbLive.secret, from: 'teacher', box: 'down', v: { kind: 'rtc', to: uid, sdp: pc.localDescription } });
+              await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'rtc', to: uid, sdp: pc.localDescription } });
           } catch (rtcErr) {
               warnLog('RTC answer failed (student stays on mailbox polling):', rtcErr?.message);
           }
@@ -13670,7 +14117,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           try {
               // Fold the session-doc watch list into the poll we already make
               // (one request, not two); the bridge pump idles while this feeds.
-              const pollPayload = { a: 'recv', c: mbLive.code, k: mbLive.secret, box: 'up', since: String(mbUpCursorRef.current) };
+              const pollPayload = { a: 'recv', admin: mbConfig.admin, c: mbLive.code, box: 'up', since: String(mbUpCursorRef.current) };
               const bridgePs = _alloMbRecvDocPs();
               if (bridgePs && bridgePs.length) pollPayload.ps = bridgePs;
               const res = await _alloMailboxCall(mbConfig.url, pollPayload);
@@ -13854,7 +14301,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           try { dc.send(JSON.stringify(presence)); return; } catch (_) {}
       }
       try {
-          await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', c: mbStudent.code, k: mbStudent.secret, from: mbStudent.uid, box: 'up', v: presence });
+          await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', uid: mbStudent.uid, pt: mbStudent.participant, c: mbStudent.code, from: mbStudent.uid, box: 'up', v: presence });
       } catch (e) {
           warnLog('Hand raise failed', e);
           setMbHandUp(!next);
@@ -20784,6 +21231,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         // fields). fidelityLimited keeps its original definition: coverage<90 OR structural notes.
         let _roundFid = null;
         try { _roundFid = recomputeContentFidelity ? recomputeContentFidelity(cur.sourceText, result.html) : null; } catch (_) {}
+        // #6-ext (2026-07-10): merge fidelity notes — RECOMPUTABLE kinds (links/tables/refusal/
+        // placement/numeric) are replaced by this round's fresh measurements so a round that swaps
+        // a number or drops a table refreshes its warning; run-scoped kinds (pageEdge, OCR
+        // accuracy/confidence, dupe-collapse, folio leak, alt quality…) can't be re-derived from
+        // (sourceText, html) and carry forward from the original run.
+        const _recompKinds = (_docPipeline && _docPipeline.recomputableFidelityKinds) || { links: 1, tables: 1, refusal: 1, placement: 1, numeric: 1 };
+        const _roundNotes = _roundFid
+          ? (cur.fidelityNotes || []).filter((n) => !(n && _recompKinds[n.kind])).concat(_roundFid.fidelityNotes || [])
+          : (cur.fidelityNotes || []);
         cur = Object.assign({}, cur, {
           accessibleHtml: result.html,
           axeAudit: result.axe,
@@ -20794,8 +21250,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           verificationAudit: reVerify,
           issueResolution: _roundIR,
           integrityCoverage: _roundFid ? _roundFid.integrityCoverage : cur.integrityCoverage,
-          integrityWarning: _roundFid ? ([_roundFid.coverageWarning, _roundFid.placementWarn].filter(Boolean).join(' ') || null) : cur.integrityWarning,
-          fidelityLimited: _roundFid ? ((_roundFid.integrityCoverage != null && _roundFid.integrityCoverage < 90) || (cur.fidelityNotes || []).length > 0) : cur.fidelityLimited,
+          integrityWarning: _roundFid ? ([_roundFid.coverageWarning, _roundFid.placementWarn, _roundFid.numericWarn].filter(Boolean).join(' ') || null) : cur.integrityWarning,
+          fidelityNotes: _roundNotes, // #6-ext: refreshed recomputable kinds + carried run-scoped kinds
+          fidelityLimited: _roundFid ? ((_roundFid.integrityCoverage != null && _roundFid.integrityCoverage < 90) || _roundNotes.length > 0) : cur.fidelityLimited,
           afterScore: newScore,
           _scoreIsBlended: _det !== null,
           // A completed re-verify clears any throttle-degraded flag from the ORIGINAL run, so a now-fully-
@@ -20831,7 +21288,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           issueResolution: snapshot.issueResolution,
           integrityCoverage: snapshot.integrityCoverage, // #6-incremental: the recomputed fidelity
           integrityWarning: snapshot.integrityWarning,   // fields must reach the RENDERED result,
-          fidelityLimited: snapshot.fidelityLimited,     // not just the ref/auto-save snapshot
+          fidelityNotes: snapshot.fidelityNotes,         // not just the ref/auto-save snapshot
+          fidelityLimited: snapshot.fidelityLimited,
           afterScore: snapshot.afterScore,
           _scoreIsBlended: snapshot._scoreIsBlended,
           axeScore: snapshot.axeScore,
@@ -23118,12 +23576,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       loadPack();
       return () => { cancelled = true; };
   }, []);
-  // Mailbox live-session student entry (?allo_mb=…): joins the teacher's own
-  // Apps Script mailbox — no accounts, no Firebase, works from any phone.
+  // Mailbox live-session student entry (?allo_mb=…): exchange the QR's
+  // join-only secret for a server-signed participant capability. The
+  // participant credential is then used by the standard session bridge.
   useEffect(() => {
       const entry = _alloReadMailboxEntryParam('allo_mb');
       if (!entry || !entry.c || !entry.k) return undefined;
-      window.__alloQrStudentMode = { type: 'mailbox-live', aiDisabled: true, code: String(entry.c).toUpperCase() };
+      const mbJoinCode = String(entry.c).toUpperCase();
+      let mbJoinCancelled = false;
+      window.__alloQrStudentMode = { type: 'mailbox-live', aiDisabled: true, code: mbJoinCode };
       window.__alloStudentAiDisabled = true;
       try { window.sessionStorage?.setItem(ALLO_QR_STUDENT_AI_OFF_KEY, '1'); } catch (_) {}
       try { if (typeof window.__alloInstallQrStudentAiGuard === 'function') window.__alloInstallQrStudentAiGuard(); } catch (_) {}
@@ -23136,56 +23597,69 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setIsIndependentMode(false);
       setIsStudentLinkMode(true);
       setShowStudentEntry(true);
-      let uid = '';
-      try {
-          uid = window.sessionStorage?.getItem('alloflow_mb_uid') || '';
-          if (!uid) {
-              uid = 'mb-' + _alloRandomToken(8);
-              window.sessionStorage?.setItem('alloflow_mb_uid', uid);
-          }
-      } catch (_) { uid = 'mb-' + _alloRandomToken(8); }
       mbStudentCursorRef.current = 0;
       mbStudentConnectedRef.current = false;
       mbChunkStoreRef.current = { parts: {}, applied: new Set() };
-      // Firestore-parity: live-session students see the CLASS pack only —
-      // the Firestore student branch replaces history wholesale, so mailbox
-      // students start clean too instead of mixing in last week's leftovers
-      // persisted on the device.
       setHistory([]);
       setGeneratedContent(null);
-      setMbStudent({ url: entry.u, code: String(entry.c).toUpperCase(), secret: String(entry.k), uid });
-      // Phase C — unified session pathway: install the session-doc bridge and
-      // run the SAME joinClassSession as Firestore QR joins (roster entry +
-      // session-doc subscription), which is what makes polls, quiz, groups
-      // and pictionary work over the mailbox. Pre-v6 mailbox scripts have no
-      // doc store; the probe detects that and leaves the legacy pack flow as
-      // the whole experience, exactly as before.
-      const mbJoinCode = String(entry.c).toUpperCase();
-      _alloMbInstallBridge({ url: entry.u, code: mbJoinCode, secret: String(entry.k), isTeacher: false, uid });
-      let mbJoinCancelled = false;
+
       (async () => {
-          for (let attempt = 0; attempt < 6 && !mbJoinCancelled; attempt += 1) {
-              try {
-                  const probe = await _alloMailboxCall(entry.u, { a: 'dget', c: mbJoinCode, k: String(entry.k), ps: [{ p: 's' }] });
-                  const sdoc = Array.isArray(probe.docs) ? probe.docs.find(d => d && d.p === 's') : null;
-                  if (sdoc && !sdoc.missing) {
-                      if (!mbJoinCancelled) joinClassSession(mbJoinCode);
-                      return;
+          try {
+              const joined = await _alloMailboxCallWithRetry(entry.u, {
+                  a: 'join', c: mbJoinCode, k: String(entry.k)
+              });
+              if (mbJoinCancelled) return;
+              if (!joined?.uid || !joined?.pt) throw new Error('Mailbox script must be updated to v7');
+              const student = {
+                  url: entry.u,
+                  code: mbJoinCode,
+                  secret: String(entry.k),
+                  uid: String(joined.uid),
+                  participant: String(joined.pt)
+              };
+              setMbStudent(student);
+              _alloMbInstallBridge({
+                  url: entry.u,
+                  code: mbJoinCode,
+                  secret: String(entry.k),
+                  participant: student.participant,
+                  isTeacher: false,
+                  uid: student.uid
+              });
+
+              for (let attempt = 0; attempt < 6 && !mbJoinCancelled; attempt += 1) {
+                  try {
+                      const probe = await _alloMailboxCall(entry.u, {
+                          a: 'dget', c: mbJoinCode, uid: student.uid, pt: student.participant,
+                          ps: [{ p: 's' }]
+                      });
+                      const sdoc = Array.isArray(probe.docs) ? probe.docs.find(d => d && d.p === 's') : null;
+                      if (sdoc && !sdoc.missing) {
+                          if (!mbJoinCancelled) joinClassSession(mbJoinCode);
+                          return;
+                      }
+                  } catch (probeErr) {
+                      const probeCode = String(probeErr?.code || '');
+                      if (probeCode.includes('no-session') || probeCode.includes('denied')) throw probeErr;
                   }
-              } catch (probeErr) {
-                  const probeCode = String(probeErr?.code || '');
-                  if (probeCode.includes('bad-action')) return; // v5 script: legacy flow only
-                  if (probeCode.includes('no-session')) return; // marker gone; the poll loop surfaces it
+                  await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
               }
-              await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+          } catch (joinErr) {
+              if (mbJoinCancelled) return;
+              warnLog('Mailbox participant join failed:', joinErr?.message);
+              _alloMbTeardownBridge();
+              setMbStudent(null);
+              const oldScript = String(joinErr?.code || '').includes('bad-action') || /v7|update/i.test(String(joinErr?.message || ''));
+              addToast(oldScript
+                  ? 'Your teacher needs to update the Class Mailbox script before students can join securely.'
+                  : 'Could not join this live session. Ask your teacher for a new QR code.', 'error');
           }
       })();
       return () => {
           mbJoinCancelled = true;
           _alloMbTeardownBridge();
       };
-  }, []);
-  // Keep the announced nickname current without restarting the poll/RTC loops.
+  }, []);  // Keep the announced nickname current without restarting the poll/RTC loops.
   // No connected-gate here: the codename picker often commits BEFORE the first
   // poll round-trip finishes, and gating on it left the teacher roster showing
   // the boot-time placeholder until the next heartbeat. Announcing early is
@@ -23214,7 +23688,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           if (dc && dc.readyState === 'open') {
               try { dc.send(JSON.stringify(presence)); return; } catch (_) {}
           }
-          await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', c: mbStudent.code, k: mbStudent.secret, from: mbStudent.uid, box: 'up', v: presence });
+          await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', uid: mbStudent.uid, pt: mbStudent.participant, c: mbStudent.code, from: mbStudent.uid, box: 'up', v: presence });
       };
       mbAnnounceRef.current = () => { announce().catch(e => warnLog('Mailbox announce failed', e)); };
       // Bridge nudge: our own session-doc writes (poll answers, hand signals,
@@ -23229,7 +23703,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           try {
               // Fold the session-doc watch list into the poll we already make
               // (one request, not two); the bridge pump idles while this feeds.
-              const pollPayload = { a: 'recv', c: mbStudent.code, k: mbStudent.secret, box: 'down', since: String(mbStudentCursorRef.current) };
+              const pollPayload = { a: 'recv', uid: mbStudent.uid, pt: mbStudent.participant, c: mbStudent.code, box: 'down', since: String(mbStudentCursorRef.current) };
               const bridgePs = _alloMbRecvDocPs();
               if (bridgePs && bridgePs.length) pollPayload.ps = bridgePs;
               const res = await _alloMailboxCall(mbStudent.url, pollPayload);
@@ -23363,7 +23837,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               await pc.setLocalDescription(await pc.createOffer());
               await _alloWaitIceComplete(pc);
               if (cancelled) return;
-              await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', c: mbStudent.code, k: mbStudent.secret, from: mbStudent.uid, box: 'up', v: { kind: 'rtc', uid: mbStudent.uid, sdp: pc.localDescription } });
+              await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', uid: mbStudent.uid, pt: mbStudent.participant, c: mbStudent.code, from: mbStudent.uid, box: 'up', v: { kind: 'rtc', uid: mbStudent.uid, sdp: pc.localDescription } });
           } catch (rtcErr) {
               warnLog('RTC upgrade attempt failed (staying on mailbox polling):', rtcErr?.message);
               scheduleRetry();
@@ -25696,6 +26170,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // and `stop` is polled by runPlan's shouldStop between steps (never
   // mid-command).
   const _planRunRef = useRef({ running: false, stop: false });
+  // Temporary, fixture-only state used by the official Video Studio tutorial.
+  // It is restored after recording finalizes or the studio window closes.
+  const _officialTutorialSnapshotRef = useRef(null);
   // Undo-plan snapshot (2026-07-10): captured right before a plan's first
   // step. Content states (generatedContent / history / activeView) are
   // replaced immutably by handleGenerate, so holding REFERENCES is a safe,
@@ -30686,7 +31163,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative text-left max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <button onClick={() => setMbPanelOpen(false)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
             <h2 className="text-xl font-black text-slate-900 mb-1">Live class without accounts <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 align-middle">beta</span></h2>
-            <p className="text-xs text-slate-600 mb-4">Runs on a Class Mailbox you own (a free Google Apps Script in your account). Students scan a QR — no accounts, no apps, nothing stored outside your Google Drive.</p>
+            <p className="text-xs text-slate-600 mb-4">Runs on a Class Mailbox you own (a free Google Apps Script in your account). Students scan a QR with no account or app. Live state stays in your Google Apps Script cache/properties; homework packs stay in your Drive.</p>
             {!mbConfig && (
               <div>
                 <p className="text-xs text-slate-700 mb-2 font-bold">One-time setup (~2 minutes):</p>
@@ -30708,13 +31185,13 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 hand-raise) but lack the session-doc store that powers polls,
                 quiz, groups and Pictionary — tell the teacher how to update
                 (same URL, ~1 minute). */}
-            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 6 && (
+            {mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 7 && (
               <div className="mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
-                <p className="text-xs font-bold text-amber-800 mb-2">Your mailbox script is v{mbConfig.v}. Update it to v6 to unlock polls, quizzes, groups and Pictionary for QR students (about 1 minute, the URL stays the same):</p>
+                <p className="text-xs font-bold text-amber-800 mb-2">Your mailbox script is v{mbConfig.v}. Update it to v7 to securely unlock polls, quizzes, groups and Pictionary for QR students (about 1 minute, the URL stays the same):</p>
                 <ol className="list-decimal list-inside text-xs text-amber-900 space-y-1">
                   <li><button onClick={() => copyToClipboard(ALLO_MB_SCRIPT_SOURCE)} className="font-bold underline underline-offset-2">Copy the updated script</button> and paste it over the old code in your Apps Script project (script.google.com → your AlloFlow Class Mailbox).</li>
                   <li>Deploy → Manage deployments → pencil icon → Version: <b>New version</b> → Deploy.</li>
-                  <li>Press "Connect &amp; self-test" here again — this notice disappears at v6.</li>
+                  <li>Press "Connect &amp; self-test" here again — this notice disappears at v7.</li>
                 </ol>
               </div>
             )}
@@ -30732,15 +31209,29 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             )}
             {mbConfig && !mbLive && (
               <div>
-                <p className="text-[11px] text-slate-500 mb-2 break-all">Connected mailbox: <span className="font-mono">{mbConfig.url}</span></p>
+                <div className="mb-2 text-[11px] text-slate-500">
+                  <p className="break-all">Connected mailbox: <span className="font-mono">{mbConfig.url}</span></p>
+                  <p className="mt-1 font-semibold text-emerald-700">Script v{mbConfig.v || '?'} · {mbConfig.latencyMs || '?'}ms round trip · security check ready</p>
+                </div>
                 {mbConfig.admin && (
                   <div className="mb-3 bg-slate-50 border border-slate-200 rounded-lg p-2">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Admin token — save it like a password</p>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-mono text-slate-700 truncate flex-1" title={mbConfig.admin}>{mbConfig.admin}</span>
-                      <button onClick={() => copyToClipboard(mbConfig.admin)} className="text-[11px] font-bold text-indigo-700 underline underline-offset-2 shrink-0">Copy</button>
+                      <span className="text-[11px] font-mono text-slate-700 truncate flex-1" title={mbShowAdmin ? mbConfig.admin : 'Hidden'}>
+                        {mbShowAdmin ? mbConfig.admin : '••••••••••••••••••••••••'}
+                      </span>
+                      <button onClick={() => setMbShowAdmin(v => !v)} className="p-1.5 text-slate-600 hover:text-slate-900" title={mbShowAdmin ? 'Hide admin token' : 'Reveal admin token'} aria-label={mbShowAdmin ? 'Hide admin token' : 'Reveal admin token'}>
+                        {mbShowAdmin ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                      <button onClick={() => copyToClipboard(mbConfig.admin)} className="p-1.5 text-indigo-700 hover:text-indigo-900" title="Copy admin token" aria-label="Copy admin token">
+                        <Copy size={15} />
+                      </button>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1">Paste it to reconnect from a new device or a fresh Canvas.</p>
+                    <p className="text-[10px] text-slate-400 mt-1">Students never receive this token. The QR contains only a one-session join secret.</p>
+                    <div className="flex gap-2 mt-2">
+                      <button onClick={rotateMailboxAdmin} disabled={mbBusy || mbResumable.length > 0} className="flex-1 text-[10px] font-bold border border-slate-300 rounded-md px-2 py-1.5 disabled:opacity-50" title={mbResumable.length ? 'Close active sessions before rotating' : 'Invalidate the old admin token'}>Rotate token</button>
+                      {mbResumable.length > 0 && <button onClick={closeAllMailboxSessions} disabled={mbBusy} className="flex-1 text-[10px] font-bold border border-rose-300 text-rose-700 rounded-md px-2 py-1.5 disabled:opacity-50">Close all sessions</button>}
+                    </div>
                   </div>
                 )}
                 <button onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl p-3 transition-all disabled:opacity-60">
@@ -33095,7 +33586,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             speakWord, callGemini, callTTS, callImagen, selectedVoice, t,
                             // Student QR devices play from the prepared pack only;
                             // the module nulls its AI seams when this is false.
-                            allowRuntimeAi: !_isQrStudentAiDisabled(),
+                            allowRuntimeAi: !studentAiFeaturesHidden,
                             wordSoundsDifficulty, setWordSoundsDifficulty,
                             wordSoundsAccuracyHistory, setWordSoundsAccuracyHistory,
                             wordSoundsTtsSpeed, setWordSoundsTtsSpeed,
@@ -33990,7 +34481,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               hasSourceOrAnalysis={hasSourceOrAnalysis}
           />
       )}
-      {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && <SocraticChat chatStyles={chatStyles} handleSetShowSocraticChatToFalse={handleSetShowSocraticChatToFalse} handleSocraticSubmit={handleSocraticSubmit} handleToggleIsSocraticExpanded={handleToggleIsSocraticExpanded} handleToggleSocraticAutoRead={handleToggleSocraticAutoRead} handleToggleSocraticAutoSend={handleToggleSocraticAutoSend} isSocraticDictating={isSocraticDictating} isSocraticDragging={isSocraticDragging} isSocraticExpanded={isSocraticExpanded} isSocraticThinking={isSocraticThinking} recognitionRef={recognitionRef} renderFormattedText={renderFormattedText} setIsSocraticDictating={setIsSocraticDictating} setIsSocraticDragging={setIsSocraticDragging} setSocraticInput={setSocraticInput} socraticAutoRead={socraticAutoRead} socraticAutoSend={socraticAutoSend} socraticChatRef={socraticChatRef} socraticDragOffset={socraticDragOffset} socraticInput={socraticInput} socraticLivePos={socraticLivePos} socraticMessages={socraticMessages} socraticPosition={socraticPosition} socraticScrollRef={socraticScrollRef} t={t} warnLog={warnLog} />}
+      {showSocraticChat && !isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && <SocraticChat chatStyles={chatStyles} handleSetShowSocraticChatToFalse={handleSetShowSocraticChatToFalse} handleSocraticSubmit={handleSocraticSubmit} handleToggleIsSocraticExpanded={handleToggleIsSocraticExpanded} handleToggleSocraticAutoRead={handleToggleSocraticAutoRead} handleToggleSocraticAutoSend={handleToggleSocraticAutoSend} isSocraticDictating={isSocraticDictating} isSocraticDragging={isSocraticDragging} isSocraticExpanded={isSocraticExpanded} isSocraticThinking={isSocraticThinking} recognitionRef={recognitionRef} renderFormattedText={renderFormattedText} setIsSocraticDictating={setIsSocraticDictating} setIsSocraticDragging={setIsSocraticDragging} setSocraticInput={setSocraticInput} socraticAutoRead={socraticAutoRead} socraticAutoSend={socraticAutoSend} socraticChatRef={socraticChatRef} socraticDragOffset={socraticDragOffset} socraticInput={socraticInput} socraticLivePos={socraticLivePos} socraticMessages={socraticMessages} socraticPosition={socraticPosition} socraticScrollRef={socraticScrollRef} t={t} warnLog={warnLog} />}
       {isSocraticDragging && (
         <div
             className="fixed inset-0 z-[109] cursor-grabbing"
@@ -34040,7 +34531,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         {isHelpMode ? <X size={16}/> : '?'}
       </button>
       )}
-      <FabStack activeView={activeView} addToast={addToast} focusMode={focusMode} generatedContent={generatedContent} handleSetIsSyntaxGameToTrue={handleSetIsSyntaxGameToTrue} handleSetShowStudyTimerModalToTrue={handleSetShowStudyTimerModalToTrue} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsFabExpanded={handleToggleIsFabExpanded} handleToggleReadingRuler={handleToggleReadingRuler} handleToggleShowSocraticChat={handleToggleShowSocraticChat} handleToggleVisualSupports={handleToggleVisualSupports} interactionMode={interactionMode} isCompareMode={isCompareMode} isDictationMode={isDictationMode} isFabExpanded={isFabExpanded} isFluencyMode={isFluencyMode} isLineFocusMode={isLineFocusMode} isStudyTimerRunning={isStudyTimerRunning} isTeacherMode={isTeacherMode} readingRuler={readingRuler} runTour={runTour} setFocusedParagraphIndex={setFocusedParagraphIndex} setInteractionMode={setInteractionMode} setIsCompareMode={setIsCompareMode} setIsDictationMode={setIsDictationMode} setIsFluencyMode={setIsFluencyMode} setIsLineFocusMode={setIsLineFocusMode} setRevisionData={setRevisionData} setSelectionMenu={setSelectionMenu} showSocraticChat={showSocraticChat} showVisualSupports={showVisualSupports} stopPlayback={stopPlayback} studentProjectSettings={studentProjectSettings} t={t} />
+      <FabStack activeView={activeView} addToast={addToast} focusMode={focusMode} generatedContent={generatedContent} handleSetIsSyntaxGameToTrue={handleSetIsSyntaxGameToTrue} handleSetShowStudyTimerModalToTrue={handleSetShowStudyTimerModalToTrue} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsFabExpanded={handleToggleIsFabExpanded} handleToggleReadingRuler={handleToggleReadingRuler} handleToggleShowSocraticChat={handleToggleShowSocraticChat} handleToggleVisualSupports={handleToggleVisualSupports} interactionMode={interactionMode} isCompareMode={isCompareMode} isDictationMode={isDictationMode} isFabExpanded={isFabExpanded} isFluencyMode={isFluencyMode} isLineFocusMode={isLineFocusMode} isStudyTimerRunning={isStudyTimerRunning} isTeacherMode={isTeacherMode} readingRuler={readingRuler} runTour={runTour} setFocusedParagraphIndex={setFocusedParagraphIndex} setInteractionMode={setInteractionMode} setIsCompareMode={setIsCompareMode} setIsDictationMode={setIsDictationMode} setIsFluencyMode={setIsFluencyMode} setIsLineFocusMode={setIsLineFocusMode} setRevisionData={setRevisionData} setSelectionMenu={setSelectionMenu} showSocraticChat={showSocraticChat} showVisualSupports={showVisualSupports} stopPlayback={stopPlayback} studentProjectSettings={studentProjectSettings} studentAiFeaturesHidden={studentAiFeaturesHidden} t={t} />
       </>
       )}
       {activeView === 'dashboard' && isTeacherMode && (<ErrorBoundary fallbackMessage="The teacher dashboard encountered an error. Please close and reopen.">
@@ -35230,7 +35721,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             })}
         </CDNModuleGate>
         {showEducatorHub && <EducatorHubModal handleFileUpload={handleFileUpload} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
-        {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
+        {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
                 onClose: () => setShowReportWriter(false),
@@ -35320,6 +35811,157 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     };
                     setHistory(prev => [...prev, refItem]);
                     return { id: newRefId };
+                },
+                onGetOfficialTutorial: async (tutorialId) => {
+                    if (tutorialId !== 'text-adaptation') throw new Error('Unknown official tutorial.');
+                    try { if (window.__alloLazyVideoStudio) window.__alloLazyVideoStudio(); } catch (_) {}
+                    let TC = window.AlloModules && window.AlloModules.TutorialCompiler;
+                    for (let waited = 0; !TC && waited < 8000; waited += 100) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        TC = window.AlloModules && window.AlloModules.TutorialCompiler;
+                    }
+                    if (!TC || typeof TC.buildTutorialManifest !== 'function') throw new Error('The tutorial compiler is still loading - wait a moment and try again.');
+                    const manifest = TC.buildTutorialManifest(GUIDED_STEPS, GUIDED_TOUR_MAP, t, { only: ['source-input', 'simplified'], wpm: 150 });
+                    return { generatedFrom: manifest.generatedFrom, steps: manifest.steps };
+                },
+                onRunOfficialTutorial: async (tutorialId, steps, hooks) => {
+                    if (tutorialId !== 'text-adaptation') throw new Error('Unknown official tutorial.');
+                    if (_planRunRef.current && _planRunRef.current.running) throw new Error('AlloBot is already running a plan - stop it first.');
+                    const list = (Array.isArray(steps) ? steps : []).filter(step => step && (step.id === 'source-input' || step.id === 'simplified')).slice(0, 2);
+                    if (list.length !== 2) throw new Error('The Text Adaptation tutorial manifest is incomplete.');
+                    const stopWanted = () => !!(_planRunRef.current.stop || (hooks && hooks.shouldStop && hooks.shouldStop()));
+                    _officialTutorialSnapshotRef.current = _officialTutorialSnapshotRef.current || {
+                        inputText, generatedContent, activeView, gradeLevel, expandedTools: expandedTools.slice()
+                    };
+                    _planRunRef.current = { running: true, stop: false };
+                    const fixtureSource = 'Plants use sunlight, water, and carbon dioxide to make sugar through photosynthesis. Chlorophyll captures light energy in the leaves. The plant stores some sugar and releases oxygen into the air.';
+                    const fixtureAdapted = '## Photosynthesis\n\nPlants make their own food. Leaves capture energy from sunlight. Roots bring in water, and leaves take in carbon dioxide from the air. The plant uses these materials to make sugar for energy. Oxygen is released back into the air.';
+                    const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+                    const spotlight = async anchorId => {
+                        let el = null;
+                        for (let attempt = 0; !el && attempt < 20; attempt++) { el = document.getElementById(anchorId); if (!el) await wait(100); }
+                        if (!el) throw new Error('Tutorial target is not visible: ' + anchorId);
+                        try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+                        const priorOutline = el.style.outline;
+                        const priorOffset = el.style.outlineOffset;
+                        el.style.outline = '4px solid #f59e0b';
+                        el.style.outlineOffset = '5px';
+                        await wait(650);
+                        el.style.outline = priorOutline;
+                        el.style.outlineOffset = priorOffset;
+                    };
+                    try {
+                        for (let waited = 0; document.visibilityState !== 'visible' && waited < 15000 && !stopWanted(); waited += 250) await wait(250);
+                        if (document.visibilityState !== 'visible') return { ok: false, completed: 0, reason: 'The AlloFlow tab never became visible.' };
+                        let completed = 0;
+                        for (let i = 0; i < list.length; i++) {
+                            if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
+                            const step = list[i];
+                            const actionBeat = (step.beats || []).find(beat => beat.kind === 'action');
+                            const successBeat = (step.beats || []).find(beat => beat.kind === 'success');
+                            if (hooks && hooks.onStep) hooks.onStep(i, 'start', step.label, (actionBeat && actionBeat.text) || step.label);
+                            if (step.id === 'source-input') {
+                                setActiveView('input');
+                                setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
+                                setInputText(fixtureSource);
+                            } else {
+                                setGradeLevel('5th Grade');
+                                setExpandedTools(prev => prev.includes('simplified') ? prev : [...prev, 'simplified']);
+                                setGeneratedContent({ id: 'official-text-adaptation-fixture', type: 'simplified', title: 'Photosynthesis - Grade 5 adaptation', data: fixtureAdapted, timestamp: new Date(), config: { gradeLevel: '5th Grade' }, source: 'official-tutorial' });
+                                setActiveView('simplified');
+                            }
+                            await wait(900);
+                            await spotlight(step.anchorId);
+                            await wait(900);
+                            if (hooks && hooks.onStep) hooks.onStep(i, 'done', step.label, (successBeat && successBeat.text) || (step.label + ' ready.'));
+                            completed++;
+                        }
+                        addToast('Official Text Adaptation tutorial finished. Video Studio is wrapping up the recording.', 'success');
+                        return { ok: true, completed };
+                    } finally {
+                        _planRunRef.current = { running: false, stop: false };
+                    }
+                },
+                onCleanupOfficialTutorial: () => {
+                    const snapshot = _officialTutorialSnapshotRef.current;
+                    if (!snapshot) return false;
+                    _officialTutorialSnapshotRef.current = null;
+                    setInputText(snapshot.inputText);
+                    setGeneratedContent(snapshot.generatedContent);
+                    setActiveView(snapshot.activeView);
+                    setGradeLevel(snapshot.gradeLevel);
+                    setExpandedTools(snapshot.expandedTools);
+                    return true;
+                },                onPlanDemo: async (goal) => {
+                    // Demo Autopilot planning: reuses AlloBot's planUtterance over
+                    // the live command registry (goal TEXT only goes to Gemini).
+                    const AC = window.AlloModules && window.AlloModules.AlloCommands;
+                    if (!AC || typeof AC.planUtterance !== 'function' || typeof AC.buildAlloCommands !== 'function') {
+                        // AlloCommands loads eagerly at app boot — if it's absent the
+                        // script is still arriving (or the CDN failed), so waiting is
+                        // the honest remedy.
+                        throw new Error('The command planner is still loading — wait a moment and try again.');
+                    }
+                    const cleanGoal = String(goal || '').slice(0, 300);
+                    let steps = await AC.planUtterance(_alloCmdCtx(), cleanGoal);
+                    if ((!steps || !steps.length) && typeof AC.routeUtterance === 'function') {
+                        // Single-action demos are legitimate ("show how to open the
+                        // reading library") but planUtterance requires 2+ steps — an
+                        // AlloBot rule we shouldn't loosen globally. Fall back to the
+                        // single-command router and wrap its match as a 1-step plan.
+                        try {
+                            const m = await AC.routeUtterance(_alloCmdCtx(), cleanGoal, { allowAi: true, preview: true });
+                            if (m && m.commandId) steps = [{ commandId: m.commandId, params: m.params || {}, why: '' }];
+                        } catch (_) {}
+                    }
+                    if (!steps || !steps.length) return { steps: [] };
+                    const cmds = AC.buildAlloCommands(_alloCmdCtx(), { includeGated: true });
+                    return { steps: steps.map(s => {
+                        const c = cmds.find(x => x.id === s.commandId);
+                        return { commandId: s.commandId, params: s.params || {}, why: s.why || '', label: (c && c.label) || s.commandId };
+                    }) };
+                },
+                onRunDemoPlan: async (steps, hooks) => {
+                    // Demo Autopilot execution: one guarded runPlan call PER STEP so
+                    // the demo breathes between steps (runPlan rechecks when-guards
+                    // and never auto-runs destructive commands). Shares AlloBot's
+                    // single-flight guard so a bot plan and a demo can't interleave.
+                    const AC = window.AlloModules && window.AlloModules.AlloCommands;
+                    if (!AC || typeof AC.runPlan !== 'function') throw new Error('The command runner has not loaded.');
+                    if (_planRunRef.current && _planRunRef.current.running) throw new Error('AlloBot is already running a plan — stop it first.');
+                    _planRunRef.current = { running: true, stop: false };
+                    const stopWanted = () => (_planRunRef.current.stop || !!(hooks && hooks.shouldStop && hooks.shouldStop()));
+                    try {
+                        // The teacher just picked the tab in the share dialog — wait
+                        // until this tab is actually visible before driving it.
+                        for (let waited = 0; document.visibilityState !== 'visible' && waited < 15000 && !stopWanted(); waited += 250) {
+                            await new Promise(r => setTimeout(r, 250));
+                        }
+                        if (stopWanted()) return { ok: false, stopped: true, completed: 0, reason: 'Stopped before the demo began.' };
+                        if (document.visibilityState !== 'visible') {
+                            return { ok: false, completed: 0, reason: 'The AlloFlow tab never became visible, so no automatic actions were run.' };
+                        }
+                        addToast('🎬 Demo Autopilot is driving AlloFlow — Video Studio is recording.', 'info');
+                        const list = (Array.isArray(steps) ? steps : []).slice(0, 8);
+                        let completed = 0;
+                        for (let i = 0; i < list.length; i++) {
+                            if (stopWanted()) return { ok: false, stopped: true, completed, reason: 'Stopped by the teacher.' };
+                            const r = await AC.runPlan(() => _alloCmdCtx(), [list[i]], {
+                                shouldStop: stopWanted,
+                                onStep: (j, phase, cmd, narr) => {
+                                    try { if (hooks && hooks.onStep) hooks.onStep(i, phase, (cmd && cmd.label) || list[i].commandId, narr || ''); } catch (_) {}
+                                }
+                            });
+                            if (!r || !r.ok) return { ok: false, completed, stopped: !!(r && r.stopped), reason: (r && r.reason) || ('Step ' + (i + 1) + ' did not finish.') };
+                            completed++;
+                            // A beat between steps so viewers see each result land.
+                            await new Promise(r2 => setTimeout(r2, 2200));
+                        }
+                        addToast('🎉 Demo finished — Video Studio is wrapping up the recording.', 'success');
+                        return { ok: true, completed };
+                    } finally {
+                        _planRunRef.current = { running: false, stop: false };
+                    }
                 },
                 onOpenCinematicStudio: () => { setIsVideoStudioOpen(false); setShowCinematicStudio(true); }
             })}
@@ -35964,6 +36606,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 isTeacherMode,
                 initialBookSlug: pendingReadingBookSlug,
                 onInitialBookConsumed: () => setPendingReadingBookSlug(null),
+                onPracticeLanguage: (selection) => {
+                    if (!selection || !selection.text) return;
+                    setPendingLinguaSource(selection);
+                    setIsReadingLibraryOpen(false);
+                    setIsLinguaPracticeOpen(true);
+                },
                 onSaveToLesson: (bookRef) => {
                     if (!bookRef || !bookRef.slug) return;
                     // Subtitle shown under the title in the resource pack, so a
@@ -36101,6 +36749,27 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 t,
             })}
         </CDNModuleGate>
+        <CDNModuleGate moduleKey="LinguaPractice" isOpen={isLinguaPracticeOpen} onClose={() => setIsLinguaPracticeOpen(false)} icon="A/文" displayName="Lingua Practice" t={t}>
+            {(LinguaPractice) => React.createElement(LinguaPractice, {
+                isOpen: true,
+                onClose: () => setIsLinguaPracticeOpen(false),
+                callGemini,
+                addToast,
+                sourceText: inputText,
+                initialSource: pendingLinguaSource,
+                onInitialSourceConsumed: () => setPendingLinguaSource(null),
+                t,
+            })}
+        </CDNModuleGate>
+        <CDNModuleGate moduleKey="TestPrepHub" isOpen={isTestPrepHubOpen} onClose={() => setIsTestPrepHubOpen(false)} icon={'\uD83E\uDDED'} displayName="Test Prep Hub" t={t}>
+            {(TestPrepHub) => React.createElement(TestPrepHub.TestPrepHub || TestPrepHub, {
+                isOpen: true,
+                onClose: () => setIsTestPrepHubOpen(false),
+                callTTS,
+                addToast,
+                t,
+            })}
+        </CDNModuleGate>
         <CDNModuleGate moduleKey="LitLab" isOpen={showLitLab} onClose={() => setShowLitLab(false)} icon="📚" displayName="Lit Lab" t={t}>
             {(LitLab) => React.createElement(LitLab, {
                 isOpen: true,
@@ -36191,7 +36860,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     selHubTab, setSelHubTab,
                     selHubTool, setSelHubTool,
                     addToast, gradeLevel,
-                    callGemini: studentProjectSettings.allowSocraticTutor ? callGemini : null,
+                    callGemini: !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor ? callGemini : null,
                     callTTS, callImagen, callGeminiVision,
                     onSafetyFlag: handleAiSafetyFlag,
                     studentCodename: studentNickname || 'student',
