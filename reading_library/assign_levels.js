@@ -99,6 +99,10 @@ for (const item of catalog.items || []) {
   if (!fs.existsSync(file)) { skipped++; continue; }
   const book = JSON.parse(fs.readFileSync(file, 'utf8'));
   if (!MEASURABLE.has(book.contentType)) { skipped++; continue; }
+  // Flesch-Kincaid is calibrated for English; don't apply it to other
+  // languages (the syllable/word heuristics would be meaningless). Non-English
+  // full texts keep the importer's default level.
+  if (book.langCode && book.langCode !== 'en') { skipped++; continue; }
   const grade = fkGrade(sampleText(book));
   if (grade == null) { skipped++; continue; }
   const level = levelForGrade(grade);

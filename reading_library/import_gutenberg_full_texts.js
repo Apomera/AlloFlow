@@ -904,7 +904,29 @@ function pruneObsoleteCatalogCards(catalog) {
   });
 }
 
+// Project Gutenberg publishes in many languages; derive the book's language
+// (display name + BCP47 code + text direction) from the Gutendex record rather
+// than hardcoding English, so non-English imports land on the right shelf.
+const GUTENBERG_LANG_NAMES = {
+  en: 'English', es: 'Spanish', fr: 'French', de: 'German', it: 'Italian',
+  pt: 'Portuguese', nl: 'Dutch', ru: 'Russian', la: 'Latin', el: 'Greek',
+  fi: 'Finnish', sv: 'Swedish', da: 'Danish', no: 'Norwegian', pl: 'Polish',
+  hu: 'Hungarian', cs: 'Czech', ca: 'Catalan', eo: 'Esperanto', zh: 'Chinese',
+  ja: 'Japanese', ar: 'Arabic', he: 'Hebrew', hi: 'Hindi', tl: 'Tagalog',
+  cy: 'Welsh', ga: 'Irish', is: 'Icelandic', ro: 'Romanian', bg: 'Bulgarian',
+};
+const RTL_LANG_CODES = new Set(['ar', 'he', 'fa', 'ur', 'yi']);
+function bookLanguage(metadata) {
+  const code = (Array.isArray(metadata.languages) && metadata.languages[0]) || 'en';
+  return {
+    langCode: code,
+    language: GUTENBERG_LANG_NAMES[code] || code.toUpperCase(),
+    isRtl: RTL_LANG_CODES.has(code),
+  };
+}
+
 function makeBook(metadata, textSource, curation, catalogItem) {
+  const langInfo = bookLanguage(metadata);
   const title = compact(metadata.title);
   const authors = (metadata.authors || []).map(authorName).filter(Boolean);
   const subjects = (curation.subjects && curation.subjects.length ? curation.subjects : metadata.subjects || [])
@@ -932,9 +954,9 @@ function makeBook(metadata, textSource, curation, catalogItem) {
     slug,
     title,
     description: curation.description || 'A full in-app Project Gutenberg public-domain text for older-student reading and research.',
-    language: 'English',
-    langCode: 'en',
-    isRtl: false,
+    language: langInfo.language,
+    langCode: langInfo.langCode,
+    isRtl: langInfo.isRtl,
     level: '6',
     orientation: 'portrait',
     sourceId: 'gutenberg',
@@ -965,8 +987,8 @@ function makeBook(metadata, textSource, curation, catalogItem) {
 function validateMetadata(metadata) {
   if (!metadata || !metadata.id) throw new Error('Bad metadata response');
   if (metadata.copyright !== false) throw new Error('Skipping #' + metadata.id + ': Gutendex does not mark it public-domain/copyright=false.');
-  if (!Array.isArray(metadata.languages) || !metadata.languages.includes('en')) {
-    throw new Error('Skipping #' + metadata.id + ': not an English-language record.');
+  if (!Array.isArray(metadata.languages) || !metadata.languages.length) {
+    throw new Error('Skipping #' + metadata.id + ': no language on the record.');
   }
 }
 

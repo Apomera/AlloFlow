@@ -277,6 +277,11 @@ describe('browse view', () => {
       clickByText(host, 'button', 'Most popular'); // sort
       await flush();
       expect(urls.some((u) => /sort=popular/i.test(u))).toBe(true);
+      // switch search language → gutendex languages param follows
+      const langSel = host.querySelector('select[aria-label="Search language"]');
+      act(() => { langSel.value = 'fr'; langSel.dispatchEvent(new window.Event('change', { bubbles: true })); });
+      await flush();
+      expect(urls.some((u) => /languages=fr/i.test(u))).toBe(true);
     } finally {
       window.fetch = realFetch;
       try { window.localStorage.clear(); } catch (_) {}

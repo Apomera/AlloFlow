@@ -2057,8 +2057,25 @@
     var _next = useState(null); var nextUrl = _next[0]; var setNextUrl = _next[1];
     var _topic = useState(''); var topic = _topic[0]; var setTopic = _topic[1];
     var _sort = useState('relevance'); var sortMode = _sort[0]; var setSortMode = _sort[1];
+    var _lang = useState('en'); var lang = _lang[0]; var setLang = _lang[1];
     var _req = useState(function () { return loadImportRequests(); }); var requests = _req[0]; var setRequests = _req[1];
     var reqSeq = useRef(0);
+
+    // Project Gutenberg has public-domain books in many languages; let teachers
+    // search them (import derives the book's language from the record).
+    var SEARCH_LANGS = [
+      { code: 'en', label: tr('lang_english', 'English') },
+      { code: 'es', label: tr('lang_spanish', 'Spanish') },
+      { code: 'fr', label: tr('lang_french', 'French') },
+      { code: 'de', label: tr('lang_german', 'German') },
+      { code: 'it', label: tr('lang_italian', 'Italian') },
+      { code: 'pt', label: tr('lang_portuguese', 'Portuguese') },
+      { code: 'nl', label: tr('lang_dutch', 'Dutch') },
+      { code: 'ru', label: tr('lang_russian', 'Russian') },
+      { code: 'la', label: tr('lang_latin', 'Latin') },
+      { code: 'zh', label: tr('lang_chinese', 'Chinese') },
+      { code: '', label: tr('readinglib_all_languages', 'All languages') },
+    ];
 
     var haveIds = useMemo(function () {
       var s = {};
@@ -2077,8 +2094,9 @@
       { label: tr('readinglib_topic_drama', 'Drama'), topic: 'drama' },
     ];
 
-    var buildUrl = function (q, topicVal, sortVal) {
-      var p = ['languages=en'];
+    var buildUrl = function (q, topicVal, sortVal, langVal) {
+      var p = [];
+      if (langVal) p.push('languages=' + encodeURIComponent(langVal));
       if (q) p.push('search=' + encodeURIComponent(q));
       if (topicVal) p.push('topic=' + encodeURIComponent(topicVal));
       if (sortVal === 'popular') p.push('sort=popular');
@@ -2112,23 +2130,28 @@
           setStatus('error'); setError(String((err && err.message) || err));
         });
     };
-    var runSearch = function (q, topicVal, sortVal) {
+    var runSearch = function (q, topicVal, sortVal, langVal) {
       var qq = String((q == null ? query : q) || '').trim();
       var tt = topicVal == null ? topic : topicVal;
       var ss = sortVal == null ? sortMode : sortVal;
+      var ll = langVal == null ? lang : langVal;
       if (!qq && !tt) return;
-      doFetch(buildUrl(qq, tt, ss), false);
+      doFetch(buildUrl(qq, tt, ss, ll), false);
     };
     var loadMore = function () { if (nextUrl) doFetch(nextUrl, true); };
     var pickTopic = function (t) {
       var next = (topic === t) ? '' : t;
       setTopic(next);
-      if (next || query.trim()) runSearch(query, next, sortMode);
+      if (next || query.trim()) runSearch(query, next, sortMode, lang);
     };
     var toggleSort = function () {
       var next = sortMode === 'popular' ? 'relevance' : 'popular';
       setSortMode(next);
-      if (query.trim() || topic) runSearch(query, topic, next);
+      if (query.trim() || topic) runSearch(query, topic, next, lang);
+    };
+    var pickLang = function (code) {
+      setLang(code);
+      if (query.trim() || topic) runSearch(query, topic, sortMode, code);
     };
 
     var addRequest = function (r) {
@@ -2201,6 +2224,12 @@
             onKeyDown: function (ev) { if (ev.key === 'Enter') runSearch(); },
             'aria-label': tr('readinglib_find_more', 'Find more books'),
           }),
+          e('select', {
+            className: 'rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm text-slate-700',
+            value: lang,
+            onChange: function (ev) { pickLang(ev.target.value); },
+            'aria-label': tr('readinglib_find_more_lang', 'Search language'),
+          }, SEARCH_LANGS.map(function (l) { return e('option', { key: l.code || 'all', value: l.code }, l.label); })),
           e('button', {
             className: 'px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700',
             onClick: function () { runSearch(); },
