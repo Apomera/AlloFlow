@@ -214,6 +214,12 @@
       '.wc-timeline-step[aria-current="step"]{border-color:#0284c7;color:#075985;background:rgba(224,242,254,.72)}',
       '.dark .wc-speed-segments{background:#0f172a;border-color:#334155}.dark .wc-speed-segments button{color:#bae6fd}.dark .wc-timeline-step{color:#94a3b8;border-color:#334155}.dark .wc-timeline-step[aria-current="step"]{color:#7dd3fc;border-color:#38bdf8;background:rgba(8,47,73,.5)}',
       '@media(max-width:560px){.wc-journey-timeline{grid-template-columns:repeat(3,minmax(0,1fr))}}',
+      '.wc-hydro-quest{margin:0 0 10px;padding:11px 12px;border-left:3px solid #06b6d4;background:linear-gradient(90deg,rgba(8,47,73,.08),rgba(16,185,129,.08))}',
+      '.wc-hydro-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.wc-hydro-kicker{display:block;font-size:10px;font-weight:900;text-transform:uppercase;color:#0284c7}.wc-hydro-head h4{margin:1px 0 0;font-size:16px;line-height:1.2;color:#0f172a}.wc-hydro-score{font-size:14px;color:#0369a1}',
+      '.wc-hydro-progress{height:5px;margin:8px 0;background:#cbd5e1;overflow:hidden}.wc-hydro-progress span{display:block;height:100%;background:linear-gradient(90deg,#0ea5e9,#10b981);transition:width 320ms ease}',
+      '.wc-hydro-missions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.wc-hydro-mission{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:6px;min-width:0;padding:7px;background:rgba(255,255,255,.76);border:1px solid #cbd5e1;color:#475569}.wc-hydro-mission.is-complete{border-color:#34d399;background:rgba(236,253,245,.92);color:#065f46}.wc-hydro-mark{font-size:17px;font-weight:900}.wc-hydro-mission strong,.wc-hydro-mission small{display:block;line-height:1.2}.wc-hydro-mission strong{font-size:11px}.wc-hydro-mission small{margin-top:2px;font-size:9px;color:#64748b}.wc-hydro-state{font-size:9px;font-weight:900;text-transform:uppercase}',
+      '.dark .wc-hydro-quest{background:linear-gradient(90deg,rgba(8,47,73,.7),rgba(6,78,59,.3))}.dark .wc-hydro-head h4{color:#f8fafc}.dark .wc-hydro-score,.dark .wc-hydro-kicker{color:#67e8f9}.dark .wc-hydro-progress{background:#334155}.dark .wc-hydro-mission{background:rgba(15,23,42,.82);border-color:#334155;color:#cbd5e1}.dark .wc-hydro-mission.is-complete{background:rgba(6,78,59,.46);border-color:#10b981;color:#a7f3d0}.dark .wc-hydro-mission small{color:#94a3b8}',
+      '@media(max-width:700px){.wc-hydro-missions{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:460px){.wc-hydro-missions{grid-template-columns:1fr}}',
       '.wc-3d-loading{position:absolute;z-index:6;inset:0;display:grid;place-items:center;background:#041a2b;color:#bae6fd;font-size:12px;font-weight:800}',
       '.dark .wc-view-segments{background:#0f172a;border-color:#334155}.dark .wc-view-segments button{color:#cbd5e1}.dark .wc-3d-status{color:#7dd3fc}',
       '.dark .wc-journey-lens div{background:rgba(15,23,42,.9)}.dark .wc-journey-lens strong{color:#f8fafc}.dark .wc-journey-lens span{color:#94a3b8}',
@@ -3992,6 +3998,11 @@ const d = labToolData.waterCycle || {};
                   paths[pathKey] = (paths[pathKey] || 0) + 1;
                   nextWaterCycle.journeyPaths = paths;
                 }
+                if (current.journeyView === '3d') {
+                  var visited3d = Object.assign({}, current.journey3dStatesVisited || {});
+                  visited3d[nextState] = true;
+                  nextWaterCycle.journey3dStatesVisited = visited3d;
+                }
                 return Object.assign({}, prev, { waterCycle: nextWaterCycle });
               });
             };
@@ -4305,6 +4316,7 @@ const d = labToolData.waterCycle || {};
               var rainVisual3d = parseFloat(canvasEl.dataset.rainIntensity || '55');
               var coverVisual3d = canvasEl.dataset.landCover || 'grass';
               var journeyPaused3d = canvasEl.dataset.journeyPaused === 'true';
+              var hydroPoints3d = Math.max(0, Math.min(120, parseFloat(canvasEl.dataset.hydroPoints || '0')));
               var state3d = rawState3d === 'idle' ? (stageMap3d[stage3d] || stage3d) : rawState3d;
               var targetArray3d = stageTargets3d[state3d] || stageTargets3d.ocean;
               var cameraArray3d = cameraTargets3d[state3d] || cameraTargets3d.idle;
@@ -4315,6 +4327,9 @@ const d = labToolData.waterCycle || {};
               if (!userOrbit3d) camera.position.lerp(cameraGoal3d, motionReduced3d ? 1 : 0.025);
               dropletMat3d.color.setHex(stateColors3d[state3d] || 0x38bdf8);
               dropletMat3d.emissive.setHex(stateColors3d[state3d] || 0x075985);
+              dropletLight3d.intensity = 1.8 + hydroPoints3d / 55;
+              halo3d.material.opacity = 0.10 + hydroPoints3d / 600;
+              route3d.material.opacity = 0.18 + hydroPoints3d / 800;
               if (!motionReduced3d && !journeyPaused3d) {
                 dropletGroup3d.position.y += Math.sin(elapsed3d * 2.8) * 0.0025;
                 halo3d.scale.setScalar(1 + Math.sin(elapsed3d * 3.2) * 0.12);
@@ -4453,6 +4468,22 @@ const d = labToolData.waterCycle || {};
             complete: { state: 'Liquid storage', driver: 'Cycle continues', pace: 'No fixed endpoint' }
           };
           var journeyLens = journeyLensMap[lensState] || journeyLensMap.ocean;
+          var journeyPaths = Object.assign({ runoff: 0, infiltrate: 0, plant: 0 }, d.journeyPaths || {});
+          var journey3dVisited = d.journey3dStatesVisited || {};
+          var hydroMissions = [
+            { id: 'cloud', name: 'Cloud Chaser', detail: 'Reach condensation in 3D', complete: !!journey3dVisited.condensing },
+            { id: 'river', name: 'River Runner', detail: 'Travel by surface runoff', complete: journeyPaths.runoff > 0 },
+            { id: 'deep', name: 'Deep Current', detail: 'Enter soil or an aquifer', complete: journeyPaths.infiltrate > 0 },
+            { id: 'green', name: 'Green Return', detail: 'Travel through a plant', complete: journeyPaths.plant > 0 },
+            { id: 'routes', name: 'Route Master', detail: 'Explore all three land paths', complete: journeyPaths.runoff > 0 && journeyPaths.infiltrate > 0 && journeyPaths.plant > 0 },
+            { id: 'cycle', name: 'Cycle Keeper', detail: 'Complete a full 3D cycle', complete: !!journey3dVisited.complete }
+          ];
+          var hydroCompleted = hydroMissions.filter(function(mission) { return mission.complete; }).length;
+          var hydroPoints = hydroCompleted * 20;
+          var hydroRank = hydroPoints >= 120 ? 'Cycle Guardian' :
+            hydroPoints >= 80 ? 'Hydro Explorer' :
+            hydroPoints >= 40 ? 'Watershed Scout' :
+            hydroPoints >= 20 ? 'Droplet' : 'Observer';
           var weatherLabel = currentTemp < 0 ? 'Cold-surface scenario' :
             currentTemp > 30 ? 'Hot-surface scenario' :
             currentSolar < 0.3 ? 'Night cycle' :
@@ -4687,6 +4718,44 @@ const d = labToolData.waterCycle || {};
               )
             ),
 
+            journeyView === '3d' && React.createElement("section", {
+              className: "wc-hydro-quest",
+              "data-watercycle-hydro-quest": "true",
+              "aria-labelledby": "wcHydroQuestTitle"
+            },
+              React.createElement("div", { className: "wc-hydro-head" },
+                React.createElement("div", null,
+                  React.createElement("span", { className: "wc-hydro-kicker" }, "Hydro Quest"),
+                  React.createElement("h4", { id: "wcHydroQuestTitle" }, hydroRank)
+                ),
+                React.createElement("strong", { className: "wc-hydro-score", "aria-label": hydroPoints + " of 120 Hydro Points" }, hydroPoints + " HP")
+              ),
+              React.createElement("div", {
+                className: "wc-hydro-progress",
+                role: "progressbar",
+                "aria-label": "Hydro Quest progress",
+                "aria-valuemin": 0,
+                "aria-valuemax": 120,
+                "aria-valuenow": hydroPoints
+              }, React.createElement("span", { style: { width: (hydroPoints / 1.2) + "%" } })),
+              React.createElement("div", { className: "wc-hydro-missions" },
+                hydroMissions.map(function(mission) {
+                  return React.createElement("div", {
+                    key: mission.id,
+                    className: "wc-hydro-mission" + (mission.complete ? " is-complete" : ""),
+                    "data-mission": mission.id
+                  },
+                    React.createElement("span", { className: "wc-hydro-mark", "aria-hidden": "true" }, mission.complete ? "\u2713" : "\u25cb"),
+                    React.createElement("span", null,
+                      React.createElement("strong", null, mission.name),
+                      React.createElement("small", null, mission.detail)
+                    ),
+                    React.createElement("span", { className: "wc-hydro-state" }, mission.complete ? "Complete" : "Open")
+                  );
+                })
+              )
+            ),
+
             React.createElement("div", {
               className: "wc-canvas-shell relative rounded-xl overflow-hidden shadow-lg mb-3 border-2 " + (isDark ? "border-slate-800/80" : "border-sky-300"),
               "data-watercycle-canvas-shell": "true"
@@ -4738,6 +4807,7 @@ const d = labToolData.waterCycle || {};
                 "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle',
                 "data-journey-paused": String(!!d.journeyPaused),
                 "data-journey-speed": String(d.journeySpeed || 1),
+                "data-hydro-points": String(hydroPoints),
                 "data-runoff-index": String(runoffTendency),
                 "data-infiltration-index": String(infiltrationOpportunity),
                 "data-rain-intensity": String(landRainIntensity),
