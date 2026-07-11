@@ -148,6 +148,10 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     await click('Conversation');
     await expectNoAxeViolations('conversation');
 
+    await click('Live chat');
+    await click('Start the chat');
+    await expectNoAxeViolations('chat opener');
+
     await click('Progress');
     await expectNoAxeViolations('progress');
 
@@ -279,8 +283,15 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     const textPairs = [
       ['047857', 'ffffff'],
       ['ffffff', '047857'],
+      // teal-700 is the far stop of the badge / primary-button / "your" chat-bubble
+      // gradient; white must stay legible across the whole gradient, not just the
+      // emerald-700 near stop.
+      ['ffffff', '0f766e'],
       ['64748b', 'ffffff'],
       ['065f46', 'ecfdf5'],
+      // emerald-800 sits on the emerald-tinted panels/pills (emerald-50 → f0fdf4);
+      // f0fdf4 is lighter than ecfdf5, so validating on ecfdf5 is the stricter case.
+      ['065f46', 'f0fdf4'],
       ['78350f', 'fffbeb'],
       ['9f1239', 'fff1f2'],
       ['475569', 'ffffff'],
