@@ -246,6 +246,76 @@
     var m = /gutenberg\.org\/ebooks\/(\d+)/.exec((book && book.source && book.source.url) || '');
     return m ? Number(m[1]) : null;
   }
+
+  // One-click import endpoint — a deployed reading_library/import_worker.js
+  // (Cloudflare Worker). Set this to your Worker URL to turn "Request import"
+  // into an instant "Add now"; leave '' and only the request-list handoff
+  // shows. window.__alloReadingImportEndpoint overrides at runtime.
+  var GUTENBERG_IMPORT_ENDPOINT = '';
+  function importEndpoint() {
+    try { if (window.__alloReadingImportEndpoint) return String(window.__alloReadingImportEndpoint); } catch (_) {}
+    return GUTENBERG_IMPORT_ENDPOINT || '';
+  }
+
+  // Per-device imported books: a small localStorage card index for the browse
+  // shelf + the full book bodies in IndexedDB (a novel can be several MB). All
+  // storage degrades to no-ops when unavailable (e.g. jsdom in tests).
+  var LOCAL_INDEX_KEY = 'allo_reading_lib_local_index';
+  var IMPORT_DB = 'alloReadingImports';
+  var IMPORT_STORE = 'books';
+  function loadLocalIndex() {
+    try { var a = JSON.parse(localStorage.getItem(LOCAL_INDEX_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (_) { return []; }
+  }
+  function saveLocalIndex(list) { try { localStorage.setItem(LOCAL_INDEX_KEY, JSON.stringify(list || [])); } catch (_) {} }
+  function localCardFromBook(b) {
+    return {
+      slug: b.slug, title: b.title, language: b.language, langCode: b.langCode, level: b.level,
+      isRtl: !!b.isRtl, authors: b.authors || [], hasAudio: !!b.audio, contentType: b.contentType,
+      wordCount: (b.stats && b.stats.words) || 0, source: b.source || null, license: b.license,
+      licenseUrl: b.licenseUrl, cover: null, local: true, file: 'local:' + b.slug,
+    };
+  }
+  function idbOpen() {
+    return new Promise(function (res, rej) {
+      try {
+        if (!window.indexedDB) { rej(new Error('no idb')); return; }
+        var req = window.indexedDB.open(IMPORT_DB, 1);
+        req.onupgradeneeded = function () { try { req.result.createObjectStore(IMPORT_STORE); } catch (_) {} };
+        req.onsuccess = function () { res(req.result); };
+        req.onerror = function () { rej(req.error || new Error('idb')); };
+      } catch (e) { rej(e); }
+    });
+  }
+  function idbPut(slug, book) {
+    return idbOpen().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction(IMPORT_STORE, 'readwrite');
+        tx.objectStore(IMPORT_STORE).put(book, slug);
+        tx.oncomplete = function () { res(true); };
+        tx.onerror = function () { rej(tx.error); };
+      });
+    });
+  }
+  function idbGet(slug) {
+    return idbOpen().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction(IMPORT_STORE, 'readonly');
+        var g = tx.objectStore(IMPORT_STORE).get(slug);
+        g.onsuccess = function () { res(g.result || null); };
+        g.onerror = function () { rej(g.error); };
+      });
+    });
+  }
+  function idbDel(slug) {
+    return idbOpen().then(function (db) {
+      return new Promise(function (res) {
+        var tx = db.transaction(IMPORT_STORE, 'readwrite');
+        tx.objectStore(IMPORT_STORE).delete(slug);
+        tx.oncomplete = function () { res(true); };
+        tx.onerror = function () { res(false); };
+      });
+    }).catch(function () { return false; });
+  }
   function saveReadingPos(slug, idx) {
     if (!slug) return;
     var m = readMap(READER_POS_KEY);
@@ -2082,6 +2152,39 @@
       (props.libraryBooks || []).forEach(function (b) { var id = gutenbergIdOf(b); if (id) s[id] = true; });
       return s;
     }, [props.libraryBooks]);
+    var _local = useState(function () {
+      var s = {}; loadLocalIndex().forEach(function (c) { var id = gutenbergIdOf(c); if (id) s[id] = true; }); return s;
+    }); var localIds = _local[0]; var setLocalIds = _local[1];
+    var _adding = useState(0); var adding = _adding[0]; var setAdding = _adding[1];
+    var endpoint = importEndpoint();
+
+    // One-click import: fetch the cleaned book JSON from the import Worker,
+    // stash the body in IndexedDB + a card in the local index, and hand it up
+    // so the reader can open it immediately. No endpoint → fall back to the
+    // maintainer request list.
+    var addNow = function (r) {
+      var ep = importEndpoint();
+      if (!ep) { addRequest(r); return; }
+      setAdding(r.id);
+      fetch(ep + (ep.indexOf('?') === -1 ? '?' : '&') + 'id=' + r.id)
+        .then(function (res) { return res.json().then(function (d) { if (!res.ok) throw new Error((d && d.error) || ('HTTP ' + res.status)); return d; }); })
+        .then(function (data) {
+          var book = data && data.book;
+          if (!book || !book.slug || !Array.isArray(book.pages) || !book.pages.length) throw new Error((data && data.error) || 'empty book');
+          return idbPut(book.slug, book).then(function () {
+            var idx = loadLocalIndex();
+            if (!idx.some(function (c) { return c.slug === book.slug; })) { idx.push(localCardFromBook(book)); saveLocalIndex(idx); }
+            setLocalIds(function (prev) { var n = Object.assign({}, prev); n[r.id] = true; return n; });
+            setAdding(0);
+            props.addToast && props.addToast('"' + book.title + '" ' + tr('readinglib_added_now', 'added to your library.'), 'success');
+            props.onImported && props.onImported(book);
+          });
+        })
+        .catch(function (err) {
+          setAdding(0);
+          props.addToast && props.addToast(tr('readinglib_add_now_failed', 'Could not import that book right now.') + (err && err.message ? ' (' + err.message + ')' : ''), 'error');
+        });
+    };
 
     var TOPICS = [
       { label: tr('readinglib_topic_adventure', 'Adventure'), topic: 'adventure' },
@@ -2260,8 +2363,9 @@
           tr('readinglib_find_more_err', 'Could not reach Project Gutenberg search right now.') + (error ? ' (' + error + ')' : '')) : null,
         status === 'ok' && !results.length ? e('div', { className: 'text-sm text-slate-500 py-3' }, tr('readinglib_find_more_empty', 'No public-domain matches. Try a different title or author.')) : null,
         (status === 'ok' || status === 'loadingMore') && results.length ? e('div', { className: 'mt-2 space-y-2' }, results.map(function (r) {
-          var inLibrary = !!haveIds[r.id];
+          var inLibrary = !!haveIds[r.id] || !!localIds[r.id];
           var requested = requests.some(function (x) { return x.id === r.id; });
+          var isAdding = adding === r.id;
           return e('div', { key: r.id, className: 'border border-slate-200 rounded-xl p-2.5 flex gap-2.5' },
             r.cover ? e('img', { src: r.cover, alt: '', loading: 'lazy', className: 'w-12 h-16 object-cover rounded bg-slate-100 flex-shrink-0' })
               : e('div', { className: 'w-12 h-16 rounded bg-indigo-50 flex items-center justify-center text-xl flex-shrink-0' }, '📖'),
@@ -2280,6 +2384,13 @@
                 inLibrary ? e('span', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200' },
                   '✓ ' + tr('readinglib_in_library', 'In your library')) :
                 !r.hasText ? e('span', { className: 'text-[11px] text-slate-400 italic' }, tr('readinglib_no_inapp_text', 'No in-app text (audio/scan only)')) :
+                isAdding ? e('span', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200' },
+                  tr('readinglib_adding', 'Adding…')) :
+                endpoint ? e('button', {
+                  className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700',
+                  onClick: function () { addNow(r); },
+                  title: tr('readinglib_add_now_hint', 'Import this book into your library now'),
+                }, '＋ ' + tr('readinglib_add_now', 'Add now')) :
                 requested ? e('span', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200' },
                   '✓ ' + tr('readinglib_requested', 'Requested')) :
                 e('button', {
@@ -2482,6 +2593,28 @@
         });
     };
 
+    // Per-device imported books ("Add now"). The card index is synchronous;
+    // book bodies come from IndexedDB on open. localVer bumps to refresh after
+    // an import or a removal.
+    var _lv = useState(0); var localVer = _lv[0]; var setLocalVer = _lv[1];
+    var localImports = useMemo(function () { return openBook ? [] : loadLocalIndex(); }, [openBook, localVer]);
+    var openLocalBook = function (card) {
+      setLoadingBook(card.slug);
+      idbGet(card.slug).then(function (book) {
+        setLoadingBook(null);
+        if (book) { stopSpeech(); setOpenBook(book); }
+        else props.addToast && props.addToast(tr('readinglib_local_missing', 'That imported book is no longer stored on this device.'), 'info');
+      }).catch(function () {
+        setLoadingBook(null);
+        props.addToast && props.addToast(tr('readinglib_book_failed', 'Could not open that book right now.'), 'error');
+      });
+    };
+    var removeLocalBook = function (slug) {
+      idbDel(slug);
+      saveLocalIndex(loadLocalIndex().filter(function (c) { return c.slug !== slug; }));
+      setLocalVer(function (n) { return n + 1; });
+    };
+
     var onExitReader = function (closeAll) {
       stopSpeech();
       setOpenBook(null);
@@ -2614,6 +2747,26 @@
           })()),
         // grid
         e('div', { className: 'flex-1 min-h-0 overflow-y-auto' },
+          // My imports — books added on-device via "Add now" (not in the shared
+          // catalog). Shown while browsing, opened straight from IndexedDB.
+          (localImports.length && !filters.search) ? e('div', { className: 'mb-3' },
+            e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-emerald-600 mb-1' },
+              '📥 ' + tr('readinglib_my_imports', 'My imports') + ' · ' + tr('readinglib_my_imports_note', 'on this device')),
+            e('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3' },
+              localImports.map(function (c) {
+                return e('div', { key: 'local-' + c.slug, className: 'relative' },
+                  e(BookCard, { book: c, onOpen: function () { openLocalBook(c); }, busy: loadingBook === c.slug }),
+                  e('button', {
+                    className: 'absolute top-1 right-1 z-10 px-1.5 py-0.5 rounded-full bg-white/90 border border-slate-200 text-[11px] text-slate-500 hover:text-red-600 hover:bg-white shadow',
+                    onClick: function (ev) { ev.stopPropagation(); removeLocalBook(c.slug); },
+                    'aria-label': tr('readinglib_remove_import', 'Remove from my imports') + ': ' + c.title,
+                    title: tr('readinglib_remove_import', 'Remove from my imports'),
+                  }, '✕')
+                );
+              })
+            ),
+            e('div', { className: 'border-b border-slate-200 mt-3' })
+          ) : null,
           // Continue reading — books with a saved position, surfaced when
           // browsing (hidden during a search so it doesn't crowd results).
           (resumeList.length && !filters.search) ? e('div', { className: 'mb-3' },
@@ -2685,7 +2838,8 @@
         findMoreOpen ? e(GutenbergSearchModal, {
           onClose: function () { setFindMoreOpen(false); },
           addToast: props.addToast,
-          libraryBooks: books,
+          libraryBooks: books.concat(localImports),
+          onImported: function (book) { setFindMoreOpen(false); setLocalVer(function (n) { return n + 1; }); stopSpeech(); setOpenBook(book); },
         }) : null,
         // Teacher explainer: the three ways to get books in any language.
         optionsOpen ? e('div', {

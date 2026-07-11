@@ -288,6 +288,71 @@ describe('browse view', () => {
     }
   });
 
+  it('one-click "Add now" imports via the Worker and opens the book', async () => {
+    try { window.localStorage.clear(); } catch (_) {}
+    // Minimal in-memory IndexedDB good enough for the reader's idb helpers.
+    const store = new Map();
+    const later = (fn) => Promise.resolve().then(fn);
+    window.indexedDB = {
+      open() {
+        const req = { result: null, onsuccess: null, onerror: null, onupgradeneeded: null };
+        req.result = {
+          createObjectStore() { return {}; },
+          transaction() {
+            const tx = { oncomplete: null, onerror: null, objectStore: () => ({
+              put(v, k) { store.set(k, v); later(() => tx.oncomplete && tx.oncomplete()); return {}; },
+              get(k) { const g = { result: undefined, onsuccess: null, onerror: null }; later(() => { g.result = store.get(k); g.onsuccess && g.onsuccess(); }); return g; },
+              delete(k) { store.delete(k); later(() => tx.oncomplete && tx.oncomplete()); return {}; },
+            }) };
+            return tx;
+          },
+        };
+        later(() => { req.onupgradeneeded && req.onupgradeneeded(); req.onsuccess && req.onsuccess(); });
+        return req;
+      },
+    };
+    window.__alloReadingImportEndpoint = 'https://worker.test/import';
+    const importedBook = {
+      slug: 'gutenberg-ebook-424242-imported-test', title: 'Imported Test Book',
+      language: 'English', langCode: 'en', isRtl: false, level: '6',
+      contentType: 'public-domain-full-text', authors: ['A. Author'],
+      source: { id: 'gutenberg', name: 'Project Gutenberg', url: 'https://www.gutenberg.org/ebooks/424242' },
+      license: 'Public Domain', pages: [{ n: 1, img: null, text: 'Hello imported world, this is a page.', words: null }],
+      stats: { pages: 1, words: 6 },
+    };
+    const realFetch = window.fetch;
+    window.fetch = (url) => {
+      const u = String(url);
+      if (u.includes('worker.test')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ book: importedBook }) });
+      if (u.includes('gutendex.com')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({
+          results: [{ id: 424242, title: 'Imported Test Book', copyright: false, download_count: 10,
+            authors: [{ name: 'A. Author' }], subjects: ['Fiction'],
+            formats: { 'text/plain; charset=utf-8': 'https://www.gutenberg.org/files/424242/424242-0.txt' } }],
+        }) });
+      }
+      return realFetch(url);
+    };
+    try {
+      await mount();
+      clickByText(host, 'button', 'Find more books');
+      await flush();
+      setInputValue(host.querySelector('input[aria-label="Find more books"]'), 'imported test');
+      clickByText(host, 'button', 'Search');
+      await flush();
+      clickByText(host, 'button', 'Add now');
+      await flush(); await flush(); await flush();
+      // onImported opened the book in the reader
+      expect(textOf(host)).toContain('Imported Test Book');
+      expect(store.has('gutenberg-ebook-424242-imported-test')).toBe(true);
+    } finally {
+      window.fetch = realFetch;
+      delete window.indexedDB;
+      delete window.__alloReadingImportEndpoint;
+      try { window.localStorage.clear(); } catch (_) {}
+    }
+  });
+
   it('opens an older-student science source with source attribution intact', async () => {
     await mount();
     await chooseCollection('Science & nonfiction');
