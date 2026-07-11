@@ -74,12 +74,49 @@
       word_bank:'Banco de palavras pessoal', saved_words:'Palavras salvas'
     }
   };
+  function interpolate(s, params) {
+    if (s == null || !params) return s;
+    Object.keys(params).forEach(function (k) { s = s.split('{' + k + '}').join(String(params[k])); });
+    return s;
+  }
   function translate(knownLang, key, params) {
     var pack = UI_STRINGS[knownLang] || null;
     var s = (pack && pack[key] != null) ? pack[key] : UI_STRINGS.English[key];
     if (s == null) return key;
-    if (params) Object.keys(params).forEach(function (k) { s = s.split('{' + k + '}').join(String(params[k])); });
-    return s;
+    return interpolate(s, params);
+  }
+  // Runtime auto-localization: for a known language with no bundled pack above,
+  // Lingua asks the app's own Gemini (props.callGemini — the USER's runtime key,
+  // never a build key) to translate its ~55 UI labels once, caches the result
+  // per-device, and falls back to English. Covers every standard language AND
+  // free-typed custom ones, and stays entirely out of lang/*.js.
+  var UI_I18N_KEY = 'allo_lingua_ui_i18n_v1';
+  function sanitizeUiPack(obj) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
+    var keys = Object.keys(UI_STRINGS.English), out = {}, n = 0;
+    keys.forEach(function (k) {
+      var v = obj[k];
+      if (typeof v === 'string') { v = v.trim().slice(0, 160); if (v) { out[k] = v; n++; } }
+    });
+    return n >= Math.floor(keys.length * 0.6) ? out : null; // reject partial/garbage responses
+  }
+  function normalizeUiI18n(value) {
+    var input = value && typeof value === 'object' && !Array.isArray(value) ? value : {}, next = {};
+    Object.keys(input).slice(0, 80).forEach(function (name) {
+      if (!name || typeof name !== 'string' || UI_STRINGS[name]) return;
+      var p = sanitizeUiPack(input[name]);
+      if (p) next[name] = p;
+    });
+    return next;
+  }
+  function uiTranslatePrompt(langName) {
+    return [
+      'Localize the user-interface labels of a language-learning app into ' + langName + '.',
+      'Translate the VALUES of this JSON into natural, concise ' + langName + ' suitable for buttons, tabs and short labels — keep them short.',
+      'CRITICAL: keep every {token} such as {lang}, {n}, {due}, {saved} EXACTLY as written (do not translate or remove them), placed naturally.',
+      'Return ONLY a JSON object with the SAME keys and translated string values — no commentary.',
+      JSON.stringify(UI_STRINGS.English)
+    ].join(String.fromCharCode(10));
   }
   var LEVELS = ['New to the language', 'Beginner', 'Developing', 'Intermediate', 'Advanced'];
   // Preset languages (name, BCP-47 code, rtl?). This is a convenience list, not
@@ -630,6 +667,7 @@
     var g0 = normalizeProgress(read(PROGRESS_KEY,{saved:[],sessions:0,spokenAttempts:0}));
     var recent0 = normalizeRecentLessons(read(RECENT_KEY,{}));
     var chat0 = normalizeChats(read(CHAT_KEY,{}));
+    var ai0 = normalizeUiI18n(read(UI_I18N_KEY,{}));
     var ps=useState(p0), profile=ps[0], setProfile=ps[1];
     var gs=useState(g0), progress=gs[0], setProgress=gs[1];
     var rls=useState(recent0), recentLessons=rls[0], setRecentLessons=rls[1];
@@ -657,8 +695,28 @@
     var phraseRef=useRef(null), conversationPromptRef=useRef(null), reviewRegionRef=useRef(null), reviewAnswerRef=useRef(null);
     var previousIndexRef=useRef(0), previousTurnRef=useRef(0), reviewFocusPendingRef=useRef(false), captureCompletedRef=useRef(false);
     var chatRequestRef=useRef(0), chatVoiceRef=useRef(null), chatLogRef=useRef(null), chatCaptureRef=useRef(false), chatStoreRef=useRef(chat0), previousChatTargetRef=useRef(p0.target);
+    var aiI18nRef=useRef(ai0), uiTransReqRef=useRef(0);
+    var uts=useState(false), uiTranslating=uts[0], setUiTranslating=uts[1];
+    var uatk=useState(0), setUiTick=uatk[1];
     var generationRequestRef=useRef(0), coachRequestRef=useRef(0), target=lang(profile.target), known=lang(profile.known);
-    function tr(key,params){return translate(profile.known,key,params);}
+    function tr(key,params){
+      var known=profile.known, sp=UI_STRINGS[known];
+      if(sp&&sp[key]!=null)return interpolate(sp[key],params);
+      var ap=aiI18nRef.current[known];
+      if(ap&&ap[key]!=null)return interpolate(ap[key],params);
+      return translate(known,key,params);
+    }
+    // True when the current known-language chrome came from runtime AI translation
+    // (not a bundled pack, not English) — used for an honest disclosure.
+    function uiIsMachine(){var k=profile.known;return k!=='English'&&!UI_STRINGS[k]&&!!aiI18nRef.current[k];}
+    async function translateUI(langName){
+      var reqId=++uiTransReqRef.current,pack=null;
+      setUiTranslating(true);
+      try{var raw=await props.callGemini(uiTranslatePrompt(langName));if(reqId!==uiTransReqRef.current)return;pack=sanitizeUiPack(JSON.parse(cleanJson(raw)));}catch(_){}
+      if(reqId!==uiTransReqRef.current)return;
+      setUiTranslating(false);
+      if(pack){var store=Object.assign({},aiI18nRef.current);store[langName]=pack;aiI18nRef.current=store;write(UI_I18N_KEY,store);setUiTick(function(n){return n+1;});}
+    }
     var due=dueWords(progress.saved||[],profile.target,Date.now()), reviewItem=due[0]||null;
     var summary=languageSummary(progress,profile.target,Date.now());
     var recentLesson=recentLessons&&recentLessons[profile.target]&&recentLessons[profile.target].lesson?recentLessons[profile.target]:null;
@@ -683,7 +741,7 @@
         else if(!x.shiftKey&&document.activeElement===last){x.preventDefault();first.focus();}
       }
       document.addEventListener('keydown',key);
-      return function(){document.removeEventListener('keydown',key);generationRequestRef.current++;coachRequestRef.current++;chatRequestRef.current++;document.body.style.overflow=previousOverflow;if(voiceRef.current)voiceRef.current.stop();if(chatVoiceRef.current)chatVoiceRef.current.stop();if(previousFocus&&previousFocus.isConnected&&typeof previousFocus.focus==='function')previousFocus.focus();};
+      return function(){document.removeEventListener('keydown',key);generationRequestRef.current++;coachRequestRef.current++;chatRequestRef.current++;uiTransReqRef.current++;document.body.style.overflow=previousOverflow;if(voiceRef.current)voiceRef.current.stop();if(chatVoiceRef.current)chatVoiceRef.current.stop();if(previousFocus&&previousFocus.isConnected&&typeof previousFocus.focus==='function')previousFocus.focus();};
     },[]);
     useEffect(function(){
       if(lastTabRef.current===null){lastTabRef.current=tab;return;}
@@ -709,6 +767,13 @@
       chatRequestRef.current++;setChatBusy(false);setChatInput('');
       setChatMessages((chatStoreRef.current[profile.target]||{}).messages||[]);
     },[profile.target]);
+    useEffect(function(){
+      var k=profile.known;
+      if(!k||k==='English'||UI_STRINGS[k]||aiI18nRef.current[k]||typeof props.callGemini!=='function')return;
+      // Debounce so a free-typed custom language only translates once typing settles.
+      var t=setTimeout(function(){translateUI(k);},700);
+      return function(){clearTimeout(t);};
+    },[profile.known]);
     useEffect(function(){
       if(!reviewFocusPendingRef.current)return;
       reviewFocusPendingRef.current=false;
@@ -885,6 +950,7 @@
                 e(LanguageField,{label:tr('i_learning'),value:profile.target,change:function(v){patch('target',v);}}),
                 e(Select,{label:tr('my_level'),value:profile.level,change:function(v){patch('level',v);},options:LEVELS})
               ),
+              (uiTranslating||uiIsMachine())?e('p',{className:'text-xs text-slate-500 mt-3',role:'status','aria-live':'polite'},uiTranslating?('Translating the interface into '+profile.known+'…'):('Interface auto-translated into '+profile.known+'. Tell us if anything reads wrong.')):null,
               e('section',{className:'py-6 border-b border-slate-200'},
                 e('label',{htmlFor:'lingua-topic',className:'block text-xs font-bold text-slate-600 mb-1.5'},tr('topic_label')),
                 e('input',{id:'lingua-topic',value:profile.topic,onChange:function(x){patch('topic',x.target.value);},placeholder:'Example: ordering lunch or discussing a reading',className:selectClass}),
@@ -1064,6 +1130,8 @@
   LinguaPractice._fallbackLesson=fallbackLesson;
   LinguaPractice._languageByName=lang;
   LinguaPractice._translate=translate;
+  LinguaPractice._sanitizeUiPack=sanitizeUiPack;
+  LinguaPractice._normalizeUiI18n=normalizeUiI18n;
   LinguaPractice._normalizeProfile=normalizeProfile;
   LinguaPractice._normalizeProgress=normalizeProgress;
   LinguaPractice._normalizeRecentLessons=normalizeRecentLessons;

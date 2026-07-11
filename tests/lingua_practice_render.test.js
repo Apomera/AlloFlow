@@ -294,6 +294,38 @@ describe('Lingua Practice UI localization', () => {
   });
 });
 
+describe('Lingua Practice runtime auto-localization', () => {
+  it('auto-translates the UI for an unbundled known language via the AI and caches it', async () => {
+    let uiCalls = 0;
+    const callGemini = async (prompt) => {
+      if (typeof prompt === 'string' && prompt.includes('Localize the user-interface labels')) {
+        uiCalls += 1;
+        const en = JSON.parse(prompt.slice(prompt.indexOf('{"'))); // English map starts at {" (not the {token} braces)
+        const out = {};
+        Object.keys(en).forEach((k) => { out[k] = 'VI·' + en[k]; }); // keep {tokens}, mark distinctly
+        return JSON.stringify(out);
+      }
+      return '{}';
+    };
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini }));
+
+    const known = host.querySelector('select[aria-label="I know"]');
+    await act(async () => { known.value = 'Vietnamese'; known.dispatchEvent(new Event('change', { bubbles: true })); });
+    // 700ms debounce + async translate
+    await act(async () => { await new Promise((r) => setTimeout(r, 900)); });
+
+    expect(uiCalls).toBe(1);
+    const navText = Array.from(host.querySelectorAll('nav button')).map((n) => n.textContent).join('|');
+    expect(navText).toContain('VI·Setup'); // nav_setup value auto-translated
+    const cached = JSON.parse(localStorage.getItem('allo_lingua_ui_i18n_v1'));
+    expect(cached.Vietnamese.nav_vocabulary).toBe('VI·Vocabulary');
+
+    // token preservation survived the round-trip
+    expect(cached.Vietnamese.due_saved).toContain('{due}');
+    expect(cached.Vietnamese.due_saved).toContain('{saved}');
+  });
+});
+
 describe('Lingua Practice slow audio', () => {
   it('toggles slow playback, persists it, and passes a slower rate to the player', async () => {
     const spoken = [];
