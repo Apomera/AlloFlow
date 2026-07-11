@@ -243,6 +243,46 @@ describe('browse view', () => {
     expect(card).toBeTruthy();
   });
 
+  it('Find-more supports topic chips, popularity sort, and load-more paging', async () => {
+    try { window.localStorage.clear(); } catch (_) {}
+    const urls = [];
+    const realFetch = window.fetch;
+    const page = (id, next) => ({ ok: true, json: () => Promise.resolve({
+      next,
+      results: [{
+        id, title: 'Book ' + id, copyright: false, download_count: 100,
+        authors: [{ name: 'X' }], subjects: ['Adventure'],
+        formats: { 'text/plain; charset=utf-8': 'https://www.gutenberg.org/files/' + id + '/' + id + '-0.txt' },
+      }],
+    }) });
+    window.fetch = (url) => {
+      const u = String(url);
+      if (u.includes('gutendex.com')) {
+        urls.push(u);
+        return Promise.resolve(u.includes('page=2') ? page(2, null) : page(1, 'https://gutendex.com/books/?page=2'));
+      }
+      return realFetch(url);
+    };
+    try {
+      await mount();
+      clickByText(host, 'button', 'Find more books');
+      await flush();
+      clickByText(host, 'button', 'Adventure'); // topic chip
+      await flush();
+      expect(urls.some((u) => /topic=adventure/i.test(u))).toBe(true);
+      expect(textOf(host)).toContain('Book 1');
+      clickByText(host, 'button', 'Load more'); // pagination
+      await flush();
+      expect(textOf(host)).toContain('Book 2');
+      clickByText(host, 'button', 'Most popular'); // sort
+      await flush();
+      expect(urls.some((u) => /sort=popular/i.test(u))).toBe(true);
+    } finally {
+      window.fetch = realFetch;
+      try { window.localStorage.clear(); } catch (_) {}
+    }
+  });
+
   it('opens an older-student science source with source attribution intact', async () => {
     await mount();
     await chooseCollection('Science & nonfiction');

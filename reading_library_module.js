@@ -2054,6 +2054,9 @@
     var _st = useState('idle'); var status = _st[0]; var setStatus = _st[1];
     var _res = useState([]); var results = _res[0]; var setResults = _res[1];
     var _err = useState(''); var error = _err[0]; var setError = _err[1];
+    var _next = useState(null); var nextUrl = _next[0]; var setNextUrl = _next[1];
+    var _topic = useState(''); var topic = _topic[0]; var setTopic = _topic[1];
+    var _sort = useState('relevance'); var sortMode = _sort[0]; var setSortMode = _sort[1];
     var _req = useState(function () { return loadImportRequests(); }); var requests = _req[0]; var setRequests = _req[1];
     var reqSeq = useRef(0);
 
@@ -2063,31 +2066,69 @@
       return s;
     }, [props.libraryBooks]);
 
-    var runSearch = function (q) {
-      q = String(q == null ? query : q).trim();
-      if (!q) return;
+    var TOPICS = [
+      { label: tr('readinglib_topic_adventure', 'Adventure'), topic: 'adventure' },
+      { label: tr('readinglib_topic_children', "Children's"), topic: 'children' },
+      { label: tr('readinglib_topic_fairy', 'Fairy tales'), topic: 'fairy tales' },
+      { label: tr('readinglib_topic_science', 'Science'), topic: 'science' },
+      { label: tr('readinglib_topic_history', 'History'), topic: 'history' },
+      { label: tr('readinglib_topic_poetry', 'Poetry'), topic: 'poetry' },
+      { label: tr('readinglib_topic_myth', 'Mythology'), topic: 'mythology' },
+      { label: tr('readinglib_topic_drama', 'Drama'), topic: 'drama' },
+    ];
+
+    var buildUrl = function (q, topicVal, sortVal) {
+      var p = ['languages=en'];
+      if (q) p.push('search=' + encodeURIComponent(q));
+      if (topicVal) p.push('topic=' + encodeURIComponent(topicVal));
+      if (sortVal === 'popular') p.push('sort=popular');
+      return 'https://gutendex.com/books/?' + p.join('&');
+    };
+    var mapResult = function (b) {
+      return {
+        id: b.id,
+        title: String(b.title || '').replace(/\s*:\s*\$[a-z]\s*/gi, ': ').trim(),
+        authors: (b.authors || []).map(function (a) { return a.name; }),
+        subjects: (b.subjects || []).slice(0, 3),
+        downloads: b.download_count || 0,
+        hasText: gutendexHasText(b.formats),
+        cover: (b.formats && (b.formats['image/jpeg'] || b.formats['image/png'])) || null,
+      };
+    };
+    var doFetch = function (url, append) {
       var seq = ++reqSeq.current;
-      setStatus('loading'); setError('');
-      fetch('https://gutendex.com/books/?languages=en&search=' + encodeURIComponent(q))
+      setStatus(append ? 'loadingMore' : 'loading'); setError('');
+      fetch(url)
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function (data) {
           if (seq !== reqSeq.current) return;
-          var list = (data.results || []).filter(function (b) { return b.copyright === false; }).slice(0, 30).map(function (b) {
-            return {
-              id: b.id,
-              title: String(b.title || '').replace(/\s*:\s*\$[a-z]\s*/gi, ': ').trim(),
-              authors: (b.authors || []).map(function (a) { return a.name; }),
-              subjects: (b.subjects || []).slice(0, 3),
-              downloads: b.download_count || 0,
-              hasText: gutendexHasText(b.formats),
-            };
-          });
-          setResults(list); setStatus('ok');
+          var list = (data.results || []).filter(function (b) { return b.copyright === false; }).map(mapResult);
+          setResults(function (prev) { return append ? prev.concat(list) : list; });
+          setNextUrl(data.next || null);
+          setStatus('ok');
         })
         .catch(function (err) {
           if (seq !== reqSeq.current) return;
           setStatus('error'); setError(String((err && err.message) || err));
         });
+    };
+    var runSearch = function (q, topicVal, sortVal) {
+      var qq = String((q == null ? query : q) || '').trim();
+      var tt = topicVal == null ? topic : topicVal;
+      var ss = sortVal == null ? sortMode : sortVal;
+      if (!qq && !tt) return;
+      doFetch(buildUrl(qq, tt, ss), false);
+    };
+    var loadMore = function () { if (nextUrl) doFetch(nextUrl, true); };
+    var pickTopic = function (t) {
+      var next = (topic === t) ? '' : t;
+      setTopic(next);
+      if (next || query.trim()) runSearch(query, next, sortMode);
+    };
+    var toggleSort = function () {
+      var next = sortMode === 'popular' ? 'relevance' : 'popular';
+      setSortMode(next);
+      if (query.trim() || topic) runSearch(query, topic, next);
     };
 
     var addRequest = function (r) {
@@ -2100,22 +2141,44 @@
       var next = requests.filter(function (x) { return x.id !== id; });
       setRequests(next); saveImportRequests(next);
     };
-    var copyRequests = function () {
-      if (!requests.length) return;
+    var buildRequestText = function () {
       var ids = requests.map(function (r) { return r.id; }).join(',');
       var lines = requests.map(function (r) { return '- ' + r.title + ' (Project Gutenberg #' + r.id + ') https://www.gutenberg.org/ebooks/' + r.id; });
-      var text = tr('readinglib_req_intro', 'Please add these public-domain books to the AlloFlow reading library:') + '\n' +
+      return tr('readinglib_req_intro', 'Please add these public-domain books to the AlloFlow reading library:') + '\n' +
         lines.join('\n') + '\n\n' + tr('readinglib_req_cmd', 'Maintainer command:') + '\n' +
         'node reading_library/import_gutenberg_full_texts.js --ids ' + ids + '\n' +
         'node reading_library/assign_levels.js && node reading_library/mirror_books.js --fetch';
+    };
+    var copyRequests = function () {
+      if (!requests.length) return;
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text);
+          navigator.clipboard.writeText(buildRequestText());
           props.addToast && props.addToast(tr('readinglib_req_copied', 'Copied the request list — send it to your AlloFlow maintainer.'), 'success');
           return;
         }
       } catch (_) {}
       props.addToast && props.addToast(tr('readinglib_req_saved', 'Your request list is saved in this browser.'), 'info');
+    };
+    var downloadRequests = function () {
+      if (!requests.length) return;
+      try {
+        var blob = new Blob([buildRequestText()], { type: 'text/plain;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'alloflow-book-requests.txt';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+      } catch (_) {
+        props.addToast && props.addToast(tr('readinglib_download_failed', 'Could not download the text.'), 'error');
+      }
+    };
+    var emailRequests = function () {
+      if (!requests.length) return;
+      try {
+        window.open('mailto:?subject=' + encodeURIComponent(tr('readinglib_req_subject', 'AlloFlow reading library — book import requests')) +
+          '&body=' + encodeURIComponent(buildRequestText()), '_blank');
+      } catch (_) {}
     };
 
     return e('div', {
@@ -2143,43 +2206,77 @@
             onClick: function () { runSearch(); },
           }, tr('readinglib_search', 'Search'))
         ),
+        // Topic chips (browse by subject) + popularity sort.
+        e('div', { className: 'flex flex-wrap items-center gap-1 mt-2' },
+          TOPICS.map(function (t) {
+            return e('button', {
+              key: t.topic,
+              className: 'px-2.5 py-1 rounded-full text-xs font-semibold border ' +
+                (topic === t.topic ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'),
+              onClick: function () { pickTopic(t.topic); },
+              'aria-pressed': topic === t.topic,
+            }, t.label);
+          }),
+          e('span', { className: 'flex-1' }),
+          e('button', {
+            className: 'px-2.5 py-1 rounded-full text-xs font-semibold border ' +
+              (sortMode === 'popular' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'),
+            onClick: toggleSort,
+            'aria-pressed': sortMode === 'popular',
+            title: tr('readinglib_sort_popular_hint', 'Show the most-downloaded books first'),
+          }, '⬇ ' + tr('readinglib_sort_popular', 'Most popular'))
+        ),
         status === 'loading' ? e('div', { className: 'text-sm text-slate-500 italic py-3' }, tr('readinglib_searching', 'Searching Project Gutenberg…')) : null,
         status === 'error' ? e('div', { className: 'text-sm text-red-600 py-3' },
           tr('readinglib_find_more_err', 'Could not reach Project Gutenberg search right now.') + (error ? ' (' + error + ')' : '')) : null,
         status === 'ok' && !results.length ? e('div', { className: 'text-sm text-slate-500 py-3' }, tr('readinglib_find_more_empty', 'No public-domain matches. Try a different title or author.')) : null,
-        status === 'ok' && results.length ? e('div', { className: 'mt-2 space-y-2' }, results.map(function (r) {
+        (status === 'ok' || status === 'loadingMore') && results.length ? e('div', { className: 'mt-2 space-y-2' }, results.map(function (r) {
           var inLibrary = !!haveIds[r.id];
           var requested = requests.some(function (x) { return x.id === r.id; });
-          return e('div', { key: r.id, className: 'border border-slate-200 rounded-xl p-2.5' },
-            e('div', { className: 'font-bold text-slate-800 text-sm leading-snug' }, r.title),
-            r.authors.length ? e('div', { className: 'text-[11px] text-slate-500' }, r.authors.join(', ')) : null,
-            e('div', { className: 'flex flex-wrap gap-1 mt-1' },
-              r.subjects.map(function (s, i) { return e('span', { key: i, className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px]' }, String(s).slice(0, 40)); }),
-              e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px]' }, '⬇ ' + r.downloads.toLocaleString())
-            ),
-            e('div', { className: 'flex flex-wrap items-center gap-2 mt-2' },
-              e('a', {
-                className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100',
-                href: 'https://www.gutenberg.org/ebooks/' + r.id, target: '_blank', rel: 'noopener noreferrer',
-              }, tr('readinglib_open_at_gutenberg', 'Open at Gutenberg')),
-              inLibrary ? e('span', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200' },
-                '✓ ' + tr('readinglib_in_library', 'In your library')) :
-              !r.hasText ? e('span', { className: 'text-[11px] text-slate-400 italic' }, tr('readinglib_no_inapp_text', 'No in-app text (audio/scan only)')) :
-              requested ? e('span', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200' },
-                '✓ ' + tr('readinglib_requested', 'Requested')) :
-              e('button', {
-                className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700',
-                onClick: function () { addRequest(r); },
-              }, '＋ ' + tr('readinglib_request_import', 'Request import'))
+          return e('div', { key: r.id, className: 'border border-slate-200 rounded-xl p-2.5 flex gap-2.5' },
+            r.cover ? e('img', { src: r.cover, alt: '', loading: 'lazy', className: 'w-12 h-16 object-cover rounded bg-slate-100 flex-shrink-0' })
+              : e('div', { className: 'w-12 h-16 rounded bg-indigo-50 flex items-center justify-center text-xl flex-shrink-0' }, '📖'),
+            e('div', { className: 'min-w-0 flex-1' },
+              e('div', { className: 'font-bold text-slate-800 text-sm leading-snug' }, r.title),
+              r.authors.length ? e('div', { className: 'text-[11px] text-slate-500' }, r.authors.join(', ')) : null,
+              e('div', { className: 'flex flex-wrap gap-1 mt-1' },
+                r.subjects.map(function (s, i) { return e('span', { key: i, className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px]' }, String(s).slice(0, 40)); }),
+                e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px]' }, '⬇ ' + r.downloads.toLocaleString())
+              ),
+              e('div', { className: 'flex flex-wrap items-center gap-2 mt-2' },
+                e('a', {
+                  className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100',
+                  href: 'https://www.gutenberg.org/ebooks/' + r.id, target: '_blank', rel: 'noopener noreferrer',
+                }, tr('readinglib_open_at_gutenberg', 'Open at Gutenberg')),
+                inLibrary ? e('span', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200' },
+                  '✓ ' + tr('readinglib_in_library', 'In your library')) :
+                !r.hasText ? e('span', { className: 'text-[11px] text-slate-400 italic' }, tr('readinglib_no_inapp_text', 'No in-app text (audio/scan only)')) :
+                requested ? e('span', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200' },
+                  '✓ ' + tr('readinglib_requested', 'Requested')) :
+                e('button', {
+                  className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700',
+                  onClick: function () { addRequest(r); },
+                }, '＋ ' + tr('readinglib_request_import', 'Request import'))
+              )
             )
           );
         })) : null,
+        status === 'ok' && nextUrl ? e('div', { className: 'flex justify-center py-2' },
+          e('button', {
+            className: 'px-4 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-sm font-bold text-indigo-800 hover:bg-indigo-100',
+            onClick: loadMore,
+          }, tr('readinglib_load_more', 'Load more results'))) : null,
+        status === 'loadingMore' ? e('div', { className: 'text-sm text-slate-500 italic py-2 text-center' }, tr('readinglib_loading_more', 'Loading more…')) : null,
         requests.length ? e('div', { className: 'mt-3 pt-2 border-t border-slate-200' },
           e('div', { className: 'flex items-center justify-between gap-2 mb-1' },
             e('div', { className: 'text-sm font-bold text-slate-700' }, '📋 ' + requests.length + ' ' + tr('readinglib_req_count', 'books requested')),
-            e('div', { className: 'flex gap-2' },
+            e('div', { className: 'flex flex-wrap gap-1.5' },
               e('button', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700', onClick: copyRequests },
-                tr('readinglib_req_copy', 'Copy list for maintainer')),
+                '📋 ' + tr('readinglib_req_copy', 'Copy for maintainer')),
+              e('button', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-indigo-800 border border-indigo-200 hover:bg-indigo-50', onClick: emailRequests },
+                '✉ ' + tr('readinglib_req_email', 'Email')),
+              e('button', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-indigo-800 border border-indigo-200 hover:bg-indigo-50', onClick: downloadRequests },
+                '⤓ ' + tr('readinglib_req_download', 'Download')),
               e('button', { className: 'px-2 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-100', onClick: function () { setRequests([]); saveImportRequests([]); } },
                 tr('readinglib_req_clear', 'Clear'))
             )
