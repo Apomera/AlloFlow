@@ -247,3 +247,60 @@ describe('Reading Library handoff', () => {
     expect(selection.text).toContain('Hola clase. Necesito un lápiz.');
   });
 });
+
+describe('Lingua Practice custom language', () => {
+  it('accepts a free-typed target language and uses it when building a set', async () => {
+    let prompt = '';
+    const callGemini = async (p) => {
+      prompt = p;
+      return JSON.stringify({
+        title: 't', goal: 'g', scenario: 's',
+        vocabulary: [{ term: 'a', meaning: 'b' }],
+        phrases: [{ target: 'a', translation: 'b' }],
+        conversation: [{ coach: 'a', translation: 'b', sample: 'c' }],
+      });
+    };
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini }));
+
+    const targetSelect = host.querySelector('select[aria-label="I am learning"]');
+    await act(async () => { targetSelect.value = '__other__'; targetSelect.dispatchEvent(new Event('change', { bubbles: true })); });
+    const input = host.querySelector('input[aria-label="I am learning: type a language"]');
+    expect(input).toBeTruthy();
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    await act(async () => { setter.call(input, 'Chuukese'); input.dispatchEvent(new Event('input', { bubbles: true })); });
+
+    await act(async () => {
+      button('Build practice set').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve(); await Promise.resolve();
+    });
+    expect(prompt).toContain('Target language: Chuukese');
+    expect(JSON.parse(localStorage.getItem('allo_lingua_profile_v1')).target).toBe('Chuukese');
+  });
+});
+
+describe('Lingua Practice chat persistence and save-from-chat', () => {
+  it('persists a conversation, saves a phrase, and restores it after remount', async () => {
+    const callGemini = async () => JSON.stringify({
+      reply: 'Hola, ¿qué tal?', translation: 'Hi, how are you?', pronunciation: 'OH-lah keh tahl', tip: 'good',
+    });
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini, addToast: () => {} }));
+
+    await act(async () => { button('Live chat').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => {
+      button('Start the chat').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+    });
+    expect(host.textContent).toContain('Hola, ¿qué tal?');
+    const stored = JSON.parse(localStorage.getItem('allo_lingua_chat_v1'));
+    expect(stored.Spanish.messages.some((m) => m.target === 'Hola, ¿qué tal?')).toBe(true);
+
+    await act(async () => { button('Save phrase').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const saved = JSON.parse(localStorage.getItem('allo_lingua_progress_v1')).saved;
+    expect(saved.some((s) => s.term === 'Hola, ¿qué tal?' && s.language === 'Spanish')).toBe(true);
+
+    act(() => root.unmount());
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini, addToast: () => {} }));
+    await act(async () => { button('Live chat').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('Hola, ¿qué tal?');
+  });
+});

@@ -243,15 +243,21 @@ describe('Lingua Practice resilience helpers', () => {
   });
 
   it('normalizes invalid stored profile and progress values', () => {
+    // Custom (non-preset) language NAMES are now retained; only bad types /
+    // empties fall back. An unknown level still normalizes to Beginner.
     expect(Lingua._normalizeProfile({
       known: 'Klingon',
       target: 'Elvish',
       level: 'Expert',
       topic: 'x'.repeat(300),
     })).toMatchObject({
+      known: 'Klingon',
+      target: 'Elvish',
+      level: 'Beginner',
+    });
+    expect(Lingua._normalizeProfile({ known: 42, target: '   ' })).toMatchObject({
       known: 'English',
       target: 'Spanish',
-      level: 'Beginner',
     });
     expect(Lingua._normalizeProfile({ topic: 'x'.repeat(300) }).topic).toHaveLength(160);
 
@@ -282,6 +288,58 @@ describe('Lingua Practice resilience helpers', () => {
       reviewStage: 5,
       nextReviewAt: 0,
     });
+
+    // Saved words in a custom (non-preset) language are retained too.
+    const custom = Lingua._normalizeProgress({
+      saved: [{ language: "Karen (S'gaw)", term: 'greeting' }],
+    });
+    expect(custom.saved).toHaveLength(1);
+    expect(custom.saved[0].language).toBe("Karen (S'gaw)");
+  });
+});
+
+
+describe('Lingua Practice custom + preset languages', () => {
+  it('cleans a language name and falls back only on bad types/empties', () => {
+    expect(Lingua._cleanLangName('  Karen   (S’gaw)  ', 'English')).toBe('Karen (S’gaw)');
+    expect(Lingua._cleanLangName('', 'English')).toBe('English');
+    expect(Lingua._cleanLangName(42, 'Spanish')).toBe('Spanish');
+    expect(Lingua._cleanLangName('x'.repeat(80), 'English')).toHaveLength(40);
+  });
+
+  it('guesses RTL for right-to-left custom scripts, LTR otherwise', () => {
+    expect(Lingua._guessRtl('Arabic')).toBe(true);
+    expect(Lingua._guessRtl('Sorani Kurdish')).toBe(true);
+    expect(Lingua._guessRtl('Karen')).toBe(false);
+    expect(Lingua._guessRtl('Swahili')).toBe(false);
+  });
+
+  it('resolves a preset to its code, and a custom name to an empty-code record', () => {
+    expect(Lingua._languageByName('Spanish')).toMatchObject({ code: 'es-ES', rtl: false });
+    expect(Lingua._languageByName('Pashto')).toMatchObject({ rtl: true });
+    expect(Lingua._languageByName('Chuukese')).toMatchObject({ name: 'Chuukese', code: '', rtl: false });
+  });
+});
+
+
+describe('Lingua Practice chat persistence', () => {
+  it('keeps only valid chat turns, caps length, and drops empty threads', () => {
+    const long = Array.from({ length: 60 }, (_, i) => ({ role: 'you', target: 'line ' + i }));
+    const chats = Lingua._normalizeChats({
+      Spanish: { messages: [
+        { role: 'coach', target: 'Hola', translation: 'Hi', pronunciation: 'OH-lah', tip: 'nice' },
+        { role: 'bogus', target: 'drop me' },
+        { role: 'you', target: '' },
+      ], at: 123 },
+      French: { messages: long, at: 5 },
+      Empty: { messages: [] },
+      Bad: 'not an object',
+    });
+    expect(chats.Spanish.messages).toHaveLength(1);
+    expect(chats.Spanish.messages[0]).toMatchObject({ role: 'coach', target: 'Hola', tip: 'nice' });
+    expect(chats.French.messages).toHaveLength(40);
+    expect(chats.Empty).toBeUndefined();
+    expect(chats.Bad).toBeUndefined();
   });
 });
 
@@ -374,7 +432,10 @@ describe('Lingua Practice lesson collection and recent-session normalization', (
     });
 
     expect(recent.Spanish).toBeUndefined();
-    expect(recent.Klingon).toBeUndefined();
+    // Custom (non-preset) languages are now supported end-to-end, so a
+    // reparsable recent lesson for one is retained rather than dropped.
+    expect(recent.Klingon).toBeDefined();
+    expect(recent.Klingon.lesson.vocabulary[0].term).toBe('nuqneH');
     expect(recent.German.title).toBe('Hallo');
     expect(recent.German.topic).toBe('Greetings');
     expect(recent.German.level).toBe('Beginner');

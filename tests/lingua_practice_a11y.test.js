@@ -417,9 +417,11 @@ describe('Lingua Practice accessible error recovery', () => {
   });
 
   it('opens safely when persisted profile and progress data have invalid shapes', async () => {
+    // Free-typed custom languages are now valid, so "invalid" means wrong TYPES
+    // (non-strings), which must still coerce to the safe defaults.
     localStorage.setItem('allo_lingua_profile_v1', JSON.stringify({
-      known: 'Unknown',
-      target: 'Unknown',
+      known: 42,
+      target: { bad: true },
       level: 'Impossible',
     }));
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({

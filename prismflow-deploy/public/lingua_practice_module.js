@@ -8,16 +8,40 @@
   if (!React) { console.error('[LinguaPractice] React missing'); return; }
   var e = React.createElement, useState = React.useState, useEffect = React.useEffect;
   var useMemo = React.useMemo, useRef = React.useRef;
-  var PROFILE_KEY = 'allo_lingua_profile_v1', PROGRESS_KEY = 'allo_lingua_progress_v1', RECENT_KEY = 'allo_lingua_recent_v1';
+  var PROFILE_KEY = 'allo_lingua_profile_v1', PROGRESS_KEY = 'allo_lingua_progress_v1', RECENT_KEY = 'allo_lingua_recent_v1', CHAT_KEY = 'allo_lingua_chat_v1';
   var LEVELS = ['New to the language', 'Beginner', 'Developing', 'Intermediate', 'Advanced'];
+  // Preset languages (name, BCP-47 code, rtl?). This is a convenience list, not
+  // a limit — the Setup screen also accepts a free-typed "Other language", and
+  // AlloSpeechPlayer keys pronunciation off the language NAME, so any language
+  // the AI can generate works end-to-end even without a code here.
   var LANGUAGES = [
     ['English','en-US'],['Spanish','es-ES'],['French','fr-FR'],['German','de-DE'],
-    ['Italian','it-IT'],['Portuguese','pt-BR'],['Arabic','ar-SA',true],
+    ['Italian','it-IT'],['Portuguese','pt-BR'],['Latin','la'],
+    ['Dutch','nl-NL'],['Polish','pl-PL'],['Romanian','ro-RO'],['Greek','el-GR'],
+    ['Russian','ru-RU'],['Ukrainian','uk-UA'],['Turkish','tr-TR'],
+    ['Arabic','ar-SA',true],['Hebrew','he-IL',true],['Persian (Farsi)','fa-IR',true],
+    ['Dari','fa-AF',true],['Pashto','ps-AF',true],['Urdu','ur-PK',true],
     ['Mandarin Chinese','zh-CN'],['Japanese','ja-JP'],['Korean','ko-KR'],
-    ['Hindi','hi-IN'],['Vietnamese','vi-VN'],['Russian','ru-RU'],
-    ['Ukrainian','uk-UA'],['Haitian Creole','ht-HT'],['Somali','so-SO'],
-    ['Swahili','sw-KE'],['Latin','la']
+    ['Vietnamese','vi-VN'],['Thai','th-TH'],['Lao','lo-LA'],['Khmer','km-KH'],
+    ['Burmese','my-MM'],['Tagalog','tl-PH'],['Indonesian','id-ID'],['Hmong','hmn'],
+    ['Hindi','hi-IN'],['Bengali','bn-BD'],['Nepali','ne-NP'],['Punjabi','pa-IN'],
+    ['Gujarati','gu-IN'],['Marathi','mr-IN'],['Tamil','ta-IN'],['Telugu','te-IN'],
+    ['Kannada','kn-IN'],['Malayalam','ml-IN'],
+    ['Swahili','sw-KE'],['Somali','so-SO'],['Amharic','am-ET'],['Tigrinya','ti-ET'],
+    ['Kinyarwanda','rw-RW'],['Kirundi','rn-BI'],['Lingala','ln-CD'],['Hausa','ha-NG'],
+    ['Yoruba','yo-NG'],['Igbo','ig-NG'],['Haitian Creole','ht-HT']
   ].map(function (x) { return { name:x[0], code:x[1], rtl:!!x[2] }; });
+  // Names (lowercased) whose scripts are right-to-left — used to guess direction
+  // for a free-typed custom language that isn't in the preset list above.
+  var RTL_NAMES = ['arabic','hebrew','persian','farsi','dari','pashto','urdu','kurdish','sindhi','uyghur','yiddish'];
+  function guessRtl(name) {
+    var n = String(name || '').toLowerCase();
+    return RTL_NAMES.some(function (r) { return n.indexOf(r) !== -1; });
+  }
+  function cleanLangName(value, fallback) {
+    var s = typeof value === 'string' ? value.trim().replace(/\s+/g, ' ').slice(0, 40) : '';
+    return s || fallback;
+  }
   var STARTERS = {
     Spanish: [
       ['Hola','hello','Hola, me llamo Ana.','Hello, my name is Ana.'],
@@ -81,11 +105,20 @@
     catch (_) { return fallback; }
   }
   function write(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {} }
-  function lang(name) { return LANGUAGES.filter(function (x) { return x.name === name; })[0] || LANGUAGES[0]; }
+  // Resolve a language NAME (preset or free-typed) to a {name,code,rtl} record.
+  // Custom names get an empty code (browser speech falls back to the default
+  // voice; Gemini TTS still pronounces correctly from the name) and a guessed
+  // direction.
+  function lang(name) {
+    var found = LANGUAGES.filter(function (x) { return x.name === name; })[0];
+    if (found) return found;
+    var clean = cleanLangName(name, 'English');
+    return { name:clean, code:'', rtl:guessRtl(clean) };
+  }
   function normalizeProfile(value) {
     var input=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
-    var known=LANGUAGES.some(function(item){return item.name===input.known;})?input.known:'English';
-    var target=LANGUAGES.some(function(item){return item.name===input.target;})?input.target:'Spanish';
+    var known=cleanLangName(input.known,'English');
+    var target=cleanLangName(input.target,'Spanish');
     var level=LEVELS.indexOf(input.level)>=0?input.level:'Beginner';
     return {known:known,target:target,level:level,topic:String(input.topic||'Everyday introductions').slice(0,160)};
   }
@@ -93,7 +126,7 @@
     var input=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
     function count(value){var number=Number(value);return Number.isFinite(number)?Math.max(0,number):0;}
     var saved=(Array.isArray(input.saved)?input.saved:[]).filter(function(item){
-      return item&&typeof item==='object'&&typeof item.term==='string'&&item.term.trim()&&LANGUAGES.some(function(language){return language.name===item.language;});
+      return item&&typeof item==='object'&&typeof item.term==='string'&&item.term.trim()&&typeof item.language==='string'&&item.language.trim();
     }).slice(0,500).map(function(item){
       var term=item.term.trim().slice(0,260),language=item.language;
       return Object.assign({},item,{
@@ -177,6 +210,7 @@
       practiceSets:Number(stats.practiceSets || 0),
       spokenAttempts:Number(stats.spokenAttempts || 0),
       reviews:Number(stats.reviews || 0),
+      chatTurns:Number(stats.chatTurns || 0),
       lastPracticedAt:Number(stats.lastPracticedAt || 0),
       savedCount:words.length,
       dueCount:dueWords(words,language,now).length,
@@ -253,14 +287,15 @@
   }
   function normalizeRecentLessons(value) {
     var input=value&&typeof value==='object'&&!Array.isArray(value)?value:{},next={};
-    LANGUAGES.forEach(function(language){
-      var entry=input[language.name];
+    Object.keys(input).slice(0,200).forEach(function(name){
+      if(!name||typeof name!=='string')return;
+      var entry=input[name];
       if(!entry||typeof entry!=='object'||Array.isArray(entry))return;
       try {
         var safeLesson=parseLesson(JSON.stringify(entry.lesson||{}));
         if(!safeLesson)return;
         var created=Number(entry.createdAt);
-        next[language.name]={
+        next[name]={
           lesson:safeLesson,
           title:safeLesson.title,
           topic:String(entry.topic||'').trim().slice(0,160),
@@ -268,6 +303,21 @@
           createdAt:Number.isFinite(created)?Math.max(0,created):0
         };
       }catch(_){}
+    });
+    return next;
+  }
+  function normalizeChats(value) {
+    var input=value&&typeof value==='object'&&!Array.isArray(value)?value:{},next={};
+    Object.keys(input).slice(0,60).forEach(function(name){
+      if(!name||typeof name!=='string')return;
+      var entry=input[name];
+      if(!entry||typeof entry!=='object'||Array.isArray(entry))return;
+      var msgs=(Array.isArray(entry.messages)?entry.messages:[]).slice(-40).filter(function(m){
+        return m&&typeof m==='object'&&(m.role==='you'||m.role==='coach')&&typeof m.target==='string'&&m.target.trim();
+      }).map(function(m){
+        return {role:m.role,target:String(m.target||'').slice(0,400),translation:String(m.translation||'').slice(0,400),pronunciation:String(m.pronunciation||'').slice(0,300),tip:String(m.tip||'').slice(0,300)};
+      });
+      if(msgs.length)next[name]={messages:msgs,at:Number(entry.at)||0};
     });
     return next;
   }
@@ -393,6 +443,26 @@
     '.lingua-bubble-coach{box-shadow:0 3px 10px -4px rgba(15,23,42,.14)}',
     '.lingua-bubble-you{background:linear-gradient(135deg,#047857 0%,#0f766e 100%);box-shadow:0 5px 14px -5px rgba(4,120,87,.5)}',
     '.lingua-emptyicon{background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);color:#047857}',
+    // Dark theme (.theme-dark) — the Tailwind color UTILITIES Lingua uses are
+    // already remapped by the shared docsuite theme block; these overrides are
+    // only for the module's own hardcoded-hex surfaces so they don't stay light
+    // on a dark modal. Values match the docsuite dark palette (panel #1e293b,
+    // deep #0f172a, borders #334155) with dark-emerald tints.
+    '.theme-dark .lingua-scene{background:radial-gradient(130% 90% at 50% -10%,#0b2f24 0%,#0f172a 46%)}',
+    '.theme-dark .lingua-header{background:linear-gradient(180deg,#0f291f 0%,#1e293b 100%)}',
+    '.theme-dark .lingua-card{background:#1e293b;border-color:#334155}',
+    '.theme-dark .lingua-card:hover{border-color:#0f766e;box-shadow:0 10px 26px -10px rgba(0,0,0,.55)}',
+    '.theme-dark .lingua-tile{background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%);border-color:#334155}',
+    '.theme-dark .lingua-panel{background:linear-gradient(180deg,#0f291f 0%,#1e293b 72%);border-color:#334155}',
+    '.theme-dark .lingua-chatlog{background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%)}',
+    '.theme-dark .lingua-emptyicon{background:linear-gradient(135deg,#0f291f 0%,#134e3a 100%);color:#6ee7b7}',
+    // High-contrast (.theme-contrast) — black surfaces, yellow borders, no
+    // gradients (matches the docsuite contrast scheme: #000 / #ffff00 text).
+    '.theme-contrast .lingua-scene{background:#000}',
+    '.theme-contrast .lingua-header,.theme-contrast .lingua-card,.theme-contrast .lingua-tile,.theme-contrast .lingua-panel,.theme-contrast .lingua-chatlog{background:#000 !important;background-image:none !important;border:1px solid #ffff00 !important}',
+    '.theme-contrast .lingua-badge,.theme-contrast .lingua-bubble-you,.theme-contrast .lingua-bubble-coach{background:#000 !important;background-image:none !important;border:1px solid #ffff00 !important;box-shadow:none}',
+    '.theme-contrast .lingua-primary{background:#000 !important;background-image:none !important;border:1px solid #00ff00 !important;box-shadow:none}',
+    '.theme-contrast .lingua-emptyicon{background:#000 !important;background-image:none !important;border:1px solid #ffff00 !important;color:#ffff00}',
     '@media (prefers-reduced-motion: reduce){.lingua-card,.lingua-primary,.lingua-nav-btn{transition:none}.lingua-card:hover{transform:none}.lingua-primary:active:not(:disabled){transform:none}}'
   ].join('');
   var selectClass = 'w-full h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 transition-colors hover:border-slate-400' + focusClass;
@@ -404,10 +474,38 @@
       )
     );
   }
+  function LanguageField(props) {
+    var isPreset = LANGUAGES.some(function (l) { return l.name === props.value; });
+    var custom = !isPreset && props.value !== '';
+    var selectValue = isPreset ? props.value : '__other__';
+    return e('label',{className:'block'},
+      e('span',{className:'block text-xs font-bold text-slate-600 mb-1.5'},props.label),
+      e('select',{value:selectValue,'aria-label':props.label,className:selectClass,onChange:function(x){
+        var v=x.target.value;
+        if(v==='__other__'){props.change(custom?props.value:'');}else{props.change(v);}
+      }},
+        LANGUAGES.map(function(l){return e('option',{key:l.name,value:l.name},l.name);})
+          .concat([e('option',{key:'__other__',value:'__other__'},'Other language…')])
+      ),
+      (custom||selectValue==='__other__')?e('input',{type:'text',value:props.value,
+        'aria-label':props.label+': type a language',placeholder:'Type a language (e.g. Karen, Chuukese, Ojibwe)',
+        onChange:function(x){props.change(x.target.value.replace(/\s+/g,' ').slice(0,40));},
+        className:selectClass+' mt-2'}):null
+    );
+  }
+  // Lucide icon set the host app publishes on window.AlloIcons. Resolved per
+  // render (not at module load) so it's ready even if Lingua's IIFE ran first,
+  // and returns null when absent (tests / standalone) so nothing crashes.
+  function navIcon(name) {
+    var icons = (typeof window !== 'undefined' && window.AlloIcons) || null;
+    var C = icons && icons[name];
+    return C ? e(C, { size:16, 'aria-hidden':'true', className:'shrink-0' }) : null;
+  }
   function IconButton(props) {
+    var active = props.active === true;
     return e('button',{type:'button',onClick:props.onClick,title:props.title,'aria-label':props.title,
       'aria-pressed':typeof props.pressed==='boolean'?props.pressed:undefined,
-      className:'w-10 h-10 shrink-0 inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'+focusClass},props.children);
+      className:'w-10 h-10 shrink-0 inline-flex items-center justify-center rounded-lg border transition-colors '+(active?'border-emerald-300 bg-emerald-50 text-emerald-700':'border-slate-300 bg-white text-slate-700 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700')+focusClass},props.children);
   }
   function PronunciationGuide(props) {
     return props && props.text ? e('p',{className:'text-xs text-slate-500 mt-1',dir:'ltr'},e('span',{className:'sr-only'},'Pronunciation guide: '),props.text) : null;
@@ -435,6 +533,7 @@
     }
     var g0 = normalizeProgress(read(PROGRESS_KEY,{saved:[],sessions:0,spokenAttempts:0}));
     var recent0 = normalizeRecentLessons(read(RECENT_KEY,{}));
+    var chat0 = normalizeChats(read(CHAT_KEY,{}));
     var ps=useState(p0), profile=ps[0], setProfile=ps[1];
     var gs=useState(g0), progress=gs[0], setProgress=gs[1];
     var rls=useState(recent0), recentLessons=rls[0], setRecentLessons=rls[1];
@@ -453,14 +552,14 @@
     var fs=useState(null), feedback=fs[0], setFeedback=fs[1];
     var rvs=useState(false), reviewRevealed=rvs[0], setReviewRevealed=rvs[1];
     var rsts=useState(''), reviewStatus=rsts[0], setReviewStatus=rsts[1];
-    var chms=useState([]), chatMessages=chms[0], setChatMessages=chms[1];
+    var chms=useState((chat0[p0.target]||{}).messages||[]), chatMessages=chms[0], setChatMessages=chms[1];
     var chis=useState(''), chatInput=chis[0], setChatInput=chis[1];
     var chbs=useState(false), chatBusy=chbs[0], setChatBusy=chbs[1];
     var chls=useState(false), chatListening=chls[0], setChatListening=chls[1];
     var voiceRef=useRef(null), dialogRef=useRef(null), sectionHeadingRef=useRef(null), lastTabRef=useRef(null);
     var phraseRef=useRef(null), conversationPromptRef=useRef(null), reviewRegionRef=useRef(null), reviewAnswerRef=useRef(null);
     var previousIndexRef=useRef(0), previousTurnRef=useRef(0), reviewFocusPendingRef=useRef(false), captureCompletedRef=useRef(false);
-    var chatRequestRef=useRef(0), chatVoiceRef=useRef(null), chatLogRef=useRef(null), chatCaptureRef=useRef(false);
+    var chatRequestRef=useRef(0), chatVoiceRef=useRef(null), chatLogRef=useRef(null), chatCaptureRef=useRef(false), chatStoreRef=useRef(chat0), previousChatTargetRef=useRef(p0.target);
     var generationRequestRef=useRef(0), coachRequestRef=useRef(0), target=lang(profile.target), known=lang(profile.known);
     var due=dueWords(progress.saved||[],profile.target,Date.now()), reviewItem=due[0]||null;
     var summary=languageSummary(progress,profile.target,Date.now());
@@ -504,6 +603,12 @@
     useEffect(function(){
       if(tab==='chat'&&chatLogRef.current)chatLogRef.current.scrollTop=chatLogRef.current.scrollHeight;
     },[chatMessages,chatBusy,tab]);
+    useEffect(function(){
+      if(previousChatTargetRef.current===profile.target)return;
+      previousChatTargetRef.current=profile.target;
+      chatRequestRef.current++;setChatBusy(false);setChatInput('');
+      setChatMessages((chatStoreRef.current[profile.target]||{}).messages||[]);
+    },[profile.target]);
     useEffect(function(){
       if(!reviewFocusPendingRef.current)return;
       reviewFocusPendingRef.current=false;
@@ -581,6 +686,11 @@
     function moveTurn(next){
       coachRequestRef.current++;setBusy(false);setTurn(next);setResponse('');setFeedback(null);
     }
+    function persistChat(langName,list){
+      var store=Object.assign({},chatStoreRef.current);
+      if(list&&list.length)store[langName]={messages:list.slice(-40),at:Date.now()};else delete store[langName];
+      chatStoreRef.current=store;write(CHAT_KEY,store);
+    }
     async function runCoachTurn(history){
       var requestId=++chatRequestRef.current,requestedProfile=profile,reply=null;
       setChatBusy(true);
@@ -593,24 +703,34 @@
       if(!reply)reply=fallbackChatReply(requestedProfile);
       setChatBusy(false);
       if(!reply.target&&!reply.tip)return;
-      setChatMessages(function(old){return old.concat([Object.assign({role:'coach'},reply)]);});
+      var next=history.concat([Object.assign({role:'coach'},reply)]);
+      setChatMessages(next);persistChat(requestedProfile.target,next);
       if(reply.target)play(reply.target,target.code,target.name);
     }
     function sendChat(){
       var text=chatInput.trim();
       if(!text||chatBusy)return;
       var history=chatMessages.concat([{role:'you',target:text}]);
-      setChatMessages(history);setChatInput('');
+      setChatMessages(history);setChatInput('');persistChat(profile.target,history);
+      progressWith(function(old){return trackLanguageActivity(old,profile.target,{chatTurns:1},Date.now());});
       runCoachTurn(history);
     }
     function startChat(){
       if(chatBusy)return;
-      chatRequestRef.current++;setChatMessages([]);setChatInput('');
+      chatRequestRef.current++;setChatMessages([]);setChatInput('');persistChat(profile.target,[]);
       runCoachTurn([]);
     }
     function resetChat(){
-      chatRequestRef.current++;setChatBusy(false);setChatMessages([]);setChatInput('');
+      chatRequestRef.current++;setChatBusy(false);setChatMessages([]);setChatInput('');persistChat(profile.target,[]);
       if(chatVoiceRef.current&&chatVoiceRef.current.isActive()){chatVoiceRef.current.stop();}setChatListening(false);
+    }
+    function chatLineSaved(m){var id=profile.target+'::'+String(m.target||'').trim().slice(0,260);return(progress.saved||[]).some(function(x){return x.id===id;});}
+    function saveChatLine(m){
+      var term=String(m.target||'').trim().slice(0,260);if(!term)return;
+      var id=profile.target+'::'+term;
+      progressWith(function(old){var list=(old.saved||[]).slice();if(list.some(function(x){return x.id===id;}))return old;
+        return Object.assign({},old,{saved:list.concat([{id:id,language:profile.target,term:term,meaning:String(m.translation||'').slice(0,260),pronunciation:String(m.pronunciation||'').slice(0,260),example:'',examplePronunciation:'',translation:String(m.translation||'').slice(0,260),reviewStage:0,nextReviewAt:0,reviews:0}])});});
+      notify(props,'Saved to your word bank.','success');
     }
     function chatListen(){
       if(chatVoiceRef.current&&chatVoiceRef.current.isActive()){chatCaptureRef.current=false;chatVoiceRef.current.stop();setChatListening(false);setSpeechStatus('Speech input stopped.');return;}
@@ -622,7 +742,7 @@
         onError:function(){chatCaptureRef.current=false;var message='I could not hear that. Check microphone permission and try again.';setChatListening(false);setSpeechStatus(message);notify(props,message);}});
       chatVoiceRef.current=ctl;if(ctl.start()){setChatListening(true);setSpeechStatus('Listening for '+profile.target+'.');}else{chatCaptureRef.current=false;var failed='Speech input is unavailable here. You can type a reply instead.';setSpeechStatus(failed);notify(props,failed);}
     }
-    var nav=[['setup','Setup'],['vocabulary','Vocabulary'],['speak','Speak'],['conversation','Conversation'],['chat','Live chat'],['progress','Progress'],['review','Review'+(due.length?' ('+due.length+')':'')],['saved','Saved words']];
+    var nav=[['setup','Setup','Settings'],['vocabulary','Vocabulary','BookOpen'],['speak','Speak','Mic'],['conversation','Conversation','MessageSquare'],['chat','Live chat','Sparkles'],['progress','Progress','BarChart3'],['review','Review'+(due.length?' ('+due.length+')':''),'RefreshCw'],['saved','Saved words','Star']];
     return e('div',{className:'fixed inset-0 z-[280] bg-slate-950/55 p-0 sm:p-4 flex items-center justify-center',style:{zIndex:280},
       onMouseDown:function(x){if(x.target===x.currentTarget&&props.onClose)props.onClose();}},
       e('div',{ref:dialogRef,tabIndex:-1,className:'allo-docsuite bg-white w-full h-full sm:h-[92vh] sm:max-h-[900px] sm:max-w-6xl sm:rounded-xl shadow-2xl overflow-hidden flex flex-col focus:outline-none',role:'dialog','aria-modal':'true','aria-labelledby':'lingua-title'},
@@ -637,7 +757,7 @@
         e('div',{className:'flex-1 min-h-0 flex flex-col md:flex-row'},
           e('nav',{className:'shrink-0 md:w-52 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50 p-2 md:p-4 overflow-x-auto','aria-label':'Lingua Practice sections'},
             e('div',{className:'flex md:flex-col gap-1 min-w-max md:min-w-0'},nav.map(function(n){var disabled=n[0]!=='setup'&&n[0]!=='progress'&&n[0]!=='review'&&n[0]!=='saved'&&n[0]!=='chat'&&!lesson;return e('button',{type:'button',key:n[0],disabled:disabled,onClick:function(){setTab(n[0]);},'aria-current':tab===n[0]?'page':undefined,
-              className:'lingua-nav-btn h-10 px-3 rounded-lg text-sm font-semibold text-left whitespace-nowrap '+(tab===n[0]?'lingua-nav-active bg-emerald-700 text-white':'text-slate-700 hover:bg-slate-200 disabled:opacity-35')+focusClass},n[1]);}))
+              className:'lingua-nav-btn h-10 px-3 rounded-lg text-sm font-semibold text-left whitespace-nowrap '+(tab===n[0]?'lingua-nav-active bg-emerald-700 text-white':'text-slate-700 hover:bg-slate-200 disabled:opacity-35')+focusClass},e('span',{className:'inline-flex items-center gap-2.5'},navIcon(n[2]),n[1]));}))
           ),
           e('main',{className:'lingua-scene flex-1 min-w-0 overflow-y-auto'},
             tab==='setup'&&e('div',{className:'max-w-4xl mx-auto p-5 sm:p-8'},
@@ -658,8 +778,8 @@
                 sourceMeta.language?e('p',{className:'text-xs text-slate-600 mt-1'},'Detected reading language: '+sourceMeta.language):null
               ),
               e('section',{className:'grid grid-cols-1 sm:grid-cols-3 gap-4 pb-6 border-b border-slate-200'},
-                e(Select,{label:'I know',value:profile.known,change:function(v){patch('known',v);},options:LANGUAGES}),
-                e(Select,{label:'I am learning',value:profile.target,change:function(v){patch('target',v);},options:LANGUAGES}),
+                e(LanguageField,{label:'I know',value:profile.known,change:function(v){patch('known',v);}}),
+                e(LanguageField,{label:'I am learning',value:profile.target,change:function(v){patch('target',v);}}),
                 e(Select,{label:'My level',value:profile.level,change:function(v){patch('level',v);},options:LEVELS})
               ),
               e('section',{className:'py-6 border-b border-slate-200'},
@@ -683,7 +803,7 @@
                 e('div',{className:'min-w-0 flex-1'},e('div',{className:'text-xl font-bold text-slate-900 leading-tight',dir:target.rtl?'rtl':'ltr',lang:target.code},item.term),e(PronunciationGuide,{text:item.pronunciation}),
                   e('div',{className:'mt-1.5'},e('span',{className:'inline-block bg-emerald-50 text-emerald-800 text-sm font-semibold px-2.5 py-0.5 rounded-md',dir:known.rtl?'rtl':'ltr',lang:known.code},item.meaning)),
                   e('div',{className:'mt-3 pt-3 border-t border-slate-100'},e('p',{className:'text-sm text-slate-700',dir:target.rtl?'rtl':'ltr',lang:target.code},item.example),e(PronunciationGuide,{text:item.examplePronunciation}),e('p',{className:'text-xs text-slate-500 mt-1',dir:known.rtl?'rtl':'ltr',lang:known.code},item.translation))),
-                e('div',{className:'flex flex-col gap-2'},e(IconButton,{title:'Listen to '+item.term,onClick:function(){play(item.term,target.code,target.name);}},'▶'),e(IconButton,{title:saved(item)?'Remove saved word':'Save word',pressed:saved(item),onClick:function(){toggle(item);}},saved(item)?'★':'☆'))
+                e('div',{className:'flex flex-col gap-2'},e(IconButton,{title:'Listen to '+item.term,onClick:function(){play(item.term,target.code,target.name);}},'▶'),e(IconButton,{title:saved(item)?'Remove saved word':'Save word',pressed:saved(item),active:saved(item),onClick:function(){toggle(item);}},saved(item)?'★':'☆'))
               );})),
               e('div',{className:'mt-6 flex justify-end'},e('button',{type:'button',onClick:function(){setTab('speak');},className:primaryClass},'Practice speaking'))
             ),
@@ -717,11 +837,14 @@
                 !chatMessages.length?e('p',{className:'text-sm text-slate-500 text-center py-10'},'Say hello to begin, or tap “Start the chat” for an opener.'):
                 chatMessages.map(function(m,i){var mine=m.role==='you';return e('div',{key:i,className:'flex '+(mine?'justify-end':'justify-start')},
                   e('div',{className:'max-w-[85%] rounded-2xl px-4 py-2.5 '+(mine?'lingua-bubble-you text-white rounded-br-md':'lingua-bubble-coach bg-white border border-slate-200 rounded-bl-md')},
-                    m.target?e('p',{className:'text-base font-semibold',dir:target.rtl?'rtl':'ltr',lang:target.code},m.target):null,
+                    m.target?e('p',{className:'text-base font-semibold '+(mine?'':'text-slate-900'),dir:target.rtl?'rtl':'ltr',lang:target.code},m.target):null,
                     !mine&&m.pronunciation?e('p',{className:'text-xs text-slate-500 mt-0.5',dir:'ltr'},m.pronunciation):null,
                     !mine&&m.translation?e('p',{className:'text-xs text-slate-500 mt-1',dir:known.rtl?'rtl':'ltr',lang:known.code},m.translation):null,
                     !mine&&m.tip?e('p',{className:'text-xs text-emerald-800 mt-2 italic',dir:known.rtl?'rtl':'ltr',lang:known.code},m.tip):null,
-                    !mine&&m.target?e('button',{type:'button',onClick:function(){play(m.target,target.code,target.name);},className:'mt-1 min-h-8 inline-flex items-center text-xs font-bold text-emerald-700 rounded'+focusClass},'▶ Listen'):null
+                    !mine&&m.target?e('div',{className:'flex items-center gap-3 mt-1'},
+                      e('button',{type:'button',onClick:function(){play(m.target,target.code,target.name);},className:'min-h-8 inline-flex items-center text-xs font-bold text-emerald-700 rounded'+focusClass},'▶ Listen'),
+                      e('button',{type:'button','aria-pressed':chatLineSaved(m),onClick:function(){saveChatLine(m);},className:'min-h-8 inline-flex items-center text-xs font-bold text-emerald-700 rounded'+focusClass},chatLineSaved(m)?'★ Saved':'☆ Save phrase')
+                    ):null
                   )
                 );})
               ),
@@ -744,10 +867,11 @@
               sectionTitle(profile.target+' progress'),
               e('p',{className:'text-sm text-slate-600 mt-2'},'This is an activity record, not a grade or proficiency score.'),
               e('p',{className:'text-xs font-semibold text-slate-500 mt-3'},activityLabel(summary.lastPracticedAt,Date.now())),
-              e('div',{className:'grid grid-cols-2 lg:grid-cols-4 gap-3 mt-7'},
+              e('div',{className:'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-7'},
                 [
                   ['Practice sets',summary.practiceSets],
                   ['Speaking attempts',summary.spokenAttempts],
+                  ['Conversation turns',summary.chatTurns],
                   ['Reviews completed',summary.reviews],
                   ['Saved words',summary.savedCount]
                 ].map(function(metric){return e('div',{key:metric[0],className:'lingua-tile p-4'},
@@ -832,6 +956,9 @@
   LinguaPractice._normalizeProfile=normalizeProfile;
   LinguaPractice._normalizeProgress=normalizeProgress;
   LinguaPractice._normalizeRecentLessons=normalizeRecentLessons;
+  LinguaPractice._normalizeChats=normalizeChats;
+  LinguaPractice._cleanLangName=cleanLangName;
+  LinguaPractice._guessRtl=guessRtl;
   window.AlloModules.LinguaPractice=LinguaPractice;
   console.log('[CDN] LinguaPractice loaded');
 })();
