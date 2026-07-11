@@ -195,6 +195,19 @@ describe('browse view', () => {
     expect(titles).toEqual(sorted);
   });
 
+  it('finds a book from another collection with "All collections" search', async () => {
+    await mount();
+    await chooseStories(); // StoryWeaver picture books only
+    const search = host.querySelector('input[aria-label="Search"]');
+    setInputValue(search, 'Hamlet'); // a Shakespeare play lives on the History shelf
+    await flush();
+    expect(textOf(host)).toContain('No books match');
+    clickByText(host, 'button', 'All collections');
+    await flush();
+    const card = Array.from(host.querySelectorAll('button')).find((b) => /Level\s+\d/.test(textOf(b)) && /Hamlet/.test(textOf(b)));
+    expect(card).toBeTruthy();
+  });
+
   it('opens an older-student science source with source attribution intact', async () => {
     await mount();
     await chooseCollection('Science & nonfiction');
@@ -499,6 +512,23 @@ describe('reader navigation, bookmarks, and continuous read-aloud', () => {
     await flush();
     const bar = Array.from(host.querySelectorAll('div')).find((d) => d.style && d.style.width === '50%');
     expect(bar).toBeTruthy();
+  });
+
+  it('offers Print and Download in the Create menu for a readable book', async () => {
+    await mountBook(makeBook());
+    clickByText(host, 'button', 'Create');
+    await flush();
+    const labels = Array.from(host.querySelectorAll('button')).map(textOf);
+    expect(labels.some((t) => /Print/.test(t))).toBe(true);
+    expect(labels.some((t) => /Download text/.test(t))).toBe(true);
+  });
+
+  it('hides Print/Download for a link-out source card', async () => {
+    await mountBook(makeBook({ contentType: 'public-domain-catalog-card', stats: { pages: 3, words: 60 } }));
+    clickByText(host, 'button', 'Create');
+    await flush();
+    const labels = Array.from(host.querySelectorAll('button')).map(textOf);
+    expect(labels.some((t) => /Download text/.test(t))).toBe(false);
   });
 });
 

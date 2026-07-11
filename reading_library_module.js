@@ -434,6 +434,11 @@
     return String(text || '').trim().split(/\s+/).filter(Boolean).length;
   }
 
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
   // Estimated reading time from the word count and a level-appropriate silent
   // reading rate (early readers are slower). Returns '' when we have no honest
   // word count (e.g. link-out source cards). Kept deliberately approximate —
@@ -1175,6 +1180,68 @@
       props.onExit && props.onExit(true);
     };
 
+    // Full displayed text (translation-aware) as [title, ...page texts]. Used
+    // by both Print and Download so the two stay in lockstep with what's on
+    // screen (original or AI translation).
+    var exportPageTexts = function () {
+      return sourcePages.map(function (p) {
+        return txReady ? cleanReadingText((p && p.text) || '') : pageTextForPipeline(p);
+      }).filter(Boolean);
+    };
+
+    // Print a clean, reader-friendly copy of the whole book (a teacher handout
+    // or a paper reading). Opens a print window; pop-up blockers are handled.
+    var printBook = function () {
+      setGenOpen(false);
+      var w;
+      try { w = window.open('', '_blank'); } catch (_) { w = null; }
+      if (!w || !w.document) {
+        props.addToast && props.addToast(tr('readinglib_print_blocked', 'Your browser blocked the print window — allow pop-ups and try again.'), 'error');
+        return;
+      }
+      var paras = exportPageTexts().map(function (t) {
+        return t.split(/\n{2,}/).map(function (par) {
+          return '<p>' + escapeHtml(par).replace(/\n/g, '<br>') + '</p>';
+        }).join('');
+      }).join('');
+      var srcLine = escapeHtml(bookSourceName) + ' — ' + escapeHtml(book.license || 'CC BY 4.0');
+      var aiNote = txReady ? '<p class="ai">🤖 ' + escapeHtml(tr('readinglib_attr_ai_translated', 'AI-translated into') + ' ' + translation.language + ' — ' + tr('readinglib_print_ai_note', 'AI translation, not reviewed by the publisher.')) + '</p>' : '';
+      var html = '<!doctype html><html' + (displayRtl ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + escapeHtml(displayTitle) + '</title>' +
+        '<style>body{font-family:Georgia,"Times New Roman",serif;max-width:720px;margin:32px auto;padding:0 20px;line-height:1.65;color:#111}' +
+        'h1{font-size:1.6rem;margin:0 0 .3em}p{margin:0 0 .8em}.attr{color:#555;font-size:.85rem}.foot{color:#555;font-size:.8rem;border-top:1px solid #ccc;margin-top:24px;padding-top:8px}' +
+        '.ai{color:#92400e;background:#fef3c7;padding:8px 10px;border-radius:6px;font-size:.85rem;margin:8px 0}@media print{body{margin:0}}</style></head><body>' +
+        '<h1>' + escapeHtml(displayTitle) + '</h1>' +
+        (attributionLine(book) ? '<p class="attr">' + escapeHtml(attributionLine(book)) + '</p>' : '') +
+        aiNote + paras +
+        '<p class="foot">' + srcLine + '</p></body></html>';
+      try {
+        w.document.open(); w.document.write(html); w.document.close(); w.focus();
+        setTimeout(function () { try { w.print(); } catch (_) {} }, 350);
+      } catch (_) {
+        props.addToast && props.addToast(tr('readinglib_print_failed', 'Could not open the print view.'), 'error');
+      }
+    };
+
+    // Download the displayed book as a plain-text file.
+    var downloadText = function () {
+      setGenOpen(false);
+      try {
+        var parts = [displayTitle];
+        if (attributionLine(book)) parts.push(attributionLine(book));
+        exportPageTexts().forEach(function (t) { parts.push(t); });
+        parts.push('— ' + bookSourceName + ' (' + (book.license || 'CC BY 4.0') + ')' + (txReady ? ' · AI-translated into ' + translation.language : ''));
+        var blob = new Blob([parts.join('\n\n')], { type: 'text/plain;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = (book.slug || 'reading-library-text') + (txReady ? '-' + String(translation.language).toLowerCase().replace(/[^a-z0-9]+/g, '-') : '') + '.txt';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+        props.addToast && props.addToast(tr('readinglib_downloaded', 'Saved the book text to your device.'), 'success');
+      } catch (_) {
+        props.addToast && props.addToast(tr('readinglib_download_failed', 'Could not download the text.'), 'error');
+      }
+    };
+
     // Open the displayed scope directly in Lingua Practice. The host owns the
     // cross-tool transition; Reading Library only emits clean text + context.
     var openInLingua = function () {
@@ -1574,7 +1641,19 @@
               className: 'block w-full text-left px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-indigo-50',
               title: tr('readinglib_open_as_doc_hint', 'Loads the book text into the Source panel so any tool can use it'),
               onClick: openAsDocument,
-            }, tr('readinglib_open_as_doc', 'Use as source text…'))
+            }, tr('readinglib_open_as_doc', 'Use as source text…')),
+            !isCardContent(book) ? e('button', {
+              role: 'menuitem',
+              className: 'block w-full text-left px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-indigo-50',
+              title: tr('readinglib_print_hint', 'Open a clean, printable copy of the whole book'),
+              onClick: printBook,
+            }, '🖨 ' + tr('readinglib_print', 'Print…')) : null,
+            !isCardContent(book) ? e('button', {
+              role: 'menuitem',
+              className: 'block w-full text-left px-3 py-1.5 rounded-lg text-sm text-slate-700 hover:bg-indigo-50',
+              title: tr('readinglib_download_hint', 'Save the book text as a plain-text file'),
+              onClick: downloadText,
+            }, '⤓ ' + tr('readinglib_download_txt', 'Download text (.txt)')) : null
           ) : null
         )
       ),
@@ -1891,7 +1970,7 @@
 
     var _idx = useState({ status: 'loading', data: null, base: null, error: null });
     var index = _idx[0]; var setIndex = _idx[1];
-    var _f = useState({ language: 'English', level: '', search: '', audio: false, sort: 'level', source: '' });
+    var _f = useState({ language: 'English', level: '', search: '', audio: false, sort: 'level', source: '', searchAll: false });
     var filters = _f[0]; var setFilters = _f[1];
     var _open = useState(null); var openBook = _open[0]; var setOpenBook = _open[1];
     var _loadingBook = useState(null); var loadingBook = _loadingBook[0]; var setLoadingBook = _loadingBook[1];
@@ -1939,7 +2018,12 @@
 
     var filtered = useMemo(function () {
       var q = filters.search.trim().toLowerCase();
-      var list = collectionBooks.filter(function (b) {
+      // "All collections" search widens the base to the whole library while a
+      // query is active, so a title that lives on another shelf (e.g. a
+      // Shakespeare play from History searched while on the Stories shelf) is
+      // still findable. Without a query it stays scoped to the collection.
+      var base = (filters.searchAll && q) ? books : collectionBooks;
+      var list = base.filter(function (b) {
         if (filters.source && bookSourceId(b) !== filters.source) return false;
         if (filters.language && b.language !== filters.language) return false;
         if (filters.level && String(b.level) !== filters.level) return false;
@@ -1962,7 +2046,7 @@
         language: function (a, b) { return String(a.language).localeCompare(String(b.language)) || byLevel(a, b); },
       };
       return list.sort(sorters[filters.sort] || byLevel);
-    }, [collectionBooks, filters]);
+    }, [collectionBooks, books, filters]);
     useEffect(function () { setVisibleLimit(VISIBLE_BOOK_BATCH); }, [selectedCollectionId, filters]);
     var visibleBooks = filtered.length > visibleLimit ? filtered.slice(0, visibleLimit) : filtered;
 
@@ -2015,6 +2099,7 @@
         audio: false,
         sort: 'level',
         source: '',
+        searchAll: false,
       });
     };
 
@@ -2088,7 +2173,7 @@
           }, tr('readinglib_change_collection', 'Change collection'))
         ),
         // filters
-        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2 pb-3' },
+        e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-2 pb-3' },
           sourceOptions.length > 1 ? e('select', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
             value: filters.source,
@@ -2139,7 +2224,16 @@
               (filters.audio ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
             onClick: function () { setFilters(Object.assign({}, filters, { audio: !filters.audio })); },
             'aria-pressed': filters.audio,
-          }, '🔊 ' + tr('readinglib_narrated_only', 'Narrated only'))
+          }, '🔊 ' + tr('readinglib_narrated_only', 'Narrated only')),
+          // Widen a search to the whole library (books on other shelves are
+          // otherwise invisible from inside one collection).
+          e('button', {
+            className: 'rounded-lg border px-3 py-2 text-sm font-semibold text-left ' +
+              (filters.searchAll ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+            onClick: function () { setFilters(Object.assign({}, filters, { searchAll: !filters.searchAll })); },
+            'aria-pressed': filters.searchAll,
+            title: tr('readinglib_search_all_hint', 'Include books from every collection in search results'),
+          }, '🔎 ' + tr('readinglib_search_all', 'All collections'))
         ),
         // status
         e('div', { className: 'text-sm text-slate-500 pb-2' },
@@ -2147,9 +2241,14 @@
           index.status === 'error' ? e('span', { className: 'text-red-600' },
             tr('readinglib_load_error', 'Could not load the library:') + ' ' + index.error) :
           filtered.length === 0 ? tr('readinglib_empty', 'No books match those filters yet.') :
-          (visibleBooks.length < filtered.length
-            ? visibleBooks.length + ' ' + tr('readinglib_shown_of', 'shown of') + ' ' + filtered.length + ' ' + tr('readinglib_matches', 'matches') + ' · ' + collectionBooks.length + ' ' + tr('readinglib_books', 'books')
-            : filtered.length + ' ' + tr('readinglib_of', 'of') + ' ' + collectionBooks.length + ' ' + tr('readinglib_books', 'books'))),
+          (function () {
+            var searchingAll = filters.searchAll && filters.search.trim();
+            var denom = searchingAll ? books.length : collectionBooks.length;
+            var scope = searchingAll ? ' ' + tr('readinglib_across_all', '(all collections)') : '';
+            return visibleBooks.length < filtered.length
+              ? visibleBooks.length + ' ' + tr('readinglib_shown_of', 'shown of') + ' ' + filtered.length + ' ' + tr('readinglib_matches', 'matches') + scope + ' · ' + denom + ' ' + tr('readinglib_books', 'books')
+              : filtered.length + ' ' + tr('readinglib_of', 'of') + ' ' + denom + ' ' + tr('readinglib_books', 'books') + scope;
+          })()),
         // grid
         e('div', { className: 'flex-1 min-h-0 overflow-y-auto' },
           // Continue reading — books with a saved position, surfaced when
