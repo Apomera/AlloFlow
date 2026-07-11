@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * AlloFlow WCAG 2.1 AA Runtime Audit
+ * AlloFlow WCAG 2.2 AA Runtime Audit
  *
  * Uses Puppeteer + axe-core to scan the running application for
  * accessibility violations. Run against local dev server or deployed URL.
@@ -25,8 +25,13 @@ const DEFAULT_URL = 'http://localhost:3000';
 const VIEWPORT = { width: 1280, height: 800 };
 const WAIT_MS = 3000; // wait for React to render
 
-// axe-core rules to run (WCAG 2.1 AA)
-const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
+// axe-core rules to run (WCAG 2.0, 2.1, and 2.2 Level A/AA)
+const AXE_TAGS = [
+  'wcag2a', 'wcag2aa',
+  'wcag21a', 'wcag21aa',
+  'wcag22a', 'wcag22aa',
+  'best-practice',
+];
 
 // ── Custom Runtime Checks ──────────────────────────────────────────────────
 
@@ -189,6 +194,53 @@ async function runCustomChecks(page) {
       });
     }
 
+    // Check 11: WCAG 2.2 target size (minimum). Inline text links are
+    // excluded because line-height and surrounding spacing can satisfy the exception.
+    const targetSelector = [
+      'button:not([disabled])', 'a[href]',
+      'input:not([type="hidden"]):not([disabled])',
+      'select:not([disabled])', 'textarea:not([disabled])',
+      '[role="button"]:not([aria-disabled="true"])',
+      '[role="tab"]:not([aria-disabled="true"])',
+      '[tabindex="0"]:not([aria-disabled="true"])',
+    ].join(',');
+    const undersizedTargets = [];
+    document.querySelectorAll(targetSelector).forEach(el => {
+      const rect = el.getBoundingClientRect();
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden' || rect.width === 0 || rect.height === 0) return;
+      if (rect.width >= 24 && rect.height >= 24) return;
+      if (el.matches('a[href]') && style.display === 'inline') return;
+      undersizedTargets.push(el);
+    });
+    if (undersizedTargets.length > 0) {
+      findings.push({
+        id: 'custom-target-size',
+        description: `${undersizedTargets.length} isolated interactive target(s) are smaller than 24 by 24 CSS pixels`,
+        wcag: '2.5.8 Target Size (Minimum)',
+        severity: 'major',
+        selector: targetSelector,
+      });
+    }
+
+    // Check 12: repeated-entry support for common personal-data purposes.
+    const repeatablePurpose = /^(?:name|given-name|family-name|email|username|organization|street-address|address-line[123]|address-level[1-4]|country|country-name|postal-code|language|url|tel)$/;
+    const missingAutocomplete = [];
+    document.querySelectorAll('input:not([type="hidden"]):not([disabled])').forEach(input => {
+      const declared = (input.getAttribute('autocomplete') || '').trim();
+      const inferred = (input.getAttribute('name') || input.id || '').toLowerCase();
+      if (!declared && repeatablePurpose.test(inferred)) missingAutocomplete.push(input);
+    });
+    if (missingAutocomplete.length > 0) {
+      findings.push({
+        id: 'custom-redundant-entry',
+        description: `${missingAutocomplete.length} common-purpose input(s) may require repeated entry because autocomplete is not declared`,
+        wcag: '3.3.7 Redundant Entry',
+        severity: 'major',
+        selector: 'input:not([autocomplete])',
+      });
+    }
+
     return findings;
   });
 }
@@ -227,7 +279,7 @@ async function main() {
   const urlArg = args.find(a => a.startsWith('http'));
   const url = urlArg || DEFAULT_URL;
 
-  console.log('AlloFlow WCAG 2.1 AA Runtime Audit');
+  console.log('AlloFlow WCAG 2.2 AA Runtime Audit');
   console.log(`Target: ${url}`);
   console.log('Launching browser...\n');
 
