@@ -1772,7 +1772,8 @@
       /* graphCalc canvas renderer: removed — see stem_tool_graphcalc.js */
       // ── 3D Tools: Load Three.js on demand (Geometry Sandbox + Architecture Studio) ──
       React.useEffect(function () {
-        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld' && stemLabTool !== 'echolocation' && stemLabTool !== 'geologyExplorer')) return;
+        var wcNeedsThree = stemLabTool === 'waterCycle' && labToolData.waterCycle && labToolData.waterCycle.journeyView === '3d';
+        if (stemLabTab !== 'explore' || (stemLabTool !== 'geoSandbox' && stemLabTool !== 'archStudio' && stemLabTool !== 'geometryWorld' && stemLabTool !== 'echolocation' && stemLabTool !== 'geologyExplorer' && !wcNeedsThree)) return;
         // THREE already present — but make sure OrbitControls came with it. This
         // early-return used to skip OrbitControls whenever THREE was cached, so a
         // 3D tool opened after the first got _threeLoaded with controls=null → the
@@ -1808,10 +1809,13 @@
         };
         s.onerror = function () {
           console.error('[StemLab] Three.js failed to load');
+          setLabToolData(function (p) {
+            return Object.assign({}, p, { _threeLoadError: 'The 3D engine could not load. The 2D Water Cycle remains available.' });
+          });
           if (typeof addToast === 'function') addToast('\u274c 3D engine failed to load', 'error');
         };
         document.head.appendChild(s);
-      }, [stemLabTab, stemLabTool]);
+      }, [stemLabTab, stemLabTool, labToolData.waterCycle && labToolData.waterCycle.journeyView]);
       // ── Geometry Sandbox: Scene init, render loop, shape updates (MUST be at top level) ──
       React.useEffect(function () {
         if (stemLabTab !== 'explore' || stemLabTool !== 'geoSandbox') return;
