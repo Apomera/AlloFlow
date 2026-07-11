@@ -61,6 +61,49 @@
   function load(key, fallback) { try { var s = localStorage.getItem(key); return s ? JSON.parse(s) : fallback; } catch (e) { return fallback; } }
   function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
 
+  // ── Self-contained UI localization (mirrors Lingua Practice) ───────────────
+  // LitLab's chrome is localized into the STUDENT's interface language
+  // (currentUiLanguage, read from the app's LanguageContext) via the app's own
+  // runtime Gemini (props.onCallGemini — the user's key, never a build key).
+  // English strings ARE the keys: wrap each in tr('…'); a registry auto-collects
+  // them and batch-translates the ones missing from the per-device cache. Falls
+  // back to English, and touches no lang/*.js. Emoji/{tokens} preserved.
+  var LL_I18N_KEY = 'allo_litlab_ui_i18n_v1';
+  var LANG_CTX = (typeof window !== 'undefined' && window.AlloLanguageContext) || React.createContext(null);
+  var STR_REG = {}; // English strings seen via tr(), used as the translate work-list
+  var LL_CUR = { lang: 'English', cache: {} }; // per-render snapshot so tr() works in module + handler scope
+  function llInterp(s, params) {
+    if (s == null || !params) return s;
+    Object.keys(params).forEach(function (k) { s = s.split('{' + k + '}').join(String(params[k])); });
+    return s;
+  }
+  // English text IS the key. Registers the string, returns its translation for the
+  // current UI language (or English). Global so it can wrap strings anywhere.
+  function tr(en, params) {
+    if (en && typeof en === 'string') STR_REG[en] = true;
+    var p = LL_CUR.cache[LL_CUR.lang];
+    return llInterp((p && p[en] != null) ? p[en] : en, params);
+  }
+  function llCleanJson(raw) {
+    var s = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '');
+    var first = s.indexOf('{'), last = s.lastIndexOf('}');
+    return first >= 0 && last > first ? s.slice(first, last + 1) : s;
+  }
+  function llSanitize(obj, wanted) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null;
+    var out = {}, n = 0;
+    wanted.forEach(function (k) { var v = obj[k]; if (typeof v === 'string') { v = v.trim().slice(0, 400); if (v) { out[k] = v; n++; } } });
+    return n ? out : null;
+  }
+  function llPrompt(langName, list) {
+    return [
+      'Translate these user-interface labels for a classroom literacy/theatre app into natural, concise ' + langName + ' (buttons, tabs, headings — keep them short).',
+      'Keep any {tokens} and any emoji EXACTLY as written. No commentary.',
+      'Return ONLY a JSON object mapping each ENGLISH string (used verbatim as the key) to its ' + langName + ' translation.',
+      JSON.stringify(list)
+    ].join(String.fromCharCode(10));
+  }
+
   // ── Main Component ────────────────────────────────────────────────────
   var LitLab = React.memo(function LitLab(props) {
     var onClose = props.onClose;
@@ -84,6 +127,43 @@
     var useState = React.useState;
     var useCallback = React.useCallback;
     var useRef = React.useRef;
+
+    // ── UI localization (student's interface language, runtime-translated) ──
+    var langCtx = React.useContext(LANG_CTX);
+    var uiLang = (langCtx && langCtx.currentUiLanguage) || (typeof window !== 'undefined' && window.__alloTextLanguage) || 'English';
+    var llCacheRef = useRef(load(LL_I18N_KEY, {}));
+    var llReqRef = useRef(0);
+    var llAttemptedRef = useRef({});
+    var setLlTick = useState(0)[1];
+    var _llTranslating = useState(false); var llTranslating = _llTranslating[0]; var setLlTranslating = _llTranslating[1];
+    // Publish this render's language + cache so the module-scope tr() resolves correctly.
+    LL_CUR.lang = uiLang; LL_CUR.cache = llCacheRef.current;
+    function llTranslateBatch(list) {
+      if (typeof onCallGemini !== 'function' || !list.length) return;
+      var reqId = ++llReqRef.current, lang = uiLang;
+      setLlTranslating(true);
+      var att = llAttemptedRef.current[lang] || (llAttemptedRef.current[lang] = {});
+      list.forEach(function (k) { att[k] = true; });
+      Promise.resolve().then(function () { return onCallGemini(llPrompt(lang, list)); }).then(function (raw) {
+        if (reqId !== llReqRef.current) return;
+        setLlTranslating(false);
+        var pack = null; try { pack = llSanitize(JSON.parse(llCleanJson(raw)), list); } catch (_) {}
+        if (pack) {
+          var next = Object.assign({}, llCacheRef.current);
+          next[lang] = Object.assign({}, next[lang] || {}, pack);
+          llCacheRef.current = next; store(LL_I18N_KEY, next);
+          setLlTick(function (n) { return n + 1; });
+        }
+      }).catch(function () { if (reqId === llReqRef.current) setLlTranslating(false); });
+    }
+    React.useEffect(function () {
+      if (uiLang === 'English' || typeof onCallGemini !== 'function') return;
+      var cache = llCacheRef.current[uiLang] || {}, attempted = llAttemptedRef.current[uiLang] || {};
+      var missing = Object.keys(STR_REG).filter(function (k) { return !cache[k] && !attempted[k]; });
+      if (!missing.length) return;
+      var t = setTimeout(function () { llTranslateBatch(missing); }, 500);
+      return function () { clearTimeout(t); };
+    });
 
     // ── Codename system ──
     var CN_ADJ = ['Alpine','Arctic','Bold','Brave','Bright','Calm','Clever','Cool','Cosmic','Daring','Eager','Epic','Fair','Fast','Fierce','Gentle','Grand','Happy','Heroic','Jolly','Kind','Lively','Lucky','Magic','Mighty','Neon','Noble','Proud','Quick','Rapid','Royal','Silent','Smart','Solar','Sonic','Steady','Super','Swift','Tough','Turbo','Unique','Vivid','Wild','Wise','Zealous'];
@@ -175,7 +255,7 @@
         if (initialConfig.genLength) setGenLength(initialConfig.genLength);
         if (initialConfig.genGradeLevel) setGenGradeLevel(initialConfig.genGradeLevel);
         if (initialConfig.inputMode) setInputMode(initialConfig.inputMode);
-        if (addToast) addToast('Assignment loaded!', 'success');
+        if (addToast) addToast(tr('Assignment loaded!'), 'success');
       } catch (err) { console.warn('[LitLab] initialConfig hydration failed:', err && err.message); }
     }, [initialConfig]);
 
@@ -245,7 +325,7 @@
     var extractScript = useCallback(async function (text) {
       if (!onCallGemini || !text.trim()) return;
       setIsLoading(true);
-      setLoadingMsg('Analyzing text and extracting characters...');
+      setLoadingMsg(tr('Analyzing text and extracting characters...'));
       try {
         var gl = genGradeLevel || gradeLevel || '5th Grade';
         var isElem = /k|1st|2nd|3rd|4th|5th/i.test(gl);
@@ -282,7 +362,7 @@
           + '}';
         var result = await onCallGemini(prompt, true);
         var parsed = JSON.parse(cleanJson(result));
-        if (!parsed.characters || !parsed.lines) throw new Error('Invalid script format');
+        if (!parsed.characters || !parsed.lines) throw new Error(tr('Invalid script format'));
         // Assign default voices to characters
         parsed.characters.forEach(function (ch, i) {
           ch.voice = VOICE_POOL[i % VOICE_POOL.length];
@@ -297,7 +377,7 @@
         setScript(parsed);
         setStoryTitle(parsed.title || 'Untitled');
         setPhase('assign');
-        addToast && addToast('Script created! ' + parsed.characters.length + ' characters, ' + parsed.lines.length + ' lines.', 'success');
+        addToast && addToast(tr('Script created! ') + parsed.characters.length + ' characters, ' + parsed.lines.length + ' lines.', 'success');
       } catch (err) {
         warnLog('Script extraction failed:', err);
         addToast && addToast('Script extraction failed: ' + err.message, 'error');
@@ -348,7 +428,7 @@
             + '- End at a compelling moment — do NOT resolve the story yet.\n\n'
             + 'Return ONLY the story text — no title, no commentary.';
           var part1 = await onCallGemini(p1, false);
-          if (!part1 || part1.trim().length < 50) throw new Error('Story generation failed');
+          if (!part1 || part1.trim().length < 50) throw new Error(tr('Story generation failed'));
           fullStory = part1.trim();
 
           // Middle passes (if 3+ chunks needed)
@@ -389,12 +469,12 @@
         if (fullStory && fullStory.trim().length > 50) {
           setSourceText(fullStory.trim());
           setInputMode('paste');
-          addToast && addToast('Story generated! ' + fullStory.trim().split(/\s+/).length + ' words. Review it, then click "Create Script".', 'success');
+          addToast && addToast(tr('Story generated! ') + fullStory.trim().split(/\s+/).length + ' words. Review it, then click "Create Script".', 'success');
         } else {
-          addToast && addToast('Generation returned too little text. Try again.', 'error');
+          addToast && addToast(tr('Generation returned too little text. Try again.'), 'error');
         }
       } catch (err) {
-        addToast && addToast('Story generation failed: ' + err.message, 'error');
+        addToast && addToast(tr('Story generation failed: ') + err.message, 'error');
       } finally { setIsLoading(false); setLoadingMsg(''); }
     }, [onCallGemini, gradeLevel, genGradeLevel, genGenre, genPrompt, genCharCount, genLength, addToast]);
 
@@ -489,19 +569,19 @@
       setIsPaused(false);
       if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
       if (window.speechSynthesis) window.speechSynthesis.cancel();
-      announceLitLab('Playback stopped.');
+      announceLitLab(tr('Playback stopped.'));
     }, []);
 
     var pausePlayback = useCallback(function () {
       pausedRef.current = true;
       setIsPaused(true);
-      announceLitLab('Paused. Will hold after current line finishes.');
+      announceLitLab(tr('Paused. Will hold after current line finishes.'));
     }, []);
 
     var resumePlayback = useCallback(function () {
       pausedRef.current = false;
       setIsPaused(false);
-      announceLitLab('Resumed.');
+      announceLitLab(tr('Resumed.'));
     }, []);
 
     // ── Save/Load Scripts ──
@@ -511,7 +591,7 @@
       var updated = [entry].concat(savedScripts.slice(0, 19));
       setSavedScripts(updated);
       store(STORAGE_SCRIPTS, updated);
-      addToast && addToast('Script saved!', 'success');
+      addToast && addToast(tr('Script saved!'), 'success');
     }, [script, storyTitle, sourceText, savedScripts, addToast]);
 
     var loadScript = useCallback(function (entry) {
@@ -538,14 +618,14 @@
         savedAt: new Date().toISOString()
       };
       onSaveConfig(config);
-      addToast && addToast('LitLab assignment saved!', 'success');
+      addToast && addToast(tr('LitLab assignment saved!'), 'success');
     }, [onSaveConfig, storyTitle, sourceText, teacherPrompt, gradeLevel, inputMode, genGenre, genLength, genGradeLevel, addToast]);
 
     // saveSubmissionToPortfolio: student saves their performed/analyzed work as a
     // 'litlab-submission' resource for portfolio review.
     var saveSubmissionToPortfolio = useCallback(function () {
       if (!onSaveSubmission) return;
-      if (!script) { addToast && addToast('Generate or load a script first!', 'info'); return; }
+      if (!script) { addToast && addToast(tr('Generate or load a script first!'), 'info'); return; }
       var submission = {
         storyTitle: storyTitle || (script && script.title) || 'My Performance',
         scriptTitle: script.title || '',
@@ -657,20 +737,20 @@
           var xp = parsed.overallRating === 'exemplary' ? 30 : parsed.overallRating === 'proficient' ? 20 : 10;
           handleScoreUpdate(xp, 'LitLab Literary Analysis', 'storystage-analysis-' + (script.title || 'untitled'));
         }
-        addToast && addToast('Feedback received!', 'success');
+        addToast && addToast(tr('Feedback received!'), 'success');
       } catch (err) {
-        setAnalysisFeedback({ error: 'Could not generate feedback.' });
+        setAnalysisFeedback({ error: tr('Could not generate feedback.') });
         addToast && addToast('Feedback failed: ' + err.message, 'error');
       }
     }, [onCallGemini, script, storyTitle, gradeLevel, analysisResponses, handleScoreUpdate, addToast]);
 
     // ── LitLab metacognitive rubric (5 criteria, performance + analysis hybrid) ──
     var LITLAB_RUBRIC = [
-      { id: 'character',   label: 'Character',       desc: 'How well I described the characters and supported it with the story' },
-      { id: 'theme',       label: 'Theme',           desc: 'How clearly I named a theme and connected it to events in the story' },
+      { id: 'character',   label: 'Character',       desc: tr('How well I described the characters and supported it with the story') },
+      { id: 'theme',       label: 'Theme',           desc: tr('How clearly I named a theme and connected it to events in the story') },
       { id: 'craft',       label: "Author's Craft",  desc: 'How specifically I noticed an author choice (figurative language, pacing, dialogue)' },
-      { id: 'performance', label: 'Performance',     desc: 'How expressively I read aloud — vocal variety, pacing, emotion' },
-      { id: 'reflection',  label: 'Connection',      desc: 'How I connected the story to myself, another book, or the world' }
+      { id: 'performance', label: 'Performance',     desc: tr('How expressively I read aloud — vocal variety, pacing, emotion') },
+      { id: 'reflection',  label: 'Connection',      desc: tr('How I connected the story to myself, another book, or the world') }
     ];
 
     // True when the student has at least 2 helper outputs available to synthesize.
@@ -802,8 +882,8 @@
       announceLitLab('Refining cover image…');
       try {
         var refined = await refineImage(sceneImage, instruction.trim(), 600);
-        if (refined) { setSceneImage(refined); addToast && addToast('Cover refined.', 'success'); announceLitLab('Cover image refined.'); }
-        else { addToast && addToast('Refine failed.', 'error'); }
+        if (refined) { setSceneImage(refined); addToast && addToast(tr('Cover refined.'), 'success'); announceLitLab(tr('Cover image refined.')); }
+        else { addToast && addToast(tr('Refine failed.'), 'error'); }
       } finally { setSceneImageLoading(false); }
     }, [sceneImage, refineImage, addToast]);
 
@@ -818,9 +898,9 @@
         var refined = await refineImage(current, instruction.trim(), 600);
         if (refined) {
           setPageImages(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = refined; return n; });
-          addToast && addToast('Page ' + (pageIdx + 1) + ' refined.', 'success');
-          announceLitLab('Page ' + (pageIdx + 1) + ' illustration refined.');
-        } else { addToast && addToast('Refine failed.', 'error'); }
+          addToast && addToast(tr('Page ') + (pageIdx + 1) + ' refined.', 'success');
+          announceLitLab(tr('Page ') + (pageIdx + 1) + ' illustration refined.');
+        } else { addToast && addToast(tr('Refine failed.'), 'error'); }
       } finally { setPageImgLoading(function (prev) { var n = Object.assign({}, prev); n[pageIdx] = false; return n; }); }
     }, [pageImages, refineImage, addToast]);
 
@@ -849,7 +929,7 @@
           if (i < totalPages - 1) await new Promise(function (r) { setTimeout(r, 1500); });
         }
       }
-      addToast && addToast('All illustrations complete!', 'success');
+      addToast && addToast(tr('All illustrations complete!'), 'success');
     }, [onCallImagen, script, totalPages, pageImages, generatePageImage, addToast]);
 
     // ── Export as printable storybook ──
@@ -969,17 +1049,17 @@
           maxDurationMs: 15 * 60 * 1000, // generous cap; performances run long
           preferredMimeType: 'audio/webm;codecs=opus',
           onError: function (err) {
-            addToast && addToast('Microphone access denied. Please allow microphone to record.', 'error');
+            addToast && addToast(tr('Microphone access denied. Please allow microphone to record.'), 'error');
             setIsRecording(false);
           }
         });
         if (!ctrl.supported) {
-          addToast && addToast('Recording not supported in this browser.', 'error');
+          addToast && addToast(tr('Recording not supported in this browser.'), 'error');
           return;
         }
         mediaRecorderRef.current = ctrl;
         setIsRecording(true);
-        addToast && addToast('Recording started — read your lines!', 'info');
+        addToast && addToast(tr('Recording started — read your lines!'), 'info');
         ctrl.result.then(function (rec) {
           if (!rec || !rec.base64) { setIsRecording(false); return; }
           // Reconstruct a Blob URL so callers that play back via
@@ -988,14 +1068,14 @@
             var url = URL.createObjectURL(blob);
             setRecordingUrl(url);
             setRecordedChunks([blob]); // single-chunk array shape
-            addToast && addToast('Recording saved!', 'success');
+            addToast && addToast(tr('Recording saved!'), 'success');
             if (handleScoreUpdate) handleScoreUpdate(15, 'LitLab Recording', 'storystage-record-' + (storyTitle || 'untitled'));
             setIsRecording(false);
           }).catch(function () {
             // Fallback: use the data URI directly as the URL
             setRecordingUrl(rec.base64);
             setRecordedChunks([]);
-            addToast && addToast('Recording saved!', 'success');
+            addToast && addToast(tr('Recording saved!'), 'success');
             if (handleScoreUpdate) handleScoreUpdate(15, 'LitLab Recording', 'storystage-record-' + (storyTitle || 'untitled'));
             setIsRecording(false);
           });
@@ -1017,15 +1097,15 @@
           setRecordingUrl(url);
           setRecordedChunks(chunks);
           stream.getTracks().forEach(function (t) { t.stop(); });
-          addToast && addToast('Recording saved!', 'success');
+          addToast && addToast(tr('Recording saved!'), 'success');
           if (handleScoreUpdate) handleScoreUpdate(15, 'LitLab Recording', 'storystage-record-' + (storyTitle || 'untitled'));
         };
         mediaRecorderRef.current = mr;
         mr.start();
         setIsRecording(true);
-        addToast && addToast('Recording started — read your lines!', 'info');
+        addToast && addToast(tr('Recording started — read your lines!'), 'info');
       } catch (err) {
-        addToast && addToast('Microphone access denied. Please allow microphone to record.', 'error');
+        addToast && addToast(tr('Microphone access denied. Please allow microphone to record.'), 'error');
       }
     }, [storyTitle, handleScoreUpdate, addToast]);
 
@@ -1126,7 +1206,7 @@
             e('span', { style: { fontSize: '24px' } }, '🎭'),
             e('div', null,
               e('h2', { style: { fontWeight: 900, fontSize: '18px', margin: 0 } }, 'LitLab'),
-              e('p', { style: { fontSize: '11px', opacity: 0.8, margin: 0 } }, storyTitle || 'Bring stories to life')
+              e('p', { style: { fontSize: '11px', opacity: 0.8, margin: 0 } }, storyTitle || tr('Bring stories to life'))
             )
           ),
           e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center' } },
@@ -1134,8 +1214,8 @@
               if (phase === 'assign') setPhase('input');
               else if (phase === 'perform') { stopPlayback(); setPhase('assign'); }
               else if (phase === 'analyze') setPhase('perform');
-            }, style: S.btn('rgba(255,255,255,0.2)', '#fff', false), 'aria-label': 'Back' }, '← Back'),
-            e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': 'Close' }, '×')
+            }, style: S.btn('rgba(255,255,255,0.2)', '#fff', false), 'aria-label': tr('Back') }, tr('← Back')),
+            e('button', { onClick: onClose, style: { color: '#fff', background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '6px', padding: '5px 11px', cursor: 'pointer', fontSize: '20px', lineHeight: 1 }, 'aria-label': tr('Close') }, '×')
           )
         ),
         // Body
@@ -1145,64 +1225,64 @@
           phase === 'input' && e('div', { style: { maxWidth: '700px', margin: '0 auto' } },
             // Codename bar
             e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', padding: '8px 16px', background: LIGHT_PURPLE, borderRadius: '12px', border: '1px solid #c4b5fd' } },
-              e('span', { style: { fontSize: '11px', fontWeight: 700, color: PURPLE } }, '🎭 Performer:'),
+              e('span', { style: { fontSize: '11px', fontWeight: 700, color: PURPLE } }, tr('🎭 Performer:')),
               e('select', { value: performerName.split(' ')[0] || '', onChange: function (ev) {
                 var animal = performerName.split(' ').slice(1).join(' ') || CN_ANI[0];
                 setPerformerName(ev.target.value ? ev.target.value + ' ' + animal : animal);
-              }, style: { fontSize: '11px', padding: '3px 6px', borderRadius: '6px', border: '1px solid #c4b5fd', color: PURPLE, fontWeight: 600 }, 'aria-label': 'Codename adjective' },
-                e('option', { value: '' }, '— Adjective —'),
+              }, style: { fontSize: '11px', padding: '3px 6px', borderRadius: '6px', border: '1px solid #c4b5fd', color: PURPLE, fontWeight: 600 }, 'aria-label': tr('Codename adjective') },
+                e('option', { value: '' }, tr('— Adjective —')),
                 CN_ADJ.map(function (a) { return e('option', { key: a, value: a }, a); })
               ),
               e('select', { value: performerName.split(' ').slice(1).join(' ') || '', onChange: function (ev) {
                 var adj = performerName.split(' ')[0] || CN_ADJ[0];
                 setPerformerName(ev.target.value ? adj + ' ' + ev.target.value : adj);
-              }, style: { fontSize: '11px', padding: '3px 6px', borderRadius: '6px', border: '1px solid #c4b5fd', color: PURPLE, fontWeight: 600 }, 'aria-label': 'Codename animal' },
-                e('option', { value: '' }, '— Animal —'),
+              }, style: { fontSize: '11px', padding: '3px 6px', borderRadius: '6px', border: '1px solid #c4b5fd', color: PURPLE, fontWeight: 600 }, 'aria-label': tr('Codename animal') },
+                e('option', { value: '' }, tr('— Animal —')),
                 CN_ANI.map(function (a) { return e('option', { key: a, value: a }, a); })
               ),
               e('button', { onClick: function () { setPerformerName(CN_ADJ[Math.floor(Math.random() * CN_ADJ.length)] + ' ' + CN_ANI[Math.floor(Math.random() * CN_ANI.length)]); },
-                style: { fontSize: '11px', background: '#fff', border: '1px solid #94a3b8', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' }, 'aria-label': 'Randomize codename' }, '🎲')
+                style: { fontSize: '11px', background: '#fff', border: '1px solid #94a3b8', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' }, 'aria-label': tr('Randomize codename') }, '🎲')
             ),
             e('div', { style: { textAlign: 'center', marginBottom: '24px' } },
-              e('h3', { style: { fontSize: '22px', fontWeight: 800, color: '#1e293b' } }, '🎭 Create Your Performance'),
-              e('p', { style: { color: '#475569', fontSize: '14px' } }, 'Paste a story, import from URL, or let AI write one — then bring it to life with character voices.')
+              e('h3', { style: { fontSize: '22px', fontWeight: 800, color: '#1e293b' } }, tr('🎭 Create Your Performance')),
+              e('p', { style: { color: '#475569', fontSize: '14px' } }, tr('Paste a story, import from URL, or let AI write one — then bring it to life with character voices.'))
             ),
 
             // ── Assignment prompt banner (visible to students when teacher set a prompt) ──
-            teacherPrompt && !onSaveConfig && e('div', { role: 'note', 'aria-label': 'Assignment prompt from teacher', style: { background: '#fffbeb', border: '2px solid #fde68a', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px' } },
-              e('div', { style: { fontSize: '11px', fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, '📋 Assignment'),
+            teacherPrompt && !onSaveConfig && e('div', { role: 'note', 'aria-label': tr('Assignment prompt from teacher'), style: { background: '#fffbeb', border: '2px solid #fde68a', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px' } },
+              e('div', { style: { fontSize: '11px', fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' } }, tr('📋 Assignment')),
               e('p', { style: { fontSize: '13px', color: '#78350f', margin: 0, lineHeight: 1.6 } }, teacherPrompt)
             ),
 
             // ── Teacher Assignment Builder (visible only when onSaveConfig is provided) ──
-            onSaveConfig && e('div', { role: 'region', 'aria-label': 'Teacher Assignment Builder', style: { background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: '12px', padding: '14px', marginBottom: '16px' } },
+            onSaveConfig && e('div', { role: 'region', 'aria-label': tr('Teacher Assignment Builder'), style: { background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: '12px', padding: '14px', marginBottom: '16px' } },
               e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' } },
-                e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e40af', margin: 0 } }, '🧑‍🏫 Teacher Assignment Builder'),
-                e('span', { style: { fontSize: '10px', color: '#1e40af', background: '#dbeafe', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Teacher mode')
+                e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e40af', margin: 0 } }, tr('🧑‍🏫 Teacher Assignment Builder')),
+                e('span', { style: { fontSize: '10px', color: '#1e40af', background: '#dbeafe', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } }, tr('Teacher mode'))
               ),
               e('p', { style: { fontSize: '11px', color: '#1e3a8a', margin: '0 0 10px', lineHeight: 1.5 } },
-                'Paste or generate the source text below, give it a title, and add a focus prompt. Save it as an assignment so students can load it from My Resources.'
+                tr('Paste or generate the source text below, give it a title, and add a focus prompt. Save it as an assignment so students can load it from My Resources.')
               ),
-              e('label', { htmlFor: 'll-teacher-prompt', style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#1e40af', marginBottom: '4px' } }, 'Performance focus / instructions for students'),
+              e('label', { htmlFor: 'll-teacher-prompt', style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#1e40af', marginBottom: '4px' } }, tr('Performance focus / instructions for students')),
               e('textarea', {
                 id: 'll-teacher-prompt',
                 value: teacherPrompt,
                 onChange: function (ev) { setTeacherPrompt(ev.target.value); },
-                placeholder: 'e.g. "Read aloud with feeling — vary your voice for each character. Pay attention to where the narrator changes mood."',
+                placeholder: tr('e.g. "Read aloud with feeling — vary your voice for each character. Pay attention to where the narrator changes mood."'),
                 rows: 3,
                 style: { width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #bfdbfe', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', background: '#fff', boxSizing: 'border-box' }
               }),
               e('button', {
                 onClick: saveAsAssignment,
                 disabled: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim(),
-                'aria-label': 'Save this LitLab setup as an assignment in My Resources',
+                'aria-label': tr('Save this LitLab setup as an assignment in My Resources'),
                 style: { marginTop: '10px', padding: '8px 16px', background: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? '#cbd5e1' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: !sourceText.trim() && !storyTitle.trim() && !teacherPrompt.trim() ? 'not-allowed' : 'pointer' }
-              }, '💾 Save as Assignment')
+              }, tr('💾 Save as Assignment'))
             ),
 
             // Mode selector
             e('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px', justifyContent: 'center' } },
-              [['paste', '📋 Paste Text'], ['generate', '✨ AI Generate']].map(function (pair) {
+              [['paste', tr('📋 Paste Text')], ['generate', tr('✨ AI Generate')]].map(function (pair) {
                 return e('button', { key: pair[0], onClick: function () { setInputMode(pair[0]); },
                   style: Object.assign({}, S.btn(inputMode === pair[0] ? PURPLE : '#f1f5f9', inputMode === pair[0] ? '#fff' : '#374151', false), { padding: '10px 20px' })
                 }, pair[1]);
@@ -1220,15 +1300,15 @@
                       ev.preventDefault();
                       var blob = items[ii].getAsFile();
                       if (!blob) return;
-                      setIsLoading(true); setLoadingMsg('Extracting text from image...');
+                      setIsLoading(true); setLoadingMsg(tr('Extracting text from image...'));
                       var reader = new FileReader();
                       reader.onload = async function () {
                         try {
                           var base64 = reader.result.split(',')[1];
                           var text = await props.onCallGeminiVision('You are an OCR expert. Extract ALL readable text from this image. Preserve paragraph structure. Return ONLY the extracted text.', base64, items[ii].type);
-                          if (text && text.trim().length > 10) { setSourceText(function (prev) { return prev ? prev + '\n\n' + text.trim() : text.trim(); }); addToast && addToast('Text extracted from image!', 'success'); }
-                          else { addToast && addToast('Could not extract text.', 'error'); }
-                        } catch (err) { addToast && addToast('OCR failed.', 'error'); }
+                          if (text && text.trim().length > 10) { setSourceText(function (prev) { return prev ? prev + '\n\n' + text.trim() : text.trim(); }); addToast && addToast(tr('Text extracted from image!'), 'success'); }
+                          else { addToast && addToast(tr('Could not extract text.'), 'error'); }
+                        } catch (err) { addToast && addToast(tr('OCR failed.'), 'error'); }
                         setIsLoading(false); setLoadingMsg('');
                       };
                       reader.readAsDataURL(blob);
@@ -1239,24 +1319,24 @@
                 placeholder: 'Paste a story, chapter, poem, or play excerpt here...\n\nYou can also paste an image (screenshot of a book page) — the text will be extracted automatically.',
                 rows: 10, style: Object.assign({}, S.input, { resize: 'vertical', fontFamily: 'Georgia, serif', lineHeight: 1.7 }),
                 autoFocus: phase === 'input' && inputMode === 'paste',
-                'aria-label': 'Story text input' }),
+                'aria-label': tr('Story text input') }),
               e('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' } },
                 e('button', { onClick: function () { if (sourceText.trim()) extractScript(sourceText); },
                   disabled: !sourceText.trim() || isLoading,
                   'aria-busy': isLoading ? 'true' : 'false',
-                  'aria-label': isLoading ? 'Creating script, please wait' : 'Create Script from text',
-                  style: S.btn(PURPLE, '#fff', !sourceText.trim() || isLoading) }, isLoading ? '⏳ ' + loadingMsg : '🎭 Create Script'),
+                  'aria-label': isLoading ? tr('Creating script, please wait') : tr('Create Script from text'),
+                  style: S.btn(PURPLE, '#fff', !sourceText.trim() || isLoading) }, isLoading ? '⏳ ' + loadingMsg : tr('🎭 Create Script')),
                 // URL import
                 e('button', { onClick: async function () {
-                  var url = prompt('Paste a URL to import text from:');
+                  var url = prompt(tr('Paste a URL to import text from:'));
                   if (!url || !url.trim()) return;
-                  setIsLoading(true); setLoadingMsg('Fetching from URL...');
+                  setIsLoading(true); setLoadingMsg(tr('Fetching from URL...'));
                   try {
                     var text = await window.__alloUtils.fetchAndCleanUrl(url.trim(), onCallGemini, addToast);
-                    if (text) { setSourceText(function (prev) { return prev ? prev + '\n\n' + text : text; }); addToast && addToast('Text imported from URL!', 'success'); }
-                  } catch (err) { addToast && addToast('Import failed: ' + err.message, 'error'); }
+                    if (text) { setSourceText(function (prev) { return prev ? prev + '\n\n' + text : text; }); addToast && addToast(tr('Text imported from URL!'), 'success'); }
+                  } catch (err) { addToast && addToast(tr('Import failed: ') + err.message, 'error'); }
                   setIsLoading(false); setLoadingMsg('');
-                }, style: S.btn('#f1f5f9', '#374151', false) }, '🔗 Import URL'),
+                }, style: S.btn('#f1f5f9', '#374151', false) }, tr('🔗 Import URL')),
                 // File upload
                 e('button', { onClick: function () {
                   var input = document.createElement('input');
@@ -1270,45 +1350,45 @@
                       reader.onload = function (e2) { setSourceText(function (prev) { return prev ? prev + '\n\n' + e2.target.result : e2.target.result; }); };
                       reader.readAsText(file);
                     } else if (file.type.startsWith('image/') || file.type === 'application/pdf') {
-                      if (!props.onCallGeminiVision) { addToast && addToast('Vision API not available.', 'error'); return; }
-                      setIsLoading(true); setLoadingMsg('Extracting text from file...');
+                      if (!props.onCallGeminiVision) { addToast && addToast(tr('Vision API not available.'), 'error'); return; }
+                      setIsLoading(true); setLoadingMsg(tr('Extracting text from file...'));
                       var reader2 = new FileReader();
                       reader2.onload = async function () {
                         try {
                           var base64 = reader2.result.split(',')[1];
                           var text = await props.onCallGeminiVision('Extract all readable text from this document. Preserve paragraph structure. Return ONLY the text.', base64, file.type);
-                          if (text) { setSourceText(function (prev) { return prev ? prev + '\n\n' + text.trim() : text.trim(); }); addToast && addToast('Text extracted!', 'success'); }
-                        } catch (err) { addToast && addToast('Extraction failed.', 'error'); }
+                          if (text) { setSourceText(function (prev) { return prev ? prev + '\n\n' + text.trim() : text.trim(); }); addToast && addToast(tr('Text extracted!'), 'success'); }
+                        } catch (err) { addToast && addToast(tr('Extraction failed.'), 'error'); }
                         setIsLoading(false); setLoadingMsg('');
                       };
                       reader2.readAsDataURL(file);
                     }
                   };
                   input.click();
-                }, style: S.btn('#f1f5f9', '#374151', false) }, '📁 Upload File')
+                }, style: S.btn('#f1f5f9', '#374151', false) }, tr('📁 Upload File'))
               )
             ),
 
             // Generate mode
             inputMode === 'generate' && e('div', { style: S.card },
-              e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px', display: 'block' } }, 'Genre'),
+              e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '8px', display: 'block' } }, tr('Genre')),
               e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px', marginBottom: '12px' } },
                 GENRES.map(function (g) {
                   return e('button', { key: g.id, onClick: function () { setGenGenre(g.id); },
                     style: { padding: '8px', borderRadius: '10px', border: '2px solid ' + (genGenre === g.id ? PURPLE : '#e5e7eb'), background: genGenre === g.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'left', fontSize: '11px' }
                   },
-                    e('div', { style: { fontWeight: 700, color: genGenre === g.id ? PURPLE : '#374151' } }, g.icon + ' ' + g.label),
-                    e('div', { style: { color: '#64748b', fontSize: '10px' } }, g.desc)
+                    e('div', { style: { fontWeight: 700, color: genGenre === g.id ? PURPLE : '#374151' } }, g.icon + ' ' + tr(g.label)),
+                    e('div', { style: { color: '#64748b', fontSize: '10px' } }, tr(g.desc))
                   );
                 })
               ),
-              e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '4px', display: 'block' } }, 'Custom Instructions (optional)'),
+              e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', marginBottom: '4px', display: 'block' } }, tr('Custom Instructions (optional)')),
               e('textarea', { value: genPrompt, onChange: function (ev) { setGenPrompt(ev.target.value); },
-                placeholder: 'e.g. "A story about a girl who discovers she can talk to animals" or "Set in ancient Egypt with a mystery about a missing artifact"',
+                placeholder: tr('e.g. "A story about a girl who discovers she can talk to animals" or "Set in ancient Egypt with a mystery about a missing artifact"'),
                 rows: 3, style: Object.assign({}, S.input, { marginBottom: '12px', resize: 'vertical' }),
-                'aria-label': 'Story generation instructions' }),
+                'aria-label': tr('Story generation instructions') }),
               e('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' } },
-                e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151' } }, 'Characters:'),
+                e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151' } }, tr('Characters:')),
                 [2, 3, 4, 5, 6].map(function (n) {
                   return e('button', { key: n, onClick: function () { setGenCharCount(n); },
                     style: { width: '32px', height: '32px', borderRadius: '50%', border: '2px solid ' + (genCharCount === n ? PURPLE : '#d1d5db'), background: genCharCount === n ? PURPLE : '#fff', color: genCharCount === n ? '#fff' : '#374151', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
@@ -1317,46 +1397,46 @@
               ),
               // Grade level selector
               e('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' } },
-                e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0 } }, 'Grade Level:'),
+                e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0 } }, tr('Grade Level:')),
                 e('select', { value: genGradeLevel, onChange: function (ev) { setGenGradeLevel(ev.target.value); },
                   style: Object.assign({}, S.input, { flex: 1 }),
-                  'aria-label': 'Story grade level'
+                  'aria-label': tr('Story grade level')
                 },
                   GRADE_OPTIONS.map(function (g) { return e('option', { key: g, value: g }, g); })
                 )
               ),
               // Length selector
               e('div', { style: { display: 'flex', gap: '6px', marginBottom: '12px' } },
-                e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0, paddingTop: '6px' } }, 'Length:'),
+                e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0, paddingTop: '6px' } }, tr('Length:')),
                 LENGTH_OPTIONS.map(function (lo) {
                   return e('button', { key: lo.id, onClick: function () { setGenLength(lo.id); },
-                    'aria-label': lo.label + ' story' + (lo.words ? ': ' + lo.words + ' words' : ''),
+                    'aria-label': tr(lo.label) + ' story' + (lo.words ? ': ' + lo.words + ' words' : ''),
                     style: { flex: 1, padding: '6px 10px', borderRadius: '10px', border: '2px solid ' + (genLength === lo.id ? PURPLE : '#e5e7eb'), background: genLength === lo.id ? LIGHT_PURPLE : '#fff', cursor: 'pointer', textAlign: 'center', fontSize: '11px' }
                   },
-                    e('div', { style: { fontWeight: 700, color: genLength === lo.id ? PURPLE : '#374151' } }, lo.label),
-                    e('div', { style: { color: '#64748b', fontSize: '9px' } }, lo.words ? lo.words + ' words' : 'You choose')
+                    e('div', { style: { fontWeight: 700, color: genLength === lo.id ? PURPLE : '#374151' } }, tr(lo.label)),
+                    e('div', { style: { color: '#64748b', fontSize: '9px' } }, lo.words ? lo.words + ' words' : tr('You choose'))
                   );
                 })
               ),
               // Custom word count input
               genLength === 'custom' && e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '12px' } },
-                e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0 } }, 'Word count:'),
+                e('label', { style: { fontSize: '12px', fontWeight: 700, color: '#374151', flexShrink: 0 } }, tr('Word count:')),
                 e('input', { type: 'number', min: 50, max: 5000, step: 50, value: customWordCount,
                   onChange: function (ev) { setCustomWordCount(ev.target.value); },
                   style: Object.assign({}, S.input, { width: '120px' }),
-                  'aria-label': 'Custom word count' }),
+                  'aria-label': tr('Custom word count') }),
                 e('span', { style: { fontSize: '10px', color: '#64748b' } }, 'words (50–5000)')
               ),
               e('button', { onClick: generateStory, disabled: isLoading,
                 'aria-busy': isLoading ? 'true' : 'false',
-                'aria-label': isLoading ? 'Generating story, please wait' : 'Generate Story with AI',
-                style: S.btn(PURPLE, '#fff', isLoading) }, isLoading ? '⏳ ' + loadingMsg : '✨ Generate Story'),
+                'aria-label': isLoading ? tr('Generating story, please wait') : tr('Generate Story with AI'),
+                style: S.btn(PURPLE, '#fff', isLoading) }, isLoading ? '⏳ ' + loadingMsg : tr('✨ Generate Story')),
               sourceText && e('p', { style: { fontSize: '11px', color: '#16a34a', marginTop: '8px', fontWeight: 600 } }, '✅ Story generated! Switch to "Paste Text" tab to review, then click "Create Script".')
             ),
 
             // Saved scripts
             savedScripts.length > 0 && e('div', { style: Object.assign({}, S.card, { marginTop: '16px' }) },
-              e('h4', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, '📂 Saved Scripts (' + savedScripts.length + ')'),
+              e('h4', { style: { fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px' } }, tr('📂 Saved Scripts (') + savedScripts.length + ')'),
               e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '150px', overflowY: 'auto' } },
                 savedScripts.map(function (s) {
                   return e('button', { key: s.id, onClick: function () { loadScript(s); },
@@ -1373,8 +1453,8 @@
           // ═══ VOICE ASSIGNMENT PHASE ═══
           phase === 'assign' && script && e('div', null,
             e('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-              e('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b' } }, '🎤 Assign Voices'),
-              e('p', { style: { color: '#475569', fontSize: '13px' } }, 'Choose a distinct voice for each character. Click preview to hear them.')
+              e('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b' } }, tr('🎤 Assign Voices')),
+              e('p', { style: { color: '#475569', fontSize: '13px' } }, tr('Choose a distinct voice for each character. Click preview to hear them.'))
             ),
             e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px', marginBottom: '20px' } },
               script.characters.map(function (ch) {
@@ -1389,7 +1469,7 @@
                     ),
                     onCallImagen && !ch.portrait && e('button', { onClick: function () { generatePortrait(ch.id); },
                       style: { fontSize: '10px', background: '#f1f5f9', border: '1px solid #94a3b8', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer' },
-                      'aria-label': 'Generate portrait' }, '🎨')
+                      'aria-label': tr('Generate portrait') }, '🎨')
                   ),
                   e('select', { value: ch.voice || '',
                     onChange: function (ev) {
@@ -1399,7 +1479,7 @@
                     style: Object.assign({}, S.input, { marginBottom: '6px' }),
                     'aria-label': 'Voice for ' + ch.name
                   },
-                    e('option', { value: '' }, '— Select Voice —'),
+                    e('option', { value: '' }, tr('— Select Voice —')),
                     allVoices.map(function (v) { return e('option', { key: v.id, value: v.id }, v.label || v.id); })
                   ),
                   e('button', { onClick: function () {
@@ -1407,14 +1487,14 @@
                     speakLine('Hello, I am ' + ch.name + '.', ch.voice).then(function () { setPreviewingVoice(null); });
                   }, disabled: previewingVoice === ch.id,
                     style: S.btn('#f1f5f9', '#374151', previewingVoice === ch.id)
-                  }, previewingVoice === ch.id ? '🔊 Playing...' : '▶ Preview Voice')
+                  }, previewingVoice === ch.id ? '🔊 Playing...' : tr('▶ Preview Voice'))
                 );
               })
             ),
             e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
-              e('button', { onClick: saveScript, style: S.btn('#f1f5f9', '#374151', false) }, '💾 Save Script'),
-              onSaveSubmission && e('button', { onClick: saveSubmissionToPortfolio, 'aria-label': 'Save this performance to your portfolio (My Resources)', style: S.btn('#7c3aed', '#fff', false) }, '📚 Save to Portfolio'),
-              e('button', { onClick: function () { setPhase('perform'); setCurrentLine(0); }, style: S.btn(PURPLE, '#fff', false) }, '🎭 Start Performance →')
+              e('button', { onClick: saveScript, style: S.btn('#f1f5f9', '#374151', false) }, tr('💾 Save Script')),
+              onSaveSubmission && e('button', { onClick: saveSubmissionToPortfolio, 'aria-label': tr('Save this performance to your portfolio (My Resources)'), style: S.btn('#7c3aed', '#fff', false) }, tr('📚 Save to Portfolio')),
+              e('button', { onClick: function () { setPhase('perform'); setCurrentLine(0); }, style: S.btn(PURPLE, '#fff', false) }, tr('🎭 Start Performance →'))
             )
           ),
 
@@ -1423,14 +1503,14 @@
             // Controls bar
             e('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e5e7eb' } },
               !isPlaying
-                ? e('button', { onClick: function () { playFromLine(currentLine); }, autoFocus: true, style: S.btn('#22c55e', '#fff', false) }, '▶ Play')
+                ? e('button', { onClick: function () { playFromLine(currentLine); }, autoFocus: true, style: S.btn('#22c55e', '#fff', false) }, tr('▶ Play'))
                 : null,
               isPlaying && (isPaused
-                ? e('button', { onClick: resumePlayback, style: S.btn('#22c55e', '#fff', false) }, '▶ Resume')
-                : e('button', { onClick: pausePlayback, style: S.btn('#f59e0b', '#fff', false) }, '⏸ Pause')),
-              isPlaying && e('button', { onClick: stopPlayback, 'aria-label': 'Stop playback', style: S.btn('#ef4444', '#fff', false) }, '⏹ Stop'),
+                ? e('button', { onClick: resumePlayback, style: S.btn('#22c55e', '#fff', false) }, tr('▶ Resume'))
+                : e('button', { onClick: pausePlayback, style: S.btn('#f59e0b', '#fff', false) }, tr('⏸ Pause'))),
+              isPlaying && e('button', { onClick: stopPlayback, 'aria-label': tr('Stop playback'), style: S.btn('#ef4444', '#fff', false) }, tr('⏹ Stop')),
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#475569' } },
-                e('span', null, 'Speed:'),
+                e('span', null, tr('Speed:')),
                 [0.75, 1, 1.25, 1.5].map(function (spd) {
                   return e('button', { key: spd, onClick: function () { setPlaybackSpeed(spd); },
                     'aria-pressed': playbackSpeed === spd ? 'true' : 'false',
@@ -1445,44 +1525,44 @@
                   var next = !largeText;
                   setLargeText(next);
                   try { localStorage.setItem('alloLitLabReadingMode', next ? '1' : '0'); } catch (e) {}
-                  announceLitLab(next ? 'Reading-friendly text on.' : 'Reading-friendly text off.');
+                  announceLitLab(next ? tr('Reading-friendly text on.') : tr('Reading-friendly text off.'));
                 },
                 'aria-pressed': largeText ? 'true' : 'false',
-                'aria-label': largeText ? 'Turn off reading-friendly text' : 'Turn on reading-friendly text (larger, sans-serif, more spacing)',
+                'aria-label': largeText ? tr('Turn off reading-friendly text') : tr('Turn on reading-friendly text (larger, sans-serif, more spacing)'),
                 style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid ' + (largeText ? PURPLE : '#d1d5db'), background: largeText ? LIGHT_PURPLE : '#fff', color: largeText ? PURPLE : '#475569', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
-              }, '🔠 ' + (largeText ? 'Reading mode on' : 'Reading mode')),
+              }, '🔠 ' + (largeText ? 'Reading mode on' : tr('Reading mode'))),
               e('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' } },
-                e('span', { style: { fontSize: '11px', color: '#475569' } }, 'My Role:'),
+                e('span', { style: { fontSize: '11px', color: '#475569' } }, tr('My Role:')),
                 e('select', { value: myRole || '', onChange: function (ev) { setMyRole(ev.target.value || null); },
                   style: { fontSize: '11px', padding: '4px 8px', borderRadius: '6px', border: '1px solid #94a3b8' },
-                  'aria-label': 'Select your character role'
+                  'aria-label': tr('Select your character role')
                 },
-                  e('option', { value: '' }, 'Audience (listen only)'),
+                  e('option', { value: '' }, tr('Audience (listen only)')),
                   script.characters.filter(function (c) { return c.id !== 'narrator' && c.id !== 'stage'; }).map(function (c) {
                     return e('option', { key: c.id, value: c.id }, '🎤 ' + c.name);
                   })
                 )
               ),
               !isRecording
-                ? e('button', { onClick: startRecording, style: S.btn('#dc2626', '#fff', false) }, '⏺ Record')
-                : e('button', { onClick: stopRecording, style: S.btn('#dc2626', '#fff', false) }, '⏹ Stop Recording'),
-              recordingUrl && e('audio', { controls: true, src: recordingUrl, style: { height: '28px', maxWidth: '150px' }, 'aria-label': 'Your recording' }),
-              e('button', { onClick: exportScript, style: S.btn('#f1f5f9', '#374151', false) }, '🖨️ Script'),
-              e('button', { onClick: exportStorybook, style: S.btn('#f1f5f9', '#374151', false) }, '📖 Storybook'),
+                ? e('button', { onClick: startRecording, style: S.btn('#dc2626', '#fff', false) }, tr('⏺ Record'))
+                : e('button', { onClick: stopRecording, style: S.btn('#dc2626', '#fff', false) }, tr('⏹ Stop Recording')),
+              recordingUrl && e('audio', { controls: true, src: recordingUrl, style: { height: '28px', maxWidth: '150px' }, 'aria-label': tr('Your recording') }),
+              e('button', { onClick: exportScript, style: S.btn('#f1f5f9', '#374151', false) }, tr('🖨️ Script')),
+              e('button', { onClick: exportStorybook, style: S.btn('#f1f5f9', '#374151', false) }, tr('📖 Storybook')),
               onCallImagen && !sceneImage && e('button', { onClick: generateSceneImage, disabled: sceneImageLoading,
                 'aria-busy': sceneImageLoading ? 'true' : 'false',
-                'aria-label': sceneImageLoading ? 'Generating cover, please wait' : 'Generate cover image with AI',
-                style: S.btn('#f1f5f9', '#374151', sceneImageLoading) }, sceneImageLoading ? '⏳ Cover…' : '🎨 Cover'),
-              onCallImagen && e('button', { onClick: generateAllImages, style: S.btn('#f1f5f9', '#374151', false) }, '🎨 All Art'),
-              e('button', { onClick: function () { setPhase('analyze'); }, style: S.btn('#f1f5f9', '#374151', false) }, '📝 Analyze →')
+                'aria-label': sceneImageLoading ? 'Generating cover, please wait' : tr('Generate cover image with AI'),
+                style: S.btn('#f1f5f9', '#374151', sceneImageLoading) }, sceneImageLoading ? '⏳ Cover…' : tr('🎨 Cover')),
+              onCallImagen && e('button', { onClick: generateAllImages, style: S.btn('#f1f5f9', '#374151', false) }, tr('🎨 All Art')),
+              e('button', { onClick: function () { setPhase('analyze'); }, style: S.btn('#f1f5f9', '#374151', false) }, tr('📝 Analyze →'))
             ),
             // Page navigation bar
             totalPages > 1 && e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', justifyContent: 'center' } },
               e('button', { onClick: function () { setCurrentPage(Math.max(0, currentPage - 1)); }, disabled: currentPage === 0,
-                style: S.btn('#f1f5f9', '#374151', currentPage === 0), 'aria-label': 'Previous page' }, '◀'),
-              e('span', { style: { fontSize: '12px', fontWeight: 700, color: '#475569' } }, 'Page ' + (currentPage + 1) + ' of ' + totalPages),
+                style: S.btn('#f1f5f9', '#374151', currentPage === 0), 'aria-label': tr('Previous page') }, '◀'),
+              e('span', { style: { fontSize: '12px', fontWeight: 700, color: '#475569' } }, tr('Page ') + (currentPage + 1) + ' of ' + totalPages),
               e('button', { onClick: function () { setCurrentPage(Math.min(totalPages - 1, currentPage + 1)); }, disabled: currentPage >= totalPages - 1,
-                style: S.btn('#f1f5f9', '#374151', currentPage >= totalPages - 1), 'aria-label': 'Next page' }, '▶')
+                style: S.btn('#f1f5f9', '#374151', currentPage >= totalPages - 1), 'aria-label': tr('Next page') }, '▶')
             ),
             // Cover image (for storybook export header)
             sceneImage && e('div', { style: { marginBottom: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' } },
@@ -1491,24 +1571,24 @@
               ),
               onCallGeminiImageEdit && e('button', { onClick: refineSceneImage, disabled: sceneImageLoading,
                 'aria-busy': sceneImageLoading ? 'true' : 'false',
-                'aria-label': sceneImageLoading ? 'Refining cover, please wait' : 'Refine cover image with a custom instruction',
+                'aria-label': sceneImageLoading ? 'Refining cover, please wait' : tr('Refine cover image with a custom instruction'),
                 style: { fontSize: '11px', color: '#475569', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '4px 10px', cursor: sceneImageLoading ? 'wait' : 'pointer' }
-              }, sceneImageLoading ? '⏳ Refining…' : '✨ Refine Cover')
+              }, sceneImageLoading ? '⏳ Refining…' : tr('✨ Refine Cover'))
             ),
             // Page illustration
             pageImages[currentPage] && e('div', { style: { marginBottom: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb', position: 'relative' } },
               e('img', { src: pageImages[currentPage], alt: 'Illustration for page ' + (currentPage + 1), style: { width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' } }),
               onCallGeminiImageEdit && e('button', { onClick: function () { refinePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
                 'aria-busy': pageImgLoading[currentPage] ? 'true' : 'false',
-                'aria-label': pageImgLoading[currentPage] ? 'Refining illustration, please wait' : 'Refine this page illustration with a custom instruction',
+                'aria-label': pageImgLoading[currentPage] ? 'Refining illustration, please wait' : tr('Refine this page illustration with a custom instruction'),
                 style: { position: 'absolute', top: '6px', right: '6px', fontSize: '11px', color: '#374151', background: 'rgba(255,255,255,0.92)', border: '1px solid #94a3b8', borderRadius: '8px', padding: '4px 10px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', fontWeight: 700 }
               }, pageImgLoading[currentPage] ? '⏳' : '✨ Refine')
             ),
             !pageImages[currentPage] && onCallImagen && e('button', { onClick: function () { generatePageImage(currentPage); }, disabled: pageImgLoading[currentPage],
               'aria-busy': pageImgLoading[currentPage] ? 'true' : 'false',
-              'aria-label': pageImgLoading[currentPage] ? 'Generating illustration, please wait' : 'Illustrate this page with AI',
+              'aria-label': pageImgLoading[currentPage] ? 'Generating illustration, please wait' : tr('Illustrate this page with AI'),
               style: { fontSize: '11px', color: '#475569', background: 'none', border: '1px dashed #d1d5db', borderRadius: '8px', padding: '6px 12px', cursor: pageImgLoading[currentPage] ? 'wait' : 'pointer', marginBottom: '10px', display: 'block', margin: '0 auto 10px' }
-            }, pageImgLoading[currentPage] ? '⏳ Generating...' : '🎨 Illustrate This Page'),
+            }, pageImgLoading[currentPage] ? '⏳ Generating...' : tr('🎨 Illustrate This Page')),
             // Progress bar
             e('div', { style: { height: '4px', background: '#e5e7eb', borderRadius: '2px', marginBottom: '12px', overflow: 'hidden' } },
               e('div', { style: { height: '100%', width: (script.lines.length > 0 ? Math.round(((currentLine + 1) / script.lines.length) * 100) : 0) + '%', background: 'linear-gradient(90deg, ' + PURPLE + ', #a855f7)', borderRadius: '2px', transition: 'width 0.3s' } })
@@ -1533,7 +1613,7 @@
                           character && character.portrait && e('img', { src: character.portrait, alt: '', style: { width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' } }),
                           e('span', { style: { fontSize: largeText ? '13px' : '11px', fontWeight: 800, color: character ? character.color : '#64748b' } },
                             character ? character.name : 'Unknown'),
-                          isMyLine && e('span', { style: { fontSize: '9px', background: '#fef3c7', color: '#92400e', padding: '1px 6px', borderRadius: '8px', fontWeight: 700 } }, '🎤 YOUR LINE')
+                          isMyLine && e('span', { style: { fontSize: '9px', background: '#fef3c7', color: '#92400e', padding: '1px 6px', borderRadius: '8px', fontWeight: 700 } }, tr('🎤 YOUR LINE'))
                         ),
                         e('p', { style: { fontSize: largeText ? (line.type === 'narration' ? '16px' : '17px') : (line.type === 'narration' ? '13px' : '14px'), color: '#1e293b', margin: 0, fontStyle: line.type === 'narration' ? 'italic' : 'normal', lineHeight: largeText ? 1.85 : 1.6 } }, line.text),
                         // Emotion reaction buttons (visible on current/past lines)
@@ -1542,7 +1622,7 @@
                             var isSelected = emotionLog[line.id] === em;
                             return e('button', { key: em, onClick: function (ev) { ev.stopPropagation(); setEmotionLog(function (prev) { var n = Object.assign({}, prev); n[line.id] = isSelected ? null : em; return n; }); },
                               style: { fontSize: '14px', padding: '1px 3px', borderRadius: '4px', border: 'none', background: isSelected ? '#fef3c7' : 'transparent', cursor: 'pointer', opacity: isSelected ? 1 : 0.4, transition: 'all 0.1s' },
-                              'aria-label': 'React with ' + em, title: 'How does this line make you feel?' }, em);
+                              'aria-label': 'React with ' + em, title: tr('How does this line make you feel?') }, em);
                           })
                         )
                       )
@@ -1554,7 +1634,7 @@
           // ═══ ANALYSIS PHASE ═══
           phase === 'analyze' && script && e('div', { style: { maxWidth: '700px', margin: '0 auto' } },
             e('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-              e('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b' } }, '📝 Literary Analysis'),
+              e('h3', { style: { fontSize: '20px', fontWeight: 800, color: '#1e293b' } }, tr('📝 Literary Analysis')),
               e('p', { style: { color: '#475569', fontSize: '13px' } }, 'Reflect on the story, its characters, and the author\'s craft.')
             ),
             // Standards alignment
@@ -1570,7 +1650,7 @@
             ),
             // Emotion summary from performance
             Object.keys(emotionLog).length > 0 && e('div', { style: { marginBottom: '16px', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '12px', padding: '12px' } },
-              e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#92400e', marginBottom: '6px' } }, '🎭 Your Emotional Journey'),
+              e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#92400e', marginBottom: '6px' } }, tr('🎭 Your Emotional Journey')),
               e('div', { style: { display: 'flex', gap: '3px', flexWrap: 'wrap', fontSize: '18px' } },
                 script.lines.map(function (line, i) {
                   var em = emotionLog[line.id];
@@ -1581,7 +1661,7 @@
             ),
             // Character analysis
             e('div', { style: S.card },
-              e('h4', { style: { fontSize: '14px', fontWeight: 700, color: PURPLE, marginBottom: '10px' } }, '👥 Character Analysis'),
+              e('h4', { style: { fontSize: '14px', fontWeight: 700, color: PURPLE, marginBottom: '10px' } }, tr('👥 Character Analysis')),
               script.characters.filter(function (c) { return c.id !== 'narrator' && c.id !== 'stage'; }).map(function (ch) {
                 var key = 'char_' + ch.id;
                 return e('div', { key: ch.id, style: { marginBottom: '12px' } },
@@ -1598,9 +1678,9 @@
             ),
             // Theme
             e('div', { style: S.card },
-              e('h4', { style: { fontSize: '14px', fontWeight: 700, color: '#059669', marginBottom: '6px' } }, '💡 Theme & Message'),
+              e('h4', { style: { fontSize: '14px', fontWeight: 700, color: '#059669', marginBottom: '6px' } }, tr('💡 Theme & Message')),
               e('textarea', { value: analysisResponses.theme || '', onChange: function (ev) { setAnalysisResponses(function (prev) { return Object.assign({}, prev, { theme: ev.target.value }); }); },
-                placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? 'What is the lesson or big idea of this story?' : /6th|7th|8th/i.test(gradeLevel) ? 'What is the theme of this story? How do the characters and events develop this theme?' : 'Identify the central theme(s). How does the author develop the theme through character, conflict, setting, and symbolism?',
+                placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? tr('What is the lesson or big idea of this story?') : /6th|7th|8th/i.test(gradeLevel) ? 'What is the theme of this story? How do the characters and events develop this theme?' : 'Identify the central theme(s). How does the author develop the theme through character, conflict, setting, and symbolism?',
                 rows: 3, style: Object.assign({}, S.input, { resize: 'vertical' }),
                 'aria-label': 'Theme analysis' })
             ),
@@ -1611,15 +1691,15 @@
                 script.literaryElements.map(function (el, i) { return e('span', { key: i, style: { fontSize: '10px', background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '8px', border: '1px solid #fde68a' } }, el); })
               ),
               e('textarea', { value: analysisResponses.craft || '', onChange: function (ev) { setAnalysisResponses(function (prev) { return Object.assign({}, prev, { craft: ev.target.value }); }); },
-                placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? 'What did the author do to make the story interesting or exciting?' : /6th|7th|8th/i.test(gradeLevel) ? 'Choose one literary element from above. Find an example in the story and explain how it affects the reader.' : 'Analyze the author\'s use of the literary elements listed above. How do these choices contribute to meaning, mood, or reader experience? Cite specific passages.',
+                placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? tr('What did the author do to make the story interesting or exciting?') : /6th|7th|8th/i.test(gradeLevel) ? 'Choose one literary element from above. Find an example in the story and explain how it affects the reader.' : 'Analyze the author\'s use of the literary elements listed above. How do these choices contribute to meaning, mood, or reader experience? Cite specific passages.',
                 rows: 3, style: Object.assign({}, S.input, { resize: 'vertical' }),
                 'aria-label': 'Literary craft analysis' })
             ),
             // Personal response
             e('div', { style: S.card },
-              e('h4', { style: { fontSize: '14px', fontWeight: 700, color: '#2563eb', marginBottom: '6px' } }, '💬 Personal Response'),
+              e('h4', { style: { fontSize: '14px', fontWeight: 700, color: '#2563eb', marginBottom: '6px' } }, tr('💬 Personal Response')),
               e('textarea', { value: analysisResponses.personal || '', onChange: function (ev) { setAnalysisResponses(function (prev) { return Object.assign({}, prev, { personal: ev.target.value }); }); },
-                placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? 'What was your favorite part? How did the story make you feel?' : 'What is your personal response to this text? How does it connect to your own experience, other texts, or the world?',
+                placeholder: /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel) ? tr('What was your favorite part? How did the story make you feel?') : 'What is your personal response to this text? How does it connect to your own experience, other texts, or the world?',
                 rows: 2, style: Object.assign({}, S.input, { resize: 'vertical' }),
                 'aria-label': 'Personal response' })
             ),
@@ -1627,19 +1707,19 @@
             // Optional but encouraged: rate your own work on 5 craft criteria
             // before the AI weighs in. Builds metacognition + gives the Revision
             // Plan synthesizer something to triangulate against.
-            !selfAssessmentSubmitted && e('div', { role: 'region', 'aria-label': 'Self-Assessment', style: { background: 'linear-gradient(135deg, #faf5ff, #eef2ff)', border: '2px solid #d8b4fe', borderRadius: '12px', padding: '14px', marginTop: '16px' } },
+            !selfAssessmentSubmitted && e('div', { role: 'region', 'aria-label': tr('Self-Assessment'), style: { background: 'linear-gradient(135deg, #faf5ff, #eef2ff)', border: '2px solid #d8b4fe', borderRadius: '12px', padding: '14px', marginTop: '16px' } },
               e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' } },
                 e('div', null,
                   e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#7c3aed', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
-                    e('span', { 'aria-hidden': 'true' }, '⭐'), 'Rate yourself first'
+                    e('span', { 'aria-hidden': 'true' }, '⭐'), tr('Rate yourself first')
                   ),
                   e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '2px 0 0' } }, 'Score your own performance + analysis on 5 criteria before the AI does. Builds reflection.')
                 ),
                 e('button', {
-                  onClick: function () { setSelfAssessmentSubmitted(true); announceLitLab('Self-assessment skipped.'); },
-                  'aria-label': 'Skip self-assessment',
+                  onClick: function () { setSelfAssessmentSubmitted(true); announceLitLab(tr('Self-assessment skipped.')); },
+                  'aria-label': tr('Skip self-assessment'),
                   style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
-                }, 'Skip')
+                }, tr('Skip'))
               ),
               e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' } },
                 LITLAB_RUBRIC.map(function (c) {
@@ -1668,12 +1748,12 @@
                   LITLAB_RUBRIC.forEach(function (c) { filled[c.id] = selfAssessment[c.id] || 3; });
                   setSelfAssessment(filled);
                   setSelfAssessmentSubmitted(true);
-                  announceLitLab('Self-assessment submitted.');
-                  if (typeof addToast === 'function') addToast('Self-assessment saved!', 'success');
+                  announceLitLab(tr('Self-assessment submitted.'));
+                  if (typeof addToast === 'function') addToast(tr('Self-assessment saved!'), 'success');
                 },
-                'aria-label': 'Submit self-assessment',
+                'aria-label': tr('Submit self-assessment'),
                 style: { marginTop: '8px', padding: '7px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }
-              }, '✓ Submit Self-Assessment')
+              }, tr('✓ Submit Self-Assessment'))
             ),
             selfAssessmentSubmitted && Object.keys(selfAssessment).length > 0 && e('div', { style: { background: '#faf5ff', border: '1px solid #e9d5ff', borderRadius: '10px', padding: '8px 12px', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
               e('div', { style: { fontSize: '11px', color: '#6b21a8' } },
@@ -1684,7 +1764,7 @@
               ),
               e('button', {
                 onClick: function () { setSelfAssessmentSubmitted(false); },
-                'aria-label': 'Edit self-assessment',
+                'aria-label': tr('Edit self-assessment'),
                 style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
               }, 'Edit')
             ),
@@ -1692,23 +1772,23 @@
             e('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px' } },
               e('button', { onClick: getAnalysisFeedback, disabled: analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }),
                 'aria-busy': analysisFeedback === 'loading' ? 'true' : 'false',
-                'aria-label': analysisFeedback === 'loading' ? 'Analyzing your responses, please wait' : 'Get AI feedback on your analysis',
+                'aria-label': analysisFeedback === 'loading' ? 'Analyzing your responses, please wait' : tr('Get AI feedback on your analysis'),
                 style: S.btn('#059669', '#fff', analysisFeedback === 'loading' || !Object.values(analysisResponses).some(function (v) { return v && v.trim(); }))
-              }, analysisFeedback === 'loading' ? '⏳ Analyzing...' : '✨ Get Feedback'),
-              e('button', { onClick: function () { setPhase('perform'); }, style: S.btn('#f1f5f9', '#374151', false) }, '← Back to Performance')
+              }, analysisFeedback === 'loading' ? '⏳ Analyzing...' : tr('✨ Get Feedback')),
+              e('button', { onClick: function () { setPhase('perform'); }, style: S.btn('#f1f5f9', '#374151', false) }, tr('← Back to Performance'))
             ),
             // Feedback display
             analysisFeedback && typeof analysisFeedback === 'object' && !analysisFeedback.error && e('div', { style: { marginTop: '16px', background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)', border: '2px solid #86efac', borderRadius: '14px', padding: '20px' } },
               e('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
-                e('h4', { style: { fontSize: '15px', fontWeight: 800, color: '#166534' } }, '📝 Literary Analysis Feedback'),
+                e('h4', { style: { fontSize: '15px', fontWeight: 800, color: '#166534' } }, tr('📝 Literary Analysis Feedback')),
                 e('span', { style: { fontSize: '12px', fontWeight: 800, padding: '4px 12px', borderRadius: '20px', background: analysisFeedback.overallRating === 'exemplary' ? '#dcfce7' : analysisFeedback.overallRating === 'proficient' ? '#dbeafe' : '#fef3c7', color: analysisFeedback.overallRating === 'exemplary' ? '#166534' : analysisFeedback.overallRating === 'proficient' ? '#1e40af' : '#92400e', border: '1px solid ' + (analysisFeedback.overallRating === 'exemplary' ? '#86efac' : analysisFeedback.overallRating === 'proficient' ? '#93c5fd' : '#fde68a') } },
-                  analysisFeedback.overallRating === 'exemplary' ? '⭐ Exemplary' : analysisFeedback.overallRating === 'proficient' ? '✅ Proficient' : '📈 Developing')
+                  analysisFeedback.overallRating === 'exemplary' ? tr('⭐ Exemplary') : analysisFeedback.overallRating === 'proficient' ? tr('✅ Proficient') : tr('📈 Developing'))
               ),
               analysisFeedback.characterInsight && e('div', { style: { background: '#fff', borderRadius: '10px', padding: '12px', marginBottom: '8px', border: '1px solid #bbf7d0' } }, e('div', { style: { fontSize: '10px', fontWeight: 700, color: PURPLE, marginBottom: '2px' } }, 'CHARACTERS'), e('p', { style: { fontSize: '13px', color: '#374151', margin: 0 } }, analysisFeedback.characterInsight)),
               analysisFeedback.themeInsight && e('div', { style: { background: '#fff', borderRadius: '10px', padding: '12px', marginBottom: '8px', border: '1px solid #bbf7d0' } }, e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#059669', marginBottom: '2px' } }, 'THEME'), e('p', { style: { fontSize: '13px', color: '#374151', margin: 0 } }, analysisFeedback.themeInsight)),
               analysisFeedback.craftInsight && e('div', { style: { background: '#fff', borderRadius: '10px', padding: '12px', marginBottom: '8px', border: '1px solid #bbf7d0' } }, e('div', { style: { fontSize: '10px', fontWeight: 700, color: '#d97706', marginBottom: '2px' } }, 'CRAFT'), e('p', { style: { fontSize: '13px', color: '#374151', margin: 0 } }, analysisFeedback.craftInsight)),
-              analysisFeedback.strengths && analysisFeedback.strengths.length > 0 && e('div', { style: { marginBottom: '8px' } }, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#16a34a', marginBottom: '4px' } }, '💪 Strengths'), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#166534' } }, analysisFeedback.strengths.map(function (s, i) { return e('li', { key: i }, s); }))),
-              analysisFeedback.nudges && analysisFeedback.nudges.length > 0 && e('div', null, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#d97706', marginBottom: '4px' } }, '🤔 Think Deeper'), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#92400e' } }, analysisFeedback.nudges.map(function (s, i) { return e('li', { key: i }, s); })))
+              analysisFeedback.strengths && analysisFeedback.strengths.length > 0 && e('div', { style: { marginBottom: '8px' } }, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#16a34a', marginBottom: '4px' } }, tr('💪 Strengths')), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#166534' } }, analysisFeedback.strengths.map(function (s, i) { return e('li', { key: i }, s); }))),
+              analysisFeedback.nudges && analysisFeedback.nudges.length > 0 && e('div', null, e('div', { style: { fontSize: '11px', fontWeight: 700, color: '#d97706', marginBottom: '4px' } }, tr('🤔 Think Deeper')), e('ul', { style: { margin: 0, paddingLeft: '16px', fontSize: '12px', color: '#92400e' } }, analysisFeedback.nudges.map(function (s, i) { return e('li', { key: i }, s); })))
             ),
             analysisFeedback && analysisFeedback.error && e('p', { style: { color: '#dc2626', fontSize: '13px', marginTop: '12px' } }, analysisFeedback.error),
 
@@ -1728,16 +1808,16 @@
                 e('button', {
                   onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading,
                   'aria-busy': revisionPlanLoading ? 'true' : 'false',
-                  'aria-label': revisionPlanLoading ? 'Synthesizing revision plan' : (revisionPlan && !revisionPlan.error ? 'Re-synthesize revision plan' : 'Build a revision plan'),
+                  'aria-label': revisionPlanLoading ? 'Synthesizing revision plan' : (revisionPlan && !revisionPlan.error ? tr('Re-synthesize revision plan') : tr('Build a revision plan')),
                   style: { padding: '7px 14px', background: revisionPlanLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: revisionPlanLoading ? 'wait' : 'pointer' }
-                }, revisionPlanLoading ? '⏳ Synthesizing…' : (revisionPlan && !revisionPlan.error ? '🔄 Rebuild' : '🗺️ Build plan'))
+                }, revisionPlanLoading ? '⏳ Synthesizing…' : (revisionPlan && !revisionPlan.error ? tr('🔄 Rebuild') : tr('🗺️ Build plan')))
               ),
               revisionPlan && revisionPlan.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, revisionPlan.error),
               revisionPlan && !revisionPlan.error && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' } },
                 revisionPlan.encouragement && e('div', { style: { background: '#fff', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '8px 10px' } },
                   e('p', { style: { fontSize: '11px', color: '#166534', margin: 0, lineHeight: 1.6 } }, '✨ ' + revisionPlan.encouragement)
                 ),
-                e('ol', { 'aria-label': 'Prioritized revision tasks', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' } },
+                e('ol', { 'aria-label': tr('Prioritized revision tasks'), style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' } },
                   (revisionPlan.tasks || []).map(function (t, ti) {
                     return e('li', { key: ti, style: { background: '#fff', border: '2px solid #d8b4fe', borderRadius: '10px', padding: '10px 12px' } },
                       e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-start' } },
@@ -1755,7 +1835,7 @@
                   })
                 )
               ),
-              !revisionPlan && e('p', { style: { fontSize: '11px', color: '#5b21b6', fontStyle: 'italic', margin: '6px 0 0' } }, 'Click "Build plan" to weave your inputs into one prioritized next step.')
+              !revisionPlan && e('p', { style: { fontSize: '11px', color: '#5b21b6', fontStyle: 'italic', margin: '6px 0 0' } }, tr('Click "Build plan" to weave your inputs into one prioritized next step.'))
             )
           )
         )
