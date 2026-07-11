@@ -1952,18 +1952,58 @@ const d = labToolData.physics;
             { target: 200, label: '\uD83C\uDFAF Reach 200m range', tolerance: 12 },
 
           ];
+          var physicsNext = (d.launchCount || 0) === 0
+            ? 'Predict the range, then launch once and compare the result.'
+            : !d.showVectors && !d.showEnergy
+              ? 'Turn on vectors or energy and explain what changes during flight.'
+              : d.targetMode
+                ? 'Use one controlled change to improve your next target attempt.'
+                : 'Change only angle, velocity, or gravity and compare the new trajectory.';
 
           return React.createElement("div", { id: "physics-fs-outer", className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', maxWidth: '100vw', margin: 0, overflowY: 'auto', background: '#0f172a', padding: '10px' } : { position: 'relative' } },
 
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
-
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, "\u26A1 Physics Simulator"),
-
-              React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "ANIMATED")
-
+            React.createElement("section", { "data-physics-command": "true", className: "mb-4 overflow-hidden rounded-2xl border border-cyan-300/40 bg-gradient-to-br from-slate-950 via-cyan-950 to-blue-950 text-white shadow-xl" },
+              React.createElement("div", { className: "p-4 sm:p-5" },
+                React.createElement("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between" },
+                  React.createElement("div", { className: "min-w-0" },
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      React.createElement("button", { onClick: () => setStemLabTool(null), className: "shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': 'Back to tools' }, React.createElement(ArrowLeft, { size: 18 })),
+                      React.createElement("span", { className: "rounded-full bg-cyan-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30" }, "Projectile mission")
+                    ),
+                    React.createElement("h3", { className: "mt-3 text-xl font-black tracking-tight sm:text-2xl" }, "\u26A1 Physics Simulator"),
+                    React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-6 text-cyan-100" }, "Investigate how launch conditions shape motion, then support each claim with trajectory evidence."),
+                    React.createElement("div", { className: "mt-3 rounded-xl border border-white/15 bg-white/10 p-3" },
+                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200" }, "Recommended next move"),
+                      React.createElement("p", { className: "mt-1 text-sm font-semibold text-white" }, physicsNext)
+                    )
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2 lg:w-[22rem]" },
+                    [
+                      { label: 'Angle', value: String(d.angle || 45) + '\u00B0' },
+                      { label: 'Speed', value: String(d.velocity || 25) + ' m/s' },
+                      { label: 'Launches', value: String(d.launchCount || 0) }
+                    ].map(function(metric) {
+                      return React.createElement("div", { key: metric.label, className: "min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center" },
+                        React.createElement("div", { className: "truncate text-sm font-black text-white", title: metric.value }, metric.value),
+                        React.createElement("div", { className: "mt-1 text-[9px] font-bold uppercase tracking-wider text-cyan-200" }, metric.label)
+                      );
+                    })
+                  )
+                ),
+                React.createElement("ol", { className: "mt-4 grid gap-2 text-xs sm:grid-cols-3", "aria-label": "Projectile investigation pathway" },
+                  [
+                    { n: '1', title: 'Predict', detail: 'Choose variables and estimate range.' },
+                    { n: '2', title: 'Launch', detail: 'Observe motion and collect evidence.' },
+                    { n: '3', title: 'Explain', detail: 'Connect forces to the trajectory.' }
+                  ].map(function(step) {
+                    return React.createElement("li", { key: step.n, className: "flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5" },
+                      React.createElement("span", { className: "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-300 font-black text-slate-950" }, step.n),
+                      React.createElement("span", null, React.createElement("strong", { className: "block text-white" }, step.title), React.createElement("span", { className: "text-cyan-200" }, step.detail))
+                    );
+                  })
+                )
+              )
             ),
 
             React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: d.physFsMode ? { position: 'relative', height: '70vh' } : { height: "420px" } },

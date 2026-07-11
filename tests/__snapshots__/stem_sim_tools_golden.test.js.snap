@@ -278,10 +278,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for physi
   "buttons": 36,
   "canvases": 1,
   "inputs": 9,
-  "lengthBucket": 86,
+  "lengthBucket": 101,
   "paths": 0,
   "selects": 0,
-  "sha": "139674496cb375c7",
+  "sha": "648777016d4dd8ee",
   "svgs": 0,
 }
 `;
