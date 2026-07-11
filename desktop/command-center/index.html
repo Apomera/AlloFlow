@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#desktop-main">Skip to desktop controls</a>
   <div class="shell">
     <aside class="rail" aria-label="Desktop sections">
       <div class="brand">
@@ -16,17 +17,17 @@
           <small>Desktop</small>
         </span>
       </div>
-      <nav class="tabs" aria-label="Command center">
-        <button class="tab active" data-tab="app" type="button">App</button>
-        <button class="tab" data-tab="ai" type="button">AI</button>
-        <button class="tab" data-tab="schoolbox" type="button">Server</button>
-        <button class="tab" data-tab="settings" type="button">Settings</button>
+      <nav class="tabs" aria-label="Command center"><div role="tablist" aria-label="Desktop sections">
+        <button class="tab active" id="tab-app" data-tab="app" type="button" role="tab" aria-controls="pane-app" aria-selected="true" tabindex="0">App</button>
+        <button class="tab" id="tab-ai" data-tab="ai" type="button" role="tab" aria-controls="pane-ai" aria-selected="false" tabindex="-1">AI</button>
+        <button class="tab" id="tab-schoolbox" data-tab="schoolbox" type="button" role="tab" aria-controls="pane-schoolbox" aria-selected="false" tabindex="-1">Server</button>
+        <button class="tab" id="tab-settings" data-tab="settings" type="button" role="tab" aria-controls="pane-settings" aria-selected="false" tabindex="-1">Settings</button></div>
       </nav>
       <div class="runtime-pill" id="runtime-pill">Starting</div>
     </aside>
 
-    <main class="workspace">
-      <section class="pane active" id="pane-app" aria-labelledby="tab-app">
+    <main class="workspace" id="desktop-main" tabindex="-1">
+      <section class="pane active" id="pane-app" role="tabpanel" tabindex="0" aria-labelledby="tab-app">
         <header class="pane-header">
           <div>
             <h1>AlloFlow App</h1>
@@ -51,27 +52,27 @@
           <div class="health-item" id="health-engine">
             <span class="health-dot" data-dot>Â·</span>
             <div class="health-body"><strong>AI Engine</strong><span data-text>Checkingâ€¦</span></div>
-            <button type="button" data-act hidden></button>
+            <button type="button" data-act hidden aria-label="Setup action"></button>
           </div>
           <div class="health-item" id="health-voice">
             <span class="health-dot" data-dot>Â·</span>
             <div class="health-body"><strong>Reading voice</strong><span data-text>Checkingâ€¦</span></div>
-            <button type="button" data-act hidden></button>
+            <button type="button" data-act hidden aria-label="Setup action"></button>
           </div>
           <div class="health-item" id="health-images">
             <span class="health-dot" data-dot>Â·</span>
             <div class="health-body"><strong>Local images</strong><span data-text>Checkingâ€¦</span></div>
-            <button type="button" data-act hidden></button>
+            <button type="button" data-act hidden aria-label="Setup action"></button>
           </div>
           <div class="health-item" id="health-asr">
             <span class="health-dot" data-dot>Â·</span>
             <div class="health-body"><strong>Speech-to-text</strong><span data-text>Checkingâ€¦</span></div>
-            <button type="button" data-act hidden></button>
+            <button type="button" data-act hidden aria-label="Setup action"></button>
           </div>
           <div class="health-item" id="health-mic">
             <span class="health-dot" data-dot>Â·</span>
             <div class="health-body"><strong>Microphone</strong><span data-text>Checkingâ€¦</span></div>
-            <button type="button" data-act hidden></button>
+            <button type="button" data-act hidden aria-label="Setup action"></button>
           </div>
         </section>
         <div class="app-grid">
@@ -94,7 +95,7 @@
         </div>
       </section>
 
-      <section class="pane" id="pane-ai" aria-labelledby="tab-ai">
+      <section class="pane" id="pane-ai" role="tabpanel" tabindex="0" aria-labelledby="tab-ai">
         <header class="pane-header">
           <div>
             <h1>AI Runtime</h1>
@@ -211,7 +212,7 @@
         </div>
       </section>
 
-      <section class="pane" id="pane-schoolbox" aria-labelledby="tab-schoolbox">
+      <section class="pane" id="pane-schoolbox" role="tabpanel" tabindex="0" aria-labelledby="tab-schoolbox">
         <header class="pane-header">
           <div>
             <h1>School Box Server</h1>
@@ -326,7 +327,7 @@
         </div>
       </section>
 
-      <section class="pane" id="pane-settings" aria-labelledby="tab-settings">
+      <section class="pane" id="pane-settings" role="tabpanel" tabindex="0" aria-labelledby="tab-settings">
         <header class="pane-header">
           <div>
             <h1>Runtime Settings</h1>

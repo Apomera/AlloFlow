@@ -71,9 +71,19 @@
     if (node) node.textContent = value == null || value === '' ? '-' : String(value);
   }
 
-  function selectPane(name) {
-    $$('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === name));
-    $$('.pane').forEach((pane) => pane.classList.toggle('active', pane.id === 'pane-' + name));
+  function selectPane(name, focusTab = false) {
+    $('.tab').forEach((tab) => {
+      const selected = tab.dataset.tab === name;
+      tab.classList.toggle('active', selected);
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      if (selected && focusTab) tab.focus();
+    });
+    $('.pane').forEach((pane) => {
+      const selected = pane.id === 'pane-' + name;
+      pane.classList.toggle('active', selected);
+      pane.hidden = !selected;
+    });
   }
 
   function providerById(id) {
@@ -1551,6 +1561,7 @@
     if (!btn) return;
     if (actLabel && actFn) {
       btn.textContent = actLabel;
+      btn.setAttribute('aria-label', actLabel);
       btn.hidden = false;
       btn.disabled = false;
       btn.onclick = async () => {
@@ -1561,6 +1572,7 @@
       };
     } else {
       btn.hidden = true;
+      btn.setAttribute('aria-label', 'Setup action unavailable');
       btn.onclick = null;
     }
   }
@@ -1733,8 +1745,19 @@
   }
 
   function bindEvents() {
-    $$('.tab').forEach((tab) => {
+    const tabs = $('.tab');
+    tabs.forEach((tab, index) => {
       tab.addEventListener('click', () => selectPane(tab.dataset.tab));
+      tab.addEventListener('keydown', (event) => {
+        let nextIndex = null;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = tabs.length - 1;
+        if (nextIndex == null) return;
+        event.preventDefault();
+        selectPane(tabs[nextIndex].dataset.tab, true);
+      });
     });
 
     $('#refresh-all').addEventListener('click', refresh);

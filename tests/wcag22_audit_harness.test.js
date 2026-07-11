@@ -11,6 +11,12 @@ describe('WCAG 2.2 audit harness', () => {
     expect(source).toContain("'wcag22a'");
     expect(source).toContain("'wcag22aa'");
   });
+  it('checks the actual focused state rather than unfocused outlines', () => {
+    const source = read('a11y-audit/runtime-audit.js');
+    expect(source).toContain("el.focus({ preventScroll: true })");
+    expect(source).toContain('noVisibleFocusCount');
+    expect(source).not.toContain('outlineNoneCount');
+  });
   it('checks target-size and redundant-entry criteria', () => {
     const source = read('a11y-audit/runtime-audit.js');
     expect(source).toContain('2.5.8 Target Size (Minimum)');

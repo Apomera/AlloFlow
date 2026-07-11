@@ -87,26 +87,34 @@ async function runCustomChecks(page) {
       });
     }
 
-    // Check 5: Focus visible -- check for outline:none in computed styles
+    // Check 5: Focus visible -- inspect the actual focused state. Unfocused
+    // controls commonly compute to outline:none and must not be treated as failures.
     const interactiveElements = document.querySelectorAll(
-      'button, a, input, select, textarea, [tabindex="0"], [role="button"]'
+      'button, a[href], input, select, textarea, [tabindex="0"], [role="button"]'
     );
-    let outlineNoneCount = 0;
+    const originalFocus = document.activeElement;
+    let noVisibleFocusCount = 0;
     interactiveElements.forEach(el => {
-      const style = window.getComputedStyle(el);
-      if (style.outlineStyle === 'none' || style.outline === 'none') {
-        // Check if there's a visible replacement (box-shadow, border change on focus)
-        // We can't fully test this without focusing each element, but flag the count
-        outlineNoneCount++;
-      }
+      const rect = el.getBoundingClientRect();
+      const base = window.getComputedStyle(el);
+      if (el.disabled || el.hidden || base.display === 'none' || base.visibility === 'hidden' || rect.width === 0 || rect.height === 0) return;
+      const baseBorder = base.borderColor;
+      el.focus({ preventScroll: true });
+      const focused = window.getComputedStyle(el);
+      const outlineWidth = Number.parseFloat(focused.outlineWidth) || 0;
+      const hasOutline = focused.outlineStyle !== 'none' && outlineWidth >= 2;
+      const hasShadow = focused.boxShadow && focused.boxShadow !== 'none';
+      const hasBorderChange = focused.borderColor !== baseBorder;
+      if (!hasOutline && !hasShadow && !hasBorderChange) noVisibleFocusCount++;
     });
-    if (outlineNoneCount > 5) {
+    if (originalFocus && typeof originalFocus.focus === 'function') originalFocus.focus({ preventScroll: true });
+    if (noVisibleFocusCount > 0) {
       findings.push({
         id: 'custom-focus-visible',
-        description: `${outlineNoneCount} interactive elements have outline:none in computed styles`,
+        description: `${noVisibleFocusCount} visible interactive element(s) lack a detectable focused-state indicator`,
         wcag: '2.4.7 Focus Visible',
         severity: 'major',
-        selector: 'button, input, [tabindex]',
+        selector: 'button, a[href], input, select, textarea, [tabindex]',
       });
     }
 

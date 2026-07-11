@@ -18,6 +18,32 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 10000;
+  transform: translateY(-160%);
+  padding: 10px 14px;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #18211c;
+  font-weight: 800;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+:where(button, a[href], input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -123,7 +149,7 @@ label {
 }
 
 .brand small {
-  color: var(--muted);
+  color: #526158;
   font-size: 12px;
 }
 
