@@ -10,6 +10,77 @@
   var useMemo = React.useMemo, useRef = React.useRef;
   var PROFILE_KEY = 'allo_lingua_profile_v1', PROGRESS_KEY = 'allo_lingua_progress_v1', RECENT_KEY = 'allo_lingua_recent_v1', CHAT_KEY = 'allo_lingua_chat_v1', SLOW_KEY = 'allo_lingua_slow_v1';
   var SLOW_RATE = 0.65;
+  // ── Self-contained UI localization ─────────────────────────────────────────
+  // Lingua's own chrome is translated by the learner's KNOWN language (what they
+  // read), NOT the app UI language — and it must work for the free-typed custom
+  // languages too. Kept entirely inside this module (English canonical + a few
+  // high-confidence packs) so it never touches lang/*.js (edited elsewhere) and
+  // falls back to English for any missing key/language. {tokens} interpolate.
+  var UI_STRINGS = {
+    English: {
+      nav_setup:'Setup', nav_vocabulary:'Vocabulary', nav_speak:'Speak', nav_conversation:'Conversation', nav_chat:'Live chat', nav_progress:'Progress', nav_review:'Review', nav_saved:'Saved words',
+      close:'Close Lingua Practice', slow:'Slow', due_saved:'{due} due · {saved} saved',
+      setup_eyebrow:'Build a practice set', i_know:'I know', i_learning:'I am learning', my_level:'My level', other_language:'Other language…',
+      topic_label:'Topic or situation', class_material:'Class material (optional)', use_source:'Use current source text', topic_enough:'A topic is enough to begin.',
+      build_set:'Build practice set', building_set:'Building practice set…', build_new:'Build a new set', continue_recent:'Continue recent practice', recent_practice:'Recent {lang} practice',
+      your_practice_set:'Your practice set', builtin_set:'Built-in starter set', practice_speaking:'Practice speaking', save_word:'Save word', remove_saved:'Remove saved word',
+      listen_repeat:'Listen and repeat', make_own:'Make the phrase your own', listen:'Listen', speak:'Speak', stop:'Stop', browser_heard:'Browser heard', word_by_word:'Word by word', previous:'Previous', next:'Next', start_conversation:'Start conversation', transcript_here:'Your transcript will appear here.', listening:'Listening…',
+      guided_conversation:'Guided conversation', your_response:'Your response in {lang}', get_coaching:'Get coaching', coaching:'Coaching…', speak_response:'Speak response',
+      live_conversation:'Live conversation', chat_title:'Talk with an AI partner in {lang}', start_chat:'Start the chat', restart_conversation:'Restart conversation', send:'Send', save_phrase:'Save phrase', saved:'Saved', speak_reply:'Speak your reply', partner_replying:'{lang} partner is replying…',
+      learning_activity:'Learning activity', lang_progress:'{lang} progress', metric_practice_sets:'Practice sets', metric_speaking:'Speaking attempts', metric_convo:'Conversation turns', metric_reviews:'Reviews completed', metric_saved:'Saved words', word_review_status:'Word review status', review_n_due:'Review {n} due',
+      spaced_review:'Spaced review', review_lang:'Review {lang}', reveal_answer:'Reveal answer', rate_again:'Again', rate_learning:'Learning', rate_know:'Know', caught_up:'You are caught up for now',
+      word_bank:'Personal word bank', saved_words:'Saved words'
+    },
+    Spanish: {
+      nav_setup:'Configuración', nav_vocabulary:'Vocabulario', nav_speak:'Hablar', nav_conversation:'Conversación', nav_chat:'Chat en vivo', nav_progress:'Progreso', nav_review:'Repaso', nav_saved:'Palabras guardadas',
+      close:'Cerrar Lingua Practice', slow:'Lento', due_saved:'{due} pendientes · {saved} guardadas',
+      setup_eyebrow:'Crea un set de práctica', i_know:'Yo sé', i_learning:'Estoy aprendiendo', my_level:'Mi nivel', other_language:'Otro idioma…',
+      topic_label:'Tema o situación', class_material:'Material de clase (opcional)', use_source:'Usar el texto actual', topic_enough:'Con un tema es suficiente para empezar.',
+      build_set:'Crear set de práctica', building_set:'Creando set de práctica…', build_new:'Crear un set nuevo', continue_recent:'Continuar práctica reciente', recent_practice:'Práctica reciente de {lang}',
+      your_practice_set:'Tu set de práctica', builtin_set:'Set inicial integrado', practice_speaking:'Practicar el habla', save_word:'Guardar palabra', remove_saved:'Quitar palabra guardada',
+      listen_repeat:'Escucha y repite', make_own:'Haz tuya la frase', listen:'Escuchar', speak:'Hablar', stop:'Parar', browser_heard:'El navegador escuchó', word_by_word:'Palabra por palabra', previous:'Anterior', next:'Siguiente', start_conversation:'Iniciar conversación', transcript_here:'Tu transcripción aparecerá aquí.', listening:'Escuchando…',
+      guided_conversation:'Conversación guiada', your_response:'Tu respuesta en {lang}', get_coaching:'Recibir orientación', coaching:'Orientando…', speak_response:'Decir la respuesta',
+      live_conversation:'Conversación en vivo', chat_title:'Habla con un compañero de IA en {lang}', start_chat:'Iniciar el chat', restart_conversation:'Reiniciar conversación', send:'Enviar', save_phrase:'Guardar frase', saved:'Guardada', speak_reply:'Di tu respuesta', partner_replying:'El compañero de {lang} está respondiendo…',
+      learning_activity:'Actividad de aprendizaje', lang_progress:'Progreso de {lang}', metric_practice_sets:'Sets de práctica', metric_speaking:'Intentos de habla', metric_convo:'Turnos de conversación', metric_reviews:'Repasos completados', metric_saved:'Palabras guardadas', word_review_status:'Estado del repaso', review_n_due:'Repasar {n} pendientes',
+      spaced_review:'Repaso espaciado', review_lang:'Repasar {lang}', reveal_answer:'Revelar respuesta', rate_again:'Otra vez', rate_learning:'Aprendiendo', rate_know:'Lo sé', caught_up:'Estás al día por ahora',
+      word_bank:'Banco de palabras personal', saved_words:'Palabras guardadas'
+    },
+    French: {
+      nav_setup:'Configuration', nav_vocabulary:'Vocabulaire', nav_speak:'Parler', nav_conversation:'Conversation', nav_chat:'Chat en direct', nav_progress:'Progrès', nav_review:'Révision', nav_saved:'Mots enregistrés',
+      close:'Fermer Lingua Practice', slow:'Lent', due_saved:'{due} à revoir · {saved} enregistrés',
+      setup_eyebrow:'Créer une séance de pratique', i_know:'Je connais', i_learning:'J’apprends', my_level:'Mon niveau', other_language:'Autre langue…',
+      topic_label:'Sujet ou situation', class_material:'Matériel de classe (facultatif)', use_source:'Utiliser le texte actuel', topic_enough:'Un sujet suffit pour commencer.',
+      build_set:'Créer la séance', building_set:'Création de la séance…', build_new:'Créer une nouvelle séance', continue_recent:'Continuer la pratique récente', recent_practice:'Pratique récente de {lang}',
+      your_practice_set:'Votre séance de pratique', builtin_set:'Séance de départ intégrée', practice_speaking:'Pratiquer l’oral', save_word:'Enregistrer le mot', remove_saved:'Retirer le mot enregistré',
+      listen_repeat:'Écoute et répète', make_own:'Approprie-toi la phrase', listen:'Écouter', speak:'Parler', stop:'Arrêter', browser_heard:'Le navigateur a entendu', word_by_word:'Mot à mot', previous:'Précédent', next:'Suivant', start_conversation:'Commencer la conversation', transcript_here:'Votre transcription apparaîtra ici.', listening:'Écoute…',
+      guided_conversation:'Conversation guidée', your_response:'Votre réponse en {lang}', get_coaching:'Obtenir un accompagnement', coaching:'Accompagnement…', speak_response:'Dire la réponse',
+      live_conversation:'Conversation en direct', chat_title:'Parlez avec un partenaire IA en {lang}', start_chat:'Démarrer le chat', restart_conversation:'Recommencer la conversation', send:'Envoyer', save_phrase:'Enregistrer la phrase', saved:'Enregistré', speak_reply:'Dites votre réponse', partner_replying:'Le partenaire en {lang} répond…',
+      learning_activity:'Activité d’apprentissage', lang_progress:'Progrès en {lang}', metric_practice_sets:'Séances de pratique', metric_speaking:'Tentatives à l’oral', metric_convo:'Tours de conversation', metric_reviews:'Révisions terminées', metric_saved:'Mots enregistrés', word_review_status:'État de la révision', review_n_due:'Réviser {n} à revoir',
+      spaced_review:'Révision espacée', review_lang:'Réviser {lang}', reveal_answer:'Révéler la réponse', rate_again:'Encore', rate_learning:'En cours', rate_know:'Je sais', caught_up:'Vous êtes à jour pour l’instant',
+      word_bank:'Banque de mots personnelle', saved_words:'Mots enregistrés'
+    },
+    Portuguese: {
+      nav_setup:'Configuração', nav_vocabulary:'Vocabulário', nav_speak:'Falar', nav_conversation:'Conversa', nav_chat:'Chat ao vivo', nav_progress:'Progresso', nav_review:'Revisão', nav_saved:'Palavras salvas',
+      close:'Fechar Lingua Practice', slow:'Devagar', due_saved:'{due} pendentes · {saved} salvas',
+      setup_eyebrow:'Crie um conjunto de prática', i_know:'Eu sei', i_learning:'Estou aprendendo', my_level:'Meu nível', other_language:'Outro idioma…',
+      topic_label:'Tema ou situação', class_material:'Material de aula (opcional)', use_source:'Usar o texto atual', topic_enough:'Um tema já basta para começar.',
+      build_set:'Criar conjunto de prática', building_set:'Criando conjunto de prática…', build_new:'Criar um novo conjunto', continue_recent:'Continuar prática recente', recent_practice:'Prática recente de {lang}',
+      your_practice_set:'Seu conjunto de prática', builtin_set:'Conjunto inicial integrado', practice_speaking:'Praticar a fala', save_word:'Salvar palavra', remove_saved:'Remover palavra salva',
+      listen_repeat:'Ouça e repita', make_own:'Torne a frase sua', listen:'Ouvir', speak:'Falar', stop:'Parar', browser_heard:'O navegador ouviu', word_by_word:'Palavra por palavra', previous:'Anterior', next:'Próximo', start_conversation:'Iniciar conversa', transcript_here:'Sua transcrição aparecerá aqui.', listening:'Ouvindo…',
+      guided_conversation:'Conversa guiada', your_response:'Sua resposta em {lang}', get_coaching:'Receber orientação', coaching:'Orientando…', speak_response:'Dizer a resposta',
+      live_conversation:'Conversa ao vivo', chat_title:'Converse com um parceiro de IA em {lang}', start_chat:'Iniciar o chat', restart_conversation:'Reiniciar conversa', send:'Enviar', save_phrase:'Salvar frase', saved:'Salva', speak_reply:'Diga sua resposta', partner_replying:'O parceiro de {lang} está respondendo…',
+      learning_activity:'Atividade de aprendizagem', lang_progress:'Progresso de {lang}', metric_practice_sets:'Conjuntos de prática', metric_speaking:'Tentativas de fala', metric_convo:'Turnos de conversa', metric_reviews:'Revisões concluídas', metric_saved:'Palavras salvas', word_review_status:'Estado da revisão', review_n_due:'Revisar {n} pendentes',
+      spaced_review:'Revisão espaçada', review_lang:'Revisar {lang}', reveal_answer:'Revelar resposta', rate_again:'De novo', rate_learning:'Aprendendo', rate_know:'Eu sei', caught_up:'Você está em dia por enquanto',
+      word_bank:'Banco de palavras pessoal', saved_words:'Palavras salvas'
+    }
+  };
+  function translate(knownLang, key, params) {
+    var pack = UI_STRINGS[knownLang] || null;
+    var s = (pack && pack[key] != null) ? pack[key] : UI_STRINGS.English[key];
+    if (s == null) return key;
+    if (params) Object.keys(params).forEach(function (k) { s = s.split('{' + k + '}').join(String(params[k])); });
+    return s;
+  }
   var LEVELS = ['New to the language', 'Beginner', 'Developing', 'Intermediate', 'Advanced'];
   // Preset languages (name, BCP-47 code, rtl?). This is a convenience list, not
   // a limit — the Setup screen also accepts a free-typed "Other language", and
@@ -587,6 +658,7 @@
     var previousIndexRef=useRef(0), previousTurnRef=useRef(0), reviewFocusPendingRef=useRef(false), captureCompletedRef=useRef(false);
     var chatRequestRef=useRef(0), chatVoiceRef=useRef(null), chatLogRef=useRef(null), chatCaptureRef=useRef(false), chatStoreRef=useRef(chat0), previousChatTargetRef=useRef(p0.target);
     var generationRequestRef=useRef(0), coachRequestRef=useRef(0), target=lang(profile.target), known=lang(profile.known);
+    function tr(key,params){return translate(profile.known,key,params);}
     var due=dueWords(progress.saved||[],profile.target,Date.now()), reviewItem=due[0]||null;
     var summary=languageSummary(progress,profile.target,Date.now());
     var recentLesson=recentLessons&&recentLessons[profile.target]&&recentLessons[profile.target].lesson?recentLessons[profile.target]:null;
@@ -771,7 +843,7 @@
         onError:function(){chatCaptureRef.current=false;var message='I could not hear that. Check microphone permission and try again.';setChatListening(false);setSpeechStatus(message);notify(props,message);}});
       chatVoiceRef.current=ctl;if(ctl.start()){setChatListening(true);setSpeechStatus('Listening for '+profile.target+'.');}else{chatCaptureRef.current=false;var failed='Speech input is unavailable here. You can type a reply instead.';setSpeechStatus(failed);notify(props,failed);}
     }
-    var nav=[['setup','Setup','Settings'],['vocabulary','Vocabulary','BookOpen'],['speak','Speak','Mic'],['conversation','Conversation','MessageSquare'],['chat','Live chat','Sparkles'],['progress','Progress','BarChart3'],['review','Review'+(due.length?' ('+due.length+')':''),'RefreshCw'],['saved','Saved words','Star']];
+    var nav=[['setup',tr('nav_setup'),'Settings'],['vocabulary',tr('nav_vocabulary'),'BookOpen'],['speak',tr('nav_speak'),'Mic'],['conversation',tr('nav_conversation'),'MessageSquare'],['chat',tr('nav_chat'),'Sparkles'],['progress',tr('nav_progress'),'BarChart3'],['review',tr('nav_review')+(due.length?' ('+due.length+')':''),'RefreshCw'],['saved',tr('nav_saved'),'Star']];
     return e('div',{className:'fixed inset-0 z-[280] bg-slate-950/55 p-0 sm:p-4 flex items-center justify-center',style:{zIndex:280},
       onMouseDown:function(x){if(x.target===x.currentTarget&&props.onClose)props.onClose();}},
       e('div',{ref:dialogRef,tabIndex:-1,className:'allo-docsuite lingua-root bg-white w-full h-full sm:h-[92vh] sm:max-h-[900px] sm:max-w-6xl sm:rounded-xl shadow-2xl overflow-hidden flex flex-col focus:outline-none',role:'dialog','aria-modal':'true','aria-labelledby':'lingua-title'},
@@ -781,9 +853,9 @@
           e('div',{className:'lingua-badge w-10 h-10 rounded-xl text-white flex items-center justify-center font-black text-sm','aria-hidden':'true'},'A/文'),
           e('div',{className:'min-w-0 flex-1'},e('h2',{id:'lingua-title',className:'text-lg font-bold text-slate-900'},'Lingua Practice'),e('p',{className:'text-xs text-slate-600 truncate'},profile.target+' · '+profile.level)),
           e('button',{type:'button',onClick:toggleSlow,'aria-pressed':audioSlow,title:audioSlow?'Playing audio slowly — tap for normal speed':'Play audio slowly','data-help-key':'lingua_slow_audio',
-            className:'shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-bold transition-colors '+(audioSlow?'border-emerald-300 bg-emerald-50 text-emerald-800':'border-slate-300 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-700')+focusClass},navIcon('Volume2'),'Slow'),
-          e('span',{className:'hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1'},due.length+' due · '+(progress.saved||[]).length+' saved'),
-          e(IconButton,{title:'Close Lingua Practice',onClick:props.onClose},'×')
+            className:'shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-bold transition-colors '+(audioSlow?'border-emerald-300 bg-emerald-50 text-emerald-800':'border-slate-300 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-700')+focusClass},navIcon('Volume2'),tr('slow')),
+          e('span',{className:'hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1'},tr('due_saved',{due:due.length,saved:(progress.saved||[]).length})),
+          e(IconButton,{title:tr('close'),onClick:props.onClose},'×')
         ),
         e('div',{className:'flex-1 min-h-0 flex flex-col md:flex-row'},
           e('nav',{className:'shrink-0 md:w-52 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50 p-2 md:p-4 overflow-x-auto','aria-label':'Lingua Practice sections'},
@@ -792,16 +864,16 @@
           ),
           e('main',{className:'lingua-scene flex-1 min-w-0 overflow-y-auto'},
             tab==='setup'&&e('div',{className:'max-w-4xl mx-auto p-5 sm:p-8'},
-              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},'Build a practice set'),
+              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},tr('setup_eyebrow')),
               sectionTitle('Practice language from what you are learning','text-2xl font-bold text-slate-900'),
               e('p',{className:'text-sm text-slate-600 mt-2 mb-7 max-w-2xl'},'Choose your languages and a topic. Add class material when you want the practice to follow a specific text.'),
               recentLesson&&e('section',{className:'mb-6 border-y border-slate-200 bg-slate-50 px-4 py-4 flex flex-col sm:flex-row sm:items-center gap-4'},
                 e('div',{className:'min-w-0 flex-1'},
-                  e('p',{className:'text-xs font-bold uppercase text-emerald-700'},'Recent '+profile.target+' practice'),
+                  e('p',{className:'text-xs font-bold uppercase text-emerald-700'},tr('recent_practice',{lang:profile.target})),
                   e('p',{className:'text-sm font-bold text-slate-900 mt-1 break-words'},recentLesson.title),
                   e('p',{className:'text-xs text-slate-500 mt-1'},(recentLesson.level||'Saved level')+' · '+activityLabel(recentLesson.createdAt,Date.now()))
                 ),
-                e('button',{type:'button',onClick:resumeRecent,className:'h-10 px-4 shrink-0 rounded-lg border border-emerald-600 bg-white text-emerald-800 text-sm font-bold hover:bg-emerald-50'+focusClass},'Continue recent practice')
+                e('button',{type:'button',onClick:resumeRecent,className:'h-10 px-4 shrink-0 rounded-lg border border-emerald-600 bg-white text-emerald-800 text-sm font-bold hover:bg-emerald-50'+focusClass},tr('continue_recent'))
               ),
               sourceMeta&&e('div',{className:'mb-6 border-l-4 border-emerald-600 bg-emerald-50 p-4'},
                 e('p',{className:'text-xs font-bold uppercase text-emerald-800'},'Imported from Reading Library'),
@@ -809,66 +881,66 @@
                 sourceMeta.language?e('p',{className:'text-xs text-slate-600 mt-1'},'Detected reading language: '+sourceMeta.language):null
               ),
               e('section',{className:'grid grid-cols-1 sm:grid-cols-3 gap-4 pb-6 border-b border-slate-200'},
-                e(LanguageField,{label:'I know',value:profile.known,change:function(v){patch('known',v);}}),
-                e(LanguageField,{label:'I am learning',value:profile.target,change:function(v){patch('target',v);}}),
-                e(Select,{label:'My level',value:profile.level,change:function(v){patch('level',v);},options:LEVELS})
+                e(LanguageField,{label:tr('i_know'),value:profile.known,change:function(v){patch('known',v);}}),
+                e(LanguageField,{label:tr('i_learning'),value:profile.target,change:function(v){patch('target',v);}}),
+                e(Select,{label:tr('my_level'),value:profile.level,change:function(v){patch('level',v);},options:LEVELS})
               ),
               e('section',{className:'py-6 border-b border-slate-200'},
-                e('label',{htmlFor:'lingua-topic',className:'block text-xs font-bold text-slate-600 mb-1.5'},'Topic or situation'),
+                e('label',{htmlFor:'lingua-topic',className:'block text-xs font-bold text-slate-600 mb-1.5'},tr('topic_label')),
                 e('input',{id:'lingua-topic',value:profile.topic,onChange:function(x){patch('topic',x.target.value);},placeholder:'Example: ordering lunch or discussing a reading',className:selectClass}),
                 e('div',{className:'flex flex-wrap gap-2 mt-3'},['Introductions','At school','Food and ordering','Travel basics','Discussing a reading'].map(function(x){return e('button',{type:'button',key:x,onClick:function(){patch('topic',x);},className:'h-9 px-3 rounded-lg border border-slate-300 text-xs font-semibold hover:border-emerald-600'+focusClass},x);}))
               ),
               e('section',{className:'py-6'},
-                e('div',{className:'flex items-center justify-between mb-2'},e('label',{htmlFor:'lingua-source',className:'text-xs font-bold text-slate-600'},'Class material (optional)'),
-                  e('button',{type:'button',onClick:function(){var s=String(props.sourceText||'').trim();if(s){setSource(s.slice(0,5000));notify(props,'Current source text added.','success');}else notify(props,'There is no current source text to import.');},className:'min-h-8 px-2 text-xs font-bold text-emerald-700 rounded'+focusClass},'Use current source text')),
+                e('div',{className:'flex items-center justify-between mb-2'},e('label',{htmlFor:'lingua-source',className:'text-xs font-bold text-slate-600'},tr('class_material')),
+                  e('button',{type:'button',onClick:function(){var s=String(props.sourceText||'').trim();if(s){setSource(s.slice(0,5000));notify(props,'Current source text added.','success');}else notify(props,'There is no current source text to import.');},className:'min-h-8 px-2 text-xs font-bold text-emerald-700 rounded'+focusClass},tr('use_source'))),
                 e('textarea',{id:'lingua-source','aria-describedby':'lingua-source-help',value:source,onChange:function(x){setSource(x.target.value.slice(0,5000));},rows:6,placeholder:'Paste a paragraph, lesson excerpt, or notes here…',className:'w-full rounded-lg border border-slate-300 p-3 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-emerald-700'}),
-                e('div',{className:'flex justify-between items-center gap-4 mt-5'},e('span',{id:'lingua-source-help',className:'text-xs text-slate-500'},source.length?source.length+' / 5,000 characters':'A topic is enough to begin.'),
-                  e('button',{type:'button',onClick:generate,disabled:busy,'aria-busy':busy,className:primaryClass},busy?'Building practice set…':lesson?'Build a new set':'Build practice set'),e('span',{className:'sr-only',role:'status','aria-live':'polite'},busy?'Building practice set.':'')),
+                e('div',{className:'flex justify-between items-center gap-4 mt-5'},e('span',{id:'lingua-source-help',className:'text-xs text-slate-500'},source.length?source.length+' / 5,000 characters':tr('topic_enough')),
+                  e('button',{type:'button',onClick:generate,disabled:busy,'aria-busy':busy,className:primaryClass},busy?tr('building_set'):lesson?tr('build_new'):tr('build_set')),e('span',{className:'sr-only',role:'status','aria-live':'polite'},busy?'Building practice set.':'')),
                 lessonError?e('p',{role:'alert',className:'mt-3 border-l-4 border-rose-600 bg-rose-50 p-3 text-sm font-semibold text-rose-900'},lessonError):null
               )
             ),
             tab==='vocabulary'&&lesson&&e('div',{className:'max-w-5xl mx-auto p-5 sm:p-8'},
-              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},lesson.offline?'Built-in starter set':'Your practice set'),
+              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},lesson.offline?tr('builtin_set'):tr('your_practice_set')),
               sectionTitle(lesson.title,'text-2xl font-bold text-slate-900'),e('p',{className:'text-sm text-slate-600 mt-2 mb-6',dir:known.rtl?'rtl':'ltr',lang:known.code},lesson.goal),
               e('div',{className:'grid grid-cols-1 lg:grid-cols-2 gap-4'},lesson.vocabulary.map(function(item){return e('article',{key:item.term,className:'lingua-card p-5 flex gap-3'},
                 e('div',{className:'min-w-0 flex-1'},e('div',{className:'text-xl font-bold text-slate-900 leading-tight',dir:target.rtl?'rtl':'ltr',lang:target.code},item.term),e(PronunciationGuide,{text:item.pronunciation}),
                   e('div',{className:'mt-1.5'},e('span',{className:'inline-block bg-emerald-50 text-emerald-800 text-sm font-semibold px-2.5 py-0.5 rounded-md',dir:known.rtl?'rtl':'ltr',lang:known.code},item.meaning)),
                   e('div',{className:'mt-3 pt-3 border-t border-slate-100'},e('p',{className:'text-sm text-slate-700',dir:target.rtl?'rtl':'ltr',lang:target.code},item.example),e(PronunciationGuide,{text:item.examplePronunciation}),e('p',{className:'text-xs text-slate-500 mt-1',dir:known.rtl?'rtl':'ltr',lang:known.code},item.translation))),
-                e('div',{className:'flex flex-col gap-2'},e(IconButton,{title:'Listen to '+item.term,onClick:function(){play(item.term,target.code,target.name);}},'▶'),e(IconButton,{title:saved(item)?'Remove saved word':'Save word',pressed:saved(item),active:saved(item),onClick:function(){toggle(item);}},saved(item)?'★':'☆'))
+                e('div',{className:'flex flex-col gap-2'},e(IconButton,{title:'Listen to '+item.term,onClick:function(){play(item.term,target.code,target.name);}},'▶'),e(IconButton,{title:saved(item)?tr('remove_saved'):tr('save_word'),pressed:saved(item),active:saved(item),onClick:function(){toggle(item);}},saved(item)?'★':'☆'))
               );})),
-              e('div',{className:'mt-6 flex justify-end'},e('button',{type:'button',onClick:function(){setTab('speak');},className:primaryClass},'Practice speaking'))
+              e('div',{className:'mt-6 flex justify-end'},e('button',{type:'button',onClick:function(){setTab('speak');},className:primaryClass},tr('practice_speaking')))
             ),
             tab==='speak'&&lesson&&phrase&&e('div',{className:'max-w-3xl mx-auto p-5 sm:p-8'},
-              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},'Listen and repeat'),sectionTitle('Make the phrase your own'),
+              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},tr('listen_repeat')),sectionTitle(tr('make_own')),
               e('p',{className:'text-sm text-slate-600 mt-2 mb-7'},'The match checks the '+(matchUnit==='character'?'characters':'words')+' your browser heard, not your accent.'),
               e('section',{className:'lingua-panel px-6 py-10 text-center'},e('div',{ref:phraseRef,tabIndex:-1,className:'text-2xl sm:text-3xl font-bold leading-relaxed'+focusTargetClass,dir:target.rtl?'rtl':'ltr',lang:target.code},phrase.target),e(PronunciationGuide,{text:phrase.pronunciation}),e('p',{className:'text-sm text-slate-600 mt-2',dir:known.rtl?'rtl':'ltr',lang:known.code},phrase.translation),
-                e('div',{className:'flex justify-center gap-3 mt-6'},e('button',{type:'button',onClick:function(){play(phrase.target,target.code,target.name);},className:'h-11 px-4 rounded-lg border border-slate-300 text-sm font-bold'+focusClass},'▶ Listen'),e('button',{type:'button',onClick:function(){listen('phrase');},'aria-pressed':listening,className:primaryClass},listening?'■ Stop':'● Speak')),
-                e('div',{className:'mt-6 min-h-[80px]',role:'status','aria-live':'polite','aria-atomic':'true'},heard?e(React.Fragment,null,e('p',{className:'text-xs font-bold text-slate-500'},'Browser heard'),e('p',{className:'text-lg mt-1',dir:target.rtl?'rtl':'ltr',lang:target.code},heard),e('p',{className:'text-sm font-bold mt-2 '+(score>=75?'text-emerald-700':score>=45?'text-amber-700':'text-rose-700')},score+'% '+matchUnit+' match'),
+                e('div',{className:'flex justify-center gap-3 mt-6'},e('button',{type:'button',onClick:function(){play(phrase.target,target.code,target.name);},className:'h-11 px-4 rounded-lg border border-slate-300 text-sm font-bold'+focusClass},'▶ '+tr('listen')),e('button',{type:'button',onClick:function(){listen('phrase');},'aria-pressed':listening,className:primaryClass},listening?'■ '+tr('stop'):'● '+tr('speak'))),
+                e('div',{className:'mt-6 min-h-[80px]',role:'status','aria-live':'polite','aria-atomic':'true'},heard?e(React.Fragment,null,e('p',{className:'text-xs font-bold text-slate-500'},tr('browser_heard')),e('p',{className:'text-lg mt-1',dir:target.rtl?'rtl':'ltr',lang:target.code},heard),e('p',{className:'text-sm font-bold mt-2 '+(score>=75?'text-emerald-700':score>=45?'text-amber-700':'text-rose-700')},score+'% '+matchUnit+' match'),
                   breakdown.length?e('div',{className:'mt-3'},
-                    e('p',{className:'text-xs font-bold text-slate-500 mb-1'},'Word by word'),
+                    e('p',{className:'text-xs font-bold text-slate-500 mb-1'},tr('word_by_word')),
                     e('p',{className:'text-base leading-relaxed',dir:target.rtl?'rtl':'ltr',lang:target.code,'aria-hidden':'true'},breakdown.map(function(b,i){return e('span',{key:i,className:(b.matched?'text-emerald-700':'text-amber-800 underline decoration-amber-400 decoration-2 underline-offset-2')+' font-semibold'},b.text+(matchUnit==='word'?' ':''));})),
                     e('p',{className:'sr-only'},missedUnits.length?('Practice these '+matchUnit+'s: '+missedUnits.join(', ')):('All '+matchUnit+'s matched.'))
                   ):null
-                ):e('p',{className:'text-sm text-slate-500'},listening?'Listening…':'Your transcript will appear here.'))
+                ):e('p',{className:'text-sm text-slate-500'},listening?tr('listening'):tr('transcript_here')))
               ),
-              e('div',{className:'flex justify-between items-center mt-6'},e('button',{type:'button',disabled:index===0,onClick:function(){setIndex(Math.max(0,index-1));setHeard('');},className:'h-10 px-4 rounded-lg border disabled:opacity-40'+focusClass},'Previous'),e('span',{className:'text-xs font-bold text-slate-500'},(index+1)+' of '+lesson.phrases.length),
-                index<lesson.phrases.length-1?e('button',{type:'button',onClick:function(){setIndex(index+1);setHeard('');},className:'h-10 px-4 rounded-lg bg-slate-900 text-white'+focusClass},'Next'):e('button',{type:'button',onClick:function(){setTab('conversation');},className:primaryClass},'Start conversation'))
+              e('div',{className:'flex justify-between items-center mt-6'},e('button',{type:'button',disabled:index===0,onClick:function(){setIndex(Math.max(0,index-1));setHeard('');},className:'h-10 px-4 rounded-lg border disabled:opacity-40'+focusClass},tr('previous')),e('span',{className:'text-xs font-bold text-slate-500'},(index+1)+' of '+lesson.phrases.length),
+                index<lesson.phrases.length-1?e('button',{type:'button',onClick:function(){setIndex(index+1);setHeard('');},className:'h-10 px-4 rounded-lg bg-slate-900 text-white'+focusClass},tr('next')):e('button',{type:'button',onClick:function(){setTab('conversation');},className:primaryClass},tr('start_conversation')))
             ),
             tab==='conversation'&&lesson&&convo&&e('div',{className:'max-w-3xl mx-auto p-5 sm:p-8'},
-              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},'Guided conversation'),sectionTitle(lesson.scenario),e('p',{className:'text-sm text-slate-600 mt-2 mb-7'},'Respond in '+profile.target+', then ask for one focused next step.'),
-              e('section',{className:'lingua-panel p-6'},e('p',{ref:conversationPromptRef,tabIndex:-1,className:'text-lg font-bold'+focusTargetClass,dir:target.rtl?'rtl':'ltr',lang:target.code},convo.coach),e(PronunciationGuide,{text:convo.coachPronunciation}),e('p',{className:'text-sm text-slate-500 mt-1',dir:known.rtl?'rtl':'ltr',lang:known.code},convo.translation),e('button',{type:'button',onClick:function(){play(convo.coach,target.code,target.name);},className:'min-h-8 inline-flex items-center px-2 -ml-2 text-xs font-bold text-emerald-700 mt-2 rounded'+focusClass},'▶ Listen'),
-                e('div',{className:'mt-5'},e('label',{htmlFor:'lingua-conversation-response',className:'block text-sm font-bold text-slate-700 mb-2'},'Your response in '+profile.target),
+              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},tr('guided_conversation')),sectionTitle(lesson.scenario),e('p',{className:'text-sm text-slate-600 mt-2 mb-7'},'Respond in '+profile.target+', then ask for one focused next step.'),
+              e('section',{className:'lingua-panel p-6'},e('p',{ref:conversationPromptRef,tabIndex:-1,className:'text-lg font-bold'+focusTargetClass,dir:target.rtl?'rtl':'ltr',lang:target.code},convo.coach),e(PronunciationGuide,{text:convo.coachPronunciation}),e('p',{className:'text-sm text-slate-500 mt-1',dir:known.rtl?'rtl':'ltr',lang:known.code},convo.translation),e('button',{type:'button',onClick:function(){play(convo.coach,target.code,target.name);},className:'min-h-8 inline-flex items-center px-2 -ml-2 text-xs font-bold text-emerald-700 mt-2 rounded'+focusClass},'▶ '+tr('listen')),
+                e('div',{className:'mt-5'},e('label',{htmlFor:'lingua-conversation-response',className:'block text-sm font-bold text-slate-700 mb-2'},tr('your_response',{lang:profile.target})),
                   e('div',{className:'relative'},e('textarea',{id:'lingua-conversation-response',value:response,onChange:function(x){setResponse(x.target.value);},rows:4,dir:target.rtl?'rtl':'ltr',lang:target.code,placeholder:'Your response in '+profile.target,className:'w-full rounded-lg border border-slate-300 p-3 '+(target.rtl?'pl-14':'pr-14')+' text-base'+focusClass}),
-                    e('div',{className:'absolute '+(target.rtl?'left-2':'right-2')+' top-2'},e(IconButton,{title:'Speak response',pressed:listening,onClick:function(){listen('conversation');}},listening?'■':'●')))),
-                e('div',{className:'flex justify-end mt-3'},e('button',{type:'button',onClick:coach,disabled:busy||!response.trim(),'aria-busy':busy,className:primaryClass},busy?'Coaching…':'Get coaching')),
+                    e('div',{className:'absolute '+(target.rtl?'left-2':'right-2')+' top-2'},e(IconButton,{title:tr('speak_response'),pressed:listening,onClick:function(){listen('conversation');}},listening?'■':'●')))),
+                e('div',{className:'flex justify-end mt-3'},e('button',{type:'button',onClick:coach,disabled:busy||!response.trim(),'aria-busy':busy,className:primaryClass},busy?tr('coaching'):tr('get_coaching'))),
                 feedback&&e('div',{className:'mt-5 bg-slate-50 border-l-4 border-emerald-600 p-4',role:'status','aria-live':'polite'},e('p',{className:'text-sm font-bold text-emerald-800',dir:known.rtl?'rtl':'ltr',lang:known.code},feedback.strength),e('p',{className:'text-sm text-slate-700 mt-2',dir:known.rtl?'rtl':'ltr',lang:known.code},feedback.tip),
                   e('div',{className:'flex gap-2 mt-3'},e('div',{className:'flex-1'},e('p',{className:'text-sm'},e('strong',{dir:known.rtl?'rtl':'ltr',lang:known.code},'Try: '),e('bdi',{dir:target.rtl?'rtl':'ltr',lang:target.code},feedback.suggested)),e(PronunciationGuide,{text:feedback.suggestedPronunciation})),e(IconButton,{title:'Listen to suggestion',onClick:function(){play(feedback.suggested,target.code,target.name);}},'▶')))
               ),
-              e('div',{className:'flex justify-between items-center mt-6'},e('button',{type:'button',disabled:turn===0,onClick:function(){moveTurn(Math.max(0,turn-1));},className:'h-10 px-4 rounded-lg border disabled:opacity-40'+focusClass},'Previous'),e('span',{className:'text-xs font-bold text-slate-500'},(turn+1)+' of '+lesson.conversation.length),e('button',{type:'button',disabled:turn>=lesson.conversation.length-1,onClick:function(){moveTurn(Math.min(lesson.conversation.length-1,turn+1));},className:'h-10 px-4 rounded-lg bg-slate-900 text-white disabled:opacity-40'+focusClass},'Next'))
+              e('div',{className:'flex justify-between items-center mt-6'},e('button',{type:'button',disabled:turn===0,onClick:function(){moveTurn(Math.max(0,turn-1));},className:'h-10 px-4 rounded-lg border disabled:opacity-40'+focusClass},tr('previous')),e('span',{className:'text-xs font-bold text-slate-500'},(turn+1)+' of '+lesson.conversation.length),e('button',{type:'button',disabled:turn>=lesson.conversation.length-1,onClick:function(){moveTurn(Math.min(lesson.conversation.length-1,turn+1));},className:'h-10 px-4 rounded-lg bg-slate-900 text-white disabled:opacity-40'+focusClass},tr('next')))
             ),
             tab==='chat'&&e('div',{className:'max-w-3xl mx-auto p-5 sm:p-8 flex flex-col h-full'},
-              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},'Live conversation'),
-              sectionTitle('Talk with an AI partner in '+profile.target),
+              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},tr('live_conversation')),
+              sectionTitle(tr('chat_title',{lang:profile.target})),
               e('p',{className:'text-sm text-slate-600 mt-2 mb-5'},'Type or speak your reply. Each partner message is read aloud and shown with its '+profile.known+' meaning. This is practice, not assessment.'),
               e('div',{ref:chatLogRef,role:'log','aria-label':'Conversation transcript','aria-live':'polite',className:'lingua-chatlog flex-1 min-h-[240px] overflow-y-auto border border-slate-200 rounded-xl p-4 space-y-3'},
                 !chatMessages.length?e('p',{className:'text-sm text-slate-500 text-center py-10'},'Say hello to begin, or tap “Start the chat” for an opener.'):
@@ -879,38 +951,38 @@
                     !mine&&m.translation?e('p',{className:'text-xs text-slate-500 mt-1',dir:known.rtl?'rtl':'ltr',lang:known.code},m.translation):null,
                     !mine&&m.tip?e('p',{className:'text-xs text-emerald-800 mt-2 italic',dir:known.rtl?'rtl':'ltr',lang:known.code},m.tip):null,
                     !mine&&m.target?e('div',{className:'flex items-center gap-3 mt-1'},
-                      e('button',{type:'button',onClick:function(){play(m.target,target.code,target.name);},className:'min-h-8 inline-flex items-center text-xs font-bold text-emerald-700 rounded'+focusClass},'▶ Listen'),
-                      e('button',{type:'button','aria-pressed':chatLineSaved(m),onClick:function(){saveChatLine(m);},className:'min-h-8 inline-flex items-center text-xs font-bold text-emerald-700 rounded'+focusClass},chatLineSaved(m)?'★ Saved':'☆ Save phrase')
+                      e('button',{type:'button',onClick:function(){play(m.target,target.code,target.name);},className:'min-h-8 inline-flex items-center text-xs font-bold text-emerald-700 rounded'+focusClass},'▶ '+tr('listen')),
+                      e('button',{type:'button','aria-pressed':chatLineSaved(m),onClick:function(){saveChatLine(m);},className:'min-h-8 inline-flex items-center text-xs font-bold text-emerald-700 rounded'+focusClass},chatLineSaved(m)?'★ '+tr('saved'):'☆ '+tr('save_phrase'))
                     ):null
                   )
                 );})
               ),
-              chatBusy?e('p',{className:'text-xs text-slate-500 mt-2',role:'status','aria-live':'polite'},profile.target+' partner is replying…'):null,
+              chatBusy?e('p',{className:'text-xs text-slate-500 mt-2',role:'status','aria-live':'polite'},tr('partner_replying',{lang:profile.target})):null,
               e('div',{className:'mt-3'},
                 e('label',{htmlFor:'lingua-chat-input',className:'sr-only'},'Your message in '+profile.target),
                 e('div',{className:'flex items-end gap-2'},
                   e('div',{className:'relative flex-1'},
                     e('textarea',{id:'lingua-chat-input',value:chatInput,onChange:function(x){setChatInput(x.target.value);},onKeyDown:function(x){if(x.key==='Enter'&&!x.shiftKey){x.preventDefault();sendChat();}},rows:2,dir:target.rtl?'rtl':'ltr',lang:target.code,placeholder:'Your reply in '+profile.target+'…',className:'w-full rounded-lg border border-slate-300 p-3 '+(target.rtl?'pl-12':'pr-12')+' text-base resize-none'+focusClass}),
-                    e('div',{className:'absolute '+(target.rtl?'left-2':'right-2')+' bottom-2'},e(IconButton,{title:'Speak your reply',pressed:chatListening,onClick:chatListen},chatListening?'■':'●'))
+                    e('div',{className:'absolute '+(target.rtl?'left-2':'right-2')+' bottom-2'},e(IconButton,{title:tr('speak_reply'),pressed:chatListening,onClick:chatListen},chatListening?'■':'●'))
                   ),
-                  e('button',{type:'button',onClick:sendChat,disabled:chatBusy||!chatInput.trim(),'aria-busy':chatBusy,className:primaryClass},'Send')
+                  e('button',{type:'button',onClick:sendChat,disabled:chatBusy||!chatInput.trim(),'aria-busy':chatBusy,className:primaryClass},tr('send'))
                 ),
-                !chatMessages.length?e('button',{type:'button',onClick:startChat,disabled:chatBusy,className:'mt-3 h-9 px-3 rounded-lg border border-emerald-600 text-emerald-800 text-xs font-bold hover:bg-emerald-50 disabled:opacity-50'+focusClass},'Start the chat'):
-                  e('button',{type:'button',onClick:resetChat,className:'mt-3 h-9 px-3 rounded-lg border border-slate-300 text-slate-600 text-xs font-semibold hover:bg-slate-50'+focusClass},'Restart conversation')
+                !chatMessages.length?e('button',{type:'button',onClick:startChat,disabled:chatBusy,className:'mt-3 h-9 px-3 rounded-lg border border-emerald-600 text-emerald-800 text-xs font-bold hover:bg-emerald-50 disabled:opacity-50'+focusClass},tr('start_chat')):
+                  e('button',{type:'button',onClick:resetChat,className:'mt-3 h-9 px-3 rounded-lg border border-slate-300 text-slate-600 text-xs font-semibold hover:bg-slate-50'+focusClass},tr('restart_conversation'))
               )
             ),
             tab==='progress'&&e('div',{className:'max-w-4xl mx-auto p-5 sm:p-8'},
-              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},'Learning activity'),
-              sectionTitle(profile.target+' progress'),
+              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},tr('learning_activity')),
+              sectionTitle(tr('lang_progress',{lang:profile.target})),
               e('p',{className:'text-sm text-slate-600 mt-2'},'This is an activity record, not a grade or proficiency score.'),
               e('p',{className:'text-xs font-semibold text-slate-500 mt-3'},activityLabel(summary.lastPracticedAt,Date.now())),
               e('div',{className:'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-7'},
                 [
-                  ['Practice sets',summary.practiceSets],
-                  ['Speaking attempts',summary.spokenAttempts],
-                  ['Conversation turns',summary.chatTurns],
-                  ['Reviews completed',summary.reviews],
-                  ['Saved words',summary.savedCount]
+                  [tr('metric_practice_sets'),summary.practiceSets],
+                  [tr('metric_speaking'),summary.spokenAttempts],
+                  [tr('metric_convo'),summary.chatTurns],
+                  [tr('metric_reviews'),summary.reviews],
+                  [tr('metric_saved'),summary.savedCount]
                 ].map(function(metric){return e('div',{key:metric[0],className:'lingua-tile p-4'},
                   e('p',{className:'text-3xl font-bold text-emerald-800'},String(metric[1])),
                   e('p',{className:'text-xs font-semibold text-slate-500 mt-1'},metric[0])
@@ -918,8 +990,8 @@
               ),
               summary.savedCount?e('section',{className:'py-7 border-b border-slate-200'},
                 e('div',{className:'flex items-center justify-between gap-4'},
-                  e('div',null,e('h4',{className:'text-sm font-bold text-slate-900'},'Word review status'),e('p',{className:'text-xs text-slate-500 mt-1'},'Longer intervals indicate repeated successful recall, not permanent mastery.')),
-                  summary.dueCount?e('button',{type:'button',onClick:function(){setTab('review');},className:'lingua-primary h-10 px-4 rounded-lg bg-emerald-700 text-white text-sm font-bold'+focusClass},'Review '+summary.dueCount+' due'):null
+                  e('div',null,e('h4',{className:'text-sm font-bold text-slate-900'},tr('word_review_status')),e('p',{className:'text-xs text-slate-500 mt-1'},'Longer intervals indicate repeated successful recall, not permanent mastery.')),
+                  summary.dueCount?e('button',{type:'button',onClick:function(){setTab('review');},className:'lingua-primary h-10 px-4 rounded-lg bg-emerald-700 text-white text-sm font-bold'+focusClass},tr('review_n_due',{n:summary.dueCount})):null
                 ),
                 e('div',{className:'h-3 w-full flex bg-slate-100 rounded-full mt-5 overflow-hidden',role:'img','aria-label':summary.learningCount+' learning and '+summary.establishedCount+' well-practiced words'},
                   summary.learningCount?e('div',{className:'h-full bg-amber-400',style:{width:(summary.learningCount/summary.savedCount*100)+'%'}}):null,
@@ -931,23 +1003,23 @@
                   e('span',null,summary.dueCount+' due now')
                 )
               ):e(EmptyState,{icon:'☆',title:'No '+profile.target+' words saved yet',sub:'Build a practice set and save useful vocabulary to begin tracking review activity.'},
-                e('button',{type:'button',onClick:function(){setTab('setup');},className:primaryClass+' mt-5'},'Build a practice set')
+                e('button',{type:'button',onClick:function(){setTab('setup');},className:primaryClass+' mt-5'},tr('build_set'))
               )
             ),
             tab==='review'&&e('div',{ref:reviewRegionRef,tabIndex:-1,className:'max-w-3xl mx-auto p-5 sm:p-8'+focusTargetClass},
-              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},'Spaced review'),
-              sectionTitle('Review '+profile.target),
+              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},tr('spaced_review')),
+              sectionTitle(tr('review_lang',{lang:profile.target})),
               e('p',{className:'text-sm text-slate-600 mt-2 mb-7'},'Recall the word before revealing it. Your response only controls when the word returns.'),
               e('p',{className:'sr-only',role:'status','aria-live':'polite','aria-atomic':'true'},reviewStatus),
               !(progress.saved||[]).some(function(item){return item.language===profile.target;})?
                 e(EmptyState,{icon:'☆',title:'No '+profile.target+' words saved yet',sub:'Save useful words from a vocabulary set, then review them here.'}):
               !reviewItem?
-                e(EmptyState,{icon:'✓',tone:'positive',title:'You are caught up for now',sub:'Reviewed words will return here when they are due.'}):
+                e(EmptyState,{icon:'✓',tone:'positive',title:tr('caught_up'),sub:'Reviewed words will return here when they are due.'}):
               e('section',{className:'lingua-panel px-6 py-10 text-center'},
                 e('p',{className:'text-xs font-bold uppercase text-slate-500'},'Recall the '+profile.target+' word'),
                 e('p',{className:'text-2xl font-bold text-slate-900 mt-3',dir:known.rtl?'rtl':'ltr',lang:known.code},reviewItem.meaning),
                 !reviewRevealed?
-                  e('button',{type:'button',onClick:revealReview,className:primaryClass+' mt-7'},'Reveal answer'):
+                  e('button',{type:'button',onClick:revealReview,className:primaryClass+' mt-7'},tr('reveal_answer')):
                   e(React.Fragment,null,
                     e('div',{className:'mt-7 pt-6 border-t border-slate-200'},
                       e('div',{className:'flex items-center justify-center gap-3'},
@@ -960,15 +1032,15 @@
                       e('p',{className:'text-xs text-slate-500 mt-1',dir:known.rtl?'rtl':'ltr',lang:known.code},reviewItem.translation)
                     ),
                     e('div',{className:'grid grid-cols-1 min-[360px]:grid-cols-3 gap-2 mt-7',role:'group','aria-label':'Choose when to review this word again'},
-                      e('button',{type:'button',onClick:function(){rateReview('again');},className:'h-12 rounded-lg border border-rose-300 bg-rose-50 text-rose-800 text-sm font-bold hover:bg-rose-100'+focusClass},'Again'),
-                      e('button',{type:'button',onClick:function(){rateReview('learning');},className:'h-12 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 text-sm font-bold hover:bg-amber-100'+focusClass},'Learning'),
-                      e('button',{type:'button',onClick:function(){rateReview('know');},className:'h-12 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-900 text-sm font-bold hover:bg-emerald-100'+focusClass},'Know')
+                      e('button',{type:'button',onClick:function(){rateReview('again');},className:'h-12 rounded-lg border border-rose-300 bg-rose-50 text-rose-800 text-sm font-bold hover:bg-rose-100'+focusClass},tr('rate_again')),
+                      e('button',{type:'button',onClick:function(){rateReview('learning');},className:'h-12 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 text-sm font-bold hover:bg-amber-100'+focusClass},tr('rate_learning')),
+                      e('button',{type:'button',onClick:function(){rateReview('know');},className:'h-12 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-900 text-sm font-bold hover:bg-emerald-100'+focusClass},tr('rate_know'))
                     )
                   )
               ),
               e('p',{className:'text-xs text-slate-500 mt-5 text-center',role:'status','aria-live':'polite'},due.length+' due now · '+(progress.saved||[]).filter(function(item){return item.language===profile.target;}).length+' saved in '+profile.target)
             ),
-            tab==='saved'&&e('div',{className:'max-w-4xl mx-auto p-5 sm:p-8'},e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},'Personal word bank'),sectionTitle('Saved words'),e('p',{className:'text-sm text-slate-600 mt-2 mb-7'},'Stored on this device for practice across sets.'),
+            tab==='saved'&&e('div',{className:'max-w-4xl mx-auto p-5 sm:p-8'},e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},tr('word_bank')),sectionTitle(tr('saved_words')),e('p',{className:'text-sm text-slate-600 mt-2 mb-7'},'Stored on this device for practice across sets.'),
               !(progress.saved||[]).length?e(EmptyState,{icon:'☆',title:'No saved words yet',sub:'Star a word in the Vocabulary tab to add it to your personal word bank.'}):e('div',{className:'space-y-2'},progress.saved.map(function(item){var l=lang(item.language);return e('div',{key:item.id,className:'lingua-card py-4 px-4 flex gap-3 items-center'},e('div',{className:'flex-1 min-w-0'},e('div',{className:'flex items-center gap-2 flex-wrap'},e('strong',{className:'text-lg text-slate-900',dir:l.rtl?'rtl':'ltr',lang:l.code},item.term),e('span',{className:'text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5'},item.language)),e(PronunciationGuide,{text:item.pronunciation}),e('p',{className:'text-sm text-slate-600',dir:known.rtl?'rtl':'ltr',lang:known.code},item.meaning),e('p',{className:'text-sm text-slate-700 mt-2 break-words',dir:l.rtl?'rtl':'ltr',lang:l.code},item.example)),e(IconButton,{title:'Listen',onClick:function(){play(item.term,l.code,l.name);}},'▶'),e(IconButton,{title:'Remove saved word',onClick:function(){toggle(item);}},'×'));}))
             )
           )
@@ -991,6 +1063,7 @@
   LinguaPractice._buildLessonPrompt=lessonPrompt;
   LinguaPractice._fallbackLesson=fallbackLesson;
   LinguaPractice._languageByName=lang;
+  LinguaPractice._translate=translate;
   LinguaPractice._normalizeProfile=normalizeProfile;
   LinguaPractice._normalizeProgress=normalizeProgress;
   LinguaPractice._normalizeRecentLessons=normalizeRecentLessons;

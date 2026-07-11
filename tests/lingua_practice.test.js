@@ -322,6 +322,18 @@ describe('Lingua Practice custom + preset languages', () => {
 });
 
 
+describe('Lingua Practice UI localization', () => {
+  it('translates chrome by known language, interpolates, and falls back to English', () => {
+    expect(Lingua._translate('Spanish', 'nav_setup')).toBe('Configuración');
+    expect(Lingua._translate('French', 'nav_vocabulary')).toBe('Vocabulaire');
+    expect(Lingua._translate('Portuguese', 'practice_speaking')).toBe('Praticar a fala');
+    expect(Lingua._translate('Spanish', 'chat_title', { lang: 'inglés' })).toBe('Habla con un compañero de IA en inglés');
+    // unknown language → English; unknown key → the key itself
+    expect(Lingua._translate('Klingon', 'nav_setup')).toBe('Setup');
+    expect(Lingua._translate('Spanish', 'no_such_key')).toBe('no_such_key');
+  });
+});
+
 describe('Lingua Practice chat persistence', () => {
   it('keeps only valid chat turns, caps length, and drops empty threads', () => {
     const long = Array.from({ length: 60 }, (_, i) => ({ role: 'you', target: 'line ' + i }));

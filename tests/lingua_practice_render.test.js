@@ -278,6 +278,22 @@ describe('Lingua Practice custom language', () => {
   });
 });
 
+describe('Lingua Practice UI localization', () => {
+  it("renders its own chrome in the learner's known language", async () => {
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {}, callGemini: async () => '{}' }));
+    // default chrome is English
+    expect(button('Setup')).toBeTruthy();
+    const known = host.querySelector('select[aria-label="I know"]');
+    await act(async () => { known.value = 'Spanish'; known.dispatchEvent(new Event('change', { bubbles: true })); });
+    const navText = Array.from(host.querySelectorAll('nav button')).map((n) => n.textContent).join('|');
+    expect(navText).toContain('Configuración');
+    expect(navText).toContain('Vocabulario');
+    expect(navText).toContain('Palabras guardadas');
+    // known-language select's own label is now localized too
+    expect(host.querySelector('select[aria-label="Yo sé"]')).toBeTruthy();
+  });
+});
+
 describe('Lingua Practice slow audio', () => {
   it('toggles slow playback, persists it, and passes a slower rate to the player', async () => {
     const spoken = [];
