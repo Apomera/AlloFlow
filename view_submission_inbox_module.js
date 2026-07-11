@@ -19,8 +19,104 @@
   if (!React) { console.error('[SubmissionInbox] React not found on window'); return; }
   var useState = React.useState, useRef = React.useRef;
 
+var SI_I18N_KEY = "allo_submissioninbox_ui_i18n_v1";
+var LANG_CTX = typeof window !== "undefined" && window.AlloLanguageContext || (typeof window !== "undefined" && window.React ? window.React.createContext(null) : null);
+var STR_REG = {};
+var LL_CUR = { lang: "English", cache: {} };
+function llLoad() {
+  try {
+    return JSON.parse(localStorage.getItem(SI_I18N_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+function llStore(v) {
+  try {
+    localStorage.setItem(SI_I18N_KEY, JSON.stringify(v));
+  } catch (e) {
+  }
+}
+function llInterp(s, params) {
+  if (s == null || !params) return s;
+  Object.keys(params).forEach(function(k) {
+    s = s.split("{" + k + "}").join(String(params[k]));
+  });
+  return s;
+}
+function tr(en, params) {
+  if (en && typeof en === "string") STR_REG[en] = true;
+  var p = LL_CUR.cache[LL_CUR.lang];
+  return llInterp(p && p[en] != null ? p[en] : en, params);
+}
+function llCleanJson(raw) {
+  var s = String(raw || "").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
+  var f = s.indexOf("{"), l = s.lastIndexOf("}");
+  return f >= 0 && l > f ? s.slice(f, l + 1) : s;
+}
+function llSanitize(obj, wanted) {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) return null;
+  var out = {}, n = 0;
+  wanted.forEach(function(k) {
+    var v = obj[k];
+    if (typeof v === "string") {
+      v = v.slice(0, 400);
+      if (v) {
+        out[k] = v;
+        n++;
+      }
+    }
+  });
+  return n ? out : null;
+}
+function llPrompt(langName, list) {
+  return ["Translate these user-interface labels for a teacher tool that imports and grades student worksheet submissions into natural, concise " + langName + " (buttons, headings, toasts \u2014 keep them short and professional).", "Keep any {tokens}, numbers, and any emoji EXACTLY as written. Do NOT translate the acronyms AI, JSON, or the file extension .alloflow. No commentary.", "Return ONLY a JSON object mapping each ENGLISH string (used verbatim as the key) to its " + langName + " translation.", JSON.stringify(list)].join(String.fromCharCode(10));
+}
 function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   if (!isOpen) return null;
+  var _llCtx = React.useContext(LANG_CTX);
+  var uiLang = _llCtx && _llCtx.currentUiLanguage || typeof window !== "undefined" && window.__alloTextLanguage || "English";
+  var _llCacheRef = React.useRef(llLoad());
+  var _llAttemptedRef = React.useRef({});
+  var _setLlTick = React.useState(0)[1];
+  LL_CUR.lang = uiLang;
+  LL_CUR.cache = _llCacheRef.current;
+  React.useEffect(function() {
+    if (uiLang === "English" || typeof window === "undefined" || typeof window.callGemini !== "function") return void 0;
+    var cache = _llCacheRef.current[uiLang] || {}, attempted = _llAttemptedRef.current[uiLang] || {};
+    var missing = Object.keys(STR_REG).filter(function(k) {
+      return !cache[k] && !attempted[k];
+    });
+    if (!missing.length) return void 0;
+    var att = _llAttemptedRef.current[uiLang] || (_llAttemptedRef.current[uiLang] = {});
+    var to = setTimeout(function() {
+      var list = missing.slice(0, 200);
+      list.forEach(function(k) {
+        att[k] = true;
+      });
+      Promise.resolve().then(function() {
+        return window.callGemini(llPrompt(uiLang, list));
+      }).then(function(raw) {
+        var pack = null;
+        try {
+          pack = llSanitize(JSON.parse(llCleanJson(raw)), list);
+        } catch (_) {
+        }
+        if (pack) {
+          var next = Object.assign({}, _llCacheRef.current);
+          next[uiLang] = Object.assign({}, next[uiLang] || {}, pack);
+          _llCacheRef.current = next;
+          llStore(next);
+          _setLlTick(function(n) {
+            return n + 1;
+          });
+        }
+      }).catch(function() {
+      });
+    }, 500);
+    return function() {
+      clearTimeout(to);
+    };
+  });
   const [privateJwk, setPrivateJwk] = useState(null);
   const [classKeyMeta, setClassKeyMeta] = useState(null);
   const [queue, setQueue] = useState([]);
@@ -118,11 +214,11 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const savePreset = () => {
     const name = (presetNameInput || "").trim();
     if (!name) {
-      addToast && addToast('Give the preset a short name (e.g. "Reading response Ch.3").', "warn");
+      addToast && addToast(tr('Give the preset a short name (e.g. "Reading response Ch.3").'), "warn");
       return;
     }
     if (!(globalRubric.rubric || "").trim() && anchors.length === 0) {
-      addToast && addToast("Nothing to save yet \u2014 add a rubric or anchors first.", "warn");
+      addToast && addToast(tr("Nothing to save yet \u2014 add a rubric or anchors first."), "warn");
       return;
     }
     const key = name.toLowerCase().replace(/[^a-z0-9]+/g, "_");
@@ -162,7 +258,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const exportPresets = () => {
     const presetCount = Object.keys(rubricPresets).length;
     if (presetCount === 0) {
-      addToast && addToast("No presets to export yet.", "warn");
+      addToast && addToast(tr("No presets to export yet."), "warn");
       return;
     }
     const payload = {
@@ -192,7 +288,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       const text = await file.text();
       const parsed = JSON.parse(text);
       if (!parsed || parsed.kind !== "alloflow-rubric-presets" || !parsed.presets) {
-        addToast && addToast("Not a valid AlloFlow presets file.", "error");
+        addToast && addToast(tr("Not a valid AlloFlow presets file."), "error");
         return;
       }
       const incoming = parsed.presets;
@@ -236,7 +332,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     setGlobalRubric({ rubric: "", context: "" });
     setAnchors([]);
     setSavedSessionMeta(null);
-    addToast && addToast("Cleared saved class rubric and anchors.", "info");
+    addToast && addToast(tr("Cleared saved class rubric and anchors."), "info");
   };
   const handleKeyFile = async (e) => {
     const file = e.target?.files?.[0];
@@ -245,7 +341,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       const text = await file.text();
       const data = JSON.parse(text);
       if (data.kind !== "alloflow-class-key" || !data.privateJwk) {
-        addToast && addToast("Not a valid AlloFlow class key file.", "error");
+        addToast && addToast(tr("Not a valid AlloFlow class key file."), "error");
         return;
       }
       setPrivateJwk(data.privateJwk);
@@ -254,7 +350,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
         classId: data.classId,
         createdAt: data.createdAt
       });
-      addToast && addToast("Class key loaded.", "success");
+      addToast && addToast(tr("Class key loaded."), "success");
     } catch (err) {
       addToast && addToast("Could not read key file: " + err.message, "error");
     }
@@ -301,7 +397,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             fileName: f.name,
             nickname: "?",
             status: "error",
-            error: "Not an AlloFlow submission file (no embedded blob)."
+            error: tr("Not an AlloFlow submission file (no embedded blob).")
           });
           continue;
         }
@@ -326,12 +422,12 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   };
   const handleDecryptAll = async () => {
     if (!privateJwk) {
-      addToast && addToast("Load the class key file first.", "warn");
+      addToast && addToast(tr("Load the class key file first."), "warn");
       return;
     }
     const SC = window.AlloModules && window.AlloModules.SubmissionCrypto;
     if (!SC || typeof SC.decryptSubmission !== "function") {
-      addToast && addToast("SubmissionCrypto module not loaded yet. Try again in a moment.", "error");
+      addToast && addToast(tr("SubmissionCrypto module not loaded yet. Try again in a moment."), "error");
       return;
     }
     setDecryptingAll(true);
@@ -428,17 +524,17 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     const rubricText = (r.rubric || "").trim() || (globalRubric.rubric || "").trim();
     const contextText = (r.context || "").trim() || (globalRubric.context || "").trim();
     if (!rubricText) {
-      if (!opts.silent) addToast && addToast("Add a class rubric at the top, or a per-submission rubric, before grading.", "warn");
+      if (!opts.silent) addToast && addToast(tr("Add a class rubric at the top, or a per-submission rubric, before grading."), "warn");
       return { ok: 0, fail: 0, skipped: true };
     }
     const QH = window.AlloModules && window.AlloModules.QuizAIHelpers;
     if (!QH || typeof QH.gradeFreeformAnswerWithCalibration !== "function") {
-      addToast && addToast("Grader module not loaded yet. Try again in a moment.", "error");
+      addToast && addToast(tr("Grader module not loaded yet. Try again in a moment."), "error");
       return;
     }
     const callGemini = window.callGemini;
     if (typeof callGemini !== "function") {
-      addToast && addToast("Gemini API not ready. Open a regular AlloFlow window first so the API key loads.", "error");
+      addToast && addToast(tr("Gemini API not ready. Open a regular AlloFlow window first so the API key loads."), "error");
       return;
     }
     const calibrationSamples = [];
@@ -466,7 +562,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     const responseEntries = Object.entries(row.payload.responses || {}).filter(([k, v]) => v && String(v).trim() && !anchoredKeys.has(k));
     if (responseEntries.length === 0) {
       if (!opts.silent) addToast && addToast(
-        anchoredKeys.size > 0 ? "All responses on this submission are already anchored." : "No responses to grade in this submission.",
+        anchoredKeys.size > 0 ? tr("All responses on this submission are already anchored.") : tr("No responses to grade in this submission."),
         "warn"
       );
       return { ok: 0, fail: 0, skipped: true };
@@ -479,7 +575,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
           rowGrades[a.fromResponseKey] = {
             score: a.teacherScore,
             status: "correct",
-            feedback: "\u{1F4CC} Teacher-anchored: " + (a.teacherFeedback || "(no note)")
+            feedback: "\u{1F4CC} Teacher-anchored: " + (a.teacherFeedback || tr("(no note)"))
           };
         }
       });
@@ -505,7 +601,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       } catch (err) {
         setGrades((prev) => ({
           ...prev,
-          [idx]: { ...prev[idx] || {}, [key]: { status: "error", feedback: err.message || "Grader failed", score: 0 } }
+          [idx]: { ...prev[idx] || {}, [key]: { status: "error", feedback: err.message || tr("Grader failed"), score: 0 } }
         }));
         fail++;
       }
@@ -519,13 +615,13 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   };
   const gradeAllDecrypted = async () => {
     if (!(globalRubric.rubric || "").trim()) {
-      addToast && addToast("Add a class rubric at the top before bulk grading.", "warn");
+      addToast && addToast(tr("Add a class rubric at the top before bulk grading."), "warn");
       setGlobalRubricOpen(true);
       return;
     }
     const decryptedIdxs = queue.map((r, i) => ({ r, i })).filter((x) => x.r.status === "decrypted").map((x) => x.i);
     if (decryptedIdxs.length === 0) {
-      addToast && addToast("No decrypted submissions to grade.", "warn");
+      addToast && addToast(tr("No decrypted submissions to grade."), "warn");
       return;
     }
     setBulkGrading(true);
@@ -582,9 +678,9 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   };
   const _writeRowToGradebook = (idx) => {
     const row = queue[idx];
-    if (!row || row.status !== "decrypted" || !row.payload) return { ok: false, reason: "not decrypted" };
+    if (!row || row.status !== "decrypted" || !row.payload) return { ok: false, reason: tr("not decrypted") };
     const rowGrades = grades[idx] || {};
-    if (Object.keys(rowGrades).length === 0) return { ok: false, reason: "no grades" };
+    if (Object.keys(rowGrades).length === 0) return { ok: false, reason: tr("no grades") };
     const existing = JSON.parse(localStorage.getItem("alloflow_offline_grades") || "{}");
     const nickname = row.payload.nickname || "unknown";
     const docTitle = row.payload.docTitle || "untitled";
@@ -607,7 +703,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const saveRowToGradebook = (idx) => {
     const rowGrades = grades[idx] || {};
     if (Object.keys(rowGrades).length === 0) {
-      addToast && addToast("Grade the responses first.", "warn");
+      addToast && addToast(tr("Grade the responses first."), "warn");
       return;
     }
     try {
@@ -623,7 +719,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const saveAllGradedToGradebook = () => {
     const candidates = queue.map((r, i) => i).filter((i) => Object.keys(grades[i] || {}).length > 0);
     if (candidates.length === 0) {
-      addToast && addToast("No graded submissions to save yet.", "warn");
+      addToast && addToast(tr("No graded submissions to save yet."), "warn");
       return;
     }
     let saved = 0, fail = 0;
@@ -648,14 +744,14 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       delete existing[storageKey];
       localStorage.setItem("alloflow_offline_grades", JSON.stringify(existing));
       setGradebookRefresh((t2) => t2 + 1);
-      addToast && addToast("Removed from gradebook.", "info");
+      addToast && addToast(tr("Removed from gradebook."), "info");
     } catch (e) {
       addToast && addToast("Could not delete: " + e.message, "error");
     }
   };
   const exportGradebookCsv = () => {
     if (gradebookEntries.length === 0) {
-      addToast && addToast("Gradebook is empty.", "warn");
+      addToast && addToast(tr("Gradebook is empty."), "warn");
       return;
     }
     const esc = (s) => {
@@ -718,8 +814,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     if (kind === "exact") {
       bg = "#dcfce7";
       color = "#166534";
-      label = "\u2713 Roster match";
-      title = "Exact roster match";
+      label = tr("\u2713 Roster match");
+      title = tr("Exact roster match");
     } else if (kind === "fuzzy") {
       bg = "#dcfce7";
       color = "#166534";
@@ -728,8 +824,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     } else {
       bg = "#fef3c7";
       color = "#92400e";
-      label = "\u26A0 Unknown name";
-      title = "No roster student matched this nickname";
+      label = tr("\u26A0 Unknown name");
+      title = tr("No roster student matched this nickname");
     }
     return /* @__PURE__ */ React.createElement("span", {
       title,
@@ -749,7 +845,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     {
       role: "dialog",
       "aria-modal": "true",
-      "aria-label": "Submission inbox",
+      "aria-label": tr("Submission inbox"),
       style: {
         position: "fixed",
         inset: 0,
@@ -789,19 +885,19 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
           /* @__PURE__ */ React.createElement(
             "h2",
             { style: { margin: 0, fontSize: "1.2rem", fontWeight: 900, color: "#1e293b", display: "flex", alignItems: "center", gap: 8 } },
-            "\u{1F4E5} Import student submissions"
+            tr("\u{1F4E5} Import student submissions")
           ),
           /* @__PURE__ */ React.createElement(
             "p",
             { style: { margin: "4px 0 0 0", fontSize: "0.85rem", color: "#64748b" } },
-            "Load your class key, then drop in the encrypted .alloflow.html files students sent you."
+            tr("Load your class key, then drop in the encrypted .alloflow.html files students sent you.")
           )
         ),
         /* @__PURE__ */ React.createElement("button", {
           type: "button",
           onClick: onClose,
           style: { padding: "6px 10px", border: "none", background: "transparent", color: "#475569", cursor: "pointer", fontSize: "1.4rem", lineHeight: 1, borderRadius: 6 },
-          "aria-label": "Close"
+          "aria-label": tr("Close")
         }, "\xD7")
       ),
       // Body
@@ -818,24 +914,24 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             /* @__PURE__ */ React.createElement(
               "div",
               null,
-              /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#1e3a8a", marginBottom: 2 } }, "1. Class key file"),
+              /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#1e3a8a", marginBottom: 2 } }, tr("1. Class key file")),
               privateJwk ? /* @__PURE__ */ React.createElement(
                 "div",
                 { style: { fontSize: "0.85rem", color: "#1e40af" } },
-                "\u2713 Loaded",
+                tr("\u2713 Loaded"),
                 classKeyMeta?.className ? ' for "' + classKeyMeta.className + '"' : "",
                 classKeyMeta?.createdAt ? " (created " + classKeyMeta.createdAt.slice(0, 10) + ")" : ""
               ) : /* @__PURE__ */ React.createElement(
                 "div",
                 { style: { fontSize: "0.85rem", color: "#64748b" } },
-                "Pick the class-key_*.alloflow file you saved when setting up offline submissions."
+                tr("Pick the class-key_*.alloflow file you saved when setting up offline submissions.")
               )
             ),
             /* @__PURE__ */ React.createElement("button", {
               type: "button",
               onClick: () => keyInputRef.current?.click(),
               style: { padding: "8px 16px", background: privateJwk ? "#f1f5f9" : "#2563eb", color: privateJwk ? "#475569" : "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.88rem" }
-            }, privateJwk ? "\u{1F501} Load different key" : "\u{1F511} Load class key")
+            }, privateJwk ? tr("\u{1F501} Load different key") : tr("\u{1F511} Load class key"))
           ),
           /* @__PURE__ */ React.createElement("input", {
             ref: keyInputRef,
@@ -843,7 +939,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             accept: ".alloflow,application/json",
             onChange: handleKeyFile,
             style: { display: "none" },
-            "aria-label": "Class key file"
+            "aria-label": tr("Class key file")
           })
         ),
         // Step 2: submission files
@@ -856,11 +952,11 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             /* @__PURE__ */ React.createElement(
               "div",
               null,
-              /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#166534", marginBottom: 2 } }, "2. Student submission files"),
+              /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#166534", marginBottom: 2 } }, tr("2. Student submission files")),
               /* @__PURE__ */ React.createElement(
                 "div",
                 { style: { fontSize: "0.85rem", color: "#475569" } },
-                queue.length === 0 ? "Select the files students saved \u2014 encrypted .alloflow.html (needs the class key) or plain .json (no key needed)." : queue.length + " file" + (queue.length === 1 ? "" : "s") + " loaded \xB7 " + (counts.decrypted || 0) + " decrypted \xB7 " + (counts.pending || 0) + " pending \xB7 " + (counts.error || 0) + " error"
+                queue.length === 0 ? tr("Select the files students saved \u2014 encrypted .alloflow.html (needs the class key) or plain .json (no key needed).") : queue.length + " file" + (queue.length === 1 ? "" : "s") + " loaded \xB7 " + (counts.decrypted || 0) + " decrypted \xB7 " + (counts.pending || 0) + " pending \xB7 " + (counts.error || 0) + " error"
               )
             ),
             /* @__PURE__ */ React.createElement(
@@ -870,12 +966,12 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                 type: "button",
                 onClick: () => subInputRef.current?.click(),
                 style: { padding: "8px 16px", background: "#16a34a", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.88rem" }
-              }, "\uFF0B Add submissions"),
+              }, tr("\uFF0B Add submissions")),
               queue.length > 0 && /* @__PURE__ */ React.createElement("button", {
                 type: "button",
                 onClick: clearQueue,
                 style: { padding: "8px 12px", background: "#f1f5f9", color: "#475569", border: "1px solid #cbd5e1", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
-              }, "Clear")
+              }, tr("Clear"))
             )
           ),
           /* @__PURE__ */ React.createElement("input", {
@@ -885,7 +981,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             multiple: true,
             onChange: handleSubmissionFiles,
             style: { display: "none" },
-            "aria-label": "Submission files"
+            "aria-label": tr("Submission files")
           })
         ),
         // Class rubric panel — shown whenever ≥1 row is decrypted. Optional
@@ -903,8 +999,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                 onClick: () => setGlobalRubricOpen(!globalRubricOpen),
                 style: { display: "inline-flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", padding: 0, fontWeight: 700, color: "#3730a3", fontSize: "0.9rem" }
               },
-              "\u{1F3AF} Class rubric",
-              (globalRubric.rubric || "").trim() && /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "1px 8px", borderRadius: 999, background: "#c7d2fe", color: "#3730a3", fontSize: "0.7rem", fontWeight: 700 } }, "\u2713 set"),
+              tr("\u{1F3AF} Class rubric"),
+              (globalRubric.rubric || "").trim() && /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "1px 8px", borderRadius: 999, background: "#c7d2fe", color: "#3730a3", fontSize: "0.7rem", fontWeight: 700 } }, tr("\u2713 set")),
               /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.75rem", fontWeight: 600, color: "#6366f1" } }, globalRubricOpen ? "\u25BE" : "\u25B8")
             ),
             /* @__PURE__ */ React.createElement(
@@ -914,7 +1010,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                 type: "button",
                 onClick: gradeAllDecrypted,
                 disabled: (counts.decrypted || 0) === 0 || !(globalRubric.rubric || "").trim(),
-                title: (globalRubric.rubric || "").trim() ? "Grade every decrypted submission in the queue with this rubric" : "Set a class rubric first",
+                title: (globalRubric.rubric || "").trim() ? tr("Grade every decrypted submission in the queue with this rubric") : tr("Set a class rubric first"),
                 style: {
                   padding: "8px 16px",
                   background: (counts.decrypted || 0) === 0 || !(globalRubric.rubric || "").trim() ? "#cbd5e1" : "#4f46e5",
@@ -931,7 +1027,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                 return gradedCount > 0 && /* @__PURE__ */ React.createElement("button", {
                   type: "button",
                   onClick: saveAllGradedToGradebook,
-                  title: "Write every graded submission to the local gradebook",
+                  title: tr("Write every graded submission to the local gradebook"),
                   style: { padding: "8px 16px", background: "#16a34a", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
                 }, "\u{1F4BE} Save all graded (" + gradedCount + ")");
               })(),
@@ -950,26 +1046,26 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
           globalRubricOpen && /* @__PURE__ */ React.createElement(
             "div",
             { style: { marginTop: 12, paddingTop: 12, borderTop: "1px solid #c7d2fe" } },
-            /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.78rem", color: "#3730a3", fontWeight: 600, marginBottom: 4 } }, "Rubric for this batch \u2014 what does full credit look like?"),
+            /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.78rem", color: "#3730a3", fontWeight: 600, marginBottom: 4 } }, tr("Rubric for this batch \u2014 what does full credit look like?")),
             /* @__PURE__ */ React.createElement("textarea", {
               value: globalRubric.rubric,
               onChange: (e) => setGlobalRubric((prev) => ({ ...prev, rubric: e.target.value })),
-              placeholder: 'e.g., "Each response should name the main idea, cite at least one specific detail from the text, and explain reasoning in 2-3 complete sentences."',
+              placeholder: tr('e.g., "Each response should name the main idea, cite at least one specific detail from the text, and explain reasoning in 2-3 complete sentences."'),
               rows: 3,
               style: { width: "100%", padding: 8, border: "1px solid #c7d2fe", borderRadius: 6, fontSize: "0.88rem", fontFamily: "inherit", resize: "vertical", marginBottom: 10 }
             }),
-            /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.78rem", color: "#3730a3", fontWeight: 600, marginBottom: 4 } }, "Assignment context (optional)"),
+            /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.78rem", color: "#3730a3", fontWeight: 600, marginBottom: 4 } }, tr("Assignment context (optional)")),
             /* @__PURE__ */ React.createElement("input", {
               type: "text",
               value: globalRubric.context,
               onChange: (e) => setGlobalRubric((prev) => ({ ...prev, context: e.target.value })),
-              placeholder: 'e.g., "Reading response to chapter 3"',
+              placeholder: tr('e.g., "Reading response to chapter 3"'),
               style: { width: "100%", padding: "6px 8px", border: "1px solid #c7d2fe", borderRadius: 6, fontSize: "0.85rem", marginBottom: 8 }
             }),
             /* @__PURE__ */ React.createElement(
               "div",
               { style: { fontSize: "0.78rem", color: "#475569" } },
-              'This rubric is used by "Grade entire queue" and as the default for each per-submission Grade button. Per-submission rubrics still override the global one when set.'
+              tr('This rubric is used by "Grade entire queue" and as the default for each per-submission Grade button. Per-submission rubrics still override the global one when set.')
             ),
             // Named preset library — save/load named rubric+anchor sets across sessions
             /* @__PURE__ */ React.createElement(
@@ -978,7 +1074,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               /* @__PURE__ */ React.createElement(
                 "div",
                 { style: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" } },
-                /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.78rem", fontWeight: 700, color: "#3730a3", marginRight: 4 } }, "\u{1F4CB} Presets:"),
+                /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.78rem", fontWeight: 700, color: "#3730a3", marginRight: 4 } }, tr("\u{1F4CB} Presets:")),
                 /* @__PURE__ */ React.createElement("input", {
                   type: "text",
                   value: presetNameInput,
@@ -989,14 +1085,14 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                       savePreset();
                     }
                   },
-                  placeholder: 'Name this preset (e.g. "Reading response Ch.3")',
+                  placeholder: tr('Name this preset (e.g. "Reading response Ch.3")'),
                   style: { flex: 1, minWidth: 180, padding: "5px 10px", border: "1px solid #c7d2fe", borderRadius: 6, fontSize: "0.8rem" }
                 }),
                 /* @__PURE__ */ React.createElement("button", {
                   type: "button",
                   onClick: savePreset,
                   disabled: !presetNameInput.trim() || !globalRubric.rubric.trim() && anchors.length === 0,
-                  title: "Save the current rubric + context + anchors as a named preset.",
+                  title: tr("Save the current rubric + context + anchors as a named preset."),
                   style: {
                     padding: "5px 12px",
                     background: !presetNameInput.trim() || !globalRubric.rubric.trim() && anchors.length === 0 ? "#cbd5e1" : "#4f46e5",
@@ -1007,34 +1103,34 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                     fontSize: "0.78rem",
                     cursor: !presetNameInput.trim() || !globalRubric.rubric.trim() && anchors.length === 0 ? "not-allowed" : "pointer"
                   }
-                }, "\u{1F4BE} Save"),
+                }, tr("\u{1F4BE} Save")),
                 /* @__PURE__ */ React.createElement("button", {
                   type: "button",
                   onClick: () => presetImportRef.current?.click(),
-                  title: "Import presets from a JSON file (e.g. shared by another teacher).",
+                  title: tr("Import presets from a JSON file (e.g. shared by another teacher)."),
                   style: { padding: "5px 10px", background: "white", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontWeight: 600, fontSize: "0.74rem", cursor: "pointer" }
-                }, "\u2B06 Import"),
+                }, tr("\u2B06 Import")),
                 /* @__PURE__ */ React.createElement("input", {
                   ref: presetImportRef,
                   type: "file",
                   accept: ".json,application/json",
                   onChange: importPresets,
                   style: { display: "none" },
-                  "aria-label": "Import presets JSON"
+                  "aria-label": tr("Import presets JSON")
                 }),
                 Object.keys(rubricPresets).length > 0 && /* @__PURE__ */ React.createElement("button", {
                   type: "button",
                   onClick: exportPresets,
-                  title: "Export all your presets as a JSON file you can share or back up.",
+                  title: tr("Export all your presets as a JSON file you can share or back up."),
                   style: { padding: "5px 10px", background: "white", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontWeight: 600, fontSize: "0.74rem", cursor: "pointer" }
-                }, "\u2B07 Export"),
+                }, tr("\u2B07 Export")),
                 Object.keys(rubricPresets).length > 0 && /* @__PURE__ */ React.createElement(
                   "div",
                   { style: { position: "relative" } },
                   /* @__PURE__ */ React.createElement("button", {
                     type: "button",
                     onClick: () => setPresetsMenuOpen(!presetsMenuOpen),
-                    title: "Load a saved preset",
+                    title: tr("Load a saved preset"),
                     style: { padding: "5px 12px", background: "white", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }
                   }, "\u{1F4C2} Load (" + Object.keys(rubricPresets).length + ") " + (presetsMenuOpen ? "\u25B4" : "\u25BE")),
                   presetsMenuOpen && /* @__PURE__ */ React.createElement(
@@ -1068,7 +1164,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                           e.stopPropagation();
                           if (confirm('Delete preset "' + p.name + '"?')) deletePreset(key);
                         },
-                        title: "Delete this preset",
+                        title: tr("Delete this preset"),
                         style: { padding: "2px 8px", background: "transparent", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.7rem", cursor: "pointer" }
                       }, "\u2717")
                     ))
@@ -1078,7 +1174,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               /* @__PURE__ */ React.createElement(
                 "div",
                 { style: { marginTop: 6, fontSize: "0.72rem", color: "#64748b" } },
-                'Presets save the rubric + context + every calibration anchor as a named set. Pick a name like "Reading response", "Math word problem", "Lab report" so you can load the right calibration when the same assignment comes back.'
+                tr('Presets save the rubric + context + every calibration anchor as a named set. Pick a name like "Reading response", "Math word problem", "Lab report" so you can load the right calibration when the same assignment comes back.')
               )
             ),
             (savedSessionMeta || (globalRubric.rubric || "").trim() || anchors.length > 0) && /* @__PURE__ */ React.createElement(
@@ -1087,14 +1183,14 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               /* @__PURE__ */ React.createElement(
                 "span",
                 null,
-                savedSessionMeta ? "\u{1F4BE} Restored from saved session (" + new Date(savedSessionMeta.savedAt).toLocaleString() + "). Auto-saves on every change." : "\u{1F4BE} Auto-saves your rubric + anchors so they persist across browser refreshes."
+                savedSessionMeta ? "\u{1F4BE} Restored from saved session (" + new Date(savedSessionMeta.savedAt).toLocaleString() + "). Auto-saves on every change." : tr("\u{1F4BE} Auto-saves your rubric + anchors so they persist across browser refreshes.")
               ),
               /* @__PURE__ */ React.createElement("button", {
                 type: "button",
                 onClick: clearSavedSession,
-                title: "Clear the auto-saved rubric and anchors",
+                title: tr("Clear the auto-saved rubric and anchors"),
                 style: { padding: "4px 10px", background: "transparent", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontSize: "0.74rem", fontWeight: 600, cursor: "pointer" }
-              }, "Clear saved session")
+              }, tr("Clear saved session"))
             )
           )
         ),
@@ -1113,7 +1209,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                 onClick: () => setGradebookOpen(!gradebookOpen),
                 style: { display: "inline-flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", padding: 0, fontWeight: 700, color: "#166534", fontSize: "0.9rem" }
               },
-              "\u{1F4CA} Gradebook",
+              tr("\u{1F4CA} Gradebook"),
               /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "1px 8px", borderRadius: 999, background: "#bbf7d0", color: "#166534", fontSize: "0.7rem", fontWeight: 700 } }, gradebookEntries.length + " saved"),
               /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.75rem", fontWeight: 600, color: "#16a34a" } }, gradebookOpen ? "\u25BE" : "\u25B8")
             ),
@@ -1127,19 +1223,19 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                   type: "button",
                   onClick: () => setGradebookGroupBy("submission"),
                   style: { padding: "4px 10px", background: gradebookGroupBy === "submission" ? "#16a34a" : "transparent", color: gradebookGroupBy === "submission" ? "white" : "#166534", border: "none", borderRadius: 4, cursor: "pointer", fontWeight: 700 }
-                }, "Submissions"),
+                }, tr("Submissions")),
                 /* @__PURE__ */ React.createElement("button", {
                   type: "button",
                   onClick: () => setGradebookGroupBy("student"),
                   style: { padding: "4px 10px", background: gradebookGroupBy === "student" ? "#16a34a" : "transparent", color: gradebookGroupBy === "student" ? "white" : "#166534", border: "none", borderRadius: 4, cursor: "pointer", fontWeight: 700 }
-                }, "By student")
+                }, tr("By student"))
               ),
               /* @__PURE__ */ React.createElement("button", {
                 type: "button",
                 onClick: exportGradebookCsv,
-                title: "Download all saved grades as a CSV spreadsheet",
+                title: tr("Download all saved grades as a CSV spreadsheet"),
                 style: { padding: "6px 12px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
-              }, "\u2B07 Export CSV")
+              }, tr("\u2B07 Export CSV"))
             )
           ),
           gradebookOpen && /* @__PURE__ */ React.createElement(
@@ -1148,7 +1244,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             gradebookEntries.length === 0 ? /* @__PURE__ */ React.createElement(
               "div",
               { style: { fontSize: "0.85rem", color: "#166534", fontStyle: "italic" } },
-              'No saved grades yet. Grade some submissions and click "\u{1F4BE} Save all graded" or the per-row "Save to gradebook" button to populate this list.'
+              tr('No saved grades yet. Grade some submissions and click "\u{1F4BE} Save all graded" or the per-row "Save to gradebook" button to populate this list.')
             ) : /* @__PURE__ */ React.createElement(
               "div",
               null,
@@ -1166,8 +1262,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                       { style: { background: "#f0fdf4", borderBottom: "1px solid #bbf7d0" } },
                       /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? "Student" : "Nickname"),
                       /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? "Submissions" : "Document"),
-                      /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? "Avg of avgs" : "Avg"),
-                      /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? "Last graded" : "Graded"),
+                      /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? tr("Avg of avgs") : "Avg"),
+                      /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "8px 12px", fontWeight: 700, color: "#166534", fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, gradebookGroupBy === "student" ? tr("Last graded") : "Graded"),
                       /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "8px 12px" } }, "")
                     )
                   ),
@@ -1220,7 +1316,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                             /* @__PURE__ */ React.createElement(
                               "td",
                               { style: { padding: "8px 12px", textAlign: "right", fontSize: "0.72rem", color: "#475569" } },
-                              isExpanded ? "click to collapse" : "click for detail"
+                              isExpanded ? tr("click to collapse") : tr("click for detail")
                             )
                           ),
                           isExpanded && s.entries.map((entry, j) => {
@@ -1256,7 +1352,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                                     e.stopPropagation();
                                     deleteGradebookEntry(entry.key);
                                   },
-                                  title: "Remove from local gradebook",
+                                  title: tr("Remove from local gradebook"),
                                   style: { padding: "2px 8px", background: "transparent", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.7rem", cursor: "pointer" }
                                 }, "\u2717")
                               )
@@ -1299,7 +1395,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                           /* @__PURE__ */ React.createElement("button", {
                             type: "button",
                             onClick: () => deleteGradebookEntry(entry.key),
-                            title: "Remove from local gradebook",
+                            title: tr("Remove from local gradebook"),
                             style: { padding: "4px 10px", background: "transparent", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.74rem", cursor: "pointer" }
                           }, "\u2717")
                         )
@@ -1311,7 +1407,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               /* @__PURE__ */ React.createElement(
                 "div",
                 { style: { marginTop: 8, fontSize: "0.78rem", color: "#166534" } },
-                "Saved locally in your browser. Export CSV to push to Sheets / your grade system. AlloFlow does not upload these grades anywhere."
+                tr("Saved locally in your browser. Export CSV to push to Sheets / your grade system. AlloFlow does not upload these grades anywhere.")
               )
             )
           )
@@ -1336,7 +1432,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             /* @__PURE__ */ React.createElement(
               "div",
               { style: { fontSize: "0.78rem", color: "#92400e" } },
-              anchors.length === 0 ? "Tap \u{1F4CC} on any decrypted response to teach the AI your scoring direction." : "Each AI grading run will use these " + anchors.length + " anchor" + (anchors.length === 1 ? "" : "s") + " as few-shot examples."
+              anchors.length === 0 ? tr("Tap \u{1F4CC} on any decrypted response to teach the AI your scoring direction.") : "Each AI grading run will use these " + anchors.length + " anchor" + (anchors.length === 1 ? "" : "s") + " as few-shot examples."
             )
           ),
           anchorsPanelOpen && /* @__PURE__ */ React.createElement(
@@ -1345,7 +1441,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             anchors.length === 0 ? /* @__PURE__ */ React.createElement(
               "div",
               { style: { fontSize: "0.85rem", color: "#92400e", fontStyle: "italic" } },
-              "No anchors yet. Anchors are individual student responses you score by hand; the AI uses them as calibration examples when grading every other response. 3-5 anchors that span the score range usually gives the best results."
+              tr("No anchors yet. Anchors are individual student responses you score by hand; the AI uses them as calibration examples when grading every other response. 3-5 anchors that span the score range usually gives the best results.")
             ) : /* @__PURE__ */ React.createElement(
               "div",
               null,
@@ -1362,7 +1458,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                 /* @__PURE__ */ React.createElement("button", {
                   type: "button",
                   onClick: () => removeAnchor(i),
-                  title: "Remove this anchor",
+                  title: tr("Remove this anchor"),
                   style: { padding: "2px 8px", background: "transparent", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.75rem", cursor: "pointer", flexShrink: 0 }
                 }, "\u2717")
               )),
@@ -1373,11 +1469,11 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                   type: "button",
                   onClick: clearAnchors,
                   style: { padding: "4px 10px", background: "transparent", color: "#92400e", border: "1px solid #fde68a", borderRadius: 6, fontSize: "0.75rem", fontWeight: 600, cursor: "pointer", marginRight: 8 }
-                }, "Clear all"),
+                }, tr("Clear all")),
                 /* @__PURE__ */ React.createElement(
                   "span",
                   { style: { color: "#b45309" } },
-                  "Tip: anchor responses spanning the full score range (e.g. one 95, one 70, one 40) for the most accurate AI calibration."
+                  tr("Tip: anchor responses spanning the full score range (e.g. one 95, one 70, one 40) for the most accurate AI calibration.")
                 )
               )
             )
@@ -1406,14 +1502,14 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
           /* @__PURE__ */ React.createElement(
             "span",
             { style: { fontSize: "0.85rem", color: "#64748b" } },
-            "Each submission is decrypted in your browser. Nothing leaves this device."
+            tr("Each submission is decrypted in your browser. Nothing leaves this device.")
           )
         ),
         // Queue table
         queue.length === 0 ? /* @__PURE__ */ React.createElement(
           "div",
           { style: { padding: "40px 20px", textAlign: "center", color: "#475569", fontSize: "0.95rem", border: "2px dashed #e2e8f0", borderRadius: 12 } },
-          "No submissions loaded yet. Load your class key, then add files."
+          tr("No submissions loaded yet. Load your class key, then add files.")
         ) : /* @__PURE__ */ React.createElement(
           "div",
           { style: { border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden" } },
@@ -1426,9 +1522,9 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               /* @__PURE__ */ React.createElement(
                 "tr",
                 { style: { background: "#f8fafc", borderBottom: "1px solid #e2e8f0" } },
-                /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Nickname"),
-                /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Document"),
-                /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, "Status"),
+                /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Nickname")),
+                /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Document")),
+                /* @__PURE__ */ React.createElement("th", { style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Status")),
                 /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, "")
               )
             ),
@@ -1465,7 +1561,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                       const lastDate = others.map((p) => p.gradedAt).filter(Boolean).sort().pop();
                       return /* @__PURE__ */ React.createElement("div", {
                         style: { marginTop: 4, display: "inline-block", padding: "2px 8px", borderRadius: 999, background: "#fef3c7", color: "#92400e", fontSize: "0.7rem", fontWeight: 600 },
-                        title: "This student already has " + others.length + " graded submission" + (others.length === 1 ? "" : "s") + " for this document in the gradebook. Most recent: " + (lastDate ? new Date(lastDate).toLocaleString() : "unknown")
+                        title: tr("This student already has ") + others.length + " graded submission" + (others.length === 1 ? "" : "s") + " for this document in the gradebook. Most recent: " + (lastDate ? new Date(lastDate).toLocaleString() : "unknown")
                       }, "\u{1F501} Previously graded" + (others.length > 1 ? " (" + others.length + "x)" : "") + (lastDate ? " " + new Date(lastDate).toLocaleDateString() : ""));
                     })()
                   ),
@@ -1481,7 +1577,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                       type: "button",
                       onClick: () => removeRow(idx),
                       style: { padding: "4px 10px", background: "transparent", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.78rem", cursor: "pointer" }
-                    }, "Remove")
+                    }, tr("Remove"))
                   )
                 ),
                 expandedRow === idx && row.payload && /* @__PURE__ */ React.createElement(
@@ -1498,7 +1594,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                         { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" } },
                         "Decrypted responses (" + Object.keys(row.payload.responses || {}).length + ")"
                       ),
-                      Object.keys(row.payload.responses || {}).length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: "#475569", fontSize: "0.85rem" } }, "No responses captured.") : Object.entries(row.payload.responses).map(([k, v], i) => {
+                      Object.keys(row.payload.responses || {}).length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: "#475569", fontSize: "0.85rem" } }, tr("No responses captured.")) : Object.entries(row.payload.responses).map(([k, v], i) => {
                         const g = (grades[idx] || {})[k];
                         const sc = g ? scoreColor(g.score) : null;
                         const isAnchored = isResponseAnchored(idx, k);
@@ -1522,9 +1618,9 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                             ) : /* @__PURE__ */ React.createElement("button", {
                               type: "button",
                               onClick: () => openAnchorForm(idx, k, String(v)),
-                              title: "Mark this response as a calibration anchor. The AI will use it as an example to match your scoring.",
+                              title: tr("Mark this response as a calibration anchor. The AI will use it as an example to match your scoring."),
                               style: { padding: "2px 8px", background: "#fffbeb", color: "#92400e", border: "1px solid #fcd34d", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }
-                            }, "\u{1F4CC} Anchor"))
+                            }, tr("\u{1F4CC} Anchor")))
                           ),
                           g && /* @__PURE__ */ React.createElement(
                             "div",
@@ -1541,43 +1637,43 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                         /* @__PURE__ */ React.createElement(
                           "div",
                           { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" } },
-                          "\u{1F3AF} AI Grade with rubric"
+                          tr("\u{1F3AF} AI Grade with rubric")
                         ),
                         /* @__PURE__ */ React.createElement(
                           "label",
                           { style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } },
-                          "Rubric (what full credit looks like)",
-                          (globalRubric.rubric || "").trim() && !(rubrics[idx] && rubrics[idx].rubric || "").trim() ? /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: "#475569", marginLeft: 6, fontSize: "0.72rem" } }, "\u2014 using class rubric above (override here for this submission only)") : null
+                          tr("Rubric (what full credit looks like)"),
+                          (globalRubric.rubric || "").trim() && !(rubrics[idx] && rubrics[idx].rubric || "").trim() ? /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: "#475569", marginLeft: 6, fontSize: "0.72rem" } }, tr("\u2014 using class rubric above (override here for this submission only)")) : null
                         ),
                         /* @__PURE__ */ React.createElement("textarea", {
                           value: rubrics[idx] && rubrics[idx].rubric || "",
                           onChange: (e) => updateRubric(idx, { rubric: e.target.value }),
-                          placeholder: (globalRubric.rubric || "").trim() ? globalRubric.rubric : 'e.g., "Explains the main idea in their own words, cites at least one detail from the text, uses complete sentences."',
+                          placeholder: (globalRubric.rubric || "").trim() ? globalRubric.rubric : tr('e.g., "Explains the main idea in their own words, cites at least one detail from the text, uses complete sentences."'),
                           rows: 3,
                           style: { width: "100%", padding: "8px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.85rem", fontFamily: "inherit", resize: "vertical", marginBottom: 8 }
                         }),
-                        /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } }, "Assignment context (optional)"),
+                        /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } }, tr("Assignment context (optional)")),
                         /* @__PURE__ */ React.createElement("input", {
                           type: "text",
                           value: rubrics[idx] && rubrics[idx].context || "",
                           onChange: (e) => updateRubric(idx, { context: e.target.value }),
-                          placeholder: 'e.g., "Reading response to chapter 3"',
+                          placeholder: tr('e.g., "Reading response to chapter 3"'),
                           style: { width: "100%", padding: "6px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.85rem", marginBottom: 8 }
                         }),
                         /* @__PURE__ */ React.createElement(
                           "label",
                           { style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } },
-                          "Quick exemplar (optional) ",
+                          tr("Quick exemplar (optional) "),
                           /* @__PURE__ */ React.createElement(
                             "span",
                             { style: { fontWeight: 400, color: "#475569", fontSize: "0.75rem" } },
-                            anchors.length > 0 ? "\u2014 " + anchors.length + " calibration anchor" + (anchors.length === 1 ? "" : "s") + " active (\u{1F4CC} panel above). Anchors apply across all submissions; this exemplar adds one more locally." : "\u2014 or tap \u{1F4CC} on a real student response above to anchor it (multi-anchor calibration)."
+                            anchors.length > 0 ? "\u2014 " + anchors.length + " calibration anchor" + (anchors.length === 1 ? "" : "s") + " active (\u{1F4CC} panel above). Anchors apply across all submissions; this exemplar adds one more locally." : tr("\u2014 or tap \u{1F4CC} on a real student response above to anchor it (multi-anchor calibration).")
                           )
                         ),
                         /* @__PURE__ */ React.createElement("textarea", {
                           value: rubrics[idx] && rubrics[idx].exemplar || "",
                           onChange: (e) => updateRubric(idx, { exemplar: e.target.value }),
-                          placeholder: "Paste an example of a 95/100 response so the AI matches your scoring.",
+                          placeholder: tr("Paste an example of a 95/100 response so the AI matches your scoring."),
                           rows: 2,
                           style: { width: "100%", padding: "8px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.85rem", fontFamily: "inherit", resize: "vertical", marginBottom: 8 }
                         }),
@@ -1589,12 +1685,12 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                             onClick: () => gradeRow(idx),
                             disabled: gradingRow === idx,
                             style: { padding: "8px 16px", background: "#7c3aed", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: gradingRow === idx ? "wait" : "pointer", opacity: gradingRow === idx ? 0.6 : 1 }
-                          }, gradingRow === idx ? "Grading\u2026" : "\u{1F3AF} Grade responses"),
+                          }, gradingRow === idx ? "Grading\u2026" : tr("\u{1F3AF} Grade responses")),
                           Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement("button", {
                             type: "button",
                             onClick: () => saveRowToGradebook(idx),
                             style: { padding: "8px 16px", background: "#16a34a", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
-                          }, "\u{1F4BE} Save to gradebook"),
+                          }, tr("\u{1F4BE} Save to gradebook")),
                           Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement(
                             "span",
                             { style: { fontSize: "0.78rem", color: "#64748b" } },
@@ -1617,7 +1713,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
         /* @__PURE__ */ React.createElement(
           "div",
           { style: { fontSize: "0.8rem", color: "#64748b" } },
-          (counts.decrypted || 0) > 0 ? 'Click "View" on a row to grade it with an AI rubric and save the result to your local gradebook.' : "Decrypt the queue to see student responses."
+          (counts.decrypted || 0) > 0 ? tr('Click "View" on a row to grade it with an AI rubric and save the result to your local gradebook.') : tr("Decrypt the queue to see student responses.")
         ),
         /* @__PURE__ */ React.createElement(
           "div",
@@ -1626,7 +1722,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
             type: "button",
             onClick: onClose,
             style: { padding: "8px 18px", background: "#f1f5f9", color: "#475569", border: "1px solid #cbd5e1", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontSize: "0.9rem" }
-          }, "Close")
+          }, tr("Close"))
         )
       ),
       // Pending anchor inline form (nested overlay)
@@ -1635,25 +1731,25 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
         {
           role: "dialog",
           "aria-modal": "true",
-          "aria-label": "Score this response as a calibration anchor",
+          "aria-label": tr("Score this response as a calibration anchor"),
           style: { position: "absolute", inset: 0, background: "rgba(15,23,42,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, zIndex: 10 }
         },
         /* @__PURE__ */ React.createElement(
           "div",
           { style: { background: "white", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.25)", maxWidth: 540, width: "100%", padding: "20px 24px", border: "2px solid #fde68a" } },
-          /* @__PURE__ */ React.createElement("h3", { style: { margin: "0 0 8px 0", fontSize: "1.05rem", fontWeight: 800, color: "#92400e" } }, "\u{1F4CC} Anchor this response"),
+          /* @__PURE__ */ React.createElement("h3", { style: { margin: "0 0 8px 0", fontSize: "1.05rem", fontWeight: 800, color: "#92400e" } }, tr("\u{1F4CC} Anchor this response")),
           /* @__PURE__ */ React.createElement(
             "p",
             { style: { margin: "0 0 12px 0", fontSize: "0.85rem", color: "#64748b" } },
-            "Give this response a score. The AI will use it as a calibration example when grading every other response."
+            tr("Give this response a score. The AI will use it as a calibration example when grading every other response.")
           ),
           /* @__PURE__ */ React.createElement(
             "div",
             { style: { background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "10px 12px", marginBottom: 14, fontSize: "0.85rem", color: "#1e293b", maxHeight: 120, overflowY: "auto" } },
-            /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "#475569", fontWeight: 700, marginBottom: 4 } }, "Student response"),
+            /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "#475569", fontWeight: 700, marginBottom: 4 } }, tr("Student response")),
             pendingAnchor.responseText
           ),
-          /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.8rem", fontWeight: 700, color: "#475569", marginBottom: 4 } }, "Score (0-100)"),
+          /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.8rem", fontWeight: 700, color: "#475569", marginBottom: 4 } }, tr("Score (0-100)")),
           /* @__PURE__ */ React.createElement(
             "div",
             { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 14 } },
@@ -1675,11 +1771,11 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               style: { width: 70, padding: "4px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.9rem", textAlign: "center" }
             })
           ),
-          /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.8rem", fontWeight: 700, color: "#475569", marginBottom: 4 } }, "Note (optional \u2014 tells the AI why this got that score)"),
+          /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: "0.8rem", fontWeight: 700, color: "#475569", marginBottom: 4 } }, tr("Note (optional \u2014 tells the AI why this got that score)")),
           /* @__PURE__ */ React.createElement("textarea", {
             value: pendingAnchor.feedback,
             onChange: (e) => setPendingAnchor({ ...pendingAnchor, feedback: e.target.value }),
-            placeholder: 'e.g., "Clear evidence + reasoning, but missed the counter-argument."',
+            placeholder: tr('e.g., "Clear evidence + reasoning, but missed the counter-argument."'),
             rows: 2,
             style: { width: "100%", padding: 8, border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.85rem", fontFamily: "inherit", resize: "vertical", marginBottom: 16 }
           }),
@@ -1690,12 +1786,12 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               type: "button",
               onClick: cancelPendingAnchor,
               style: { padding: "8px 16px", background: "#f1f5f9", color: "#475569", border: "1px solid #cbd5e1", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontSize: "0.88rem" }
-            }, "Cancel"),
+            }, tr("Cancel")),
             /* @__PURE__ */ React.createElement("button", {
               type: "button",
               onClick: confirmPendingAnchor,
               style: { padding: "8px 16px", background: "#f59e0b", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.88rem" }
-            }, "\u{1F4CC} Add anchor")
+            }, tr("\u{1F4CC} Add anchor"))
           )
         )
       )
