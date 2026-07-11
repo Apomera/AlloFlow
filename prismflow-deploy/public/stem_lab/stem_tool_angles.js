@@ -645,7 +645,7 @@ window.StemLab = window.StemLab || {
         var active = activeTab === id;
         return h('button', { onClick: function() { upd('activeTab', id); if (soundEnabled) sfxClick(); },
           role: 'tab', 'aria-selected': active,
-          className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
+          className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
             (active ? 'bg-purple-700 text-white shadow-md' : 'bg-white text-purple-600 hover:bg-purple-50 border border-purple-600')
         }, icon + ' ' + label);
       };
@@ -653,20 +653,67 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── RENDER ──
       // ══════════════════════════════════════════════════════════════
-      var __anglesMainView = h('div', { className: 'space-y-3 max-w-4xl mx-auto animate-in fade-in duration-200' },
+      var angleTabLabel = { explore: 'Explore', challenges: 'Challenges', reference: 'Learn', tools: 'Tools' }[activeTab] || 'Explore';
+      var angleNext = anglePins.length === 0
+        ? 'Estimate the angle, measure it precisely, then save the result as evidence.'
+        : activeTab === 'challenges'
+          ? 'Name the angle type before calculating its exact measure.'
+          : showBisector
+            ? 'Verify that the bisector creates two equal angles.'
+            : 'Compare this angle with a complementary, supplementary, or reflex partner.';
+
+      var __anglesMainView = h('div', { className: 'space-y-3 max-w-5xl mx-auto animate-in fade-in duration-200' },
 
         // ── Header ──
-        h('div', { className: 'flex items-center gap-3 mb-1' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors', 'aria-label': t('stem.angles.back_to_tools', 'Back to tools') },
-            h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-purple-800' }, t('stem.angles.angle_explorer', '\uD83D\uDCD0 Angle Explorer')),
-          // Score + streak
-          h('div', { className: 'flex items-center gap-2 ml-1' },
+        h('section', { 'data-protractor-command': 'true', className: 'overflow-hidden rounded-2xl border border-violet-300/40 bg-gradient-to-br from-slate-950 via-violet-950 to-fuchsia-950 text-white shadow-xl' },
+          h('div', { className: 'p-4 sm:p-5' },
+            h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-violet-300', 'aria-label': t('stem.angles.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                  h('span', { className: 'rounded-full bg-violet-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-violet-100 ring-1 ring-violet-200/30' }, 'Angle investigation studio')
+                ),
+                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.angles.angle_explorer', '\uD83D\uDCD0 Angle Explorer')),
+                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-violet-100' }, 'Estimate, construct, and justify angle relationships with precise visual evidence.'),
+                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-violet-200' }, 'Recommended next move'),
+                  h('p', { className: 'mt-1 text-sm font-semibold text-white' }, angleNext)
+                )
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                [
+                  { label: 'Focus', value: angleTabLabel },
+                  { label: 'Angle', value: String(convertedAngle) },
+                  { label: 'Pins', value: String(anglePins.length) }
+                ].map(function(metric) {
+                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                    h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-violet-200' }, metric.label)
+                  );
+                })
+              )
+            ),
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Angle reasoning pathway' },
+              [
+                { n: '1', title: 'Measure', detail: 'Align the vertex and read the scale.' },
+                { n: '2', title: 'Classify', detail: 'Name the angle by its measure.' },
+                { n: '3', title: 'Verify', detail: 'Check a relationship or construction.' }
+              ].map(function(step) {
+                return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                  h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-300 font-black text-slate-950' }, step.n),
+                  h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-violet-200' }, step.detail))
+                );
+              })
+            )
+          )
+        ),
+        h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+          h('div', { className: 'flex items-center gap-2' },
             h('div', { className: 'text-xs font-bold text-emerald-600' }, '\u2714 ' + exploreScore.correct + '/' + exploreScore.total),
             streak > 0 && h('div', { className: 'text-xs font-bold text-amber-700' }, '\uD83D\uDD25 ' + streak),
             bestStreak > 0 && h('div', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak)
           ),
-          h('div', { className: 'flex items-center gap-1 ml-auto' },
+          h('div', { className: 'flex items-center gap-1' },
             // Badge count
             h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadges ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200') },
               '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
@@ -707,7 +754,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Tab Navigation ──
-        h('div', { className: 'flex gap-2 flex-wrap', role: 'tablist', 'aria-label': t('stem.angles.angle_explorer_sections', 'Angle Explorer sections') },
+        h('div', { className: 'flex gap-2 overflow-x-auto', role: 'tablist', 'aria-label': t('stem.angles.angle_explorer_sections', 'Angle Explorer sections') },
           tabBtn('explore', 'Explore', '\uD83D\uDCD0'),
           tabBtn('challenges', 'Challenges', '\uD83C\uDFAF'),
           tabBtn('reference', 'Learn', '\uD83D\uDCDA'),
@@ -747,7 +794,7 @@ window.StemLab = window.StemLab || {
         // ══════════════════════════════════════════════════════════
         activeTab === 'explore' && h('div', { className: 'space-y-3' },
           // ── SVG Protractor ──
-          h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-3 flex justify-center relative' },
+          h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-2 sm:p-3 flex justify-center relative overflow-x-auto' },
             h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, convertedAngle + ', ' + angleClass + ' angle'), h('svg', { width: 400, height: 420, className: 'select-none', 'data-protractor-svg': true },
               // Outer circle + semi-circle fills
               h('circle', { cx: cx, cy: cy, r: r, fill: 'none', stroke: '#e9d5ff', strokeWidth: 1 }),
@@ -794,7 +841,7 @@ window.StemLab = window.StemLab || {
           ),
 
           // ── Controls row ──
-          h('div', { className: 'grid grid-cols-4 gap-2' },
+          h('div', { className: 'grid grid-cols-2 gap-2 sm:grid-cols-4' },
             h('div', { className: 'bg-white rounded-xl p-2.5 border border-purple-100 text-center' },
               h('div', { className: 'text-[11px] font-bold text-purple-600 uppercase mb-0.5' }, t('stem.angles.angle', 'Angle')),
               h('div', { className: 'text-xl font-bold text-purple-800' }, estimateActive ? '?' : convertedAngle)
