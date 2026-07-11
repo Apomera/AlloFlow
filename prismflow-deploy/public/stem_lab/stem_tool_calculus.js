@@ -1912,22 +1912,70 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         };
 
         // ── RENDER ───────────────────────────────────────────────────────
-        return h('div', { className: 'max-w-3xl mx-auto animate-in fade-in duration-200' },
+        var calcTabLabel = { integral: 'Integral', derivative: 'Derivative', visualize: 'Visualize', challenge: 'Challenge', discover: 'Discover' }[tab] || 'Integral';
+        var methodsTried = Object.keys(d.methodsUsed || {}).length;
+        var calcNext = tab === 'integral' && methodsTried < 2
+          ? 'Compare two approximation methods using the same function and interval.'
+          : tab === 'derivative'
+            ? 'Move the secant point closer and watch its slope approach the tangent slope.'
+            : tab === 'visualize'
+              ? 'Choose a view, change one control, and describe what stays invariant.'
+              : tab === 'challenge'
+                ? 'Solve one problem, then use the feedback to explain any error.'
+                : 'Connect rate and accumulation through the Fundamental Theorem.';
+
+        return h('div', { className: 'max-w-5xl mx-auto animate-in fade-in duration-200' },
 
           h('style', null, css),
 
           // Header
-          h('div', { className: 'flex items-center gap-3 mb-3' },
-            h('button', { onClick: function(){setStemLabTool(null);}, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': 'Back' }, h(ArrowLeft, {size:18,className:'text-slate-600'})),
-            h('h3', { className: 'text-lg font-bold text-slate-800' }, '\u222B Calculus'),
-            h('span', { className: 'px-2 py-0.5 bg-red-100 text-red-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
-            cScore > 0 && h('span', { className: 'ml-auto px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-full' }, '\u2B50 ' + cScore + ' | \uD83D\uDD25 ' + cStreak)
+          h('section', { 'data-calculus-command': 'true', className: 'mb-4 overflow-hidden rounded-2xl border border-sky-300/40 bg-gradient-to-br from-slate-950 via-sky-950 to-violet-950 text-white shadow-xl' },
+            h('div', { className: 'p-4 sm:p-5' },
+              h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
+                h('div', { className: 'min-w-0' },
+                  h('div', { className: 'flex items-center gap-2' },
+                    h('button', { onClick: function(){setStemLabTool(null);}, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-sky-300', 'aria-label': 'Back to tools' }, h(ArrowLeft, {size:18})),
+                    h('span', { className: 'rounded-full bg-sky-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-sky-100 ring-1 ring-sky-200/30' }, 'Concept studio')
+                  ),
+                  h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, '\u222B Calculus Explorer'),
+                  h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-sky-100' }, 'Connect change, accumulation, and limits through graphs, numerical evidence, and explanation.'),
+                  h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                    h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-sky-200' }, 'Recommended next move'),
+                    h('p', { className: 'mt-1 text-sm font-semibold text-white' }, calcNext)
+                  )
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                  [
+                    { label: 'Focus', value: calcTabLabel },
+                    { label: 'Resolution', value: String(nRects) },
+                    { label: 'Score', value: String(cScore) }
+                  ].map(function(metric) {
+                    return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                      h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                      h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-sky-200' }, metric.label)
+                    );
+                  })
+                )
+              ),
+              h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Calculus reasoning pathway' },
+                [
+                  { n: '1', title: 'Represent', detail: 'See the function and interval.' },
+                  { n: '2', title: 'Approximate', detail: 'Measure slope or accumulated area.' },
+                  { n: '3', title: 'Explain', detail: 'Connect the limit to an exact idea.' }
+                ].map(function(step) {
+                  return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                    h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-300 font-black text-slate-950' }, step.n),
+                    h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-sky-200' }, step.detail))
+                  );
+                })
+              )
+            )
           ),
 
           // Tab bar
-          h('div', { className: 'flex gap-0 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': 'Calculus Tool sections' },
+          h('div', { className: 'flex gap-0 mb-3 overflow-x-auto border-b border-slate-200', role: 'tablist', 'aria-label': 'Calculus Tool sections' },
             [['integral','\u222B Integral'],['derivative','\uD83D\uDCC8 Derivative'],['visualize','\uD83C\uDFAC Visualize'],['challenge','\uD83C\uDFAF Challenge'],['discover','\uD83D\uDD2C Discover']].map(function(item){
-              return h('button',{ key:item[0],onClick:function(){upd('tab',item[0]);},role:'tab','aria-selected':tab===item[0],className:'px-3 py-1.5 text-xs font-bold transition-all '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':'text-slate-600 hover:text-slate-700')},item[1]);
+              return h('button',{ key:item[0],onClick:function(){upd('tab',item[0]);},role:'tab','aria-selected':tab===item[0],className:'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-red-400 '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':'text-slate-600 hover:text-slate-700')},item[1]);
             })
           ),
 
