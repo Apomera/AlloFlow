@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-70033-the-history-of-magic-b-including-a-clear-and-precise-exposition-",
-  "title": "The history of magic : $b including a clear and precise exposition of its procedure, its rites and its mysteries",
+  "title": "The history of magic: including a clear and precise exposition of its procedure, its rites and its mysteries",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"The history of magic : $b including a clear and precise exposition of its procedure, its rites and its mysteries\" by Lévi, Éliphas. Metadata tags include: Magic -- History."
+      "text": "Project Gutenberg catalog record for \"The history of magic: including a clear and precise exposition of its procedure, its rites and its mysteries\" by Lévi, Éliphas. Metadata tags include: Magic -- History."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 79
+    "words": 77
   }
 }

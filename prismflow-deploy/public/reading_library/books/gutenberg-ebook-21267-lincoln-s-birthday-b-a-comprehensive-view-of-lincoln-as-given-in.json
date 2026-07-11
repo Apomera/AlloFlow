@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-21267-lincoln-s-birthday-b-a-comprehensive-view-of-lincoln-as-given-in",
-  "title": "Lincoln's Birthday : $b a comprehensive view of Lincoln as given in the most noteworthy essays, orations and poems, in fiction and in Lincoln's own writings",
+  "title": "Lincoln's Birthday: a comprehensive view of Lincoln as given in the most noteworthy essays, orations and poems, in fiction and in Lincoln's own writings",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -34,7 +34,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Lincoln's Birthday : $b a comprehensive view of Lincoln as given in the most noteworthy essays, orations and poems, in fiction and in Lincoln's own writings\". Metadata tags include: Lincoln, Abraham, 1809-1865; Lincoln, Abraham, 1809-1865 -- Anecdotes; Lincoln, Abraham, 1809-1865 -- Poetry."
+      "text": "Project Gutenberg catalog record for \"Lincoln's Birthday: a comprehensive view of Lincoln as given in the most noteworthy essays, orations and poems, in fiction and in Lincoln's own writings\". Metadata tags include: Lincoln, Abraham, 1809-1865; Lincoln, Abraham, 1809-1865 -- Anecdotes; Lincoln, Abraham, 1809-1865 -- Poetry."
     },
     {
       "n": 2,
@@ -49,6 +49,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 92
+    "words": 90
   }
 }

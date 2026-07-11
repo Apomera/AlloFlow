@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-23135-history-of-circumcision-from-the-earliest-times-to-the-present-b",
-  "title": "History of circumcision from the earliest times to the present : $b Moral and physical reasons for its performance, with a history of eunuchism, hermaphrodism, etc., and of the different operations practiced upon the prepuce",
+  "title": "History of circumcision from the earliest times to the present: Moral and physical reasons for its performance, with a history of eunuchism, hermaphrodism, etc., and of the different operations practiced upon the prepuce",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"History of circumcision from the earliest times to the present : $b Moral and physical reasons for its performance, with a history of eunuchism, hermaphrodism, etc., and of the different operations practiced upon the prepuce\" by Remondino, P. C. (Peter Charles). Metadata tags include: Circumcision."
+      "text": "Project Gutenberg catalog record for \"History of circumcision from the earliest times to the present: Moral and physical reasons for its performance, with a history of eunuchism, hermaphrodism, etc., and of the different operations practiced upon the prepuce\" by Remondino, P. C. (Peter Charles). Metadata tags include: Circumcision."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 95
+    "words": 93
   }
 }

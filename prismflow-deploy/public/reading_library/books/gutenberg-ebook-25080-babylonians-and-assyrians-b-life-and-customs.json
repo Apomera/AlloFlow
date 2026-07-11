@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-25080-babylonians-and-assyrians-b-life-and-customs",
-  "title": "Babylonians and Assyrians : $b Life and customs",
+  "title": "Babylonians and Assyrians: Life and customs",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -33,7 +33,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Babylonians and Assyrians : $b Life and customs\" by Sayce, A. H. (Archibald Henry). Metadata tags include: Assyria -- Social life and customs; Babylonia -- Social life and customs."
+      "text": "Project Gutenberg catalog record for \"Babylonians and Assyrians: Life and customs\" by Sayce, A. H. (Archibald Henry). Metadata tags include: Assyria -- Social life and customs; Babylonia -- Social life and customs."
     },
     {
       "n": 2,
@@ -48,6 +48,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 79
+    "words": 77
   }
 }

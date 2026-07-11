@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-22314-mysticism-and-its-results-b-being-an-inquiry-into-the-uses-and-a",
-  "title": "Mysticism and its results : $b Being an inquiry into the uses and abuses of secrecy",
+  "title": "Mysticism and its results: Being an inquiry into the uses and abuses of secrecy",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Mysticism and its results : $b Being an inquiry into the uses and abuses of secrecy\" by Delafield, John. Metadata tags include: Secret societies."
+      "text": "Project Gutenberg catalog record for \"Mysticism and its results: Being an inquiry into the uses and abuses of secrecy\" by Delafield, John. Metadata tags include: Secret societies."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 74
+    "words": 72
   }
 }

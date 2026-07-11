@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-27920-ben-comee-b-a-tale-of-rogers-s-rangers-1758-59",
-  "title": "Ben Comee : $b A tale of Rogers's Rangers, 1758-59",
+  "title": "Ben Comee: A tale of Rogers's Rangers, 1758-59",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Ben Comee : $b A tale of Rogers's Rangers, 1758-59\" by Canavan, M. J. (Michael Joseph). Metadata tags include: United States -- History -- French and Indian War, 1754-1763 -- Fiction."
+      "text": "Project Gutenberg catalog record for \"Ben Comee: A tale of Rogers's Rangers, 1758-59\" by Canavan, M. J. (Michael Joseph). Metadata tags include: United States -- History -- French and Indian War, 1754-1763 -- Fiction."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 81
+    "words": 79
   }
 }

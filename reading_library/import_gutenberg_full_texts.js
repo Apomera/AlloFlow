@@ -539,6 +539,129 @@ const DEFAULT_IMPORTS = [
     subjects: ['Fiction', 'Animals', 'Children\'s literature'],
     description: 'A full in-app public-domain copy of Winnie-the-Pooh for early and middle-grade readers.',
   },
+  // ---- 2026-07-11 batch: canonical classroom classics still sitting as
+  //  Gutenberg catalog-card stubs. IDs verified to have a usable UTF-8 full
+  //  text via --dry-run before committing (the importer prints each fetched
+  //  title; prune any mismatch/short-text and re-run). Several pair with a
+  //  full text we already ship (Anne of Green Gables #45, Little Women #514,
+  //  Kidnapped #421) to complete a series.
+  {
+    id: 46409,
+    subjects: ['Fiction', 'Family', 'Children\'s literature'],
+    description: 'A full in-app public-domain copy of Heidi for middle-grade reading.',
+  },
+  {
+    id: 1450,
+    subjects: ['Fiction', 'Optimism', 'Children\'s literature'],
+    description: 'A full in-app public-domain copy of Pollyanna for middle-grade reading.',
+  },
+  {
+    id: 47,
+    subjects: ['Fiction', 'Coming of age', 'Canadian literature'],
+    description: 'A full in-app public-domain copy of Anne of Avonlea for middle-grade and older-student reading.',
+  },
+  {
+    id: 51,
+    subjects: ['Fiction', 'Coming of age', 'Canadian literature'],
+    description: 'A full in-app public-domain copy of Anne of the Island for middle-grade and older-student reading.',
+  },
+  {
+    id: 544,
+    subjects: ['Fiction', 'Family', 'Canadian literature'],
+    description: 'A full in-app public-domain copy of Anne\'s House of Dreams for older-student reading.',
+  },
+  {
+    id: 5343,
+    subjects: ['Fiction', 'Family', 'Canadian literature'],
+    description: 'A full in-app public-domain copy of Rainbow Valley for middle-grade and older-student reading.',
+  },
+  {
+    id: 67979,
+    subjects: ['Fiction', 'Coming of age', 'Canadian literature'],
+    description: 'A full in-app public-domain copy of The Blue Castle for older-student reading.',
+  },
+  {
+    id: 2788,
+    subjects: ['Fiction', 'Family', 'American literature'],
+    description: 'A full in-app public-domain copy of Little Men for middle-grade reading.',
+  },
+  {
+    id: 82,
+    subjects: ['Fiction', 'Chivalry', 'British literature'],
+    description: 'A full in-app public-domain copy of Ivanhoe for older-student literature and medieval-history study.',
+  },
+  {
+    id: 60,
+    subjects: ['Fiction', 'French Revolution', 'Adventure'],
+    description: 'A full in-app public-domain copy of The Scarlet Pimpernel for older-student adventure and historical-context reading.',
+  },
+  {
+    id: 940,
+    subjects: ['Fiction', 'Colonial America', 'Adventure'],
+    description: 'A full in-app public-domain copy of The Last of the Mohicans for older-student literature and history study.',
+  },
+  {
+    id: 1184,
+    subjects: ['Fiction', 'Adventure', 'French literature'],
+    description: 'A full in-app public-domain copy of The Count of Monte Cristo for older-student literature study.',
+  },
+  {
+    id: 1257,
+    subjects: ['Fiction', 'Adventure', 'French literature'],
+    description: 'A full in-app public-domain copy of The Three Musketeers for older-student literature study.',
+  },
+  {
+    id: 26027,
+    subjects: ['Fiction', 'History', 'British literature'],
+    description: 'A full in-app public-domain copy of Puck of Pook\'s Hill for middle-grade and older-student reading.',
+  },
+  {
+    id: 589,
+    subjects: ['Fiction', 'Adventure', 'Scottish history'],
+    description: 'A full in-app public-domain copy of Catriona (the sequel to Kidnapped) for older-student literature study.',
+  },
+  // ---- 2026-07-11 batch 2 (widen): more K-8 children's/middle-grade, world
+  //  literature, mythology, and diverse voices. IDs resolved via gutendex
+  //  search then hand-corrected where search returned a partial/wrong edition
+  //  (Doctor Dolittle 27168->501, Wonder-Book excerpt 9255->979 full, Oliver
+  //  Twist Vol.2 47530->730 complete, Arabian Nights vol 34206->128 one-vol).
+  //  Verified by --dry-run (importer prints title + word count).
+  { id: 500, subjects: ['Fiction', 'Fantasy', "Children's literature"], description: 'A full in-app public-domain copy of The Adventures of Pinocchio for early and middle-grade reading.' },
+  { id: 501, subjects: ['Fiction', 'Animals', "Children's literature"], description: 'A full in-app public-domain copy of The Story of Doctor Dolittle for early and middle-grade reading.' },
+  { id: 146, subjects: ['Fiction', 'Coming of age', "Children's literature"], description: 'A full in-app public-domain copy of A Little Princess for middle-grade reading.' },
+  { id: 1874, subjects: ['Fiction', 'Family', "Children's literature"], description: 'A full in-app public-domain copy of The Railway Children for middle-grade reading.' },
+  { id: 17314, subjects: ['Fiction', 'Fantasy', "Children's literature"], description: 'A full in-app public-domain copy of Five Children and It for middle-grade reading.' },
+  { id: 225, subjects: ['Fiction', 'Fantasy', "Children's literature"], description: 'A full in-app public-domain copy of At the Back of the North Wind for middle-grade reading.' },
+  { id: 25564, subjects: ['Fiction', 'Fantasy', "Children's literature"], description: 'A full in-app public-domain copy of The Water-Babies for middle-grade reading.' },
+  { id: 78017, subjects: ['Fiction', 'Adventure', "Children's literature"], description: 'A full in-app public-domain copy of The Swiss Family Robinson for middle-grade adventure reading.' },
+  { id: 2781, subjects: ['Fiction', 'Folklore', "Children's literature"], description: 'A full in-app public-domain copy of Just So Stories for early and middle-grade reading.' },
+  { id: 503, subjects: ['Fairy tales', 'Folklore', "Children's literature"], description: 'A full in-app public-domain copy of The Blue Fairy Book for younger readers.' },
+  { id: 54, subjects: ['Fiction', 'Fantasy', "Children's literature"], description: 'A full in-app public-domain copy of The Marvelous Land of Oz for middle-grade reading.' },
+  { id: 33361, subjects: ['Fiction', 'Fantasy', "Children's literature"], description: 'A full in-app public-domain copy of Ozma of Oz for middle-grade reading.' },
+  { id: 1837, subjects: ['Fiction', 'Historical fiction', "Children's literature"], description: 'A full in-app public-domain copy of The Prince and the Pauper for middle-grade reading.' },
+  { id: 498, subjects: ['Fiction', 'Family', "Children's literature"], description: 'A full in-app public-domain copy of Rebecca of Sunnybrook Farm for middle-grade reading.' },
+  { id: 764, subjects: ['Fiction', 'Family', "Children's literature"], description: 'A full in-app public-domain copy of Hans Brinker, or The Silver Skates for middle-grade reading.' },
+  { id: 10148, subjects: ['Fiction', 'Adventure', 'Legends'], description: 'A full in-app public-domain copy of The Merry Adventures of Robin Hood for middle-grade adventure reading.' },
+  { id: 910, subjects: ['Fiction', 'Animals', 'Adventure'], description: 'A full in-app public-domain copy of White Fang for older-student adventure reading.' },
+  { id: 2226, subjects: ['Fiction', 'Adventure', 'India'], description: 'A full in-app public-domain copy of Kim for older-student literature and history study.' },
+  { id: 1268, subjects: ['Fiction', 'Science fiction', 'Adventure'], description: 'A full in-app public-domain copy of The Mysterious Island for older-student adventure reading.' },
+  { id: 5230, subjects: ['Fiction', 'Science fiction', 'British literature'], description: 'A full in-app public-domain copy of The Invisible Man for older-student science-fiction reading.' },
+  { id: 159, subjects: ['Fiction', 'Science fiction', 'Science ethics'], description: 'A full in-app public-domain copy of The Island of Doctor Moreau for older-student science-fiction and ethics study.' },
+  { id: 1259, subjects: ['Fiction', 'Adventure', 'French literature'], description: 'A full in-app public-domain copy of Twenty Years After (sequel to The Three Musketeers) for older-student reading.' },
+  { id: 135, subjects: ['Fiction', 'Social justice', 'French literature'], description: 'A full in-app public-domain copy of Les Miserables for older-student literature and social-history study.' },
+  { id: 1399, subjects: ['Fiction', 'Society', 'Russian literature'], description: 'A full in-app public-domain copy of Anna Karenina for older-student world-literature study.' },
+  { id: 730, subjects: ['Fiction', 'Social class', 'British literature'], description: 'A full in-app public-domain copy of Oliver Twist for older-student literature study.' },
+  { id: 766, subjects: ['Fiction', 'Coming of age', 'British literature'], description: 'A full in-app public-domain copy of David Copperfield for older-student literature study.' },
+  { id: 219, subjects: ['Fiction', 'Imperialism', 'World literature'], description: 'A full in-app public-domain copy of Heart of Darkness for older-student literature and colonial-history study.' },
+  { id: 19942, subjects: ['Fiction', 'Satire', 'Philosophy'], description: 'A full in-app public-domain copy of Candide for older-student philosophy and satire study.' },
+  { id: 56644, subjects: ['Mythology', 'Classical studies', 'Folklore'], description: 'A full in-app public-domain copy of Bulfinch\'s Mythology (The Age of Fable) for mythology study.' },
+  { id: 11582, subjects: ['Mythology', 'Ancient history', 'Folklore'], description: 'A full in-app public-domain copy of Old Greek Stories for middle-grade mythology reading.' },
+  { id: 128, subjects: ['Folklore', 'Fairy tales', 'World literature'], description: 'A full in-app public-domain copy of The Arabian Nights\' Entertainments for middle-grade and older-student reading.' },
+  { id: 3748, subjects: ['Fiction', 'Science fiction', 'Adventure'], description: 'A full in-app public-domain copy of A Journey to the Centre of the Earth for middle-grade and older-student reading.' },
+  { id: 996, subjects: ['Fiction', 'Satire', 'Spanish literature'], description: 'A full in-app public-domain copy of Don Quixote for older-student world-literature study.' },
+  { id: 203, subjects: ['Fiction', 'Abolition', 'American literature'], description: 'A full in-app public-domain copy of Uncle Tom\'s Cabin for older-student literature and history study.' },
+  { id: 11012, subjects: ['Fiction', 'Civil rights', 'American literature'], description: 'A full in-app public-domain copy of The Autobiography of an Ex-Colored Man for older-student literature and history study.' },
+  { id: 944, subjects: ['Science', 'Natural history', 'Exploration'], description: 'A full in-app public-domain copy of The Voyage of the Beagle for older-student science and exploration reading.' },
 ];
 
 const dryRun = process.argv.includes('--dry-run');

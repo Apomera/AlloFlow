@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-10T23:59:31.761Z",
+ "generatedAt": "2026-07-11T13:28:18.483Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -10,7 +10,7 @@
   {
    "name": "English",
    "code": "en",
-   "count": 1669
+   "count": 1688
   },
   {
    "name": "Spanish",
@@ -52272,7 +52272,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "5",
+   "level": "6",
    "sourceId": "frontiers",
    "contentType": "science-article",
    "subjects": [
@@ -53132,27 +53132,25 @@
   {
    "slug": "gutenberg-ebook-1184-the-count-of-monte-cristo",
    "title": "The Count of Monte Cristo",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Count of Monte Cristo for older-student literature study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Adventure stories",
-    "Dantès, Edmond (Fictitious character) -- Fiction",
-    "France -- History -- 19th century -- Fiction",
-    "Historical fiction",
-    "Pirates -- Fiction",
-    "Prisoners -- Fiction"
+    "Fiction",
+    "Adventure",
+    "French literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/1184"
+    "url": "https://www.gutenberg.org/ebooks/1184",
+    "textUrl": "https://www.gutenberg.org/cache/epub/1184/pg1184.txt"
    },
    "cover": null,
    "authors": [
@@ -53162,34 +53160,32 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 81,
+   "pageCount": 963,
+   "wordCount": 461010,
    "file": "books/gutenberg-ebook-1184-the-count-of-monte-cristo.json"
   },
   {
    "slug": "gutenberg-ebook-67979-the-blue-castle-a-novel",
    "title": "The Blue Castle: a novel",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Blue Castle for older-student reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Canada -- History -- 1914-1945 -- Fiction",
-    "Choice (Psychology) -- Fiction",
-    "Love -- Fiction",
-    "Romance fiction",
-    "Self-actualization (Psychology) -- Fiction",
-    "Single women -- Fiction"
+    "Fiction",
+    "Coming of age",
+    "Canadian literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/67979"
+    "url": "https://www.gutenberg.org/ebooks/67979",
+    "textUrl": "https://www.gutenberg.org/cache/epub/67979/pg67979.txt"
    },
    "cover": null,
    "authors": [
@@ -53198,29 +53194,32 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 80,
+   "pageCount": 147,
+   "wordCount": 68313,
    "file": "books/gutenberg-ebook-67979-the-blue-castle-a-novel.json"
   },
   {
    "slug": "gutenberg-ebook-1259-twenty-years-after",
    "title": "Twenty years after",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Twenty Years After (sequel to The Three Musketeers) for older-student reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "France -- History -- Louis XIV, 1643-1715 -- Fiction"
+    "Fiction",
+    "Adventure",
+    "French literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/1259"
+    "url": "https://www.gutenberg.org/ebooks/1259",
+    "textUrl": "https://www.gutenberg.org/files/1259/1259-0.txt"
    },
    "cover": null,
    "authors": [
@@ -53230,8 +53229,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 70,
+   "pageCount": 492,
+   "wordCount": 242096,
    "file": "books/gutenberg-ebook-1259-twenty-years-after.json"
   },
   {
@@ -53306,7 +53305,7 @@
   },
   {
    "slug": "gutenberg-ebook-76639-eloisa-b-or-a-series-of-original-letters",
-   "title": "Eloisa : $b or, A series of original letters",
+   "title": "Eloisa: or, A series of original letters",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -53337,7 +53336,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 86,
+   "wordCount": 84,
    "file": "books/gutenberg-ebook-76639-eloisa-b-or-a-series-of-original-letters.json"
   },
   {
@@ -53411,23 +53410,25 @@
   {
    "slug": "gutenberg-ebook-589-catriona",
    "title": "Catriona",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Catriona (the sequel to Kidnapped) for older-student literature study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Adventure stories",
-    "Scotland -- History -- 18th century -- Fiction"
+    "Fiction",
+    "Adventure",
+    "Scottish history"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/589"
+    "url": "https://www.gutenberg.org/ebooks/589",
+    "textUrl": "https://www.gutenberg.org/cache/epub/589/pg589.txt"
    },
    "cover": null,
    "authors": [
@@ -53436,8 +53437,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 68,
+   "pageCount": 221,
+   "wordCount": 101102,
    "file": "books/gutenberg-ebook-589-catriona.json"
   },
   {
@@ -53782,7 +53783,7 @@
   },
   {
    "slug": "gutenberg-ebook-46976-the-anabasis-of-alexander-b-or-the-history-of-the-wars-and-conqu",
-   "title": "The Anabasis of Alexander : $b or, The history of the wars and conquests of Alexander the Great",
+   "title": "The Anabasis of Alexander: or, The history of the wars and conquests of Alexander the Great",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -53810,12 +53811,12 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 92,
+   "wordCount": 90,
    "file": "books/gutenberg-ebook-46976-the-anabasis-of-alexander-b-or-the-history-of-the-wars-and-conqu.json"
   },
   {
    "slug": "gutenberg-ebook-75883-the-roll-of-honour-volume-1-b-a-biographical-record-of-all-membe",
-   "title": "The Roll of Honour, Volume 1 : $b A biographical record of all members of His Majesty's naval and military forces who have fallen in the war",
+   "title": "The Roll of Honour, Volume 1: A biographical record of all members of His Majesty's naval and military forces who have fallen in the war",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -53842,12 +53843,12 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 105,
+   "wordCount": 103,
    "file": "books/gutenberg-ebook-75883-the-roll-of-honour-volume-1-b-a-biographical-record-of-all-membe.json"
   },
   {
    "slug": "gutenberg-ebook-3530-love-at-arms-b-being-a-narrative-excerpted-from-the-chronicles-o",
-   "title": "Love-at-arms : $b being a narrative excerpted from the chronicles of Urbino, during the dominion of the high and mighty Messer Guidobaldo da Montefeltro",
+   "title": "Love-at-arms: being a narrative excerpted from the chronicles of Urbino, during the dominion of the high and mighty Messer Guidobaldo da Montefeltro",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -53876,40 +53877,8 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 100,
+   "wordCount": 98,
    "file": "books/gutenberg-ebook-3530-love-at-arms-b-being-a-narrative-excerpted-from-the-chronicles-o.json"
-  },
-  {
-   "slug": "gutenberg-ebook-20203-autobiography-of-benjamin-franklin",
-   "title": "Autobiography of Benjamin Franklin",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Franklin, Benjamin, 1706-1790",
-    "Statesmen -- United States -- Biography"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/20203"
-   },
-   "cover": null,
-   "authors": [
-    "Franklin, Benjamin"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 69,
-   "file": "books/gutenberg-ebook-20203-autobiography-of-benjamin-franklin.json"
   },
   {
    "slug": "gutenberg-ebook-26849-the-works-of-mr-george-gillespie-vol-1-of-2",
@@ -54348,25 +54317,25 @@
   {
    "slug": "gutenberg-ebook-1257-the-three-musketeers",
    "title": "The three musketeers",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Three Musketeers for older-student literature study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Adventure and adventurers -- Fiction",
-    "France -- History -- Louis XIII, 1610-1643 -- Fiction",
-    "Historical fiction",
-    "Swordsmen -- Fiction"
+    "Fiction",
+    "Adventure",
+    "French literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/1257"
+    "url": "https://www.gutenberg.org/ebooks/1257",
+    "textUrl": "https://www.gutenberg.org/files/1257/1257-0.txt"
    },
    "cover": null,
    "authors": [
@@ -54376,8 +54345,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 80,
+   "pageCount": 470,
+   "wordCount": 229468,
    "file": "books/gutenberg-ebook-1257-the-three-musketeers.json"
   },
   {
@@ -54777,7 +54746,7 @@
   },
   {
    "slug": "gutenberg-ebook-22210-in-the-forbidden-land-b-an-account-of-a-journey-into-tibet-captu",
-   "title": "In the forbidden land : $b an account of a journey into Tibet, capture by the Tibetan lamas and soldiers, imprisonment, torture and ultimate release",
+   "title": "In the forbidden land: an account of a journey into Tibet, capture by the Tibetan lamas and soldiers, imprisonment, torture and ultimate release",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -54803,7 +54772,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 91,
+   "wordCount": 89,
    "file": "books/gutenberg-ebook-22210-in-the-forbidden-land-b-an-account-of-a-journey-into-tibet-captu.json"
   },
   {
@@ -54942,27 +54911,25 @@
   {
    "slug": "gutenberg-ebook-940-the-last-of-the-mohicans-a-narrative-of-1757",
    "title": "The Last of the Mohicans; A narrative of 1757",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Last of the Mohicans for older-student literature and history study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Adventure stories",
-    "Bumppo, Natty (Fictitious character) -- Fiction",
-    "Frontier and pioneer life -- Fiction",
-    "Historical fiction",
-    "Mohegan Indians -- Fiction",
-    "United States -- History -- French and Indian War, 1754-1763 -- Fiction"
+    "Fiction",
+    "Colonial America",
+    "Adventure"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/940"
+    "url": "https://www.gutenberg.org/ebooks/940",
+    "textUrl": "https://www.gutenberg.org/files/940/940-0.txt"
    },
    "cover": null,
    "authors": [
@@ -54971,8 +54938,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 82,
+   "pageCount": 325,
+   "wordCount": 148473,
    "file": "books/gutenberg-ebook-940-the-last-of-the-mohicans-a-narrative-of-1757.json"
   },
   {
@@ -56356,7 +56323,7 @@
   },
   {
    "slug": "gutenberg-ebook-21012-the-loyalists-of-america-and-their-times-b-from-1620-to-1816-vol",
-   "title": "The loyalists of America and their times : $b from 1620 to 1816, Vol. 1 of 2",
+   "title": "The loyalists of America and their times: from 1620 to 1816, Vol. 1 of 2",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -56387,7 +56354,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 98,
+   "wordCount": 96,
    "file": "books/gutenberg-ebook-21012-the-loyalists-of-america-and-their-times-b-from-1620-to-1816-vol.json"
   },
   {
@@ -56657,7 +56624,7 @@
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
    "contentType": "public-domain-full-text",
    "subjects": [
@@ -57153,7 +57120,7 @@
   },
   {
    "slug": "gutenberg-ebook-24780-the-letters-of-queen-victoria-vol-2-1844-1853-b-a-selection-from",
-   "title": "The letters of Queen Victoria, vol. 2, 1844-1853 : $b A selection from Her Majesty's correspondence between the years 1837 and 1861.",
+   "title": "The letters of Queen Victoria, vol. 2, 1844-1853: A selection from Her Majesty's correspondence between the years 1837 and 1861.",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -57183,7 +57150,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 112,
+   "wordCount": 110,
    "file": "books/gutenberg-ebook-24780-the-letters-of-queen-victoria-vol-2-1844-1853-b-a-selection-from.json"
   },
   {
@@ -57907,7 +57874,7 @@
   },
   {
    "slug": "gutenberg-ebook-78025-main-currents-in-american-thought-b-an-interpretation-of-america",
-   "title": "Main currents in American thought : $b An interpretation of American literature from the beginnings to 1920",
+   "title": "Main currents in American thought: An interpretation of American literature from the beginnings to 1920",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -57938,7 +57905,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 91,
+   "wordCount": 89,
    "file": "books/gutenberg-ebook-78025-main-currents-in-american-thought-b-an-interpretation-of-america.json"
   },
   {
@@ -57975,7 +57942,7 @@
   },
   {
    "slug": "gutenberg-ebook-78124-1066-and-all-that-b-a-memorable-history-of-england-comprising-al",
-   "title": "1066 and all that : $b A memorable history of England, comprising all the parts you can remember, including 103 good things, 5 bad kings and 2 genuine dates",
+   "title": "1066 and all that: A memorable history of England, comprising all the parts you can remember, including 103 good things, 5 bad kings and 2 genuine dates",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -58003,7 +57970,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 102,
+   "wordCount": 100,
    "file": "books/gutenberg-ebook-78124-1066-and-all-that-b-a-memorable-history-of-england-comprising-al.json"
   },
   {
@@ -58817,7 +58784,7 @@
   },
   {
    "slug": "gutenberg-ebook-28649-the-letters-of-queen-victoria-vol-3-1854-1861-b-a-selection-from",
-   "title": "The letters of Queen Victoria, vol. 3, 1854-1861 : $b A selection from Her Majesty's correspondence between the years 1837 and 1861.",
+   "title": "The letters of Queen Victoria, vol. 3, 1854-1861: A selection from Her Majesty's correspondence between the years 1837 and 1861.",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -58847,7 +58814,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 112,
+   "wordCount": 110,
    "file": "books/gutenberg-ebook-28649-the-letters-of-queen-victoria-vol-3-1854-1861-b-a-selection-from.json"
   },
   {
@@ -59571,40 +59538,6 @@
    "file": "books/gutenberg-ebook-28117-india-its-life-and-thought.json"
   },
   {
-   "slug": "gutenberg-ebook-26-paradise-lost",
-   "title": "Paradise Lost",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Adam (Biblical figure) -- Poetry",
-    "Bible. Genesis -- History of Biblical events -- Poetry",
-    "Eve (Biblical figure) -- Poetry",
-    "Fall of man -- Poetry"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/26"
-   },
-   "cover": null,
-   "authors": [
-    "Milton, John"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 82,
-   "file": "books/gutenberg-ebook-26-paradise-lost.json"
-  },
-  {
    "slug": "gutenberg-ebook-408-the-souls-of-black-folk",
    "title": "The Souls of Black Folk",
    "description": "A full in-app public-domain copy of The Souls of Black Folk for older-student reading and research.",
@@ -59828,42 +59761,6 @@
    "pageCount": 3,
    "wordCount": 67,
    "file": "books/gutenberg-ebook-23200-the-journal-of-negro-history-volume-5-1920.json"
-  },
-  {
-   "slug": "gutenberg-ebook-20265-anne-of-the-island",
-   "title": "Anne of the Island",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Canada -- History -- 1914-1945 -- Fiction",
-    "Interpersonal relations -- Fiction",
-    "Nova Scotia -- History -- 20th century -- Fiction",
-    "Orphans -- Fiction",
-    "Prince Edward Island -- History -- 20th century -- Fiction",
-    "Self-perception -- Fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/20265"
-   },
-   "cover": null,
-   "authors": [
-    "Montgomery, L. M. (Lucy Maud)"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 86,
-   "file": "books/gutenberg-ebook-20265-anne-of-the-island.json"
   },
   {
    "slug": "gutenberg-ebook-21427-comic-history-of-the-united-states",
@@ -60478,42 +60375,6 @@
    "pageCount": 3,
    "wordCount": 70,
    "file": "books/gutenberg-ebook-25625-historic-tales-the-romance-of-reality-vol-08-of-15-russian.json"
-  },
-  {
-   "slug": "gutenberg-ebook-20593-anne-of-green-gables",
-   "title": "Anne of Green Gables",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Bildungsromans",
-    "Canada -- History -- 1867-1914 -- Fiction",
-    "Country life -- Prince Edward Island -- Fiction",
-    "Friendship -- Fiction",
-    "Girls -- Fiction",
-    "Islands -- Fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/20593"
-   },
-   "cover": null,
-   "authors": [
-    "Montgomery, L. M. (Lucy Maud)"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 82,
-   "file": "books/gutenberg-ebook-20593-anne-of-green-gables.json"
   },
   {
    "slug": "gutenberg-ebook-26170-diaries-of-sir-moses-and-lady-montefiore-volume-1-of-2-comprisin",
@@ -61620,7 +61481,7 @@
   },
   {
    "slug": "gutenberg-ebook-21976-three-years-in-the-sixth-corps-b-a-concise-narrative-of-events-i",
-   "title": "Three years in the Sixth Corps : $b A concise narrative of events in the Army of the Potomac, from 1861 to the close of the rebellion, April, 1865",
+   "title": "Three years in the Sixth Corps: A concise narrative of events in the Army of the Potomac, from 1861 to the close of the rebellion, April, 1865",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -61651,7 +61512,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 123,
+   "wordCount": 121,
    "file": "books/gutenberg-ebook-21976-three-years-in-the-sixth-corps-b-a-concise-narrative-of-events-i.json"
   },
   {
@@ -61850,7 +61711,7 @@
   },
   {
    "slug": "gutenberg-ebook-20023-the-letters-of-queen-victoria-vol-1-1837-1843-b-a-selection-from",
-   "title": "The letters of Queen Victoria, vol. 1, 1837-1843 : $b A selection from Her Majesty's correspondence between the years 1837 and 1861.",
+   "title": "The letters of Queen Victoria, vol. 1, 1837-1843: A selection from Her Majesty's correspondence between the years 1837 and 1861.",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -61880,7 +61741,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 112,
+   "wordCount": 110,
    "file": "books/gutenberg-ebook-20023-the-letters-of-queen-victoria-vol-1-1837-1843-b-a-selection-from.json"
   },
   {
@@ -62496,42 +62357,6 @@
    "file": "books/gutenberg-ebook-23284-impressions-of-america-during-the-years-1833-1834-and-1835-volum.json"
   },
   {
-   "slug": "gutenberg-ebook-27681-the-last-of-the-mohicans-a-narrative-of-1757",
-   "title": "The Last of the Mohicans: A Narrative of 1757",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Adventure stories",
-    "Bumppo, Natty (Fictitious character) -- Fiction",
-    "Frontier and pioneer life -- Fiction",
-    "Historical fiction",
-    "Mohegan Indians -- Fiction",
-    "United States -- History -- French and Indian War, 1754-1763 -- Fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/27681"
-   },
-   "cover": null,
-   "authors": [
-    "Cooper, James Fenimore"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 82,
-   "file": "books/gutenberg-ebook-27681-the-last-of-the-mohicans-a-narrative-of-1757.json"
-  },
-  {
    "slug": "gutenberg-ebook-23340-campaigns-of-a-non-combatant-and-his-romaunt-abroad-during-the-w",
    "title": "Campaigns of a Non-Combatant, and His Romaunt Abroad During the War",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
@@ -62793,42 +62618,6 @@
    "pageCount": 3,
    "wordCount": 95,
    "file": "books/gutenberg-ebook-25622-beatrice-d-este-duchess-of-milan-1475-1497.json"
-  },
-  {
-   "slug": "gutenberg-ebook-26469-rainbow-valley",
-   "title": "Rainbow Valley",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Canada -- History -- 20th century -- Juvenile fiction",
-    "Family life -- Juvenile fiction",
-    "Foster home care -- Juvenile fiction",
-    "Friendship -- Juvenile fiction",
-    "Historical fiction",
-    "Orphans -- Juvenile fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/26469"
-   },
-   "cover": null,
-   "authors": [
-    "Montgomery, L. M. (Lucy Maud)"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 85,
-   "file": "books/gutenberg-ebook-26469-rainbow-valley.json"
   },
   {
    "slug": "gutenberg-ebook-25855-stray-studies-from-england-and-italy",
@@ -63519,7 +63308,7 @@
   },
   {
    "slug": "gutenberg-ebook-22220-policing-the-plains-b-being-the-real-life-record-of-the-famous-r",
-   "title": "Policing the plains : $b being the real-life record of the famous Royal North-West Mounted Police",
+   "title": "Policing the plains: being the real-life record of the famous Royal North-West Mounted Police",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -63546,7 +63335,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 83,
+   "wordCount": 81,
    "file": "books/gutenberg-ebook-22220-policing-the-plains-b-being-the-real-life-record-of-the-famous-r.json"
   },
   {
@@ -63618,7 +63407,7 @@
   },
   {
    "slug": "gutenberg-ebook-23135-history-of-circumcision-from-the-earliest-times-to-the-present-b",
-   "title": "History of circumcision from the earliest times to the present : $b Moral and physical reasons for its performance, with a history of eunuchism, hermaphrodism, etc., and of the different operations practiced upon the prepuce",
+   "title": "History of circumcision from the earliest times to the present: Moral and physical reasons for its performance, with a history of eunuchism, hermaphrodism, etc., and of the different operations practiced upon the prepuce",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -63644,12 +63433,12 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 95,
+   "wordCount": 93,
    "file": "books/gutenberg-ebook-23135-history-of-circumcision-from-the-earliest-times-to-the-present-b.json"
   },
   {
    "slug": "gutenberg-ebook-28294-pilgrimage-from-the-alps-to-the-tiber-b-or-the-influence-of-roma",
-   "title": "Pilgrimage from the Alps to the Tiber : $b or, The influence of Romanism on trade, justice, and knowledge",
+   "title": "Pilgrimage from the Alps to the Tiber: or, The influence of Romanism on trade, justice, and knowledge",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -63676,7 +63465,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 87,
+   "wordCount": 85,
    "file": "books/gutenberg-ebook-28294-pilgrimage-from-the-alps-to-the-tiber-b-or-the-influence-of-roma.json"
   },
   {
@@ -64036,42 +63825,6 @@
    "pageCount": 3,
    "wordCount": 72,
    "file": "books/gutenberg-ebook-25632-a-history-of-art-for-beginners-and-students-painting-sculpture-a.json"
-  },
-  {
-   "slug": "gutenberg-ebook-19576-anne-of-green-gables",
-   "title": "Anne of Green Gables",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Bildungsromans",
-    "Canada -- History -- 1867-1914 -- Fiction",
-    "Country life -- Prince Edward Island -- Fiction",
-    "Friendship -- Fiction",
-    "Girls -- Fiction",
-    "Islands -- Fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/19576"
-   },
-   "cover": null,
-   "authors": [
-    "Montgomery, L. M. (Lucy Maud)"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 82,
-   "file": "books/gutenberg-ebook-19576-anne-of-green-gables.json"
   },
   {
    "slug": "gutenberg-ebook-28116-the-red-watch-with-the-first-canadian-division-in-flanders",
@@ -65073,7 +64826,7 @@
   },
   {
    "slug": "gutenberg-ebook-22910-ancient-law-b-its-connection-to-the-history-of-early-society",
-   "title": "Ancient law : $b its connection to the history of early society",
+   "title": "Ancient law: its connection to the history of early society",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -65103,7 +64856,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 79,
+   "wordCount": 77,
    "file": "books/gutenberg-ebook-22910-ancient-law-b-its-connection-to-the-history-of-early-society.json"
   },
   {
@@ -65368,7 +65121,7 @@
   },
   {
    "slug": "gutenberg-ebook-21267-lincoln-s-birthday-b-a-comprehensive-view-of-lincoln-as-given-in",
-   "title": "Lincoln's Birthday : $b a comprehensive view of Lincoln as given in the most noteworthy essays, orations and poems, in fiction and in Lincoln's own writings",
+   "title": "Lincoln's Birthday: a comprehensive view of Lincoln as given in the most noteworthy essays, orations and poems, in fiction and in Lincoln's own writings",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -65396,7 +65149,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 92,
+   "wordCount": 90,
    "file": "books/gutenberg-ebook-21267-lincoln-s-birthday-b-a-comprehensive-view-of-lincoln-as-given-in.json"
   },
   {
@@ -66182,42 +65935,6 @@
    "file": "books/gutenberg-ebook-26860-lives-of-the-most-eminent-painters-sculptors-and-architects-vol-.json"
   },
   {
-   "slug": "gutenberg-ebook-28808-the-scarlet-pimpernel",
-   "title": "The Scarlet Pimpernel",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Adventure stories",
-    "Blakeney, Percy, Sir (Fictitious character) -- Fiction",
-    "British -- France -- Fiction",
-    "France -- History -- Revolution, 1789-1799 -- Fiction",
-    "Historical fiction",
-    "Nobility -- Fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/28808"
-   },
-   "cover": null,
-   "authors": [
-    "Orczy, Emmuska Orczy, Baroness"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 83,
-   "file": "books/gutenberg-ebook-28808-the-scarlet-pimpernel.json"
-  },
-  {
    "slug": "gutenberg-ebook-21600-the-flourishing-of-romance-and-the-rise-of-allegory-periods-of-e",
    "title": "The Flourishing of Romance and the Rise of Allegory: (Periods of European Literature, vol. II)",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
@@ -66670,7 +66387,7 @@
   },
   {
    "slug": "gutenberg-ebook-21623-usury-b-a-scriptural-ethical-and-economic-view",
-   "title": "Usury : $b a scriptural, ethical and economic view",
+   "title": "Usury: a scriptural, ethical and economic view",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -66696,7 +66413,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 66,
+   "wordCount": 64,
    "file": "books/gutenberg-ebook-21623-usury-b-a-scriptural-ethical-and-economic-view.json"
   },
   {
@@ -67313,23 +67030,25 @@
   {
    "slug": "gutenberg-ebook-26027-puck-of-pook-s-hill",
    "title": "Puck of Pook's Hill",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Puck of Pook's Hill for middle-grade and older-student reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Great Britain -- History -- Fiction",
-    "Space and time -- Fiction"
+    "Fiction",
+    "History",
+    "British literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/26027"
+    "url": "https://www.gutenberg.org/ebooks/26027",
+    "textUrl": "https://www.gutenberg.org/files/26027/26027-0.txt"
    },
    "cover": null,
    "authors": [
@@ -67338,8 +67057,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 71,
+   "pageCount": 124,
+   "wordCount": 58589,
    "file": "books/gutenberg-ebook-26027-puck-of-pook-s-hill.json"
   },
   {
@@ -68219,7 +67938,7 @@
   },
   {
    "slug": "gutenberg-ebook-27164-seven-and-nine-years-among-the-camanches-and-apaches-b-an-autobi",
-   "title": "Seven and nine years among the Camanches and Apaches : $b an autobiography",
+   "title": "Seven and nine years among the Camanches and Apaches: an autobiography",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -68249,7 +67968,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 87,
+   "wordCount": 85,
    "file": "books/gutenberg-ebook-27164-seven-and-nine-years-among-the-camanches-and-apaches-b-an-autobi.json"
   },
   {
@@ -68615,7 +68334,7 @@
   },
   {
    "slug": "gutenberg-ebook-27920-ben-comee-b-a-tale-of-rogers-s-rangers-1758-59",
-   "title": "Ben Comee : $b A tale of Rogers's Rangers, 1758-59",
+   "title": "Ben Comee: A tale of Rogers's Rangers, 1758-59",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -68641,7 +68360,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 81,
+   "wordCount": 79,
    "file": "books/gutenberg-ebook-27920-ben-comee-b-a-tale-of-rogers-s-rangers-1758-59.json"
   },
   {
@@ -68872,42 +68591,6 @@
    "pageCount": 3,
    "wordCount": 82,
    "file": "books/gutenberg-ebook-26423-great-men-and-famous-women-vol-3-a-series-of-pen-and-pencil-sket.json"
-  },
-  {
-   "slug": "gutenberg-ebook-19575-anne-of-avonlea",
-   "title": "Anne of Avonlea",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Canada -- History -- 1914-1945 -- Fiction",
-    "Islands -- Fiction",
-    "Orphans -- Fiction",
-    "Prince Edward Island -- History -- 20th century -- Fiction",
-    "Shirley, Anne (Fictitious character) -- Fiction",
-    "Teachers -- Fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/19575"
-   },
-   "cover": null,
-   "authors": [
-    "Montgomery, L. M. (Lucy Maud)"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 85,
-   "file": "books/gutenberg-ebook-19575-anne-of-avonlea.json"
   },
   {
    "slug": "gutenberg-ebook-25104-ocean-steam-navigation-and-the-ocean-post",
@@ -69520,42 +69203,6 @@
    "pageCount": 3,
    "wordCount": 75,
    "file": "books/gutenberg-ebook-20921-adventures-in-the-arts-informal-chapters-on-painters-vaudeville-.json"
-  },
-  {
-   "slug": "gutenberg-ebook-26740-the-picture-of-dorian-gray",
-   "title": "The Picture of Dorian Gray",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Appearance (Philosophy) -- Fiction",
-    "Conduct of life -- Fiction",
-    "Didactic fiction",
-    "Great Britain -- History -- Victoria, 1837-1901 -- Fiction",
-    "London (England) -- History -- 1800-1950 -- Fiction",
-    "Paranormal fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/26740"
-   },
-   "cover": null,
-   "authors": [
-    "Wilde, Oscar"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 81,
-   "file": "books/gutenberg-ebook-26740-the-picture-of-dorian-gray.json"
   },
   {
    "slug": "gutenberg-ebook-28178-sound-military-decision",
@@ -70536,37 +70183,6 @@
    "file": "books/gutenberg-ebook-25603-detailed-minutiae-of-soldier-life-in-the-army-of-northern-virgin.json"
   },
   {
-   "slug": "gutenberg-ebook-26245-the-history-of-the-peloponnesian-war",
-   "title": "The History of the Peloponnesian War",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Greece -- History -- Peloponnesian War, 431-404 B.C."
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/26245"
-   },
-   "cover": null,
-   "authors": [
-    "Thucydides"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 69,
-   "file": "books/gutenberg-ebook-26245-the-history-of-the-peloponnesian-war.json"
-  },
-  {
    "slug": "gutenberg-ebook-27594-an-eagle-flight-a-filipino-novel-adapted-from-noli-me-tangere",
    "title": "An Eagle Flight: A Filipino Novel Adapted from Noli Me Tangere",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
@@ -71017,7 +70633,7 @@
   },
   {
    "slug": "gutenberg-ebook-72344-the-decline-of-the-west-volume-1-b-form-and-actuality",
-   "title": "The decline of the West, Volume 1 : $b Form and actuality",
+   "title": "The decline of the West, Volume 1: Form and actuality",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -71043,12 +70659,12 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 71,
+   "wordCount": 69,
    "file": "books/gutenberg-ebook-72344-the-decline-of-the-west-volume-1-b-form-and-actuality.json"
   },
   {
    "slug": "gutenberg-ebook-25080-babylonians-and-assyrians-b-life-and-customs",
-   "title": "Babylonians and Assyrians : $b Life and customs",
+   "title": "Babylonians and Assyrians: Life and customs",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -71075,7 +70691,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 79,
+   "wordCount": 77,
    "file": "books/gutenberg-ebook-25080-babylonians-and-assyrians-b-life-and-customs.json"
   },
   {
@@ -71246,27 +70862,25 @@
   {
    "slug": "gutenberg-ebook-82-ivanhoe-a-romance",
    "title": "Ivanhoe: A Romance",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Ivanhoe for older-student literature and medieval-history study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Anglo-Saxons -- Fiction",
-    "Great Britain -- History -- Richard I, 1189-1199 -- Fiction",
-    "Historical fiction",
-    "Ivanhoe, Wilfred of, Sir (Fictitious character) -- Fiction",
-    "Jews -- England -- Fiction",
-    "Knights and knighthood -- Fiction"
+    "Fiction",
+    "Chivalry",
+    "British literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/82"
+    "url": "https://www.gutenberg.org/ebooks/82",
+    "textUrl": "https://www.gutenberg.org/cache/epub/82/pg82.txt"
    },
    "cover": null,
    "authors": [
@@ -71275,8 +70889,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 82,
+   "pageCount": 415,
+   "wordCount": 191681,
    "file": "books/gutenberg-ebook-82-ivanhoe-a-romance.json"
   },
   {
@@ -71731,7 +71345,7 @@
   },
   {
    "slug": "gutenberg-ebook-27763-a-journal-of-a-young-man-of-massachusetts-late-a-surgeon-on-boar",
-   "title": "A journal, of a young man of Massachusetts, late a surgeon on board an American privateer, who was captured at sea by the British in May, eighteen hundred and thirteen and was confined first, at Melville Island, Halifax, then at Chatham, in England, and last at Dartmoor prison : $b Interspersed with observations, anecdotes and remarks, tending to illustrate the moral and political characters of three nations. To which is added, a correct engraving of Dartmoor prison, representing the massacre of American prisoners.",
+   "title": "A journal, of a young man of Massachusetts, late a surgeon on board an American privateer, who was captured at sea by the British in May, eighteen hundred and thirteen and was confined first, at Melville Island, Halifax, then at Chatham, in England, and last at Dartmoor prison: Interspersed with observations, anecdotes and remarks, tending to illustrate the moral and political characters of three nations. To which is added, a correct engraving of Dartmoor prison, representing the massacre of American prisoners.",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -71758,7 +71372,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 153,
+   "wordCount": 151,
    "file": "books/gutenberg-ebook-27763-a-journal-of-a-young-man-of-massachusetts-late-a-surgeon-on-boar.json"
   },
   {
@@ -73602,27 +73216,25 @@
   {
    "slug": "gutenberg-ebook-47-anne-of-avonlea",
    "title": "Anne of Avonlea",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Anne of Avonlea for middle-grade and older-student reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Canada -- History -- 1914-1945 -- Fiction",
-    "Islands -- Fiction",
-    "Orphans -- Fiction",
-    "Prince Edward Island -- History -- 20th century -- Fiction",
-    "Shirley, Anne (Fictitious character) -- Fiction",
-    "Teachers -- Fiction"
+    "Fiction",
+    "Coming of age",
+    "Canadian literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/47"
+    "url": "https://www.gutenberg.org/ebooks/47",
+    "textUrl": "https://www.gutenberg.org/files/47/47-0.txt"
    },
    "cover": null,
    "authors": [
@@ -73631,8 +73243,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 85,
+   "pageCount": 196,
+   "wordCount": 91128,
    "file": "books/gutenberg-ebook-47-anne-of-avonlea.json"
   },
   {
@@ -74184,7 +73796,7 @@
   },
   {
    "slug": "gutenberg-ebook-27604-a-history-of-the-japanese-people-b-from-the-earliest-times-to-th",
-   "title": "A history of the Japanese people : $b from the earliest times to the end of the Meiji era",
+   "title": "A history of the Japanese people: from the earliest times to the end of the Meiji era",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -74212,7 +73824,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 84,
+   "wordCount": 82,
    "file": "books/gutenberg-ebook-27604-a-history-of-the-japanese-people-b-from-the-earliest-times-to-th.json"
   },
   {
@@ -74311,27 +73923,25 @@
   {
    "slug": "gutenberg-ebook-51-anne-of-the-island",
    "title": "Anne of the Island",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Anne of the Island for middle-grade and older-student reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Canada -- History -- 1914-1945 -- Fiction",
-    "Interpersonal relations -- Fiction",
-    "Nova Scotia -- History -- 20th century -- Fiction",
-    "Orphans -- Fiction",
-    "Prince Edward Island -- History -- 20th century -- Fiction",
-    "Self-perception -- Fiction"
+    "Fiction",
+    "Coming of age",
+    "Canadian literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/51"
+    "url": "https://www.gutenberg.org/ebooks/51",
+    "textUrl": "https://www.gutenberg.org/files/51/51-0.txt"
    },
    "cover": null,
    "authors": [
@@ -74340,8 +73950,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 86,
+   "pageCount": 162,
+   "wordCount": 76598,
    "file": "books/gutenberg-ebook-51-anne-of-the-island.json"
   },
   {
@@ -74831,7 +74441,7 @@
   },
   {
    "slug": "gutenberg-ebook-42108-the-slang-dictionary-b-etymological-historical-and-anecdotal",
-   "title": "The slang dictionary : $b Etymological, historical and anecdotal",
+   "title": "The slang dictionary: Etymological, historical and anecdotal",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -74859,7 +74469,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 94,
+   "wordCount": 92,
    "file": "books/gutenberg-ebook-42108-the-slang-dictionary-b-etymological-historical-and-anecdotal.json"
   },
   {
@@ -75793,40 +75403,6 @@
    "file": "books/gutenberg-ebook-25235-a-dialogue-between-dean-swift-and-tho-prior-esq-in-the-isles-of-.json"
   },
   {
-   "slug": "gutenberg-ebook-19637-black-beauty-b-the-autobiography-of-a-horse",
-   "title": "Black Beauty : $b The autobiography of a horse",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Great Britain -- History -- 19th century -- Juvenile fiction",
-    "Historical fiction",
-    "Horses -- Juvenile fiction",
-    "Human-animal relationships -- Juvenile fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/19637"
-   },
-   "cover": null,
-   "authors": [
-    "Sewell, Anna"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 86,
-   "file": "books/gutenberg-ebook-19637-black-beauty-b-the-autobiography-of-a-horse.json"
-  },
-  {
    "slug": "gutenberg-ebook-26289-walden",
    "title": "Walden",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
@@ -75864,7 +75440,7 @@
   },
   {
    "slug": "gutenberg-ebook-22682-secret-armies-b-the-new-technique-of-nazi-warfare",
-   "title": "Secret armies : $b the new technique of Nazi warfare",
+   "title": "Secret armies: the new technique of Nazi warfare",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -75892,7 +75468,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 76,
+   "wordCount": 74,
    "file": "books/gutenberg-ebook-22682-secret-armies-b-the-new-technique-of-nazi-warfare.json"
   },
   {
@@ -76275,42 +75851,6 @@
    "pageCount": 3,
    "wordCount": 72,
    "file": "books/gutenberg-ebook-27312-nero-makers-of-history-series.json"
-  },
-  {
-   "slug": "gutenberg-ebook-4078-the-picture-of-dorian-gray",
-   "title": "The Picture of Dorian Gray",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Appearance (Philosophy) -- Fiction",
-    "Conduct of life -- Fiction",
-    "Didactic fiction",
-    "Great Britain -- History -- Victoria, 1837-1901 -- Fiction",
-    "London (England) -- History -- 1800-1950 -- Fiction",
-    "Paranormal fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/4078"
-   },
-   "cover": null,
-   "authors": [
-    "Wilde, Oscar"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 81,
-   "file": "books/gutenberg-ebook-4078-the-picture-of-dorian-gray.json"
   },
   {
    "slug": "gutenberg-ebook-24889-the-greater-love",
@@ -77162,7 +76702,7 @@
   },
   {
    "slug": "gutenberg-ebook-22598-the-story-of-the-first-trans-continental-railroad-b-its-projecto",
-   "title": "The story of the first trans-continental railroad : $b its projectors, construction, and history",
+   "title": "The story of the first trans-continental railroad: its projectors, construction, and history",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -77189,7 +76729,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 81,
+   "wordCount": 79,
    "file": "books/gutenberg-ebook-22598-the-story-of-the-first-trans-continental-railroad-b-its-projecto.json"
   },
   {
@@ -77519,7 +77059,7 @@
   },
   {
    "slug": "gutenberg-ebook-11937-the-symbolism-of-freemasonry-b-illustrating-and-explaining-its-s",
-   "title": "The symbolism of Freemasonry : $b Illustrating and explaining its science and philosophy, its legends, myths and symbols",
+   "title": "The symbolism of Freemasonry: Illustrating and explaining its science and philosophy, its legends, myths and symbols",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -77545,7 +77085,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 78,
+   "wordCount": 76,
    "file": "books/gutenberg-ebook-11937-the-symbolism-of-freemasonry-b-illustrating-and-explaining-its-s.json"
   },
   {
@@ -78747,7 +78287,7 @@
   },
   {
    "slug": "gutenberg-ebook-22314-mysticism-and-its-results-b-being-an-inquiry-into-the-uses-and-a",
-   "title": "Mysticism and its results : $b Being an inquiry into the uses and abuses of secrecy",
+   "title": "Mysticism and its results: Being an inquiry into the uses and abuses of secrecy",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -78773,7 +78313,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 74,
+   "wordCount": 72,
    "file": "books/gutenberg-ebook-22314-mysticism-and-its-results-b-being-an-inquiry-into-the-uses-and-a.json"
   },
   {
@@ -80167,7 +79707,7 @@
   },
   {
    "slug": "gutenberg-ebook-43707-finger-ring-lore-b-historical-legendary-anecdotal",
-   "title": "Finger-ring lore : $b historical, legendary, anecdotal",
+   "title": "Finger-ring lore: historical, legendary, anecdotal",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -80193,33 +79733,31 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 65,
+   "wordCount": 63,
    "file": "books/gutenberg-ebook-43707-finger-ring-lore-b-historical-legendary-anecdotal.json"
   },
   {
    "slug": "gutenberg-ebook-544-anne-s-house-of-dreams",
    "title": "Anne's House of Dreams",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Anne's House of Dreams for older-student reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Canada -- History -- 1867-1914 -- Fiction",
-    "Country life -- Prince Edward Island -- Fiction",
-    "Friendship -- Fiction",
-    "Marriage -- Fiction",
-    "Orphans -- Fiction",
-    "Prince Edward Island -- History -- 20th century -- Fiction"
+    "Fiction",
+    "Family",
+    "Canadian literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/544"
+    "url": "https://www.gutenberg.org/ebooks/544",
+    "textUrl": "https://www.gutenberg.org/files/544/544-0.txt"
    },
    "cover": null,
    "authors": [
@@ -80228,8 +79766,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 84,
+   "pageCount": 171,
+   "wordCount": 79420,
    "file": "books/gutenberg-ebook-544-anne-s-house-of-dreams.json"
   },
   {
@@ -80365,26 +79903,25 @@
   {
    "slug": "gutenberg-ebook-944-the-voyage-of-the-beagle",
    "title": "The Voyage of the Beagle",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Voyage of the Beagle for older-student science and exploration reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Beagle Expedition (1831-1836)",
-    "Geology",
+    "Science",
     "Natural history",
-    "South America -- Discovery and exploration",
-    "Voyages around the world -- History -- 19th century"
+    "Exploration"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/944"
+    "url": "https://www.gutenberg.org/ebooks/944",
+    "textUrl": "https://www.gutenberg.org/files/944/944-0.txt"
    },
    "cover": null,
    "authors": [
@@ -80393,8 +79930,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 73,
+   "pageCount": 525,
+   "wordCount": 205700,
    "file": "books/gutenberg-ebook-944-the-voyage-of-the-beagle.json"
   },
   {
@@ -80988,7 +80525,7 @@
   },
   {
    "slug": "gutenberg-ebook-22885-hindu-gods-and-heroes-b-studies-in-the-history-of-the-religion-o",
-   "title": "Hindu gods and heroes : $b studies in the history of the religion of India",
+   "title": "Hindu gods and heroes: studies in the history of the religion of India",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -81015,7 +80552,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 77,
+   "wordCount": 75,
    "file": "books/gutenberg-ebook-22885-hindu-gods-and-heroes-b-studies-in-the-history-of-the-religion-o.json"
   },
   {
@@ -81147,7 +80684,7 @@
   },
   {
    "slug": "gutenberg-ebook-40580-a-general-history-of-the-pyrates-b-from-their-first-rise-and-set",
-   "title": "A general history of the pyrates : $b from their first rise and settlement in the island of Providence, to the present time",
+   "title": "A general history of the pyrates: from their first rise and settlement in the island of Providence, to the present time",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -81173,7 +80710,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 87,
+   "wordCount": 85,
    "file": "books/gutenberg-ebook-40580-a-general-history-of-the-pyrates-b-from-their-first-rise-and-set.json"
   },
   {
@@ -81700,7 +81237,7 @@
   },
   {
    "slug": "gutenberg-ebook-26713-norman-ten-hundred-b-a-record-of-the-1st-service-bn-royal-guerns",
-   "title": "Norman Ten Hundred : $b A Record of the 1st (Service) Bn. Royal Guernsey Light Infantry",
+   "title": "Norman Ten Hundred: A Record of the 1st (Service) Bn. Royal Guernsey Light Infantry",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -81729,7 +81266,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 113,
+   "wordCount": 111,
    "file": "books/gutenberg-ebook-26713-norman-ten-hundred-b-a-record-of-the-1st-service-bn-royal-guerns.json"
   },
   {
@@ -82152,40 +81689,6 @@
    "pageCount": 3,
    "wordCount": 78,
    "file": "books/gutenberg-ebook-14496-charles-the-bold-last-duke-of-burgundy-1433-1477.json"
-  },
-  {
-   "slug": "gutenberg-ebook-22787-little-men",
-   "title": "Little Men",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Boarding schools -- Fiction",
-    "Family life -- New England -- Fiction",
-    "New England -- History -- 19th century -- Fiction",
-    "Schools -- Fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/22787"
-   },
-   "cover": null,
-   "authors": [
-    "Alcott, Louisa May"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 82,
-   "file": "books/gutenberg-ebook-22787-little-men.json"
   },
   {
    "slug": "gutenberg-ebook-23507-a-short-history-of-pittsburgh-1758-1908",
@@ -82672,27 +82175,25 @@
   {
    "slug": "gutenberg-ebook-60-the-scarlet-pimpernel",
    "title": "The Scarlet Pimpernel",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of The Scarlet Pimpernel for older-student adventure and historical-context reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Adventure stories",
-    "Blakeney, Percy, Sir (Fictitious character) -- Fiction",
-    "British -- France -- Fiction",
-    "France -- History -- Revolution, 1789-1799 -- Fiction",
-    "Historical fiction",
-    "Nobility -- Fiction"
+    "Fiction",
+    "French Revolution",
+    "Adventure"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/60"
+    "url": "https://www.gutenberg.org/ebooks/60",
+    "textUrl": "https://www.gutenberg.org/files/60/60-0.txt"
    },
    "cover": null,
    "authors": [
@@ -82701,8 +82202,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 83,
+   "pageCount": 178,
+   "wordCount": 85757,
    "file": "books/gutenberg-ebook-60-the-scarlet-pimpernel.json"
   },
   {
@@ -82772,27 +82273,25 @@
   {
    "slug": "gutenberg-ebook-1450-pollyanna",
    "title": "Pollyanna",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Pollyanna for middle-grade reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Aunts -- Juvenile fiction",
-    "Cheerfulness -- Juvenile fiction",
-    "Conduct of life -- Juvenile fiction",
-    "Interpersonal relations -- Juvenile fiction",
-    "Orphans -- Juvenile fiction",
-    "Vermont -- History -- 20th century -- Juvenile fiction"
+    "Fiction",
+    "Optimism",
+    "Children's literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/1450"
+    "url": "https://www.gutenberg.org/ebooks/1450",
+    "textUrl": "https://www.gutenberg.org/files/1450/1450-0.txt"
    },
    "cover": null,
    "authors": [
@@ -82801,8 +82300,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 79,
+   "pageCount": 114,
+   "wordCount": 55734,
    "file": "books/gutenberg-ebook-1450-pollyanna.json"
   },
   {
@@ -83421,42 +82920,6 @@
    "file": "books/gutenberg-ebook-657-the-anglo-saxon-chronicle.json"
   },
   {
-   "slug": "gutenberg-ebook-33-the-scarlet-letter",
-   "title": "The Scarlet Letter",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Adultery -- Fiction",
-    "Boston (Mass.) -- History -- Colonial period, ca. 1600-1775 -- Fiction",
-    "Clergy -- Fiction",
-    "Historical fiction",
-    "Illegitimate children -- Fiction",
-    "Married women -- Fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/33"
-   },
-   "cover": null,
-   "authors": [
-    "Hawthorne, Nathaniel"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 78,
-   "file": "books/gutenberg-ebook-33-the-scarlet-letter.json"
-  },
-  {
    "slug": "gutenberg-ebook-12410-the-travels-of-marco-polo-volume-2",
    "title": "The Travels of Marco Polo — Volume 2",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
@@ -83557,25 +83020,25 @@
   {
    "slug": "gutenberg-ebook-46409-heidi",
    "title": "Heidi",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Heidi for middle-grade reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
    "level": "6",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Grandfathers -- Fiction",
-    "Mountain life -- Switzerland -- Fiction",
-    "Orphans -- Fiction",
-    "Switzerland -- History -- 19th century -- Fiction"
+    "Fiction",
+    "Family",
+    "Children's literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/46409"
+    "url": "https://www.gutenberg.org/ebooks/46409",
+    "textUrl": "https://www.gutenberg.org/files/46409/46409-0.txt"
    },
    "cover": null,
    "authors": [
@@ -83584,8 +83047,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 77,
+   "pageCount": 143,
+   "wordCount": 66787,
    "file": "books/gutenberg-ebook-46409-heidi.json"
   },
   {
@@ -84015,7 +83478,7 @@
   },
   {
    "slug": "gutenberg-ebook-72847-steam-ships-b-the-story-of-their-development-to-the-present-day",
-   "title": "Steam-ships : $b The story of their development to the present day",
+   "title": "Steam-ships: The story of their development to the present day",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -84042,7 +83505,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 71,
+   "wordCount": 69,
    "file": "books/gutenberg-ebook-72847-steam-ships-b-the-story-of-their-development-to-the-present-day.json"
   },
   {
@@ -84144,25 +83607,25 @@
   {
    "slug": "gutenberg-ebook-2788-little-men-life-at-plumfield-with-jo-s-boys",
    "title": "Little Men: Life at Plumfield With Jo's Boys",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Little Men for middle-grade reading.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "5",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Boarding schools -- Fiction",
-    "Family life -- New England -- Fiction",
-    "New England -- History -- 19th century -- Fiction",
-    "Schools -- Fiction"
+    "Fiction",
+    "Family",
+    "American literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/2788"
+    "url": "https://www.gutenberg.org/ebooks/2788",
+    "textUrl": "https://www.gutenberg.org/files/2788/2788-0.txt"
    },
    "cover": null,
    "authors": [
@@ -84171,8 +83634,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 88,
+   "pageCount": 224,
+   "wordCount": 105011,
    "file": "books/gutenberg-ebook-2788-little-men-life-at-plumfield-with-jo-s-boys.json"
   },
   {
@@ -84272,7 +83735,7 @@
   },
   {
    "slug": "gutenberg-ebook-74406-navies-of-the-world-b-giving-concise-descriptions-of-the-plans-a",
-   "title": "Navies of the world : $b giving concise descriptions of the plans, armament and armor of the naval vessels of twenty of the principal nations.",
+   "title": "Navies of the world: giving concise descriptions of the plans, armament and armor of the naval vessels of twenty of the principal nations.",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -84302,7 +83765,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 91,
+   "wordCount": 89,
    "file": "books/gutenberg-ebook-74406-navies-of-the-world-b-giving-concise-descriptions-of-the-plans-a.json"
   },
   {
@@ -84498,7 +83961,7 @@
   },
   {
    "slug": "gutenberg-ebook-70033-the-history-of-magic-b-including-a-clear-and-precise-exposition-",
-   "title": "The history of magic : $b including a clear and precise exposition of its procedure, its rites and its mysteries",
+   "title": "The history of magic: including a clear and precise exposition of its procedure, its rites and its mysteries",
    "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
    "language": "English",
    "langCode": "en",
@@ -84524,7 +83987,7 @@
    "publisher": "Project Gutenberg",
    "hasAudio": false,
    "pageCount": 3,
-   "wordCount": 79,
+   "wordCount": 77,
    "file": "books/gutenberg-ebook-70033-the-history-of-magic-b-including-a-clear-and-precise-exposition-.json"
   },
   {
@@ -84721,40 +84184,6 @@
    "pageCount": 3,
    "wordCount": 70,
    "file": "books/gutenberg-ebook-24797-a-history-of-sea-power.json"
-  },
-  {
-   "slug": "gutenberg-ebook-20271-heidi",
-   "title": "Heidi",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
-   "language": "English",
-   "langCode": "en",
-   "isRtl": false,
-   "level": "6",
-   "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
-   "subjects": [
-    "Grandfathers -- Fiction",
-    "Mountain life -- Switzerland -- Fiction",
-    "Orphans -- Fiction",
-    "Switzerland -- History -- 19th century -- Fiction"
-   ],
-   "license": "Public Domain in the U.S. / Project Gutenberg License",
-   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
-   "source": {
-    "id": "gutenberg",
-    "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/20271"
-   },
-   "cover": null,
-   "authors": [
-    "Spyri, Johanna"
-   ],
-   "illustrators": [],
-   "publisher": "Project Gutenberg",
-   "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 77,
-   "file": "books/gutenberg-ebook-20271-heidi.json"
   },
   {
    "slug": "gutenberg-ebook-11030-incidents-in-the-life-of-a-slave-girl-written-by-herself",
@@ -90161,6 +89590,1196 @@
    "pageCount": 100,
    "wordCount": 47307,
    "file": "books/gutenberg-ebook-16-peter-pan-peter-and-wendy.json"
+  },
+  {
+   "slug": "gutenberg-ebook-5343-rainbow-valley",
+   "title": "Rainbow Valley",
+   "description": "A full in-app public-domain copy of Rainbow Valley for middle-grade and older-student reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Family",
+    "Canadian literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/5343",
+    "textUrl": "https://www.gutenberg.org/files/5343/5343-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Montgomery, L. M. (Lucy Maud)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 175,
+   "wordCount": 80955,
+   "file": "books/gutenberg-ebook-5343-rainbow-valley.json"
+  },
+  {
+   "slug": "gutenberg-ebook-500-the-adventures-of-pinocchio",
+   "title": "The Adventures of Pinocchio",
+   "description": "A full in-app public-domain copy of The Adventures of Pinocchio for early and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Fantasy",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/500",
+    "textUrl": "https://www.gutenberg.org/cache/epub/500/pg500.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Collodi, Carlo"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 82,
+   "wordCount": 39933,
+   "file": "books/gutenberg-ebook-500-the-adventures-of-pinocchio.json"
+  },
+  {
+   "slug": "gutenberg-ebook-501-the-story-of-doctor-dolittle",
+   "title": "The Story of Doctor Dolittle",
+   "description": "A full in-app public-domain copy of The Story of Doctor Dolittle for early and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Animals",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/501",
+    "textUrl": "https://www.gutenberg.org/files/501/501-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Lofting, Hugh"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 56,
+   "wordCount": 26717,
+   "file": "books/gutenberg-ebook-501-the-story-of-doctor-dolittle.json"
+  },
+  {
+   "slug": "gutenberg-ebook-146-a-little-princess-being-the-whole-story-of-sara-crewe-now-told-f",
+   "title": "A Little Princess: Being the whole story of Sara Crewe now told for the first time",
+   "description": "A full in-app public-domain copy of A Little Princess for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Coming of age",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/146",
+    "textUrl": "https://www.gutenberg.org/files/146/146-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Burnett, Frances Hodgson"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 140,
+   "wordCount": 66399,
+   "file": "books/gutenberg-ebook-146-a-little-princess-being-the-whole-story-of-sara-crewe-now-told-f.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1874-the-railway-children",
+   "title": "The Railway Children",
+   "description": "A full in-app public-domain copy of The Railway Children for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Family",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1874",
+    "textUrl": "https://www.gutenberg.org/files/1874/1874.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Nesbit, E. (Edith)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 122,
+   "wordCount": 59392,
+   "file": "books/gutenberg-ebook-1874-the-railway-children.json"
+  },
+  {
+   "slug": "gutenberg-ebook-17314-five-children-and-it",
+   "title": "Five Children and It",
+   "description": "A full in-app public-domain copy of Five Children and It for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Fantasy",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/17314",
+    "textUrl": "https://www.gutenberg.org/files/17314/17314-8.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Nesbit, E. (Edith)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 113,
+   "wordCount": 53730,
+   "file": "books/gutenberg-ebook-17314-five-children-and-it.json"
+  },
+  {
+   "slug": "gutenberg-ebook-225-at-the-back-of-the-north-wind",
+   "title": "At the Back of the North Wind",
+   "description": "A full in-app public-domain copy of At the Back of the North Wind for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Fantasy",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/225",
+    "textUrl": "https://www.gutenberg.org/cache/epub/225/pg225.txt"
+   },
+   "cover": null,
+   "authors": [
+    "MacDonald, George"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 190,
+   "wordCount": 88570,
+   "file": "books/gutenberg-ebook-225-at-the-back-of-the-north-wind.json"
+  },
+  {
+   "slug": "gutenberg-ebook-25564-the-water-babies-a-fairy-tale-for-a-land-baby",
+   "title": "The Water-Babies: A Fairy Tale for a Land-Baby",
+   "description": "A full in-app public-domain copy of The Water-Babies for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Fantasy",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/25564",
+    "textUrl": "https://www.gutenberg.org/files/25564/25564-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Kingsley, Charles"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 148,
+   "wordCount": 68696,
+   "file": "books/gutenberg-ebook-25564-the-water-babies-a-fairy-tale-for-a-land-baby.json"
+  },
+  {
+   "slug": "gutenberg-ebook-78017-the-swiss-family-robinson",
+   "title": "The Swiss family Robinson",
+   "description": "A full in-app public-domain copy of The Swiss Family Robinson for middle-grade adventure reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Adventure",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/78017",
+    "textUrl": "https://www.gutenberg.org/cache/epub/78017/pg78017.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Wyss, Johann David"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 281,
+   "wordCount": 123802,
+   "file": "books/gutenberg-ebook-78017-the-swiss-family-robinson.json"
+  },
+  {
+   "slug": "gutenberg-ebook-2781-just-so-stories",
+   "title": "Just so stories",
+   "description": "A full in-app public-domain copy of Just So Stories for early and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Folklore",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/2781",
+    "textUrl": "https://www.gutenberg.org/files/2781/2781-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Kipling, Rudyard"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 61,
+   "wordCount": 28828,
+   "file": "books/gutenberg-ebook-2781-just-so-stories.json"
+  },
+  {
+   "slug": "gutenberg-ebook-503-the-blue-fairy-book",
+   "title": "The Blue Fairy Book",
+   "description": "A full in-app public-domain copy of The Blue Fairy Book for younger readers.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fairy tales",
+    "Folklore",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/503",
+    "textUrl": "https://www.gutenberg.org/files/503/503-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Lang, Andrew"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 309,
+   "wordCount": 138478,
+   "file": "books/gutenberg-ebook-503-the-blue-fairy-book.json"
+  },
+  {
+   "slug": "gutenberg-ebook-54-the-marvelous-land-of-oz",
+   "title": "The Marvelous Land of Oz",
+   "description": "A full in-app public-domain copy of The Marvelous Land of Oz for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Fantasy",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/54",
+    "textUrl": "https://www.gutenberg.org/files/54/54-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Baum, L. Frank (Lyman Frank)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 85,
+   "wordCount": 41917,
+   "file": "books/gutenberg-ebook-54-the-marvelous-land-of-oz.json"
+  },
+  {
+   "slug": "gutenberg-ebook-33361-ozma-of-oz-a-record-of-her-adventures-with-dorothy-gale-of-kansa",
+   "title": "Ozma of Oz: A Record of Her Adventures with Dorothy Gale of Kansas, the Yellow Hen, the Scarecrow, the Tin Woodman, Tiktok, the Cowardly Lion, and the Hungry Tiger; Besides Other Good People too Numerous to Mention Faithfully Recorded Herein",
+   "description": "A full in-app public-domain copy of Ozma of Oz for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Fantasy",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/33361",
+    "textUrl": "https://www.gutenberg.org/files/33361/33361-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Baum, L. Frank (Lyman Frank)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 81,
+   "wordCount": 39549,
+   "file": "books/gutenberg-ebook-33361-ozma-of-oz-a-record-of-her-adventures-with-dorothy-gale-of-kansa.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1837-the-prince-and-the-pauper",
+   "title": "The Prince and the Pauper",
+   "description": "A full in-app public-domain copy of The Prince and the Pauper for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Historical fiction",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1837",
+    "textUrl": "https://www.gutenberg.org/cache/epub/1837/pg1837.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Twain, Mark"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 152,
+   "wordCount": 70098,
+   "file": "books/gutenberg-ebook-1837-the-prince-and-the-pauper.json"
+  },
+  {
+   "slug": "gutenberg-ebook-498-rebecca-of-sunnybrook-farm",
+   "title": "Rebecca of Sunnybrook Farm",
+   "description": "A full in-app public-domain copy of Rebecca of Sunnybrook Farm for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Family",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/498",
+    "textUrl": "https://www.gutenberg.org/files/498/498-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Wiggin, Kate Douglas Smith"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 161,
+   "wordCount": 73677,
+   "file": "books/gutenberg-ebook-498-rebecca-of-sunnybrook-farm.json"
+  },
+  {
+   "slug": "gutenberg-ebook-764-hans-brinker-or-the-silver-skates",
+   "title": "Hans Brinker; Or, The Silver Skates",
+   "description": "A full in-app public-domain copy of Hans Brinker, or The Silver Skates for middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Family",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/764",
+    "textUrl": "https://www.gutenberg.org/files/764/764.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Dodge, Mary Mapes"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 178,
+   "wordCount": 83659,
+   "file": "books/gutenberg-ebook-764-hans-brinker-or-the-silver-skates.json"
+  },
+  {
+   "slug": "gutenberg-ebook-10148-the-merry-adventures-of-robin-hood",
+   "title": "The Merry Adventures of Robin Hood",
+   "description": "A full in-app public-domain copy of The Merry Adventures of Robin Hood for middle-grade adventure reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Adventure",
+    "Legends"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/10148",
+    "textUrl": "https://www.gutenberg.org/cache/epub/10148/pg10148.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Pyle, Howard"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 240,
+   "wordCount": 111161,
+   "file": "books/gutenberg-ebook-10148-the-merry-adventures-of-robin-hood.json"
+  },
+  {
+   "slug": "gutenberg-ebook-910-white-fang",
+   "title": "White Fang",
+   "description": "A full in-app public-domain copy of White Fang for older-student adventure reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Animals",
+    "Adventure"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/910",
+    "textUrl": "https://www.gutenberg.org/files/910/910-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "London, Jack"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 157,
+   "wordCount": 72218,
+   "file": "books/gutenberg-ebook-910-white-fang.json"
+  },
+  {
+   "slug": "gutenberg-ebook-2226-kim",
+   "title": "Kim",
+   "description": "A full in-app public-domain copy of Kim for older-student literature and history study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Adventure",
+    "India"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/2226",
+    "textUrl": "https://www.gutenberg.org/files/2226/2226-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Kipling, Rudyard"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 224,
+   "wordCount": 104607,
+   "file": "books/gutenberg-ebook-2226-kim.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1268-the-mysterious-island",
+   "title": "The Mysterious Island",
+   "description": "A full in-app public-domain copy of The Mysterious Island for older-student adventure reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Science fiction",
+    "Adventure"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1268",
+    "textUrl": "https://www.gutenberg.org/files/1268/1268-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Verne, Jules"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 406,
+   "wordCount": 193374,
+   "file": "books/gutenberg-ebook-1268-the-mysterious-island.json"
+  },
+  {
+   "slug": "gutenberg-ebook-5230-the-invisible-man-a-grotesque-romance",
+   "title": "The Invisible Man: A Grotesque Romance",
+   "description": "A full in-app public-domain copy of The Invisible Man for older-student science-fiction reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Science fiction",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/5230",
+    "textUrl": "https://www.gutenberg.org/files/5230/5230-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Wells, H. G. (Herbert George)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 104,
+   "wordCount": 48539,
+   "file": "books/gutenberg-ebook-5230-the-invisible-man-a-grotesque-romance.json"
+  },
+  {
+   "slug": "gutenberg-ebook-159-the-island-of-doctor-moreau",
+   "title": "The island of Doctor Moreau",
+   "description": "A full in-app public-domain copy of The Island of Doctor Moreau for older-student science-fiction and ethics study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Science fiction",
+    "Science ethics"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/159",
+    "textUrl": "https://www.gutenberg.org/files/159/159-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Wells, H. G. (Herbert George)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 98,
+   "wordCount": 43584,
+   "file": "books/gutenberg-ebook-159-the-island-of-doctor-moreau.json"
+  },
+  {
+   "slug": "gutenberg-ebook-135-les-mis-rables",
+   "title": "Les Misérables",
+   "description": "A full in-app public-domain copy of Les Miserables for older-student literature and social-history study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Social justice",
+    "French literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/135",
+    "textUrl": "https://www.gutenberg.org/cache/epub/135/pg135.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Hugo, Victor"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 1244,
+   "wordCount": 565691,
+   "file": "books/gutenberg-ebook-135-les-mis-rables.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1399-anna-karenina",
+   "title": "Anna Karenina",
+   "description": "A full in-app public-domain copy of Anna Karenina for older-student world-literature study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Society",
+    "Russian literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1399",
+    "textUrl": "https://www.gutenberg.org/files/1399/1399-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Tolstoy, Leo, graf"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 755,
+   "wordCount": 349804,
+   "file": "books/gutenberg-ebook-1399-anna-karenina.json"
+  },
+  {
+   "slug": "gutenberg-ebook-730-oliver-twist",
+   "title": "Oliver Twist",
+   "description": "A full in-app public-domain copy of Oliver Twist for older-student literature study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Social class",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/730",
+    "textUrl": "https://www.gutenberg.org/files/730/730-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Dickens, Charles"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 329,
+   "wordCount": 158008,
+   "file": "books/gutenberg-ebook-730-oliver-twist.json"
+  },
+  {
+   "slug": "gutenberg-ebook-766-david-copperfield",
+   "title": "David Copperfield",
+   "description": "A full in-app public-domain copy of David Copperfield for older-student literature study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Coming of age",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/766",
+    "textUrl": "https://www.gutenberg.org/files/766/766-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Dickens, Charles"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 758,
+   "wordCount": 354865,
+   "file": "books/gutenberg-ebook-766-david-copperfield.json"
+  },
+  {
+   "slug": "gutenberg-ebook-219-heart-of-darkness",
+   "title": "Heart of Darkness",
+   "description": "A full in-app public-domain copy of Heart of Darkness for older-student literature and colonial-history study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Imperialism",
+    "World literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/219",
+    "textUrl": "https://www.gutenberg.org/files/219/219-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Conrad, Joseph"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 92,
+   "wordCount": 37993,
+   "file": "books/gutenberg-ebook-219-heart-of-darkness.json"
+  },
+  {
+   "slug": "gutenberg-ebook-19942-candide",
+   "title": "Candide",
+   "description": "A full in-app public-domain copy of Candide for older-student philosophy and satire study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Satire",
+    "Philosophy"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/19942",
+    "textUrl": "https://www.gutenberg.org/files/19942/19942-8.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Voltaire"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 78,
+   "wordCount": 35916,
+   "file": "books/gutenberg-ebook-19942-candide.json"
+  },
+  {
+   "slug": "gutenberg-ebook-56644-bulfinch-s-mythology-the-age-of-fable-the-age-of-chivalry-legend",
+   "title": "Bulfinch's Mythology: The Age of Fable; The Age of Chivalry; Legends of Charlemagne",
+   "description": "A full in-app public-domain copy of Bulfinch's Mythology (The Age of Fable) for mythology study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Mythology",
+    "Classical studies",
+    "Folklore"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/56644",
+    "textUrl": "https://www.gutenberg.org/files/56644/56644-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Bulfinch, Thomas"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 771,
+   "wordCount": 335125,
+   "file": "books/gutenberg-ebook-56644-bulfinch-s-mythology-the-age-of-fable-the-age-of-chivalry-legend.json"
+  },
+  {
+   "slug": "gutenberg-ebook-11582-old-greek-stories",
+   "title": "Old Greek Stories",
+   "description": "A full in-app public-domain copy of Old Greek Stories for middle-grade mythology reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Mythology",
+    "Ancient history",
+    "Folklore"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/11582",
+    "textUrl": "https://www.gutenberg.org/files/11582/11582-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Baldwin, James"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 93,
+   "wordCount": 43561,
+   "file": "books/gutenberg-ebook-11582-old-greek-stories.json"
+  },
+  {
+   "slug": "gutenberg-ebook-128-the-arabian-nights-entertainments",
+   "title": "The Arabian Nights Entertainments",
+   "description": "A full in-app public-domain copy of The Arabian Nights' Entertainments for middle-grade and older-student reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Folklore",
+    "Fairy tales",
+    "World literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/128",
+    "textUrl": "https://www.gutenberg.org/files/128/128-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Lang, Andrew"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 239,
+   "wordCount": 111625,
+   "file": "books/gutenberg-ebook-128-the-arabian-nights-entertainments.json"
+  },
+  {
+   "slug": "gutenberg-ebook-3748-a-journey-into-the-interior-of-the-earth",
+   "title": "A Journey into the Interior of the Earth",
+   "description": "A full in-app public-domain copy of A Journey to the Centre of the Earth for middle-grade and older-student reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Science fiction",
+    "Adventure"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/3748",
+    "textUrl": "https://www.gutenberg.org/files/3748/3748-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Verne, Jules"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 154,
+   "wordCount": 74121,
+   "file": "books/gutenberg-ebook-3748-a-journey-into-the-interior-of-the-earth.json"
+  },
+  {
+   "slug": "gutenberg-ebook-996-don-quixote",
+   "title": "Don Quixote",
+   "description": "A full in-app public-domain copy of Don Quixote for older-student world-literature study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Satire",
+    "Spanish literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/996",
+    "textUrl": "https://www.gutenberg.org/files/996/996-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Cervantes Saavedra, Miguel de"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 997,
+   "wordCount": 427315,
+   "file": "books/gutenberg-ebook-996-don-quixote.json"
+  },
+  {
+   "slug": "gutenberg-ebook-203-uncle-tom-s-cabin",
+   "title": "Uncle Tom's Cabin",
+   "description": "A full in-app public-domain copy of Uncle Tom's Cabin for older-student literature and history study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Abolition",
+    "American literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/203",
+    "textUrl": "https://www.gutenberg.org/cache/epub/203/pg203.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Stowe, Harriet Beecher"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 384,
+   "wordCount": 180963,
+   "file": "books/gutenberg-ebook-203-uncle-tom-s-cabin.json"
+  },
+  {
+   "slug": "gutenberg-ebook-11012-the-autobiography-of-an-ex-colored-man",
+   "title": "The Autobiography of an Ex-Colored Man",
+   "description": "A full in-app public-domain copy of The Autobiography of an Ex-Colored Man for older-student literature and history study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "Civil rights",
+    "American literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/11012",
+    "textUrl": "https://www.gutenberg.org/files/11012/11012-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Johnson, James Weldon"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 130,
+   "wordCount": 51846,
+   "file": "books/gutenberg-ebook-11012-the-autobiography-of-an-ex-colored-man.json"
   }
  ]
 }

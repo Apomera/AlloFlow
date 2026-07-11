@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-26713-norman-ten-hundred-b-a-record-of-the-1st-service-bn-royal-guerns",
-  "title": "Norman Ten Hundred : $b A Record of the 1st (Service) Bn. Royal Guernsey Light Infantry",
+  "title": "Norman Ten Hundred: A Record of the 1st (Service) Bn. Royal Guernsey Light Infantry",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -35,7 +35,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Norman Ten Hundred : $b A Record of the 1st (Service) Bn. Royal Guernsey Light Infantry\" by Blicq, A. Stanley (Arthur Stanley). Metadata tags include: Cambrai, Battle of, Cambrai, France, 1917; Guernsey (Channel Islands) -- Militia -- History; Guernsey (Channel Islands) -- Regimental histories -- 1st (Service) Bn. Royal Guernsey Light Infantry; World War, 1914-1918 -- Regimental histories -- Channel Islands -- Guernsey."
+      "text": "Project Gutenberg catalog record for \"Norman Ten Hundred: A Record of the 1st (Service) Bn. Royal Guernsey Light Infantry\" by Blicq, A. Stanley (Arthur Stanley). Metadata tags include: Cambrai, Battle of, Cambrai, France, 1917; Guernsey (Channel Islands) -- Militia -- History; Guernsey (Channel Islands) -- Regimental histories -- 1st (Service) Bn. Royal Guernsey Light Infantry; World War, 1914-1918 -- Regimental histories -- Channel Islands -- Guernsey."
     },
     {
       "n": 2,
@@ -50,6 +50,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 113
+    "words": 111
   }
 }

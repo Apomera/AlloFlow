@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-21012-the-loyalists-of-america-and-their-times-b-from-1620-to-1816-vol",
-  "title": "The loyalists of America and their times : $b from 1620 to 1816, Vol. 1 of 2",
+  "title": "The loyalists of America and their times: from 1620 to 1816, Vol. 1 of 2",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -37,7 +37,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"The loyalists of America and their times : $b from 1620 to 1816, Vol. 1 of 2\" by Ryerson, Egerton. Metadata tags include: American loyalists; Massachusetts -- Politics and government -- To 1775; United States -- History -- Revolution, 1775-1783; United States -- History -- War of 1812."
+      "text": "Project Gutenberg catalog record for \"The loyalists of America and their times: from 1620 to 1816, Vol. 1 of 2\" by Ryerson, Egerton. Metadata tags include: American loyalists; Massachusetts -- Politics and government -- To 1775; United States -- History -- Revolution, 1775-1783; United States -- History -- War of 1812."
     },
     {
       "n": 2,
@@ -52,6 +52,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 98
+    "words": 96
   }
 }

@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-43707-finger-ring-lore-b-historical-legendary-anecdotal",
-  "title": "Finger-ring lore : $b historical, legendary, anecdotal",
+  "title": "Finger-ring lore: historical, legendary, anecdotal",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Finger-ring lore : $b historical, legendary, anecdotal\" by Jones, William, F.S.A.. Metadata tags include: Rings."
+      "text": "Project Gutenberg catalog record for \"Finger-ring lore: historical, legendary, anecdotal\" by Jones, William, F.S.A.. Metadata tags include: Rings."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 65
+    "words": 63
   }
 }

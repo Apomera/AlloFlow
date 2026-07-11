@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-46976-the-anabasis-of-alexander-b-or-the-history-of-the-wars-and-conqu",
-  "title": "The Anabasis of Alexander : $b or, The history of the wars and conquests of Alexander the Great",
+  "title": "The Anabasis of Alexander: or, The history of the wars and conquests of Alexander the Great",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -34,7 +34,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"The Anabasis of Alexander : $b or, The history of the wars and conquests of Alexander the Great\" by Arrian. Metadata tags include: Alexander, the Great, 356 B.C.-323 B.C.; India -- History -- To 324 B.C.; Iran -- History -- To 640."
+      "text": "Project Gutenberg catalog record for \"The Anabasis of Alexander: or, The history of the wars and conquests of Alexander the Great\" by Arrian. Metadata tags include: Alexander, the Great, 356 B.C.-323 B.C.; India -- History -- To 324 B.C.; Iran -- History -- To 640."
     },
     {
       "n": 2,
@@ -49,6 +49,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 92
+    "words": 90
   }
 }

@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-76639-eloisa-b-or-a-series-of-original-letters",
-  "title": "Eloisa : $b or, A series of original letters",
+  "title": "Eloisa: or, A series of original letters",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -37,7 +37,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Eloisa : $b or, A series of original letters\" by Rousseau, Jean-Jacques. Metadata tags include: Alps Region -- History -- 18th century -- Fiction; Epistolary fiction; French fiction -- Translations into English; Man-woman relationships -- Fiction."
+      "text": "Project Gutenberg catalog record for \"Eloisa: or, A series of original letters\" by Rousseau, Jean-Jacques. Metadata tags include: Alps Region -- History -- 18th century -- Fiction; Epistolary fiction; French fiction -- Translations into English; Man-woman relationships -- Fiction."
     },
     {
       "n": 2,
@@ -52,6 +52,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 86
+    "words": 84
   }
 }

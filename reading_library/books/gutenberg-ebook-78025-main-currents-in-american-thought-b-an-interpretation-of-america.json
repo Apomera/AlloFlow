@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-78025-main-currents-in-american-thought-b-an-interpretation-of-america",
-  "title": "Main currents in American thought : $b An interpretation of American literature from the beginnings to 1920",
+  "title": "Main currents in American thought: An interpretation of American literature from the beginnings to 1920",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -37,7 +37,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Main currents in American thought : $b An interpretation of American literature from the beginnings to 1920\" by Parrington, Vernon Louis. Metadata tags include: American literature -- History and criticism; Philosophy, American; United States -- Civilization; United States -- Intellectual life."
+      "text": "Project Gutenberg catalog record for \"Main currents in American thought: An interpretation of American literature from the beginnings to 1920\" by Parrington, Vernon Louis. Metadata tags include: American literature -- History and criticism; Philosophy, American; United States -- Civilization; United States -- Intellectual life."
     },
     {
       "n": 2,
@@ -52,6 +52,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 91
+    "words": 89
   }
 }

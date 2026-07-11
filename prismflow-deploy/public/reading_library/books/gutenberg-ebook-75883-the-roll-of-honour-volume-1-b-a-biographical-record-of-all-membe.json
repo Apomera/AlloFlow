@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-75883-the-roll-of-honour-volume-1-b-a-biographical-record-of-all-membe",
-  "title": "The Roll of Honour, Volume 1 : $b A biographical record of all members of His Majesty's naval and military forces who have fallen in the war",
+  "title": "The Roll of Honour, Volume 1: A biographical record of all members of His Majesty's naval and military forces who have fallen in the war",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -33,7 +33,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"The Roll of Honour, Volume 1 : $b A biographical record of all members of His Majesty's naval and military forces who have fallen in the war\" by Ruvigny et Raineval, Melville Henry Massue, marquis de. Metadata tags include: Soldiers -- Great Britain -- Biography; World War, 1914-1918 -- Registers of dead -- Great Britain."
+      "text": "Project Gutenberg catalog record for \"The Roll of Honour, Volume 1: A biographical record of all members of His Majesty's naval and military forces who have fallen in the war\" by Ruvigny et Raineval, Melville Henry Massue, marquis de. Metadata tags include: Soldiers -- Great Britain -- Biography; World War, 1914-1918 -- Registers of dead -- Great Britain."
     },
     {
       "n": 2,
@@ -48,6 +48,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 105
+    "words": 103
   }
 }

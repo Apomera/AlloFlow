@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-27763-a-journal-of-a-young-man-of-massachusetts-late-a-surgeon-on-boar",
-  "title": "A journal, of a young man of Massachusetts, late a surgeon on board an American privateer, who was captured at sea by the British in May, eighteen hundred and thirteen and was confined first, at Melville Island, Halifax, then at Chatham, in England, and last at Dartmoor prison : $b Interspersed with observations, anecdotes and remarks, tending to illustrate the moral and political characters of three nations. To which is added, a correct engraving of Dartmoor prison, representing the massacre of American prisoners.",
+  "title": "A journal, of a young man of Massachusetts, late a surgeon on board an American privateer, who was captured at sea by the British in May, eighteen hundred and thirteen and was confined first, at Melville Island, Halifax, then at Chatham, in England, and last at Dartmoor prison: Interspersed with observations, anecdotes and remarks, tending to illustrate the moral and political characters of three nations. To which is added, a correct engraving of Dartmoor prison, representing the massacre of American prisoners.",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -33,7 +33,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"A journal, of a young man of Massachusetts, late a surgeon on board an American privateer, who was captured at sea by the British in May, eighteen hundred and thirteen and was confined first, at Melville Island, Halifax, then at Chatham, in England, and last at Dartmoor prison : $b Interspersed with observations, anecdotes and remarks, tending to illustrate the moral and political characters of three nations. To which is added, a correct engraving of Dartmoor prison, representing the massacre of American prisoners.\" by Waterhouse, Benjamin. Metadata tags include: Dartmoor Prison; United States -- History -- War of 1812 -- Prisoners and prisons."
+      "text": "Project Gutenberg catalog record for \"A journal, of a young man of Massachusetts, late a surgeon on board an American privateer, who was captured at sea by the British in May, eighteen hundred and thirteen and was confined first, at Melville Island, Halifax, then at Chatham, in England, and last at Dartmoor prison: Interspersed with observations, anecdotes and remarks, tending to illustrate the moral and political characters of three nations. To which is added, a correct engraving of Dartmoor prison, representing the massacre of American prisoners.\" by Waterhouse, Benjamin. Metadata tags include: Dartmoor Prison; United States -- History -- War of 1812 -- Prisoners and prisons."
     },
     {
       "n": 2,
@@ -48,6 +48,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 153
+    "words": 151
   }
 }

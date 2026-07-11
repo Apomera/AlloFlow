@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-22910-ancient-law-b-its-connection-to-the-history-of-early-society",
-  "title": "Ancient law : $b its connection to the history of early society",
+  "title": "Ancient law: its connection to the history of early society",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -36,7 +36,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Ancient law : $b its connection to the history of early society\" by Maine, Henry Sumner, Sir. Metadata tags include: Comparative law; Customary law; Law -- History; Law, Ancient."
+      "text": "Project Gutenberg catalog record for \"Ancient law: its connection to the history of early society\" by Maine, Henry Sumner, Sir. Metadata tags include: Comparative law; Customary law; Law -- History; Law, Ancient."
     },
     {
       "n": 2,
@@ -51,6 +51,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 79
+    "words": 77
   }
 }

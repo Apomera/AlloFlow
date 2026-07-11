@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-72344-the-decline-of-the-west-volume-1-b-form-and-actuality",
-  "title": "The decline of the West, Volume 1 : $b Form and actuality",
+  "title": "The decline of the West, Volume 1: Form and actuality",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"The decline of the West, Volume 1 : $b Form and actuality\" by Spengler, Oswald. Metadata tags include: Civilization -- History."
+      "text": "Project Gutenberg catalog record for \"The decline of the West, Volume 1: Form and actuality\" by Spengler, Oswald. Metadata tags include: Civilization -- History."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 71
+    "words": 69
   }
 }

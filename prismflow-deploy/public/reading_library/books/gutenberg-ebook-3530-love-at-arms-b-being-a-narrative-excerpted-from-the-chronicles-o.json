@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-3530-love-at-arms-b-being-a-narrative-excerpted-from-the-chronicles-o",
-  "title": "Love-at-arms : $b being a narrative excerpted from the chronicles of Urbino, during the dominion of the high and mighty Messer Guidobaldo da Montefeltro",
+  "title": "Love-at-arms: being a narrative excerpted from the chronicles of Urbino, during the dominion of the high and mighty Messer Guidobaldo da Montefeltro",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -35,7 +35,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Love-at-arms : $b being a narrative excerpted from the chronicles of Urbino, during the dominion of the high and mighty Messer Guidobaldo da Montefeltro\" by Sabatini, Rafael. Metadata tags include: Arranged marriage -- Fiction; Borgia, Cesare, 1476?-1507 -- Fiction; Italy -- History -- 1492-1559 -- Fiction; Urbino (Italy) -- Fiction."
+      "text": "Project Gutenberg catalog record for \"Love-at-arms: being a narrative excerpted from the chronicles of Urbino, during the dominion of the high and mighty Messer Guidobaldo da Montefeltro\" by Sabatini, Rafael. Metadata tags include: Arranged marriage -- Fiction; Borgia, Cesare, 1476?-1507 -- Fiction; Italy -- History -- 1492-1559 -- Fiction; Urbino (Italy) -- Fiction."
     },
     {
       "n": 2,
@@ -50,6 +50,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 100
+    "words": 98
   }
 }

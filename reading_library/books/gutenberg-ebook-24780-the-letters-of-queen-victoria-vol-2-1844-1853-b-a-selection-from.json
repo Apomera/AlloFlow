@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-24780-the-letters-of-queen-victoria-vol-2-1844-1853-b-a-selection-from",
-  "title": "The letters of Queen Victoria, vol. 2, 1844-1853 : $b A selection from Her Majesty's correspondence between the years 1837 and 1861.",
+  "title": "The letters of Queen Victoria, vol. 2, 1844-1853: A selection from Her Majesty's correspondence between the years 1837 and 1861.",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -36,7 +36,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"The letters of Queen Victoria, vol. 2, 1844-1853 : $b A selection from Her Majesty's correspondence between the years 1837 and 1861.\" by Victoria, Queen of Great Britain. Metadata tags include: Europe -- Politics and government -- 1848-1871; Great Britain -- History -- Victoria, 1837-1901; Great Britain -- History -- Victoria, 1837-1901 -- Sources; Great Britain -- Politics and government -- 1837-1901."
+      "text": "Project Gutenberg catalog record for \"The letters of Queen Victoria, vol. 2, 1844-1853: A selection from Her Majesty's correspondence between the years 1837 and 1861.\" by Victoria, Queen of Great Britain. Metadata tags include: Europe -- Politics and government -- 1848-1871; Great Britain -- History -- Victoria, 1837-1901; Great Britain -- History -- Victoria, 1837-1901 -- Sources; Great Britain -- Politics and government -- 1837-1901."
     },
     {
       "n": 2,
@@ -51,6 +51,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 112
+    "words": 110
   }
 }

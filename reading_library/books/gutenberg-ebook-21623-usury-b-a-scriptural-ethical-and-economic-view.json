@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-21623-usury-b-a-scriptural-ethical-and-economic-view",
-  "title": "Usury : $b a scriptural, ethical and economic view",
+  "title": "Usury: a scriptural, ethical and economic view",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Usury : $b a scriptural, ethical and economic view\" by Elliott, Calvin. Metadata tags include: Usury."
+      "text": "Project Gutenberg catalog record for \"Usury: a scriptural, ethical and economic view\" by Elliott, Calvin. Metadata tags include: Usury."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 66
+    "words": 64
   }
 }

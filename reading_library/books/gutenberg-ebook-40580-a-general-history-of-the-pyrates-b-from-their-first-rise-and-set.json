@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-40580-a-general-history-of-the-pyrates-b-from-their-first-rise-and-set",
-  "title": "A general history of the pyrates : $b from their first rise and settlement in the island of Providence, to the present time",
+  "title": "A general history of the pyrates: from their first rise and settlement in the island of Providence, to the present time",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"A general history of the pyrates : $b from their first rise and settlement in the island of Providence, to the present time\" by Johnson, Charles, active 1724-1731. Metadata tags include: Pirates -- Early works to 1800."
+      "text": "Project Gutenberg catalog record for \"A general history of the pyrates: from their first rise and settlement in the island of Providence, to the present time\" by Johnson, Charles, active 1724-1731. Metadata tags include: Pirates -- Early works to 1800."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 87
+    "words": 85
   }
 }

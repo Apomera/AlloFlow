@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-78124-1066-and-all-that-b-a-memorable-history-of-england-comprising-al",
-  "title": "1066 and all that : $b A memorable history of England, comprising all the parts you can remember, including 103 good things, 5 bad kings and 2 genuine dates",
+  "title": "1066 and all that: A memorable history of England, comprising all the parts you can remember, including 103 good things, 5 bad kings and 2 genuine dates",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -34,7 +34,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"1066 and all that : $b A memorable history of England, comprising all the parts you can remember, including 103 good things, 5 bad kings and 2 genuine dates\" by Sellar, Walter Carruthers, Yeatman, Robert Julian. Metadata tags include: English wit and humor -- 20th century; Great Britain -- History -- Humor."
+      "text": "Project Gutenberg catalog record for \"1066 and all that: A memorable history of England, comprising all the parts you can remember, including 103 good things, 5 bad kings and 2 genuine dates\" by Sellar, Walter Carruthers, Yeatman, Robert Julian. Metadata tags include: English wit and humor -- 20th century; Great Britain -- History -- Humor."
     },
     {
       "n": 2,
@@ -49,6 +49,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 102
+    "words": 100
   }
 }

@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-22885-hindu-gods-and-heroes-b-studies-in-the-history-of-the-religion-o",
-  "title": "Hindu gods and heroes : $b studies in the history of the religion of India",
+  "title": "Hindu gods and heroes: studies in the history of the religion of India",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -33,7 +33,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Hindu gods and heroes : $b studies in the history of the religion of India\" by Barnett, Lionel D. (Lionel David). Metadata tags include: Hindu mythology; Hinduism."
+      "text": "Project Gutenberg catalog record for \"Hindu gods and heroes: studies in the history of the religion of India\" by Barnett, Lionel D. (Lionel David). Metadata tags include: Hindu mythology; Hinduism."
     },
     {
       "n": 2,
@@ -48,6 +48,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 77
+    "words": 75
   }
 }

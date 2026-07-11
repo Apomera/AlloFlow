@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-21976-three-years-in-the-sixth-corps-b-a-concise-narrative-of-events-i",
-  "title": "Three years in the Sixth Corps : $b A concise narrative of events in the Army of the Potomac, from 1861 to the close of the rebellion, April, 1865",
+  "title": "Three years in the Sixth Corps: A concise narrative of events in the Army of the Potomac, from 1861 to the close of the rebellion, April, 1865",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -37,7 +37,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Three years in the Sixth Corps : $b A concise narrative of events in the Army of the Potomac, from 1861 to the close of the rebellion, April, 1865\" by Stevens, George T. (George Thomas). Metadata tags include: Soldiers -- New York (State) -- Biography; Stevens, George T. (George Thomas), 1832-1921; United States -- History -- Civil War, 1861-1865 -- Personal narratives; United States -- History -- Civil War, 1861-1865 -- Regimental histories."
+      "text": "Project Gutenberg catalog record for \"Three years in the Sixth Corps: A concise narrative of events in the Army of the Potomac, from 1861 to the close of the rebellion, April, 1865\" by Stevens, George T. (George Thomas). Metadata tags include: Soldiers -- New York (State) -- Biography; Stevens, George T. (George Thomas), 1832-1921; United States -- History -- Civil War, 1861-1865 -- Personal narratives; United States -- History -- Civil War, 1861-1865 -- Regimental histories."
     },
     {
       "n": 2,
@@ -52,6 +52,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 123
+    "words": 121
   }
 }

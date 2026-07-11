@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-28294-pilgrimage-from-the-alps-to-the-tiber-b-or-the-influence-of-roma",
-  "title": "Pilgrimage from the Alps to the Tiber : $b or, The influence of Romanism on trade, justice, and knowledge",
+  "title": "Pilgrimage from the Alps to the Tiber: or, The influence of Romanism on trade, justice, and knowledge",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -33,7 +33,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Pilgrimage from the Alps to the Tiber : $b or, The influence of Romanism on trade, justice, and knowledge\" by Wylie, J. A. (James Aitken). Metadata tags include: Catholic Church -- Italy; Italy -- Description and travel."
+      "text": "Project Gutenberg catalog record for \"Pilgrimage from the Alps to the Tiber: or, The influence of Romanism on trade, justice, and knowledge\" by Wylie, J. A. (James Aitken). Metadata tags include: Catholic Church -- Italy; Italy -- Description and travel."
     },
     {
       "n": 2,
@@ -48,6 +48,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 87
+    "words": 85
   }
 }

@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-11937-the-symbolism-of-freemasonry-b-illustrating-and-explaining-its-s",
-  "title": "The symbolism of Freemasonry : $b Illustrating and explaining its science and philosophy, its legends, myths and symbols",
+  "title": "The symbolism of Freemasonry: Illustrating and explaining its science and philosophy, its legends, myths and symbols",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"The symbolism of Freemasonry : $b Illustrating and explaining its science and philosophy, its legends, myths and symbols\" by Mackey, Albert Gallatin. Metadata tags include: Freemasonry -- Symbolism."
+      "text": "Project Gutenberg catalog record for \"The symbolism of Freemasonry: Illustrating and explaining its science and philosophy, its legends, myths and symbols\" by Mackey, Albert Gallatin. Metadata tags include: Freemasonry -- Symbolism."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 78
+    "words": 76
   }
 }

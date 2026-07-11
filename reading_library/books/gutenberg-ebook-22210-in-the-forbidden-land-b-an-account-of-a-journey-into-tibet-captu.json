@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-22210-in-the-forbidden-land-b-an-account-of-a-journey-into-tibet-captu",
-  "title": "In the forbidden land : $b an account of a journey into Tibet, capture by the Tibetan lamas and soldiers, imprisonment, torture and ultimate release",
+  "title": "In the forbidden land: an account of a journey into Tibet, capture by the Tibetan lamas and soldiers, imprisonment, torture and ultimate release",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -32,7 +32,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"In the forbidden land : $b an account of a journey into Tibet, capture by the Tibetan lamas and soldiers, imprisonment, torture and ultimate release\" by Landor, Arnold Henry Savage. Metadata tags include: Tibet Autonomous Region (China) -- Description and travel."
+      "text": "Project Gutenberg catalog record for \"In the forbidden land: an account of a journey into Tibet, capture by the Tibetan lamas and soldiers, imprisonment, torture and ultimate release\" by Landor, Arnold Henry Savage. Metadata tags include: Tibet Autonomous Region (China) -- Description and travel."
     },
     {
       "n": 2,
@@ -47,6 +47,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 91
+    "words": 89
   }
 }

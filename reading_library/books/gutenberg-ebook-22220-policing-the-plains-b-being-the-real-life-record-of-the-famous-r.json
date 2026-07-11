@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-22220-policing-the-plains-b-being-the-real-life-record-of-the-famous-r",
-  "title": "Policing the plains : $b being the real-life record of the famous Royal North-West Mounted Police",
+  "title": "Policing the plains: being the real-life record of the famous Royal North-West Mounted Police",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -33,7 +33,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Policing the plains : $b being the real-life record of the famous Royal North-West Mounted Police\" by MacBeth, R. G. (Roderick George). Metadata tags include: Northwest, Canadian -- History; Royal Canadian Mounted Police."
+      "text": "Project Gutenberg catalog record for \"Policing the plains: being the real-life record of the famous Royal North-West Mounted Police\" by MacBeth, R. G. (Roderick George). Metadata tags include: Northwest, Canadian -- History; Royal Canadian Mounted Police."
     },
     {
       "n": 2,
@@ -48,6 +48,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 83
+    "words": 81
   }
 }

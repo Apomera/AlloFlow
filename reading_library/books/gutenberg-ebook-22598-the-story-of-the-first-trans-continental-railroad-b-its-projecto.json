@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-22598-the-story-of-the-first-trans-continental-railroad-b-its-projecto",
-  "title": "The story of the first trans-continental railroad : $b its projectors, construction, and history",
+  "title": "The story of the first trans-continental railroad: its projectors, construction, and history",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -33,7 +33,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"The story of the first trans-continental railroad : $b its projectors, construction, and history\" by Bailey, William Francis. Metadata tags include: Railroads -- United States -- History; Union Pacific Railroad Company."
+      "text": "Project Gutenberg catalog record for \"The story of the first trans-continental railroad: its projectors, construction, and history\" by Bailey, William Francis. Metadata tags include: Railroads -- United States -- History; Union Pacific Railroad Company."
     },
     {
       "n": 2,
@@ -48,6 +48,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 81
+    "words": 79
   }
 }

@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-72847-steam-ships-b-the-story-of-their-development-to-the-present-day",
-  "title": "Steam-ships : $b The story of their development to the present day",
+  "title": "Steam-ships: The story of their development to the present day",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -33,7 +33,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Steam-ships : $b The story of their development to the present day\" by Fletcher, R. A.. Metadata tags include: Shipbuilding; Steamboats."
+      "text": "Project Gutenberg catalog record for \"Steam-ships: The story of their development to the present day\" by Fletcher, R. A.. Metadata tags include: Shipbuilding; Steamboats."
     },
     {
       "n": 2,
@@ -48,6 +48,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 71
+    "words": 69
   }
 }

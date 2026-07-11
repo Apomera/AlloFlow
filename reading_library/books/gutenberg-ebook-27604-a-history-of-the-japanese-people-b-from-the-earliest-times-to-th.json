@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-27604-a-history-of-the-japanese-people-b-from-the-earliest-times-to-th",
-  "title": "A history of the Japanese people : $b from the earliest times to the end of the Meiji era",
+  "title": "A history of the Japanese people: from the earliest times to the end of the Meiji era",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -34,7 +34,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"A history of the Japanese people : $b from the earliest times to the end of the Meiji era\" by Brinkley, F. (Frank), Kikuchi, Dairoku. Metadata tags include: Japan -- Civilization; Japan -- History."
+      "text": "Project Gutenberg catalog record for \"A history of the Japanese people: from the earliest times to the end of the Meiji era\" by Brinkley, F. (Frank), Kikuchi, Dairoku. Metadata tags include: Japan -- Civilization; Japan -- History."
     },
     {
       "n": 2,
@@ -49,6 +49,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 84
+    "words": 82
   }
 }

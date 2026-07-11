@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-27164-seven-and-nine-years-among-the-camanches-and-apaches-b-an-autobi",
-  "title": "Seven and nine years among the Camanches and Apaches : $b an autobiography",
+  "title": "Seven and nine years among the Camanches and Apaches: an autobiography",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -36,7 +36,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"Seven and nine years among the Camanches and Apaches : $b an autobiography\" by Eastman, Edwin. Metadata tags include: Apache Indians -- Fiction; Comanche Indians -- Fiction; Eastman, Edwin (Fictitious character) -- Fiction; Indian captivities -- Fiction."
+      "text": "Project Gutenberg catalog record for \"Seven and nine years among the Camanches and Apaches: an autobiography\" by Eastman, Edwin. Metadata tags include: Apache Indians -- Fiction; Comanche Indians -- Fiction; Eastman, Edwin (Fictitious character) -- Fiction; Indian captivities -- Fiction."
     },
     {
       "n": 2,
@@ -51,6 +51,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 87
+    "words": 85
   }
 }

@@ -1,7 +1,7 @@
 {
   "schema": "allo-reading-book@1",
   "slug": "gutenberg-ebook-42108-the-slang-dictionary-b-etymological-historical-and-anecdotal",
-  "title": "The slang dictionary : $b Etymological, historical and anecdotal",
+  "title": "The slang dictionary: Etymological, historical and anecdotal",
   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
   "language": "English",
   "langCode": "en",
@@ -34,7 +34,7 @@
     {
       "n": 1,
       "img": null,
-      "text": "Project Gutenberg catalog record for \"The slang dictionary : $b Etymological, historical and anecdotal\" by Hotten, John Camden. Metadata tags include: English language -- Dialects -- England -- London -- Glossaries, vocabularies, etc.; English language -- England -- London -- Slang -- Dictionaries; London (England) -- Languages -- Dictionaries."
+      "text": "Project Gutenberg catalog record for \"The slang dictionary: Etymological, historical and anecdotal\" by Hotten, John Camden. Metadata tags include: English language -- Dialects -- England -- London -- Glossaries, vocabularies, etc.; English language -- England -- London -- Slang -- Dictionaries; London (England) -- Languages -- Dictionaries."
     },
     {
       "n": 2,
@@ -49,6 +49,6 @@
   ],
   "stats": {
     "pages": 3,
-    "words": 94
+    "words": 92
   }
 }
