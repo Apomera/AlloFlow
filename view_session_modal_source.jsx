@@ -40,6 +40,9 @@ function SessionModal({
   doc,
   handleSetShowGroupModalToTrue,
   handleSetShowSessionModalToFalse,
+  isMailboxSession = false,
+  mailboxJoinUrl = '',
+  onEndMailboxSession = null,
   sessionData,
   setActiveSessionCode,
   setConfirmDialog,
@@ -62,6 +65,7 @@ function SessionModal({
   const [liveQrError, setLiveQrError] = React.useState(false);
 
   const liveJoinUrl = React.useMemo(() => {
+    if (mailboxJoinUrl) return mailboxJoinUrl;
     if (isLocalOnly || !activeSessionCode || typeof window === 'undefined') return '';
     const params = {
       allo_join: activeSessionCode,
@@ -90,7 +94,7 @@ function SessionModal({
     } catch (_) {
       return '';
     }
-  }, [activeSessionAppId, activeSessionCode, appId, isLocalOnly]);
+  }, [activeSessionAppId, activeSessionCode, appId, isLocalOnly, mailboxJoinUrl]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -126,8 +130,8 @@ function SessionModal({
             <Wifi size={48} className="text-green-600 animate-pulse" />
           </div>
         </div>
-        <h2 className="text-2xl font-black text-slate-800 mb-2">{isLocalOnly ? 'Local preview' : t('session.live_title')}</h2>
-        <p className="text-slate-600 mb-6 font-medium">{isLocalOnly ? 'Firebase did not create a shareable session. This preview stays on the teacher device.' : t('session.live_instruction')}</p>
+        <h2 className="text-2xl font-black text-slate-800 mb-2">{isLocalOnly ? 'Local preview' : isMailboxSession ? 'Class Mailbox live session' : t('session.live_title')}</h2>
+        <p className="text-slate-600 mb-6 font-medium">{isLocalOnly ? 'Firebase did not create a shareable session. This preview stays on the teacher device.' : isMailboxSession ? 'Students join through your Class Mailbox without accounts.' : t('session.live_instruction')}</p>
         <div
           className="bg-indigo-50 border-4 border-indigo-100 rounded-2xl p-6 mb-6 cursor-pointer hover:bg-indigo-100 transition-colors group relative"
           onClick={() => copyToClipboard(activeSessionCode)}
@@ -142,7 +146,7 @@ function SessionModal({
         </div>
         {liveJoinUrl && (
           <div className="mb-6 bg-cyan-50 p-4 rounded-xl border border-cyan-200 text-left">
-            <p className="text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center">Student QR join</p>
+            <p className="text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center">{isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'}</p>
             <div className="flex justify-center mb-3">
               <div className="bg-white border border-cyan-200 rounded-lg p-2 w-40 h-40 flex items-center justify-center shadow-sm">
                 {liveQrSvg
@@ -157,7 +161,7 @@ function SessionModal({
             >
               Copy student join link <Copy size={12}/>
             </button>
-            <p className="text-[11px] text-cyan-800 mt-2 text-center">QR students join this live session with AI generation off.</p>
+            <p className="text-[11px] text-cyan-800 mt-2 text-center">{isMailboxSession ? 'This QR uses the mailbox session secret and does not require Firebase sign-in.' : 'QR students join this live session with AI generation off.'}</p>
           </div>
         )}
         {!liveJoinUrl && (
@@ -178,16 +182,18 @@ function SessionModal({
             </button>
           </div>
         )}
-        <div className="mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
-          <p className="text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1">{t('session.host_id_share')}</p>
-          <button
-            aria-label={t('common.copy')}
-            onClick={() => copyToClipboard(appId)}
-            className="w-full flex items-center justify-center gap-2 text-xs font-mono font-bold text-slate-600 hover:text-indigo-600 bg-white border border-slate-400 hover:border-indigo-200 rounded-lg p-2 transition-all"
-          >
-            {appId} <Copy size={12}/>
-          </button>
-        </div>
+        {!isMailboxSession && (
+          <div className="mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <p className="text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1">{t('session.host_id_share')}</p>
+            <button
+              aria-label={t('common.copy')}
+              onClick={() => copyToClipboard(appId)}
+              className="w-full flex items-center justify-center gap-2 text-xs font-mono font-bold text-slate-600 hover:text-indigo-600 bg-white border border-slate-400 hover:border-indigo-200 rounded-lg p-2 transition-all"
+            >
+              {appId} <Copy size={12}/>
+            </button>
+          </div>
+        )}
         {sessionData && (
           <div className="mb-6 text-center animate-in slide-in-from-bottom-2">
             <button
@@ -232,7 +238,15 @@ function SessionModal({
           <button
             onClick={async () => {
               setConfirmDialog({ message: t('session.end_confirm') || 'Are you sure you want to end this session?', onConfirm: async () => {
-                if (activeSessionCode) {
+                if (typeof onEndMailboxSession === 'function') {
+                  try {
+                    await onEndMailboxSession();
+                    addToast(t('session.session_ended_toast') || "Session ended.", "success");
+                  } catch (e) {
+                    warnLog("Error ending mailbox session:", e);
+                    addToast(t('session.error_end_session') || "Failed to end session.", "error");
+                  }
+                } else if (activeSessionCode) {
                   try {
                     const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
                     await deleteDoc(sessionRef);

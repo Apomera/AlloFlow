@@ -240,6 +240,9 @@ describe('Canvas-managed QR auth sequencing', () => {
     expect(join).toContain('[`roster.${authenticatedUser.uid}`]');
     expect(join).not.toContain("'anon-' + Date.now()");
     expect(join.slice(join.indexOf('} catch(e)'))).not.toContain("t('session.error_not_found')");
+    expect(join).toContain('return true;');
+    expect(join).toContain('return false;');
+    expect(join).toContain('Use Retry below without reloading.');
   });
 
   it('authenticates homework reads and never shares local-preview fallback codes', () => {
@@ -253,6 +256,10 @@ describe('Canvas-managed QR auth sequencing', () => {
     expect(phaseOSource).toContain('isLocalOnly: true');
     expect(phaseOSource).toContain("transport: 'local-preview'");
     expect(sessionModalSource).toContain("if (isLocalOnly || !activeSessionCode || typeof window === 'undefined') return '';");
+    expect(sessionModalSource).toContain('if (mailboxJoinUrl) return mailboxJoinUrl;');
+    expect(sessionModalSource).toContain("isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'");
+    expect(sessionModalSource).toContain("typeof onEndMailboxSession === 'function'");
+    expect(sessionModalSource).toContain('{!isMailboxSession && (');
     expect(sessionModalSource).toContain('This code was not saved to Firebase, so students cannot join it.');
     expect(phaseOModule).toBe(phaseOPublicModule);
     expect(sessionModalModule).toBe(sessionModalPublicModule);
@@ -295,6 +302,10 @@ describe('incomplete QR privacy guard', () => {
     expect(error).toBeGreaterThan(guard);
     expect(join).toBeGreaterThan(error);
     expect(live.slice(error, join)).toContain('return undefined;');
+    expect(live).toContain('setLiveJoinStatus');
+    expect(live).toContain('setLiveJoinRetryable(true)');
+    expect(live).toContain('await joinClassSession(liveCode, hostId)');
+    expect(live).toContain('[liveJoinAttempt]');
   });
 
   it('shows the incomplete-link error before homework can read Firestore', () => {

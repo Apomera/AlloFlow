@@ -7767,6 +7767,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jul 2026: Molecule Shelf — Mol* (RCSB, MIT) companion window with a
         // Notice→Wonder coach; launcher + AI bridge in the tool.
         'stem_lab/stem_tool_moleculeshelf.js',
+        'stem_lab/stem_tool_particlelab3d.js',
         // Jul 2026: Zoom Gallery — OpenSeadragon (BSD-3) deep-zoom companion
         // window over Smithsonian CC0 (IIIF) + NASA public-domain images with a
         // Notice→Wonder coach; launcher + AI bridge in the tool.
@@ -9784,6 +9785,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [autoRemoveWords, setAutoRemoveWords] = useState(true);
   const [activeSessionCode, setActiveSessionCode] = useState(null);
   const [activeSessionAppId, setActiveSessionAppId] = useState(appId);
+  const [showSessionStartOptions, setShowSessionStartOptions] = useState(false);
+  const [mbPanelOpen, setMbPanelOpen] = useState(false);
+  const [liveJoinStatus, setLiveJoinStatus] = useState('');
+  const [liveJoinError, setLiveJoinError] = useState(false);
+  const [liveJoinRetryable, setLiveJoinRetryable] = useState(false);
+  const [liveJoinAttempt, setLiveJoinAttempt] = useState(0);
+  const sessionStartOptionsRef = useRef(null);
+  const mailboxPanelRef = useRef(null);
+  useFocusTrap(sessionStartOptionsRef, showSessionStartOptions, () => setShowSessionStartOptions(false));
+  useFocusTrap(mailboxPanelRef, mbPanelOpen, () => setMbPanelOpen(false));
   const xpModalRef = useRef(null);
   useFocusTrap(xpModalRef, showXPModal, () => setShowXPModal(false));
   const studyTimerRef = useRef(null);
@@ -13667,8 +13678,6 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // apps_script/session_mailbox/). It exists because Canvas-managed Firestore
   // refuses anonymous student devices; the mailbox is the meeting point both
   // sides CAN reach, on infrastructure the teacher already owns.
-  const [mbPanelOpen, setMbPanelOpen] = useState(false);
-  const [showSessionStartOptions, setShowSessionStartOptions] = useState(false);
   const [mbUrlInput, setMbUrlInput] = useState('');
   const [mbConfig, setMbConfig] = useState(() => {
       try {
@@ -22359,7 +22368,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const cleanCode = _alloCleanLiveSessionCode(code);
       if (!cleanCode) {
           addToast(t('session.error_invalid_code'), "error");
-          return;
+          return false;
       }
       if (sessionUnsubscribeRef.current) {
           sessionUnsubscribeRef.current();
@@ -22377,14 +22386,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               addToast(t('session.error_not_found') || "Session not found. It may have ended.", "error");
               setActiveSessionCode(null);
               setActiveSessionAppId(appId);
-              return;
+              return false;
           }
           const sessionInfo = sessionSnap.data();
           if (sessionInfo.isActive === false || sessionInfo.status === 'ended') {
               addToast(t('session.toast_ended') || "Session has ended.", "info");
               setActiveSessionCode(null);
               setActiveSessionAppId(appId);
-              return;
+              return false;
           }
           const userEntry = {
               uid: authenticatedUser.uid,
@@ -22398,6 +22407,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setActiveSessionAppId(targetAppId);
           setActiveSessionCode(cleanCode);
           addToast(t('session.joining', { code: cleanCode, host: targetAppId.slice(0,8) }), "info");
+          return true;
       } catch(e) {
           warnLog("Session join failed", e);
           const errorCode = String(e?.code || e?.message || 'unknown');
@@ -22409,12 +22419,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           } else if (errorCode === 'auth/operation-not-allowed' || errorCode === 'auth/admin-restricted-operation') {
               addToast('Anonymous student sign-in is turned off on the class Firebase project, so QR devices cannot authenticate. Live QR needs a session backend with Anonymous Authentication enabled.' + codeSuffix, "error");
           } else if (errorCode.startsWith('auth/') || errorCode.startsWith('allo/')) {
-              addToast('Student sign-in did not complete on this device. Reload once and scan the QR code again.' + codeSuffix, "error");
+              addToast('Student sign-in did not complete on this device. Use Retry below without reloading.' + codeSuffix, "error");
           } else {
               addToast('Could not join this live session. Check the code and try again.' + codeSuffix, "error");
           }
           setActiveSessionCode(null);
           setActiveSessionAppId(appId);
+          return false;
       }
   };
   // Desktop LAN classroom auto-join: the School Box join page (served by
@@ -22442,6 +22453,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   useEffect(() => {
       let cancelled = false;
       let timer = null;
+      let clearStatusTimer = null;
       try {
           const params = new URLSearchParams(window.location.search);
           const liveCode = _alloCleanLiveSessionCode(params.get('allo_join') || params.get('allo_live_join') || '');
@@ -22461,19 +22473,50 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           setIsIndependentMode(false);
           setIsStudentLinkMode(true);
           setShowStudentEntry(true);
+          setLiveJoinError(false);
+          setLiveJoinRetryable(false);
+          setLiveJoinStatus('Connecting to live session ' + liveCode + '…');
           if (!firebaseHandoff) {
+              setLiveJoinError(true);
+              setLiveJoinStatus(ALLO_QR_INCOMPLETE_MESSAGE);
               addToast(ALLO_QR_INCOMPLETE_MESSAGE, 'error');
               return undefined;
           }
           setJoinAppIdInput(hostId);
           setJoinCodeInput(liveCode);
-          timer = setTimeout(() => {
+          timer = setTimeout(async () => {
               if (cancelled) return;
-              try { joinClassSession(liveCode, hostId); } catch (e) { warnLog('QR live auto-join failed', e); }
-          }, 600);
-      } catch (e) { warnLog('QR live auto-join failed', e); }
-      return () => { cancelled = true; if (timer) clearTimeout(timer); };
-  }, []);
+              let joined = false;
+              try { joined = await joinClassSession(liveCode, hostId); }
+              catch (e) { warnLog('QR live auto-join failed', e); }
+              if (cancelled) return;
+              if (joined) {
+                  setLiveJoinStatus('Connected to live session ' + liveCode + '.');
+                  clearStatusTimer = setTimeout(() => { if (!cancelled) setLiveJoinStatus(''); }, 2500);
+              } else {
+                  setLiveJoinError(true);
+                  setLiveJoinRetryable(true);
+                  setLiveJoinStatus('Could not join live session ' + liveCode + '. Check the connection and retry.');
+              }
+          }, 400);
+      } catch (e) {
+          warnLog('QR live auto-join failed', e);
+          setLiveJoinError(true);
+          setLiveJoinRetryable(true);
+          setLiveJoinStatus('Could not prepare this live-session link. Retry, or ask the teacher for a new QR code.');
+      }
+      return () => {
+          cancelled = true;
+          if (timer) clearTimeout(timer);
+          if (clearStatusTimer) clearTimeout(clearStatusTimer);
+      };
+  }, [liveJoinAttempt]);
+  useEffect(() => {
+      if (!liveJoinError || !liveJoinRetryable || typeof window === 'undefined') return undefined;
+      const retryWhenOnline = () => setLiveJoinAttempt(value => value + 1);
+      window.addEventListener('online', retryWhenOnline, { once: true });
+      return () => window.removeEventListener('online', retryWhenOnline);
+  }, [liveJoinError, liveJoinRetryable]);
   const handleExportPDF = () => {
       handleExport('print');
   };
@@ -31296,7 +31339,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         </div>
       )}
       {showSessionStartOptions && (
-        <div className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label="Start live session" onClick={() => setShowSessionStartOptions(false)}>
+        <div ref={sessionStartOptionsRef} className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label="Start live session" onClick={() => setShowSessionStartOptions(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative" onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowSessionStartOptions(false)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
             <h2 className="text-xl font-black text-slate-900 mb-1">Start live session</h2>
@@ -31315,7 +31358,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         </div>
       )}
       {mbPanelOpen && (
-        <div className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label="Class Mailbox live session" onClick={() => setMbPanelOpen(false)}>
+        <div ref={mailboxPanelRef} className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label="Class Mailbox live session" onClick={() => setMbPanelOpen(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative text-left max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <button onClick={() => setMbPanelOpen(false)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
             <h2 className="text-xl font-black text-slate-900 mb-1">Live class without accounts <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 align-middle">beta</span></h2>
@@ -31442,6 +31485,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           </div>
         </div>
       )}
+      {liveJoinStatus && !isTeacherMode && window.__alloQrStudentMode?.type === 'live' && (
+        <div role={liveJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] max-w-[calc(100vw-24px)] rounded-xl border border-cyan-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
+          <span>{liveJoinStatus}</span>
+          {liveJoinError && liveJoinRetryable && <button onClick={() => setLiveJoinAttempt(value => value + 1)} className="ml-3 rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-800">Retry</button>}
+        </div>
+      )}
       {mbJoinStatus && !isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (
         <div role={mbJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] max-w-[calc(100vw-24px)] rounded-xl border border-indigo-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
           <span>{mbJoinStatus}</span>
@@ -31468,7 +31517,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           )}
         </div>
       )}
-      {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
+      {showSessionModal && activeSessionCode && <div ref={sessionModalRef}><SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} isMailboxSession={!!mbLive} mailboxJoinUrl={mbLive?.joinUrl || ''} onEndMailboxSession={mbLive ? endMailboxLiveSession : null} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} /></div>}
       {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
       {promptDialog && <PromptDialog promptDialog={promptDialog} setPromptDialog={setPromptDialog} t={t} />}
       {/* ── GroupSessionModal extracted to view_misc_panels_module.js (CDN) ── */}

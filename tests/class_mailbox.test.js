@@ -375,6 +375,9 @@ describe('ANTI wiring pins', () => {
         // Hosted variant renders without QR suppression and with the Drive note.
         expect(anti).toMatch(/assignment-pack-hosted/);
         expect(anti).toMatch(/AlloFlow Class Mailbox" Drive folder/);
+        expect(anti).toMatch(/isMailboxSession=\{!!mbLive\}/);
+        expect(anti).toMatch(/mailboxJoinUrl=\{mbLive\?\.joinUrl \|\| ''\}/);
+        expect(anti).toMatch(/onEndMailboxSession=\{mbLive \? endMailboxLiveSession : null\}/);
     });
 
     it('open/putpack are admin-gated in Code.gs and boxes are restricted to up/down', () => {

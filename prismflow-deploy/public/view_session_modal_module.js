@@ -24,6 +24,9 @@ function SessionModal({
   doc,
   handleSetShowGroupModalToTrue,
   handleSetShowSessionModalToFalse,
+  isMailboxSession = false,
+  mailboxJoinUrl = "",
+  onEndMailboxSession = null,
   sessionData,
   setActiveSessionCode,
   setConfirmDialog,
@@ -45,6 +48,7 @@ function SessionModal({
   const [liveQrSvg, setLiveQrSvg] = React.useState("");
   const [liveQrError, setLiveQrError] = React.useState(false);
   const liveJoinUrl = React.useMemo(() => {
+    if (mailboxJoinUrl) return mailboxJoinUrl;
     if (isLocalOnly || !activeSessionCode || typeof window === "undefined") return "";
     const params = {
       allo_join: activeSessionCode,
@@ -71,7 +75,7 @@ function SessionModal({
     } catch (_) {
       return "";
     }
-  }, [activeSessionAppId, activeSessionCode, appId, isLocalOnly]);
+  }, [activeSessionAppId, activeSessionCode, appId, isLocalOnly, mailboxJoinUrl]);
   React.useEffect(() => {
     let cancelled = false;
     if (!liveJoinUrl || typeof window === "undefined") {
@@ -103,7 +107,7 @@ function SessionModal({
       cancelled = true;
     };
   }, [liveJoinUrl]);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowSessionModalToFalse }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-label": t("session.live_title") }, /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowSessionModalToFalse, className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-4 rounded-full shadow-inner" }, /* @__PURE__ */ React.createElement(Wifi, { size: 48, className: "text-green-600 animate-pulse" }))), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mb-2" }, isLocalOnly ? "Local preview" : t("session.live_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6 font-medium" }, isLocalOnly ? "Firebase did not create a shareable session. This preview stays on the teacher device." : t("session.live_instruction")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200", onClick: handleSetShowSessionModalToFalse }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-label": t("session.live_title") }, /* @__PURE__ */ React.createElement("button", { onClick: handleSetShowSessionModalToFalse, className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-100 p-4 rounded-full shadow-inner" }, /* @__PURE__ */ React.createElement(Wifi, { size: 48, className: "text-green-600 animate-pulse" }))), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black text-slate-800 mb-2" }, isLocalOnly ? "Local preview" : isMailboxSession ? "Class Mailbox live session" : t("session.live_title")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 mb-6 font-medium" }, isLocalOnly ? "Firebase did not create a shareable session. This preview stays on the teacher device." : isMailboxSession ? "Students join through your Class Mailbox without accounts." : t("session.live_instruction")), /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "bg-indigo-50 border-4 border-indigo-100 rounded-2xl p-6 mb-6 cursor-pointer hover:bg-indigo-100 transition-colors group relative",
@@ -112,7 +116,7 @@ function SessionModal({
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-7xl font-black text-indigo-600 tracking-widest font-mono" }, activeSessionCode),
     /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Copy, { size: 10 }), " ", t("session.click_to_copy"))
-  ), liveJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-cyan-50 p-4 rounded-xl border border-cyan-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center" }, "Student QR join"), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-cyan-200 rounded-lg p-2 w-40 h-40 flex items-center justify-center shadow-sm" }, liveQrSvg ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full [&_svg]:w-full [&_svg]:h-full", dangerouslySetInnerHTML: { __html: liveQrSvg } }) : /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-cyan-700 text-center" }, liveQrError ? "Copy link below" : "QR loading"))), /* @__PURE__ */ React.createElement(
+  ), liveJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-cyan-50 p-4 rounded-xl border border-cyan-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center" }, isMailboxSession ? "Class Mailbox QR join" : "Student QR join"), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-cyan-200 rounded-lg p-2 w-40 h-40 flex items-center justify-center shadow-sm" }, liveQrSvg ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full [&_svg]:w-full [&_svg]:h-full", dangerouslySetInnerHTML: { __html: liveQrSvg } }) : /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-cyan-700 text-center" }, liveQrError ? "Copy link below" : "QR loading"))), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.copy"),
@@ -121,7 +125,7 @@ function SessionModal({
     },
     "Copy student join link ",
     /* @__PURE__ */ React.createElement(Copy, { size: 12 })
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800 mt-2 text-center" }, "QR students join this live session with AI generation off.")), !liveJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center" }, isLocalOnly ? "Local preview only" : "Student QR unavailable"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900 text-center" }, isLocalOnly ? "This code was not saved to Firebase, so students cannot join it. Reload, start a new live session, and share only when a QR appears." : "This host is not configured as a student join path. Use the class code, local network link, or a student app URL.")), lanJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1" }, "Local network join link"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800 mt-2 text-center" }, isMailboxSession ? "This QR uses the mailbox session secret and does not require Firebase sign-in." : "QR students join this live session with AI generation off.")), !liveJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center" }, isLocalOnly ? "Local preview only" : "Student QR unavailable"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900 text-center" }, isLocalOnly ? "This code was not saved to Firebase, so students cannot join it. Reload, start a new live session, and share only when a QR appears." : "This host is not configured as a student join path. Use the class code, local network link, or a student app URL.")), lanJoinUrl && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 font-bold uppercase tracking-wider mb-1" }, "Local network join link"), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.copy"),
@@ -131,7 +135,7 @@ function SessionModal({
     lanJoinUrl,
     " ",
     /* @__PURE__ */ React.createElement(Copy, { size: 12 })
-  )), /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1" }, t("session.host_id_share")), /* @__PURE__ */ React.createElement(
+  )), !isMailboxSession && /* @__PURE__ */ React.createElement("div", { className: "mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1" }, t("session.host_id_share")), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.copy"),
@@ -171,7 +175,15 @@ function SessionModal({
     {
       onClick: async () => {
         setConfirmDialog({ message: t("session.end_confirm") || "Are you sure you want to end this session?", onConfirm: async () => {
-          if (activeSessionCode) {
+          if (typeof onEndMailboxSession === "function") {
+            try {
+              await onEndMailboxSession();
+              addToast(t("session.session_ended_toast") || "Session ended.", "success");
+            } catch (e) {
+              warnLog("Error ending mailbox session:", e);
+              addToast(t("session.error_end_session") || "Failed to end session.", "error");
+            }
+          } else if (activeSessionCode) {
             try {
               const sessionRef = doc(db, "artifacts", activeSessionAppId || appId, "public", "data", "sessions", activeSessionCode);
               await deleteDoc(sessionRef);
