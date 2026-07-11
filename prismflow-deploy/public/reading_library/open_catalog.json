@@ -4696,6 +4696,78 @@
     {
       "slug": "gutenberg-ebook-11012-the-autobiography-of-an-ex-colored-man",
       "file": "books/gutenberg-ebook-11012-the-autobiography-of-an-ex-colored-man.json"
+    },
+    {
+      "slug": "gutenberg-ebook-1513-romeo-and-juliet",
+      "file": "books/gutenberg-ebook-1513-romeo-and-juliet.json"
+    },
+    {
+      "slug": "gutenberg-ebook-1524-hamlet",
+      "file": "books/gutenberg-ebook-1524-hamlet.json"
+    },
+    {
+      "slug": "gutenberg-ebook-1533-macbeth",
+      "file": "books/gutenberg-ebook-1533-macbeth.json"
+    },
+    {
+      "slug": "gutenberg-ebook-1514-a-midsummer-night-s-dream",
+      "file": "books/gutenberg-ebook-1514-a-midsummer-night-s-dream.json"
+    },
+    {
+      "slug": "gutenberg-ebook-1515-the-merchant-of-venice",
+      "file": "books/gutenberg-ebook-1515-the-merchant-of-venice.json"
+    },
+    {
+      "slug": "gutenberg-ebook-2267-othello",
+      "file": "books/gutenberg-ebook-2267-othello.json"
+    },
+    {
+      "slug": "gutenberg-ebook-216-the-tao-teh-king-or-the-tao-and-its-characteristics",
+      "file": "books/gutenberg-ebook-216-the-tao-teh-king-or-the-tao-and-its-characteristics.json"
+    },
+    {
+      "slug": "gutenberg-ebook-3330-the-analects-of-confucius-from-the-chinese-classics",
+      "file": "books/gutenberg-ebook-3330-the-analects-of-confucius-from-the-chinese-classics.json"
+    },
+    {
+      "slug": "gutenberg-ebook-7164-gitanjali",
+      "file": "books/gutenberg-ebook-7164-gitanjali.json"
+    },
+    {
+      "slug": "gutenberg-ebook-4018-japanese-fairy-tales",
+      "file": "books/gutenberg-ebook-4018-japanese-fairy-tales.json"
+    },
+    {
+      "slug": "gutenberg-ebook-7128-indian-fairy-tales",
+      "file": "books/gutenberg-ebook-7128-indian-fairy-tales.json"
+    },
+    {
+      "slug": "gutenberg-ebook-7439-english-fairy-tales",
+      "file": "books/gutenberg-ebook-7439-english-fairy-tales.json"
+    },
+    {
+      "slug": "gutenberg-ebook-1597-andersen-s-fairy-tales",
+      "file": "books/gutenberg-ebook-1597-andersen-s-fairy-tales.json"
+    },
+    {
+      "slug": "gutenberg-ebook-19-the-song-of-hiawatha",
+      "file": "books/gutenberg-ebook-19-the-song-of-hiawatha.json"
+    },
+    {
+      "slug": "gutenberg-ebook-11666-the-conjure-woman",
+      "file": "books/gutenberg-ebook-11666-the-conjure-woman.json"
+    },
+    {
+      "slug": "gutenberg-ebook-2542-a-doll-s-house-a-play",
+      "file": "books/gutenberg-ebook-2542-a-doll-s-house-a-play.json"
+    },
+    {
+      "slug": "gutenberg-ebook-844-the-importance-of-being-earnest-a-trivial-comedy-for-serious-peo",
+      "file": "books/gutenberg-ebook-844-the-importance-of-being-earnest-a-trivial-comedy-for-serious-peo.json"
+    },
+    {
+      "slug": "gutenberg-ebook-3825-pygmalion",
+      "file": "books/gutenberg-ebook-3825-pygmalion.json"
     }
   ]
 }

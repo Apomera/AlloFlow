@@ -1,6 +1,6 @@
 {
  "schema": "allo-reading-library-index@1",
- "generatedAt": "2026-07-11T13:28:18.483Z",
+ "generatedAt": "2026-07-11T13:39:46.170Z",
  "attribution": {
   "text": "Open reading materials from StoryWeaver and curated public/open education sources. Item-level licenses are shown on each text.",
   "url": "https://storyweaver.org.in",
@@ -10,7 +10,7 @@
   {
    "name": "English",
    "code": "en",
-   "count": 1688
+   "count": 1706
   },
   {
    "name": "Spanish",
@@ -80875,27 +80875,25 @@
   {
    "slug": "gutenberg-ebook-1522-julius-caesar",
    "title": "Julius Caesar",
-   "description": "A Project Gutenberg public-domain catalog card for older-student reading and research.",
+   "description": "A full in-app public-domain copy of Julius Caesar for older-student drama and history study.",
    "language": "English",
    "langCode": "en",
    "isRtl": false,
-   "level": "6",
+   "level": "4",
    "sourceId": "gutenberg",
-   "contentType": "public-domain-catalog-card",
+   "contentType": "public-domain-full-text",
    "subjects": [
-    "Assassins -- Drama",
-    "Brutus, Marcus Junius, 85 B.C.?-42 B.C. -- Drama",
-    "Caesar, Julius -- Assassination -- Drama",
-    "Conspiracies -- Drama",
-    "Rome -- History -- Civil War, 43-31 B.C. -- Drama",
-    "Tragedies (Drama)"
+    "Drama",
+    "History",
+    "British literature"
    ],
    "license": "Public Domain in the U.S. / Project Gutenberg License",
    "licenseUrl": "https://www.gutenberg.org/policy/license.html",
    "source": {
     "id": "gutenberg",
     "name": "Project Gutenberg",
-    "url": "https://www.gutenberg.org/ebooks/1522"
+    "url": "https://www.gutenberg.org/ebooks/1522",
+    "textUrl": "https://www.gutenberg.org/files/1522/1522-0.txt"
    },
    "cover": null,
    "authors": [
@@ -80904,8 +80902,8 @@
    "illustrators": [],
    "publisher": "Project Gutenberg",
    "hasAudio": false,
-   "pageCount": 3,
-   "wordCount": 78,
+   "pageCount": 46,
+   "wordCount": 21053,
    "file": "books/gutenberg-ebook-1522-julius-caesar.json"
   },
   {
@@ -90780,6 +90778,618 @@
    "pageCount": 130,
    "wordCount": 51846,
    "file": "books/gutenberg-ebook-11012-the-autobiography-of-an-ex-colored-man.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1513-romeo-and-juliet",
+   "title": "Romeo and Juliet",
+   "description": "A full in-app public-domain copy of Romeo and Juliet for older-student drama study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Drama",
+    "Tragedy",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1513",
+    "textUrl": "https://www.gutenberg.org/files/1513/1513-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Shakespeare, William"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 57,
+   "wordCount": 25997,
+   "file": "books/gutenberg-ebook-1513-romeo-and-juliet.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1524-hamlet",
+   "title": "Hamlet",
+   "description": "A full in-app public-domain copy of Hamlet for older-student drama study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Drama",
+    "Tragedy",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1524",
+    "textUrl": "https://www.gutenberg.org/files/1524/1524-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Shakespeare, William"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 68,
+   "wordCount": 31999,
+   "file": "books/gutenberg-ebook-1524-hamlet.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1533-macbeth",
+   "title": "Macbeth",
+   "description": "A full in-app public-domain copy of Macbeth for older-student drama study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Drama",
+    "Tragedy",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1533",
+    "textUrl": "https://www.gutenberg.org/files/1533/1533-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Shakespeare, William"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 39,
+   "wordCount": 18432,
+   "file": "books/gutenberg-ebook-1533-macbeth.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1514-a-midsummer-night-s-dream",
+   "title": "A Midsummer Night's Dream",
+   "description": "A full in-app public-domain copy of A Midsummer Night's Dream for older-student drama study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Drama",
+    "Comedy",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1514",
+    "textUrl": "https://www.gutenberg.org/files/1514/1514-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Shakespeare, William"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 37,
+   "wordCount": 17323,
+   "file": "books/gutenberg-ebook-1514-a-midsummer-night-s-dream.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1515-the-merchant-of-venice",
+   "title": "The Merchant of Venice",
+   "description": "A full in-app public-domain copy of The Merchant of Venice for older-student drama study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Drama",
+    "Comedy",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1515",
+    "textUrl": "https://www.gutenberg.org/files/1515/1515-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Shakespeare, William"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 48,
+   "wordCount": 22439,
+   "file": "books/gutenberg-ebook-1515-the-merchant-of-venice.json"
+  },
+  {
+   "slug": "gutenberg-ebook-2267-othello",
+   "title": "Othello",
+   "description": "A full in-app public-domain copy of Othello for older-student drama study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Drama",
+    "Tragedy",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/2267",
+    "textUrl": "https://www.gutenberg.org/files/2267/2267-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Shakespeare, William"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 59,
+   "wordCount": 28084,
+   "file": "books/gutenberg-ebook-2267-othello.json"
+  },
+  {
+   "slug": "gutenberg-ebook-216-the-tao-teh-king-or-the-tao-and-its-characteristics",
+   "title": "The Tao Teh King, or the Tao and its Characteristics",
+   "description": "A full in-app public-domain copy of the Tao Te Ching for older-student philosophy and world-religions study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Philosophy",
+    "World religions",
+    "Classical texts"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/216",
+    "textUrl": "https://www.gutenberg.org/files/216/216.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Laozi"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 23,
+   "wordCount": 10700,
+   "file": "books/gutenberg-ebook-216-the-tao-teh-king-or-the-tao-and-its-characteristics.json"
+  },
+  {
+   "slug": "gutenberg-ebook-3330-the-analects-of-confucius-from-the-chinese-classics",
+   "title": "The Analects of Confucius (from the Chinese Classics)",
+   "description": "A full in-app public-domain copy of The Analects of Confucius for older-student philosophy and world-history study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Philosophy",
+    "World religions",
+    "Classical texts"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/3330",
+    "textUrl": "https://www.gutenberg.org/files/3330/3330.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Confucius"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 73,
+   "wordCount": 31571,
+   "file": "books/gutenberg-ebook-3330-the-analects-of-confucius-from-the-chinese-classics.json"
+  },
+  {
+   "slug": "gutenberg-ebook-7164-gitanjali",
+   "title": "Gitanjali",
+   "description": "A full in-app public-domain copy of Tagore's Gitanjali for older-student poetry and world-literature study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Poetry",
+    "World religions",
+    "World literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/7164",
+    "textUrl": "https://www.gutenberg.org/files/7164/7164-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Tagore, Rabindranath"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 30,
+   "wordCount": 14556,
+   "file": "books/gutenberg-ebook-7164-gitanjali.json"
+  },
+  {
+   "slug": "gutenberg-ebook-4018-japanese-fairy-tales",
+   "title": "Japanese Fairy Tales",
+   "description": "A full in-app public-domain copy of Japanese Fairy Tales for middle-grade world-folklore reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Folklore",
+    "Fairy tales",
+    "World literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/4018",
+    "textUrl": "https://www.gutenberg.org/files/4018/4018-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Ozaki, Yei Theodora"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 149,
+   "wordCount": 70661,
+   "file": "books/gutenberg-ebook-4018-japanese-fairy-tales.json"
+  },
+  {
+   "slug": "gutenberg-ebook-7128-indian-fairy-tales",
+   "title": "Indian Fairy Tales",
+   "description": "A full in-app public-domain copy of Indian Fairy Tales for middle-grade world-folklore reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Folklore",
+    "Fairy tales",
+    "World literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/7128",
+    "textUrl": "https://www.gutenberg.org/files/7128/7128-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Project Gutenberg"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 157,
+   "wordCount": 71291,
+   "file": "books/gutenberg-ebook-7128-indian-fairy-tales.json"
+  },
+  {
+   "slug": "gutenberg-ebook-7439-english-fairy-tales",
+   "title": "English Fairy Tales",
+   "description": "A full in-app public-domain copy of English Fairy Tales for middle-grade folklore reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Folklore",
+    "Fairy tales",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/7439",
+    "textUrl": "https://www.gutenberg.org/files/7439/7439-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Project Gutenberg"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 130,
+   "wordCount": 60945,
+   "file": "books/gutenberg-ebook-7439-english-fairy-tales.json"
+  },
+  {
+   "slug": "gutenberg-ebook-1597-andersen-s-fairy-tales",
+   "title": "Andersen's Fairy Tales",
+   "description": "A full in-app public-domain copy of Andersen's Fairy Tales for younger and middle-grade reading.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fairy tales",
+    "Folklore",
+    "Children's literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/1597",
+    "textUrl": "https://www.gutenberg.org/files/1597/1597-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Andersen, H. C. (Hans Christian)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 120,
+   "wordCount": 55457,
+   "file": "books/gutenberg-ebook-1597-andersen-s-fairy-tales.json"
+  },
+  {
+   "slug": "gutenberg-ebook-19-the-song-of-hiawatha",
+   "title": "The Song of Hiawatha",
+   "description": "A full in-app public-domain copy of The Song of Hiawatha for older-student poetry study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Poetry",
+    "Native American culture",
+    "American literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/19",
+    "textUrl": "https://www.gutenberg.org/files/19/19-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Longfellow, Henry Wadsworth"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 68,
+   "wordCount": 32174,
+   "file": "books/gutenberg-ebook-19-the-song-of-hiawatha.json"
+  },
+  {
+   "slug": "gutenberg-ebook-11666-the-conjure-woman",
+   "title": "The Conjure Woman",
+   "description": "A full in-app public-domain copy of Charles Chesnutt's The Conjure Woman for older-student literature and history study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "6",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Fiction",
+    "African American literature",
+    "Folklore"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/11666",
+    "textUrl": "https://www.gutenberg.org/files/11666/11666-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Chesnutt, Charles W. (Charles Waddell)"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 123,
+   "wordCount": 55394,
+   "file": "books/gutenberg-ebook-11666-the-conjure-woman.json"
+  },
+  {
+   "slug": "gutenberg-ebook-2542-a-doll-s-house-a-play",
+   "title": "A Doll's House: a play",
+   "description": "A full in-app public-domain copy of Ibsen's A Doll's House for older-student drama study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Drama",
+    "Women's history",
+    "World literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/2542",
+    "textUrl": "https://www.gutenberg.org/cache/epub/2542/pg2542.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Ibsen, Henrik"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 55,
+   "wordCount": 26518,
+   "file": "books/gutenberg-ebook-2542-a-doll-s-house-a-play.json"
+  },
+  {
+   "slug": "gutenberg-ebook-844-the-importance-of-being-earnest-a-trivial-comedy-for-serious-peo",
+   "title": "The Importance of Being Earnest: A Trivial Comedy for Serious People",
+   "description": "A full in-app public-domain copy of The Importance of Being Earnest for older-student drama study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "4",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Drama",
+    "Comedy",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/844",
+    "textUrl": "https://www.gutenberg.org/files/844/844-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Wilde, Oscar"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 43,
+   "wordCount": 20753,
+   "file": "books/gutenberg-ebook-844-the-importance-of-being-earnest-a-trivial-comedy-for-serious-peo.json"
+  },
+  {
+   "slug": "gutenberg-ebook-3825-pygmalion",
+   "title": "Pygmalion",
+   "description": "A full in-app public-domain copy of Shaw's Pygmalion for older-student drama study.",
+   "language": "English",
+   "langCode": "en",
+   "isRtl": false,
+   "level": "5",
+   "sourceId": "gutenberg",
+   "contentType": "public-domain-full-text",
+   "subjects": [
+    "Drama",
+    "Social class",
+    "British literature"
+   ],
+   "license": "Public Domain in the U.S. / Project Gutenberg License",
+   "licenseUrl": "https://www.gutenberg.org/policy/license.html",
+   "source": {
+    "id": "gutenberg",
+    "name": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/ebooks/3825",
+    "textUrl": "https://www.gutenberg.org/files/3825/3825-0.txt"
+   },
+   "cover": null,
+   "authors": [
+    "Shaw, Bernard"
+   ],
+   "illustrators": [],
+   "publisher": "Project Gutenberg",
+   "hasAudio": false,
+   "pageCount": 73,
+   "wordCount": 33593,
+   "file": "books/gutenberg-ebook-3825-pygmalion.json"
   }
  ]
 }

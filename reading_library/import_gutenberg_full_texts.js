@@ -662,6 +662,30 @@ const DEFAULT_IMPORTS = [
   { id: 203, subjects: ['Fiction', 'Abolition', 'American literature'], description: 'A full in-app public-domain copy of Uncle Tom\'s Cabin for older-student literature and history study.' },
   { id: 11012, subjects: ['Fiction', 'Civil rights', 'American literature'], description: 'A full in-app public-domain copy of The Autobiography of an Ex-Colored Man for older-student literature and history study.' },
   { id: 944, subjects: ['Science', 'Natural history', 'Exploration'], description: 'A full in-app public-domain copy of The Voyage of the Beagle for older-student science and exploration reading.' },
+  // ---- 2026-07-11 batch 3 (curated, not bulk): individual Shakespeare plays
+  //  (far more usable per-assignment than the Complete Works blob), non-Western
+  //  classics, world folklore, and diverse voices. All titles verified by
+  //  --dry-run. Cyrano #1256 dropped (French-language record, importer is
+  //  English-only).
+  { id: 1513, subjects: ['Drama', 'Tragedy', 'British literature'], description: 'A full in-app public-domain copy of Romeo and Juliet for older-student drama study.' },
+  { id: 1524, subjects: ['Drama', 'Tragedy', 'British literature'], description: 'A full in-app public-domain copy of Hamlet for older-student drama study.' },
+  { id: 1533, subjects: ['Drama', 'Tragedy', 'British literature'], description: 'A full in-app public-domain copy of Macbeth for older-student drama study.' },
+  { id: 1522, subjects: ['Drama', 'History', 'British literature'], description: 'A full in-app public-domain copy of Julius Caesar for older-student drama and history study.' },
+  { id: 1514, subjects: ['Drama', 'Comedy', 'British literature'], description: 'A full in-app public-domain copy of A Midsummer Night\'s Dream for older-student drama study.' },
+  { id: 1515, subjects: ['Drama', 'Comedy', 'British literature'], description: 'A full in-app public-domain copy of The Merchant of Venice for older-student drama study.' },
+  { id: 2267, subjects: ['Drama', 'Tragedy', 'British literature'], description: 'A full in-app public-domain copy of Othello for older-student drama study.' },
+  { id: 216, subjects: ['Philosophy', 'World religions', 'Classical texts'], description: 'A full in-app public-domain copy of the Tao Te Ching for older-student philosophy and world-religions study.' },
+  { id: 3330, subjects: ['Philosophy', 'World religions', 'Classical texts'], description: 'A full in-app public-domain copy of The Analects of Confucius for older-student philosophy and world-history study.' },
+  { id: 7164, subjects: ['Poetry', 'World religions', 'World literature'], description: 'A full in-app public-domain copy of Tagore\'s Gitanjali for older-student poetry and world-literature study.' },
+  { id: 4018, subjects: ['Folklore', 'Fairy tales', 'World literature'], description: 'A full in-app public-domain copy of Japanese Fairy Tales for middle-grade world-folklore reading.' },
+  { id: 7128, subjects: ['Folklore', 'Fairy tales', 'World literature'], description: 'A full in-app public-domain copy of Indian Fairy Tales for middle-grade world-folklore reading.' },
+  { id: 7439, subjects: ['Folklore', 'Fairy tales', 'British literature'], description: 'A full in-app public-domain copy of English Fairy Tales for middle-grade folklore reading.' },
+  { id: 1597, subjects: ['Fairy tales', 'Folklore', "Children's literature"], description: 'A full in-app public-domain copy of Andersen\'s Fairy Tales for younger and middle-grade reading.' },
+  { id: 19, subjects: ['Poetry', 'Native American culture', 'American literature'], description: 'A full in-app public-domain copy of The Song of Hiawatha for older-student poetry study.' },
+  { id: 11666, subjects: ['Fiction', 'African American literature', 'Folklore'], description: 'A full in-app public-domain copy of Charles Chesnutt\'s The Conjure Woman for older-student literature and history study.' },
+  { id: 2542, subjects: ['Drama', "Women's history", 'World literature'], description: 'A full in-app public-domain copy of Ibsen\'s A Doll\'s House for older-student drama study.' },
+  { id: 844, subjects: ['Drama', 'Comedy', 'British literature'], description: 'A full in-app public-domain copy of The Importance of Being Earnest for older-student drama study.' },
+  { id: 3825, subjects: ['Drama', 'Social class', 'British literature'], description: 'A full in-app public-domain copy of Shaw\'s Pygmalion for older-student drama study.' },
 ];
 
 const dryRun = process.argv.includes('--dry-run');
