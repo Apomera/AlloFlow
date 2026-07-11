@@ -2158,15 +2158,11 @@
     var _adding = useState(0); var adding = _adding[0]; var setAdding = _adding[1];
     var endpoint = importEndpoint();
 
-    // One-click import: fetch the cleaned book JSON from the import Worker,
-    // stash the body in IndexedDB + a card in the local index, and hand it up
-    // so the reader can open it immediately. No endpoint → fall back to the
-    // maintainer request list.
-    var addNow = function (r) {
+    // Import one book via the Worker: fetch cleaned JSON, store the body in
+    // IndexedDB + a card in the local index. Returns the stored book (or throws).
+    var importOne = function (r) {
       var ep = importEndpoint();
-      if (!ep) { addRequest(r); return; }
-      setAdding(r.id);
-      fetch(ep + (ep.indexOf('?') === -1 ? '?' : '&') + 'id=' + r.id)
+      return fetch(ep + (ep.indexOf('?') === -1 ? '?' : '&') + 'id=' + r.id)
         .then(function (res) { return res.json().then(function (d) { if (!res.ok) throw new Error((d && d.error) || ('HTTP ' + res.status)); return d; }); })
         .then(function (data) {
           var book = data && data.book;
@@ -2175,15 +2171,44 @@
             var idx = loadLocalIndex();
             if (!idx.some(function (c) { return c.slug === book.slug; })) { idx.push(localCardFromBook(book)); saveLocalIndex(idx); }
             setLocalIds(function (prev) { var n = Object.assign({}, prev); n[r.id] = true; return n; });
-            setAdding(0);
-            props.addToast && props.addToast('"' + book.title + '" ' + tr('readinglib_added_now', 'added to your library.'), 'success');
-            props.onImported && props.onImported(book);
+            return book;
           });
-        })
-        .catch(function (err) {
-          setAdding(0);
-          props.addToast && props.addToast(tr('readinglib_add_now_failed', 'Could not import that book right now.') + (err && err.message ? ' (' + err.message + ')' : ''), 'error');
         });
+    };
+
+    // One-click import (single result) — opens the book immediately. No
+    // endpoint → fall back to the maintainer request list.
+    var addNow = function (r) {
+      if (!importEndpoint()) { addRequest(r); return; }
+      setAdding(r.id);
+      importOne(r).then(function (book) {
+        setAdding(0);
+        props.addToast && props.addToast('"' + book.title + '" ' + tr('readinglib_added_now', 'added to your library.'), 'success');
+        props.onImported && props.onImported(book);
+      }).catch(function (err) {
+        setAdding(0);
+        props.addToast && props.addToast(tr('readinglib_add_now_failed', 'Could not import that book right now.') + (err && err.message ? ' (' + err.message + ')' : ''), 'error');
+      });
+    };
+
+    // Bulk import every importable result on the current view, one at a time so
+    // the Worker isn't hammered. Skips books already in the library.
+    var addAll = function () {
+      if (!importEndpoint()) return;
+      var todo = results.filter(function (r) { return r.hasText && !haveIds[r.id] && !localIds[r.id]; });
+      if (!todo.length) return;
+      setAdding(-1); // -1 = bulk in progress
+      var ok = 0; var fail = 0; var i = 0;
+      var step = function () {
+        if (i >= todo.length) {
+          setAdding(0);
+          props.addToast && props.addToast(ok + ' ' + tr('readinglib_added_count', 'books added to your library.') + (fail ? ' (' + fail + ' ' + tr('readinglib_failed_count', 'failed') + ')' : ''), fail && !ok ? 'error' : 'success');
+          if (ok) { props.onImportedBulk && props.onImportedBulk(); }
+          return;
+        }
+        importOne(todo[i++]).then(function () { ok++; step(); }, function () { fail++; step(); });
+      };
+      step();
     };
 
     var TOPICS = [
@@ -2362,6 +2387,18 @@
         status === 'error' ? e('div', { className: 'text-sm text-red-600 py-3' },
           tr('readinglib_find_more_err', 'Could not reach Project Gutenberg search right now.') + (error ? ' (' + error + ')' : '')) : null,
         status === 'ok' && !results.length ? e('div', { className: 'text-sm text-slate-500 py-3' }, tr('readinglib_find_more_empty', 'No public-domain matches. Try a different title or author.')) : null,
+        // Bulk import bar (only when a Worker endpoint is configured).
+        (endpoint && (status === 'ok' || status === 'loadingMore') && results.length) ? (function () {
+          var importable = results.filter(function (r) { return r.hasText && !haveIds[r.id] && !localIds[r.id]; }).length;
+          return e('div', { className: 'flex items-center justify-between gap-2 mt-2' },
+            e('div', { className: 'text-[11px] text-slate-500' }, results.length + ' ' + tr('readinglib_results', 'results')),
+            importable ? e('button', {
+              className: 'px-3 py-1 rounded-lg text-xs font-semibold ' + (adding === -1 ? 'bg-emerald-300 text-white cursor-wait' : 'bg-emerald-600 text-white hover:bg-emerald-700'),
+              onClick: adding === -1 ? undefined : addAll,
+              disabled: adding === -1,
+            }, adding === -1 ? tr('readinglib_adding', 'Adding…') : '＋ ' + tr('readinglib_add_all', 'Add all') + ' (' + importable + ')') : null
+          );
+        })() : null,
         (status === 'ok' || status === 'loadingMore') && results.length ? e('div', { className: 'mt-2 space-y-2' }, results.map(function (r) {
           var inLibrary = !!haveIds[r.id] || !!localIds[r.id];
           var requested = requests.some(function (x) { return x.id === r.id; });
@@ -2615,6 +2652,47 @@
       setLocalVer(function (n) { return n + 1; });
     };
 
+    // "My imports" live only on this device; export/restore lets a teacher move
+    // their imported library to another device or share it with a colleague.
+    var restoreInputRef = useRef(null);
+    var exportImports = function () {
+      var cards = loadLocalIndex();
+      if (!cards.length) return;
+      Promise.all(cards.map(function (c) { return idbGet(c.slug).catch(function () { return null; }); }))
+        .then(function (books) {
+          var payload = { schema: 'allo-reading-imports@1', exportedFrom: 'AlloFlow Reading Library', books: books.filter(Boolean) };
+          try {
+            var blob = new Blob([JSON.stringify(payload)], { type: 'application/json;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = 'alloflow-my-imports.json';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+          } catch (_) {
+            props.addToast && props.addToast(tr('readinglib_export_failed', 'Could not export your imports.'), 'error');
+          }
+        });
+    };
+    var restoreImports = function (file) {
+      if (!file) return;
+      var read = file.text ? file.text() : new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(String(fr.result || '')); }; fr.onerror = rej; fr.readAsText(file); });
+      read.then(function (txt) {
+        var data = JSON.parse(txt);
+        var books = (data && Array.isArray(data.books)) ? data.books : [];
+        var valid = books.filter(function (b) { return b && b.slug && Array.isArray(b.pages) && b.pages.length; });
+        if (!valid.length) { props.addToast && props.addToast(tr('readinglib_restore_empty', 'No imported books found in that file.'), 'info'); return; }
+        return Promise.all(valid.map(function (b) { return idbPut(b.slug, b).catch(function () { return null; }); })).then(function () {
+          var idx = loadLocalIndex();
+          valid.forEach(function (b) { if (!idx.some(function (c) { return c.slug === b.slug; })) idx.push(localCardFromBook(b)); });
+          saveLocalIndex(idx);
+          setLocalVer(function (n) { return n + 1; });
+          props.addToast && props.addToast(valid.length + ' ' + tr('readinglib_restored_count', 'imported books restored to this device.'), 'success');
+        });
+      }).catch(function () {
+        props.addToast && props.addToast(tr('readinglib_restore_failed', 'That file is not a valid AlloFlow imports export.'), 'error');
+      });
+    };
+
     var onExitReader = function (closeAll) {
       stopSpeech();
       setOpenBook(null);
@@ -2750,8 +2828,18 @@
           // My imports — books added on-device via "Add now" (not in the shared
           // catalog). Shown while browsing, opened straight from IndexedDB.
           (localImports.length && !filters.search) ? e('div', { className: 'mb-3' },
-            e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-emerald-600 mb-1' },
-              '📥 ' + tr('readinglib_my_imports', 'My imports') + ' · ' + tr('readinglib_my_imports_note', 'on this device')),
+            e('div', { className: 'flex items-center justify-between gap-2 mb-1' },
+              e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-emerald-600' },
+                '📥 ' + tr('readinglib_my_imports', 'My imports') + ' · ' + tr('readinglib_my_imports_note', 'on this device')),
+              props.isTeacherMode ? e('div', { className: 'flex gap-1.5' },
+                e('button', { className: 'px-2 py-0.5 rounded-lg text-[11px] font-semibold text-emerald-800 border border-emerald-200 hover:bg-emerald-50', onClick: exportImports, title: tr('readinglib_export_hint', 'Save your imported books to a file (to move to another device)') },
+                  '⤓ ' + tr('readinglib_export', 'Back up')),
+                e('button', { className: 'px-2 py-0.5 rounded-lg text-[11px] font-semibold text-emerald-800 border border-emerald-200 hover:bg-emerald-50', onClick: function () { if (restoreInputRef.current) restoreInputRef.current.click(); }, title: tr('readinglib_restore_hint', 'Restore imported books from a backup file') },
+                  '⤒ ' + tr('readinglib_restore', 'Restore')),
+                e('input', { ref: restoreInputRef, type: 'file', accept: 'application/json,.json', className: 'hidden', 'aria-hidden': true,
+                  onChange: function (ev) { var f = ev.target.files && ev.target.files[0]; restoreImports(f); ev.target.value = ''; } })
+              ) : null
+            ),
             e('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3' },
               localImports.map(function (c) {
                 return e('div', { key: 'local-' + c.slug, className: 'relative' },
@@ -2840,6 +2928,7 @@
           addToast: props.addToast,
           libraryBooks: books.concat(localImports),
           onImported: function (book) { setFindMoreOpen(false); setLocalVer(function (n) { return n + 1; }); stopSpeech(); setOpenBook(book); },
+          onImportedBulk: function () { setLocalVer(function (n) { return n + 1; }); },
         }) : null,
         // Teacher explainer: the three ways to get books in any language.
         optionsOpen ? e('div', {

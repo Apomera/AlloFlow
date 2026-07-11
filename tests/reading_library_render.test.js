@@ -353,6 +353,68 @@ describe('browse view', () => {
     }
   });
 
+  it('bulk "Add all" imports every importable result via the Worker', async () => {
+    try { window.localStorage.clear(); } catch (_) {}
+    const store = new Map();
+    const later = (fn) => Promise.resolve().then(fn);
+    window.indexedDB = {
+      open() {
+        const req = { result: null, onsuccess: null, onerror: null, onupgradeneeded: null };
+        req.result = {
+          createObjectStore() { return {}; },
+          transaction() {
+            const tx = { oncomplete: null, onerror: null, objectStore: () => ({
+              put(v, k) { store.set(k, v); later(() => tx.oncomplete && tx.oncomplete()); return {}; },
+              get(k) { const g = { result: undefined, onsuccess: null }; later(() => { g.result = store.get(k); g.onsuccess && g.onsuccess(); }); return g; },
+              delete(k) { store.delete(k); later(() => tx.oncomplete && tx.oncomplete()); return {}; },
+            }) };
+            return tx;
+          },
+        };
+        later(() => { req.onupgradeneeded && req.onupgradeneeded(); req.onsuccess && req.onsuccess(); });
+        return req;
+      },
+    };
+    window.__alloReadingImportEndpoint = 'https://worker.test/import';
+    const realFetch = window.fetch;
+    window.fetch = (url) => {
+      const u = String(url);
+      if (u.includes('worker.test')) {
+        const id = (u.match(/id=(\d+)/) || [])[1];
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ book: {
+          slug: 'gutenberg-ebook-' + id + '-b', title: 'Book ' + id, language: 'English', langCode: 'en',
+          isRtl: false, level: '6', contentType: 'public-domain-full-text',
+          source: { url: 'https://www.gutenberg.org/ebooks/' + id }, license: 'PD',
+          pages: [{ n: 1, img: null, text: 'Body ' + id + ' has some words here.', words: null }], stats: { pages: 1, words: 6 },
+        } }) });
+      }
+      if (u.includes('gutendex.com')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ results: [
+          { id: 900001, title: 'Book 900001', copyright: false, download_count: 5, authors: [{ name: 'X' }], subjects: ['F'], formats: { 'text/plain': 'https://www.gutenberg.org/files/900001/900001-0.txt' } },
+          { id: 900002, title: 'Book 900002', copyright: false, download_count: 5, authors: [{ name: 'Y' }], subjects: ['F'], formats: { 'text/plain': 'https://www.gutenberg.org/files/900002/900002-0.txt' } },
+        ] }) });
+      }
+      return realFetch(url);
+    };
+    try {
+      await mount();
+      clickByText(host, 'button', 'Find more books');
+      await flush();
+      setInputValue(host.querySelector('input[aria-label="Find more books"]'), 'books');
+      clickByText(host, 'button', 'Search');
+      await flush();
+      clickByText(host, 'button', 'Add all');
+      for (let i = 0; i < 8; i++) await flush();
+      expect(store.has('gutenberg-ebook-900001-b')).toBe(true);
+      expect(store.has('gutenberg-ebook-900002-b')).toBe(true);
+    } finally {
+      window.fetch = realFetch;
+      delete window.indexedDB;
+      delete window.__alloReadingImportEndpoint;
+      try { window.localStorage.clear(); } catch (_) {}
+    }
+  });
+
   it('opens an older-student science source with source attribution intact', async () => {
     await mount();
     await chooseCollection('Science & nonfiction');
