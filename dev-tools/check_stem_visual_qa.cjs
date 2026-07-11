@@ -87,6 +87,7 @@ const EXPECTED_MARKERS = [
   { id: 'playlab', file: 'stem_tool_playlab.js', marker: 'data-playlab-gameplan', label: 'PlayLab game plan' },
   { id: 'plateTectonics', file: 'stem_tool_platetectonics.js', marker: 'data-pt-sim-focus', label: 'Plate Tectonics sim focus' },
   { id: 'astronomy', file: 'stem_tool_astronomy.js', marker: 'data-astronomy-command', label: 'Astronomy observation command' },
+  { id: 'geologyExplorer', file: 'stem_tool_geologyexplorer.js', marker: 'data-geology-command', label: 'Geology field investigation command' },
   { id: 'rockCycle', file: 'stem_tool_rocks.js', marker: 'data-rockcycle-command', label: 'Rock Cycle Earth systems command' },
   { id: 'aquarium', file: 'stem_tool_aquarium.js', marker: 'data-aquarium-focus-panel', label: 'Aquarium mission panel' },
   { id: 'moonMission', file: 'stem_tool_moonmission.js', marker: 'data-moonmission-control', label: 'Moon Mission control panel' },

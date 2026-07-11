@@ -1356,17 +1356,62 @@
 
       var btn = 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-2 rounded-lg border ';
       var btnIdle = isDark ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100';
+      var identifiedCount = Object.keys(d.identified || {}).length;
+      var fossilCount = Object.keys(found || {}).length;
+      var sceneLabel = (SCENES[scene] && SCENES[scene].label) || scene;
+      var fieldEvidence = identifiedCount + fossilCount + (core ? 1 : 0) + (d.datedRock ? 1 : 0);
+      var fieldNext = !selected
+        ? 'Select a rock or layer to begin reading this world.'
+        : identifiedCount < 3
+          ? 'Compare two more materials and look for depth, texture, or age patterns.'
+          : 'Use a core, fossil, or dating tool to support an evidence-based history.';
 
       return h('div', { className: 'space-y-3 animate-in fade-in duration-200' },
         // live region (SR)
         h('div', { id: 'allo-live-geology', 'aria-live': 'polite', 'aria-atomic': 'true', role: 'status', className: 'sr-only' }),
         // header
-        h('div', { className: 'flex items-center gap-3' },
-          setStemLabTool ? h('button', { onClick: function () { setStemLabTool(null); }, 'aria-label': t('stem.back', 'Back to tools'), className: 'transition-colors active:scale-[0.97] p-1.5 rounded-lg ' + (isDark ? 'hover:bg-slate-700' : 'hover:bg-slate-100') }, ArrowLeft ? h(ArrowLeft, { size: 18, className: isDark ? 'text-slate-200' : 'text-slate-600' }) : '←') : null,
-          h('div', null,
-            h('h2', { className: 'text-lg font-black tracking-tight ' + ink }, '⛰️ ' + t('stem.geology.title', 'Geology Explorer')),
-            h('div', { className: 'h-[3px] w-12 rounded-full mt-1', style: { background: 'linear-gradient(90deg,#f59e0b,#a855f7)' } }),
-            h('p', { className: 'text-[11px] mt-1 ' + muted }, t('stem.geology.subtitle', 'Dig a cross-section of the crust. Identify rocks, read the layers, find the pluton that cuts them.')))),
+        h('section', { 'data-geology-command': 'true', className: 'overflow-hidden rounded-2xl border border-amber-300/40 bg-gradient-to-br from-slate-950 via-stone-900 to-violet-950 text-white shadow-xl' },
+          h('div', { className: 'p-4 sm:p-5' },
+            h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex items-center gap-2' },
+                  setStemLabTool ? h('button', { onClick: function () { setStemLabTool(null); }, 'aria-label': t('stem.back', 'Back to tools'), className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-amber-300' }, ArrowLeft ? h(ArrowLeft, { size: 18 }) : '←') : null,
+                  h('span', { className: 'rounded-full bg-amber-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-amber-100 ring-1 ring-amber-200/30' }, 'Field investigation')
+                ),
+                h('h2', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, '⛰️ ' + t('stem.geology.title', 'Geology Explorer')),
+                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-stone-200' }, t('stem.geology.subtitle', 'Dig a cross-section of the crust. Identify rocks, read the layers, find the pluton that cuts them.')),
+                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-amber-200' }, 'Recommended next move'),
+                  h('p', { className: 'mt-1 text-sm font-semibold text-white' }, fieldNext)
+                )
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                [
+                  { label: 'World', value: sceneLabel },
+                  { label: 'Materials', value: String(identifiedCount) },
+                  { label: 'Evidence', value: String(fieldEvidence) }
+                ].map(function (metric) {
+                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                    h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-stone-300' }, metric.label)
+                  );
+                })
+              )
+            ),
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Geology field investigation pathway' },
+              [
+                { n: '1', title: 'Observe', detail: 'Explore a world and select material.' },
+                { n: '2', title: 'Compare', detail: 'Connect layers, depth, and processes.' },
+                { n: '3', title: 'Reconstruct', detail: 'Use evidence to explain its history.' }
+              ].map(function (step) {
+                return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                  h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-300 font-black text-slate-950' }, step.n),
+                  h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-stone-300' }, step.detail))
+                );
+              })
+            )
+          )
+        ),
         // scene picker (worlds) — switching rebuilds the 3D voxel scene
         h('div', { className: 'flex flex-wrap items-center gap-1.5', role: 'tablist', 'aria-label': t('stem.geology.scene', 'Scene') },
           Object.keys(SCENES).map(function (sid) {
@@ -1378,7 +1423,7 @@
             }, SCENES[sid].label);
           })),
         // main: viewport + controls (left) | info + cross-section + list (right)
-        h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)' } },
+        h('div', { className: 'grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]' },
           h('div', { className: 'space-y-2' },
             feat.history ? historyBar() : null,
             feat.volcano ? eruptionBar() : null,
