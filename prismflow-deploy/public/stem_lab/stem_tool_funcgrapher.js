@@ -446,6 +446,16 @@ window.StemLab = window.StemLab || {
 
           ];
 
+          var activeType = TYPES.filter(function(tp) { return tp.id === d.type; })[0] || TYPES[0];
+          var familiesTriedCount = Object.keys(d.familiesTried || {}).length;
+          var evidenceCount = roots.length + (yIntercept >= yR.yMin && yIntercept <= yR.yMax ? 1 : 0) + critPts.length;
+          var overlayCount = (d.showDeriv ? 1 : 0) + (d.showArea ? 1 : 0) + (d.showTable ? 1 : 0);
+          var nextMove = familiesTriedCount < 2
+            ? 'Compare a second function family and notice what stays the same.'
+            : overlayCount === 0
+              ? 'Turn on the table or derivative to connect the graph to numerical evidence.'
+              : 'Move the trace point and explain how the value and slope change together.';
+
 
 
           // ── Keyboard shortcuts (WCAG 2.1.1): 1-6 pick function type, D/A/T/L toggle overlays ──
@@ -467,33 +477,65 @@ window.StemLab = window.StemLab || {
             else if (k === 'l' || k === 'L') { e.preventDefault(); upd('showLearn', !d.showLearn); }
           }
           return React.createElement("div", {
-              className: "max-w-3xl mx-auto animate-in fade-in duration-200",
+              className: "max-w-5xl mx-auto animate-in fade-in duration-200",
               role: "region",
               "aria-label": __alloT('stem.funcgrapher.function_grapher_keyboard_shortcuts_1_', "Function Grapher. Keyboard shortcuts: 1 through 6 pick a function type, D derivative, A area, T table, L learn."),
               tabIndex: 0,
               onKeyDown: onFgKey
             },
 
-            React.createElement("div", { className: "flex items-center gap-3 mb-3" },
-
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': __alloT('stem.funcgrapher.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
-
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, __alloT('stem.funcgrapher.function_grapher', "\uD83D\uDCC8 Function Grapher")),
-
-              React.createElement("span", { className: "px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[11px] font-bold rounded-full" }, "INTERACTIVE")
-
+            React.createElement("section", { "data-funcgrapher-command": "true", className: "mb-4 overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-br from-slate-950 via-indigo-950 to-violet-900 text-white shadow-xl" },
+              React.createElement("div", { className: "p-4 sm:p-5" },
+                React.createElement("div", { className: "flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between" },
+                  React.createElement("div", { className: "min-w-0" },
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      React.createElement("button", { onClick: () => setStemLabTool(null), className: "shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300", 'aria-label': __alloT('stem.funcgrapher.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                      React.createElement("span", { className: "rounded-full bg-cyan-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30" }, "Graph exploration console")
+                    ),
+                    React.createElement("h3", { className: "mt-3 text-xl font-black tracking-tight sm:text-2xl" }, __alloT('stem.funcgrapher.function_grapher', "\uD83D\uDCC8 Function Grapher")),
+                    React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-6 text-indigo-100" }, "Change a rule, observe its shape, then use values and rates to explain the pattern."),
+                    React.createElement("div", { className: "mt-3 rounded-xl border border-white/15 bg-white/10 p-3" },
+                      React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200" }, "Recommended next move"),
+                      React.createElement("p", { className: "mt-1 text-sm font-semibold text-white" }, nextMove)
+                    )
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2 lg:w-[22rem]" },
+                    [
+                      { label: 'Family', value: activeType.emoji + ' ' + activeType.label },
+                      { label: 'Evidence', value: String(evidenceCount) },
+                      { label: 'Tools on', value: String(overlayCount) }
+                    ].map(function(metric) {
+                      return React.createElement("div", { key: metric.label, className: "min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center" },
+                        React.createElement("div", { className: "truncate text-sm font-black text-white", title: metric.value }, metric.value),
+                        React.createElement("div", { className: "mt-1 text-[9px] font-bold uppercase tracking-wider text-indigo-200" }, metric.label)
+                      );
+                    })
+                  )
+                ),
+                React.createElement("ol", { className: "mt-4 grid gap-2 text-xs sm:grid-cols-3", "aria-label": "Function investigation pathway" },
+                  [
+                    { n: '1', title: 'Choose', detail: 'Pick a function family.' },
+                    { n: '2', title: 'Transform', detail: 'Adjust coefficients and trace.' },
+                    { n: '3', title: 'Explain', detail: 'Use intercepts, slope, or a table.' }
+                  ].map(function(step) {
+                    return React.createElement("li", { key: step.n, className: "flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5" },
+                      React.createElement("span", { className: "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-300 font-black text-slate-950" }, step.n),
+                      React.createElement("span", null, React.createElement("strong", { className: "block text-white" }, step.title), React.createElement("span", { className: "text-indigo-200" }, step.detail))
+                    );
+                  })
+                )
+              )
             ),
 
             // Function type buttons
 
-            React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
-
-              TYPES.map(function(tp) { return React.createElement("button", { key: tp.id, onClick: function() { setFnType(tp.id); },
-
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.type === tp.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50')
-
-              }, tp.emoji + " " + tp.label); })
-
+            React.createElement("div", { className: "mb-3 rounded-xl border border-slate-200 bg-white p-2 shadow-sm" },
+              React.createElement("p", { className: "mb-2 px-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500" }, "Choose a function family"),
+              React.createElement("div", { className: "grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5", role: "group", "aria-label": "Function families" },
+                TYPES.map(function(tp) { return React.createElement("button", { key: tp.id, onClick: function() { setFnType(tp.id); },
+                  className: "min-h-[2.5rem] px-3 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 " + (d.type === tp.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-indigo-50')
+                }, tp.emoji + " " + tp.label); })
+              )
             ),
 
             // SVG Graph
