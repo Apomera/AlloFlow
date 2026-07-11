@@ -56,6 +56,19 @@ function sanitizeBakedGoogleKeys(rootDir) {
   GOOGLE_API_KEY_PATTERN.lastIndex = 0;
 }
 
+function assertScopedServiceWorker(rootDir) {
+  const workerPath = path.join(rootDir, 'sw.js');
+  if (!fs.existsSync(workerPath)) throw new Error('Desktop web build is missing sw.js.');
+  const worker = fs.readFileSync(workerPath, 'utf8');
+  const hasScopedShell = /self\.registration\.scope/.test(worker) && /SHELL_URL/.test(worker);
+  const rootShellCache = /cache\.(?:add|match|put)\(\s*['"]\/index\.html['"]/.test(worker);
+  if (!hasScopedShell || rootShellCache) {
+    throw new Error(
+      'Desktop service worker must cache the app-scoped index. A root /index.html cache serves the command center inside /app/.'
+    );
+  }
+}
+
 function assertSingleReactBundle(rootDir) {
   const indexPath = path.join(rootDir, 'index.html');
   const html = fs.readFileSync(indexPath, 'utf8');
@@ -151,6 +164,7 @@ function main() {
   patchDesktopHtml(DESKTOP_APP_BUILD);
   sanitizeBakedGoogleKeys(DESKTOP_APP_BUILD);
   assertSingleReactBundle(DESKTOP_APP_BUILD);
+  assertScopedServiceWorker(DESKTOP_APP_BUILD);
   const keyHits = scanForBakedKeys(DESKTOP_APP_BUILD);
   if (keyHits.length) {
     const details = keyHits.map((hit) => `${hit.file} (${hit.count})`).join(', ');
