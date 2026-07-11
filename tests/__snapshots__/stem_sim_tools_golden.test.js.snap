@@ -398,7 +398,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for water
   "lengthBucket": 107,
   "paths": 0,
   "selects": 0,
-  "sha": "8ccfa8ba426185b9",
+  "sha": "4c0807b634c74e02",
   "svgs": 0,
 }
 `;

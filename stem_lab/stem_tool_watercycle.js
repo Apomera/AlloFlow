@@ -202,6 +202,18 @@
       '.wc-journey-lens div{padding:8px 10px;background:rgba(255,255,255,.88)}',
       '.wc-journey-lens span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b}',
       '.wc-journey-lens strong{display:block;margin-top:2px;font-size:12px;line-height:1.3;color:#0f172a}',
+      '.wc-journey-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 0}',
+      '.wc-journey-actions{display:flex;align-items:center;gap:5px}',
+      '.wc-journey-icon-btn{width:34px;height:34px;display:grid;place-items:center;border-radius:6px;background:#0369a1;color:#fff;font-size:16px;font-weight:900}',
+      '.wc-speed-segments{display:inline-flex;padding:3px;border-radius:7px;background:#e0f2fe;border:1px solid #7dd3fc}',
+      '.wc-speed-segments button{min-width:42px;min-height:28px;border-radius:5px;font-size:10px;font-weight:800;color:#075985}',
+      '.wc-speed-segments button[aria-pressed="true"]{background:#0369a1;color:#fff}',
+      '.wc-journey-timeline{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:2px 0 8px}',
+      '.wc-timeline-step{position:relative;min-width:0;padding:7px 4px;border-top:3px solid #cbd5e1;text-align:center;color:#64748b}',
+      '.wc-timeline-step strong{display:block;font-size:10px;line-height:1.2;white-space:normal}',
+      '.wc-timeline-step[aria-current="step"]{border-color:#0284c7;color:#075985;background:rgba(224,242,254,.72)}',
+      '.dark .wc-speed-segments{background:#0f172a;border-color:#334155}.dark .wc-speed-segments button{color:#bae6fd}.dark .wc-timeline-step{color:#94a3b8;border-color:#334155}.dark .wc-timeline-step[aria-current="step"]{color:#7dd3fc;border-color:#38bdf8;background:rgba(8,47,73,.5)}',
+      '@media(max-width:560px){.wc-journey-timeline{grid-template-columns:repeat(3,minmax(0,1fr))}}',
       '.wc-3d-loading{position:absolute;z-index:6;inset:0;display:grid;place-items:center;background:#041a2b;color:#bae6fd;font-size:12px;font-weight:800}',
       '.dark .wc-view-segments{background:#0f172a;border-color:#334155}.dark .wc-view-segments button{color:#cbd5e1}.dark .wc-3d-status{color:#7dd3fc}',
       '.dark .wc-journey-lens div{background:rgba(15,23,42,.9)}.dark .wc-journey-lens strong{color:#f8fafc}.dark .wc-journey-lens span{color:#94a3b8}',
@@ -2401,6 +2413,7 @@ const d = labToolData.waterCycle || {};
               canvasEl._onJourneyTransition = null;
               canvasEl._onJourneyComplete = null;
               canvasEl._wcSyncReact = null;
+              canvasEl._wcRestartJourney = null;
               canvasEl._wcCleanup = null;
             }
 
@@ -3817,13 +3830,16 @@ const d = labToolData.waterCycle || {};
 
               // ═══ JOURNEY MODE  -  Draw droplet + update state ═══
               var jState = canvasEl.dataset.journeyState || 'idle';
+              var journeyPaused2 = canvasEl.dataset.journeyPaused === 'true';
+              var journeySpeed2 = parseFloat(canvasEl.dataset.journeySpeed || '1');
+              if (!isFinite(journeySpeed2) || journeySpeed2 <= 0) journeySpeed2 = 1;
               if (jState !== 'idle') {
                 journey.state = jState;
                 var speed2 = (jState === 'aquifer_flow' || jState === 'infiltrating') ? 0.003 : 
                             (jState === 'precipitating') ? 0.012 : 0.006;
                 
-                if (jState !== 'ground_choice' && jState !== 'complete') {
-                  journey.progress += speed2;
+                if (!journeyPaused2 && jState !== 'ground_choice' && jState !== 'complete') {
+                  journey.progress += speed2 * journeySpeed2;
                   if (journey.progress >= 1) {
                     journey.progress = 0;
                     journey.particleTrail = [];
@@ -3950,6 +3966,14 @@ const d = labToolData.waterCycle || {};
               }
             };
             // Bridge canvas clicks and events to React state
+            canvasEl._wcRestartJourney = function() {
+              journey.state = 'ocean';
+              journey.progress = 0;
+              journey.particleTrail = [];
+              canvasEl.dataset.journeyState = 'ocean';
+              canvasEl.dataset.journeyPaused = 'false';
+              if (canvasEl._onJourneyTransition) canvasEl._onJourneyTransition('ocean');
+            };
             canvasEl._wcSyncReact = function(nextState, pathKey) {
               // Play state-specific water cycle sound
               if (nextState === 'complete') sfxWcCorrect();
@@ -4280,6 +4304,7 @@ const d = labToolData.waterCycle || {};
               var infiltrationVisual3d = parseFloat(canvasEl.dataset.infiltrationIndex || '50');
               var rainVisual3d = parseFloat(canvasEl.dataset.rainIntensity || '55');
               var coverVisual3d = canvasEl.dataset.landCover || 'grass';
+              var journeyPaused3d = canvasEl.dataset.journeyPaused === 'true';
               var state3d = rawState3d === 'idle' ? (stageMap3d[stage3d] || stage3d) : rawState3d;
               var targetArray3d = stageTargets3d[state3d] || stageTargets3d.ocean;
               var cameraArray3d = cameraTargets3d[state3d] || cameraTargets3d.idle;
@@ -4290,7 +4315,7 @@ const d = labToolData.waterCycle || {};
               if (!userOrbit3d) camera.position.lerp(cameraGoal3d, motionReduced3d ? 1 : 0.025);
               dropletMat3d.color.setHex(stateColors3d[state3d] || 0x38bdf8);
               dropletMat3d.emissive.setHex(stateColors3d[state3d] || 0x075985);
-              if (!motionReduced3d) {
+              if (!motionReduced3d && !journeyPaused3d) {
                 dropletGroup3d.position.y += Math.sin(elapsed3d * 2.8) * 0.0025;
                 halo3d.scale.setScalar(1 + Math.sin(elapsed3d * 3.2) * 0.12);
                 cloudGroup3d.position.x = 0.5 + Math.sin(elapsed3d * 0.18) * 0.35;
@@ -4358,11 +4383,11 @@ const d = labToolData.waterCycle || {};
             } else if (k === 'j' || k === 'J') {
               e.preventDefault();
               if (d.journeyActive) {
-                upd('journeyActive', false); upd('journeyState', 'idle');
+                upd('journeyActive', false); upd('journeyState', 'idle'); upd('journeyPaused', false);
                 var cvOff = document.getElementById('wcCanvas'); if (cvOff) cvOff.dataset.journeyState = 'idle';
                 if (typeof announceToSR === 'function') announceToSR('Journey ended.');
               } else {
-                upd('journeyActive', true); upd('journeyState', 'ocean');
+                upd('journeyActive', true); upd('journeyState', 'ocean'); upd('journeyPaused', false);
                 upd('journeyLoops', d.journeyLoops || 0);
                 upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
                 var cvOn = document.getElementById('wcCanvas'); if (cvOn) cvOn.dataset.journeyState = 'ocean';
@@ -4392,6 +4417,23 @@ const d = labToolData.waterCycle || {};
           var journeyLabel = d.journeyActive
             ? ((d.journeyState || 'ocean').replace(/_/g, ' '))
             : 'Ready to start';
+          var journeyPaused = !!d.journeyPaused;
+          var journeySpeed = d.journeySpeed || 1;
+          var journeyTimelineSteps = ['Ocean', 'Vapor', 'Cloud', 'Precipitation', 'Land pathway', 'Return'];
+          var journeyTimelineIndex = {
+            ocean: 0,
+            evaporating: 1,
+            condensing: 2,
+            precipitating: 3,
+            ground_choice: 4,
+            river_runoff: 4,
+            infiltrating: 4,
+            aquifer_flow: 4,
+            plant_absorb: 4,
+            transpiring: 4,
+            complete: 5
+          }[d.journeyState || 'ocean'];
+          if (journeyTimelineIndex == null) journeyTimelineIndex = 0;
           var lensStageMap = {
             evaporation: 'evaporating', condensation: 'condensing', precipitation: 'precipitating',
             collection: 'ocean', transpiration: 'transpiring', infiltration: 'infiltrating'
@@ -4672,6 +4714,8 @@ const d = labToolData.waterCycle || {};
                 "data-watercycle-canvas": "true",
                 "data-active-stage": d.activeStage || 'evaporation',
                 "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle',
+                "data-journey-paused": String(!!d.journeyPaused),
+                "data-journey-speed": String(d.journeySpeed || 1),
                 "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0),
                 "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15),
                 "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0),
@@ -4692,6 +4736,8 @@ const d = labToolData.waterCycle || {};
                 "data-watercycle-journey-3d": "true",
                 "data-active-stage": d.activeStage || 'evaporation',
                 "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle',
+                "data-journey-paused": String(!!d.journeyPaused),
+                "data-journey-speed": String(d.journeySpeed || 1),
                 "data-runoff-index": String(runoffTendency),
                 "data-infiltration-index": String(infiltrationOpportunity),
                 "data-rain-intensity": String(landRainIntensity),
@@ -4928,6 +4974,7 @@ const d = labToolData.waterCycle || {};
                       onClick: function() {
                         upd('journeyActive', true);
                         upd('journeyState', 'ocean');
+                        upd('journeyPaused', false);
                         upd('journeyLoops', d.journeyLoops || 0);
                         upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
                         var cv = document.getElementById('wcCanvas');
@@ -4942,6 +4989,7 @@ const d = labToolData.waterCycle || {};
                         onClick: function() {
                           upd('journeyActive', false);
                           upd('journeyState', 'idle');
+                          upd('journeyPaused', false);
                           var cv = document.getElementById('wcCanvas');
                           if (cv) { cv.dataset.journeyState = 'idle'; }
                           if (typeof announceToSR === 'function') announceToSR('Journey ended.');
@@ -4969,6 +5017,66 @@ const d = labToolData.waterCycle || {};
 
               // Journey status
               d.journeyActive && React.createElement("div", { className: "space-y-2" },
+                React.createElement("div", { className: "wc-journey-controls" },
+                  React.createElement("div", { className: "wc-journey-actions" },
+                    React.createElement("button", {
+                      type: "button",
+                      className: "wc-journey-icon-btn",
+                      disabled: d.journeyState === 'ground_choice' || d.journeyState === 'complete',
+                      "aria-label": journeyPaused ? "Resume water journey" : "Pause water journey",
+                      title: journeyPaused ? "Resume journey" : "Pause journey",
+                      onClick: function() {
+                        var nextPaused = !journeyPaused;
+                        upd('journeyPaused', nextPaused);
+                        var journeyCanvas = document.getElementById('wcCanvas');
+                        if (journeyCanvas) journeyCanvas.dataset.journeyPaused = String(nextPaused);
+                        if (typeof announceToSR === 'function') announceToSR(nextPaused ? 'Water journey paused.' : 'Water journey resumed.');
+                      }
+                    }, journeyPaused ? "\u25B6" : "\u23F8"),
+                    React.createElement("button", {
+                      type: "button",
+                      className: "wc-journey-icon-btn",
+                      "aria-label": "Restart water journey from the ocean",
+                      title: "Restart from ocean",
+                      onClick: function() {
+                        updMulti({ journeyState: 'ocean', journeyPaused: false });
+                        var journeyCanvas = document.getElementById('wcCanvas');
+                        if (journeyCanvas && journeyCanvas._wcRestartJourney) journeyCanvas._wcRestartJourney();
+                        if (typeof announceToSR === 'function') announceToSR('Water journey restarted in the ocean.');
+                      }
+                    }, "\u21BA")
+                  ),
+                  React.createElement("div", { className: "wc-speed-segments", role: "group", "aria-label": "Journey animation speed" },
+                    [0.5, 1, 2].map(function(speedOption) {
+                      return React.createElement("button", {
+                        key: String(speedOption),
+                        type: "button",
+                        "aria-pressed": journeySpeed === speedOption,
+                        onClick: function() {
+                          upd('journeySpeed', speedOption);
+                          var journeyCanvas = document.getElementById('wcCanvas');
+                          if (journeyCanvas) journeyCanvas.dataset.journeySpeed = String(speedOption);
+                          if (typeof announceToSR === 'function') announceToSR('Journey animation speed ' + speedOption + ' times.');
+                        }
+                      }, speedOption + "\u00D7");
+                    })
+                  )
+                ),
+                React.createElement("div", { className: "wc-journey-timeline", role: "list", "aria-label": "Water journey timeline" },
+                  journeyTimelineSteps.map(function(step, index) {
+                    return React.createElement("div", {
+                      key: step,
+                      role: "listitem",
+                      className: "wc-timeline-step",
+                      "aria-current": index === journeyTimelineIndex ? "step" : undefined
+                    },
+                      React.createElement("strong", null, (index + 1) + ". " + step)
+                    );
+                  })
+                ),
+                React.createElement("p", { role: "note", className: "text-[11px] leading-relaxed " + (isDark ? "text-cyan-200" : "text-cyan-800") },
+                  "Playback speed changes this animation only. Real water residence times vary enormously; groundwater pathways can take years to millennia."
+                ),
                 // Current state card
                 React.createElement("div", { className: "rounded-lg p-3 border " + (isDark ? "bg-slate-900/60 border-cyan-950/50 text-slate-350" : "bg-white border-cyan-100 text-slate-800") },
                   React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? "text-cyan-400" : "text-cyan-700") },
@@ -5024,6 +5132,7 @@ const d = labToolData.waterCycle || {};
                   d.journeyState === 'complete' && React.createElement("button", { "aria-label": t('stem.watercycle.start_another_loop', "Start Another Loop"),
                     onClick: function() {
                       upd('journeyState', 'ocean');
+                      upd('journeyPaused', false);
                       upd('journeyLoops', (d.journeyLoops || 0) + 1);
                       var cv = document.getElementById('wcCanvas');
                       if (cv) { cv.dataset.journeyState = 'ocean'; }
