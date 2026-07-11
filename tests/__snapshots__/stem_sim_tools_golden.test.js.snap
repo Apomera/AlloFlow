@@ -392,13 +392,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for titra
 
 exports[`science-sim + studio render goldens > renders + pins a digest for waterCycle [ssr] 1`] = `
 {
-  "buttons": 20,
+  "buttons": 30,
   "canvases": 1,
-  "inputs": 4,
-  "lengthBucket": 93,
+  "inputs": 6,
+  "lengthBucket": 107,
   "paths": 0,
   "selects": 0,
-  "sha": "316711041c1bdad1",
+  "sha": "8ccfa8ba426185b9",
   "svgs": 0,
 }
 `;

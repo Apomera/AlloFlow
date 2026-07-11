@@ -51,6 +51,7 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toContain('if (detached3d && !detached3d.isConnected && detached3d._wc3dCleanup)');
       expect(source).toContain('WebGL is unavailable on this device. Use the 2D Cycle view instead.');
       expect(source).toContain('"Return to 2D Cycle"');
+      expect(source).toMatch(/: "Loading the 3D water journey\.\.\."\r?\n\s+\),\r?\n/);
       expect(source).toContain('canvasEl._wc3dResetCamera = function()');
       expect(source).toContain('canvasEl._wc3dResetCamera = null;');
       expect(source).toContain('"aria-label": "Resume guided camera"');

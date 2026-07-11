@@ -215,6 +215,21 @@
       '.wc-stage-rack{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}',
       '.wc-stage-rack button{min-height:34px}',
       '.wc-control-panel{box-shadow:0 12px 28px rgba(15,23,42,.10)}',
+      '.wc-land-lab{border:1px solid rgba(16,185,129,.34);background:linear-gradient(135deg,rgba(236,253,245,.96),rgba(239,246,255,.96));padding:12px;margin-bottom:12px;box-shadow:0 12px 28px rgba(15,23,42,.09)}',
+      '.wc-land-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}',
+      '.wc-land-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}',
+      '.wc-land-control{min-width:0}',
+      '.wc-land-control label,.wc-land-control legend{display:block;font-size:11px;font-weight:800;color:#166534;margin-bottom:5px}',
+      '.wc-land-segments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}',
+      '.wc-land-segments button{min-height:32px;padding:4px 5px;border:1px solid #a7f3d0;background:rgba(255,255,255,.88);color:#166534;font-size:10px;font-weight:800}',
+      '.wc-land-segments button[aria-pressed="true"]{background:#047857;border-color:#047857;color:#fff}',
+      '.wc-land-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}',
+      '.wc-land-result{padding:9px 10px;border-left:3px solid #0ea5e9;background:rgba(255,255,255,.82)}',
+      '.wc-land-result span{display:block;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b}',
+      '.wc-land-result strong{display:block;margin-top:2px;font-size:15px;color:#0f172a}',
+      '.dark .wc-land-lab{background:linear-gradient(135deg,rgba(6,78,59,.28),rgba(8,47,73,.32));border-color:rgba(52,211,153,.3)}',
+      '.dark .wc-land-control label,.dark .wc-land-control legend{color:#6ee7b7}.dark .wc-land-segments button{background:#0f172a;border-color:#334155;color:#cbd5e1}.dark .wc-land-segments button[aria-pressed="true"]{background:#047857;color:#fff}.dark .wc-land-result{background:rgba(15,23,42,.82)}.dark .wc-land-result strong{color:#f8fafc}',
+      '@media(max-width:640px){.wc-land-grid,.wc-land-results{grid-template-columns:1fr}}',
       '.wc-control-panel .grid.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}',
       '@media(max-width:840px){.wc-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-canvas-shell{height:360px!important}.wc-canvas-topbar{position:absolute;align-items:flex-start}.wc-chip-row{max-width:50%;justify-content:flex-end}.wc-control-panel .grid.grid-cols-3{grid-template-columns:1fr!important}}',
       '@media(max-width:560px){.wc-metric-grid{grid-template-columns:1fr}.wc-canvas-shell{height:320px!important}.wc-canvas-topbar{left:8px;right:8px;top:8px}.wc-canvas-title{padding:7px 8px}.wc-chip{font-size:10px;padding:5px 7px}.wc-chip-row{max-width:48%}}',
@@ -942,6 +957,22 @@ const d = labToolData.waterCycle || {};
             setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
           };
 
+          var adjustLand = function(key, val) {
+            updMulti({ [key]: val, landAdjusted: true });
+          };
+
+          var resetLandScenario = function() {
+            updMulti({
+              landRainIntensity: 55,
+              landSaturation: 45,
+              landPermeability: 'medium',
+              landSlope: 'moderate',
+              landCover: 'grass',
+              landAdjusted: false
+            });
+            if (typeof announceToSR === 'function') announceToSR('Land-surface scenario reset to balanced conditions.');
+          };
+
           var askHydrologist = function() {
             var query = d.hydrologistQuery || '';
             if (!query.trim()) return;
@@ -950,9 +981,15 @@ const d = labToolData.waterCycle || {};
               return;
             }
             updMulti({ hydrologistLoading: true, hydrologistError: '', hydrologistReply: '' });
+            var landContext = 'Land scenario: rainfall intensity ' + (d.landRainIntensity != null ? d.landRainIntensity : 55) +
+              '/100, antecedent soil saturation ' + (d.landSaturation != null ? d.landSaturation : 45) +
+              '/100, permeability ' + (d.landPermeability || 'medium') +
+              ', slope ' + (d.landSlope || 'moderate') +
+              ', land cover ' + (d.landCover || 'grass') + '. ';
             var prompt = 'You are a friendly, encouraging Water Cycle & Hydrology tutor for middle-to-high school students. ' +
-              'The student is asking about: "' + query + '". ' +
+              'The student is asking about: "' + query + '". ' + landContext +
               'Explain the science behind this clearly in 3-4 sentences using helpful analogies. ' +
+              'Treat tool outputs as qualitative teaching indices, not measured percentages or forecasts. ' +
               'Provide the explanation in plain prose. No markdown, no headings, no bullets.';
             callGemini(prompt, false, false, 0.5).then(function(resp) {
               updMulti({
@@ -4053,7 +4090,7 @@ const d = labToolData.waterCycle || {};
             ]);
             var river3d = new THREE.Mesh(
               new THREE.TubeGeometry(riverCurve, 64, 0.24, 12, false),
-              new THREE.MeshPhysicalMaterial({ color: 0x22b8e6, roughness: 0.16, clearcoat: 0.75 })
+              new THREE.MeshPhysicalMaterial({ color: 0x22b8e6, roughness: 0.16, clearcoat: 0.75, transparent: true, opacity: 0.7 })
             );
             world3d.add(river3d);
 
@@ -4239,6 +4276,10 @@ const d = labToolData.waterCycle || {};
               var elapsed3d = clock3d.getElapsedTime();
               var rawState3d = canvasEl.dataset.journeyState || 'idle';
               var stage3d = canvasEl.dataset.activeStage || 'collection';
+              var runoffVisual3d = parseFloat(canvasEl.dataset.runoffIndex || '50');
+              var infiltrationVisual3d = parseFloat(canvasEl.dataset.infiltrationIndex || '50');
+              var rainVisual3d = parseFloat(canvasEl.dataset.rainIntensity || '55');
+              var coverVisual3d = canvasEl.dataset.landCover || 'grass';
               var state3d = rawState3d === 'idle' ? (stageMap3d[stage3d] || stage3d) : rawState3d;
               var targetArray3d = stageTargets3d[state3d] || stageTargets3d.ocean;
               var cameraArray3d = cameraTargets3d[state3d] || cameraTargets3d.idle;
@@ -4264,7 +4305,11 @@ const d = labToolData.waterCycle || {};
               }
               vapor3d.visible = state3d === 'evaporating' || state3d === 'transpiring' || state3d === 'evaporation' || state3d === 'transpiration';
               rain3d.visible = state3d === 'precipitating' || state3d === 'precipitation' || state3d === 'ground_choice';
-              aquifer3d.material.opacity = (state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow') ? 0.82 : 0.48;
+              rain3d.material.opacity = 0.3 + rainVisual3d / 145;
+              river3d.material.opacity = 0.3 + runoffVisual3d / 145;
+              aquifer3d.material.opacity = Math.min(0.92, 0.28 + infiltrationVisual3d / 180 +
+                ((state3d === 'infiltrating' || state3d === 'infiltration' || state3d === 'aquifer_flow') ? 0.2 : 0));
+              grass3d.material.color.setHex(coverVisual3d === 'forest' ? 0x245c3a : coverVisual3d === 'urban' ? 0x68737d : 0x5d8f3b);
               if (controls3d) {
                 if (!userOrbit3d) controls3d.target.lerp(target3d, motionReduced3d ? 1 : 0.035);
                 controls3d.update();
@@ -4372,6 +4417,54 @@ const d = labToolData.waterCycle || {};
             currentTemp > 2 && currentTemp < 18 ? 'Fog and rain' :
             'Balanced cycle';
           var evaporationIndex = Math.max(0.2, Math.min(2, currentSolar * (currentTemp / 15)));
+          var landRainIntensity = d.landRainIntensity != null ? d.landRainIntensity : 55;
+          var landSaturation = d.landSaturation != null ? d.landSaturation : 45;
+          var landPermeability = d.landPermeability || 'medium';
+          var landSlope = d.landSlope || 'moderate';
+          var landCover = d.landCover || 'grass';
+          var permeabilityResistance = { high: 0.15, medium: 0.5, low: 0.85 }[landPermeability];
+          var slopePressure = { gentle: 0.15, moderate: 0.45, steep: 0.8 }[landSlope];
+          var coverRunoffPressure = { forest: 0.15, grass: 0.35, urban: 0.9 }[landCover];
+          if (permeabilityResistance == null) permeabilityResistance = 0.5;
+          if (slopePressure == null) slopePressure = 0.45;
+          if (coverRunoffPressure == null) coverRunoffPressure = 0.35;
+          var rainPressure = landRainIntensity / 100;
+          var saturationPressure = landSaturation / 100;
+          // Qualitative teaching indices only. They are intentionally independent,
+          // not percentages in a closed water budget and not a calibrated forecast.
+          var runoffTendency = Math.round(100 * Math.max(0, Math.min(1,
+            0.30 * rainPressure +
+            0.25 * saturationPressure +
+            0.18 * coverRunoffPressure +
+            0.15 * slopePressure +
+            0.12 * permeabilityResistance
+          )));
+          var infiltrationOpportunity = Math.round(100 * Math.max(0, Math.min(1,
+            0.32 * (1 - saturationPressure) +
+            0.28 * (1 - permeabilityResistance) +
+            0.20 * (1 - coverRunoffPressure) +
+            0.12 * (1 - slopePressure) +
+            0.08 * (1 - rainPressure)
+          )));
+          function landIndexBand(value) {
+            return value < 35 ? 'Low' : value < 65 ? 'Moderate' : 'High';
+          }
+          function renderLandSegments(label, stateKey, options, selected) {
+            return React.createElement("fieldset", { className: "wc-land-control" },
+              React.createElement("legend", null, label),
+              React.createElement("div", { className: "wc-land-segments" },
+                options.map(function(option) {
+                  var active = selected === option.id;
+                  return React.createElement("button", {
+                    key: option.id,
+                    type: "button",
+                    "aria-pressed": active,
+                    onClick: function() { adjustLand(stateKey, option.id); }
+                  }, option.label);
+                })
+              )
+            );
+          }
           var missionCopy = d.journeyActive
             ? 'Follow the highlighted droplet and choose its path when it reaches the ground.'
             : 'Start a droplet journey or tune the climate sliders to see how energy, temperature, and wind reshape the cycle.';
@@ -4598,7 +4691,11 @@ const d = labToolData.waterCycle || {};
                 className: "wc-journey-3d",
                 "data-watercycle-journey-3d": "true",
                 "data-active-stage": d.activeStage || 'evaporation',
-                "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle'
+                "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle',
+                "data-runoff-index": String(runoffTendency),
+                "data-infiltration-index": String(infiltrationOpportunity),
+                "data-rain-intensity": String(landRainIntensity),
+                "data-land-cover": landCover
               }),
               journeyView === '3d' && (!labToolData._threeLoaded || labToolData._threeLoadError || d.journey3dError) && React.createElement("div", {
                 className: "wc-3d-loading",
@@ -4615,7 +4712,7 @@ const d = labToolData.waterCycle || {};
                       }, "Return to 2D Cycle")
                     )
                   : "Loading the 3D water journey..."
-              )
+              ),
 
               // Weather badge overlay
               (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute bottom-2 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.snow', "\u2744\uFE0F SNOW")),
@@ -4697,6 +4794,90 @@ const d = labToolData.waterCycle || {};
               )
             ),
 
+            React.createElement("section", {
+              className: "wc-land-lab",
+              "data-watercycle-land": "true",
+              "aria-labelledby": "wc-land-title"
+            },
+              React.createElement("div", { className: "wc-land-head" },
+                React.createElement("div", null,
+                  React.createElement("h4", { id: "wc-land-title", className: "text-sm font-bold " + (isDark ? "text-emerald-300" : "text-emerald-800") }, "Land-Surface Scenario Lab"),
+                  React.createElement("p", { className: "text-[11px] mt-1 " + (isDark ? "text-slate-300" : "text-slate-600") }, "Explore how storm and landscape conditions influence pathways after water reaches the ground.")
+                ),
+                React.createElement("button", {
+                  type: "button",
+                  title: "Reset land scenario",
+                  "aria-label": "Reset land-surface scenario",
+                  onClick: resetLandScenario,
+                  className: "w-8 h-8 grid place-items-center rounded-md bg-emerald-700 text-white text-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+                }, "\u21BA")
+              ),
+              React.createElement("div", { className: "wc-land-grid" },
+                React.createElement("div", { className: "wc-land-control" },
+                  React.createElement("label", { htmlFor: "wc-land-rain" }, "Rainfall intensity: " + landRainIntensity),
+                  React.createElement("input", {
+                    id: "wc-land-rain",
+                    type: "range",
+                    min: "0",
+                    max: "100",
+                    step: "5",
+                    value: landRainIntensity,
+                    "aria-label": "Rainfall intensity index",
+                    onChange: function(e) { adjustLand('landRainIntensity', parseFloat(e.target.value)); },
+                    className: "w-full",
+                    style: { accentColor: '#0284c7' }
+                  })
+                ),
+                React.createElement("div", { className: "wc-land-control" },
+                  React.createElement("label", { htmlFor: "wc-land-saturation" }, "Soil saturation: " + landSaturation),
+                  React.createElement("input", {
+                    id: "wc-land-saturation",
+                    type: "range",
+                    min: "0",
+                    max: "100",
+                    step: "5",
+                    value: landSaturation,
+                    "aria-label": "Antecedent soil saturation index",
+                    onChange: function(e) { adjustLand('landSaturation', parseFloat(e.target.value)); },
+                    className: "w-full",
+                    style: { accentColor: '#0891b2' }
+                  })
+                ),
+                renderLandSegments("Soil permeability", "landPermeability", [
+                  { id: "low", label: "Low" },
+                  { id: "medium", label: "Medium" },
+                  { id: "high", label: "High" }
+                ], landPermeability),
+                renderLandSegments("Slope", "landSlope", [
+                  { id: "gentle", label: "Gentle" },
+                  { id: "moderate", label: "Moderate" },
+                  { id: "steep", label: "Steep" }
+                ], landSlope),
+                renderLandSegments("Land cover", "landCover", [
+                  { id: "forest", label: "Forest" },
+                  { id: "grass", label: "Grass" },
+                  { id: "urban", label: "Urban" }
+                ], landCover)
+              ),
+              React.createElement("div", {
+                className: "wc-land-results",
+                role: "status",
+                "aria-live": "polite",
+                "aria-atomic": "true"
+              },
+                React.createElement("div", { className: "wc-land-result" },
+                  React.createElement("span", null, "Runoff tendency"),
+                  React.createElement("strong", null, landIndexBand(runoffTendency) + " | " + runoffTendency + "/100")
+                ),
+                React.createElement("div", { className: "wc-land-result", style: { borderLeftColor: "#10b981" } },
+                  React.createElement("span", null, "Infiltration opportunity"),
+                  React.createElement("strong", null, landIndexBand(infiltrationOpportunity) + " | " + infiltrationOpportunity + "/100")
+                )
+              ),
+              React.createElement("p", { role: "note", className: "text-[11px] mt-2 leading-relaxed " + (isDark ? "text-emerald-200" : "text-emerald-800") },
+                "Qualitative teaching indices, not measured percentages or a forecast. They are independent: water can also be stored, evaporated, taken up by organisms, or move laterally. Infiltration does not automatically become groundwater recharge."
+              )
+            ),
             React.createElement("div", { className: "wc-stage-rack flex flex-wrap gap-1.5 mb-3", role: "group", "data-watercycle-stage-rack": "true", "aria-label": t('stem.watercycle.water_cycle_stages', "Water cycle stages") },
               STAGES.map(function (stage, stageIdx) {
                 // active-tab ink: pick near-black or white per stage color so white
@@ -4809,7 +4990,7 @@ const d = labToolData.waterCycle || {};
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
                       React.createElement("p", { className: "text-[11px] font-bold" }, t('stem.watercycle.river_runoff_r', "River Runoff (R)")),
-                      React.createElement("p", { className: "text-[11px] opacity-70" }, t('stem.watercycle.fast_path', "Fast path!"))
+                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Runoff tendency: " + landIndexBand(runoffTendency))
                     ),
                     React.createElement("button", { "aria-label": t('stem.watercycle.choose_underground_infiltration_path_s', "Choose Underground infiltration path (shortcut: U)"),
                       onClick: function() {
@@ -4823,7 +5004,7 @@ const d = labToolData.waterCycle || {};
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
                       React.createElement("p", { className: "text-[11px] font-bold" }, t('stem.watercycle.underground_u', "Underground (U)")),
-                      React.createElement("p", { className: "text-[11px] opacity-70" }, t('stem.watercycle.slow_deep', "Slow + deep"))
+                      React.createElement("p", { className: "text-[11px] opacity-70" }, "Infiltration opportunity: " + landIndexBand(infiltrationOpportunity))
                     ),
                     React.createElement("button", { "aria-label": t('stem.watercycle.choose_plant_absorption_path_shortcut_', "Choose Plant absorption path (shortcut: P)"),
                       onClick: function() {
@@ -4937,8 +5118,8 @@ const d = labToolData.waterCycle || {};
                 var w2 = d.climWind != null ? d.climWind : 1.0;
                 var evapRate = Math.max(0.2, Math.min(2, s2 * Math.max(0.2, (t3 + 20) / 35) * (0.85 + w2 * 0.15)));
                 var precipType = t3 < -2 ? 'Snow favored' : t3 <= 3 ? 'Mixed / uncertain' : 'Rain favored';
-                var runoffPct = 'Needs land data';
-                var gwRecharge = 'Not resolved';
+                var runoffDisplay = landIndexBand(runoffTendency) + ' | ' + runoffTendency + '/100';
+                var infiltrationDisplay = landIndexBand(infiltrationOpportunity) + ' | ' + infiltrationOpportunity + '/100';
                 return React.createElement("div", null, React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-amber-950/50" : "bg-white border-amber-100") },
                     React.createElement("p", { className: "text-lg font-bold text-amber-500 tracking-tight" }, evapRate.toFixed(2) + "x"),
@@ -4949,15 +5130,15 @@ const d = labToolData.waterCycle || {};
                     React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-blue-600" : "text-blue-500") }, t('stem.watercycle.precip_type', "Precip Type"))
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-cyan-950/50" : "bg-white border-cyan-100") },
-                    React.createElement("p", { className: "text-sm font-bold text-cyan-500" }, runoffPct),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-cyan-600" : "text-cyan-500") }, t('stem.watercycle.runoff', "Runoff"))
+                    React.createElement("p", { className: "text-sm font-bold text-cyan-500" }, runoffDisplay),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-cyan-600" : "text-cyan-500") }, "Runoff tendency")
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-emerald-950/50" : "bg-white border-emerald-100") },
-                    React.createElement("p", { className: "text-sm font-bold text-emerald-500" }, gwRecharge),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-600" : "text-emerald-500") }, t('stem.watercycle.gw_recharge', "Groundwater recharge"))
+                    React.createElement("p", { className: "text-sm font-bold text-emerald-500" }, infiltrationDisplay),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-600" : "text-emerald-500") }, "Infiltration opportunity")
                   )
                   ),
-                  React.createElement("p", { role: "note", className: "text-[11px] mt-2 text-center font-medium " + (isDark ? "text-sky-300" : "text-sky-700") }, "Relative teaching indices, not measurements or a forecast. Surface temperature only hints at precipitation phase; the vertical temperature profile matters. Runoff depends on rainfall, slope, soil, saturation, vegetation, and impervious cover. Infiltration is not automatically groundwater recharge.")
+                  React.createElement("p", { role: "note", className: "text-[11px] mt-2 text-center font-medium " + (isDark ? "text-sky-300" : "text-sky-700") }, "Relative teaching indices, not measurements or a forecast. Surface temperature only hints at precipitation phase; the vertical temperature profile matters. Land controls shape runoff tendency and infiltration opportunity, but neither index is a water-budget percentage. Groundwater recharge remains unresolved.")
                 );
               })()
             ),
