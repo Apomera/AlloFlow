@@ -1293,13 +1293,61 @@ window.StemLab = window.StemLab || {
 
       // ══════════ RENDER ══════════
       var bgClass = isWord ? 'allo-vol-bg-word' : (isFreeform ? 'allo-vol-bg-freeform' : 'allo-vol-bg-slider');
-      return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200 ' + bgClass },
+      var volumeModeLabel = isWord ? 'Word problem' : (isFreeform ? 'Freeform' : 'Dimensions');
+      var volumeNext = isFreeform && positions.length === 0
+        ? 'Place unit cubes, count one layer, then predict the total before finishing.'
+        : isWord
+          ? 'Identify length, width, and height in the context before multiplying.'
+          : score.total === 0
+            ? 'Predict the volume, then use layers to verify length × width × height.'
+            : 'Change one dimension and explain how volume and surface area respond.';
+
+      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200 ' + bgClass },
         // Header
-        h('div', { className: 'flex items-center gap-3 mb-2' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.volume.back', 'Back') },
-            h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-emerald-800' }, __alloT('stem.volume.3d_volume_explorer', '\uD83D\uDCE6 3D Volume Explorer')),
-          h('div', { className: 'flex items-center gap-2 ml-2' },
+        h('section', { 'data-volume-command': 'true', className: 'overflow-hidden rounded-2xl border border-emerald-300/40 bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-950 text-white shadow-xl' },
+          h('div', { className: 'p-4 sm:p-5' },
+            h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-300', 'aria-label': __alloT('stem.volume.back', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                  h('span', { className: 'rounded-full bg-emerald-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-100 ring-1 ring-emerald-200/30' }, 'Volume design brief')
+                ),
+                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, __alloT('stem.volume.3d_volume_explorer', '\uD83D\uDCE6 3D Volume Explorer')),
+                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-emerald-100' }, 'Build solids from unit cubes, connect layers to multiplication, and justify volume with spatial evidence.'),
+                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-emerald-200' }, 'Recommended next move'),
+                  h('p', { className: 'mt-1 text-sm font-semibold text-white' }, volumeNext)
+                )
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                [
+                  { label: 'Mode', value: volumeModeLabel },
+                  { label: 'Volume', value: String(Math.round(volume * 100) / 100) },
+                  { label: 'Solved', value: String(score.correct) }
+                ].map(function(metric) {
+                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                    h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-emerald-200' }, metric.label)
+                  );
+                })
+              )
+            ),
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Volume reasoning pathway' },
+              [
+                { n: '1', title: 'Build', detail: 'Set dimensions or place cubes.' },
+                { n: '2', title: 'Count', detail: 'Find cubes per layer and layers.' },
+                { n: '3', title: 'Generalize', detail: 'Connect the model to a formula.' }
+              ].map(function(step) {
+                return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                  h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-300 font-black text-slate-950' }, step.n),
+                  h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-emerald-200' }, step.detail))
+                );
+              })
+            )
+          )
+        ),
+        h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-emerald-100 bg-white/80 p-2' },
+          h('div', { className: 'flex items-center gap-2' },
             h('div', { className: 'text-xs font-bold text-emerald-600' }, score.correct + '/' + score.total),
             (_v.attemptHist && _v.attemptHist.length > 1) && h('div', { className: 'flex items-center gap-px', title: __alloT('stem.volume.recent_attempts_newest_at_right', 'Recent attempts (newest at right)'), role: 'img', 'aria-label': _v.attemptHist.slice(-12).filter(function (x) { return x; }).length + ' correct of your last ' + Math.min(12, _v.attemptHist.length) + ' attempts' },
               _v.attemptHist.slice(-12).map(function (v, i) { return h('span', { key: i, className: 'inline-block w-1 h-3.5 rounded-sm ' + (v ? 'bg-emerald-500' : 'bg-rose-400') }); })),
@@ -1317,17 +1365,17 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex-1' }),
           // Mode toggle (now 3 options: Slider / Freeform / Word Problems)
-          h('div', { className: 'flex items-center gap-1 bg-emerald-50 rounded-lg p-1 border border-emerald-200', role: 'tablist', 'aria-label': __alloT('stem.volume.volume_modes', 'Volume modes') },
+          h('div', { className: 'flex items-center gap-1 overflow-x-auto bg-emerald-50 rounded-lg p-1 border border-emerald-200', role: 'tablist', 'aria-label': __alloT('stem.volume.volume_modes', 'Volume modes') },
             h('button', { 'aria-label': __alloT('stem.volume.slider_mode', 'Slider mode'),
               onClick: function() { upd({ mode: 'slider', builderChallenge: null, builderFeedback: null }); },
               role: 'tab', 'aria-selected': mode === 'slider',
-              className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (mode === 'slider' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
+              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 ' + (mode === 'slider' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
               title: __alloT('stem.volume.slider_mode_s', 'Slider mode (S)')
             }, __alloT('stem.volume.slider', '\uD83C\uDF9A\uFE0F Slider')),
             h('button', { 'aria-label': __alloT('stem.volume.freeform_mode', 'Freeform mode'),
               onClick: function() { upd({ mode: 'freeform', challenge: null, feedback: null }); },
               role: 'tab', 'aria-selected': isFreeform,
-              className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (isFreeform ? 'bg-white text-indigo-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
+              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 ' + (isFreeform ? 'bg-white text-indigo-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
               title: __alloT('stem.volume.freeform_mode_f', 'Freeform mode (F)')
             }, __alloT('stem.volume.freeform', '\uD83E\uDDF1 Freeform')),
             h('button', { 'aria-label': __alloT('stem.volume.word_problems_mode', 'Word Problems mode'),
@@ -1336,7 +1384,7 @@ window.StemLab = window.StemLab || {
                 upd({ mode: 'word', dims: ctx.defaults, challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, wpFeedback: null });
               },
               role: 'tab', 'aria-selected': isWord,
-              className: 'px-3 py-1 rounded-md text-xs font-bold transition-all ' + (isWord ? 'bg-white text-amber-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
+              className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ' + (isWord ? 'bg-white text-amber-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
               title: __alloT('stem.volume.word_problems_mode_w', 'Word Problems mode (W)')
             }, __alloT('stem.volume.word', '\uD83D\uDCDD Word'))),
           // Mute toggle
