@@ -63,6 +63,25 @@
   var STORAGE_POEMS = 'alloPoetTreePoems';
   var STORAGE_PREFS = 'alloPoetTreePrefs';
 
+  // ── Self-contained UI localization (same pattern as Lingua / LitLab) ───────
+  // PoetTree's chrome is localized into the STUDENT's interface language
+  // (currentUiLanguage via the app's LanguageContext) using the app's own runtime
+  // Gemini (props.onCallGemini — the user's key, never a build key). English text
+  // IS the key: wrap each display string in tr('…'); a registry auto-collects them
+  // and batch-translates the ones missing from the per-device cache. Falls back to
+  // English, touches no lang/*.js. AI prompts / form data stay English (unwrapped).
+  var PT_I18N_KEY = 'allo_poettree_ui_i18n_v1';
+  var LANG_CTX = (typeof window !== 'undefined' && window.AlloLanguageContext) || React.createContext(null);
+  var STR_REG = {};
+  var LL_CUR = { lang: 'English', cache: {} };
+  function llLoad() { try { return JSON.parse(localStorage.getItem(PT_I18N_KEY)) || {}; } catch (e) { return {}; } }
+  function llStore(v) { try { localStorage.setItem(PT_I18N_KEY, JSON.stringify(v)); } catch (e) {} }
+  function llInterp(s, params) { if (s == null || !params) return s; Object.keys(params).forEach(function (k) { s = s.split('{' + k + '}').join(String(params[k])); }); return s; }
+  function tr(en, params) { if (en && typeof en === 'string') STR_REG[en] = true; var p = LL_CUR.cache[LL_CUR.lang]; return llInterp((p && p[en] != null) ? p[en] : en, params); }
+  function llCleanJson(raw) { var s = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, ''); var f = s.indexOf('{'), l = s.lastIndexOf('}'); return f >= 0 && l > f ? s.slice(f, l + 1) : s; }
+  function llSanitize(obj, wanted) { if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null; var out = {}, n = 0; wanted.forEach(function (k) { var v = obj[k]; if (typeof v === 'string') { v = v.trim().slice(0, 400); if (v) { out[k] = v; n++; } } }); return n ? out : null; }
+  function llPrompt(langName, list) { return ['Translate these user-interface labels for a classroom poetry-writing app into natural, concise ' + langName + ' (buttons, tabs, headings — keep them short).', 'Keep any {tokens} and any emoji EXACTLY as written. No commentary.', 'Return ONLY a JSON object mapping each ENGLISH string (used verbatim as the key) to its ' + langName + ' translation.', JSON.stringify(list)].join(String.fromCharCode(10)); }
+
   // Poetic forms — middle-school friendly progression from no-rules to structured.
   var FORMS = [
     {
@@ -142,7 +161,7 @@
       tips: [
         'The funnier the better. Limericks reward bold choices.',
         'Line 3 and 4 should set up the punch in line 5.',
-        'Read it out loud to feel the rhythm.'
+        tr('Read it out loud to feel the rhythm.')
       ],
       moreExamples: [
         {
@@ -647,6 +666,42 @@
     var useRef = React.useRef;
     var useEffect = React.useEffect;
 
+    // ── UI localization (student's interface language, runtime-translated) ──
+    var langCtx = React.useContext(LANG_CTX);
+    var uiLang = (langCtx && langCtx.currentUiLanguage) || (typeof window !== 'undefined' && window.__alloTextLanguage) || 'English';
+    var llCacheRef = useRef(llLoad());
+    var llReqRef = useRef(0);
+    var llAttemptedRef = useRef({});
+    var setLlTick = useState(0)[1];
+    var _llTranslating = useState(false); var llTranslating = _llTranslating[0]; var setLlTranslating = _llTranslating[1];
+    LL_CUR.lang = uiLang; LL_CUR.cache = llCacheRef.current; // publish snapshot for module-scope tr()
+    function llTranslateBatch(list) {
+      if (typeof onCallGemini !== 'function' || !list.length) return;
+      var reqId = ++llReqRef.current, lang = uiLang;
+      setLlTranslating(true);
+      var att = llAttemptedRef.current[lang] || (llAttemptedRef.current[lang] = {});
+      list.forEach(function (k) { att[k] = true; });
+      Promise.resolve().then(function () { return onCallGemini(llPrompt(lang, list)); }).then(function (raw) {
+        if (reqId !== llReqRef.current) return;
+        setLlTranslating(false);
+        var pack = null; try { pack = llSanitize(JSON.parse(llCleanJson(raw)), list); } catch (_) {}
+        if (pack) {
+          var next = Object.assign({}, llCacheRef.current);
+          next[lang] = Object.assign({}, next[lang] || {}, pack);
+          llCacheRef.current = next; llStore(next);
+          setLlTick(function (n) { return n + 1; });
+        }
+      }).catch(function () { if (reqId === llReqRef.current) setLlTranslating(false); });
+    }
+    useEffect(function () {
+      if (uiLang === 'English' || typeof onCallGemini !== 'function') return;
+      var cache = llCacheRef.current[uiLang] || {}, attempted = llAttemptedRef.current[uiLang] || {};
+      var missing = Object.keys(STR_REG).filter(function (k) { return !cache[k] && !attempted[k]; });
+      if (!missing.length) return;
+      var t = setTimeout(function () { llTranslateBatch(missing); }, 500);
+      return function () { clearTimeout(t); };
+    });
+
     var TEAL = '#0d9488';
     var TEAL_LIGHT = '#f0fdfa';
     var TEAL_DARK = '#115e59';
@@ -755,11 +810,11 @@
 
     // Built-in poetry rubric for Self-Assessment (5 criteria, age-responsive language)
     var POETRY_RUBRIC_CRITERIA = [
-      { id: 'imagery',   label: 'Imagery & Sensory Detail',  desc: 'Concrete, specific images that engage the senses' },
-      { id: 'sound',     label: 'Sound & Music',             desc: 'Rhythm, alliteration, assonance, line breaks that earn their place' },
-      { id: 'structure', label: 'Structure & Form',          desc: 'Form rules met (or broken on purpose); shape supports meaning' },
-      { id: 'voice',     label: 'Voice & Emotion',           desc: 'A real feeling lives in the poem; it sounds like you' },
-      { id: 'wordChoice',label: 'Word Choice',               desc: 'Strong verbs, specific nouns, no filler words' }
+      { id: 'imagery',   label: tr('Imagery & Sensory Detail'),  desc: 'Concrete, specific images that engage the senses' },
+      { id: 'sound',     label: tr('Sound & Music'),             desc: 'Rhythm, alliteration, assonance, line breaks that earn their place' },
+      { id: 'structure', label: tr('Structure & Form'),          desc: 'Form rules met (or broken on purpose); shape supports meaning' },
+      { id: 'voice',     label: tr('Voice & Emotion'),           desc: 'A real feeling lives in the poem; it sounds like you' },
+      { id: 'wordChoice',label: tr('Word Choice'),               desc: 'Strong verbs, specific nouns, no filler words' }
     ];
 
     // Teacher-scaffold fields (saved into the resource-history config payload).
@@ -786,8 +841,8 @@
           // Seed the editable title once so the student starts with the teacher's hint.
           if (!poemTitle) setPoemTitle(initialConfig.suggestedTitle);
         }
-        announcePT('Assignment loaded from teacher.');
-        if (addToast) addToast('Assignment loaded!', 'success');
+        announcePT(tr('Assignment loaded from teacher.'));
+        if (addToast) addToast(tr('Assignment loaded!'), 'success');
       } catch (err) { warnLog('initialConfig hydration failed:', err && err.message); }
     }, [initialConfig]);
 
@@ -797,7 +852,7 @@
     }, []);
 
     var savePoem = useCallback(function () {
-      if (!poemText.trim()) { addToast && addToast('Write something first!', 'info'); return; }
+      if (!poemText.trim()) { addToast && addToast(tr('Write something first!'), 'info'); return; }
       var entry = {
         id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         title: poemTitle.trim() || 'Untitled',
@@ -808,8 +863,8 @@
       var updated = [entry].concat(saved).slice(0, 50);
       setSaved(updated);
       try { localStorage.setItem(STORAGE_POEMS, JSON.stringify(updated)); } catch (e) {}
-      addToast && addToast('Poem saved.', 'success');
-      announcePT('Poem saved as "' + entry.title + '."');
+      addToast && addToast(tr('Poem saved.'), 'success');
+      announcePT(tr('Poem saved as "') + entry.title + '."');
     }, [poemText, poemTitle, form, saved, addToast]);
 
     var loadPoem = useCallback(function (entry) {
@@ -818,7 +873,7 @@
       var f = FORMS.find(function (ff) { return ff.id === entry.formId; });
       if (f) setForm(f);
       setActiveTab('write');
-      announcePT('Loaded poem: ' + (entry.title || 'Untitled') + '.');
+      announcePT(tr('Loaded poem: ') + (entry.title || 'Untitled') + '.');
     }, []);
 
     // ── Resource-history hooks (mirror StoryForge's saveAsConfig / saveAsSubmission) ──
@@ -836,8 +891,8 @@
         savedAt: new Date().toISOString()
       };
       onSaveConfig(config);
-      announcePT('Assignment saved to lesson resources.');
-      addToast && addToast('PoetTree assignment saved!', 'success');
+      announcePT(tr('Assignment saved to lesson resources.'));
+      addToast && addToast(tr('PoetTree assignment saved!'), 'success');
     }, [onSaveConfig, form, teacherPrompt, suggestedTitle, gradeLevel, addToast]);
 
     // sendToLitLab: cross-tool handoff — the parent receives the poem as a
@@ -845,7 +900,7 @@
     // student can perform their poem with character voices in LitLab.
     var sendToLitLab = useCallback(function () {
       if (!onSendToLitLab) return;
-      if (!poemText.trim()) { addToast && addToast('Write something first!', 'info'); return; }
+      if (!poemText.trim()) { addToast && addToast(tr('Write something first!'), 'info'); return; }
       onSendToLitLab({
         storyTitle: poemTitle.trim() || 'My Poem',
         sourceText: poemText,
@@ -856,15 +911,15 @@
         sourceFormId: form ? form.id : 'free',
         sourceFormName: form ? form.name : 'Free Verse'
       });
-      announcePT('Poem sent to LitLab as a performance.');
-      addToast && addToast('Sent to LitLab!', 'success');
+      announcePT(tr('Poem sent to LitLab as a performance.'));
+      addToast && addToast(tr('Sent to LitLab!'), 'success');
     }, [onSendToLitLab, poemText, poemTitle, gradeLevel, form, addToast]);
 
     // saveSubmissionToPortfolio: student saves their finished poem as a
     // 'poettree-submission' resource for portfolio review.
     var saveSubmissionToPortfolio = useCallback(function () {
       if (!onSaveSubmission) return;
-      if (!poemText.trim()) { addToast && addToast('Write something first!', 'info'); return; }
+      if (!poemText.trim()) { addToast && addToast(tr('Write something first!'), 'info'); return; }
       var lines = poemText.split('\n');
       var submission = {
         poemTitle: poemTitle.trim() || 'Untitled',
@@ -955,11 +1010,11 @@
         var parsed = JSON.parse(clean);
         setAiFeedback(parsed);
         if (handleScoreUpdate) handleScoreUpdate(15, 'PoetTree feedback', 'poettree-feedback-' + entry_safe(poemTitle));
-        announcePT('Feedback received.');
+        announcePT(tr('Feedback received.'));
       } catch (err) {
         warnLog('AI feedback failed:', err && err.message);
-        setAiFeedback({ error: 'Could not generate feedback. Try again in a moment.' });
-        addToast && addToast('Feedback unavailable.', 'error');
+        setAiFeedback({ error: tr('Could not generate feedback. Try again in a moment.') });
+        addToast && addToast(tr('Feedback unavailable.'), 'error');
       } finally {
         setAiLoading(false);
       }
@@ -978,7 +1033,7 @@
         var result = await onCallGemini(prompt, false);
         var clean = String(result || '').trim().replace(/^["“]|["”]$/g, '').replace(/^prompt:\s*/i, '');
         setDailyPrompt(clean);
-        announcePT('New writing prompt: ' + clean);
+        announcePT(tr('New writing prompt: ') + clean);
       } catch (err) {
         warnLog('Daily prompt failed:', err && err.message);
         addToast && addToast('Couldn\'t fetch a prompt right now.', 'error');
@@ -1013,7 +1068,7 @@
         addToast && addToast('"' + word + '" copied to clipboard.', 'success');
         announcePT('Copied ' + word + ' to clipboard.');
       } catch (e) {
-        addToast && addToast('Copy failed — long-press the word instead.', 'info');
+        addToast && addToast(tr('Copy failed — long-press the word instead.'), 'info');
       }
     }, [addToast]);
 
@@ -1031,7 +1086,7 @@
         var parsed = JSON.parse(clean);
         setVerbSuggestions(parsed.suggestions || []);
         var n = (parsed.suggestions || []).length;
-        announcePT(n === 0 ? 'No weak verbs detected — your verbs are working hard.' : n + ' verb suggestion' + (n === 1 ? '' : 's') + '.');
+        announcePT(n === 0 ? tr('No weak verbs detected — your verbs are working hard.') : n + ' verb suggestion' + (n === 1 ? '' : 's') + '.');
       } catch (err) {
         warnLog('Verb booster failed:', err && err.message);
         setVerbSuggestions({ error: 'Couldn\'t analyze verbs right now.' });
@@ -1053,7 +1108,7 @@
         var clean = String(result).trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/, '').trim();
         var parsed = JSON.parse(clean);
         setSensesResult(parsed);
-        announcePT('Senses check complete. ' + (parsed.suggestion || ''));
+        announcePT(tr('Senses check complete. ') + (parsed.suggestion || ''));
       } catch (err) {
         warnLog('Senses check failed:', err && err.message);
         setSensesResult({ error: 'Couldn\'t analyze senses right now.' });
@@ -1096,7 +1151,7 @@
           if (Array.isArray(parsed[k])) parsed[k] = parsed[k].slice(0, 3);
         });
         setSoundDeviceResult(parsed);
-        announcePT('Sound device coach ready. Try strengthening: ' + (parsed.weakest || 'a sound') + '.');
+        announcePT(tr('Sound device coach ready. Try strengthening: ') + (parsed.weakest || 'a sound') + '.');
       } catch (err) {
         warnLog('Sound device coach failed:', err && err.message);
         setSoundDeviceResult({ error: 'Couldn\'t analyze sound devices right now.' });
@@ -1131,7 +1186,7 @@
         // Stamp a stable client-side id on each so images keyed by it don't collide across re-detects.
         var stamped = items.map(function (m, i) { return Object.assign({}, m, { id: 'mph_' + Date.now() + '_' + i }); });
         setMetaphors(stamped);
-        announcePT(stamped.length === 0 ? 'No metaphors or similes found in this draft.' : (stamped.length + ' figurative phrase' + (stamped.length === 1 ? '' : 's') + ' found.'));
+        announcePT(stamped.length === 0 ? tr('No metaphors or similes found in this draft.') : (stamped.length + ' figurative phrase' + (stamped.length === 1 ? '' : 's') + ' found.'));
       } catch (err) {
         warnLog('Metaphor detection failed:', err && err.message);
         setMetaphors({ error: 'Couldn\'t scan for metaphors right now. Try again in a moment.' });
@@ -1157,7 +1212,7 @@
         }
       } catch (err) {
         warnLog('Metaphor image gen failed:', err && err.message);
-        addToast && addToast('Image gen failed — try again.', 'error');
+        addToast && addToast(tr('Image gen failed — try again.'), 'error');
       } finally {
         setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = false; return n; });
       }
@@ -1167,7 +1222,7 @@
       if (!onCallGeminiImageEdit || !m || !m.id) return;
       var existing = metaphorImages[m.id];
       var instruction = (metaphorEditText[m.id] || '').trim();
-      if (!existing) { addToast && addToast('Generate an image first, then edit it.', 'info'); return; }
+      if (!existing) { addToast && addToast(tr('Generate an image first, then edit it.'), 'info'); return; }
       if (!instruction) { addToast && addToast('Type a tweak (e.g. "make it sunset", "add stars").', 'info'); return; }
       setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = true; return n; });
       try {
@@ -1181,11 +1236,11 @@
         if (refined) {
           setMetaphorImages(function (prev) { var n = Object.assign({}, prev); n[m.id] = refined; return n; });
           setMetaphorEditText(function (prev) { var n = Object.assign({}, prev); n[m.id] = ''; return n; });
-          announcePT('Image refined.');
+          announcePT(tr('Image refined.'));
         }
       } catch (err) {
         warnLog('Metaphor image edit failed:', err && err.message);
-        addToast && addToast('Image edit failed — try again.', 'error');
+        addToast && addToast(tr('Image edit failed — try again.'), 'error');
       } finally {
         setMetaphorImgLoading(function (prev) { var n = Object.assign({}, prev); n[m.id] = false; return n; });
       }
@@ -1212,7 +1267,7 @@
       // If only one stanza, encourage the student to add stanza breaks first
       // (otherwise mood-board === image-poem and there's no narrative arc).
       if (stanzas.length === 1) {
-        addToast && addToast('Mood Board needs at least 2 stanzas (separate them with a blank line).', 'info');
+        addToast && addToast(tr('Mood Board needs at least 2 stanzas (separate them with a blank line).'), 'info');
         return;
       }
       setStanzaBoardLoading(true);
@@ -1248,7 +1303,7 @@
             }
           })(idx, stanzas[idx]);
         }
-        announcePT('Mood board ready: ' + stanzas.length + ' stanza images.');
+        announcePT(tr('Mood board ready: ') + stanzas.length + ' stanza images.');
       } finally {
         setStanzaBoardLoading(false);
       }
@@ -1459,7 +1514,7 @@
       setRewriteResult(null);
       setRewriteTargetId('');
       addToast && addToast('Replaced with the rewrite. Your old version is gone — Library save first if you want both.', 'info');
-      announcePT('Replaced with ' + (rewriteResult.targetForm ? rewriteResult.targetForm.name : 'rewrite') + '.');
+      announcePT(tr('Replaced with ') + (rewriteResult.targetForm ? rewriteResult.targetForm.name : 'rewrite') + '.');
     }, [rewriteResult, addToast]);
 
     // ── CMU-dict verification (Pyodide-on-demand) ──
@@ -1477,7 +1532,7 @@
     var verifyWithCMU = useCallback(async function () {
       var py = window.AlloModules && window.AlloModules.PyodideRuntime;
       if (!py || typeof py.runPoetryCheck !== 'function') {
-        if (addToast) addToast('Python verifier not available — refresh and try again.', 'error');
+        if (addToast) addToast(tr('Python verifier not available — refresh and try again.'), 'error');
         return;
       }
       if (!form || !poemText.trim()) return;
@@ -1523,7 +1578,7 @@
         announcePT('Meter analysis complete for ' + (parsed.lines ? parsed.lines.length : 0) + ' lines.');
       } catch (err) {
         warnLog('Meter analysis failed:', err && err.message);
-        setMeterAnalysis({ error: 'Could not analyze meter.' });
+        setMeterAnalysis({ error: tr('Could not analyze meter.') });
       } finally {
         setMeterLoading(false);
       }
@@ -1534,7 +1589,7 @@
       if (!onCallTTS || !poemText.trim()) return;
       ttsCancelRef.current = false;
       setTtsPlaying(true);
-      announcePT('Playing poem.');
+      announcePT(tr('Playing poem.'));
       try {
         var emotionPreface = emotion === 'somber' ? '(read this poem somberly, slowly)\n'
           : emotion === 'joyful' ? '(read this poem joyfully)\n'
@@ -1569,7 +1624,7 @@
       ttsCancelRef.current = true;
       setTtsPlaying(false);
       try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
-      announcePT('Stopped.');
+      announcePT(tr('Stopped.'));
     }, []);
 
     // ── Illustration ──
@@ -1579,10 +1634,10 @@
       try {
         var prompt = 'Illustration for a poem titled "' + (poemTitle || 'Untitled') + '". Poem text: ' + poemText.slice(0, 400) + '. Style: dreamy, evocative, watercolor and ink. Single image. STRICTLY NO TEXT in the image.';
         var url = await onCallImagen(prompt, 600, 0.85);
-        if (url) { setIllustration(url); announcePT('Illustration generated.'); }
+        if (url) { setIllustration(url); announcePT(tr('Illustration generated.')); }
       } catch (err) {
         warnLog('Illustration failed:', err && err.message);
-        addToast && addToast('Illustration failed.', 'error');
+        addToast && addToast(tr('Illustration failed.'), 'error');
       } finally {
         setIllusLoading(false);
       }
@@ -1603,11 +1658,11 @@
         if (url) {
           setImagePoemUrl(url);
           announcePT('Image poem rendered.');
-          if (typeof addToast === 'function') addToast('Image poem rendered!', 'success');
+          if (typeof addToast === 'function') addToast(tr('Image poem rendered!'), 'success');
         }
       } catch (err) {
         warnLog('Image poem failed:', err && err.message);
-        addToast && addToast('Image poem failed — try again.', 'error');
+        addToast && addToast(tr('Image poem failed — try again.'), 'error');
       } finally {
         setImagePoemLoading(false);
       }
@@ -1620,7 +1675,7 @@
       try { readAloudReturnFocusRef.current = document.activeElement; } catch (e) {}
       setReadIdx(0);
       setReadCountdown(3);
-      announcePT('Read-aloud starting in 3…');
+      announcePT(tr('Read-aloud starting in 3…'));
       var c = 3;
       var tick = function () {
         c -= 1;
@@ -1631,7 +1686,7 @@
         } else {
           setReadCountdown(0);
           setReadAloudActive(true);
-          announcePT('Begin reading.');
+          announcePT(tr('Begin reading.'));
         }
       };
       setTimeout(tick, 900);
@@ -1652,7 +1707,7 @@
       setReadAloudActive(false);
       setReadCountdown(0);
       setReadIdx(0);
-      announcePT('Read-aloud ended.');
+      announcePT(tr('Read-aloud ended.'));
     }, []);
 
     var advanceReadAloud = useCallback(function () {
@@ -1663,7 +1718,7 @@
       if (next >= allLines.length) {
         // Done
         setReadAloudActive(false);
-        announcePT('You finished. Well read.');
+        announcePT(tr('You finished. Well read.'));
         if (handleScoreUpdate) handleScoreUpdate(15, 'PoetTree read-aloud', 'poettree-recital');
       } else {
         setReadIdx(next);
@@ -1685,7 +1740,7 @@
     var printBroadside = useCallback(function () {
       if (!poemText.trim()) return;
       var w = window.open('', '_blank', 'width=720,height=900');
-      if (!w) { addToast && addToast('Pop-up blocked. Allow pop-ups to print.', 'error'); return; }
+      if (!w) { addToast && addToast(tr('Pop-up blocked. Allow pop-ups to print.'), 'error'); return; }
       // Escape user content for HTML.
       var escHtml = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
       var safeTitle = escHtml(poemTitle || 'Untitled');
@@ -1758,22 +1813,22 @@
         + '</main>'
         + '<footer class="site-footer" role="contentinfo">PoetTree · AlloFlow</footer>'
         + '</body></html>';
-      try { w.document.open(); w.document.write(html); w.document.close(); announcePT('Broadside ready in a new window.'); }
-      catch (er) { addToast && addToast('Broadside failed.', 'error'); }
+      try { w.document.open(); w.document.write(html); w.document.close(); announcePT(tr('Broadside ready in a new window.')); }
+      catch (er) { addToast && addToast(tr('Broadside failed.'), 'error'); }
     }, [poemText, poemTitle, studentNickname, form, illustration, addToast]);
 
     // ── Print Chapbook (all saved poems as one document) ──
     // Same accessible-HTML5 pattern as the broadside but multi-page with cover + table of contents.
     var printChapbook = useCallback(function (filterFormId) {
       var pool = filterFormId ? saved.filter(function (p) { return p.formId === filterFormId; }) : saved;
-      if (!pool.length) { addToast && addToast('No poems to print yet.', 'info'); return; }
+      if (!pool.length) { addToast && addToast(tr('No poems to print yet.'), 'info'); return; }
       var w = window.open('', '_blank', 'width=720,height=900');
-      if (!w) { addToast && addToast('Pop-up blocked. Allow pop-ups to print.', 'error'); return; }
+      if (!w) { addToast && addToast(tr('Pop-up blocked. Allow pop-ups to print.'), 'error'); return; }
       var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
       var safeAuthor = esc(studentNickname || 'A poet');
       var dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
       var filterLabel = filterFormId ? (FORMS.find(function (f) { return f.id === filterFormId; }) || { name: filterFormId }).name : '';
-      var coverTitle = filterFormId ? esc(filterLabel + ' Collection') : 'Selected Poems';
+      var coverTitle = filterFormId ? esc(filterLabel + ' Collection') : tr('Selected Poems');
 
       // Cover (header landmark) — large title, author, date, count.
       var coverHtml = '<header class="page cover" role="banner">'
@@ -1874,7 +1929,7 @@
         + '</div></footer>'
         + '</body></html>';
       try { w.document.open(); w.document.write(html); w.document.close(); announcePT('Chapbook ready: ' + pool.length + ' poems, in a new window.'); }
-      catch (er) { addToast && addToast('Chapbook failed.', 'error'); }
+      catch (er) { addToast && addToast(tr('Chapbook failed.'), 'error'); }
     }, [saved, studentNickname, addToast]);
 
     // ── Theme Tracker: analyze recurring patterns across the student's saved poems ──
@@ -1937,7 +1992,7 @@
           try {
             var formHint = form && form.name !== 'Free Verse' ? form.name + ' ' : '';
             var searchQuery = keywords + ' ' + formHint + 'famous public domain poem poetryfoundation';
-            announcePT('Searching for similar master poems…');
+            announcePT(tr('Searching for similar master poems…'));
             var searchResult = await window.WebSearchProvider.search(searchQuery, 8);
             if (searchResult && searchResult.results && searchResult.results.length > 0) {
               searchResults = searchResult.results.slice(0, 8);
@@ -2016,9 +2071,9 @@
           e('span', { style: { fontSize: '32px' }, 'aria-hidden': 'true' }, '🌳'),
           e('div', { style: { flex: 1 } },
             e('h2', { style: { fontSize: '18px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, 'PoetTree'),
-            e('p', { style: { fontSize: '11px', color: '#475569', margin: 0 } }, 'Form, write, hear, share — your poems with structure and AI feedback.')
+            e('p', { style: { fontSize: '11px', color: '#475569', margin: 0 } }, tr('Form, write, hear, share — your poems with structure and AI feedback.'))
           ),
-          onClose && e('button', { onClick: onClose, 'aria-label': 'Close PoetTree',
+          onClose && e('button', { onClick: onClose, 'aria-label': tr('Close PoetTree'),
             style: { padding: '6px 14px', background: '#fff', border: '1px solid #94a3b8', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }
           }, '✕ Close')
         ),
@@ -2057,7 +2112,7 @@
               tabIndex: active ? 0 : -1,
               onClick: function () { setActiveTab(t.id); },
               style: { padding: '8px 14px', borderRadius: '10px', border: 'none', background: active ? TEAL : 'transparent', color: active ? '#fff' : '#374151', fontWeight: 700, fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }
-            }, t.icon + ' ' + t.label);
+            }, t.icon + ' ' + tr(t.label));
           })
         ),
 
@@ -2074,15 +2129,15 @@
             ),
 
             // ── Teacher Assignment Builder (visible only when onSaveConfig is provided) ──
-            onSaveConfig && e('div', { role: 'region', 'aria-label': 'Teacher Assignment Builder', style: { background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: '12px', padding: '14px' } },
+            onSaveConfig && e('div', { role: 'region', 'aria-label': tr('Teacher Assignment Builder'), style: { background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: '12px', padding: '14px' } },
               e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' } },
                 e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#1e40af', margin: 0 } }, '🧑‍🏫 Teacher Assignment Builder'),
-                e('span', { style: { fontSize: '10px', color: '#1e40af', background: '#dbeafe', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Teacher mode')
+                e('span', { style: { fontSize: '10px', color: '#1e40af', background: '#dbeafe', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } }, tr('Teacher mode'))
               ),
               e('p', { style: { fontSize: '11px', color: '#1e3a8a', margin: '0 0 10px', lineHeight: 1.5 } },
                 'Pick a form below, then add a prompt and optional title hint. Save it as an assignment so students can load it from My Resources.'
               ),
-              e('label', { htmlFor: 'pt-teacher-prompt', style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#1e40af', marginBottom: '4px' } }, 'Writing prompt for students'),
+              e('label', { htmlFor: 'pt-teacher-prompt', style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#1e40af', marginBottom: '4px' } }, tr('Writing prompt for students')),
               e('textarea', {
                 id: 'pt-teacher-prompt',
                 value: teacherPrompt,
@@ -2091,7 +2146,7 @@
                 rows: 3,
                 style: { width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #bfdbfe', fontSize: '13px', fontFamily: 'inherit', resize: 'vertical', background: '#fff', boxSizing: 'border-box' }
               }),
-              e('label', { htmlFor: 'pt-suggested-title', style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#1e40af', margin: '8px 0 4px' } }, 'Suggested title (optional)'),
+              e('label', { htmlFor: 'pt-suggested-title', style: { display: 'block', fontSize: '11px', fontWeight: 700, color: '#1e40af', margin: '8px 0 4px' } }, tr('Suggested title (optional)')),
               e('input', {
                 id: 'pt-suggested-title',
                 type: 'text',
@@ -2103,12 +2158,12 @@
               e('button', {
                 onClick: saveAsAssignment,
                 disabled: !teacherPrompt.trim() && !form,
-                'aria-label': 'Save this PoetTree setup as an assignment in My Resources',
+                'aria-label': tr('Save this PoetTree setup as an assignment in My Resources'),
                 style: { marginTop: '10px', padding: '8px 16px', background: !teacherPrompt.trim() && !form ? '#cbd5e1' : '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: !teacherPrompt.trim() && !form ? 'not-allowed' : 'pointer' }
               }, '💾 Save as Assignment')
             ),
 
-            e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 4px' } }, 'Pick a form to start'),
+            e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 4px' } }, tr('Pick a form to start')),
             e('p', { style: { fontSize: '12px', color: '#475569', margin: 0 } }, 'Each form has its own rules. Free verse has none. Pick what fits your idea, or try one you\'ve never written before.'),
             e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px', marginTop: '6px' } },
               FORMS.map(function (f) {
@@ -2116,15 +2171,15 @@
                 return e('button', { key: f.id,
                   onClick: function () { setForm(f); announcePT('Selected form: ' + f.name); },
                   'aria-pressed': selected ? 'true' : 'false',
-                  'aria-label': 'Choose form ' + f.name + ' — ' + f.tagline,
+                  'aria-label': tr('Choose form ') + tr(f.name) + ' — ' + tr(f.tagline),
                   style: { textAlign: 'left', padding: '14px', borderRadius: '12px', border: selected ? '2px solid ' + TEAL : '1px solid #e5e7eb', background: selected ? TEAL_LIGHT : '#fff', cursor: 'pointer' }
                 },
                   e('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' } },
                     e('span', { style: { fontSize: '24px' }, 'aria-hidden': 'true' }, f.icon),
-                    e('h4', { style: { fontSize: '14px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, f.name)
+                    e('h4', { style: { fontSize: '14px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, tr(f.name))
                   ),
-                  e('p', { style: { fontSize: '11px', color: '#475569', margin: '0 0 6px', fontStyle: 'italic' } }, f.tagline),
-                  e('p', { style: { fontSize: '11px', color: '#374151', margin: 0, lineHeight: 1.5 } }, f.structure)
+                  e('p', { style: { fontSize: '11px', color: '#475569', margin: '0 0 6px', fontStyle: 'italic' } }, tr(f.tagline)),
+                  e('p', { style: { fontSize: '11px', color: '#374151', margin: 0, lineHeight: 1.5 } }, tr(f.structure))
                 );
               })
             ),
@@ -2138,9 +2193,9 @@
               ),
               // Inspiration Gallery: additional public-domain examples per form
               form.moreExamples && form.moreExamples.length > 0 && e('details', { style: { marginTop: '14px', borderTop: '1px dashed #99f6e4', paddingTop: '12px' } },
-                e('summary', { style: { cursor: 'pointer', fontSize: '13px', fontWeight: 800, color: TEAL_DARK, listStyle: 'none', display: 'flex', alignItems: 'center', gap: '6px' }, 'aria-label': 'Show more example poems in this form' },
+                e('summary', { style: { cursor: 'pointer', fontSize: '13px', fontWeight: 800, color: TEAL_DARK, listStyle: 'none', display: 'flex', alignItems: 'center', gap: '6px' }, 'aria-label': tr('Show more example poems in this form') },
                   e('span', { 'aria-hidden': 'true' }, '📚'),
-                  e('span', null, 'Inspiration gallery (' + form.moreExamples.length + ' more example' + (form.moreExamples.length === 1 ? '' : 's') + ')'),
+                  e('span', null, tr('Inspiration gallery (') + form.moreExamples.length + ' more example' + (form.moreExamples.length === 1 ? '' : 's') + ')'),
                   e('span', { 'aria-hidden': 'true', style: { marginLeft: 'auto', color: '#475569', fontSize: '11px', fontWeight: 500 } }, 'click to expand')
                 ),
                 e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' } },
@@ -2158,7 +2213,7 @@
               ),
               e('button', { onClick: function () { setActiveTab('write'); announcePT('Ready to write a ' + form.name + '.'); },
                 style: { marginTop: '10px', padding: '8px 18px', background: TEAL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
-              }, 'Start writing →')
+              }, tr('Start writing →'))
             )
           ),
 
@@ -2169,23 +2224,23 @@
               form
                 ? e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', background: TEAL_LIGHT, borderRadius: '14px', border: '1px solid #99f6e4', fontSize: '12px', fontWeight: 700, color: TEAL_DARK } },
                     e('span', { 'aria-hidden': 'true' }, form.icon), form.name,
-                    e('button', { onClick: function () { setForm(null); }, 'aria-label': 'Switch form', style: { background: 'transparent', border: 'none', color: TEAL_DARK, cursor: 'pointer', fontSize: '11px', textDecoration: 'underline', marginLeft: '4px' } }, 'switch'))
-                : e('span', { style: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' } }, 'No form chosen — free verse'),
-              e('button', { onClick: function () { var next = !largeText; setLargeText(next); savePrefs({ largeText: next }); announcePT(next ? 'Reading-friendly text on.' : 'Reading-friendly text off.'); },
+                    e('button', { onClick: function () { setForm(null); }, 'aria-label': tr('Switch form'), style: { background: 'transparent', border: 'none', color: TEAL_DARK, cursor: 'pointer', fontSize: '11px', textDecoration: 'underline', marginLeft: '4px' } }, 'switch'))
+                : e('span', { style: { fontSize: '12px', color: '#6b7280', fontStyle: 'italic' } }, tr('No form chosen — free verse')),
+              e('button', { onClick: function () { var next = !largeText; setLargeText(next); savePrefs({ largeText: next }); announcePT(next ? tr('Reading-friendly text on.') : tr('Reading-friendly text off.')); },
                 'aria-pressed': largeText ? 'true' : 'false',
-                'aria-label': largeText ? 'Turn off reading-friendly text' : 'Turn on reading-friendly text',
+                'aria-label': largeText ? tr('Turn off reading-friendly text') : tr('Turn on reading-friendly text'),
                 style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid ' + (largeText ? TEAL : '#d1d5db'), background: largeText ? TEAL_LIGHT : '#fff', color: largeText ? TEAL_DARK : '#475569', fontWeight: 600, fontSize: '11px', cursor: 'pointer' }
-              }, '🔠 ' + (largeText ? 'Reading mode on' : 'Reading mode'))
+              }, '🔠 ' + (largeText ? 'Reading mode on' : tr('Reading mode')))
             ),
 
             // Title with inline AI title generator
             e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' } },
-              e('label', { htmlFor: 'pt-title', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, 'Title (optional)'),
+              e('label', { htmlFor: 'pt-title', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, tr('Title (optional)')),
               onCallGemini && e('button', {
                 onClick: generateTitles,
                 disabled: !poemText.trim() || titleLoading,
                 'aria-busy': titleLoading ? 'true' : 'false',
-                'aria-label': titleLoading ? 'Generating title suggestions' : 'Suggest 5 titles based on the poem',
+                'aria-label': titleLoading ? tr('Generating title suggestions') : 'Suggest 5 titles based on the poem',
                 style: { padding: '3px 10px', borderRadius: '6px', border: 'none', background: poemText.trim() && !titleLoading ? '#7c3aed' : '#e5e7eb', color: poemText.trim() && !titleLoading ? '#fff' : '#94a3b8', fontSize: '10px', fontWeight: 700, cursor: poemText.trim() && !titleLoading ? 'pointer' : 'not-allowed' }
               }, titleLoading ? '⏳…' : '✨ Suggest titles')
             ),
@@ -2194,10 +2249,10 @@
               style: { padding: '8px 12px', borderRadius: '8px', border: '1px solid #94a3b8', fontSize: largeText ? '15px' : '13px', fontFamily: largeText ? 'system-ui, -apple-system, sans-serif' : 'inherit' }
             }),
             // Title suggestions chips
-            titleSuggestions && Array.isArray(titleSuggestions) && titleSuggestions.length > 0 && e('div', { role: 'region', 'aria-label': 'Title suggestions', 'aria-live': 'polite', style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '-4px' } },
+            titleSuggestions && Array.isArray(titleSuggestions) && titleSuggestions.length > 0 && e('div', { role: 'region', 'aria-label': tr('Title suggestions'), 'aria-live': 'polite', style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '-4px' } },
               titleSuggestions.map(function (t, ti) {
                 return e('button', { key: ti,
-                  onClick: function () { setPoemTitle(t); setTitleSuggestions(null); announcePT('Title set to "' + t + '."'); },
+                  onClick: function () { setPoemTitle(t); setTitleSuggestions(null); announcePT(tr('Title set to "') + t + '."'); },
                   'aria-label': 'Use title: ' + t,
                   style: { padding: '4px 12px', background: '#faf5ff', border: '1px solid #d8b4fe', borderRadius: '14px', fontSize: '12px', cursor: 'pointer', color: '#6b21a8', fontFamily: 'Georgia, serif', fontStyle: 'italic' }
                 }, '"' + t + '"');
@@ -2206,7 +2261,7 @@
 
             // Found-poetry source (only when form is found)
             form && form.id === 'found' && e('div', null,
-              e('label', { htmlFor: 'pt-found-source', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, 'Source text (paste any text here, then click words to add)'),
+              e('label', { htmlFor: 'pt-found-source', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, tr('Source text (paste any text here, then click words to add)')),
               // Starter sources — public-domain seeds students can mine when they don't have their own text yet
               e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '6px' } },
                 e('span', { style: { fontSize: '10px', color: '#475569', fontStyle: 'italic' } }, '📰 Or pick a starter source:'),
@@ -2232,11 +2287,11 @@
                 })
               ),
               e('textarea', { id: 'pt-found-source', value: foundSource, onChange: function (ev) { setFoundSource(ev.target.value); },
-                rows: 6, placeholder: 'Paste a news article, a textbook page, a letter…',
+                rows: 6, placeholder: tr('Paste a news article, a textbook page, a letter…'),
                 style: { width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #94a3b8', fontSize: largeText ? '14px' : '12px', fontFamily: 'Georgia, serif', resize: 'vertical', boxSizing: 'border-box' }
               }),
               foundSource && e('div', { style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px', padding: '10px', marginTop: '6px', maxHeight: '160px', overflowY: 'auto' } },
-                e('p', { style: { fontSize: '10px', color: '#78350f', margin: '0 0 6px', fontWeight: 700 } }, 'Click words to add them to your poem:'),
+                e('p', { style: { fontSize: '10px', color: '#78350f', margin: '0 0 6px', fontWeight: 700 } }, tr('Click words to add them to your poem:')),
                 e('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
                   foundSource.split(/\s+/).filter(Boolean).slice(0, 200).map(function (w, wi) {
                     return e('button', { key: wi, onClick: function () { addFoundWord(w); },
@@ -2251,7 +2306,7 @@
             // ── Erasure Workshop (only when form is 'erasure') ──
             // Two stages: paste/seed source text → click words to keep. Kept words form
             // the extracted poem in original reading order, preserving line breaks.
-            form && form.id === 'erasure' && e('div', { role: 'region', 'aria-label': 'Erasure Workshop', style: { background: '#fafafa', border: '2px solid #1e293b', borderRadius: '10px', padding: '12px' } },
+            form && form.id === 'erasure' && e('div', { role: 'region', 'aria-label': tr('Erasure Workshop'), style: { background: '#fafafa', border: '2px solid #1e293b', borderRadius: '10px', padding: '12px' } },
               e('div', { style: { fontSize: '11px', fontWeight: 800, color: '#1e293b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } }, '⬛ Erasure Workshop'),
               !erasureSource && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
                 e('p', { style: { fontSize: '12px', color: '#475569', margin: 0, lineHeight: 1.5 } }, 'Paste a source text below, then click the words you want to KEEP. Everything else gets blacked out.'),
@@ -2259,8 +2314,8 @@
                   id: 'pt-erasure-source',
                   value: erasureSource,
                   onChange: function (ev) { setErasureSource(ev.target.value); setErasureKept({}); },
-                  rows: 4, placeholder: 'Paste a paragraph, an article, a song lyric — anything…',
-                  'aria-label': 'Source text for erasure',
+                  rows: 4, placeholder: tr('Paste a paragraph, an article, a song lyric — anything…'),
+                  'aria-label': tr('Source text for erasure'),
                   style: { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #94a3b8', fontSize: '12px', fontFamily: 'Georgia, serif', resize: 'vertical', boxSizing: 'border-box' }
                 }),
                 e('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', fontSize: '10px', color: '#475569' } },
@@ -2271,7 +2326,7 @@
                     { label: '📰 News brief', text: 'The town council voted unanimously last night to preserve the abandoned lot at the corner of Maple and Third as a community garden. Residents had petitioned for the change for over a year. Volunteers will begin planting in the spring; until then, the lot will be cleared of debris and the soil tested for contamination.' }
                   ].map(function (seed) {
                     return e('button', { key: seed.label,
-                      onClick: function () { setErasureSource(seed.text); setErasureKept({}); announcePT('Seed source loaded.'); },
+                      onClick: function () { setErasureSource(seed.text); setErasureKept({}); announcePT(tr('Seed source loaded.')); },
                       'aria-label': 'Use ' + seed.label + ' as source text',
                       style: { padding: '3px 8px', borderRadius: '999px', border: '1px solid #94a3b8', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#1e293b', cursor: 'pointer' }
                     }, seed.label);
@@ -2307,10 +2362,10 @@
                 var keptCount = Object.keys(erasureKept).filter(function (k) { return erasureKept[k]; }).length;
                 return e('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
                   e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' } },
-                    e('span', { style: { fontSize: '11px', color: '#475569' } }, 'Click words to keep · ' + keptCount + ' kept of ' + globalIdx + ' total'),
+                    e('span', { style: { fontSize: '11px', color: '#475569' } }, tr('Click words to keep · ') + keptCount + ' kept of ' + globalIdx + ' total'),
                     e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
-                      e('button', { onClick: function () { setErasureKept({}); announcePT('Erasure cleared. All words restored.'); },
-                        'aria-label': 'Clear all kept words',
+                      e('button', { onClick: function () { setErasureKept({}); announcePT(tr('Erasure cleared. All words restored.')); },
+                        'aria-label': tr('Clear all kept words'),
                         style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid #94a3b8', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#475569', cursor: 'pointer' }
                       }, '↻ Reset'),
                       e('button', { onClick: function () {
@@ -2318,17 +2373,17 @@
                           for (var i = 0; i < globalIdx; i++) allKept[i] = true;
                           setErasureKept(allKept);
                         },
-                        'aria-label': 'Keep all words',
+                        'aria-label': tr('Keep all words'),
                         style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid #94a3b8', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#475569', cursor: 'pointer' }
                       }, '◻ All'),
                       e('button', { onClick: function () { setErasureSource(''); setErasureKept({}); },
-                        'aria-label': 'Replace source text',
+                        'aria-label': tr('Replace source text'),
                         style: { padding: '3px 8px', borderRadius: '6px', border: '1px solid #94a3b8', background: '#fff', fontSize: '10px', fontWeight: 700, color: '#475569', cursor: 'pointer' }
                       }, '✎ Replace')
                     )
                   ),
                   // Source canvas — clickable word tokens with blackout effect on non-kept
-                  e('div', { role: 'group', 'aria-label': 'Source text — click words to keep them in your erasure poem', style: { background: '#fff', border: '1px solid #94a3b8', borderRadius: '8px', padding: '12px', fontFamily: 'Georgia, serif', fontSize: largeText ? '16px' : '14px', lineHeight: 1.9 } },
+                  e('div', { role: 'group', 'aria-label': tr('Source text — click words to keep them in your erasure poem'), style: { background: '#fff', border: '1px solid #94a3b8', borderRadius: '8px', padding: '12px', fontFamily: 'Georgia, serif', fontSize: largeText ? '16px' : '14px', lineHeight: 1.9 } },
                     lineTokens.map(function (l, li) {
                       if (l.tokens.length === 0) return e('div', { key: li, style: { height: '1em' } });
                       return e('div', { key: li, style: { marginBottom: '4px' } },
@@ -2369,8 +2424,8 @@
                   extractedPoem.trim() && e('div', { style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '12px' } },
                     e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#78350f', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } }, '✨ Your erasure poem'),
                     e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: largeText ? '15px' : '13px', color: '#1e293b', margin: 0, lineHeight: 1.7 } }, extractedPoem),
-                    e('button', { onClick: function () { setPoemText(extractedPoem); announcePT('Erasure poem copied into editor.'); addToast && addToast('Copied to editor!', 'success'); },
-                      'aria-label': 'Copy this erasure into the main poem editor below',
+                    e('button', { onClick: function () { setPoemText(extractedPoem); announcePT(tr('Erasure poem copied into editor.')); addToast && addToast(tr('Copied to editor!'), 'success'); },
+                      'aria-label': tr('Copy this erasure into the main poem editor below'),
                       style: { marginTop: '8px', padding: '5px 12px', borderRadius: '6px', border: 'none', background: '#0d9488', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
                     }, '↓ Use as poem')
                   )
@@ -2379,16 +2434,16 @@
             ),
 
             // Editor
-            e('label', { htmlFor: 'pt-editor', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, 'Your poem'),
+            e('label', { htmlFor: 'pt-editor', style: { fontSize: '11px', fontWeight: 700, color: '#374151' } }, tr('Your poem')),
             e('textarea', { id: 'pt-editor', value: poemText, onChange: function (ev) { setPoemText(ev.target.value); },
               autoFocus: true,
-              rows: 12, placeholder: form && form.id === 'haiku' ? 'Line 1 (5 syllables)\nLine 2 (7 syllables)\nLine 3 (5 syllables)' : 'Start writing…',
+              rows: 12, placeholder: form && form.id === 'haiku' ? 'Line 1 (5 syllables)\nLine 2 (7 syllables)\nLine 3 (5 syllables)' : tr('Start writing…'),
               style: { width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid ' + TEAL, fontSize: largeText ? '17px' : '15px', fontFamily: largeText ? 'system-ui, -apple-system, sans-serif' : 'Georgia, serif', lineHeight: largeText ? 1.85 : 1.7, letterSpacing: largeText ? '0.02em' : 'normal', resize: 'vertical', minHeight: '180px', boxSizing: 'border-box' }
             }),
 
             // Live structure check
             e('div', { style: { background: '#f8fafc', borderRadius: '10px', padding: '10px 12px', border: '1px solid #e2e8f0' } },
-              e('h4', { style: { fontSize: '11px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Live structure check'),
+              e('h4', { style: { fontSize: '11px', fontWeight: 800, color: TEAL_DARK, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, tr('Live structure check')),
               // Per-line table
               lines.length > 0 && e('div', { style: { fontFamily: 'monospace', fontSize: '11px', color: '#374151', maxHeight: '200px', overflowY: 'auto' } },
                 lines.map(function (line, li) {
@@ -2418,7 +2473,7 @@
                 style: { padding: '8px 14px', background: poemText.trim() ? TEAL : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '💾 Save'),
               onSaveSubmission && e('button', { onClick: saveSubmissionToPortfolio, disabled: !poemText.trim(),
-                'aria-label': 'Save this poem to your portfolio (My Resources)',
+                'aria-label': tr('Save this poem to your portfolio (My Resources)'),
                 style: { padding: '8px 14px', background: poemText.trim() ? '#7c3aed' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '📚 Save to Portfolio'),
               onCallGemini && e('button', { onClick: function () { setActiveTab('feedback'); getAiFeedback(); }, disabled: !poemText.trim(),
@@ -2426,7 +2481,7 @@
               }, '✨ Get feedback'),
               // Cross-tool: open this poem in LitLab as a performance script (parent wires the prop).
               onSendToLitLab && e('button', { onClick: sendToLitLab, disabled: !poemText.trim(),
-                'aria-label': 'Send this poem to LitLab to perform with character voices',
+                'aria-label': tr('Send this poem to LitLab to perform with character voices'),
                 style: { padding: '8px 14px', background: poemText.trim() ? '#9333ea' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: poemText.trim() ? 'pointer' : 'not-allowed' }
               }, '🎭 Perform in LitLab'),
               onCallGemini && e('button', { onClick: analyzeMeter, disabled: !poemText.trim() || meterLoading,
@@ -2455,7 +2510,7 @@
                 e('label', { htmlFor: 'pt-rewrite-target', style: { fontSize: '11px', fontWeight: 800, color: '#581c87', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🔁 Rewrite as'),
                 e('select', { id: 'pt-rewrite-target', value: rewriteTargetId,
                   onChange: function (ev) { setRewriteTargetId(ev.target.value); },
-                  'aria-label': 'Choose target form for rewrite',
+                  'aria-label': tr('Choose target form for rewrite'),
                   style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #c4b5fd', fontSize: '12px', background: '#fff' }
                 },
                   e('option', { value: '' }, '— pick a form —'),
@@ -2466,7 +2521,7 @@
                 e('button', { onClick: function () { rewriteAsForm(rewriteTargetId); },
                   disabled: !rewriteTargetId || rewriteLoading,
                   'aria-busy': rewriteLoading ? 'true' : 'false',
-                  'aria-label': rewriteLoading ? 'Rewriting, please wait' : 'Rewrite the poem in the chosen form',
+                  'aria-label': rewriteLoading ? tr('Rewriting, please wait') : tr('Rewrite the poem in the chosen form'),
                   style: { padding: '5px 12px', borderRadius: '6px', border: 'none', background: rewriteTargetId && !rewriteLoading ? '#7c3aed' : '#e5e7eb', color: rewriteTargetId && !rewriteLoading ? '#fff' : '#94a3b8', fontSize: '11px', fontWeight: 700, cursor: rewriteTargetId && !rewriteLoading ? 'pointer' : 'not-allowed' }
                 }, rewriteLoading ? '⏳ Rewriting…' : '🔁 Rewrite'),
                 rewriteResult && e('button', { onClick: function () { setRewriteResult(null); setRewriteTargetId(''); },
@@ -2476,25 +2531,25 @@
               ),
               !rewriteResult && !rewriteLoading && e('p', { style: { fontSize: '10px', color: '#581c87', margin: '6px 0 0', fontStyle: 'italic' } }, 'See how your image holds up in a different form. Original stays intact unless you replace it.'),
               rewriteResult && rewriteResult.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: '6px 0 0' } }, rewriteResult.error),
-              rewriteResult && !rewriteResult.error && e('div', { role: 'region', 'aria-label': 'Rewrite preview', 'aria-live': 'polite', style: { marginTop: '10px' } },
+              rewriteResult && !rewriteResult.error && e('div', { role: 'region', 'aria-label': tr('Rewrite preview'), 'aria-live': 'polite', style: { marginTop: '10px' } },
                 e('div', { style: { background: '#fff', border: '2px solid #c4b5fd', borderRadius: '10px', padding: '14px 16px' } },
-                  e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#581c87', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, 'Rewrite preview' + (rewriteResult.targetForm ? ' (' + rewriteResult.targetForm.icon + ' ' + rewriteResult.targetForm.name + ')' : '')),
+                  e('div', { style: { fontSize: '10px', fontWeight: 800, color: '#581c87', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, tr('Rewrite preview') + (rewriteResult.targetForm ? ' (' + rewriteResult.targetForm.icon + ' ' + rewriteResult.targetForm.name + ')' : '')),
                   e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: largeText ? '15px' : '14px', color: '#1e293b', margin: 0, lineHeight: largeText ? 1.85 : 1.7 } }, rewriteResult.poem),
                   rewriteResult.note && e('p', { style: { fontSize: '11px', color: '#475569', margin: '10px 0 0', fontStyle: 'italic', borderTop: '1px dashed #e5e7eb', paddingTop: '8px' } }, '✏️ ' + rewriteResult.note)
                 ),
                 e('div', { style: { display: 'flex', gap: '6px', marginTop: '8px' } },
                   e('button', { onClick: applyRewrite,
-                    'aria-label': 'Replace your poem with this rewrite',
+                    'aria-label': tr('Replace your poem with this rewrite'),
                     style: { padding: '6px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
                   }, '✓ Replace mine'),
-                  e('button', { onClick: function () { try { navigator.clipboard.writeText(rewriteResult.poem); addToast && addToast('Rewrite copied to clipboard.', 'success'); } catch (er) {} },
-                    'aria-label': 'Copy rewrite to clipboard',
+                  e('button', { onClick: function () { try { navigator.clipboard.writeText(rewriteResult.poem); addToast && addToast(tr('Rewrite copied to clipboard.'), 'success'); } catch (er) {} },
+                    'aria-label': tr('Copy rewrite to clipboard'),
                     style: { padding: '6px 14px', background: '#fff', color: '#581c87', border: '1px solid #c4b5fd', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
                   }, '📋 Copy'),
-                  e('button', { onClick: function () { setRewriteResult(null); setRewriteTargetId(''); announcePT('Kept original.'); },
-                    'aria-label': 'Keep original poem, discard rewrite',
+                  e('button', { onClick: function () { setRewriteResult(null); setRewriteTargetId(''); announcePT(tr('Kept original.')); },
+                    'aria-label': tr('Keep original poem, discard rewrite'),
                     style: { padding: '6px 14px', background: 'transparent', color: '#475569', border: '1px solid #94a3b8', borderRadius: '6px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
-                  }, 'Keep mine')
+                  }, tr('Keep mine'))
                 )
               )
             ),
@@ -2580,7 +2635,7 @@
                 onClick: function () { setHelpersOpen(!helpersOpen); },
                 'aria-expanded': helpersOpen ? 'true' : 'false',
                 'aria-controls': 'pt-helpers-panel',
-                'aria-label': helpersOpen ? 'Collapse writing helpers' : 'Expand writing helpers',
+                'aria-label': helpersOpen ? tr('Collapse writing helpers') : tr('Expand writing helpers'),
                 style: { width: '100%', padding: '10px 14px', background: 'transparent', border: 'none', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontSize: '13px', fontWeight: 800, color: TEAL_DARK }
               },
                 e('span', null, '✨ Writing helpers'),
@@ -2593,18 +2648,18 @@
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '💡 Daily Prompt'),
                     e('button', { onClick: generateDailyPrompt, disabled: dailyPromptLoading,
                       'aria-busy': dailyPromptLoading ? 'true' : 'false',
-                      'aria-label': dailyPromptLoading ? 'Fetching prompt, please wait' : (dailyPrompt ? 'Get another prompt' : 'Get a prompt'),
+                      'aria-label': dailyPromptLoading ? tr('Fetching prompt, please wait') : (dailyPrompt ? tr('Get another prompt') : tr('Get a prompt')),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: dailyPromptLoading ? '#cbd5e1' : TEAL, color: '#fff', fontSize: '11px', fontWeight: 700, cursor: dailyPromptLoading ? 'wait' : 'pointer' }
                     }, dailyPromptLoading ? '⏳…' : (dailyPrompt ? '🔄 New prompt' : '💡 Inspire me'))
                   ),
                   dailyPrompt && e('div', { role: 'region', 'aria-live': 'polite', style: { background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#78350f', fontFamily: 'Georgia, serif', fontStyle: 'italic', lineHeight: 1.5 } },
                     '"' + dailyPrompt + '"',
-                    e('button', { onClick: function () { try { navigator.clipboard.writeText(dailyPrompt); addToast && addToast('Prompt copied.', 'success'); } catch (er) {} },
-                      'aria-label': 'Copy prompt to clipboard',
+                    e('button', { onClick: function () { try { navigator.clipboard.writeText(dailyPrompt); addToast && addToast(tr('Prompt copied.'), 'success'); } catch (er) {} },
+                      'aria-label': tr('Copy prompt to clipboard'),
                       style: { marginLeft: '8px', padding: '2px 8px', background: 'transparent', border: '1px solid #fcd34d', color: '#78350f', borderRadius: '4px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', verticalAlign: 'middle' }
                     }, '📋 copy')
                   ),
-                  !dailyPrompt && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Stuck? Get a fresh idea to start from.')
+                  !dailyPrompt && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, tr('Stuck? Get a fresh idea to start from.'))
                 ),
 
                 // ── Rhymes ──
@@ -2621,7 +2676,7 @@
                     }),
                     e('button', { onClick: fetchRhymes, disabled: !rhymeQuery.trim() || rhymeLoading,
                       'aria-busy': rhymeLoading ? 'true' : 'false',
-                      'aria-label': rhymeLoading ? 'Fetching rhymes' : 'Find rhymes',
+                      'aria-label': rhymeLoading ? tr('Fetching rhymes') : tr('Find rhymes'),
                       style: { padding: '6px 12px', borderRadius: '6px', border: 'none', background: rhymeQuery.trim() && !rhymeLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: rhymeQuery.trim() && !rhymeLoading ? 'pointer' : 'not-allowed' }
                     }, rhymeLoading ? '⏳' : '🔍')
                   ),
@@ -2649,7 +2704,7 @@
                         })
                       )
                     ),
-                    (!rhymeResults.perfect || rhymeResults.perfect.length === 0) && (!rhymeResults.slant || rhymeResults.slant.length === 0) && e('p', { style: { fontSize: '11px', color: '#475569', fontStyle: 'italic', margin: 0 } }, 'No rhymes found — try a more common word.')
+                    (!rhymeResults.perfect || rhymeResults.perfect.length === 0) && (!rhymeResults.slant || rhymeResults.slant.length === 0) && e('p', { style: { fontSize: '11px', color: '#475569', fontStyle: 'italic', margin: 0 } }, tr('No rhymes found — try a more common word.'))
                   )
                 ),
 
@@ -2659,13 +2714,13 @@
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '💪 Stronger Verbs'),
                     e('button', { onClick: findStrongerVerbs, disabled: !poemText.trim() || verbLoading,
                       'aria-busy': verbLoading ? 'true' : 'false',
-                      'aria-label': verbLoading ? 'Analyzing verbs' : 'Find stronger verbs',
+                      'aria-label': verbLoading ? tr('Analyzing verbs') : tr('Find stronger verbs'),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !verbLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !verbLoading ? 'pointer' : 'not-allowed' }
                     }, verbLoading ? '⏳…' : '🔍 Scan')
                   ),
                   verbSuggestions && verbSuggestions.error && e('p', { style: { fontSize: '11px', color: '#b91c1c', fontStyle: 'italic', margin: 0 } }, verbSuggestions.error),
                   verbSuggestions && Array.isArray(verbSuggestions) && verbSuggestions.length === 0 && e('p', { style: { fontSize: '12px', color: '#166534', fontStyle: 'italic', margin: 0, background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '6px', padding: '8px 10px' } }, '✓ No weak verbs detected — your verbs are working hard.'),
-                  verbSuggestions && Array.isArray(verbSuggestions) && verbSuggestions.length > 0 && e('div', { role: 'region', 'aria-label': 'Verb suggestions', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                  verbSuggestions && Array.isArray(verbSuggestions) && verbSuggestions.length > 0 && e('div', { role: 'region', 'aria-label': tr('Verb suggestions'), 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
                     verbSuggestions.map(function (s, si) {
                       return e('div', { key: si, style: { background: '#fff', border: '1px solid #fde68a', borderRadius: '8px', padding: '8px 10px' } },
                         e('p', { style: { fontFamily: 'Georgia, serif', fontSize: '12px', color: '#1e293b', margin: '0 0 4px', fontStyle: 'italic' } }, '"' + s.line + '"'),
@@ -2692,7 +2747,7 @@
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🌈 Senses Check'),
                     e('button', { onClick: checkSenses, disabled: !poemText.trim() || sensesLoading,
                       'aria-busy': sensesLoading ? 'true' : 'false',
-                      'aria-label': sensesLoading ? 'Auditing sensory imagery' : 'Audit which senses your poem uses',
+                      'aria-label': sensesLoading ? tr('Auditing sensory imagery') : tr('Audit which senses your poem uses'),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !sensesLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !sensesLoading ? 'pointer' : 'not-allowed' }
                     }, sensesLoading ? '⏳…' : '🌈 Audit')
                   ),
@@ -2731,7 +2786,7 @@
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎶 Sound Devices'),
                     e('button', { onClick: analyzeSoundDevices, disabled: !poemText.trim() || soundDeviceLoading,
                       'aria-busy': soundDeviceLoading ? 'true' : 'false',
-                      'aria-label': soundDeviceLoading ? 'Analyzing sound devices' : 'Analyze alliteration, assonance, consonance, and internal rhyme',
+                      'aria-label': soundDeviceLoading ? tr('Analyzing sound devices') : 'Analyze alliteration, assonance, consonance, and internal rhyme',
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !soundDeviceLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !soundDeviceLoading ? 'pointer' : 'not-allowed' }
                     }, soundDeviceLoading ? '⏳…' : '🎶 Listen')
                   ),
@@ -2784,7 +2839,7 @@
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎨 Metaphor Visualizer'),
                     e('button', { onClick: detectMetaphors, disabled: !poemText.trim() || metaphorLoading,
                       'aria-busy': metaphorLoading ? 'true' : 'false',
-                      'aria-label': metaphorLoading ? 'Scanning for metaphors and similes' : (metaphors && Array.isArray(metaphors) ? 'Re-scan for metaphors' : 'Find metaphors and similes in this poem'),
+                      'aria-label': metaphorLoading ? tr('Scanning for metaphors and similes') : (metaphors && Array.isArray(metaphors) ? tr('Re-scan for metaphors') : tr('Find metaphors and similes in this poem')),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !metaphorLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !metaphorLoading ? 'pointer' : 'not-allowed' }
                     }, metaphorLoading ? '⏳…' : (metaphors && Array.isArray(metaphors) ? '🔄 Re-scan' : '🔍 Find them'))
                   ),
@@ -2835,7 +2890,7 @@
                             }, loading ? '⏳' : '✨ Edit')
                           ),
                           e('button', { onClick: function () { visualizeMetaphor(m); }, disabled: loading,
-                            'aria-label': 'Re-roll the image with same prompt',
+                            'aria-label': tr('Re-roll the image with same prompt'),
                             style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid #94a3b8', background: '#fff', color: '#475569', fontSize: '10px', fontWeight: 700, cursor: loading ? 'wait' : 'pointer', alignSelf: 'flex-start' }
                           }, loading ? '⏳' : '🔄 Re-roll')
                         )
@@ -2851,12 +2906,12 @@
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎬 Mood Board'),
                     e('button', { onClick: generateMoodBoard, disabled: !poemText.trim() || stanzaBoardLoading,
                       'aria-busy': stanzaBoardLoading ? 'true' : 'false',
-                      'aria-label': stanzaBoardLoading ? 'Building mood board, please wait' : (stanzaImages.length > 0 ? 'Rebuild mood board' : 'Build mood board for this poem'),
+                      'aria-label': stanzaBoardLoading ? tr('Building mood board, please wait') : (stanzaImages.length > 0 ? tr('Rebuild mood board') : tr('Build mood board for this poem')),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: poemText.trim() && !stanzaBoardLoading ? TEAL : '#cbd5e1', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: poemText.trim() && !stanzaBoardLoading ? 'pointer' : 'not-allowed' }
                     }, stanzaBoardLoading ? '⏳…' : (stanzaImages.length > 0 ? '🔄 Rebuild' : '🎬 Build'))
                   ),
                   // Active board — horizontal scroll grid of stanza cards
-                  stanzaImages.length > 0 && e('div', { role: 'list', 'aria-label': 'Mood board: one image per stanza', style: { display: 'flex', gap: '8px', overflowX: 'auto', padding: '4px 2px 8px', scrollSnapType: 'x mandatory' } },
+                  stanzaImages.length > 0 && e('div', { role: 'list', 'aria-label': tr('Mood board: one image per stanza'), style: { display: 'flex', gap: '8px', overflowX: 'auto', padding: '4px 2px 8px', scrollSnapType: 'x mandatory' } },
                     stanzaImages.map(function (s, si) {
                       return e('div', { key: si, role: 'listitem', style: { flex: '0 0 220px', scrollSnapAlign: 'start', background: '#fff', border: '1px solid #99f6e4', borderRadius: '10px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '6px' } },
                         // Stanza number + text preview
@@ -2867,7 +2922,7 @@
                           ? e('div', { 'aria-busy': 'true', 'aria-label': 'Rendering stanza ' + (si + 1), style: { width: '100%', aspectRatio: '1', background: '#f1f5f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', fontSize: '12px' } }, '⏳')
                           : s.url
                             ? e('img', { src: s.url, alt: 'AI rendering of stanza ' + (si + 1) + ': ' + s.text.split('\n')[0], style: { width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '8px', display: 'block' } })
-                            : e('div', { style: { width: '100%', aspectRatio: '1', background: '#fef2f2', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b91c1c', fontSize: '11px', fontStyle: 'italic', textAlign: 'center', padding: '8px' } }, s.error ? 'Failed to render' : 'No image yet'),
+                            : e('div', { style: { width: '100%', aspectRatio: '1', background: '#fef2f2', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b91c1c', fontSize: '11px', fontStyle: 'italic', textAlign: 'center', padding: '8px' } }, s.error ? 'Failed to render' : tr('No image yet')),
                         // Per-stanza re-roll
                         e('button', { onClick: function () { rerollStanzaImage(si); }, disabled: s.loading,
                           'aria-label': 'Re-roll stanza ' + (si + 1) + ' image',
@@ -2885,7 +2940,7 @@
                     e('h4', { style: { fontSize: '12px', fontWeight: 800, color: TEAL_DARK, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' } }, '🎲 Spark Words'),
                     e('button', { onClick: generateSparks, disabled: sparkLoading,
                       'aria-busy': sparkLoading ? 'true' : 'false',
-                      'aria-label': sparkLoading ? 'Generating spark words' : (sparkWords ? 'Generate 5 fresh spark words' : 'Generate 5 spark words'),
+                      'aria-label': sparkLoading ? tr('Generating spark words') : (sparkWords ? tr('Generate 5 fresh spark words') : tr('Generate 5 spark words')),
                       style: { padding: '4px 12px', borderRadius: '6px', border: 'none', background: sparkLoading ? '#cbd5e1' : TEAL, color: '#fff', fontSize: '11px', fontWeight: 700, cursor: sparkLoading ? 'wait' : 'pointer' }
                     }, sparkLoading ? '⏳…' : (sparkWords ? '🔄 Re-roll' : '🎲 Roll'))
                   ),
@@ -2897,7 +2952,7 @@
                       }, w);
                     })
                   ),
-                  !sparkWords && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, 'Stuck? Get 5 vivid concrete words to seed an image.')
+                  !sparkWords && e('p', { style: { fontSize: '11px', color: '#475569', margin: 0, fontStyle: 'italic' } }, tr('Stuck? Get 5 vivid concrete words to seed an image.'))
                 )
               )
             )
@@ -2906,22 +2961,22 @@
           // ── FEEDBACK TAB ──
           activeTab === 'feedback' && e('div', { role: 'tabpanel', id: 'pt-panel-feedback', 'aria-labelledby': 'pt-tab-feedback', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px', outline: 'none' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '✨ AI Feedback'),
-            !poemText.trim() && e('p', { style: { color: '#475569', fontSize: '13px', margin: 0 } }, 'Write a poem in the Write tab first, then come back for feedback.'),
+            !poemText.trim() && e('p', { style: { color: '#475569', fontSize: '13px', margin: 0 } }, tr('Write a poem in the Write tab first, then come back for feedback.')),
 
             // ── Pre-Feedback Self-Assessment ──
             // Optional but encouraged: rate your own poem on 5 craft criteria first,
             // so you have a metacognitive baseline before the AI weighs in.
-            poemText.trim() && !selfAssessmentSubmitted && e('div', { role: 'region', 'aria-label': 'Self-Assessment', style: { background: 'linear-gradient(135deg, #faf5ff, #eef2ff)', border: '2px solid #d8b4fe', borderRadius: '12px', padding: '14px' } },
+            poemText.trim() && !selfAssessmentSubmitted && e('div', { role: 'region', 'aria-label': tr('Self-Assessment'), style: { background: 'linear-gradient(135deg, #faf5ff, #eef2ff)', border: '2px solid #d8b4fe', borderRadius: '12px', padding: '14px' } },
               e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' } },
                 e('div', null,
                   e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#7c3aed', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
-                    e('span', { 'aria-hidden': 'true' }, '⭐'), 'Rate yourself first'
+                    e('span', { 'aria-hidden': 'true' }, '⭐'), tr('Rate yourself first')
                   ),
                   e('p', { style: { fontSize: '11px', color: '#6b21a8', margin: '2px 0 0' } }, 'Score your own poem on these 5 craft moves before the AI does. Builds reflection.')
                 ),
                 e('button', {
-                  onClick: function () { setSelfAssessmentSubmitted(true); announcePT('Self-assessment skipped. AI feedback unlocked.'); },
-                  'aria-label': 'Skip self-assessment',
+                  onClick: function () { setSelfAssessmentSubmitted(true); announcePT(tr('Self-assessment skipped. AI feedback unlocked.')); },
+                  'aria-label': tr('Skip self-assessment'),
                   style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
                 }, 'Skip')
               ),
@@ -2953,10 +3008,10 @@
                   POETRY_RUBRIC_CRITERIA.forEach(function (c) { filled[c.id] = selfAssessment[c.id] || 3; });
                   setSelfAssessment(filled);
                   setSelfAssessmentSubmitted(true);
-                  announcePT('Self-assessment submitted. You can now get AI feedback.');
-                  if (typeof addToast === 'function') addToast('Self-assessment saved!', 'success');
+                  announcePT(tr('Self-assessment submitted. You can now get AI feedback.'));
+                  if (typeof addToast === 'function') addToast(tr('Self-assessment saved!'), 'success');
                 },
-                'aria-label': 'Submit self-assessment',
+                'aria-label': tr('Submit self-assessment'),
                 style: { marginTop: '8px', padding: '7px 14px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }
               }, '✓ Submit Self-Assessment')
             ),
@@ -2970,18 +3025,18 @@
               ),
               e('button', {
                 onClick: function () { setSelfAssessmentSubmitted(false); },
-                'aria-label': 'Edit self-assessment',
+                'aria-label': tr('Edit self-assessment'),
                 style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontWeight: 700 }
               }, 'Edit')
             ),
 
             poemText.trim() && e('button', { onClick: getAiFeedback, disabled: aiLoading, 'aria-busy': aiLoading,
               'aria-busy': aiLoading ? 'true' : 'false',
-              'aria-label': aiLoading ? 'Getting feedback, please wait' : 'Get AI feedback on this poem',
+              'aria-label': aiLoading ? tr('Getting feedback, please wait') : tr('Get AI feedback on this poem'),
               style: { padding: '10px 18px', background: aiLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '13px', cursor: aiLoading ? 'wait' : 'pointer', alignSelf: 'flex-start' }
             }, aiLoading ? '⏳ Reading your poem…' : '✨ Get feedback'),
             aiFeedback && aiFeedback.error && e('p', { style: { color: '#b91c1c', fontSize: '12px', fontStyle: 'italic' } }, aiFeedback.error),
-            aiFeedback && !aiFeedback.error && e('div', { role: 'region', 'aria-label': 'AI feedback', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+            aiFeedback && !aiFeedback.error && e('div', { role: 'region', 'aria-label': tr('AI feedback'), 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
               aiFeedback.strongestLine && e('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '12px', border: '1px solid #86efac' } },
                 e('h4', { style: { fontSize: '11px', fontWeight: 800, color: '#166534', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Strongest line'),
                 e('p', { style: { fontFamily: 'Georgia, serif', fontSize: '14px', color: '#1e293b', margin: '0 0 6px', fontStyle: 'italic' } }, '"' + aiFeedback.strongestLine + '"'),
@@ -3011,7 +3066,7 @@
                 e('button', { onClick: findMentorPoem,
                   disabled: mentorLoading,
                   'aria-busy': mentorLoading ? 'true' : 'false',
-                  'aria-label': mentorLoading ? 'Finding a mentor poem, please wait' : (mentorMatch ? 'Find a different mentor poem' : 'Find a mentor poem'),
+                  'aria-label': mentorLoading ? tr('Finding a mentor poem, please wait') : (mentorMatch ? tr('Find a different mentor poem') : tr('Find a mentor poem')),
                   style: { padding: '7px 14px', background: mentorLoading ? '#cbd5e1' : '#a21caf', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: mentorLoading ? 'wait' : 'pointer' }
                 }, mentorLoading ? '⏳ Searching…' : (mentorMatch ? '🔄 Find another' : '🎓 Find a mentor'))
               ),
@@ -3029,7 +3084,7 @@
                   // Source URL (when search grounded the recommendation) — student can click to verify / read full poem
                   mentorMatch.mentor.sourceUrl && e('p', { style: { fontSize: '11px', margin: '10px 0 0' } },
                     e('a', { href: mentorMatch.mentor.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
-                      'aria-label': 'Open the source for ' + (mentorMatch.mentor.title || 'this poem') + ' in a new tab',
+                      'aria-label': tr('Open the source for ') + (mentorMatch.mentor.title || 'this poem') + ' in a new tab',
                       style: { color: '#86198f', textDecoration: 'underline', fontWeight: 700 }
                     }, '🔗 Read full poem at source ↗')
                   ),
@@ -3067,12 +3122,12 @@
                   e('h4', { style: { fontSize: '13px', fontWeight: 800, color: '#6d28d9', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' } },
                     e('span', { 'aria-hidden': 'true' }, '🗺️'), 'Revision Plan'
                   ),
-                  e('p', { style: { fontSize: '11px', color: '#5b21b6', margin: '2px 0 0' } }, 'Pulls from your helpers above into ONE prioritized 3-task plan.')
+                  e('p', { style: { fontSize: '11px', color: '#5b21b6', margin: '2px 0 0' } }, tr('Pulls from your helpers above into ONE prioritized 3-task plan.'))
                 ),
                 e('button', {
                   onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading,
                   'aria-busy': revisionPlanLoading ? 'true' : 'false',
-                  'aria-label': revisionPlanLoading ? 'Synthesizing revision plan' : (revisionPlan && !revisionPlan.error ? 'Re-synthesize revision plan' : 'Build a revision plan'),
+                  'aria-label': revisionPlanLoading ? tr('Synthesizing revision plan') : (revisionPlan && !revisionPlan.error ? tr('Re-synthesize revision plan') : tr('Build a revision plan')),
                   style: { padding: '7px 14px', background: revisionPlanLoading ? '#cbd5e1' : '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: revisionPlanLoading ? 'wait' : 'pointer' }
                 }, revisionPlanLoading ? '⏳ Synthesizing…' : (revisionPlan && !revisionPlan.error ? '🔄 Rebuild' : '🗺️ Build plan'))
               ),
@@ -3081,7 +3136,7 @@
                 revisionPlan.encouragement && e('div', { style: { background: '#fff', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '8px 10px' } },
                   e('p', { style: { fontSize: '11px', color: '#166534', margin: 0, lineHeight: 1.6 } }, '✨ ' + revisionPlan.encouragement)
                 ),
-                e('ol', { 'aria-label': 'Prioritized revision tasks', style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' } },
+                e('ol', { 'aria-label': tr('Prioritized revision tasks'), style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px' } },
                   (revisionPlan.tasks || []).map(function (t, ti) {
                     return e('li', { key: ti, style: { background: '#fff', border: '2px solid #d8b4fe', borderRadius: '10px', padding: '10px 12px' } },
                       e('div', { style: { display: 'flex', gap: '8px', alignItems: 'flex-start' } },
@@ -3106,7 +3161,7 @@
           // ── PERFORM TAB ──
           activeTab === 'perform' && e('div', { role: 'tabpanel', id: 'pt-panel-perform', 'aria-labelledby': 'pt-tab-perform', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px', outline: 'none' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '🎙️ Perform'),
-            !poemText.trim() && e('p', { style: { color: '#475569', fontSize: '13px', margin: 0 } }, 'Write a poem first.'),
+            !poemText.trim() && e('p', { style: { color: '#475569', fontSize: '13px', margin: 0 } }, tr('Write a poem first.')),
             poemText.trim() && e('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
               // Poem display
               e('div', { style: { background: '#fff', borderRadius: '12px', padding: '20px', border: '1px solid #e5e7eb', minHeight: '200px' } },
@@ -3115,7 +3170,7 @@
               ),
               // Emotion picker
               e('div', null,
-                e('label', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', display: 'block', marginBottom: '4px' } }, 'Reading mood'),
+                e('label', { style: { fontSize: '11px', fontWeight: 700, color: '#374151', display: 'block', marginBottom: '4px' } }, tr('Reading mood')),
                 e('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
                   ['neutral', 'somber', 'joyful', 'urgent', 'contemplative'].map(function (em) {
                     var sel = emotion === em;
@@ -3135,26 +3190,26 @@
                       
                       style: { padding: '10px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: onCallTTS ? 'pointer' : 'not-allowed', opacity: onCallTTS ? 1 : 0.5 }
                     }, '▶ Play')
-                  : e('button', { onClick: stopPoem, 'aria-label': 'Stop playback',
+                  : e('button', { onClick: stopPoem, 'aria-label': tr('Stop playback'),
                       style: { padding: '10px 20px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
                     }, '⏹ Stop'),
                 // Image Poem: primary "Imagine It" button shown only when this form is active.
                 onCallImagen && form && form.id === 'image-poem' && e('button', { onClick: generateImagePoem, disabled: imagePoemLoading || !poemText.trim(),
                   'aria-busy': imagePoemLoading ? 'true' : 'false',
-                  'aria-label': imagePoemLoading ? 'Rendering image poem, please wait' : (imagePoemUrl ? 'Re-render the image poem' : 'Render the poem as an image'),
+                  'aria-label': imagePoemLoading ? tr('Rendering image poem, please wait') : (imagePoemUrl ? tr('Re-render the image poem') : tr('Render the poem as an image')),
                   style: { padding: '10px 18px', background: imagePoemLoading ? '#cbd5e1' : (poemText.trim() ? '#7c3aed' : '#cbd5e1'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: imagePoemLoading || !poemText.trim() ? 'not-allowed' : 'pointer' }
                 }, imagePoemLoading ? '⏳ Imagining…' : (imagePoemUrl ? '🔄 Re-imagine' : '🖼️ Imagine It')),
                 onCallImagen && e('button', { onClick: generateIllustration, disabled: illusLoading,
                   'aria-busy': illusLoading ? 'true' : 'false',
-                  'aria-label': illusLoading ? 'Generating illustration, please wait' : 'Generate illustration with AI',
+                  'aria-label': illusLoading ? tr('Generating illustration, please wait') : tr('Generate illustration with AI'),
                   style: { padding: '10px 16px', background: illusLoading ? '#cbd5e1' : '#a78bfa', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: illusLoading ? 'wait' : 'pointer' }
                 }, illusLoading ? '⏳ Painting…' : '🎨 Illustrate'),
                 e('button', { onClick: startReadAloud, disabled: !poemText.trim() || readCountdown > 0,
-                  'aria-label': 'Read aloud yourself in large-text recital mode',
+                  'aria-label': tr('Read aloud yourself in large-text recital mode'),
                   style: { padding: '10px 16px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: poemText.trim() && !readCountdown ? 'pointer' : 'not-allowed', opacity: poemText.trim() ? 1 : 0.5 }
                 }, readCountdown > 0 ? ('… ' + readCountdown) : '🎤 Read aloud'),
                 e('button', { onClick: printBroadside, disabled: !poemText.trim(),
-                  'aria-label': 'Open a printable broadside of this poem in a new window',
+                  'aria-label': tr('Open a printable broadside of this poem in a new window'),
                   style: { padding: '10px 16px', background: '#fff', color: '#0d9488', border: '1px solid #0d9488', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: poemText.trim() ? 'pointer' : 'not-allowed', opacity: poemText.trim() ? 1 : 0.5 }
                 }, '🖨️ Broadside')
               ),
@@ -3163,14 +3218,14 @@
                 e('img', { src: imagePoemUrl, alt: 'AI rendering of your image poem' + (poemTitle ? ' titled ' + poemTitle : ''), style: { width: '100%', display: 'block' } }),
                 e('figcaption', { style: { padding: '10px 14px', fontSize: '11px', color: '#5b21b6', fontStyle: 'italic', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' } },
                   e('span', null, '🖼️ Your poem, made visible. Edit your words and re-imagine to see how the image changes.'),
-                  e('button', { onClick: function () { setImagePoemUrl(null); announcePT('Image poem cleared.'); },
-                    'aria-label': 'Clear the rendered image poem',
+                  e('button', { onClick: function () { setImagePoemUrl(null); announcePT(tr('Image poem cleared.')); },
+                    'aria-label': tr('Clear the rendered image poem'),
                     style: { fontSize: '10px', color: '#7c3aed', background: 'none', border: '1px solid #c4b5fd', borderRadius: '6px', padding: '3px 8px', cursor: 'pointer', fontWeight: 700 }
                   }, 'Clear')
                 )
               ),
               illustration && e('div', { style: { borderRadius: '12px', overflow: 'hidden', border: '1px solid #e5e7eb' } },
-                e('img', { src: illustration, alt: 'Illustration for the poem ' + (poemTitle || 'Untitled'), style: { width: '100%', display: 'block' } })
+                e('img', { src: illustration, alt: tr('Illustration for the poem ') + (poemTitle || 'Untitled'), style: { width: '100%', display: 'block' } })
               )
             )
           ),
@@ -3181,7 +3236,7 @@
             var line = readAloudActive ? (allLines[readIdx] || '') : '';
             var totalLines = allLines.filter(function (l) { return l.trim(); }).length;
             var currentNonBlankIdx = allLines.slice(0, readIdx + 1).filter(function (l) { return l.trim(); }).length;
-            return e('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Read-aloud recital mode',
+            return e('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Read-aloud recital mode'),
               onClick: function () { if (readAloudActive) advanceReadAloud(); },
               onKeyDown: function (ev) {
                 if (!readAloudActive) return;
@@ -3213,11 +3268,11 @@
                   e('button', { onClick: advanceReadAloud, autoFocus: true, 
                     style: { padding: '12px 28px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }
                   }, 'Next ▶'),
-                  e('button', { onClick: stopReadAloud, 'aria-label': 'Exit read-aloud mode',
+                  e('button', { onClick: stopReadAloud, 'aria-label': tr('Exit read-aloud mode'),
                     style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                   }, '✕ Done')
                 ),
-                e('p', { style: { color: '#cbd5e1', fontSize: '11px', fontFamily: 'system-ui, sans-serif', margin: 0, textAlign: 'center' } }, 'Tap or press Space to advance · ← / → to step · Esc to exit')
+                e('p', { style: { color: '#cbd5e1', fontSize: '11px', fontFamily: 'system-ui, sans-serif', margin: 0, textAlign: 'center' } }, tr('Tap or press Space to advance · ← / → to step · Esc to exit'))
               )
             );
           })(),
@@ -3226,7 +3281,7 @@
           activeTab === 'share' && e('div', { role: 'tabpanel', id: 'pt-panel-share', 'aria-labelledby': 'pt-tab-share', tabIndex: 0, style: { maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '10px', outline: 'none' } },
             e('h3', { style: { fontSize: '16px', fontWeight: 800, color: TEAL_DARK, margin: 0 } }, '📚 Library'),
             saved.length === 0
-              ? e('p', { style: { color: '#cbd5e1', fontSize: '13px', fontStyle: 'italic' } }, 'No poems saved yet. Save one from the Write tab to see it here.')
+              ? e('p', { style: { color: '#cbd5e1', fontSize: '13px', fontStyle: 'italic' } }, tr('No poems saved yet. Save one from the Write tab to see it here.'))
               : (function () {
                   // Compute which forms are represented in saved poems for the filter dropdown
                   var formsInLibrary = {};
@@ -3243,7 +3298,7 @@
                         ),
                         formIdsRepresented.length > 1 && e('select', { value: chapbookFilter,
                           onChange: function (ev) { setChapbookFilter(ev.target.value); },
-                          'aria-label': 'Filter chapbook by form',
+                          'aria-label': tr('Filter chapbook by form'),
                           style: { padding: '5px 8px', borderRadius: '6px', border: '1px solid #99f6e4', fontSize: '12px', background: '#fff' }
                         },
                           e('option', { value: '' }, 'All poems (' + saved.length + ')'),
@@ -3253,7 +3308,7 @@
                           })
                         ),
                         e('button', { onClick: function () { printChapbook(chapbookFilter); },
-                          'aria-label': 'Print chapbook of ' + filterCount + ' poems',
+                          'aria-label': tr('Print chapbook of ') + filterCount + ' poems',
                           disabled: filterCount === 0,
                           style: { padding: '8px 14px', background: filterCount > 0 ? TEAL : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: filterCount > 0 ? 'pointer' : 'not-allowed' }
                         }, '🖨️ Print ' + filterCount + ' poem' + (filterCount === 1 ? '' : 's'))
@@ -3271,7 +3326,7 @@
                         e('button', { onClick: runThemeTracker,
                           disabled: saved.length < 3 || themeLoading,
                           'aria-busy': themeLoading ? 'true' : 'false',
-                          'aria-label': themeLoading ? 'Analyzing patterns, please wait' : (saved.length < 3 ? 'Need at least 3 saved poems' : (themeReport ? 'Re-run pattern analysis' : 'Find patterns across all saved poems')),
+                          'aria-label': themeLoading ? tr('Analyzing patterns, please wait') : (saved.length < 3 ? tr('Need at least 3 saved poems') : (themeReport ? tr('Re-run pattern analysis') : tr('Find patterns across all saved poems'))),
                           style: { padding: '8px 14px', background: saved.length >= 3 && !themeLoading ? '#7c3aed' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: saved.length >= 3 && !themeLoading ? 'pointer' : 'not-allowed' }
                         }, themeLoading ? '⏳ Reading…' : (themeReport ? '🔄 Re-analyze' : '🌿 Find patterns'))
                       ),
