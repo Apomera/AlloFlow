@@ -158,10 +158,45 @@ describe('browse view', () => {
     expect(textOf(host)).toContain('Request a permanent addition');
   });
 
-  it('hides the language-options entry for students', async () => {
+  it('hides the language-options and find-more entries for students', async () => {
     await mount({ isTeacherMode: false });
     const btns = Array.from(host.querySelectorAll('button')).map(textOf);
     expect(btns.some((t) => t.includes('Language options'))).toBe(false);
+    expect(btns.some((t) => t.includes('Find more books'))).toBe(false);
+  });
+
+  it('teacher searches Project Gutenberg (Gutendex) and queues an import request', async () => {
+    try { window.localStorage.clear(); } catch (_) {}
+    const realFetch = window.fetch;
+    window.fetch = (url) => {
+      if (String(url).includes('gutendex.com')) {
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({
+          results: [{
+            id: 424242, title: 'A Test Public-Domain Book', copyright: false, download_count: 6208,
+            authors: [{ name: 'Grahame, Kenneth' }], subjects: ['Animals', 'Fantasy'],
+            formats: { 'text/plain; charset=utf-8': 'https://www.gutenberg.org/files/424242/424242-0.txt' },
+          }],
+        }) });
+      }
+      return realFetch(url);
+    };
+    try {
+      await mount();
+      clickByText(host, 'button', 'Find more books');
+      await flush();
+      const input = host.querySelector('input[aria-label="Find more books"]');
+      expect(input).toBeTruthy();
+      setInputValue(input, 'wind in the willows');
+      clickByText(host, 'button', 'Search');
+      await flush();
+      expect(textOf(host)).toContain('A Test Public-Domain Book');
+      clickByText(host, 'button', 'Request import');
+      await flush();
+      expect(textOf(host)).toContain('1 books requested');
+    } finally {
+      window.fetch = realFetch;
+      try { window.localStorage.clear(); } catch (_) {}
+    }
   });
 
   it('sorts by reading level (easiest first) by default', async () => {
