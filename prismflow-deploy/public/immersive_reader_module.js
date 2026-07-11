@@ -1256,7 +1256,10 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
     const isPast = idx < sentenceIdx;
     if (isActive) {
       const pct = sweepPct;
-      const bgImage = "linear-gradient(to right, " + c.sweep + " 0%, " + c.sweep + " " + pct + "%, " + c.dim + " " + pct + "%, " + c.dim + " 100%)";
+      const totalChars = sText.length || 1;
+      const filledChars = pct / 100 * totalChars;
+      const parts = sText.split(/(\s+)/);
+      let charAcc = 0;
       return /* @__PURE__ */ React.createElement(
         "span",
         {
@@ -1280,19 +1283,29 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
             setSweepPct(0);
             if (!isPlaying) setIsPlaying(true);
           },
-          style: {
-            backgroundImage: bgImage,
+          style: { fontWeight: 700, cursor: "pointer", borderRadius: 2 }
+        },
+        parts.map((part, pi) => {
+          const start = charAcc;
+          charAcc += part.length;
+          if (/^\s+$/.test(part)) return part;
+          const end = charAcc;
+          if (end <= filledChars) {
+            return /* @__PURE__ */ React.createElement("span", { key: pi, style: { color: c.sweep, transition: reducedMotion ? "none" : "color 0.12s linear" } }, part);
+          }
+          if (start >= filledChars) {
+            return /* @__PURE__ */ React.createElement("span", { key: pi, style: { color: c.dim } }, part);
+          }
+          const wPct = Math.max(0, Math.min(100, (filledChars - start) / (part.length || 1) * 100));
+          const wordBg = "linear-gradient(to right, " + c.sweep + " 0%, " + c.sweep + " " + wPct + "%, " + c.dim + " " + wPct + "%, " + c.dim + " 100%)";
+          return /* @__PURE__ */ React.createElement("span", { key: pi, style: {
+            backgroundImage: wordBg,
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             WebkitTextFillColor: "transparent",
-            color: "transparent",
-            fontWeight: 700,
-            transition: reducedMotion ? "none" : "background-image 0.08s linear",
-            cursor: "pointer",
-            borderRadius: 2
-          }
-        },
-        sText
+            color: "transparent"
+          } }, part);
+        })
       );
     }
     return /* @__PURE__ */ React.createElement(

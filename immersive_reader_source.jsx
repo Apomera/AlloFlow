@@ -1400,8 +1400,22 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
         const isPast = idx < sentenceIdx;
         if (isActive) {
             const pct = sweepPct;
-            // Build background-image inline so each re-render captures the current sweepPct
-            const bgImage = 'linear-gradient(to right, ' + c.sweep + ' 0%, ' + c.sweep + ' ' + pct + '%, ' + c.dim + ' ' + pct + '%, ' + c.dim + ' 100%)';
+            // Word-level sweep in reading order. A single background-clip gradient
+            // across the WHOLE sentence looks correct only while the sentence fits
+            // on one line: once the text wraps (which it almost always does at this
+            // font size in a max-w-3xl column), `linear-gradient(to right, …)`
+            // repaints the SAME horizontal band on every wrapped line instead of
+            // following reading order, so the colored region drifts out of sync with
+            // the spoken words (the "slightly off" highlight). Splitting the sentence
+            // into per-word inline boxes lets the browser wrap naturally while the
+            // fill advances strictly in reading order — matching the leveled-text
+            // reader's accuracy while preserving the karaoke sweep feel. Progress is
+            // mapped onto CHARACTER count (not word count) so long words take
+            // proportionally longer to fill, tracking speech pace more closely.
+            const totalChars = sText.length || 1;
+            const filledChars = (pct / 100) * totalChars;
+            const parts = sText.split(/(\s+)/); // keep whitespace tokens so wrap points/spacing survive
+            let charAcc = 0;
             return (
                 <span
                     key={idx}
@@ -1411,19 +1425,37 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl, i
                     tabIndex={0}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSentenceIdx(idx); setSweepPct(0); if (!isPlaying) setIsPlaying(true); } }}
                     onClick={() => { setSentenceIdx(idx); setSweepPct(0); if (!isPlaying) setIsPlaying(true); }}
-                    style={{
-                        backgroundImage: bgImage,
-                        WebkitBackgroundClip: 'text',
-                        backgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        color: 'transparent',
-                        fontWeight: 700,
-                        transition: reducedMotion ? 'none' : 'background-image 0.08s linear',
-                        cursor: 'pointer',
-                        borderRadius: 2
-                    }}
+                    style={{ fontWeight: 700, cursor: 'pointer', borderRadius: 2 }}
                 >
-                    {sText}
+                    {parts.map((part, pi) => {
+                        const start = charAcc;
+                        charAcc += part.length;
+                        // Whitespace inherits color and only marks wrap points — no styling.
+                        if (/^\s+$/.test(part)) return part;
+                        const end = charAcc;
+                        if (end <= filledChars) {
+                            // Already spoken.
+                            return <span key={pi} style={{ color: c.sweep, transition: reducedMotion ? 'none' : 'color 0.12s linear' }}>{part}</span>;
+                        }
+                        if (start >= filledChars) {
+                            // Not yet reached.
+                            return <span key={pi} style={{ color: c.dim }}>{part}</span>;
+                        }
+                        // The word currently being spoken — fill it left-to-right with a
+                        // gradient. A single word rarely wraps, so a horizontal gradient
+                        // is accurate here and gives a smooth sub-word sweep.
+                        const wPct = Math.max(0, Math.min(100, ((filledChars - start) / (part.length || 1)) * 100));
+                        const wordBg = 'linear-gradient(to right, ' + c.sweep + ' 0%, ' + c.sweep + ' ' + wPct + '%, ' + c.dim + ' ' + wPct + '%, ' + c.dim + ' 100%)';
+                        return (
+                            <span key={pi} style={{
+                                backgroundImage: wordBg,
+                                WebkitBackgroundClip: 'text',
+                                backgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                color: 'transparent'
+                            }}>{part}</span>
+                        );
+                    })}
                 </span>
             );
         }
