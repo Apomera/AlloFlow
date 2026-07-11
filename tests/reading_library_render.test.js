@@ -8,7 +8,7 @@
 //   browse grid → narrated-only filter → open an RTL book → reader dir/lang
 //   → 🌐 AI-translate (stubbed Gemini) → caveat banner → ✨ Use as source text.
 
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -328,9 +328,13 @@ function RLBookTextLength(book) {
 }
 
 describe('reader navigation, bookmarks, and continuous read-aloud', () => {
+  // Per-book reading position and bookmarks live in localStorage; clear it
+  // between tests so a saved position never bleeds across cases.
+  beforeEach(() => { try { window.localStorage.clear(); } catch (_) {} });
+  let navSeq = 0;
   function makeBook(overrides) {
     return Object.assign({
-      slug: 'nav-fixture', title: 'Navigation Fixture', language: 'English', langCode: 'en',
+      slug: 'nav-fixture-' + (++navSeq), title: 'Navigation Fixture', language: 'English', langCode: 'en',
       isRtl: false, level: '4', contentType: 'public-domain-full-text',
       authors: ['A. Author'], source: { url: 'https://www.gutenberg.org/ebooks/1' },
       license: 'Public Domain', licenseUrl: 'https://www.gutenberg.org/policy/license.html',
@@ -462,6 +466,39 @@ describe('reader navigation, bookmarks, and continuous read-aloud', () => {
     const fontBtns = Array.from(host.querySelectorAll('button')).map(textOf);
     expect(fontBtns.some((t) => t.trim() === 'Andika')).toBe(true);
     expect(fontBtns.some((t) => t.trim() === 'Serif')).toBe(true);
+  });
+
+  it('shows an estimated reading time for a text with a word count', async () => {
+    await mountBook(makeBook({ stats: { pages: 6, words: 1400 }, level: '4' }));
+    // 1400 words / 140 wpm (level 4) = ~10 min
+    expect(textOf(host)).toMatch(/~\s*10\s*min/);
+  });
+
+  it('navigates first/last with Home/End and toggles a bookmark with "b"', async () => {
+    await mountBook(makeBook());
+    // End → last page (6)
+    act(() => { window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'End', bubbles: true })); });
+    await flush();
+    expect(pageInput().value).toBe('6');
+    // Home → first page
+    act(() => { window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Home', bubbles: true })); });
+    await flush();
+    expect(pageInput().value).toBe('1');
+    // "b" bookmarks the current page → a chip appears
+    act(() => { window.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'b', bubbles: true })); });
+    await flush();
+    const chip = Array.from(host.querySelectorAll('button')).find((b) => /🔖 1$/.test(textOf(b).trim()));
+    expect(chip).toBeTruthy();
+  });
+
+  it('renders a reading-progress bar for a multi-page book', async () => {
+    await mountBook(makeBook());
+    // move to page 3 of 6 → bar at ~50%
+    setInputValue(pageInput(), '3');
+    act(() => { pageInput().dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
+    await flush();
+    const bar = Array.from(host.querySelectorAll('div')).find((d) => d.style && d.style.width === '50%');
+    expect(bar).toBeTruthy();
   });
 });
 

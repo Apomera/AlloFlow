@@ -221,6 +221,7 @@
     var v = readMap(READER_POS_KEY)[slug];
     return (typeof v === 'number' && isFinite(v) && v > 0) ? Math.floor(v) : 0;
   }
+  function loadAllReadingPos() { return readMap(READER_POS_KEY); }
   function saveReadingPos(slug, idx) {
     if (!slug) return;
     var m = readMap(READER_POS_KEY);
@@ -431,6 +432,29 @@
 
   function countWords(text) {
     return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+  }
+
+  // Estimated reading time from the word count and a level-appropriate silent
+  // reading rate (early readers are slower). Returns '' when we have no honest
+  // word count (e.g. link-out source cards). Kept deliberately approximate —
+  // labelled with "~" so it reads as a guide, not a promise.
+  var LEVEL_WPM = { 1: 55, 2: 80, 3: 110, 4: 140, 5: 170, 6: 190 };
+  function bookWordCount(book) {
+    if (!book) return 0;
+    if (typeof book.wordCount === 'number' && book.wordCount > 0) return book.wordCount;
+    if (book.stats && typeof book.stats.words === 'number' && book.stats.words > 0) return book.stats.words;
+    return 0;
+  }
+  function readingTimeLabel(book) {
+    if (!book || isCardContent(book)) return '';
+    var words = bookWordCount(book);
+    if (!words) return '';
+    var wpm = LEVEL_WPM[Number(book.level)] || 140;
+    var mins = Math.max(1, Math.round(words / wpm));
+    if (mins < 60) return '~' + mins + ' ' + tr('readinglib_min', 'min');
+    var h = Math.floor(mins / 60);
+    var m = mins % 60;
+    return '~' + h + ' ' + tr('readinglib_hr', 'hr') + (m ? ' ' + m + ' ' + tr('readinglib_min', 'min') : '');
   }
 
   function clampIndex(n, min, max) {
@@ -1037,16 +1061,19 @@
 
     useEffect(function () {
       var onKey = function (ev) {
-        if (ev.defaultPrevented) return;
+        if (ev.defaultPrevented || ev.metaKey || ev.ctrlKey || ev.altKey) return;
         var tag = (ev.target && ev.target.tagName) || '';
         if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
         var next = displayRtl ? -1 : 1;
         if (ev.key === 'ArrowRight') { go(next); }
         else if (ev.key === 'ArrowLeft') { go(-next); }
+        else if (ev.key === 'Home') { ev.preventDefault(); goTo(0); }
+        else if (ev.key === 'End') { ev.preventDefault(); goTo((book.pages || []).length - 1); }
+        else if (ev.key === 'b' || ev.key === 'B') { toggleBookmark(); }
       };
       window.addEventListener('keydown', onKey);
       return function () { window.removeEventListener('keydown', onKey); };
-    }, [go, displayRtl]);
+    }, [go, goTo, displayRtl, book.pages, bookmarks, pageIdx]);
 
     // Toolbar dropdowns (Aa, Reading tools, Translate, Create) dismiss on an
     // outside click or Escape.
@@ -1625,6 +1652,14 @@
       ) : null,
       // pager + attribution
       e('div', { className: 'pt-2 border-t border-slate-200' },
+        // Progress through the book — a thin bar (the page count announces the
+        // exact position for screen readers, so the bar is decorative).
+        pages.length > 1 ? e('div', {
+          className: 'h-1 w-full rounded-full bg-slate-200 mb-2 overflow-hidden', 'aria-hidden': true,
+        }, e('div', {
+          className: 'h-full bg-indigo-500 rounded-full transition-all',
+          style: { width: Math.round(((pageIdx + 1) / pages.length) * 100) + '%' },
+        })) : null,
         e('div', { className: 'flex items-center justify-center gap-2 flex-wrap' },
           // Chapter jump for long texts (sections detected from the pages).
           sourceSections.length > 1 ? e('select', {
@@ -1697,7 +1732,8 @@
             bookSourceName),
           ' · ',
           e('a', { href: book.licenseUrl || 'https://creativecommons.org/licenses/by/4.0/', target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
-            book.license || 'CC BY 4.0')
+            book.license || 'CC BY 4.0'),
+          readingTimeLabel(book) ? ' · ⏱ ' + readingTimeLabel(book) + ' ' + tr('readinglib_read_time', 'read') : ''
         )
       ),
       popup ? e(WordPopup, { data: popup, onClose: function () { setPopup(null); } }) : null,
@@ -1743,14 +1779,23 @@
   // --------------------------------------------------------------- browse
   function BookCard(props) {
     var b = props.book;
+    var busy = !!props.busy;
+    var timeLabel = readingTimeLabel(b);
+    var resumePage = props.resumePage || 0; // 1-based page to resume at, if any
     return e('button', {
-      className: 'text-left bg-white border border-slate-200 rounded-2xl p-3 hover:border-indigo-300 hover:shadow-md transition-shadow flex flex-col gap-2',
+      className: 'relative text-left bg-white border border-slate-200 rounded-2xl p-3 hover:border-indigo-300 hover:shadow-md transition-shadow flex flex-col gap-2 ' +
+        (busy ? 'opacity-70 pointer-events-none' : ''),
       onClick: function () { props.onOpen(b); },
+      disabled: busy,
+      'aria-busy': busy,
     },
       b.cover ? e('img', {
         src: b.cover, alt: '', loading: 'lazy',
         className: 'w-full h-36 object-cover rounded-xl bg-slate-100',
       }) : e('div', { className: 'w-full h-36 rounded-xl bg-indigo-50 flex items-center justify-center text-4xl' }, '📖'),
+      busy ? e('div', { className: 'absolute inset-0 rounded-2xl bg-white/60 flex items-center justify-center' },
+        e('div', { className: 'px-3 py-1.5 rounded-lg bg-white shadow text-xs font-semibold text-indigo-700' },
+          tr('readinglib_opening', 'Opening book…'))) : null,
       e('div', { className: 'font-bold text-slate-800 leading-snug', dir: 'auto' }, b.title),
       e('div', { className: 'flex flex-wrap gap-1' },
         bookSourceId(b) !== 'storyweaver' ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-semibold' },
@@ -1760,6 +1805,10 @@
         e('span', { className: 'px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[11px] font-semibold' }, b.language),
         b.hasAudio ? e('span', { className: 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-semibold' },
           '🔊 ' + tr('readinglib_narrated', 'Narrated')) : null,
+        timeLabel ? e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-semibold' },
+          '⏱ ' + timeLabel) : null,
+        resumePage ? e('span', { className: 'px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[11px] font-semibold' },
+          '▶ ' + tr('readinglib_resume_page', 'Resume p.') + resumePage) : null,
         isCardContent(b) ? e('span', {
           className: 'px-2 py-0.5 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-[11px] font-semibold',
           title: tr('readinglib_card_badge_hint', 'A short overview that links out to the full text at the source'),
@@ -1937,6 +1986,26 @@
       });
     }, [collectionBooks]);
 
+    // Only offer reading levels that actually exist in this collection (the
+    // History shelf has no Level 1, etc.) — an empty level filter is a dead end.
+    var availableLevels = useMemo(function () {
+      var present = {};
+      collectionBooks.forEach(function (b) { present[String(b.level)] = true; });
+      return ['1', '2', '3', '4', '5', '6'].filter(function (lv) { return present[lv]; });
+    }, [collectionBooks]);
+
+    // "Continue reading" — books with a saved position. Re-read localStorage
+    // whenever we're back on the browse (openBook toggles), so a book just
+    // closed shows up immediately. Only long-form texts persist a position.
+    var resumeList = useMemo(function () {
+      if (openBook) return [];
+      var posMap = loadAllReadingPos();
+      var slugs = Object.keys(posMap);
+      if (!slugs.length) return [];
+      var wanted = collectionBooks.filter(function (b) { return posMap[b.slug] > 0; });
+      return wanted.map(function (b) { return { book: b, page: Math.floor(posMap[b.slug]) + 1 }; }).slice(0, 12);
+    }, [collectionBooks, openBook]);
+
     var chooseCollection = function (collection) {
       setSelectedCollectionId(collection.id);
       setFilters({
@@ -2045,7 +2114,7 @@
             'aria-label': tr('readinglib_filter_level', 'Reading level'),
           },
             e('option', { value: '' }, tr('readinglib_all_levels', 'All levels')),
-            ['1', '2', '3', '4', '5', '6'].map(function (lv) { return e('option', { key: lv, value: lv }, LEVEL_LABELS[lv] || ('Level ' + lv)); })
+            availableLevels.map(function (lv) { return e('option', { key: lv, value: lv }, LEVEL_LABELS[lv] || ('Level ' + lv)); })
           ),
           e('select', {
             className: 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700',
@@ -2083,9 +2152,21 @@
             : filtered.length + ' ' + tr('readinglib_of', 'of') + ' ' + collectionBooks.length + ' ' + tr('readinglib_books', 'books'))),
         // grid
         e('div', { className: 'flex-1 min-h-0 overflow-y-auto' },
+          // Continue reading — books with a saved position, surfaced when
+          // browsing (hidden during a search so it doesn't crowd results).
+          (resumeList.length && !filters.search) ? e('div', { className: 'mb-3' },
+            e('div', { className: 'text-[11px] uppercase tracking-wide font-bold text-indigo-500 mb-1' },
+              '▶ ' + tr('readinglib_continue_reading', 'Continue reading')),
+            e('div', { className: 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3' },
+              resumeList.map(function (r) {
+                return e(BookCard, { key: 'resume-' + r.book.slug, book: r.book, onOpen: openBookBySlug, resumePage: r.page, busy: loadingBook === r.book.slug });
+              })
+            ),
+            e('div', { className: 'border-b border-slate-200 mt-3' })
+          ) : null,
           e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pb-2' },
             visibleBooks.map(function (b) {
-              return e(BookCard, { key: b.slug, book: b, onOpen: openBookBySlug });
+              return e(BookCard, { key: b.slug, book: b, onOpen: openBookBySlug, busy: loadingBook === b.slug });
             })
           ),
           visibleBooks.length < filtered.length ? e('div', { className: 'flex justify-center py-3' },
