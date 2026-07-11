@@ -327,6 +327,144 @@ function RLBookTextLength(book) {
   return [book.title].concat((book.pages || []).map((p) => p.text || '')).join('\n\n').length;
 }
 
+describe('reader navigation, bookmarks, and continuous read-aloud', () => {
+  function makeBook(overrides) {
+    return Object.assign({
+      slug: 'nav-fixture', title: 'Navigation Fixture', language: 'English', langCode: 'en',
+      isRtl: false, level: '4', contentType: 'public-domain-full-text',
+      authors: ['A. Author'], source: { url: 'https://www.gutenberg.org/ebooks/1' },
+      license: 'Public Domain', licenseUrl: 'https://www.gutenberg.org/policy/license.html',
+      stats: { pages: 6, words: 12000 },
+      pages: [
+        { n: 1, img: null, text: 'CHAPTER I\n\nThe first chapter opens here with plenty of words.', words: null },
+        { n: 2, img: null, text: 'More of the first chapter continues along nicely.', words: null },
+        { n: 3, img: null, text: 'CHAPTER II\n\nThe second chapter begins on this page now.', words: null },
+        { n: 4, img: null, text: 'The second chapter keeps going with more text here.', words: null },
+        { n: 5, img: null, text: 'CHAPTER III\n\nThe third chapter starts on this page here.', words: null },
+        { n: 6, img: null, text: 'The very last page of the whole fixture book.', words: null },
+      ],
+    }, overrides || {});
+  }
+
+  async function mountBook(book, extra) {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    const calls = { toasts: [] };
+    await act(async () => {
+      root.render(React.createElement(ReadingLibrary.BookReader, Object.assign({
+        book, onExit: () => {}, addToast: (m, t) => calls.toasts.push([m, t]),
+      }, extra || {})));
+    });
+    await flush();
+    return calls;
+  }
+
+  function pageInput() { return host.querySelector('input[aria-label="Go to page"]'); }
+
+  it('jumps to an arbitrary page via the page input (Enter commits)', async () => {
+    await mountBook(makeBook());
+    const inp = pageInput();
+    expect(inp).toBeTruthy();
+    expect(inp.value).toBe('1');
+    setInputValue(inp, '5');
+    act(() => { inp.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
+    await flush();
+    expect(textOf(host)).toContain('third chapter starts');
+    expect(pageInput().value).toBe('5');
+  });
+
+  it('jumps by chapter through the detected table of contents', async () => {
+    await mountBook(makeBook());
+    const chapter = host.querySelector('select[aria-label="Chapter"]');
+    expect(chapter).toBeTruthy();
+    // sections: Opening?/CHAPTER I (0-1), CHAPTER II (2-3), CHAPTER III (4-5)
+    const opts = Array.from(chapter.querySelectorAll('option')).map((o) => o.textContent);
+    expect(opts.some((t) => /CHAPTER II\b/.test(t))).toBe(true);
+    act(() => { chapter.value = '2'; chapter.dispatchEvent(new window.Event('change', { bubbles: true })); });
+    await flush();
+    expect(textOf(host)).toContain('second chapter begins');
+    expect(pageInput().value).toBe('3');
+  });
+
+  it('bookmarks a page and jumps back to it from a chip', async () => {
+    try { window.localStorage.clear(); } catch (_) {}
+    await mountBook(makeBook({ slug: 'bm-fixture' }));
+    // go to page 4
+    setInputValue(pageInput(), '4');
+    act(() => { pageInput().dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
+    await flush();
+    // bookmark it
+    const bmBtn = host.querySelector('button[aria-label="Bookmark this page"]');
+    expect(bmBtn).toBeTruthy();
+    act(() => { bmBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+    await flush();
+    // navigate away to page 1
+    setInputValue(pageInput(), '1');
+    act(() => { pageInput().dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
+    await flush();
+    // a bookmark chip for page 4 exists; clicking it returns there
+    const chip = Array.from(host.querySelectorAll('button')).find((b) => /🔖 4$/.test(textOf(b).trim()));
+    expect(chip).toBeTruthy();
+    act(() => { chip.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+    await flush();
+    expect(pageInput().value).toBe('4');
+  });
+
+  it('resumes a long-form book at the saved page on remount', async () => {
+    try { window.localStorage.clear(); } catch (_) {}
+    await mountBook(makeBook({ slug: 'resume-fixture' }));
+    setInputValue(pageInput(), '5');
+    act(() => { pageInput().dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
+    await flush();
+    // unmount and remount the same slug
+    root.unmount(); host.remove();
+    await mountBook(makeBook({ slug: 'resume-fixture' }));
+    expect(pageInput().value).toBe('5');
+  });
+
+  it('offers continuous read-aloud for a text-only book and speaks the first page', async () => {
+    const spoken = [];
+    window.AlloSpeechPlayer = { speak: (t) => { spoken.push(t); return true; }, stop: () => {} };
+    try {
+      await mountBook(makeBook({ slug: 'read-fixture', audio: null }));
+      const btn = Array.from(host.querySelectorAll('button')).find((b) => /Read aloud/.test(textOf(b)));
+      expect(btn).toBeTruthy();
+      act(() => { btn.dispatchEvent(new window.MouseEvent('click', { bubbles: true })); });
+      await flush();
+      expect(spoken.length).toBe(1);
+      expect(spoken[0]).toContain('first chapter opens');
+      // advancing on the speech-finished event turns the page and reads on
+      act(() => { window.dispatchEvent(new window.CustomEvent('allo-speech-state', { detail: { isPlaying: false } })); });
+      await flush();
+      expect(spoken.length).toBe(2);
+      expect(pageInput().value).toBe('2');
+    } finally {
+      delete window.AlloSpeechPlayer;
+    }
+  });
+
+  it('closes an open toolbar menu on an outside click', async () => {
+    await mountBook(makeBook());
+    clickByText(host, 'button', 'Create');
+    await flush();
+    expect(host.querySelector('select[aria-label="Source scope"]')).toBeTruthy();
+    act(() => { document.dispatchEvent(new window.MouseEvent('mousedown', { bubbles: true })); });
+    await flush();
+    expect(host.querySelector('select[aria-label="Source scope"]')).toBeFalsy();
+  });
+
+  it('exposes a word-spacing control and an Andika font option in the Aa panel', async () => {
+    await mountBook(makeBook());
+    clickByText(host, 'button', 'Aa');
+    await flush();
+    expect(textOf(host)).toContain('Word spacing');
+    const fontBtns = Array.from(host.querySelectorAll('button')).map(textOf);
+    expect(fontBtns.some((t) => t.trim() === 'Andika')).toBe(true);
+    expect(fontBtns.some((t) => t.trim() === 'Serif')).toBe(true);
+  });
+});
+
 describe('AI translation', () => {
   it('translates via 🌐, shows the caveat, and exports the translation', async () => {
     const translated = {

@@ -193,7 +193,7 @@
   // global line-height/letter-spacing overrides DO cascade) — so the reader
   // keeps its own lightweight prefs and also honors the app-wide font choice.
   var READER_PREFS_KEY = 'allo_reading_lib_prefs';
-  var READER_PREFS_DEFAULTS = { font: 'default', textScale: 1, lineHeight: 0, letterSpacing: 0, theme: 'default', ruler: false };
+  var READER_PREFS_DEFAULTS = { font: 'default', textScale: 1, lineHeight: 0, letterSpacing: 0, wordSpacing: 0, theme: 'default', ruler: false };
   function loadReaderPrefs() {
     try {
       var raw = localStorage.getItem(READER_PREFS_KEY);
@@ -205,6 +205,37 @@
   }
   function saveReaderPrefs(p) {
     try { localStorage.setItem(READER_PREFS_KEY, JSON.stringify(p)); } catch (_) {}
+  }
+
+  // Per-book reading position (resume where you left off) and bookmarks. Keyed
+  // by slug in small localStorage maps; both degrade to no-ops if storage is
+  // unavailable. Position is only tracked for long-form texts (picture books
+  // are short enough to just reopen at the start).
+  var READER_POS_KEY = 'allo_reading_lib_pos';
+  var READER_BM_KEY = 'allo_reading_lib_bookmarks';
+  function readMap(key) {
+    try { var m = JSON.parse(localStorage.getItem(key) || '{}'); return (m && typeof m === 'object') ? m : {}; } catch (_) { return {}; }
+  }
+  function writeMap(key, m) { try { localStorage.setItem(key, JSON.stringify(m)); } catch (_) {} }
+  function loadReadingPos(slug) {
+    var v = readMap(READER_POS_KEY)[slug];
+    return (typeof v === 'number' && isFinite(v) && v > 0) ? Math.floor(v) : 0;
+  }
+  function saveReadingPos(slug, idx) {
+    if (!slug) return;
+    var m = readMap(READER_POS_KEY);
+    if (idx > 0) m[slug] = idx; else delete m[slug];
+    writeMap(READER_POS_KEY, m);
+  }
+  function loadBookmarks(slug) {
+    var v = readMap(READER_BM_KEY)[slug];
+    return Array.isArray(v) ? v.filter(function (n) { return typeof n === 'number' && n >= 0; }).sort(function (a, b) { return a - b; }) : [];
+  }
+  function saveBookmarks(slug, list) {
+    if (!slug) return;
+    var m = readMap(READER_BM_KEY);
+    if (list && list.length) m[slug] = list.slice().sort(function (a, b) { return a - b; }); else delete m[slug];
+    writeMap(READER_BM_KEY, m);
   }
 
   // Page-surface palettes (mirrors the host's reading-theme options; the host
@@ -230,7 +261,42 @@
     { id: 'opendyslexic', label: 'OpenDyslexic', cssClass: 'font-opendyslexic' },
     { id: 'atkinson', label: 'Atkinson', cssClass: 'font-atkinson' },
     { id: 'lexend', label: 'Lexend', cssClass: 'font-lexend' },
+    { id: 'andika', label: 'Andika', cssClass: 'font-andika' },
+    { id: 'serif', label: 'Serif', cssClass: 'font-readserif' },
   ];
+
+  // The reader ships its own accessibility fonts so its picker never advertises
+  // a font the host build didn't actually load. OpenDyslexic's @font-face is
+  // installed globally by the host; Atkinson Hyperlegible, Lexend, Andika, and a
+  // reading serif (Gentium Book Plus) previously fell back to system sans-serif
+  // because no webface was loaded for them. Inject them once, and map the
+  // reader font classes to the real families — scoped to .allo-docsuite so the
+  // rest of the app is untouched. Offline (School Box) the CDN load simply
+  // fails and the classes fall back to system fonts, exactly as before.
+  function ensureReaderFonts() {
+    try {
+      if (typeof document === 'undefined' || !document.head) return;
+      if (!document.getElementById('allo-reader-fonts-link')) {
+        var link = document.createElement('link');
+        link.id = 'allo-reader-fonts-link';
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible&family=Lexend:wght@400;600&family=Andika&family=Gentium+Book+Plus&display=swap';
+        document.head.appendChild(link);
+      }
+      if (!document.getElementById('allo-reader-fonts-css')) {
+        var style = document.createElement('style');
+        style.id = 'allo-reader-fonts-css';
+        style.textContent = [
+          '.allo-docsuite .font-opendyslexic,.allo-docsuite .font-opendyslexic *{font-family:"OpenDyslexic","Comic Sans MS",system-ui,sans-serif !important;}',
+          '.allo-docsuite .font-atkinson,.allo-docsuite .font-atkinson *{font-family:"Atkinson Hyperlegible",system-ui,sans-serif !important;}',
+          '.allo-docsuite .font-lexend,.allo-docsuite .font-lexend *{font-family:"Lexend",system-ui,sans-serif !important;}',
+          '.allo-docsuite .font-andika,.allo-docsuite .font-andika *{font-family:"Andika","Segoe UI",system-ui,sans-serif !important;}',
+          '.allo-docsuite .font-readserif,.allo-docsuite .font-readserif *{font-family:"Gentium Book Plus",Georgia,"Times New Roman",serif !important;}'
+        ].join('\n');
+        document.head.appendChild(style);
+      }
+    } catch (_) {}
+  }
   var READER_A11Y_FONT_IDS = ['opendyslexic', 'atkinson', 'lexend', 'andika'];
   function readerFontClass(prefFont) {
     // Reader-local pick wins; otherwise honor an app-wide accessibility font
@@ -545,10 +611,18 @@
   function WordPopup(props) {
     var d = props.data;
     if (!d) return null;
+    // Clamp to the viewport on both axes so a word near the right edge or the
+    // bottom of the page doesn't push the popup off-screen (it used to only
+    // clamp X). Flip above the word when there isn't room below.
+    var vw = window.innerWidth || 800;
+    var vh = window.innerHeight || 600;
+    var estH = d.loading ? 90 : 150;
+    var below = d.y + 12;
+    var top = (below + estH > vh - 8) ? Math.max(8, d.y - estH - 8) : below;
     var style = {
       position: 'fixed',
-      left: Math.min(d.x, (window.innerWidth || 800) - 280) + 'px',
-      top: (d.y + 12) + 'px',
+      left: Math.max(8, Math.min(d.x, vw - 280)) + 'px',
+      top: top + 'px',
       zIndex: 90,
       maxWidth: '260px',
     };
@@ -689,7 +763,15 @@
   // --------------------------------------------------------------- reader
   function BookReader(props) {
     var book = props.book;
-    var _pg = useState(0); var pageIdx = _pg[0]; var setPageIdx = _pg[1];
+    // Resume where the reader left off — long-form texts only (picture books
+    // are short enough to just reopen at the start, and this keeps their
+    // behavior unchanged). Lazy initializer runs once per mounted book.
+    var _pg = useState(function () {
+      var p = book.pages || [];
+      if (!isLongFormBook(book, p)) return 0;
+      return clampIndex(loadReadingPos(book.slug), 0, Math.max(0, p.length - 1));
+    });
+    var pageIdx = _pg[0]; var setPageIdx = _pg[1];
     var _cue = useState(null); var activeCue = _cue[0]; var setActiveCue = _cue[1];
     var _play = useState(false); var narrating = _play[0]; var setNarrating = _play[1];
     var _mode = useState('read'); var mode = _mode[0]; var setMode = _mode[1];
@@ -711,6 +793,13 @@
     var _ovl = useState(null); var overlay = _ovl[0]; var setOverlay = _ovl[1]; // 'focus' | 'karaoke' | 'crawl'
     var _ry = useState(null); var rulerY = _ry[0]; var setRulerY = _ry[1];
     var _rate = useState(1); var narrationRate = _rate[0]; var setNarrationRate = _rate[1];
+    // Continuous read-aloud (auto page-turn) for text-only books; bookmarks;
+    // and the editable jump-to-page field.
+    var _auto = useState(false); var autoRead = _auto[0]; var setAutoRead = _auto[1];
+    var _bm = useState(function () { return loadBookmarks(book.slug); }); var bookmarks = _bm[0]; var setBookmarks = _bm[1];
+    var _ji = useState('1'); var jumpInput = _ji[0]; var setJumpInput = _ji[1];
+    var autoReadRef = useRef(false);
+    var pageIdxRef = useRef(pageIdx);
     var setReaderPrefs = function (patch) {
       setReaderPrefsState(function (prev) {
         var next = Object.assign({}, prev, patch);
@@ -773,6 +862,7 @@
     if (readerPrefs.textScale && readerPrefs.textScale !== 1) textStyle.fontSize = readerPrefs.textScale + 'em';
     if (readerPrefs.lineHeight) textStyle.lineHeight = readerPrefs.lineHeight;
     if (readerPrefs.letterSpacing) textStyle.letterSpacing = readerPrefs.letterSpacing + 'em';
+    if (readerPrefs.wordSpacing) textStyle.wordSpacing = readerPrefs.wordSpacing + 'em';
     if (pageTheme.fg) textStyle.color = pageTheme.fg;
     // What the immersive overlays read: whole book for picture books; current
     // chapter (or page) for long-form texts so RSVP/karaoke stay tractable.
@@ -794,7 +884,16 @@
       setSourceScope('auto');
       setRangeStartInput('');
       setRangeEndInput('');
+      setBookmarks(loadBookmarks(book.slug));
     }, [book.slug]);
+
+    // Mirror the page index into a ref (the speech listener reads it without
+    // re-subscribing) and persist the reading position for long-form texts.
+    useEffect(function () {
+      pageIdxRef.current = pageIdx;
+      if (isLongFormBook(book, pages)) saveReadingPos(book.slug, pageIdx);
+      setJumpInput(String(pageIdx + 1));
+    }, [pageIdx, book.slug]);
 
     var lines = useMemo(function () {
       if (!page) return [];
@@ -804,6 +903,8 @@
     }, [page, txReady, displayPageText]);
 
     var stopAll = useCallback(function () {
+      autoReadRef.current = false;
+      setAutoRead(false);
       stopSpeech();
       var a = audioRef.current;
       if (a) { try { a.pause(); } catch (_) {} }
@@ -813,6 +914,65 @@
 
     useEffect(function () { return stopAll; }, [stopAll]);
     useEffect(function () { setPopup(null); }, [pageIdx]);
+
+    // Continuous read-aloud for text-only books: when a page's TTS finishes
+    // (AlloSpeechPlayer emits 'allo-speech-state' with isPlaying=false), turn
+    // to the next non-empty page and read on. Manual navigation clears
+    // autoReadRef via stopAll, so a user page-turn cleanly stops the chain.
+    var speakPageText = function (idx) {
+      var src = sourcePages[idx];
+      var text = txReady ? cleanReadingText((src && src.text) || '') : pageTextForPipeline(src);
+      if (!text) return false;
+      return speak(text, displayLanguage);
+    };
+    useEffect(function () {
+      var onSpeechState = function (ev) {
+        if (!autoReadRef.current) return;
+        var st = ev && ev.detail;
+        if (!st || st.isPlaying) return; // only act on a genuine finish
+        var next = pageIdxRef.current + 1;
+        var max = sourcePages.length - 1;
+        while (next <= max) {
+          var src = sourcePages[next];
+          var text = txReady ? cleanReadingText((src && src.text) || '') : pageTextForPipeline(src);
+          if (text) break;
+          next++;
+        }
+        if (next > max) { autoReadRef.current = false; setAutoRead(false); return; }
+        setPageIdx(next);
+        if (!speakPageText(next)) { autoReadRef.current = false; setAutoRead(false); }
+      };
+      window.addEventListener('allo-speech-state', onSpeechState);
+      return function () { window.removeEventListener('allo-speech-state', onSpeechState); };
+    }, [sourcePages, txReady, displayLanguage]);
+
+    var toggleAutoRead = function () {
+      if (autoReadRef.current) { stopAll(); return; }
+      // Start from the current page; stop narration mp3 without clearing the
+      // auto flag (stopAll would).
+      stopSpeech();
+      var a = audioRef.current;
+      if (a) { try { a.pause(); } catch (_) {} }
+      setNarrating(false); setActiveCue(null); setPopup(null);
+      autoReadRef.current = true; setAutoRead(true);
+      if (!speakPageText(pageIdx)) {
+        autoReadRef.current = false; setAutoRead(false);
+        props.addToast && props.addToast(tr('readinglib_tts_unavailable', 'Read-aloud is not available right now.'), 'error');
+      }
+    };
+
+    var goTo = useCallback(function (idx) {
+      stopAll();
+      setPageIdx(function () { return clampIndex(idx, 0, (book.pages || []).length - 1); });
+    }, [book.pages, stopAll]);
+
+    var toggleBookmark = function () {
+      var has = bookmarks.indexOf(pageIdx) !== -1;
+      var next = has ? bookmarks.filter(function (n) { return n !== pageIdx; }) : bookmarks.concat([pageIdx]);
+      next.sort(function (a, b) { return a - b; });
+      setBookmarks(next);
+      saveBookmarks(book.slug, next);
+    };
 
     // Narration: single whole-book mp3; page follows the active cue.
     var onTimeUpdate = function () {
@@ -888,9 +1048,33 @@
       return function () { window.removeEventListener('keydown', onKey); };
     }, [go, displayRtl]);
 
+    // Toolbar dropdowns (Aa, Reading tools, Translate, Create) dismiss on an
+    // outside click or Escape.
+    var closeMenus = function () { setAaOpen(false); setToolsOpen(false); setGenOpen(false); setTxMenuOpen(false); };
+    useEffect(function () {
+      if (!(aaOpen || toolsOpen || genOpen || txMenuOpen)) return;
+      var onDown = function (ev) {
+        var t = ev.target;
+        if (!t || !t.closest || !t.closest('[data-rl-menu]')) closeMenus();
+      };
+      var onEsc = function (ev) { if (ev.key === 'Escape') { ev.stopPropagation(); closeMenus(); } };
+      document.addEventListener('mousedown', onDown, true);
+      document.addEventListener('keydown', onEsc, true);
+      return function () {
+        document.removeEventListener('mousedown', onDown, true);
+        document.removeEventListener('keydown', onEsc, true);
+      };
+    }, [aaOpen, toolsOpen, genOpen, txMenuOpen]);
+
+    // Mouse click and keyboard (Enter/Space) both route here; keyboard passes
+    // the word element's rectangle so the popup anchors under the focused word.
     var onWordClick = function (word, ev) {
       if (mode === 'read') return;
-      var x = ev.clientX || 40; var y = ev.clientY || 40;
+      var x = 40, y = 40;
+      if (ev && typeof ev.clientX === 'number' && (ev.clientX || ev.clientY)) { x = ev.clientX; y = ev.clientY; }
+      else if (ev && ev.currentTarget && ev.currentTarget.getBoundingClientRect) {
+        var r = ev.currentTarget.getBoundingClientRect(); x = r.left; y = r.bottom;
+      }
       var clean = String(word).replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
       if (!clean) return;
       if (!props.callGemini) {
@@ -1100,14 +1284,24 @@
           title: tr('readinglib_narration_speed', 'Narration speed'),
           'aria-label': tr('readinglib_narration_speed', 'Narration speed') + ': ' + narrationRate + '×',
         }, narrationRate + '×') : null,
+        // Continuous read-aloud with auto page-turn — for text-only books (full
+        // texts have no narration mp3) and AI translations (cues can't map). The
+        // pre-recorded narration path already auto-advances, so skip it there.
+        (sourcePages.length > 1 && (!hasAudioTrack || txReady)) ? e('button', {
+          className: 'px-2 py-1.5 rounded-lg text-sm font-semibold border ' +
+            (autoRead ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50'),
+          onClick: toggleAutoRead,
+          'aria-pressed': autoRead,
+          title: tr('readinglib_read_aloud_hint', 'Read the book aloud and turn the pages automatically'),
+        }, autoRead ? '⏸ ' + tr('readinglib_stop_reading', 'Stop') : '▶ ' + tr('readinglib_read_aloud', 'Read aloud')) : null,
         modeBtn('define', '📖', tr('readinglib_mode_define', 'Define')),
         modeBtn('phonics', '🔤', tr('readinglib_mode_phonics', 'Sounds')),
         // Aa — reading supports (font, size, spacing, page color, ruler).
-        e('div', { className: 'relative' },
+        e('div', { className: 'relative', 'data-rl-menu': 'aa' },
           e('button', {
             className: 'px-2 py-1 rounded-lg text-sm font-bold border ' +
               (aaOpen ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
-            onClick: function () { setAaOpen(!aaOpen); setToolsOpen(false); },
+            onClick: function () { var v = !aaOpen; closeMenus(); setAaOpen(v); },
             'aria-expanded': aaOpen, 'aria-haspopup': 'menu',
             'data-help-key': 'readinglib-aa',
             title: tr('readinglib_aa_hint', 'Reading supports: font, text size, spacing, page color, reading ruler'),
@@ -1168,6 +1362,18 @@
                 }, opt[1]);
               }))
             ),
+            e('div', null,
+              e('div', { className: 'text-[11px] font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_word', 'Word spacing')),
+              e('div', { className: 'flex gap-1' }, [[0, tr('readinglib_aa_normal', 'Normal')], [0.16, tr('readinglib_aa_wide', 'Wide')], [0.32, tr('readinglib_aa_wider', 'Wider')]].map(function (opt) {
+                return e('button', {
+                  key: String(opt[0]),
+                  className: 'px-2 py-1 rounded-lg text-xs font-semibold border ' +
+                    (readerPrefs.wordSpacing === opt[0] ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+                  onClick: function () { setReaderPrefs({ wordSpacing: opt[0] }); },
+                  'aria-pressed': readerPrefs.wordSpacing === opt[0],
+                }, opt[1]);
+              }))
+            ),
             // page color
             e('div', null,
               e('div', { className: 'text-[11px] font-bold uppercase text-slate-500 mb-1' }, tr('readinglib_aa_theme', 'Page color')),
@@ -1197,11 +1403,11 @@
           ) : null
         ),
         // Reading tools — hand this book's text to the app's immersive overlays.
-        (window.AlloModules && (window.AlloModules.FocusReaderOverlay || window.AlloModules.KaraokeReaderOverlay)) ? e('div', { className: 'relative' },
+        (window.AlloModules && (window.AlloModules.FocusReaderOverlay || window.AlloModules.KaraokeReaderOverlay)) ? e('div', { className: 'relative', 'data-rl-menu': 'tools' },
           e('button', {
             className: 'px-2 py-1 rounded-lg text-sm font-semibold border ' +
               (toolsOpen ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
-            onClick: function () { setToolsOpen(!toolsOpen); setAaOpen(false); },
+            onClick: function () { var v = !toolsOpen; closeMenus(); setToolsOpen(v); },
             'aria-expanded': toolsOpen, 'aria-haspopup': 'menu',
             'data-help-key': 'readinglib-tools',
             title: tr('readinglib_tools_hint', 'Focus reader, bionic reading, and karaoke read-along for this book'),
@@ -1227,11 +1433,11 @@
           ) : null
         ) : null,
         // AI translation menu — fills languages StoryWeaver doesn't cover.
-        e('div', { className: 'relative' },
+        e('div', { className: 'relative', 'data-rl-menu': 'tx' },
           e('button', {
             className: 'px-2 py-1 rounded-lg text-sm font-semibold border ' +
               (txReady ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
-            onClick: function () { setTxMenuOpen(!txMenuOpen); },
+            onClick: function () { var v = !txMenuOpen; closeMenus(); setTxMenuOpen(v); },
             'aria-expanded': txMenuOpen, 'aria-haspopup': 'menu',
             title: tr('readinglib_translate_hint', 'AI-translate this book into any language'),
           }, '🌐 ' + (txReady ? translation.language : tr('readinglib_translate', 'Translate')) + ' ▾'),
@@ -1284,10 +1490,10 @@
           onClick: saveToLesson,
           title: tr('readinglib_save_lesson_hint', 'Students who load this lesson can open the book from Resources'),
         }, '📌 ' + tr('readinglib_save_lesson', 'Save to lesson')) : null,
-        e('div', { className: 'relative' },
+        e('div', { className: 'relative', 'data-rl-menu': 'create' },
           e('button', {
             className: 'px-2 py-1 rounded-lg text-sm font-semibold border bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100',
-            onClick: function () { setGenOpen(!genOpen); },
+            onClick: function () { var v = !genOpen; closeMenus(); setGenOpen(v); },
             'aria-expanded': genOpen, 'aria-haspopup': 'menu',
           }, '✨ ' + tr('readinglib_create', 'Create') + ' ▾'),
           genOpen ? e('div', { className: 'absolute right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-1 z-20 min-w-[260px]', role: 'menu' },
@@ -1392,10 +1598,18 @@
           }, lines.map(function (line, li) {
             return e('p', { key: li, className: 'mb-2' }, line.map(function (tok, ti) {
               var hot = tok.cue != null && tok.cue === activeCue;
+              var lookupOn = mode !== 'read';
+              // In Define/Sounds mode words become focusable buttons so keyboard
+              // and screen-reader users can look them up (Enter/Space), not just
+              // mouse users. In read mode they're plain, non-focusable spans.
               return e('span', {
                 key: ti,
-                className: (hot ? 'bg-amber-200 rounded ' : '') + (mode !== 'read' ? 'hover:bg-indigo-100 rounded ' : ''),
-                onClick: mode !== 'read' ? function (ev) { onWordClick(tok.w, ev); } : undefined,
+                className: (hot ? 'bg-amber-200 rounded ' : '') + (lookupOn ? 'hover:bg-indigo-100 focus:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded cursor-pointer ' : ''),
+                onClick: lookupOn ? function (ev) { onWordClick(tok.w, ev); } : undefined,
+                role: lookupOn ? 'button' : undefined,
+                tabIndex: lookupOn ? 0 : undefined,
+                'aria-label': lookupOn ? (mode === 'define' ? tr('readinglib_define', 'Define') : tr('readinglib_sounds', 'Sounds')) + ': ' + tok.w : undefined,
+                onKeyDown: lookupOn ? function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onWordClick(tok.w, ev); } } : undefined,
               }, tok.w + (ti < line.length - 1 ? ' ' : ''));
             }));
           }))
@@ -1411,23 +1625,72 @@
       ) : null,
       // pager + attribution
       e('div', { className: 'pt-2 border-t border-slate-200' },
-        e('div', { className: 'flex items-center justify-center gap-3' },
+        e('div', { className: 'flex items-center justify-center gap-2 flex-wrap' },
+          // Chapter jump for long texts (sections detected from the pages).
+          sourceSections.length > 1 ? e('select', {
+            className: 'rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-700 max-w-[45vw] sm:max-w-xs',
+            value: currentSection ? String(currentSection.start) : '',
+            onChange: function (ev) { if (ev.target.value !== '') goTo(Number(ev.target.value)); },
+            'aria-label': tr('readinglib_chapter', 'Chapter'),
+            title: tr('readinglib_chapter', 'Chapter'),
+          }, [currentSection ? null : e('option', { key: '_', value: '' }, tr('readinglib_jump_chapter', 'Jump to chapter…'))].concat(
+            sourceSections.map(function (s) {
+              return e('option', { key: s.start, value: String(s.start) }, s.title + ' (' + pageRangeLabel(s.start, s.end) + ')');
+            })
+          )) : null,
           e('button', {
             className: 'px-4 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold disabled:opacity-40',
             disabled: pageIdx === 0, onClick: function () { go(-1); },
             'aria-label': tr('readinglib_prev_page', 'Previous page'),
           }, '‹'),
-          e('span', {
-            className: 'text-sm text-slate-600 tabular-nums',
-            role: 'status', 'aria-live': 'polite',
-            'aria-label': tr('readinglib_page', 'page') + ' ' + (pageIdx + 1) + ' ' + tr('readinglib_of', 'of') + ' ' + pages.length,
-          }, (pageIdx + 1) + ' / ' + pages.length),
+          // Editable jump-to-page — clicking hundreds of times to reach a page
+          // in a full novel is not navigation. Enter or blur commits.
+          e('div', { className: 'flex items-center gap-1 text-sm text-slate-600 tabular-nums' },
+            e('input', {
+              type: 'number', min: 1, max: pages.length, value: jumpInput,
+              className: 'w-14 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-center text-slate-700',
+              onChange: function (ev) { setJumpInput(ev.target.value); },
+              onKeyDown: function (ev) {
+                if (ev.key === 'Enter') { var n = parseInt(jumpInput, 10); if (n >= 1 && n <= pages.length) goTo(n - 1); else setJumpInput(String(pageIdx + 1)); }
+              },
+              onBlur: function () { var n = parseInt(jumpInput, 10); if (n >= 1 && n <= pages.length) { if (n - 1 !== pageIdx) goTo(n - 1); } else setJumpInput(String(pageIdx + 1)); },
+              'aria-label': tr('readinglib_go_to_page', 'Go to page'),
+            }),
+            e('span', { role: 'status', 'aria-live': 'polite', 'aria-label': tr('readinglib_page', 'page') + ' ' + (pageIdx + 1) + ' ' + tr('readinglib_of', 'of') + ' ' + pages.length }, '/ ' + pages.length)
+          ),
           e('button', {
             className: 'px-4 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold disabled:opacity-40',
             disabled: pageIdx >= pages.length - 1, onClick: function () { go(1); },
             'aria-label': tr('readinglib_next_page', 'Next page'),
-          }, '›')
+          }, '›'),
+          // Bookmark the current page.
+          e('button', {
+            className: 'px-2 py-1.5 rounded-lg text-sm font-semibold border ' +
+              (bookmarks.indexOf(pageIdx) !== -1 ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+            onClick: toggleBookmark,
+            'aria-pressed': bookmarks.indexOf(pageIdx) !== -1,
+            title: tr('readinglib_bookmark_hint', 'Bookmark this page'),
+            'aria-label': tr('readinglib_bookmark', 'Bookmark this page'),
+          }, bookmarks.indexOf(pageIdx) !== -1 ? '🔖' : '🔖')
         ),
+        // Saved bookmarks — jump chips with a remove (✕).
+        bookmarks.length ? e('div', { className: 'flex items-center justify-center gap-1 flex-wrap mt-1.5' },
+          e('span', { className: 'text-[11px] font-semibold text-slate-400' }, tr('readinglib_bookmarks', 'Bookmarks') + ':'),
+          bookmarks.map(function (bmIdx) {
+            return e('span', { key: bmIdx, className: 'inline-flex items-center rounded-full border border-amber-200 bg-amber-50 overflow-hidden' },
+              e('button', {
+                className: 'px-2 py-0.5 text-[11px] font-semibold text-amber-800 hover:bg-amber-100 tabular-nums',
+                onClick: function () { goTo(bmIdx); },
+                title: tr('readinglib_go_to_page', 'Go to page') + ' ' + (bmIdx + 1),
+              }, '🔖 ' + (bmIdx + 1)),
+              e('button', {
+                className: 'px-1.5 py-0.5 text-[11px] text-amber-500 hover:text-amber-800 hover:bg-amber-100',
+                onClick: function () { var next = bookmarks.filter(function (n) { return n !== bmIdx; }); setBookmarks(next); saveBookmarks(book.slug, next); },
+                'aria-label': tr('readinglib_remove_bookmark', 'Remove bookmark') + ' ' + (bmIdx + 1),
+              }, '✕')
+            );
+          })
+        ) : null,
         e('p', { className: 'text-[11px] text-slate-500 text-center mt-1.5' },
           attributionLine(book) + (txReady ? ' · 🤖 ' + tr('readinglib_attr_ai_translated', 'AI-translated into') + ' ' + translation.language : '') + ' · ',
           e('a', { href: bookSourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'underline hover:text-indigo-700' },
@@ -1589,6 +1852,7 @@
     var containerRef = useRef(null);
 
     useEffect(function () {
+      ensureReaderFonts();
       var alive = true;
       fetchIndex(function (err, data, base) {
         if (!alive) return;
