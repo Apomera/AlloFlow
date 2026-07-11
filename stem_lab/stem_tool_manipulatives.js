@@ -841,13 +841,67 @@ window.StemLab = window.StemLab || {
       // ══════════════════════════════════════════════════════════════
       // ── HEADER ──
       // ══════════════════════════════════════════════════════════════
+      var manipModeLabel = {
+        blocks: 'Base-10 blocks', abacus: 'Abacus', slideRule: 'Slide rule', quiz: 'Place-value quiz',
+        tenFrame: 'Ten frames', counters: 'Counters', pvDisks: 'Place-value disks', hundredsChart: 'Hundreds chart',
+        patternBlocks: 'Pattern blocks', geoboard: 'Geoboard', cRods: 'Cuisenaire rods', numberBonds: 'Number bonds',
+        fracBars: 'Fraction bars', algebraTiles: 'Algebra tiles', cra: 'CRA progression', challenges: 'Challenge hub'
+      }[manipMode] || 'Math resources';
+      var manipDisplayValue = manipMode === 'blocks' ? totalValue : (manipMode === 'abacus' ? abacusTotal : score.correct);
+      var manipNext = manipMode === 'blocks' && totalValue === 0
+        ? 'Build a number with blocks, then name the value of each place.'
+        : manipMode === 'blocks'
+          ? 'Regroup ten blocks into one block of the next place and explain why the value stays equal.'
+          : manipMode === 'abacus'
+            ? 'Set one number, read each rod by place value, then change one bead.'
+            : 'Use the representation first, then connect it to numbers or an equation.';
+
       var headerEl = h('div', { className: 'space-y-3 mb-4' },
-        h('div', { className: 'flex items-center gap-3 flex-wrap' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg', 'aria-label': __alloT('stem.manipulatives.back', 'Back') },
-            h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-orange-800' }, __alloT('stem.manipulatives.math_manipulatives', '\uD83E\uDDEE Math Manipulatives')),
+        h('section', { 'data-manipulatives-command': 'true', className: 'overflow-hidden rounded-2xl border border-orange-300/40 bg-gradient-to-br from-slate-950 via-orange-950 to-amber-950 text-white shadow-xl' },
+          h('div', { className: 'p-4 sm:p-5' },
+            h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-orange-300', 'aria-label': __alloT('stem.manipulatives.back', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                  h('span', { className: 'rounded-full bg-orange-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-orange-100 ring-1 ring-orange-200/30' }, 'Representation studio')
+                ),
+                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, __alloT('stem.manipulatives.math_manipulatives', '\uD83E\uDDEE Math Manipulatives')),
+                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-orange-100' }, 'Make number relationships visible, then connect concrete models to pictures and equations.'),
+                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-orange-200' }, 'Recommended next move'),
+                  h('p', { className: 'mt-1 text-sm font-semibold text-white' }, manipNext)
+                )
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                [
+                  { label: 'Model', value: manipModeLabel },
+                  { label: 'Value', value: String(manipDisplayValue) },
+                  { label: 'Solved', value: String(score.correct) }
+                ].map(function(metric) {
+                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                    h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-orange-200' }, metric.label)
+                  );
+                })
+              )
+            ),
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Manipulative reasoning pathway' },
+              [
+                { n: '1', title: 'Build', detail: 'Represent the quantity.' },
+                { n: '2', title: 'Regroup', detail: 'Trade or reorganize equal values.' },
+                { n: '3', title: 'Explain', detail: 'Connect the model to symbols.' }
+              ].map(function(step) {
+                return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                  h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-300 font-black text-slate-950' }, step.n),
+                  h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-orange-200' }, step.detail))
+                );
+              })
+            )
+          )
+        ),
+        h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
           streak >= 3 && h('span', { className: 'text-xs font-bold text-orange-500' }, '\uD83D\uDD25 ' + streak),
-          h('div', { className: 'ml-auto flex gap-1.5' },
+          h('div', { className: 'flex gap-1.5' },
             h('span', { className: 'text-xs font-bold text-emerald-600 self-center' }, score.correct + '/' + score.total),
             h('button', { 'aria-label': __alloT('stem.manipulatives.badges', 'Badges'), onClick: function() { upd({ showBadgesPanel: !showBadgesPanel }); }, className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ' + (showBadgesPanel ? 'bg-amber-100 border-amber-600 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-600') }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + badgeDefs.length),
             h('button', { onClick: function() { upd({ soundEnabled: !soundEnabled }); }, 'aria-label': soundEnabled ? 'Mute sound' : 'Enable sound', className: 'text-sm px-1' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
@@ -880,7 +934,7 @@ window.StemLab = window.StemLab || {
 
         // v3: Mode tabs (12 modes \u2014 wraps to multiple lines on small screens).
         // Organized into 2 rows: classic manipulatives first, then v3 additions.
-        h('div', { className: 'flex gap-1 bg-slate-100 rounded-xl p-1 flex-wrap' },
+        h('div', { className: 'flex gap-1 overflow-x-auto bg-slate-100 rounded-xl p-1' },
           [{ id: 'blocks',        icon: '\uD83E\uDDF1', label: __alloT('stem.manipulatives.base_10_blocks', 'Base-10 Blocks') },
            { id: 'abacus',        icon: '\uD83E\uDDEE', label: __alloT('stem.manipulatives.abacus', 'Abacus') },
            { id: 'slideRule',     icon: '\uD83D\uDCCF', label: __alloT('stem.manipulatives.slide_rule', 'Slide Rule') },
@@ -910,7 +964,7 @@ window.StemLab = window.StemLab || {
           ].map(function(m) {
             return h('button', { 'aria-label': 'Switch to ' + m.label + ' mode',
               key: m.id, onClick: function() { switchMode(m.id); },
-              className: 'py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ' +
+              className: 'min-h-[2.5rem] py-2 px-3 rounded-lg text-xs font-bold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-orange-400 ' +
                 (manipMode === m.id ? 'bg-white text-orange-800 shadow-sm' : 'text-slate-600 hover:text-slate-700 hover:bg-slate-50')
             }, m.icon + ' ' + m.label);
           })
