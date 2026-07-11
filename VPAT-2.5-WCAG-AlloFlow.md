@@ -9,9 +9,11 @@
 | **Last Updated** | Evaluation: May 17, 2026 · Currency note added: June 20, 2026 (no re-evaluation) |
 | **Contact** | Aaron Pomeranz, PsyD — apomeranz@alloflow.org |
 | **Evaluation Methods** | Static code analysis and automated pattern scanning across 470 source files (~880K+ lines of code including 104 STEM Lab tools, 70+ SEL Hub items, 98 monolith CDN modules — the May 2026 evaluation scope; see the Evaluation currency note below), supplemented by runtime axe-core 4.10.3 testing via Playwright across 7 representative visual scenarios (light theme, dark theme, high-contrast theme, sepia + dyslexia reading themes, blue Irlen-style color overlay, and an active-content state). A custom 12-criterion static-pattern audit script (`c:/tmp/wcag_full_audit.cjs`) re-runnable on each release. Criteria marked "Supports (pending verification)" reflect code-level compliance that warrants additional manual confirmation (full keyboard-only walkthrough, screen-reader testing, 200%/400% zoom). |
-| **Applicable Standards** | WCAG 2.1 Level A & AA |
+| **Applicable Standards** | DOJ Title II baseline: WCAG 2.1 Level A & AA; current product evaluation target: WCAG 2.2 Level A & AA |
 | **Platform** | Web application (React SPA, Firebase Hosting + Cloudflare Pages CDN) |
 | **Supported Browsers** | Chrome 90+, Firefox 90+, Safari 15+, Edge 90+ |
+
+> **Standards and regulatory note (updated July 11, 2026).** The U.S. Department of Justice Title II web and mobile application rule incorporates **WCAG 2.1 Level A and AA**. In April 2026, DOJ extended the compliance dates to **April 26, 2027** for public entities with populations of 50,000 or more and **April 26, 2028** for smaller public entities and special district governments. AlloFlow's current engineering and audit target is **WCAG 2.2 Level A and AA**, which includes WCAG 2.1 and adds criteria such as Focus Not Obscured, Dragging Movements, Target Size (Minimum), Consistent Help, Redundant Entry, and Accessible Authentication. Meeting the WCAG 2.2 target must not be inferred from older WCAG 2.1 results; the new criteria are reported separately below.
 
 > **Evaluation currency (updated July 9, 2026).** This VPAT reflects a static + runtime accessibility evaluation performed **May 17, 2026** against product version **0.9.4**, covering the source tree as it existed then (470 files, including **104 STEM Lab tools**, 70 SEL Hub items, and 98 CDN modules). The product has since grown to **v1.1** -- now **111 STEM Lab tool files / 116 registered STEM plugin IDs** and **151 build-managed top-level module definitions**, plus new subsystems that postdate this evaluation: native tagged-PDF output with in-app structural PDF/UA self-checks, optional browser/local veraPDF QA paths, Cinematic Studio, and in-app Professional Development. **Tools and features added after May 17, 2026 are *Not Evaluated*; conformance must not be inferred for them** until this VPAT is regenerated against the current build. All findings below describe the evaluated snapshot.
 
@@ -90,6 +92,24 @@
 | **3.3.3 Error Suggestion** | Supports | Where input errors are detected, specific correction suggestions provided. Examples: paste detection suggests "write your own words," export blocking suggests "resolve contradictions first," API failures suggest "try again." |
 | **3.3.4 Error Prevention (Legal, Financial, Data)** | Supports | Clinical report exports require clinician attestation checkbox. Demo data cannot be exported for clinical use. Destructive actions (world reset, data clear) require explicit confirmation. Student submissions are auto-saved to prevent data loss. |
 | **4.1.3 Status Messages** | Supports | `aria-live="polite"` regions used for: screen reader announcements via `announceToSR()` (implemented across STEM Lab and SEL Hub tools), toast notifications, loading state changes, score updates, and action results. `aria-live="assertive"` used for critical errors. Status changes do not require focus movement. May 2026: new `window.AlloFlowUX.toast(msg, type)` global helper routes module-side notifications through the central toast aria-live region, providing a unified channel for status communication across all 290+ source modules without per-module ctx plumbing. |
+
+---
+
+## WCAG 2.2 Additions (Current Evaluation)
+
+The following criteria were introduced in WCAG 2.2. These entries supplement, rather than replace, the WCAG 2.1 tables above. States are intentionally conservative until representative runtime and manual assistive-technology testing is complete.
+
+| Criteria | Conformance Level | Remarks |
+|---|---|---|
+| **2.4.11 Focus Not Obscured (Minimum)** | Not Evaluated | Prior code review found no known persistent obstruction, but representative keyboard walkthroughs at supported viewport sizes remain required. |
+| **2.4.12 Focus Not Obscured (Enhanced)** | Not Evaluated | Level AAA; outside the AA conformance target, retained for evaluation visibility. |
+| **2.4.13 Focus Appearance** | Not Evaluated | Level AAA in WCAG 2.2. Global focus styling exists, but area and contrast measurements have not been completed across all components. |
+| **2.5.7 Dragging Movements** | Partially Supports | Shared tools include keyboard alternatives for many drag interactions. Net-new tools and all drag workflows require re-audit before full support can be claimed. |
+| **2.5.8 Target Size (Minimum)** | Partially Supports | Many controls meet or exceed 24 by 24 CSS pixels. A current rendered target-size audit has been added; exceptions and net-new surfaces still require review. |
+| **3.2.6 Consistent Help** | Not Evaluated | Help mechanisms exist, but consistent relative placement across every applicable multi-page process has not yet been verified. |
+| **3.3.7 Redundant Entry** | Partially Supports | Saved application state and browser autofill reduce repeated entry in several workflows. Multi-step processes and common-purpose autocomplete tokens require current verification. |
+| **3.3.8 Accessible Authentication (Minimum)** | Not Evaluated | Authentication is primarily provided by platform and third-party identity flows. Each supported flow must be tested for cognitive-function-test alternatives before claiming support. |
+| **3.3.9 Accessible Authentication (Enhanced)** | Not Evaluated | Level AAA; outside the AA conformance target. |
 
 ---
 
