@@ -1810,7 +1810,7 @@ window.StemLab = window.StemLab || {
                 onClick: function() { sfxClick(); updCG({ mapScenario: s.id }); },
                 role: 'tab',
                 'aria-selected': mapScenario === s.id,
-                className: 'flex-1 py-2 px-2 rounded-lg text-xs font-bold transition-all ' +
+                className: 'min-h-[2.5rem] min-w-max flex-1 whitespace-nowrap py-2 px-3 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' +
                   (mapScenario === s.id ? 'bg-white text-emerald-800 shadow-sm' : 'text-emerald-600 hover:text-emerald-800')
               }, s.icon + ' ' + s.label);
             })
@@ -1835,13 +1835,62 @@ window.StemLab = window.StemLab || {
       };
 
       // ══════════ MAIN RENDER ══════════
-      return h('div', { className: 'space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200' },
+      var coordTabLabel = { explore: 'Explore', quadrants: 'Quadrant tour', maps: 'Real-world maps', quadHunt: 'Quadrant hunt' }[cgTab] || 'Explore';
+      var coordSolved = plotsSolved + slopesSolved + distanceSolved;
+      var coordNext = gridPoints.length === 0
+        ? 'Plot one point and describe its horizontal move before its vertical move.'
+        : coordSolved === 0
+          ? 'Start a plot, slope, or distance challenge and show the coordinate evidence.'
+          : cgTab === 'maps'
+            ? 'Translate one real-world location into an ordered pair and explain the convention.'
+            : 'Compare two points and explain their quadrant, distance, or rate of change.';
+
+      return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200' },
         // Header
-        h('div', { className: 'flex items-center gap-3 mb-2' },
-          h('button', { onClick: function() { setStemLabTool(null); }, className: 'p-1.5 hover:bg-slate-100 rounded-lg transition-colors', 'aria-label': t('stem.coordgrid.back_to_tools', 'Back to tools') },
-            h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
-          h('h3', { className: 'text-lg font-bold text-cyan-800' }, t('stem.coordgrid.coordinate_grid', '\uD83D\uDCCD Coordinate Grid')),
-          h('div', { className: 'ml-auto flex items-center gap-3' },
+        h('section', { 'data-coordinate-command': 'true', className: 'overflow-hidden rounded-2xl border border-cyan-300/40 bg-gradient-to-br from-slate-950 via-cyan-950 to-indigo-950 text-white shadow-xl' },
+          h('div', { className: 'p-4 sm:p-5' },
+            h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'flex items-center gap-2' },
+                  h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-cyan-300', 'aria-label': t('stem.coordgrid.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                  h('span', { className: 'rounded-full bg-cyan-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100 ring-1 ring-cyan-200/30' }, 'Spatial reasoning studio')
+                ),
+                h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.coordgrid.coordinate_grid', '\uD83D\uDCCD Coordinate Grid')),
+                h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-cyan-100' }, 'Locate, compare, and communicate positions using ordered pairs across graphs and real-world maps.'),
+                h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200' }, 'Recommended next move'),
+                  h('p', { className: 'mt-1 text-sm font-semibold text-white' }, coordNext)
+                )
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                [
+                  { label: 'Mode', value: coordTabLabel },
+                  { label: 'Points', value: String(gridPoints.length) },
+                  { label: 'Solved', value: String(coordSolved) }
+                ].map(function(metric) {
+                  return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                    h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                    h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-cyan-200' }, metric.label)
+                  );
+                })
+              )
+            ),
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Coordinate reasoning pathway' },
+              [
+                { n: '1', title: 'Locate', detail: 'Read x first, then y.' },
+                { n: '2', title: 'Relate', detail: 'Compare quadrant, distance, or slope.' },
+                { n: '3', title: 'Communicate', detail: 'Explain the ordered-pair evidence.' }
+              ].map(function(step) {
+                return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                  h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-300 font-black text-slate-950' }, step.n),
+                  h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-cyan-200' }, step.detail))
+                );
+              })
+            )
+          )
+        ),
+        h('div', { className: 'flex justify-end' },
+          h('div', { className: 'flex flex-wrap items-center justify-end gap-2' },
             streak > 0 && h('span', { className: 'text-xs font-bold text-orange-600' }, '\uD83D\uDD25 ' + streak),
             bestStreak > 0 && h('span', { className: 'text-[11px] text-slate-600' }, 'Best: ' + bestStreak),
             h('span', { className: 'text-xs font-bold text-emerald-600' }, exploreScore.correct + '/' + exploreScore.total),
@@ -1894,7 +1943,7 @@ window.StemLab = window.StemLab || {
         ),
 
         // Tab bar
-        h('div', { className: 'flex gap-1 bg-cyan-50 rounded-xl p-1 border border-cyan-200', role: 'tablist', 'aria-label': t('stem.coordgrid.coordinate_grid_sections', 'Coordinate Grid sections') },
+        h('div', { className: 'flex gap-1 overflow-x-auto bg-cyan-50 rounded-xl p-1 border border-cyan-200', role: 'tablist', 'aria-label': t('stem.coordgrid.coordinate_grid_sections', 'Coordinate Grid sections') },
           [
             { id: 'explore', icon: '\uD83D\uDCCD', label: t('stem.coordgrid.explore', 'Explore') },
             { id: 'quadrants', icon: '\uD83D\uDDFA', label: t('stem.coordgrid.quadrant_tour', 'Quadrant Tour') },
@@ -1916,7 +1965,7 @@ window.StemLab = window.StemLab || {
         cgTab === 'explore' && h('div', { className: 'space-y-4 allo-cg-bg-explore' },
 
         // SVG Grid
-        h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-4 flex justify-center' },
+        h('div', { className: 'bg-white rounded-xl border-2 border-cyan-200 p-2 sm:p-4 flex justify-center overflow-x-auto' },
           h('svg', { width: gridW, height: gridH, onClick: handleGridClick, onTouchStart: handleGridTouch, className: 'cursor-crosshair', style: { background: '#f8fafc', touchAction: 'none' } },
             gridElements,
             funcElements,

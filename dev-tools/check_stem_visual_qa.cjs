@@ -107,6 +107,7 @@ const EXPECTED_MARKERS = [
   { id: 'chemBalance', file: 'stem_tool_chembalance.js', marker: 'data-chembalance-command', label: 'Chemistry Lab bench' },
   { id: 'titrationLab', file: 'stem_tool_titration.js', marker: 'data-titration-command', label: 'Titration experiment command' },
   { id: 'areamodel', file: 'stem_tool_areamodel.js', marker: 'data-areamodel-focus', label: 'Area Model workshop' },
+  { id: 'coordinate', file: 'stem_tool_coordgrid.js', marker: 'data-coordinate-command', label: 'Coordinate spatial reasoning studio' },
   { id: 'numberline', file: 'stem_tool_numberline.js', marker: 'data-numberline-focus', label: 'Number Line workspace' },
   { id: 'moneyMath', file: 'stem_tool_money.js', marker: 'data-moneymath-focus', label: 'Money Math studio' },
   { id: 'logicLab', file: 'stem_tool_logiclab.js', marker: 'data-logiclab-focus', label: 'Logic Lab reasoning studio' },
