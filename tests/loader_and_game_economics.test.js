@@ -119,9 +119,10 @@ describe('mailbox live-session parity', () => {
         expect(anti).not.toMatch(/tries >= 4/);
         // Cursor self-heal on server counter eviction, both directions.
         expect((anti.match(/box\.latest === 'number' && box\.latest < mb/g) || []).length).toBe(2);
-        // Live-join students start with a clean pack (Firestore parity).
+        // Live-join students start with a clean pack (Firestore parity), but the
+        // reset is idempotent so it can't wipe a live pack that already arrived.
         const entry = anti.slice(anti.indexOf('// Mailbox live-session student entry'), anti.indexOf('setMbStudent({ url: entry.u'));
-        expect(entry).toMatch(/setHistory\(\[\]\);/);
+        expect(entry).toMatch(/setHistory\(prev => \(Array\.isArray\(prev\) && prev\.length \? prev : \[\]\)\);/);
     });
 
     it('server-side session resume works without local storage (Canvas-correct)', () => {

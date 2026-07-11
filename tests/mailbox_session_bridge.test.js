@@ -604,3 +604,100 @@ describe('three-copy sync pins (Phase C sections)', () => {
         });
     });
 });
+
+// ── Durable live-resource parity (packRef self-heal) + large-pack HW reroute ──
+
+describe('mailbox live-resource parity: durable packRef self-heal', () => {
+    it('putpack + a tiny packRef let a participant rebuild the whole pack; packRef survives projection', () => {
+        const sb = openedSandbox();
+        const PK = 'PK-12345678-1234-1234-1234-123456789012';
+        const secret = 'p_secret_p_secret_20';
+        // Teacher hosts the whole student-safe pack in two chunks (the durable
+        // data.resources analogue) and advertises only a tiny pointer.
+        expect(sb.teacherCall({ a: 'putpack', id: PK, k: secret, part: 1, of: 2, data: 'AAAA', title: 'Live pack' }).ok).toBe(true);
+        expect(sb.teacherCall({ a: 'putpack', id: PK, k: secret, part: 2, of: 2, data: 'BBBB', title: 'Live pack' }).ok).toBe(true);
+        sb.teacherCall({ a: 'dset', c: sb.code, p: 's', d: { mode: 'sync', roster: {}, packRef: { id: PK, k: secret, n: 3, t: 111 } } });
+        const guest = sb.joinParticipant();
+        // A participant's privacy-filtered view keeps packRef (only roster/quiz/etc.
+        // are projected away), so every student can find the pack.
+        const view = sb.call({ a: 'dget', ...guest, c: sb.code, ps: [{ p: 's' }] }).docs[0].d;
+        expect(view.packRef.id).toBe(PK);
+        expect(view.packRef.k).toBe(secret);
+        // getpack is secret-gated only — the student reassembles the full pack,
+        // and can do so again after any local history wipe (self-heal).
+        const gp = sb.call({ a: 'getpack', id: PK, k: secret, part: 1 });
+        expect(gp.ok).toBe(true);
+        expect(gp.data).toBe('AAAABBBB');
+        expect(gp.of).toBe(1);
+    });
+
+    it('the bridge publishes packRef on a session write but still strips resources', async () => {
+        const { api, sb } = makeBridge();
+        sb.teacherCall({ a: 'dset', c: sb.code, p: 's', d: { mode: 'sync', roster: {} } });
+        api.install({ url: 'https://mb/exec', code: sb.code, secret: sb.secret, admin: sb.admin, isTeacher: true });
+        try {
+            const ref = api.doc(...sessionArgs(sb.code));
+            await api.updateDoc(ref, { packRef: { id: 'PK-live', k: 'kkkkkkkkkkkkkkkk', n: 3, t: 42 }, resources: [{ id: 'nope' }] });
+            const stored = sb.teacherCall({ a: 'dget', c: sb.code, ps: [{ p: 's' }] }).docs[0].d;
+            expect(stored.packRef.t).toBe(42);
+            expect(stored.packRef.id).toBe('PK-live');
+            expect(stored.resources).toBeUndefined(); // the pointer rides the doc; the payload stays in the pack
+        } finally { api.teardown(); }
+    });
+
+    const NEW_COPIES = [
+        anti,
+        fs.readFileSync(path.join(ROOT, 'prismflow-deploy', 'src', 'AlloFlowANTI.txt'), 'utf8'),
+        fs.readFileSync(path.join(ROOT, 'prismflow-deploy', 'src', 'App.jsx'), 'utf8'),
+    ];
+
+    it('every copy hosts the whole pack + advertises packRef, and students getpack-heal', () => {
+        NEW_COPIES.forEach(source => {
+            // Teacher: fingerprint-gated whole-pack host + tiny pointer publish.
+            expect(source).toContain("a: 'putpack', admin: mbConfig.admin, id, k, part: i + 1, of: parts.length, title: 'Live pack', data: parts[i]");
+            expect(source).toContain('await updateDoc(sessionRef, { packRef: { id, k, n: candidates.length, t: Date.now() } });');
+            expect(source).toContain('if (packFp !== mbHostedPackFpRef.current) {');
+            // Student: self-heal branch reads packRef and rebuilds via getpack.
+            expect(source).toContain('} else if (data.packRef && data.packRef.id && _alloMbBridgeActive()) {');
+            expect(source).toContain("a: 'getpack', id: data.packRef.id, k: data.packRef.k, part");
+            expect(source).toContain('hydratedHistoryRef.current = merged;');
+            // Preserve the pinned mailbox fallback + the exactly-two invariant.
+            expect(source).toContain('_alloMbBridgeActive() && Array.isArray(hydratedHistoryRef.current) && hydratedHistoryRef.current.length');
+            expect(source.split('hydratedHistoryRef.current = next;').length - 1).toBe(2);
+            // Best-effort cleanup on end.
+            expect(source).toContain("a: 'delpack', admin: mbConfig.admin, id: mbLivePackRef.current.id");
+        });
+    });
+
+    it('every copy isolates per-item push failures in the auto-sync loop', () => {
+        NEW_COPIES.forEach(source => {
+            const loop = sliceBetween(source, 'if (seen[item.id] === fp) continue;', '// Durable full-set store');
+            expect(loop).toContain('try {');
+            expect(loop).toContain('await _mbPushOneResource(item, { open: false, quiet: true });');
+            expect(loop).toContain('seen[item.id] = fp;');
+            expect(loop).toContain('} catch (itemErr) {');
+        });
+    });
+
+    it('every copy guards the offline-history loader against clobbering a live student', () => {
+        NEW_COPIES.forEach(source => {
+            expect(source).toContain("_alloReadMailboxEntryParam('allo_mb') || _alloReadMailboxEntryParam('allo_mbp')");
+            expect(source).toContain('if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive() || _qrLiveStudent)) {');
+        });
+    });
+
+    it('every copy reroutes oversize homework packs to the mailbox host instead of dead-ending', () => {
+        NEW_COPIES.forEach(source => {
+            const fn = sliceBetween(source, 'const createSelfContainedHomeworkLink = useCallback', 'const hostPackOnMailbox = useCallback');
+            expect(fn).toContain('shareUrl.length > ALLO_QR_PACK_MAX_URL_CHARS');
+            expect(fn).toContain('return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current() : null;');
+            // The old dead-end error toast is gone.
+            expect(fn).not.toContain('too large for a self-contained link. Host it on your Class Mailbox (images OK) or use the HTML export');
+            // Not-connected queues the host for after the connect self-test lands.
+            const host = sliceBetween(source, 'const hostPackOnMailbox = useCallback', 'const toggleMbHand = useCallback');
+            expect(host).toContain('mbPendingHostRef.current = true;');
+            expect(source).toContain('if (mbPendingHostRef.current && mbConfig?.url && mbConfig?.admin) {');
+            expect(source).toContain('hostPackOnMailboxRef.current = hostPackOnMailbox;');
+        });
+    });
+});

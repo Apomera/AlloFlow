@@ -5844,6 +5844,7 @@ const AlloFlowContent = () => {
   const lastDictationStartRef = useRef(0);
   const lastResourcesStringRef = useRef(null);
   const hydratedHistoryRef = useRef([]);
+  const lastPackRefRef = useRef(null);
   const isBotSpeakingRef = useRef(false);
   const isPlayingRef = useRef(false);
   const isSystemAudioActiveRef = useRef(false);
@@ -12699,6 +12700,47 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                       } else {
                           resourcesToRender = hydratedHistoryRef.current;
                       }
+                  } else if (data.packRef && data.packRef.id && _alloMbBridgeActive()) {
+                      // Durable self-heal (mailbox): the teacher hosts the whole
+                      // student-safe pack to Drive and advertises a tiny packRef
+                      // here. Re-derive the COMPLETE set whenever packRef.t
+                      // changes — the mailbox analogue of Firebase re-hydrating
+                      // from data.resources, so a history wipe, a late join, or a
+                      // polling-only student that missed ring messages recovers on
+                      // the next snapshot.
+                      const packSig = data.packRef.id + ':' + data.packRef.t;
+                      if (packSig !== lastPackRefRef.current) {
+                          lastPackRefRef.current = packSig;
+                          try {
+                              let assembled = '';
+                              let part = 1;
+                              let of = 1;
+                              do {
+                                  const gp = await _alloMailboxCall(_alloMbBridgeState.url, { a: 'getpack', id: data.packRef.id, k: data.packRef.k, part });
+                                  assembled += String(gp.data || '');
+                                  of = gp.of || 1;
+                                  part += 1;
+                              } while (part <= of);
+                              const packet = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
+                              const rawResources = Array.isArray(packet && packet.resources)
+                                  ? packet.resources.filter(it => it && it.id && it.type && !TEACHER_ONLY_TYPES.includes(it.type))
+                                  : [];
+                              if (rawResources.length) {
+                                  const merged = rawResources;
+                                  hydratedHistoryRef.current = merged;
+                                  resourcesToRender = merged;
+                                  setHistory(merged);
+                              } else {
+                                  resourcesToRender = hydratedHistoryRef.current;
+                              }
+                          } catch (packErr) {
+                              lastPackRefRef.current = null; // let the next snapshot retry (e.g. rate-limited)
+                              warnLog('Mailbox packRef hydrate failed:', packErr?.message);
+                              resourcesToRender = hydratedHistoryRef.current;
+                          }
+                      } else {
+                          resourcesToRender = hydratedHistoryRef.current;
+                      }
                   } else if (_alloMbBridgeActive() && Array.isArray(hydratedHistoryRef.current) && hydratedHistoryRef.current.length) {
                       // Mailbox sessions: the session doc deliberately carries NO
                       // resources (85KB ceiling) — content arrives over the chunked
@@ -13085,7 +13127,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, []);
   useEffect(() => {
     if (!lzLoaded) return;
-    if (!isTeacherMode && activeSessionCode) {
+    // A joining/active live student (Firebase OR mailbox) must never have its
+    // live resource pack clobbered by the offline-history loader. The old guard
+    // only caught activeSessionCode, which is still null during the async
+    // mailbox join, so a bridged/QR student slipped through and the loader wiped
+    // the pack — which the mailbox, unlike Firebase, cannot re-hydrate. Read the
+    // URL param directly so this holds regardless of effect ordering, and
+    // re-check after the await below.
+    const _qrLiveStudent = (typeof window !== 'undefined' && window.__alloQrStudentMode)
+        || _alloReadMailboxEntryParam('allo_mb') || _alloReadMailboxEntryParam('allo_mbp');
+    if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive() || _qrLiveStudent)) {
+        setIsHistoryLoaded(true);
         return;
     }
     if (isTeacherMode && activeSessionCode && isHistoryLoaded) {
@@ -13098,6 +13150,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         }
         try {
             const savedHistory = await storageDB.get('allo_offline_history');
+            if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive()
+                || _alloReadMailboxEntryParam('allo_mb') || _alloReadMailboxEntryParam('allo_mbp'))) {
+                return; // a live student joined during the await — leave the pack intact (finally sets loaded)
+            }
             if (savedHistory) {
                 const items = savedHistory.items || (Array.isArray(savedHistory) ? savedHistory : []);
                 if (Array.isArray(items)) {
@@ -13652,6 +13708,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [mbMode, setMbMode] = useState('sync');
   const mbSentPacksRef = useRef({});
   const mbPackItemsRef = useRef([]);
+  const mbLivePackRef = useRef(null);
+  const mbHostedPackFpRef = useRef('');
   const moduleAutoRetryRef = useRef(false);
   const [mbStudent, setMbStudent] = useState(null);
   const [mbHandUp, setMbHandUp] = useState(false);
@@ -13928,7 +13986,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           }
           try { await _alloMailboxCall(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: live.code, from: 'teacher', box: 'down', v: { kind: 'end' } }); } catch (_) {}
           try { await _alloMailboxCall(mbConfig.url, { a: 'end', admin: mbConfig.admin, c: live.code }); } catch (_) {}
+          // Best-effort cleanup of the durable live pack from the teacher's Drive.
+          if (mbLivePackRef.current) {
+              try { await _alloMailboxCall(mbConfig.url, { a: 'delpack', admin: mbConfig.admin, id: mbLivePackRef.current.id }); } catch (_) {}
+          }
       }
+      mbLivePackRef.current = null;
+      mbHostedPackFpRef.current = '';
       _alloMbTeardownBridge();
       if (live && activeSessionCode === live.code) {
           setActiveSessionCode(null);
@@ -14042,15 +14106,48 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               for (const item of candidates) {
                   const fp = _alloQuickHash(JSON.stringify(stripUndefined({ id: item.id, type: item.type, title: item.title, meta: item.meta, data: item.data })) || '');
                   if (seen[item.id] === fp) continue;
-                  await _mbPushOneResource(item, { open: false, quiet: true });
-                  seen[item.id] = fp;
+                  // Per-item isolation: one failed push (rate-limit/too-big/network)
+                  // must not strand the rest of the pack. Record the fingerprint
+                  // only on success so a failed item retries next cycle.
+                  try {
+                      await _mbPushOneResource(item, { open: false, quiet: true });
+                      seen[item.id] = fp;
+                  } catch (itemErr) {
+                      warnLog('Mailbox pack sync: one resource failed, continuing:', itemErr?.message);
+                  }
+              }
+              // Durable full-set store (the Firebase data.resources analogue):
+              // host the whole student-safe pack to the teacher's own Drive via
+              // putpack and advertise a tiny packRef in the session doc. Students
+              // re-derive the COMPLETE set from it on every snapshot, so a history
+              // wipe / late join / polling-only student that missed ring messages
+              // self-heals — the property Firebase gets for free and the
+              // consume-once mailbox message channel lacks. Fingerprint-gated:
+              // zero Drive writes when the student-safe set is unchanged.
+              if (candidates.length) {
+                  const packFp = _alloQuickHash(candidates.map(it => it.id + ':' + (_alloQuickHash(JSON.stringify(stripUndefined({ id: it.id, type: it.type, title: it.title, meta: it.meta, data: it.data })) || '') || '')).join('|'));
+                  if (packFp !== mbHostedPackFpRef.current) {
+                      if (!mbLivePackRef.current) mbLivePackRef.current = { id: 'PK-' + generateUUID(), k: _alloRandomToken(16) };
+                      const { id, k } = mbLivePackRef.current;
+                      const packet = stripUndefined({ v: 1, kind: 'assignment', currentResourceId: candidates[0]?.id || null, resources: candidates.map(it => ({ id: it.id, type: it.type, title: it.title, meta: it.meta, data: it.data })) });
+                      const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
+                      const parts = _alloSplitPackChunks(encoded);
+                      for (let i = 0; i < parts.length; i += 1) {
+                          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'putpack', admin: mbConfig.admin, id, k, part: i + 1, of: parts.length, title: 'Live pack', data: parts[i] });
+                      }
+                      mbHostedPackFpRef.current = packFp;
+                      try {
+                          const sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', mbLive.code);
+                          await updateDoc(sessionRef, { packRef: { id, k, n: candidates.length, t: Date.now() } });
+                      } catch (prefErr) { warnLog('packRef publish failed:', prefErr?.message); }
+                  }
               }
           } catch (e) {
               warnLog('Mailbox auto pack sync failed:', e?.message);
           }
       }, 1500);
       return () => clearTimeout(timeoutId);
-  }, [history, mbLive, isTeacherMode, mbConfig, _mbPushOneResource]);
+  }, [history, mbLive, isTeacherMode, mbConfig, _mbPushOneResource, activeSessionAppId]);
   useEffect(() => {
       if (!mbLive || !mbConfig?.url) return undefined;
       let cancelled = false;
@@ -14215,6 +14312,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const encoded = await _alloEncodeAlloPack(JSON.stringify(packet));
       return { encoded, title, count: resources.length };
   }, [generatedContent, history, sourceTopic]);
+  // Latest-ref to the mailbox-host callback so the self-contained builder can
+  // reroute oversize packs to it (hostPackOnMailbox is declared below), and so a
+  // queued host can auto-run after a late mailbox connect. Mirrors the
+  // startClassSessionRef idiom above (avoids a TDZ from the forward reference).
+  const hostPackOnMailboxRef = useRef(null);
+  const mbPendingHostRef = useRef(false);
   // Self-contained variant: no Firestore write, no student auth — the whole
   // pack is compressed into the URL fragment and decoded by the student shell.
   // This is the pathway that works when the class backend (e.g. Gemini
@@ -14229,8 +14332,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               return null;
           }
           if (shareUrl.length > ALLO_QR_PACK_MAX_URL_CHARS) {
-              addToast('This activity is too large for a self-contained link. Host it on your Class Mailbox (images OK) or use the HTML export.', 'error');
-              return null;
+              // Too big for a URL, but the Class Mailbox is built for large packs
+              // (up to ~8MB via putpack). Route there instead of dead-ending;
+              // hostPackOnMailbox prompts to connect + opens setup when needed.
+              addToast('This activity is too large for a self-contained link — hosting it on your Class Mailbox instead (images included).', 'info');
+              return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current() : null;
           }
           copyToClipboard(shareUrl);
           setQrShareModal({
@@ -14254,6 +14360,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // pointer, so it is always small enough to print.
   const hostPackOnMailbox = useCallback(async () => {
       if (!mbConfig?.url || !mbConfig?.admin) {
+          mbPendingHostRef.current = true; // auto-host once the connect self-test lands
           addToast('Connect your Class Mailbox first — open "Live class without accounts" for the one-time setup.', 'info');
           setMbPanelOpen(true);
           return null;
@@ -14289,6 +14396,18 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           return null;
       }
   }, [mbConfig, buildAssignmentPackEncoded, copyToClipboard]);
+  // Keep the host-callback ref fresh so the self-contained builder's oversize
+  // reroute (above) always calls the current hostPackOnMailbox.
+  useEffect(() => { hostPackOnMailboxRef.current = hostPackOnMailbox; });
+  // Connect-then-host: if a large pack asked to be hosted while the mailbox was
+  // not yet connected, hostPackOnMailbox queued the request and opened setup.
+  // Once the connect self-test lands (mbConfig gains url+admin), run it once.
+  useEffect(() => {
+      if (mbPendingHostRef.current && mbConfig?.url && mbConfig?.admin) {
+          mbPendingHostRef.current = false;
+          if (hostPackOnMailboxRef.current) hostPackOnMailboxRef.current();
+      }
+  }, [mbConfig]);
   const toggleMbHand = useCallback(async () => {
       if (!mbStudent) return;
       const next = !mbHandUp;
@@ -23600,7 +23719,9 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       mbStudentCursorRef.current = 0;
       mbStudentConnectedRef.current = false;
       mbChunkStoreRef.current = { parts: {}, applied: new Set() };
-      setHistory([]);
+      // Idempotent: clears stale device leftovers on a fresh mount (prev is []),
+      // but never wipes a live pack that already arrived if this effect re-runs.
+      setHistory(prev => (Array.isArray(prev) && prev.length ? prev : []));
       setGeneratedContent(null);
 
       (async () => {

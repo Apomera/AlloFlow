@@ -422,4 +422,18 @@ describe('ANTI wiring pins', () => {
         // Poll cadence: slower base while the channel is open.
         expect(anti).toMatch(/rtcOpen \? 8000 : ALLO_MB_POLL_MS/);
     });
+
+    it('live sessions host a durable pack + advertise packRef, and students getpack-heal it', () => {
+        // Teacher publishes a tiny pointer to a putpack-hosted full pack (the
+        // durable data.resources analogue that makes the mailbox self-healing).
+        expect(anti).toContain('await updateDoc(sessionRef, { packRef: { id, k, n: candidates.length, t: Date.now() } });');
+        expect(anti).toContain("a: 'putpack', admin: mbConfig.admin, id, k, part: i + 1, of: parts.length, title: 'Live pack', data: parts[i]");
+        // Student self-heal branch reassembles the full set from packRef via getpack.
+        expect(anti).toContain('} else if (data.packRef && data.packRef.id && _alloMbBridgeActive()) {');
+        expect(anti).toContain("a: 'getpack', id: data.packRef.id, k: data.packRef.k, part");
+        // Large homework packs route to the mailbox host instead of dead-ending.
+        expect(anti).toContain('return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current() : null;');
+        // The offline-history loader no longer clobbers a joining live student.
+        expect(anti).toContain('if (!isTeacherMode && (activeSessionCode || _alloMbBridgeActive() || _qrLiveStudent)) {');
+    });
 });
