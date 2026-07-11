@@ -335,6 +335,16 @@
         // â”€â”€ Earned badges count â”€â”€
         var earnedBadges = BADGES.filter(function(b) { return badges[b.id]; });
         var earnedCount = earnedBadges.length;
+        var tabLabel = { convert: 'Convert', table: 'All units', quiz: 'Quiz', wordproblem: 'Word problem', magHunt: 'Magnitude' }[tab] || 'Convert';
+        var unitNext = tab === 'convert' && historySaveCount === 0
+          ? 'Choose compatible units, estimate the scale, then save one conversion.'
+          : tab === 'table'
+            ? 'Compare units in one category and identify the base-unit relationship.'
+            : tab === 'quiz'
+              ? 'Solve with a conversion factor and check that unwanted units cancel.'
+              : tab === 'wordproblem'
+                ? 'Underline the given unit and target unit before calculating.'
+                : 'Use powers of ten to explain the size difference between scales.';
 
         // â”€â”€ CSS ANIMATIONS â”€â”€
         var css = '@keyframes ucResultPop{0%{transform:scale(0.8);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}' +
@@ -344,29 +354,54 @@
           '@keyframes spin{to{transform:rotate(360deg)}}';
 
         // â”€â”€ RENDER â”€â”€
-        return h('div', { className: 'max-w-2xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1', onKeyDown: handleKey, tabIndex: -1 },
+        return h('div', { className: 'max-w-5xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1', onKeyDown: handleKey, tabIndex: -1 },
 
           h('style', null, css),
 
           // Header
-          h('div', { className: 'flex items-center gap-3 mb-3' },
-            h('button', { onClick: function() { setStemLabTool(null); }, className: 'transition-colors p-1.5 hover:bg-slate-100 rounded-lg active:scale-[0.97]', 'aria-label': t('stem.unitconvert.back', 'Back') },
-              h(ArrowLeft, { size: 18, className: 'text-slate-600' })
-            ),
-            h('h3', { className: 'text-lg font-bold text-slate-800 tracking-tight' }, t('stem.unitconvert.unit_converter', '\uD83D\uDCCF Unit Converter')),
-            h('span', { className: 'px-2 py-0.5 bg-cyan-100 text-cyan-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
-            (d.score || 0) > 0 && h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' }, '\u2B50 ' + d.score + ' XP'),
-            (d.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.streak),
-            earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); },
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all active:scale-[0.97]',
-              title: t('stem.unitconvert.view_badges_b', 'View badges (B)')
-            }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
-            h('button', { onClick: askTutor,
-              'aria-label': tutorLoading ? 'AI Tutor thinking' : 'Ask AI Tutor',
-              'aria-busy': !!tutorLoading,
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-600 text-purple-600 hover:bg-purple-100 transition-all active:scale-[0.97]',
-              title: t('stem.unitconvert.ai_tutor', 'AI Tutor (?)')
-            }, t('stem.unitconvert.ai', '\uD83E\uDDE0 AI'))
+          h('section', { 'data-unitconvert-command': 'true', className: 'mb-4 overflow-hidden rounded-2xl border border-teal-300/40 bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950 text-white shadow-xl' },
+            h('div', { className: 'p-4 sm:p-5' },
+              h('div', { className: 'flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between' },
+                h('div', { className: 'min-w-0' },
+                  h('div', { className: 'flex flex-wrap items-center gap-2' },
+                    h('button', { onClick: function() { setStemLabTool(null); }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-teal-300', 'aria-label': t('stem.unitconvert.back', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
+                    h('span', { className: 'rounded-full bg-teal-300/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-teal-100 ring-1 ring-teal-200/30' }, 'Measurement workbench'),
+                    earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); }, className: 'rounded-full border border-amber-300/40 bg-amber-300/15 px-2.5 py-1 text-[10px] font-bold text-amber-100', title: t('stem.unitconvert.view_badges_b', 'View badges (B)') }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
+                    h('button', { onClick: askTutor, 'aria-label': tutorLoading ? 'AI Tutor thinking' : 'Ask AI Tutor', 'aria-busy': !!tutorLoading, className: 'rounded-full border border-violet-300/40 bg-violet-300/15 px-2.5 py-1 text-[10px] font-bold text-violet-100' }, t('stem.unitconvert.ai', '\uD83E\uDDE0 AI'))
+                  ),
+                  h('h3', { className: 'mt-3 text-xl font-black tracking-tight sm:text-2xl' }, t('stem.unitconvert.unit_converter', '\uD83D\uDCCF Unit Converter')),
+                  h('p', { className: 'mt-1 max-w-2xl text-sm leading-6 text-teal-100' }, 'Preserve the quantity while changing its unit, and verify every step through dimensional reasoning.'),
+                  h('div', { className: 'mt-3 rounded-xl border border-white/15 bg-white/10 p-3' },
+                    h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-teal-200' }, 'Recommended next move'),
+                    h('p', { className: 'mt-1 text-sm font-semibold text-white' }, unitNext)
+                  )
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-2 lg:w-[22rem]' },
+                  [
+                    { label: 'Focus', value: tabLabel },
+                    { label: 'Category', value: cat.label },
+                    { label: 'Saved', value: String(historySaveCount) }
+                  ].map(function(metric) {
+                    return h('div', { key: metric.label, className: 'min-w-0 rounded-xl border border-white/15 bg-white/10 px-2 py-3 text-center' },
+                      h('div', { className: 'truncate text-sm font-black text-white', title: metric.value }, metric.value),
+                      h('div', { className: 'mt-1 text-[9px] font-bold uppercase tracking-wider text-teal-200' }, metric.label)
+                    );
+                  })
+                )
+              ),
+              h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Unit conversion reasoning pathway' },
+                [
+                  { n: '1', title: 'Select', detail: 'Name the given and target units.' },
+                  { n: '2', title: 'Convert', detail: 'Apply a factor equal to one.' },
+                  { n: '3', title: 'Verify', detail: 'Check units, scale, and context.' }
+                ].map(function(step) {
+                  return h('li', { key: step.n, className: 'flex items-center gap-2 rounded-xl border border-white/10 bg-black/10 p-2.5' },
+                    h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-300 font-black text-slate-950' }, step.n),
+                    h('span', null, h('strong', { className: 'block text-white' }, step.title), h('span', { className: 'text-teal-200' }, step.detail))
+                  );
+                })
+              )
+            )
           ),
 
           // â”€â”€ Badge panel â”€â”€
@@ -410,7 +445,8 @@
           ),
 
           // Category selector
-          h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
+          h('div', { className: 'mb-3 rounded-xl border border-slate-200 bg-white p-2 shadow-sm' },
+            h('div', { className: 'grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5', role: 'group', 'aria-label': 'Measurement categories' },
             Object.entries(CATEGORIES).map(function(e) {
               var k = e[0], v = e[1];
               return h('button', { key: k,
@@ -422,18 +458,19 @@
                   trackCategory(k);
                   checkBadges({ firstConvert: true });
                 },
-                className: 'px-2.5 py-1 rounded-lg text-xs font-bold transition-all ' + (d.category === k ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-cyan-50 active:scale-[0.97]')
+                className: 'min-h-[2.5rem] px-2.5 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (d.category === k ? 'bg-cyan-700 text-white shadow-md' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-cyan-50 active:scale-[0.97]')
               }, v.label);
             })
+            )
           ),
 
           // Tool tabs
-          h('div', { className: 'flex gap-0 mb-3 border-b border-slate-200', role: 'tablist', 'aria-label': t('stem.unitconvert.unit_converter_sections', 'Unit Converter sections') },
+          h('div', { className: 'flex gap-0 mb-3 overflow-x-auto border-b border-slate-200', role: 'tablist', 'aria-label': t('stem.unitconvert.unit_converter_sections', 'Unit Converter sections') },
             [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem'], ['magHunt', '\u2699\uFE0F Magnitude']].map(function(item, idx) {
               return h('button', { key: item[0],
                 onClick: function() { upd('tab', item[0]); },
                 role: 'tab', 'aria-selected': tab === item[0],
-                className: 'px-3 py-1.5 text-xs font-bold transition-all ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : 'transition-colors text-slate-600 hover:text-slate-700'),
+                className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : 'transition-colors text-slate-600 hover:text-slate-700'),
                 title: (idx + 1) + ' key'
               }, item[1]);
             })

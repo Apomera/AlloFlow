@@ -137,9 +137,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 21,
   "circles": 0,
   "inputs": 1,
-  "lengthBucket": 44,
+  "lengthBucket": 64,
   "paths": 0,
-  "sha": "20eae0de103717ce",
+  "sha": "edc645da00c5479c",
   "svgs": 0,
 }
 `;
