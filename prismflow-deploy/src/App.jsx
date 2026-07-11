@@ -2074,6 +2074,8 @@ function delPack(p) {
 const ALLO_MB_URL_KEY = 'alloflow_session_mailbox_url';
 const ALLO_MB_ADMIN_KEY = 'alloflow_session_mailbox_admin';
 const ALLO_MB_LIVE_KEY = 'alloflow_mb_live_session';
+const ALLO_STANDARD_LIVE_KEY = 'alloflow_standard_live_session';
+const ALLO_STANDARD_LIVE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 const ALLO_MB_CHUNK_CHARS = 60000;
 const ALLO_MB_POLL_MS = 2500;
 function _alloRandomToken(byteCount = 16) {
@@ -10009,21 +10011,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.addEventListener('alloflow:open-live-polling', handler);
     return () => window.removeEventListener('alloflow:open-live-polling', handler);
   }, [isTeacherMode, activeSessionCode]);
-    React.useEffect(() => {
-        if (!activeSessionCode || !isTeacherMode || !db || !appId) return;
-        const sessionCleanupOnUnload = () => {
-            try {
-                const sRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-                deleteDoc(sRef).catch(() => {});
-            } catch(e) { /* ignore */ }
-        };
-        window.addEventListener('pagehide', sessionCleanupOnUnload);
-        window.addEventListener('beforeunload', sessionCleanupOnUnload);
-        return () => {
-            window.removeEventListener('pagehide', sessionCleanupOnUnload);
-            window.removeEventListener('beforeunload', sessionCleanupOnUnload);
-        };
-    }, [activeSessionCode, isTeacherMode, db, appId]);
+  // Do not delete a teacher's live session from pagehide/beforeunload.
+  // Refreshes, mobile tab suspension, and Canvas re-renders all fire those
+  // events; treating them as an explicit End Session disconnects the class.
+  // Standard sessions are resumed below and remain explicitly endable.
   // sessionData useState moved up to ~line 5825 (before _picMyRoleRaw
   // const block) to fix the TDZ ReferenceError on initial render.
   const [joinCodeInput, setJoinCodeInput] = useState('');
@@ -13719,6 +13710,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [mbJoinStatus, setMbJoinStatus] = useState('');
   const [mbJoinError, setMbJoinError] = useState(false);
   const [mbJoinAttempt, setMbJoinAttempt] = useState(0);
+  const [standardResumeAttempt, setStandardResumeAttempt] = useState(0);
   const [mbHandUp, setMbHandUp] = useState(false);
   const mbStudentCursorRef = useRef(0);
   const mbStudentConnectedRef = useRef(false);
@@ -13728,6 +13720,80 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const mbHandRef = useRef(false);
   const mbAnnounceRef = useRef(null);
   const mbPollNowRef = useRef(null);
+  const standardResumeAttemptedRef = useRef(false);
+  const standardLiveSeenRef = useRef(false);
+  useEffect(() => {
+      if (!isTeacherMode || !user?.uid || activeSessionCode || mbLive || standardResumeAttemptedRef.current) return undefined;
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem(ALLO_STANDARD_LIVE_KEY) || 'null'); } catch (_) {}
+      if (!saved) return undefined;
+      const code = _alloCleanLiveSessionCode(saved.code);
+      const hostAppId = String(saved.appId || appId || '').trim();
+      const ageMs = Date.now() - Number(saved.savedAt || 0);
+      if (!code || !hostAppId || saved.uid !== user.uid || !Number.isFinite(ageMs) || ageMs < 0) {
+          try { localStorage.removeItem(ALLO_STANDARD_LIVE_KEY); } catch (_) {}
+          return undefined;
+      }
+      if (ageMs > ALLO_STANDARD_LIVE_MAX_AGE_MS) {
+          try { localStorage.removeItem(ALLO_STANDARD_LIVE_KEY); } catch (_) {}
+          try {
+              const staleRef = doc(db, 'artifacts', hostAppId, 'public', 'data', 'sessions', code);
+              deleteDoc(staleRef).catch(() => {});
+          } catch (_) {}
+          return undefined;
+      }
+      standardResumeAttemptedRef.current = true;
+      let cancelled = false;
+      const retryWhenOnline = () => setStandardResumeAttempt(value => value + 1);
+      (async () => {
+          try {
+              const sessionRef = doc(db, 'artifacts', hostAppId, 'public', 'data', 'sessions', code);
+              const snap = await getDoc(sessionRef);
+              if (cancelled) return;
+              const data = snap.exists() ? snap.data() : null;
+              if (data && data.hostId === user.uid && data.isActive !== false && data.status !== 'ended') {
+                  setActiveSessionAppId(hostAppId);
+                  setActiveSessionCode(code);
+                  addToast('Restored live session ' + code + ' after the page restarted.', 'success');
+              } else {
+                  try { localStorage.removeItem(ALLO_STANDARD_LIVE_KEY); } catch (_) {}
+              }
+          } catch (resumeErr) {
+              if (cancelled) return;
+              standardResumeAttemptedRef.current = false;
+              warnLog('Standard live-session resume deferred:', resumeErr?.message);
+              try { window.addEventListener('online', retryWhenOnline, { once: true }); } catch (_) {}
+          }
+      })();
+      return () => {
+          cancelled = true;
+          try { window.removeEventListener('online', retryWhenOnline); } catch (_) {}
+      };
+  }, [isTeacherMode, user?.uid, activeSessionCode, mbLive, appId, standardResumeAttempt]);
+  useEffect(() => {
+      if (!isTeacherMode || !user?.uid) return;
+      if (mbLive || _alloMbBridgeActive()) {
+          if (mbLive) {
+              try { localStorage.removeItem(ALLO_STANDARD_LIVE_KEY); } catch (_) {}
+          }
+          standardLiveSeenRef.current = false;
+          return;
+      }
+      if (activeSessionCode) {
+          standardLiveSeenRef.current = true;
+          try {
+              localStorage.setItem(ALLO_STANDARD_LIVE_KEY, JSON.stringify({
+                  code: activeSessionCode,
+                  appId: activeSessionAppId || appId,
+                  uid: user.uid,
+                  savedAt: Date.now(),
+              }));
+          } catch (_) {}
+      } else if (standardLiveSeenRef.current) {
+          standardLiveSeenRef.current = false;
+          try { localStorage.removeItem(ALLO_STANDARD_LIVE_KEY); } catch (_) {}
+      }
+  }, [isTeacherMode, user?.uid, activeSessionCode, activeSessionAppId, appId, mbLive]);
   // Phase C (single pathway): the mailbox start flow calls the SAME
   // startClassSession as Firestore. It is re-declared every render (plain
   // const), so callbacks reach it through a render-fresh ref instead of a
@@ -13845,7 +13911,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setMbStatus('Could not close mailbox sessions: ' + (e?.message || e));
       }
       setMbBusy(false);
-  }, [mbConfig]);  const startMailboxLiveSession = useCallback(async () => {
+  }, [mbConfig]);
+  const startMailboxLiveSession = useCallback(async () => {
       if (!mbConfig?.url || !mbConfig?.admin) return;
       if (Number(mbConfig.v || 0) < 7) {
           setMbStatus('Update the mailbox script to v7 before starting a secure QR session.');
@@ -22195,7 +22262,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setUser(sessionUser);
     } catch (error) {
       warnLog('Live session authentication failed:', error);
-      addToast('Live session sign-in failed. Reload the app and try again.', 'error');
+      addToast('Live session sign-in failed. Check the connection and try again.', 'error');
       return;
     }
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;

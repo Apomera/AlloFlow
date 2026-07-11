@@ -38,7 +38,7 @@ describe('student-side terminal handling of a soft-ended session', () => {
 
   it('soft-end is followed by a delayed delete (session metadata must not outlive the class)', () => {
     // Data-hygiene invariant: ALL end paths converge on deletion. The session
-    // modal and the teacher-unload handler hard-delete; the quiz-dashboard
+    // modal hard-deletes explicitly; the quiz-dashboard
     // soft-end now schedules a delete after the terminal marker lands.
     const idx = src.indexOf('const handleEndLiveSession');
     expect(idx).toBeGreaterThan(-1);
@@ -71,6 +71,33 @@ describe('session code entropy + rules-compatible TTL cleanup', () => {
   });
 });
 
+describe('teacher refresh recovery', () => {
+  it('does not treat page lifecycle events as End Session', () => {
+    expect(src).not.toContain('sessionCleanupOnUnload');
+    expect(src).toContain("Do not delete a teacher's live session from pagehide/beforeunload.");
+  });
+
+  it('persists a standard teacher session and restores only its authenticated host', () => {
+    expect(src).toContain("const ALLO_STANDARD_LIVE_KEY = 'alloflow_standard_live_session';");
+    expect(src).toContain('const ALLO_STANDARD_LIVE_MAX_AGE_MS = 12 * 60 * 60 * 1000;');
+    expect(src).toContain('saved.uid !== user.uid');
+    expect(src).toContain("data.hostId === user.uid && data.isActive !== false && data.status !== 'ended'");
+    expect(src).toContain('setActiveSessionAppId(hostAppId);');
+    expect(src).toContain('setActiveSessionCode(code);');
+    expect(src).toContain('savedAt: Date.now()');
+  });
+
+  it('clears stale records, cleans expired docs, and retries a deferred restore online', () => {
+    expect(src).toContain('ageMs > ALLO_STANDARD_LIVE_MAX_AGE_MS');
+    expect(src).toContain('deleteDoc(staleRef).catch(() => {});');
+    expect(src).toContain("window.addEventListener('online', retryWhenOnline, { once: true })");
+    expect(src).toContain('localStorage.removeItem(ALLO_STANDARD_LIVE_KEY)');
+  });
+
+  it('keeps mailbox transport out of standard-session persistence', () => {
+    expect(src).toContain('if (mbLive || _alloMbBridgeActive())');
+  });
+});
 describe('live polling presence gating (Tier-1 livePolling leaf)', () => {
   it('allowlists the livePolling leaf for writeToSession', () => {
     expect(src).toContain("'livePolling',");

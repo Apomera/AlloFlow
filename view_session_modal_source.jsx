@@ -18,6 +18,9 @@
  *   doc                              — Firestore doc primitive
  *   handleSetShowGroupModalToTrue    — open the groups manager
  *   handleSetShowSessionModalToFalse — close this modal
+ *   isMailboxSession               — whether this uses the mailbox transport
+ *   mailboxJoinUrl                 — capability-bearing mailbox student URL
+ *   onEndMailboxSession            — mailbox teardown callback
  *   sessionData                      — current session state (mode + roster)
  *   setActiveSessionCode             — clears session code on end
  *   setConfirmDialog                 — shows confirm dialog for "end session"
@@ -123,27 +126,28 @@ function SessionModal({
 
   return (
     <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowSessionModalToFalse}>
-      <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('session.live_title')}>
+      <div className="bg-white rounded-2xl shadow-2xl p-5 sm:p-8 text-center max-w-md w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title">
         <button onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24}/></button>
         <div className="flex justify-center mb-4">
           <div className="bg-green-100 p-4 rounded-full shadow-inner">
             <Wifi size={48} className="text-green-600 animate-pulse" />
           </div>
         </div>
-        <h2 className="text-2xl font-black text-slate-800 mb-2">{isLocalOnly ? 'Local preview' : isMailboxSession ? 'Class Mailbox live session' : t('session.live_title')}</h2>
+        <h2 id="alloflow-session-modal-title" className="text-2xl font-black text-slate-800 mb-2">{isLocalOnly ? 'Local preview' : isMailboxSession ? 'Class Mailbox live session' : t('session.live_title')}</h2>
         <p className="text-slate-600 mb-6 font-medium">{isLocalOnly ? 'Firebase did not create a shareable session. This preview stays on the teacher device.' : isMailboxSession ? 'Students join through your Class Mailbox without accounts.' : t('session.live_instruction')}</p>
-        <div
-          className="bg-indigo-50 border-4 border-indigo-100 rounded-2xl p-6 mb-6 cursor-pointer hover:bg-indigo-100 transition-colors group relative"
+        <button
+          type="button"
+          className="w-full bg-indigo-50 border-4 border-indigo-100 rounded-2xl p-4 sm:p-6 mb-6 cursor-pointer hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors group relative"
           onClick={() => copyToClipboard(activeSessionCode)}
           title={t('common.click_to_copy')}
         >
-          <div className="text-7xl font-black text-indigo-600 tracking-widest font-mono">
+          <div className="text-5xl sm:text-7xl font-black text-indigo-600 tracking-[0.16em] sm:tracking-widest font-mono">
             {activeSessionCode}
           </div>
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center gap-1">
             <Copy size={10}/> {t('session.click_to_copy')}
           </div>
-        </div>
+        </button>
         {liveJoinUrl && (
           <div className="mb-6 bg-cyan-50 p-4 rounded-xl border border-cyan-200 text-left">
             <p className="text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center">{isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'}</p>
@@ -228,10 +232,10 @@ function SessionModal({
             </button>
           </div>
         )}
-        <div className="flex gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={handleSetShowSessionModalToFalse}
-            className="px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors"
+            className="w-full sm:w-auto px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors"
           >
             {t('session.action_close')}
           </button>
@@ -261,7 +265,7 @@ function SessionModal({
                 setShowSessionModal(false);
               }});
             }}
-            className="px-8 py-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-full transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto px-8 py-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-full transition-colors flex items-center justify-center gap-2"
           >
             <XCircle size={18}/> {t('session.action_end')}
           </button>

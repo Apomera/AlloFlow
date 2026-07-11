@@ -260,6 +260,10 @@ describe('Canvas-managed QR auth sequencing', () => {
     expect(sessionModalSource).toContain("isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'");
     expect(sessionModalSource).toContain("typeof onEndMailboxSession === 'function'");
     expect(sessionModalSource).toContain('{!isMailboxSession && (');
+    expect(sessionModalSource).toContain('aria-labelledby="alloflow-session-modal-title"');
+    expect(sessionModalSource).toContain('<button');
+    expect(sessionModalSource).toContain('text-5xl sm:text-7xl');
+    expect(sessionModalSource).toContain('flex flex-col sm:flex-row');
     expect(sessionModalSource).toContain('This code was not saved to Firebase, so students cannot join it.');
     expect(phaseOModule).toBe(phaseOPublicModule);
     expect(sessionModalModule).toBe(sessionModalPublicModule);
