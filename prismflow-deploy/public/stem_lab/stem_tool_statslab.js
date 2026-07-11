@@ -1749,6 +1749,13 @@ window.StemLab = window.StemLab || {
         });
       }
 
+      var analysisMission = !d.sampleId ? { icon: '📚', title: 'Choose a question and sample', detail: 'Start with a sample dataset or enter evidence that matches your research question.' }
+        : !d.selectedTest ? { icon: '🧭', title: 'Match the test to the design', detail: 'Use variable type, groups, and independence to justify the analysis.' }
+        : !(d.testsRun > 0) ? { icon: '⚖️', title: 'Check assumptions, then run', detail: 'Inspect the data before calculating significance and effect size.' }
+        : { icon: '📝', title: 'Interpret magnitude and uncertainty', detail: 'Connect p-value, effect size, confidence, and the original question.' };
+      var analysisStage = !d.sampleId ? 1 : !d.selectedTest ? 2 : !(d.testsRun > 0) ? 3 : 4;
+
+
       // ── Build UI ──
       return h('div', {
         style: {
@@ -1761,10 +1768,30 @@ window.StemLab = window.StemLab || {
       },
         // Header
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
+          h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM tools', 'data-sl-focusable': 'true', style: { width: 40, height: 40, borderRadius: 12, border: '1px solid rgba(99,102,241,.45)', background: 'rgba(99,102,241,.10)', color: '#c7d2fe', cursor: 'pointer', fontSize: 18, flexShrink: 0 } }, '←'),
           h('div', { style: { fontSize: 36 } }, '📊'),
           h('div', { style: { flex: 1 } },
             h('h2', { style: { margin: 0, color: '#a5b4fc', fontSize: 24, fontWeight: 900 } }, __alloT('stem.statslab.statistics_lab', 'Statistics Lab')),
             h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, __alloT('stem.statslab.inferential_stats_with_ap_psych_ap_bio', 'Inferential stats with AP Psych / AP Bio focus. Transparent. Scaffolded. Better than SPSS for learning.'))
+          )
+        ),
+
+        h('section', { 'data-statslab-command': 'true', 'aria-labelledby': 'statslab-command-title', className: 'relative overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/65 via-slate-900 to-cyan-950/45 p-4 sm:p-5 mb-4' },
+          h('div', { className: 'absolute -right-6 -top-8 text-8xl opacity-[0.06]', 'aria-hidden': 'true' }, '📊'),
+          h('div', { className: 'relative grid gap-4 lg:grid-cols-[1.15fr_.85fr]' },
+            h('div', null,
+              h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-indigo-300' }, 'Research analysis command · Stage ' + analysisStage + '/4'),
+              h('h2', { id: 'statslab-command-title', className: 'mt-2 text-xl sm:text-2xl font-black text-white' }, analysisMission.icon + ' ' + analysisMission.title),
+              h('p', { className: 'mt-1 text-xs sm:text-sm text-slate-300 leading-relaxed' }, analysisMission.detail),
+              h('div', { className: 'mt-4 grid grid-cols-3 gap-2', 'aria-label': 'Statistics workflow status' },
+                [[d.sampleId ? 'Ready' : '—', 'Sample'], [d.selectedTest ? 'Chosen' : '—', 'Test'], [d.testsRun || 0, 'Runs']].map(function(metric) { return h('div', { key: metric[1], className: 'rounded-xl border border-white/10 bg-white/5 p-3 text-center' }, h('div', { className: 'text-base font-black text-white' }, metric[0]), h('div', { className: 'mt-1 text-[10px] font-bold text-slate-400' }, metric[1])); })
+              )
+            ),
+            h('aside', { className: 'rounded-xl border border-cyan-500/20 bg-black/20 p-4', 'aria-label': 'Statistics evidence route' },
+              h('div', { className: 'flex items-center justify-between gap-3' }, h('span', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-300' }, 'Evidence route'), h('span', { className: 'text-lg font-black text-white' }, analysisStage + '/4')),
+              h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full bg-slate-800', role: 'progressbar', 'aria-valuemin': 1, 'aria-valuemax': 4, 'aria-valuenow': analysisStage, 'aria-label': 'Statistics analysis stage ' + analysisStage + ' of 4' }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400', style: { width: (analysisStage / 4 * 100) + '%' } })),
+              h('ol', { className: 'mt-4 space-y-1.5 text-[11px] text-slate-300' }, ['Question', 'Sample', 'Test', 'Conclusion'].map(function(step, i) { return h('li', { key: step, className: 'flex items-center gap-2' }, h('span', { className: i < analysisStage ? 'text-emerald-400' : 'text-slate-600', 'aria-hidden': 'true' }, i < analysisStage ? '●' : '○'), h('span', null, step)); }))
+            )
           )
         ),
 
@@ -1828,7 +1855,7 @@ window.StemLab = window.StemLab || {
             }
           },
             h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
-            h('div', { style: { flex: 1, minWidth: 220 } },
+            h('div', { style: { flex: '1 1 220px', minWidth: 0 } },
               h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
               h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
             )
@@ -1999,7 +2026,7 @@ window.StemLab = window.StemLab || {
           h('div', { style: { fontSize: 26, fontWeight: 900, color: '#d8b4fe', lineHeight: 1 } }, _hMasteredCount + ' / ' + _hTotal),
           h('div', { style: { fontSize: 9, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 3 } }, 'AP mastered')
         ),
-        h('div', { style: { flex: 1, minWidth: 200 } },
+        h('div', { style: { flex: '1 1 200px', minWidth: 0 } },
           h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 4 } }, '🏅 AP Stats Concept Mastery'),
           h('div', { style: { height: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 3, overflow: 'hidden', marginBottom: 5 }, 'aria-hidden': 'true' },
             h('div', { style: { width: _hPct + '%', height: '100%', background: 'linear-gradient(90deg, #6366f1, #a855f7, #ec4899)', transition: 'width 0.3s' } })
@@ -2026,7 +2053,7 @@ window.StemLab = window.StemLab || {
         )
       ),
       h('div', {
-        style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }
+        className: 'grid gap-2 sm:grid-cols-2 xl:grid-cols-3'
       },
         SAMPLE_DATASETS.map(function(s) {
           return h('button', {
