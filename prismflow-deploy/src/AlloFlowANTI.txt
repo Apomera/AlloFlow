@@ -2099,7 +2099,7 @@ function _alloCleanMailboxUrl(value) {
         return '';
     }
 }
-async function _alloMailboxCall(execUrl, payload, timeoutMs = 12000) {
+async function _alloMailboxCall(execUrl, payload, timeoutMs = 8000) {
     // Hard timeout: on mobile radios a fetch can hang indefinitely (radio
     // wake, captive portals, flaky Wi-Fi). Without this, the FIRST join poll
     // hanging meant the student sat on a dead screen until they refreshed —
@@ -8034,37 +8034,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         catch (e) { console.warn('[SD-Turbo] init failed:', e?.message); return false; }
       };
 
-      const isLazy = _isCanvasEnv || (typeof window !== 'undefined' && (window.location.search.includes('disableTtsLoader=true') || window._disableTtsLoader));
-      if (isLazy) {
-        console.log('[TTS] Lazy mode enabled — Kokoro and Piper download on demand');
-        setKokoroLoadState(null); // No loading overlay
-      } else {
-        console.log('[Firebase TTS] Auto-loading Kokoro (cached for future sessions)...');
-        // Surface the boot preload's outcome when a Kokoro voice is the active
-        // selection — silence here left users hearing the browser fallback
-        // with no idea the local voice had (or hadn't) come up.
-        window.__loadKokoroTTS().then((ok) => {
-          try {
-            // Toast whenever the local voice WILL actually serve read-aloud:
-            // a Kokoro voice is selected, OR this is a keyless install (the
-            // routing serves any voice name locally then). The old af_-only
-            // condition meant keyless users whose voice had been reset to a
-            // cloud name never saw readiness at all.
-            const _kokoroWillServe = /^(af|am|bf|bm)_/.test(String(selectedVoice || '')) || (!_isCanvasEnv && !apiKey);
-            if (ok && _kokoroWillServe) {
-              addToast(t('toasts.kokoro_ready') || '🎤 Local voice ready — read-aloud now uses it.', 'success');
-            } else if (!ok) {
-              console.warn('[TTS] Kokoro boot preload did not complete — it retries on first read-aloud.');
-            }
-          } catch (_) {}
-        });
-      }
+      // Kokoro is intentionally opt-in on every launch surface. In particular,
+      // QR/student devices must not download or initialize the model while they
+      // are joining a live session. The voice-pack dialog and first explicit
+      // read-aloud request retain the existing on-demand loader paths.
+      console.log('[TTS] Lazy mode enabled — Kokoro and Piper download on demand');
+      setKokoroLoadState(null);
     }
   }, []);
-  const [kokoroLoadState, setKokoroLoadState] = useState(
-    (!_isCanvasEnv && !(typeof window !== 'undefined' && (window.location.search.includes('disableTtsLoader=true') || window._disableTtsLoader)))
-      ? { loading: true, stage: t('voice_engine.preparing') || 'Preparing voice engine...', pct: 0 } : null
-  );
+  const [kokoroLoadState, setKokoroLoadState] = useState(null);
   const [showKokoroOfferModal, _setShowKokoroOfferModalRaw] = useState(false);
   const [showSdTurboOfferModal, setShowSdTurboOfferModal] = useState(false);
   const setShowKokoroOfferModal = React.useCallback((v) => { if (v && window.__alloLazyKokoroOfferModal) { try { window.__alloLazyKokoroOfferModal(); } catch(_) {} } _setShowKokoroOfferModalRaw(v); }, []);
@@ -8081,18 +8059,34 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, []);
 
   React.useEffect(() => {
-    if (_isCanvasEnv) return; // Canvas doesn't use service workers
+    if (_isCanvasEnv) return undefined; // Canvas doesn't use service workers
+    const announceUpdate = () => {
+      try {
+        if (window.__alloUpdateNoticeShown) return;
+        window.__alloUpdateNoticeShown = true;
+        addToast('An AlloFlow update is ready. It will apply after you close and reopen the app.', 'info');
+      } catch (_) {}
+    };
+    const onControllerChange = () => {
+      // Never reload an active classroom automatically. A controller change is
+      // safe to use for subsequent requests; the current JS keeps running.
+      try { window.__alloUpdateReady = true; } catch (_) {}
+      announceUpdate();
+    };
     try {
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          console.log('[SW] New version detected — reloading for latest code');
-          window.location.reload();
-        });
+        navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+        window.addEventListener('alloflow:update-ready', announceUpdate);
+        if (window.__alloUpdateReady) announceUpdate();
         navigator.serviceWorker.getRegistration().then(reg => {
           if (reg) reg.update().catch(() => {});
         }).catch(() => {});
       }
     } catch (e) { /* SW API blocked in this context */ }
+    return () => {
+      try { navigator.serviceWorker?.removeEventListener('controllerchange', onControllerChange); } catch (_) {}
+      try { window.removeEventListener('alloflow:update-ready', announceUpdate); } catch (_) {}
+    };
   }, []);
   const [stemLabTool, setStemLabTool] = useState(null);
   const [assessmentBlocks, setAssessmentBlocks] = useState([]);
@@ -13674,6 +13668,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // refuses anonymous student devices; the mailbox is the meeting point both
   // sides CAN reach, on infrastructure the teacher already owns.
   const [mbPanelOpen, setMbPanelOpen] = useState(false);
+  const [showSessionStartOptions, setShowSessionStartOptions] = useState(false);
   const [mbUrlInput, setMbUrlInput] = useState('');
   const [mbConfig, setMbConfig] = useState(() => {
       try {
@@ -13712,6 +13707,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const mbHostedPackFpRef = useRef('');
   const moduleAutoRetryRef = useRef(false);
   const [mbStudent, setMbStudent] = useState(null);
+  const [mbJoinStatus, setMbJoinStatus] = useState('');
+  const [mbJoinError, setMbJoinError] = useState(false);
+  const [mbJoinAttempt, setMbJoinAttempt] = useState(0);
   const [mbHandUp, setMbHandUp] = useState(false);
   const mbStudentCursorRef = useRef(0);
   const mbStudentConnectedRef = useRef(false);
@@ -23727,12 +23725,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // but never wipes a live pack that already arrived if this effect re-runs.
       setHistory(prev => (Array.isArray(prev) && prev.length ? prev : []));
       setGeneratedContent(null);
+      setMbJoinError(false);
+      setMbJoinStatus('Contacting the class mailbox…');
 
       (async () => {
           try {
               const joined = await _alloMailboxCallWithRetry(entry.u, {
                   a: 'join', c: mbJoinCode, k: String(entry.k)
-              });
+              }, 2, 600);
               if (mbJoinCancelled) return;
               if (!joined?.uid || !joined?.pt) throw new Error('Mailbox script must be updated to v7');
               const student = {
@@ -23743,6 +23743,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   participant: String(joined.pt)
               };
               setMbStudent(student);
+              setMbJoinStatus('Mailbox reached. Waiting for the live session…');
               _alloMbInstallBridge({
                   url: entry.u,
                   code: mbJoinCode,
@@ -23752,7 +23753,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                   uid: student.uid
               });
 
-              for (let attempt = 0; attempt < 6 && !mbJoinCancelled; attempt += 1) {
+              for (let attempt = 0; attempt < 4 && !mbJoinCancelled; attempt += 1) {
+                  setMbJoinStatus('Mailbox reached. Checking session… attempt ' + (attempt + 1) + ' of 4');
                   try {
                       const probe = await _alloMailboxCall(entry.u, {
                           a: 'dget', c: mbJoinCode, uid: student.uid, pt: student.participant,
@@ -23760,31 +23762,39 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
                       });
                       const sdoc = Array.isArray(probe.docs) ? probe.docs.find(d => d && d.p === 's') : null;
                       if (sdoc && !sdoc.missing) {
-                          if (!mbJoinCancelled) joinClassSession(mbJoinCode);
+                          if (!mbJoinCancelled) {
+                              setMbJoinStatus('Connected to class ' + mbJoinCode + '.');
+                              joinClassSession(mbJoinCode);
+                              setTimeout(() => { if (!mbJoinCancelled) setMbJoinStatus(''); }, 2500);
+                          }
                           return;
                       }
                   } catch (probeErr) {
                       const probeCode = String(probeErr?.code || '');
                       if (probeCode.includes('no-session') || probeCode.includes('denied')) throw probeErr;
                   }
-                  await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+                  if (attempt < 3) await new Promise(r => setTimeout(r, 1200 * (attempt + 1)));
               }
+              throw new Error('The mailbox responded, but the live session was not ready in time.');
           } catch (joinErr) {
               if (mbJoinCancelled) return;
               warnLog('Mailbox participant join failed:', joinErr?.message);
               _alloMbTeardownBridge();
               setMbStudent(null);
+              setMbJoinError(true);
               const oldScript = String(joinErr?.code || '').includes('bad-action') || /v7|update/i.test(String(joinErr?.message || ''));
-              addToast(oldScript
+              const joinMessage = oldScript
                   ? 'Your teacher needs to update the Class Mailbox script before students can join securely.'
-                  : 'Could not join this live session. Ask your teacher for a new QR code.', 'error');
+                  : 'Could not join this live session. Check the connection, then retry or ask your teacher for a new QR code.';
+              setMbJoinStatus(joinMessage);
+              addToast(joinMessage, 'error');
           }
       })();
       return () => {
           mbJoinCancelled = true;
           _alloMbTeardownBridge();
       };
-  }, []);  // Keep the announced nickname current without restarting the poll/RTC loops.
+  }, [mbJoinAttempt]);  // Keep the announced nickname current; changing mbJoinAttempt only retries the mailbox handshake.
   // No connected-gate here: the codename picker often commits BEFORE the first
   // poll round-trip finishes, and gating on it left the teacher roster showing
   // the boot-time placeholder until the next heartbeat. Announcing early is
@@ -23866,6 +23876,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               if (code.includes('no-session') || code.includes('denied')) {
                   addToast(mbStudentConnectedRef.current ? 'This live session has ended.' : 'Could not find this live session — it may have ended. Ask your teacher for a new QR code.', 'error');
                   setMbStudent(null);
+              setMbJoinError(true);
                   return;
               }
               errorCount = Math.min(errorCount + 1, 3);
@@ -24066,6 +24077,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     setHistory(prev => prev.filter(item => item.id !== id));
     if (generatedContent && generatedContent.id === id) {
         setGeneratedContent(null);
+      setMbJoinError(false);
+      setMbJoinStatus('Contacting the class mailbox…');
         setActiveView('input');
     }
   };
@@ -24290,6 +24303,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       setShowSourceGen(true);
       setExpandedTools(prev => prev.includes('source-input') ? prev : ['source-input', ...prev]);
       setGeneratedContent(null);
+      setMbJoinError(false);
+      setMbJoinStatus('Contacting the class mailbox…');
       setActiveView('input');
       setInputText("");
       setShowUDLGuide(true);
@@ -28428,6 +28443,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
 
     if (action === 'dismiss') {
       setGeneratedContent(null);
+      setMbJoinError(false);
+      setMbJoinStatus('Contacting the class mailbox…');
       setActiveView('input');
       addToast('Transcript shortcuts hidden. The source text is still available.', 'info');
       return;
@@ -31268,11 +31285,6 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 {mbBusy ? 'Uploading to your mailbox…' : 'Host on Class Mailbox (small QR, images OK)'} <Share2 size={12}/>
               </button>
             )}
-            {qrShareModal.type === 'assignment' && (
-              <button onClick={() => { setQrShareModal(null); setMbPanelOpen(true); }} className="w-full mt-2 text-[11px] font-bold text-slate-500 hover:text-slate-700 underline underline-offset-2">
-                Live class without accounts (beta) — set up your Class Mailbox
-              </button>
-            )}
             {qrShareModal.type === 'assignment-pack-hosted' ? (
               <p className="text-[11px] text-slate-500 mt-3">The activity (images included) is stored in YOUR Google Drive via your Class Mailbox — students need no account, and AI stays off. Delete it any time from the "AlloFlow Class Mailbox" Drive folder.</p>
             ) : qrShareModal.type === 'assignment-pack' ? (
@@ -31280,6 +31292,25 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             ) : (
               <p className="text-[11px] text-slate-500 mt-3">Students open teacher-prepared resources with AI generation off.</p>
             )}
+          </div>
+        </div>
+      )}
+      {showSessionStartOptions && (
+        <div className="fixed inset-0 bg-black/70 z-[152] flex items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-label="Start live session" onClick={() => setShowSessionStartOptions(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowSessionStartOptions(false)} className="absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100" aria-label={t('common.close') || 'Close'}><X size={20}/></button>
+            <h2 className="text-xl font-black text-slate-900 mb-1">Start live session</h2>
+            <p className="text-xs text-slate-600 mb-4">Choose how student devices will connect. Both options use the same live-session tools after starting.</p>
+            <div className="space-y-3">
+              <button onClick={() => { setShowSessionStartOptions(false); startClassSession(); }} className="w-full text-left rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4 hover:border-indigo-400 hover:bg-indigo-100 transition-colors">
+                <span className="block text-sm font-black text-indigo-900">Standard live session</span>
+                <span className="block text-xs text-indigo-800 mt-1">Use the configured Firebase, district, or local-network session backend.</span>
+              </button>
+              <button onClick={() => { setShowSessionStartOptions(false); setMbPanelOpen(true); }} className="w-full text-left rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 hover:border-emerald-400 hover:bg-emerald-100 transition-colors">
+                <span className="block text-sm font-black text-emerald-900">Class Mailbox QR session</span>
+                <span className="block text-xs text-emerald-800 mt-1">Students scan a QR and join without accounts through your Google Apps Script mailbox.</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -31400,9 +31431,6 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <button onClick={() => setMbMode(m => m === 'sync' ? 'async' : 'sync')} className={`w-full flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 transition-all mb-2 border ${mbMode === 'sync' ? 'text-emerald-800 bg-emerald-50 border-emerald-300' : 'text-sky-800 bg-sky-50 border-sky-300'}`}>
                   {mbMode === 'sync' ? 'Teacher-paced: class follows what you open (tap to switch)' : 'Student-paced: students explore freely (tap to switch)'}
                 </button>
-                <button onClick={() => pushResourceToMailbox()} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl p-3 transition-all disabled:opacity-60 mb-2">
-                  {mbBusy ? 'Sending…' : 'Push current resource to class'}
-                </button>
                 <button onClick={shareFullPackToMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60 mb-2">
                   Re-send full pack (troubleshooting — it already syncs automatically)
                 </button>
@@ -31412,6 +31440,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             )}
             {mbStatus && <p className="text-xs text-slate-600 mt-3">{mbStatus}</p>}
           </div>
+        </div>
+      )}
+      {mbJoinStatus && !isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (
+        <div role={mbJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] max-w-[calc(100vw-24px)] rounded-xl border border-indigo-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
+          <span>{mbJoinStatus}</span>
+          {mbJoinError && <button onClick={() => setMbJoinAttempt(v => v + 1)} className="ml-3 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">Retry</button>}
         </div>
       )}
       {mbStudent && !isTeacherMode && (
@@ -32278,7 +32312,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       {/* SR announcement regions — drive these via window.alloAnnounce(msg, 'polite'|'assertive'). */}
       <div id="allo-live-polite" role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
       <div id="allo-live-assertive" role="alert" aria-live="assertive" aria-atomic="true" className="sr-only" />
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={startClassSession} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={setSelectedVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} startClassSession={() => setShowSessionStartOptions(true)} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {/* Wrapper divs attach the focus-trap refs declared near line 6677. They
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and

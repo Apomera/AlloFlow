@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-11T03:51:56.820Z",
+  "generatedAt": "2026-07-11T05:14:42.480Z",
   "summary": {
     "legacyQuestions": 2933,
-    "nativeQaQuestions": 112,
+    "nativeQaQuestions": 416,
     "nativeOriginalQaQuestions": 8,
-    "legacyReviewPassedQuestions": 104,
+    "legacyReviewPassedQuestions": 408,
     "nativeTargetQuestions": 2933,
-    "nativeRemainingToTarget": 2829,
+    "nativeRemainingToTarget": 2525,
     "flashcards": 415,
     "memoryAids": 255,
     "textbookChapters": 49,
@@ -179,8 +179,8 @@
         "weightPercent": 10,
         "legacySharePercent": 17,
         "target": 500,
-        "currentQaPassed": 13,
-        "remaining": 487
+        "currentQaPassed": 43,
+        "remaining": 457
       },
       {
         "domainId": 2,
@@ -189,8 +189,8 @@
         "weightPercent": 13,
         "legacySharePercent": 11.7,
         "target": 344,
-        "currentQaPassed": 13,
-        "remaining": 331
+        "currentQaPassed": 53,
+        "remaining": 291
       },
       {
         "domainId": 3,
@@ -199,8 +199,8 @@
         "weightPercent": 11,
         "legacySharePercent": 11.4,
         "target": 335,
-        "currentQaPassed": 13,
-        "remaining": 322
+        "currentQaPassed": 46,
+        "remaining": 289
       },
       {
         "domainId": 4,
@@ -209,8 +209,8 @@
         "weightPercent": 12,
         "legacySharePercent": 12.4,
         "target": 364,
-        "currentQaPassed": 13,
-        "remaining": 351
+        "currentQaPassed": 49,
+        "remaining": 315
       },
       {
         "domainId": 5,
@@ -219,8 +219,8 @@
         "weightPercent": 16,
         "legacySharePercent": 11.6,
         "target": 341,
-        "currentQaPassed": 13,
-        "remaining": 328
+        "currentQaPassed": 62,
+        "remaining": 279
       },
       {
         "domainId": 6,
@@ -229,8 +229,8 @@
         "weightPercent": 15,
         "legacySharePercent": 12.9,
         "target": 378,
-        "currentQaPassed": 13,
-        "remaining": 365
+        "currentQaPassed": 59,
+        "remaining": 319
       },
       {
         "domainId": 7,
@@ -239,8 +239,8 @@
         "weightPercent": 7,
         "legacySharePercent": 11.7,
         "target": 343,
-        "currentQaPassed": 13,
-        "remaining": 330
+        "currentQaPassed": 34,
+        "remaining": 309
       },
       {
         "domainId": 8,
@@ -249,8 +249,8 @@
         "weightPercent": 16,
         "legacySharePercent": 11.2,
         "target": 328,
-        "currentQaPassed": 13,
-        "remaining": 315
+        "currentQaPassed": 62,
+        "remaining": 266
       }
     ],
     "practiceSampling": "Build practice sets using blueprint weights even though the reviewed source pool is not distributed in those proportions."

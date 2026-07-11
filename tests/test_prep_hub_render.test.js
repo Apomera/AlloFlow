@@ -125,8 +125,8 @@ describe('Test Prep Hub render flow', () => {
     expect(openButtons).toHaveLength(2);
     await act(async () => { openButtons[1].click(); });
 
-    expect(host.textContent).toContain('Question 1 of 112');
-    expect(host.textContent).toContain('112/112 native items passed content QA');
+    expect(host.textContent).toContain('Question 1 of 416');
+    expect(host.textContent).toContain('416/416 native items passed content QA');
     expect(host.textContent).toContain('Legacy source item');
     expect(host.textContent).toContain('QA passed');
     expect(host.textContent).toContain('Expert validated');
@@ -141,7 +141,7 @@ describe('Test Prep Hub render flow', () => {
     expect(host.textContent).toContain('415');
     expect(host.textContent).toContain('255');
     expect(host.textContent).toContain('1,583');
-    expect(host.textContent).toContain('104 / 2,933 legacy items');
+    expect(host.textContent).toContain('408 / 2,933 legacy items');
     expect(host.textContent).toContain('All 2,933 legacy questions are in the review universe');
     expect(host.querySelector('a[href*="content_inventory.md"]')).toBeTruthy();
     expect(host.querySelector('a[href*="review_ledger.md"]')).toBeTruthy();
@@ -164,7 +164,7 @@ describe('Test Prep Hub render flow', () => {
       await clickButton('Check answer');
       await clickButton('Next question');
     }
-    expect(host.textContent).toContain('Question 9 of 112');
+    expect(host.textContent).toContain('Question 9 of 416');
     const migratedRadios = Array.from(host.querySelectorAll('input[type="radio"]'));
     await act(async () => { migratedRadios[eppp.items[8].answerIndex].click(); });
     await clickButton('Check answer');

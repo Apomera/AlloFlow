@@ -1,17 +1,17 @@
 # Pass the EPPP learning-content inventory
 
-Generated: 2026-07-11T03:51:56.820Z
+Generated: 2026-07-11T05:14:42.480Z
 
 ## Inventory
 
 | Content type | Count |
 | --- | ---: |
 | Legacy learner-visible questions | 2933 |
-| Total native QA-passed questions | 112 |
+| Total native QA-passed questions | 416 |
 | Native-original QA-passed questions | 8 |
-| Legacy questions migrated and QA-passed | 104 |
+| Legacy questions migrated and QA-passed | 408 |
 | Legacy full-review target | 2933 |
-| Remaining to target | 2829 |
+| Remaining to target | 2525 |
 | Flashcards | 415 |
 | Memory aids and mnemonics | 255 |
 | Textbook chapters | 49 |
@@ -28,14 +28,14 @@ Generated: 2026-07-11T03:51:56.820Z
 
 | Domain | Blueprint weight | Legacy-pool share | Legacy items QA passed | Review universe | Remaining |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Biological Bases of Behavior | 10% | 17% | 13 | 500 | 487 |
-| Cognitive-Affective Bases of Behavior | 13% | 11.7% | 13 | 344 | 331 |
-| Social & Cultural Bases of Behavior | 11% | 11.4% | 13 | 335 | 322 |
-| Growth & Lifespan Development | 12% | 12.4% | 13 | 364 | 351 |
-| Assessment & Diagnosis | 16% | 11.6% | 13 | 341 | 328 |
-| Treatment, Intervention & Prevention | 15% | 12.9% | 13 | 378 | 365 |
-| Research Methods & Statistics | 7% | 11.7% | 13 | 343 | 330 |
-| Ethical, Legal & Professional Issues | 16% | 11.2% | 13 | 328 | 315 |
+| Biological Bases of Behavior | 10% | 17% | 43 | 500 | 457 |
+| Cognitive-Affective Bases of Behavior | 13% | 11.7% | 53 | 344 | 291 |
+| Social & Cultural Bases of Behavior | 11% | 11.4% | 46 | 335 | 289 |
+| Growth & Lifespan Development | 12% | 12.4% | 49 | 364 | 315 |
+| Assessment & Diagnosis | 16% | 11.6% | 62 | 341 | 279 |
+| Treatment, Intervention & Prevention | 15% | 12.9% | 59 | 378 | 319 |
+| Research Methods & Statistics | 7% | 11.7% | 34 | 343 | 309 |
+| Ethical, Legal & Professional Issues | 16% | 11.2% | 62 | 328 | 266 |
 
 Recommended release gates: 100-question foundation, 300-question alpha, 1,000-question beta, 2,000-question expansion, and the complete 2,933-question reviewed universe. Reviewing all questions does not guarantee publishing every original wording: failures must be corrected, diversified, or retired. Practice forms should sample by blueprint weight rather than mirror the uneven legacy-pool distribution.
 

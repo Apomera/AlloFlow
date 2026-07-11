@@ -28,7 +28,7 @@ describe('Test Prep Hub exam-pack contract', () => {
     expect(demo.status).toBe('ready');
     expect(demo.items).toHaveLength(5);
     expect(eppp.status).toBe('ready');
-    expect(eppp.items).toHaveLength(112);
+    expect(eppp.items).toHaveLength(416);
     expect(eppp.domains).toHaveLength(8);
     expect(new Set(eppp.items.map((item) => item.domainId)).size).toBe(8);
     expect(eppp.items.every((item) => item.reviewStatus === 'source-reviewed')).toBe(true);

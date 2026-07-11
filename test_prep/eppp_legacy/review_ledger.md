@@ -1,6 +1,6 @@
 # EPPP full-bank review ledger
 
-Generated: 2026-07-11T03:51:56.972Z
+Generated: 2026-07-11T05:14:42.636Z
 
 ## Goal
 
@@ -11,10 +11,10 @@ Deeply review the complete 2,933-question legacy universe; correct, diversify, o
 | Status | Count |
 | --- | ---: |
 | Legacy questions in review universe | 2933 |
-| Legacy items migrated and native-QA passed | 104 |
-| Legacy items still quarantined | 2829 |
+| Legacy items migrated and native-QA passed | 408 |
+| Legacy items still quarantined | 2525 |
 | Native-original QA-passed items | 8 |
-| Total native QA-passed items | 112 |
+| Total native QA-passed items | 416 |
 | Independently expert-validated items | 0 |
 | Production-validated items | 0 |
 

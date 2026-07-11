@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-11T00:00:25.775Z
+Generated: 2026-07-11T05:00:42.871Z
 
 ## Scope
 
@@ -148,7 +148,7 @@ Generated: 2026-07-11T00:00:25.775Z
 | `solarSystem` Solar System Explorer | science | standard | 25 | 1 | 1 | 0 | 0 | 0 |  |
 | `spaceColony` Kepler Colony | strategy | standard | 13 | 7 | 0 | 0 | 0 | 0 |  |
 | `spaceExplorer` Space Explorer | Simulations | standard | 9 | 0 | 0 | 0 | 0 | 0 |  |
-| `statsLab` Statistics Lab | math | standard | 20 | 0 | 0 | 0 | 0 | 0 |  |
+| `statsLab` Statistics Lab | math | standard | 21 | 0 | 0 | 0 | 0 | 0 |  |
 | `stewardshipHub` Environmental Stewardship Campaigns | science | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
 | `swimLab` SwimLab | life-skills | standard | 13 | 0 | 0 | 0 | 0 | 0 |  |
 | `throwlab` ThrowLab | science | standard | 53 | 8 | 1 | 0 | 0 | 0 |  |

@@ -364,10 +364,12 @@ describe('ANTI wiring pins', () => {
         expect(hosted).not.toMatch(/_alloEnsureAuthenticatedUser|getDoc|doc\(db|onSnapshot/);
     });
 
-    it('teacher panel, hosted-QR button, and hand-raise are wired', () => {
-        expect(anti).toMatch(/Live class without accounts/);
+    it('live-session transport chooser, hosted-QR button, and hand-raise are wired', () => {
+        expect(anti).toMatch(/Start live session/);
+        expect(anti).toMatch(/Standard live session/);
+        expect(anti).toMatch(/Class Mailbox QR session/);
         expect(anti).toMatch(/Connect & self-test/);
-        expect(anti).toMatch(/Push current resource to class/);
+        expect(anti).not.toMatch(/Push current resource to class/);
         expect(anti).toMatch(/Host on Class Mailbox \(small QR, images OK\)/);
         expect(anti).toMatch(/aria-label=\{mbHandUp \? 'Lower hand' : 'Raise hand'\}/);
         // Hosted variant renders without QR suppression and with the Drive note.

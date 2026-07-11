@@ -178,7 +178,7 @@
     var st = document.createElement('style');
     st.id = 'allo-watercycle-polish-css';
     st.textContent = [
-      '.wc-explorer-root{max-width:1040px!important}',
+      '.wc-explorer-root{width:100%;max-width:65rem!important}',
       '.wc-cycle-brief{border-radius:16px;padding:14px;margin-bottom:12px;background:linear-gradient(135deg,rgba(14,165,233,.16),rgba(16,185,129,.10) 56%,rgba(251,191,36,.12));border:1px solid rgba(14,165,233,.28);box-shadow:0 16px 36px rgba(15,23,42,.12)}',
       '.wc-brief-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}',
       '.wc-kicker{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#0284c7;margin-bottom:3px}',
@@ -1510,7 +1510,7 @@ const d = labToolData.waterCycle || {};
                   h('p', { style: { margin: '8px 0 0', color: isDark ? '#cbd5e1' : '#334155', fontSize: 14, lineHeight: 1.6 } },
                     t('stem.watercycle.six_watershed_components_ten_years_rea', 'Six watershed components, ten years, real Maine pressures: dam barriers, agricultural runoff, suburban stormwater, climate-driven floods and droughts. '),
                     h('strong', null, t('stem.watercycle.hydrological_feedback_rules_tie_them_t', 'Hydrological feedback rules tie them together.')),
-                    t('stem.watercycle.healthy_buffers_cool_headwater_streams', ' Healthy buffers cool headwater streams. Beaver wetlands attenuate floods and clean the mainstem. Low ag runoff lets the river breathe. Connected, shaded rivers bring back salmon and alewife runs.')
+                    t('stem.watercycle.healthy_buffers_cool_headwater_streams', ' Healthy buffers cool headwater streams. Beaver wetlands attenuate floods and clean the mainstem. Low ag runoff lets the river breathe. Connected, shaded rivers bring back salmon and alewife runs. Outcomes are hand-authored teaching indices, not field measurements, forecasts, or project guarantees.')
                   )
                 ),
 
@@ -2239,7 +2239,7 @@ const d = labToolData.waterCycle || {};
                          '9-12': 'Antarctic ice cores preserve 800,000 years of climate history, with \u03B4\u00B9\u2078O variations of ~5\u2030 between glacial and interglacial periods.' } },
             { id: 'transpiration', label: t('stem.water_cycle.transpiration'), emoji: '\uD83C\uDF3F', color: '#22c55e',
               desc: { 'K-2': 'Plants drink water through their roots. Then the water travels up to the leaves and floats away into the air through tiny holes  -  like the plant is breathing!',
-                      '3-5': 'Plants absorb water through roots and release vapor from tiny pores called stomata in their leaves. A single large oak tree can transpire 150,000 liters per year.',
+                      '3-5': 'Plants absorb water through roots and release vapor from tiny pores called stomata in their leaves. A large tree can transpire substantial amounts of water, but the rate varies widely with species, size, season, soil moisture, and weather.',
                       '6-8': 'Transpiration is driven by the soil-plant-atmosphere continuum. Water moves through xylem via cohesion-tension, exiting through ~100,000 stomata per cm\u00B2 of leaf surface. Guard cells regulate stomatal aperture in response to light, CO\u2082, and water stress.',
                       '9-12': 'The Penman-Monteith equation models transpiration: ET = [\u0394(Rn-G) + \u03C1a·cp·VPD/ra] / [\u0394 + \u03B3(1 + rs/ra)]. Stomatal conductance follows the Ball-Berry model linking assimilation, humidity, and CO\u2082 concentration.' },
               funFact: { 'K-2': 'A big oak tree lets out enough water every year to fill a swimming pool!',
@@ -2292,13 +2292,17 @@ const d = labToolData.waterCycle || {};
           const canvasRef = function (canvasEl) {
 
             if (!canvasEl) {
-
-              if (_lastWcCanvas && _lastWcCanvas._wcCleanup) { _lastWcCanvas._wcCleanup(); _lastWcCanvas._wcInit = false; }
-
+              var detachedCanvas = _lastWcCanvas;
               _lastWcCanvas = null;
-
+              // React calls an old callback ref with null on ordinary rerenders.
+              // Defer teardown so the same, still-connected canvas keeps its progress.
+              setTimeout(function() {
+                if (detachedCanvas && !detachedCanvas.isConnected && detachedCanvas._wcCleanup) {
+                  detachedCanvas._wcCleanup();
+                  detachedCanvas._wcInit = false;
+                }
+              }, 0);
               return;
-
             }
 
             _lastWcCanvas = canvasEl;
@@ -2437,7 +2441,7 @@ const d = labToolData.waterCycle || {};
 
 
             // ═══ JOURNEY MODE ENGINE ═══
-            var journey = { state: 'idle', progress: 0, pathIdx: 0, timer: 0, particleTrail: [], phase: 0 };
+            var journey = { state: canvasEl.dataset.journeyState || 'idle', progress: 0, pathIdx: 0, timer: 0, particleTrail: [], phase: 0 };
 
             // Waypoint paths (fractional coords relative to cW/cH, in dpr-independent space)
             var JOURNEY_PATHS = {
@@ -3657,7 +3661,7 @@ const d = labToolData.waterCycle || {};
               }
 
               // ── Lightning (random, when temp > 30) ──
-              if (climTemp > 30) {
+              if (canvasEl.dataset.stormActive === 'true') {
                 lightning.timer--;
                 if (lightning.timer <= 0 && Math.random() < 0.003) {
                   lightning.active = true;
@@ -3777,6 +3781,7 @@ const d = labToolData.waterCycle || {};
                       if (canvasEl._onJourneyComplete) canvasEl._onJourneyComplete(jState);
                     } else if (next === 'ground_choice') {
                       canvasEl.dataset.journeyState = 'ground_choice';
+                      if (canvasEl._onJourneyTransition) canvasEl._onJourneyTransition('ground_choice');
                     } else {
                       canvasEl.dataset.journeyState = next || 'idle';
                       if (canvasEl._onJourneyTransition) canvasEl._onJourneyTransition(next);
@@ -3902,12 +3907,16 @@ const d = labToolData.waterCycle || {};
               else if (nextState && (nextState.indexOf('collect') >= 0 || nextState.indexOf('ocean') >= 0 || nextState.indexOf('lake') >= 0)) sfxCollect();
               else if (nextState && (nextState.indexOf('freez') >= 0 || nextState.indexOf('ice') >= 0 || nextState.indexOf('glacier') >= 0)) sfxFreeze();
               else sfxWcClick();
-              upd('journeyState', nextState);
-              if (pathKey) {
-                var paths = Object.assign({}, d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
-                paths[pathKey] = (paths[pathKey] || 0) + 1;
-                upd('journeyPaths', paths);
-              }
+              setLabToolData(function(prev) {
+                var current = prev.waterCycle || {};
+                var nextWaterCycle = Object.assign({}, current, { journeyState: nextState });
+                if (pathKey) {
+                  var paths = Object.assign({ runoff: 0, infiltrate: 0, plant: 0 }, current.journeyPaths || {});
+                  paths[pathKey] = (paths[pathKey] || 0) + 1;
+                  nextWaterCycle.journeyPaths = paths;
+                }
+                return Object.assign({}, prev, { waterCycle: nextWaterCycle });
+              });
             };
 
           };
@@ -4110,11 +4119,11 @@ const d = labToolData.waterCycle || {};
                 )
               ),
 
-              React.createElement("canvas", { role: "img", tabIndex: 0, "aria-label": "Water cycle animation showing the " + (d.activeStage || 'evaporation') + " stage.", ref: canvasRef, id: "wcCanvas", className: "wc-canvas-element", "data-watercycle-canvas": "true", "data-active-stage": d.activeStage || 'evaporation', "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0), "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15), "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0), "data-dark-mode": String(isDark), style: { width: "100%", height: "100%", display: "block" } }),
+              React.createElement("canvas", { role: "img", tabIndex: 0, "aria-label": "Water cycle animation showing the " + (d.activeStage || 'evaporation') + " stage.", ref: canvasRef, id: "wcCanvas", className: "wc-canvas-element", "data-watercycle-canvas": "true", "data-active-stage": d.activeStage || 'evaporation', "data-journey-state": d.journeyActive ? (d.journeyState || 'ocean') : 'idle', "data-clim-solar": String(d.climSolar != null ? d.climSolar : 1.0), "data-clim-temp": String(d.climTemp != null ? d.climTemp : 15), "data-clim-wind": String(d.climWind != null ? d.climWind : 1.0), "data-dark-mode": String(isDark), style: { width: "100%", height: "100%", display: "block" } }),
 
               // Weather badge overlay
               (d.climTemp != null && d.climTemp < 0) && React.createElement("div", { className: "absolute bottom-2 left-2 px-2 py-1 bg-blue-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.snow', "\u2744\uFE0F SNOW")),
-              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", { className: "absolute bottom-2 left-2 px-2 py-1 bg-amber-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.storm', "\u26A1 STORM")),
+              (d.climTemp != null && d.climTemp > 30) && React.createElement("div", { className: "absolute bottom-2 left-2 px-2 py-1 bg-amber-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, "HOT SURFACE"),
               (d.climSolar != null && d.climSolar < 0.3) && React.createElement("div", { className: "absolute bottom-2 right-2 px-2 py-1 bg-indigo-900/70 text-white text-[11px] font-bold rounded-full backdrop-blur-sm" }, t('stem.watercycle.night', "\uD83C\uDF19 NIGHT"))
 
             ),
@@ -4182,12 +4191,12 @@ const d = labToolData.waterCycle || {};
               // Weather readout
               React.createElement("div", { className: "mt-2 flex flex-wrap gap-1.5 text-[11px] font-bold" },
                 (d.climTemp != null && d.climTemp < 0) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-blue-950/60 text-blue-300 border border-blue-900/50" : "bg-blue-100 text-blue-700") }, t('stem.watercycle.snow_active', "\u2744\uFE0F Snow active")),
-                (d.climTemp != null && d.climTemp > 30) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-amber-950/60 text-amber-300 border border-amber-900/50" : "bg-amber-100 text-amber-700") }, t('stem.watercycle.thunderstorm', "\u26A1 Thunderstorm")),
+                (d.climTemp != null && d.climTemp > 30) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-amber-950/60 text-amber-300 border border-amber-900/50" : "bg-amber-100 text-amber-700") }, "Hot surface"),
                 (d.climSolar != null && d.climSolar > 0.7 && d.climTemp > 10 && d.climTemp < 35) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-purple-950/60 text-purple-300 border border-purple-900/50" : "bg-purple-100 text-purple-700") }, t('stem.watercycle.rainbow', "\uD83C\uDF08 Rainbow")),
                 (d.climSolar != null && d.climSolar < 0.3) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-indigo-950/60 text-indigo-300 border border-indigo-900/50" : "bg-indigo-100 text-indigo-700") }, t('stem.watercycle.stars_visible', "\u2B50 Stars visible")),
                 (d.climTemp != null && d.climTemp > 2 && d.climTemp < 18) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-slate-800/80 text-slate-350 border border-slate-700/60" : "bg-slate-100 text-slate-600") }, t('stem.watercycle.fog', "\uD83C\uDF2B\uFE0F Fog")),
                 React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-sky-950/60 text-sky-300 border border-sky-900/50" : "bg-sky-100 text-sky-600") },
-                  "\uD83D\uDCA7 Evap: " + (Math.max(0.2, Math.min(2, (d.climSolar != null ? d.climSolar : 1) * ((d.climTemp != null ? d.climTemp : 15) / 15))) * 100).toFixed(0) + "%"
+                  "Evaporation index: " + Math.max(0.2, Math.min(2, (d.climSolar != null ? d.climSolar : 1) * ((d.climTemp != null ? d.climTemp : 15) / 15))).toFixed(2) + "x"
                 )
               )
             ),
@@ -4420,39 +4429,39 @@ const d = labToolData.waterCycle || {};
             ),
 
             // ═══ WATER BUDGET  -  Live Data Panel ═══
-            React.createElement("div", { className: "rounded-xl p-3 mb-3 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-gradient-to-r from-slate-50 to-sky-50 border-slate-400 shadow-sm") },
+            React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "rounded-xl p-3 mb-3 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-gradient-to-r from-slate-50 to-sky-50 border-slate-400 shadow-sm") },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-base" }, "\uD83D\uDCCA"),
-                React.createElement("h4", { className: "text-xs font-bold " + (isDark ? "text-slate-200" : "text-slate-700") }, t('stem.watercycle.water_budget_live', "Water Budget (Live)")),
-                React.createElement("span", { className: "px-1.5 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-600") }, "REAL-TIME")
+                React.createElement("h4", { className: "text-xs font-bold " + (isDark ? "text-slate-200" : "text-slate-700") }, t('stem.watercycle.water_budget_live', "Scenario Readout")),
+                React.createElement("span", { className: "px-1.5 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-sky-950/60 text-sky-400 border border-sky-900/40" : "bg-sky-100 text-sky-600") }, "TEACHING MODEL")
               ),
               (function() {
                 var s2 = d.climSolar != null ? d.climSolar : 1.0;
                 var t3 = d.climTemp != null ? d.climTemp : 15;
                 var w2 = d.climWind != null ? d.climWind : 1.0;
-                var evapRate = Math.max(0, (s2 * 0.5 + Math.max(0, t3) / 30) * (0.8 + w2 * 0.2));
-                var precipType = t3 < -5 ? '\u2744\uFE0F Snow' : t3 < 2 ? '\uD83E\uDEE7 Sleet' : t3 > 30 ? '\u26A1 Storm' : '\uD83C\uDF27 Rain';
-                var runoffPct = Math.min(95, Math.max(5, 30 + (t3 > 0 ? t3 * 0.8 : 0) + w2 * 8));
-                var gwRecharge = Math.max(0, 100 - runoffPct); // true partition: of rain reaching the ground, runoff + infiltration = 100% (water is conserved, just redirected)
-                return React.createElement("div", null, React.createElement("div", { className: "grid grid-cols-4 gap-2" },
+                var evapRate = Math.max(0.2, Math.min(2, s2 * Math.max(0.2, (t3 + 20) / 35) * (0.85 + w2 * 0.15)));
+                var precipType = t3 < -2 ? 'Snow favored' : t3 <= 3 ? 'Mixed / uncertain' : 'Rain favored';
+                var runoffPct = 'Needs land data';
+                var gwRecharge = 'Not resolved';
+                return React.createElement("div", null, React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-amber-950/50" : "bg-white border-amber-100") },
-                    React.createElement("p", { className: "text-lg font-bold text-amber-500 tracking-tight" }, (evapRate * 100).toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-amber-600" : "text-amber-500") }, t('stem.watercycle.evaporation_2', "Evaporation"))
+                    React.createElement("p", { className: "text-lg font-bold text-amber-500 tracking-tight" }, evapRate.toFixed(2) + "x"),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-amber-600" : "text-amber-500") }, t('stem.watercycle.evaporation_2', "Evaporation index"))
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-blue-950/50" : "bg-white border-blue-100") },
                     React.createElement("p", { className: "text-sm font-bold text-blue-500" }, precipType),
                     React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-blue-600" : "text-blue-500") }, t('stem.watercycle.precip_type', "Precip Type"))
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-cyan-950/50" : "bg-white border-cyan-100") },
-                    React.createElement("p", { className: "text-lg font-bold text-cyan-500 tracking-tight" }, runoffPct.toFixed(0) + "%"),
+                    React.createElement("p", { className: "text-sm font-bold text-cyan-500" }, runoffPct),
                     React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-cyan-600" : "text-cyan-500") }, t('stem.watercycle.runoff', "Runoff"))
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-emerald-950/50" : "bg-white border-emerald-100") },
-                    React.createElement("p", { className: "text-lg font-bold text-emerald-500 tracking-tight" }, gwRecharge.toFixed(0) + "%"),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-600" : "text-emerald-500") }, t('stem.watercycle.gw_recharge', "GW Recharge"))
+                    React.createElement("p", { className: "text-sm font-bold text-emerald-500" }, gwRecharge),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-600" : "text-emerald-500") }, t('stem.watercycle.gw_recharge', "Groundwater recharge"))
                   )
                   ),
-                  React.createElement("p", { className: "text-[11px] mt-2 text-center font-medium " + (isDark ? "text-sky-300" : "text-sky-700") }, t('stem.watercycle.water_is_conserved_runoff_what_soaks_i', "💧 Water is conserved — runoff + what soaks in ≈ 100% of the rain reaching the ground. None disappears; it just takes different paths back to the sea."))
+                  React.createElement("p", { role: "note", className: "text-[11px] mt-2 text-center font-medium " + (isDark ? "text-sky-300" : "text-sky-700") }, "Relative teaching indices, not measurements or a forecast. Surface temperature only hints at precipitation phase; the vertical temperature profile matters. Runoff depends on rainfall, slope, soil, saturation, vegetation, and impervious cover. Infiltration is not automatically groundwater recharge.")
                 );
               })()
             ),
@@ -4666,9 +4675,9 @@ const d = labToolData.waterCycle || {};
                 { s: 'Groundwater flows in big underground rivers and lakes.', t: false, why: 'Almost all groundwater seeps through tiny pores in soil and rock, like water held in a sponge \u2014 often moving just meters per YEAR.', tryIt: 'In Journey Mode, take the Infiltration path \u2014 the aquifer leg is the slowest part of the whole cycle.' }
               ]);
               var MYTHS_912 = MYTHS_68.concat([
-                { s: 'A warmer atmosphere can hold more moisture.', t: true, why: 'The Clausius-Clapeyron relation: roughly 7% more water vapor per \u00B0C of warming \u2014 one reason a warming climate produces heavier downpours.', tryIt: 'In the Climate Lab, raise the temperature and watch evaporation and storm behavior climb together.' },
+                { s: 'Saturation vapor pressure rises as air warms.', t: true, why: 'Near common surface temperatures, saturation vapor pressure rises by roughly 7% per degree Celsius. Actual atmospheric moisture also depends on relative humidity and circulation.', tryIt: 'Raise temperature in the Climate Lab and compare the relative evaporation index. This teaching model does not forecast storms.' },
                 { s: 'Rain falls in the same place the water evaporated from.', t: false, why: 'Vapor rides the wind for hundreds of kilometers (atmospheric "flying rivers"). Rain falls where the air COOLS, not where the water left the surface.', tryIt: 'Crank the wind slider and watch the clouds drift far downwind before the rain drops.' },
-                { s: 'Transpiration from plants barely matters to the cycle.', t: false, why: 'Plants pump roughly 10% of all atmospheric moisture \u2014 and the Amazon recycles about HALF of its own rainfall through transpiration.', tryIt: 'Open the Transpiration stage: a single oak moves about 150,000 liters per year.' }
+                { s: 'Transpiration from plants barely matters to the cycle.', t: false, why: 'Transpiration is a major part of evapotranspiration over vegetated land. Its share varies with ecosystem, season, soil moisture, and weather.', tryIt: 'Open the Transpiration stage and trace how roots, xylem, and stomata return water to the atmosphere.' }
               ]);
               var mythBank = gradeBand === '9-12' ? MYTHS_912 : gradeBand === '6-8' ? MYTHS_68 : MYTHS_35;
               var myth = d.wcMyth || null;

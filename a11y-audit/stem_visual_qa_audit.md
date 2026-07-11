@@ -1,25 +1,25 @@
 # STEM Visual QA Audit
 
-Generated: 2026-07-11T00:00:31.590Z
+Generated: 2026-07-11T05:04:17.522Z
 
 ## Scope
 
 - Registered STEM tools: 121
 - STEM tool files: 118
-- Monitored student-facing visual markers: 62
+- Monitored student-facing visual markers: 63
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
 | Load errors | 0 |
-| Marker passes | 62 |
+| Marker passes | 63 |
 | Marker failures | 0 |
-| Monitored first-screen findings | 11 |
+| Monitored first-screen findings | 12 |
 | High-confidence monitored errors | 0 |
 | Source/public drift | 0 |
-| Any source/public/build drift | 5 |
-| Monitored file drift | 4 |
+| Any source/public/build drift | 0 |
+| Monitored file drift | 0 |
 
 ## Visual Marker Coverage
 
@@ -75,6 +75,7 @@ Generated: 2026-07-11T00:00:31.590Z
 | pass | `echolocation` | `data-echolocation-run-focus` | Rendered |
 | pass | `skatelab` | `data-skatelab-run-focus` | Rendered |
 | pass | `probability` | `data-probability-command` | Rendered |
+| pass | `statsLab` | `data-statslab-command` | Rendered |
 | pass | `punnett` | `data-punnett-cross-focus` | Rendered |
 | pass | `circuit` | `data-circuit-bench` | Rendered |
 | pass | `chemBalance` | `data-chembalance-command` | Rendered |
@@ -94,17 +95,11 @@ Generated: 2026-07-11T00:00:31.590Z
 | --- | --- | ---: | --- |
 | warning | `heading` | 2 | `cellularLab`, `bikeLab` |
 | warning | `canvas-focus` | 1 | `bikeLab` |
-| notice | `horizontal-overflow-risk` | 8 | `opticsLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation` |
+| notice | `horizontal-overflow-risk` | 9 | `opticsLab`, `cellularLab`, `dinoLab`, `printingPress`, `birdLab`, `playlab`, `bikeLab`, `echolocation`, `statsLab` |
 
 ## Sync Drift
 
-| Status | File | Monitored | Hashes |
-| --- | --- | --- | --- |
-| build-drift | `stem_tool_birdlab.js` | yes | source `201D77C757F0`, public `201D77C757F0`, build `CCABD7BECBE2` |
-| build-drift | `stem_tool_cell.js` | yes | source `2433EA10FC97`, public `2433EA10FC97`, build `6A89FB48A090` |
-| build-drift | `stem_tool_cephalopodlab.js` | no | source `AAB1C1265B3E`, public `AAB1C1265B3E`, build `C25FCED0641A` |
-| build-drift | `stem_tool_fisherlab.js` | yes | source `5E8E157BF4BB`, public `5E8E157BF4BB`, build `C89E05857D36` |
-| build-drift | `stem_tool_microbiology.js` | yes | source `389ACB3D9297`, public `389ACB3D9297`, build `CF3007BDFE0F` |
+All source, public, and local build STEM tool copies match.
 
 ## Gate Policy
 

@@ -349,7 +349,7 @@ describe('Prismflow demo isolation', () => {
   });
 });
 describe('Cloudflare student shell build wiring', () => {
-  it('keeps the committed /app artifact self-contained and Cloudflare-sized', () => {
+  it('keeps the committed /app artifact split, precached, and Cloudflare-sized', () => {
     const shellDir = resolve(process.cwd(), 'prismflow-deploy/public/app');
     const cdnShellDir = resolve(process.cwd(), 'app');
     const indexPath = resolve(shellDir, 'index.html');
@@ -366,17 +366,26 @@ describe('Cloudflare student shell build wiring', () => {
       }
     }
 
-    expect(index.length).toBeGreaterThan(100 * 1024);
+    expect(index.length).toBeGreaterThan(1024);
+    expect(index.length).toBeLessThan(100 * 1024);
     expect(readFileSync(resolve(cdnShellDir, 'index.html'), 'utf8')).toBe(index);
     expect(readFileSync(resolve(cdnShellDir, 'sw.js'), 'utf8')).toBe(serviceWorker);
-    expect(index).toContain('https://alloflow-cdn.pages.dev/app/');
-    expect(index).toContain('This QR link is incomplete');
-    expect(index).toContain('navigator.serviceWorker.register("./sw.js",{scope:"./"');
+    expect(index).toContain("navigator.serviceWorker.register('./sw.js', { scope: './'");
+    expect(index).toMatch(/\.\/static\/js\/main\.[a-f0-9]+\.js/);
+    expect(index).toMatch(/\.\/static\/css\/main\.[a-f0-9]+\.css/);
+    const mainJsFile = files.find((file) => /static[\\/]js[\\/]main\.[a-f0-9]+\.js$/.test(file));
+    expect(mainJsFile).toBeTruthy();
+    const mainJs = readFileSync(mainJsFile, 'utf8');
+    expect(mainJs).toContain('https://alloflow-cdn.pages.dev/app/');
+    expect(mainJs).toContain('This QR link is incomplete');
     expect(serviceWorker).toContain("const CACHE_NAME = 'alloflow-student-shell-v");
     expect(serviceWorker).toContain("keys.filter(k => k.startsWith('alloflow-student-shell-v')");
-    expect(serviceWorker).toContain('/app/index.html');
-    expect(serviceWorker).not.toContain("cache.add('/index.html')");
-    expect(files.length).toBeGreaterThanOrEqual(4);
+    expect(serviceWorker).toContain('const PRECACHE_PATHS = [');
+    expect(serviceWorker).toMatch(/\.\/static\/js\/main\.[a-f0-9]+\.js/);
+    expect(serviceWorker).toMatch(/\.\/static\/css\/main\.[a-f0-9]+\.css/);
+    expect(serviceWorker).toContain("const SHELL_URL = scopedUrl('./index.html')");
+    expect(serviceWorker).not.toContain('self.skipWaiting()');
+    expect(files.length).toBeGreaterThanOrEqual(7);
     expect(files.some((file) => statSync(file).size >= 25 * 1024 * 1024)).toBe(false);
     expect(files.some((file) => /alloflow_intro_(teacher|family)\.mp4$/.test(file))).toBe(false);
   });

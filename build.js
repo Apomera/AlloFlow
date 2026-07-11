@@ -66,8 +66,9 @@ function publishStudentShell() {
     }
 
     const html = fs.readFileSync(sourceIndex, 'utf8');
-    if (!html.includes('<div id="root"></div>') || Buffer.byteLength(html, 'utf8') < 100 * 1024) {
-        throw new Error('Compiled index is not the self-contained AlloFlow app produced by postbuild.js.');
+    if (!html.includes('<div id="root"></div>') || Buffer.byteLength(html, 'utf8') < 1024
+        || !html.includes('./static/js/main.') || !html.includes('./static/css/main.')) {
+        throw new Error('Compiled split shell is missing its root or hashed boot assets.');
     }
 
     fs.rmSync(STUDENT_SHELL_PUBLIC_DIR, { recursive: true, force: true });
@@ -86,12 +87,15 @@ function publishStudentShell() {
 
     const publishedIndex = path.join(STUDENT_SHELL_PUBLIC_DIR, 'index.html');
     let publishedHtml = fs.readFileSync(publishedIndex, 'utf8');
-    const rootSwRegistration = 'navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"})';
-    const scopedSwRegistration = 'navigator.serviceWorker.register("./sw.js",{scope:"./",updateViaCache:"none"})';
-    if (!publishedHtml.includes(rootSwRegistration)) {
+    // postbuild may preserve readable or minified service-worker registration.
+    const rootSwRegistration = /navigator\.serviceWorker\.register\((['"])\/sw\.js\1,\s*\{\s*updateViaCache:\s*(['"])none\2\s*\}\)/;
+    if (!rootSwRegistration.test(publishedHtml)) {
         throw new Error('Student shell service-worker registration anchor was not found.');
     }
-    publishedHtml = publishedHtml.replace(rootSwRegistration, scopedSwRegistration);
+    publishedHtml = publishedHtml.replace(
+        rootSwRegistration,
+        "navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' })"
+    );
     fs.writeFileSync(publishedIndex, publishedHtml, 'utf8');
 
     const publishedSw = path.join(STUDENT_SHELL_PUBLIC_DIR, 'sw.js');
@@ -101,8 +105,7 @@ function publishStudentShell() {
     }
     sw = sw
         .replace("const CACHE_NAME = 'alloflow-v", "const CACHE_NAME = 'alloflow-student-shell-v")
-        .replace("keys.filter(k => k !== CACHE_NAME)", "keys.filter(k => k.startsWith('alloflow-student-shell-v') && k !== CACHE_NAME)")
-        .replaceAll('/index.html', '/app/index.html');
+        .replace("keys.filter(k => k !== CACHE_NAME)", "keys.filter(k => k.startsWith('alloflow-student-shell-v') && k !== CACHE_NAME)");
     fs.writeFileSync(publishedSw, sw, 'utf8');
 
     let copiedFiles = 0;
@@ -129,7 +132,7 @@ function publishStudentShell() {
 
     console.log('Published student shell: ' + path.relative(ROOT, STUDENT_SHELL_PUBLIC_DIR)
         + ' + ' + path.relative(ROOT, STUDENT_SHELL_CDN_DIR)
-        + ' (' + copiedFiles + ' files each, self-contained index)');
+        + ' (' + copiedFiles + ' files each, split shell with precached assets)');
 }
 
 

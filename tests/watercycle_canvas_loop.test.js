@@ -11,7 +11,13 @@ describe('water cycle canvas animation loop', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('if (_lastWcCanvas && _lastWcCanvas._wcCleanup) { _lastWcCanvas._wcCleanup(); _lastWcCanvas._wcInit = false; }');
+      expect(source).toContain('var detachedCanvas = _lastWcCanvas;');
+      expect(source).toContain('if (detachedCanvas && !detachedCanvas.isConnected && detachedCanvas._wcCleanup) {');
+      expect(source).toContain("var journey = { state: canvasEl.dataset.journeyState || 'idle'");
+      expect(source).toContain("\"data-journey-state\": d.journeyActive ? (d.journeyState || 'ocean') : 'idle'");
+      expect(source).toContain("canvasEl._onJourneyTransition('ground_choice')");
+      expect(source).toContain('var current = prev.waterCycle || {};');
+      expect(source).not.toContain('if (_lastWcCanvas && _lastWcCanvas._wcCleanup) { _lastWcCanvas._wcCleanup(); _lastWcCanvas._wcInit = false; }');
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
       expect(source).toContain('function isWaterCycleHidden()');
       expect(source).toContain('function cancelWaterCycleFrame()');
