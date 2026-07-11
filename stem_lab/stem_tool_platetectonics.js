@@ -642,6 +642,7 @@
       running: true,
       years: 0,
       quakes: [],
+      quakeTotal: 0,
       mountainHeight: 0,
       rift: 0,
       offset: 0
@@ -663,6 +664,26 @@
       convergent: { name: 'Convergent', color: '#dc2626', icon: '🗻', desc: 'Plates collide -> mountains rise. Andes, Himalayas, Cascades.' },
       divergent:  { name: 'Divergent',  color: '#0ea5e9', icon: '🌊', desc: 'Plates separate -> magma fills rift -> new crust. Mid-Atlantic Ridge.' },
       transform:  { name: 'Transform',  color: '#f59e0b', icon: '⚡', desc: 'Plates slide past -> friction -> quakes. San Andreas Fault.' }
+    };
+    var BOUNDARY_EVIDENCE = {
+      convergent: {
+        motion: 'Toward each other',
+        crust: 'Recycled at subduction zones or thickened in collision',
+        quakes: 'Shallow to deep at subduction zones',
+        volcanoes: 'Common above many subduction zones'
+      },
+      divergent: {
+        motion: 'Away from each other',
+        crust: 'Created at a ridge or rift',
+        quakes: 'Mostly shallow',
+        volcanoes: 'Common along ridges and rifts'
+      },
+      transform: {
+        motion: 'Side by side',
+        crust: 'Neither created nor destroyed',
+        quakes: 'Mostly shallow',
+        volcanoes: 'Usually not caused by the boundary'
+      }
     };
 
     useEffect(function() {
@@ -693,20 +714,24 @@
           } else if (cur.mode === 'transform') {
             patch.offset = cur.offset + (cur.rate * 0.5) * dt;
           }
-          // Earthquakes: probability scaled by rate; convergent + transform higher rate
-          var quakeProb = cur.mode === 'transform' ? 0.06 : cur.mode === 'convergent' ? 0.04 : 0.012;
-          quakeProb *= (cur.rate / 5);
+          // Qualitative cadence uses elapsed time, so event counts do not
+          // depend on display refresh rate. This is not a hazard forecast.
+          var eventsPerSecond = cur.mode === 'transform' ? 0.9 : cur.mode === 'convergent' ? 0.7 : 0.25;
+          var quakeProb = 1 - Math.exp(-eventsPerSecond * (cur.rate / 5) * dt);
           if (Math.random() < quakeProb) {
             var magnitude = cur.mode === 'transform' ? 4 + Math.random() * 3.5
                           : cur.mode === 'convergent' ? 3.5 + Math.random() * 4.5
                           : 2 + Math.random() * 2;
+            var depthKm = cur.mode === 'convergent'
+              ? (Math.random() < 0.55 ? 5 + Math.random() * 65 : 70 + Math.random() * 580)
+              : 2 + Math.random() * 28;
             var qx = 220 + (Math.random() - 0.5) * 100;
-            var qy = 150 + (Math.random() - 0.5) * 40;
+            var qy = 150 + Math.min(72, depthKm / 9);
             var newQ = (cur.quakes || []).slice();
-            newQ.push({ x: qx, y: qy, m: magnitude, age: 0 });
+            newQ.push({ x: qx, y: qy, m: magnitude, depthKm: depthKm, age: 0 });
             if (newQ.length > 40) newQ.shift();
             patch.quakes = newQ;
-            // Play rumble sound
+            patch.quakeTotal = (cur.quakeTotal || 0) + 1;
             playQuakeRumble();
           } else if (cur.quakes && cur.quakes.length) {
             patch.quakes = cur.quakes.map(function(q) { return Object.assign({}, q, { age: q.age + dt }); }).filter(function(q) { return q.age < 3; });
@@ -895,7 +920,8 @@
           ctx.shadowBlur = 10;
           ctx.shadowColor = '#ef4444';
         }
-        ctx.strokeStyle = isDark ? 'rgba(244,63,94,' + alpha + ')' : 'rgba(220,38,38,' + alpha + ')';
+        var depthColor = q.depthKm >= 300 ? '167,139,250' : q.depthKm >= 70 ? '251,146,60' : '244,63,94';
+        ctx.strokeStyle = 'rgba(' + depthColor + ',' + alpha + ')';
         ctx.lineWidth = 2 - q.age * 0.5;
         ctx.beginPath();
         ctx.arc(q.x, q.y, radius, 0, Math.PI * 2);
@@ -941,7 +967,7 @@
       ctx.font = '10px monospace';
       ctx.fillText('Years: ' + Math.round(cur.years).toLocaleString(), 14, 36);
       ctx.fillText('Rate: ' + cur.rate + ' cm/yr', 14, 48);
-      ctx.fillText('Quakes: ' + (cur.quakes ? cur.quakes.length : 0), 14, 60);
+      ctx.fillText('Events: ' + (cur.quakeTotal || 0), 14, 60);
 
       // Mode-specific stat
       ctx.fillStyle = '#a3e635';
@@ -955,10 +981,17 @@
     }
 
   function reset() {
-    update({ years: 0, quakes: [], mountainHeight: 0, rift: 0, offset: 0 });
+    update({ years: 0, quakes: [], quakeTotal: 0, mountainHeight: 0, rift: 0, offset: 0 });
   }
 
   var info = BOUNDARY[s.mode];
+  var evidence = BOUNDARY_EVIDENCE[s.mode];
+  var activeDepths = (s.quakes || []).map(function(q) { return q.depthKm || 0; });
+  var deepestActive = activeDepths.length ? Math.round(Math.max.apply(Math, activeDepths)) : null;
+  var depthSummary = deepestActive == null ? 'No active events yet' :
+    (deepestActive >= 300 ? 'Deepest active focus: ' + deepestActive + ' km (deep)' :
+     deepestActive >= 70 ? 'Deepest active focus: ' + deepestActive + ' km (intermediate)' :
+     'Deepest active focus: ' + deepestActive + ' km (shallow)');
 
   var containerClass = 'rounded-2xl border-2 overflow-hidden mt-5 plate-tectonics-container ' + (isDark ? 'border-slate-800 text-slate-200' : 'border-orange-400');
   var containerStyle = isDark ? { background: 'linear-gradient(135deg, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 0%, var(--allo-stem-panel, rgba(30,41,59,0.7)) 100%)', backdropFilter: 'blur(12px)' } : { background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)' };
@@ -977,7 +1010,13 @@
     ),
     h('div', { className: 'p-3 grid grid-cols-1 md:grid-cols-3 gap-3' },
       h('div', { className: 'md:col-span-2 rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-orange-400 bg-white') },
-        h('canvas', { ref: canvasRef, role: 'img', tabIndex: 0, 'aria-label': 'Plate boundary map visualization.', style: { width: 540, height: 300, display: 'block', maxWidth: '100%' } })
+        h('canvas', {
+          ref: canvasRef,
+          role: 'img',
+          tabIndex: 0,
+          'aria-label': info.name + ' boundary cross-section. ' + evidence.motion + '. ' + depthSummary + '.',
+          style: { width: 540, height: 300, display: 'block', maxWidth: '100%' }
+        })
       ),
       h('div', { className: 'flex flex-col gap-2' },
         // Mode selector
@@ -1036,21 +1075,56 @@
         h('div', { className: 'text-[10px] px-1 italic ' + (isDark ? 'text-slate-400' : 'text-orange-800') }, info.desc)
       )
     ),
+    h('section', {
+      className: 'mx-3 mb-3 rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-700' : 'bg-white border-orange-300'),
+      'aria-labelledby': 'ptEvidenceTitle'
+    },
+      h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
+        h('div', null,
+          h('div', { className: 'text-[10px] font-bold uppercase ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, 'Boundary evidence'),
+          h('h4', { id: 'ptEvidenceTitle', className: 'text-sm font-black ' + (isDark ? 'text-slate-100' : 'text-slate-900') }, 'What observations support ' + info.name.toLowerCase() + '?')
+        ),
+        h('span', { className: 'text-[10px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-600'), role: 'status', 'aria-live': 'polite' },
+          (s.quakeTotal || 0) + ' events | ' + depthSummary
+        )
+      ),
+      h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2' },
+        [
+          ['Relative motion', evidence.motion],
+          ['Crustal outcome', evidence.crust],
+          ['Quake-depth clue', evidence.quakes],
+          ['Volcanism clue', evidence.volcanoes]
+        ].map(function(item) {
+          return h('div', { key: item[0], className: 'border-l-2 border-cyan-500 pl-2 py-1' },
+            h('span', { className: 'block text-[9px] font-bold uppercase ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[0]),
+            h('strong', { className: 'block text-[11px] leading-snug ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, item[1])
+          );
+        })
+      ),
+      h('div', { className: 'mt-2 text-[10px] leading-relaxed ' + (isDark ? 'text-slate-400' : 'text-slate-600') },
+        (s.mode === 'convergent' ? 'Scenario note: this cross-section depicts oceanic lithosphere subducting beneath another plate. Continental collision looks different. ' : ''),
+        'Model note: event cadence and landscape growth are accelerated qualitative cues, not forecasts or calibrated rates. ',
+        h('span', { className: 'font-bold' }, 'Depth colors: '),
+        h('span', { style: { color: '#e11d48' } }, 'shallow'), ' | ',
+        h('span', { style: { color: '#ea580c' } }, 'intermediate'), ' | ',
+        h('span', { style: { color: '#7c3aed' } }, 'deep')
+      )
+    ),
     // Educational cards
     h('div', { className: 'mx-3 mb-3 grid grid-cols-1 md:grid-cols-2 gap-2' },
       h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
         h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, '📐 The math'),
         h('div', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
-          'Plates move 2-15 cm/year - roughly the speed your fingernails grow. Over 10 million years (almost nothing geologically) that is 200-1500 km of motion. India crashed into Asia at 15 cm/yr starting ~50 Ma ago - that is how the Himalayas got to 8800 m. Earthquake magnitude is logarithmic: each whole-number step on the Richter scale = 10x shaking amplitude and ~32x energy.'
+          'Plate speeds are commonly measured in centimeters per year. At a constant 2-15 cm/year, a plate would travel about 200-1500 km in 10 million years. Real rates and directions change through time. Earthquake magnitude is logarithmic: one whole moment-magnitude unit represents about 10x recorded wave amplitude and roughly 32x energy release.'
         )
       ),
       h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
         h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, '🎯 Try this'),
         h('ul', { className: 'text-[11px] space-y-0.5 list-disc pl-4 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
-          h('li', null, 'Switch to Convergent at max rate - watch a mountain grow from 0 to Himalayan in seconds (sim years = real seconds x 250).'),
+          h('li', null, 'Switch to Convergent and compare shallow, intermediate, and deep event colors. Deep-focus earthquakes are strong evidence of a subducting slab.'),
           h('li', null, 'Switch to Divergent - see the mid-ocean ridge open and magma fill in (this is happening at the Mid-Atlantic Ridge right now).'),
-          h('li', null, 'Switch to Transform - most earthquakes fire here. That is the San Andreas (CA), North Anatolian (Turkey), Alpine Fault (NZ).'),
-          h('li', null, 'Compare quake frequency: divergent boundaries are quietest; transform faults are loudest.')
+          h('li', null, 'Switch to Transform and observe shallow events plus horizontal offset, as at the San Andreas, North Anatolian, and Alpine faults.'),
+          h('li', null, 'Compare patterns, not raw counts: this accelerated model emphasizes quake depth and crustal outcome rather than predicting real hazard.')
         )
       )
     )
